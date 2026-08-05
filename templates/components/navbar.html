@@ -23,6 +23,10 @@
         <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About" width="18" height="18" decoding="async">
         About Kashii
       </a>
+      <a href="/sandbox/" class="{% if '/sandbox/' in request.path %}active{% endif %}">
+        <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="18" height="18" decoding="async">
+        Coding Sandbox
+      </a>
       <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700;">
         <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube" width="18" height="18" decoding="async">
         Python Kashi
