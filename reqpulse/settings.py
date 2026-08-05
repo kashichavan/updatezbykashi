@@ -123,6 +123,10 @@ else:
         },
     }
 
+# Ultra-Fast Static Asset Caching (WhiteNoise 1-Year Max Age)
+WHITENOISE_MAX_AGE = 31536000 # 1 year immutable caching for images & static assets
+WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
