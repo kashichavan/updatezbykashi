@@ -1,0 +1,671 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ job.company_name }} — {{ job.title }} | Kashii Updatez{% endblock %}
+{% block meta_description %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Stipend/Salary: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}.{% endblock %}
+
+{% block extra_css %}
+<!-- Open Graph & Social Media Share Meta Tags -->
+<meta property="og:title" content="{{ job.company_name }} Hiring: {{ job.title }}">
+<meta property="og:description" content="Location: {{ job.location }} • Pay: {{ job.stipend_salary }} • Eligibility: {{ job.eligibility }}">
+<meta property="og:url" content="{{ share_url }}">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ job.company_name }} Hiring — {{ job.title }}">
+<meta name="twitter:description" content="Apply directly via official recruiter application link on Kashii Updatez.">
+
+<style>
+  /* ==========================================================================
+     MOBILE-FIRST APP SHELL & WEB APP LAYOUT SYSTEM
+     ========================================================================== */
+
+  /* Container */
+  .job-detail-wrap {
+    width: 100%;
+    max-width: 1180px;
+    margin: 20px auto 80px;
+    padding: 0 16px;
+  }
+
+  @media (min-width: 768px) {
+    .job-detail-wrap {
+      margin: 32px auto 60px;
+      padding: 0 24px;
+    }
+  }
+
+  /* Web App Grid Layout (2 Columns on Desktop) */
+  .web-app-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  @media (min-width: 992px) {
+    .web-app-grid {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      align-items: start;
+    }
+  }
+
+  /* Dark Hero Header Banner */
+  .job-hero-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    border-radius: 20px;
+    padding: 24px 20px;
+    color: #ffffff;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .job-hero-card {
+      border-radius: 28px;
+      padding: 36px 32px;
+    }
+  }
+
+  .job-hero-glow {
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.35), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* Breadcrumb Navigation */
+  .job-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .job-breadcrumb a {
+    color: #93c5fd;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .job-breadcrumb a:hover {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+
+  /* Monospace Code Badge */
+  .job-code-tag {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(37, 99, 235, 0.3);
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 800;
+    font-family: 'Consolas', 'JetBrains Mono', monospace;
+    border-radius: 6px;
+    border: 1px solid rgba(147, 197, 253, 0.3);
+    margin-bottom: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Job Title */
+  .job-hero-title {
+    font-family: 'Consolas', 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #ffffff;
+    margin: 0 0 16px;
+    letter-spacing: -0.4px;
+  }
+
+  @media (min-width: 768px) {
+    .job-hero-title {
+      font-size: 32px;
+    }
+  }
+
+  /* Alternative Design: Glassmorphism Meta Strip */
+  .job-meta-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    padding: 18px 20px;
+    margin-top: 20px;
+  }
+
+  @media (min-width: 640px) {
+    .job-meta-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+    }
+  }
+
+  .meta-strip-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+  }
+
+  .meta-strip-icon {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .meta-strip-icon img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
+    filter: brightness(0) invert(1);
+  }
+
+  .meta-strip-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .meta-strip-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+  }
+
+  .meta-strip-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    word-break: break-word;
+    line-height: 1.3;
+  }
+
+  .meta-val-blue {
+    color: #93c5fd;
+  }
+
+  /* Main Card Details */
+  .job-main-card {
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: var(--card-shadow);
+  }
+
+  @media (min-width: 768px) {
+    .job-main-card {
+      border-radius: 24px;
+      padding: 32px;
+    }
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .eligibility-alert-box {
+    background: #fff8f1;
+    border: 1px solid #ffedd5;
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 24px;
+  }
+
+  .description-body {
+    color: #334155;
+    line-height: 1.7;
+    white-space: pre-line;
+    font-size: 14px;
+    background: var(--paper);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--subtle-border);
+    margin-bottom: 24px;
+  }
+
+  @media (min-width: 768px) {
+    .description-body {
+      font-size: 15px;
+      padding: 24px;
+    }
+  }
+
+  /* Sticky Web App Sidebar on Desktop */
+  .web-app-sidebar {
+    position: relative;
+  }
+
+  @media (min-width: 992px) {
+    .web-app-sidebar {
+      position: sticky;
+      top: 84px;
+    }
+  }
+
+  /* Action Box & Buttons */
+  .apply-action-box {
+    text-align: center;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    padding: 24px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--blue-border);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+    margin-bottom: 24px;
+  }
+
+  .btn-apply-portal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--blue-primary);
+    color: #ffffff !important;
+    font-size: 15px;
+    font-weight: 800;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.4);
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-apply-portal:hover {
+    background: var(--blue-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.5);
+  }
+
+  /* Share Action Buttons Grid */
+  .share-action-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .share-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid var(--subtle-border);
+    background: #ffffff;
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition);
+  }
+
+  .share-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--card-shadow);
+  }
+
+  .share-pill-wa {
+    background: #25d366;
+    color: #ffffff !important;
+    border-color: #25d366;
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+  }
+
+  .share-pill-wa:hover {
+    background: #1ebc57;
+  }
+
+  .share-pill-ig {
+    background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+    color: #ffffff !important;
+    border: none;
+    box-shadow: 0 4px 14px rgba(225, 48, 108, 0.3);
+  }
+
+  /* Sticky Mobile Bottom Bar (App-Like 1-Thumb Action) */
+  .mobile-sticky-apply-bar {
+    position: fixed;
+    bottom: 56px; /* Sits cleanly above mobile bottom nav bar */
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--subtle-border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 150;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    .job-detail-wrap {
+      padding-bottom: 120px;
+    }
+
+    /* Lift floating Instagram chat widget above sticky apply bar on mobile */
+    .floating-chat-widget {
+      bottom: 130px !important;
+      right: 14px !important;
+      padding: 8px 14px !important;
+      font-size: 12px !important;
+      z-index: 160 !important;
+    }
+
+    .chat-label {
+      font-size: 11px !important;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .mobile-sticky-apply-bar {
+      display: none;
+    }
+  }
+
+  .mobile-apply-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 11px 16px;
+    background: var(--blue-primary);
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: 800;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+  }
+
+  /* Related Cards Grid */
+  .related-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  @media (min-width: 640px) {
+    .related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="job-detail-wrap">
+
+  <!-- ── 1. HERO HEADER CARD (DARK GRADIENT BANNER) ────────────────── -->
+  <header class="job-hero-card">
+    <div class="job-hero-glow"></div>
+
+    <!-- Breadcrumbs -->
+    <nav class="job-breadcrumb">
+      <a href="/">Home Feed</a>
+      <span>›</span>
+      <a href="/category/{{ job.category.slug }}/">{{ job.category.name }}</a>
+      <span>›</span>
+      <span style="color: #cbd5e1;">{{ job.company_name }}</span>
+    </nav>
+
+    <!-- Code Tag -->
+    <span class="job-code-tag">
+      REQUIREMENT_ID_{{ job.pk }} • 3-DAY_ACTIVE_POLICY
+    </span>
+
+    <!-- Job Title -->
+    <h1 class="job-hero-title">
+      {{ job.title }}
+    </h1>
+
+    <!-- Glassmorphism Meta Details Strip with Transparent PNG Icons -->
+    <div class="job-meta-strip">
+      <div class="meta-strip-item">
+        <div class="meta-strip-icon">
+          <img src="{% static 'images/icon-company.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Company" loading="eager" decoding="async">
+        </div>
+        <div class="meta-strip-content">
+          <span class="meta-strip-label">Company</span>
+          <span class="meta-strip-val">{{ job.company_name }}</span>
+        </div>
+      </div>
+
+      <div class="meta-strip-item">
+        <div class="meta-strip-icon">
+          <img src="{% static 'images/icon-type.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Type" loading="eager" decoding="async">
+        </div>
+        <div class="meta-strip-content">
+          <span class="meta-strip-label">Opportunity Type</span>
+          <span class="meta-strip-val meta-val-blue">{{ job.get_job_type_display }}</span>
+        </div>
+      </div>
+
+      <div class="meta-strip-item">
+        <div class="meta-strip-icon">
+          <img src="{% static 'images/icon-salary.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Salary" loading="eager" decoding="async">
+        </div>
+        <div class="meta-strip-content">
+          <span class="meta-strip-label">Stipend / Salary</span>
+          <span class="meta-strip-val">{{ job.stipend_salary }}</span>
+        </div>
+      </div>
+
+      <div class="meta-strip-item">
+        <div class="meta-strip-icon">
+          <img src="{% static 'images/icon-location.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Location" loading="eager" decoding="async">
+        </div>
+        <div class="meta-strip-content">
+          <span class="meta-strip-label">Location</span>
+          <span class="meta-strip-val">{{ job.location }}</span>
+        </div>
+      </div>
+
+      <div class="meta-strip-item">
+        <div class="meta-strip-icon">
+          <img src="{% static 'images/icon-date.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Posted Date" loading="eager" decoding="async">
+        </div>
+        <div class="meta-strip-content">
+          <span class="meta-strip-label">Posted Date</span>
+          <span class="meta-strip-val">{{ posted_date_display }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── 2. WEB APP TWO-COLUMN GRID (MAIN CONTENT + STICKY SIDEBAR) ── -->
+  <div class="web-app-grid">
+
+    <!-- LEFT COLUMN: REQUIREMENT DETAILS -->
+    <main class="job-main-card">
+
+      <!-- Required Skills -->
+      <div style="margin-bottom: 20px;">
+        <div class="section-label" style="display:flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Skills"> Required Skills & Tech Stack</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          {% for skill in skills_list %}
+            <span class="skill-tag" style="font-size: 12px; padding: 5px 12px; background: var(--blue-light); color: var(--blue-dark); border-radius: 8px; border: 1px solid var(--blue-border); font-weight: 700;">
+              {{ skill }}
+            </span>
+          {% empty %}
+            <span style="font-size: 13px; color: var(--muted);">General Student Requirements</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Eligibility Alert Box -->
+      <div class="eligibility-alert-box">
+        <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: #c2410c; margin-bottom: 4px; display:flex; align-items:center; gap:6px;">
+          <img src="{% static 'images/icon-about.png' %}" class="nav-icon" width="14" height="14" alt="Eligibility"> Eligibility Criteria
+        </div>
+        <p style="color: #9a3412; font-size: 14px; font-weight: 700; margin: 0; line-height: 1.5;">
+          {{ job.eligibility }}
+        </p>
+      </div>
+
+      <!-- Description & Responsibilities -->
+      <div>
+        <div class="section-label" style="display:flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="Description"> Job Description & Key Responsibilities</div>
+        <div class="description-body">
+{{ job.description }}
+        </div>
+      </div>
+
+    </main>
+
+    <!-- RIGHT COLUMN: STICKY WEB APP SIDEBAR (APPLY & SHARE ACTIONS) -->
+    <aside class="web-app-sidebar">
+
+      <!-- Official Recruiter Application Card -->
+      {% if job.apply_url %}
+      <section class="apply-action-box">
+        <h3 style="font-size: 18px; font-weight: 800; margin: 0 0 6px; color: var(--ink);">Official Application Portal</h3>
+        <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">
+          Submit your application directly via recruiter's official portal:
+        </p>
+        <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="btn-apply-portal">
+          <img src="{% static 'images/icon-apply.png' %}" width="22" height="22" alt="Apply" loading="eager" decoding="async">
+          Apply via Official Link ↗
+        </a>
+      </section>
+      {% endif %}
+
+      <!-- Share Requirement Box -->
+      <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 20px; padding: 22px; box-shadow: var(--card-shadow); margin-bottom: 24px;">
+        <div class="section-label" style="margin-bottom: 12px;"><img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Share"> Share This Requirement</div>
+        <div class="share-action-grid">
+          <a id="shareWaBtn" href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}" target="_blank" rel="noopener" class="share-pill share-pill-wa">
+            <img src="{% static 'images/icon-whatsapp.png' %}" width="20" height="20" alt="WhatsApp" loading="eager" decoding="async"> Share on WhatsApp
+          </a>
+          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="share-pill share-pill-ig">
+            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram" loading="eager" decoding="async"> DM @ikashii_07
+          </a>
+          <button id="copyUrlBtn" class="share-pill" onclick="copyShareUrl()">
+            <img src="{% static 'images/icon-share.png' %}" width="20" height="20" alt="Share" loading="eager" decoding="async"> Copy Direct Link
+          </button>
+        </div>
+      </div>
+
+      <!-- Founder & YouTube Hub Banner -->
+      <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 20px; padding: 20px; text-align: center;">
+        <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark)); color: #ffffff; display: grid; place-items: center; font-size: 22px; font-weight: 800; margin: 0 auto 10px; font-family: var(--font-serif);">
+          K
+        </div>
+        <h4 style="font-size: 15px; font-weight: 700; margin: 0 0 2px;">Kashinath (Kashii)</h4>
+        <span style="font-size: 11px; font-weight: 700; color: var(--blue-primary); background: var(--blue-light); padding: 2px 8px; border-radius: 99px;">Tech Educator</span>
+        <p style="font-size: 12px; color: var(--muted); margin: 8px 0 12px;">Learn Python & Django tutorials on YouTube @pythonkashi.</p>
+        <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 700; color: #dc2626; text-decoration: none; display:inline-flex; align-items:center; gap:6px;">
+          <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" width="16" height="16" alt="YouTube"> Subscribe YouTube (@pythonkashi) ↗
+        </a>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- ── 3. RELATED FRESH OPPORTUNITIES GRID ──────────────────────── -->
+  {% if related_jobs %}
+  <section style="margin-top: 48px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font: 700 20px var(--font-serif); margin: 0; color: var(--ink);">
+        More Fresh Requirements in {{ job.category.name }}
+      </h3>
+      <a href="/category/{{ job.category.slug }}/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
+        View Category Feed ↗
+      </a>
+    </div>
+
+    <div class="related-grid">
+      {% for r in related_jobs %}
+      <a href="/category/{{ r.category.slug }}/job/{{ r.uuid }}/" style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 18px; padding: 20px; text-decoration: none; transition: var(--transition); display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--card-shadow);">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span class="company-badge" style="font-size: 12px;">{{ r.company_name }}</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--blue-primary);">{{ r.get_posted_date_display }}</span>
+          </div>
+          <h4 style="font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 6px; line-height: 1.35;">
+            {{ r.title }}
+          </h4>
+          <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:3px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="14" height="14" alt="Location"> {{ r.location }}</span> • 
+            <span style="display:inline-flex;align-items:center;gap:3px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="14" height="14" alt="Salary"> {{ r.stipend_salary }}</span>
+          </p>
+        </div>
+        <span style="font-size: 13px; font-weight: 800; color: var(--blue-primary); display: flex; align-items: center; gap: 4px;">
+          View & Share Requirement ↗
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+
+<!-- ── STICKY MOBILE BOTTOM APPLY BAR (MOBILE-FIRST 1-THUMB TAP) ───── -->
+{% if job.apply_url %}
+<div class="mobile-sticky-apply-bar">
+  <div style="flex: 1; min-width: 0;">
+    <div style="font-size: 12px; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      {{ job.company_name }}
+    </div>
+    <div style="font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      {{ job.title }}
+    </div>
+  </div>
+
+  <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="mobile-apply-btn">
+    <img src="{% static 'images/icon-apply.png' %}" width="20" height="20" alt="Apply" loading="eager" decoding="async"> Apply Now ↗
+  </a>
+</div>
+{% endif %}
+
+<script>
+  function copyShareUrl() {
+    const url = "{{ share_url }}";
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copyUrlBtn');
+      const orig = btn.innerText;
+      btn.innerText = '✅ Link Copied!';
+      setTimeout(() => { btn.innerText = orig; }, 2500);
+    }).catch(err => {
+      alert('Share URL: ' + url);
+    });
+  }
+</script>
+{% endblock %}

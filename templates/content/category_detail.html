@@ -14,8 +14,8 @@
 
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
       <div>
-        <span style="display: inline-block; padding: 4px 12px; background: var(--blue-light); color: var(--blue-primary); font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
-          🏷️ DEDICATED CATEGORY FEED
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: var(--blue-light); color: var(--blue-primary); font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
+          <img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Feed"> DEDICATED CATEGORY FEED
         </span>
         <h1 style="font: 700 36px var(--font-serif); margin: 0 0 8px; color: var(--ink);">{{ category.name }}</h1>
         <p style="color: var(--muted); font-size: 15px; margin: 0; max-width: 650px;">
@@ -64,7 +64,7 @@
   <main>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
       <div>
-        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);">📋 Active Requirements</h2>
+        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink); display:flex; align-items:center; gap:6px;"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="18" height="18" alt="Requirements"> Active Requirements</h2>
         <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Sorted newest first — click any card to view details & apply</p>
       </div>
     </div>
@@ -93,10 +93,10 @@
 
     <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
     
-    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap;">
-      <span>💵 Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
-      <span>📍 Location: <span id="detailLocation">Remote</span></span>
-      <span>📅 Posted: <span id="detailPostedDate">Today</span></span>
+    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap; align-items: center;">
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> Location: <span id="detailLocation">Remote</span></span>
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="16" height="16" alt="Date"> Posted: <span id="detailPostedDate">Today</span></span>
     </div>
 
     <div style="margin-bottom: 16px;">

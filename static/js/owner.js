@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authBadge) {
       authBadge.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; font-weight: 700; color: var(--ink);">👑 Owner: <strong>${escapeHtml(username)}</strong></span>
+          <span style="font-size: 13px; font-weight: 700; color: var(--ink);"><img src="/static/images/icon-apply.png" class="nav-icon" width="14" height="14" alt="Owner"> Owner: <strong>${escapeHtml(username)}</strong></span>
           <button id="btnLogoutOwner" class="button button-light" style="padding: 6px 12px; font-size: 12px;">Logout</button>
         </div>
       `;

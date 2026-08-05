@@ -218,8 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const postedDate = j.posted_date_display || 'Today';
       const isNewToday = postedDate === 'Today';
 
+      const shareUrl = j.share_url || `/category/${j.category_slug}/job/${j.uuid}/`;
       return `
-        <div class="vp-product-card" data-id="${j.id}">
+        <div class="vp-product-card" data-id="${j.id}" data-share-url="${escapeHtml(shareUrl)}">
           <div class="vp-card-header">
             <span class="company-badge">${escapeHtml(j.company_name)}</span>
             <div style="display:flex;gap:6px;align-items:center;">
@@ -232,17 +233,17 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3>${escapeHtml(j.title)}</h3>
             
             <div class="vp-salary-row">
-              <span>💵 ${escapeHtml(j.stipend_salary)}</span>
-              <span style="color: var(--muted); font-weight: 500;">📍 ${escapeHtml(j.location)}</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-salary.png" class="nav-icon" width="16" height="16" alt="Salary"> ${escapeHtml(j.stipend_salary)}</span>
+              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> ${escapeHtml(j.location)}</span>
             </div>
 
             ${isNewToday ? `
               <div style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-light);color:var(--blue-primary);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;border:1px solid var(--blue-border);margin-bottom:8px;">
-                📅 Posted Today
+                <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted Today
               </div>
             ` : `
-              <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;">
-                📅 Posted: <strong style="color:var(--ink);">${postedDate}</strong>
+              <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+                <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">${postedDate}</strong>
               </div>
             `}
 
@@ -258,25 +259,30 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
 
-            <!-- Apply Now Button — prominent, full width -->
-            <div style="margin-top:12px;">
+            <!-- Apply / View Page Buttons -->
+            <div style="margin-top:12px; display:flex; gap:8px;">
               ${!isDeactivated && j.apply_url ? `
                 <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener"
+                   class="external-apply-btn"
                    onclick="event.stopPropagation();"
-                   style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);"
-                   onmouseover="this.style.background='var(--blue-dark)';this.style.transform='translateY(-1px)'"
-                   onmouseout="this.style.background='var(--blue-primary)';this.style.transform='translateY(0)'">
-                  🚀 Apply Now ↗
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);">
+                  <img src="/static/images/icon-apply.png" class="nav-icon" style="filter:brightness(0) invert(1);" width="16" height="16" alt="Apply"> Apply Now ↗
+                </a>
+                <a href="${escapeHtml(shareUrl)}"
+                   onclick="event.stopPropagation();"
+                   style="padding:11px 14px;background:var(--blue-light);color:var(--blue-primary);font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:1px solid var(--blue-border);display:flex;align-items:center;justify-content:center;">
+                  <img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
                 </a>
               ` : isDeactivated ? `
                 <button disabled style="display:flex;align-items:center;justify-content:center;width:100%;padding:11px 0;background:#f1f5f9;color:#94a3b8;font-size:13px;font-weight:700;border-radius:10px;border:1px solid #e2e8f0;cursor:not-allowed;">
                   ⛔ Deactivated
                 </button>
               ` : `
-                <button data-open-id="${j.id}"
-                   style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;border:none;cursor:pointer;transition:background 0.2s;">
-                  📋 View Details &amp; Apply
-                </button>
+                <a href="${escapeHtml(shareUrl)}"
+                   onclick="event.stopPropagation();"
+                   style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;">
+                  <img src="/static/images/icon-feed.png" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
+                </a>
               `}
             </div>
           </div>
@@ -286,12 +292,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('.vp-product-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        // Don't open modal when clicking the green Apply Now link
-        if (e.target.closest('a[href]')) return;
-        const openBtn = e.target.closest('[data-open-id]');
-        const id = openBtn ? openBtn.dataset.openId : card.dataset.id;
-        state.activeJobId = id;
-        loadJobDetail(id);
+        // Don't intercept direct external apply clicks
+        if (e.target.closest('.external-apply-btn')) return;
+        const shareUrl = card.dataset.shareUrl;
+        if (shareUrl) {
+          window.location.href = shareUrl;
+        } else {
+          const id = card.dataset.id;
+          state.activeJobId = id;
+          loadJobDetail(id);
+        }
       });
     });
   }
@@ -398,6 +408,11 @@ document.addEventListener('DOMContentLoaded', () => {
       externalBtn.style.display = 'inline-flex';
     } else {
       externalBtn.style.display = 'none';
+    }
+
+    const pageLink = document.getElementById('detailPageLink');
+    if (pageLink) {
+      pageLink.href = j.share_url || `/job/${j.uuid || j.id}/`;
     }
 
     detailModal.classList.add('active');

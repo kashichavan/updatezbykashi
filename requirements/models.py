@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
@@ -29,6 +30,7 @@ class JobPosting(models.Model):
         ('CLOSED', 'Manually Closed'),
     ]
 
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     title = models.CharField(max_length=200, help_text="e.g. Software Engineer Intern - Summer 2026")
     company_name = models.CharField(max_length=150, help_text="e.g. Stripe, Vercel, Microsoft")
     company_logo_icon = models.CharField(max_length=50, default="building")

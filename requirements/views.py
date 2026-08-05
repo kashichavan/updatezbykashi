@@ -93,6 +93,44 @@ def category_detail_view(request, slug):
     videos = get_cached_youtube_videos()
     return render(request, 'content/category_detail.html', {'category': category, 'youtube_videos': videos})
 
+def job_detail_view(request, category_slug=None, uuid=None, pk=None):
+    sync_expired_jobs()
+    job = None
+    if uuid:
+        job = JobPosting.objects.filter(uuid=uuid).first()
+        if not job:
+            clean_str = str(uuid).replace('-', '')
+            job = JobPosting.objects.filter(uuid__icontains=clean_str).first()
+    if not job and pk:
+        job = JobPosting.objects.filter(pk=pk).first()
+
+    if not job:
+        from django.http import Http404
+        raise Http404("No job posting matches the requested link.")
+
+    # Increment view counter
+    JobPosting.objects.filter(pk=job.pk).update(views_count=job.views_count + 1)
+    job.views_count += 1
+
+    related_jobs = JobPosting.objects.filter(
+        status='ACTIVE',
+        deadline__gt=timezone.now()
+    ).exclude(pk=job.pk).select_related('category').order_by('-created_at')[:4]
+
+    videos = get_cached_youtube_videos()
+
+    full_share_url = request.build_absolute_uri(f"/category/{job.category.slug}/job/{job.uuid}/")
+
+    context = {
+        'job': job,
+        'skills_list': job.get_skills_list(),
+        'posted_date_display': job.get_posted_date_display(),
+        'related_jobs': related_jobs,
+        'youtube_videos': videos,
+        'share_url': full_share_url,
+    }
+    return render(request, 'content/job_detail.html', context)
+
 def owner_view(request):
     sync_expired_jobs()
     return render(request, 'owner.html')
@@ -451,6 +489,8 @@ def api_jobs(request):
 
             results.append({
                 'id': j.id,
+                'uuid': str(j.uuid),
+                'share_url': f"/category/{j.category.slug}/job/{j.uuid}/",
                 'title': j.title,
                 'company_name': j.company_name,
                 'company_logo_icon': j.company_logo_icon,

@@ -6,6 +6,9 @@ urlpatterns = [
     path('about/', views.about_view, name='about'),
     path('youtube/', views.youtube_view, name='youtube'),
     path('category/<slug:slug>/', views.category_detail_view, name='category_detail'),
+    path('category/<slug:category_slug>/job/<uuid:uuid>/', views.job_detail_view, name='category_job_detail'),
+    path('job/<uuid:uuid>/', views.job_detail_view, name='job_detail'),
+    path('job/<int:pk>/', views.job_detail_view, name='job_detail_pk'),
     path('owner/', views.owner_view, name='owner'),
 
     # Public API Endpoints

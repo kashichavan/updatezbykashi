@@ -10,16 +10,16 @@
   <section class="vp-hero">
     <div class="vp-hero-inner">
       <div class="vp-hero-copy">
-        <span class="code-badge">⚡ FRESH DAILY STUDENT REQUIREMENTS</span>
+        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
         <h1 id="typewriterText">Daily Student Jobs & <em>Internship Requirements</em></h1>
         <p class="lead">
           Verified student requirements, campus drives, & internships. All postings remain active for exactly 3 days to guarantee 100% fresh opportunities.
         </p>
 
         <div class="vp-trust-pills">
-          <span class="vp-pill">⏱️ Auto 3-Day Fresh Rule</span>
-          <span class="vp-pill">💻 Software & Tech</span>
-          <span class="vp-pill">🎯 Official Direct Links</span>
+          <span class="vp-pill" style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="3-Day"> Auto 3-Day Fresh Rule</span>
+          <span class="vp-pill"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software & Tech</span>
+          <span class="vp-pill"><img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Links"> Official Direct Links</span>
         </div>
       </div>
 
@@ -102,7 +102,7 @@
       <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between;">
         <div style="flex: 1; min-width: 240px;">
           <span style="display: inline-block; padding: 4px 12px; background: rgba(225, 48, 108, 0.2); color: #f43f5e; font-size: 11px; font-weight: 800; font-family: var(--font-code); border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(244, 63, 94, 0.3);">
-            💬 INSTANT DIRECT CONVERSATION
+            <img src="{% static 'images/icon-chat.png' %}" class="nav-icon" width="16" height="16" alt="Chat"> INSTANT DIRECT CONVERSATION
           </span>
           <h2 style="font: 700 26px var(--font-serif); margin: 0 0 10px; color: #ffffff;">Got Questions? Chat Direct with Kashii</h2>
           <p style="color: #94a3b8; font-size: 15px; margin: 0; line-height: 1.6;">
@@ -126,7 +126,7 @@
   <section id="catalogSection" class="vp-filter-bar">
     <div class="vp-tabs">
       <!-- Only 'Software & Tech' category is currently active in DB -->
-      <button class="vp-tab active" data-category="software-tech">💻 Software &amp; Tech</button>
+      <button class="vp-tab active" data-category="software-tech"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software &amp; Tech</button>
     </div>
 
     <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">
@@ -156,7 +156,7 @@
   <main>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
       <div>
-        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);">🔥 Latest Requirements</h2>
+        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="18" height="18" alt="Requirements"> Latest Requirements</h2>
         <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Showing newest 3 postings — sorted by date posted (newest first)</p>
       </div>
       <a href="/category/software-tech/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary);">View All ↗</a>
@@ -187,10 +187,10 @@
 
     <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
     
-    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap;">
-      <span>💵 Salary / Stipend: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
-      <span>📍 Location: <span id="detailLocation">Remote</span></span>
-      <span>📅 Posted: <span id="detailPostedDate">Today</span></span>
+    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap; align-items: center;">
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> Salary / Stipend: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> Location: <span id="detailLocation">Remote</span></span>
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="16" height="16" alt="Date"> Posted: <span id="detailPostedDate">Today</span></span>
     </div>
 
     <div style="margin-bottom: 16px;">

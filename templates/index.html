@@ -91,7 +91,7 @@
           </a>
           <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" class="drawer-link" style="color: #e1306c; font-weight: 700; margin-top: 6px;">
             <span style="display: flex; align-items: center; gap: 8px;">
-              <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About">
+              <img src="{% static 'images/icon-chat.png' %}" class="nav-icon" alt="Instagram">
               Instagram (@ikashii_07)
             </span>
             <span class="d-tag" style="background:#fce7f3; color:#be185d;">Follow</span>
@@ -100,7 +100,7 @@
       </div>
       <div style="padding: 16px 20px; border-top: 1px solid var(--subtle-border); background: var(--paper);">
         <a href="/owner/" target="_blank" class="button button-light" style="width: 100%; justify-content: center;">
-          👑 Owner Portal ↗
+          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="16" height="16" alt="Owner"> Owner Portal ↗
         </a>
       </div>
     </div>
@@ -118,9 +118,9 @@
           <p class="lead">Every day fresh student requirements & opportunities are posted on Kashii Updatez. Go through eligibility criteria & apply directly via official application links!</p>
 
           <div class="vp-trust-pills">
-            <span class="vp-pill">⚡ 3-Day Auto Deactivation</span>
-            <span class="vp-pill">🏢 Top Tech & Startups</span>
-            <span class="vp-pill">🔗 Official Direct Application Links</span>
+            <span class="vp-pill"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="Date"> 3-Day Auto Deactivation</span>
+            <span class="vp-pill"><img src="{% static 'images/icon-company.png' %}" class="nav-icon" width="14" height="14" alt="Company"> Top Tech & Startups</span>
+            <span class="vp-pill"><img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Links"> Official Direct Application Links</span>
           </div>
         </div>
 
@@ -192,7 +192,7 @@
               <span>▶ Subscribe @pythonkashi</span>
             </a>
             <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="social-pill-ig">
-              <span>📸 Follow @ikashii_07</span>
+              <span><img src="{% static 'images/icon-chat.png' %}" class="nav-icon" width="16" height="16" alt="Instagram"> Follow @ikashii_07</span>
             </a>
           </div>
         </div>
@@ -274,11 +274,11 @@
       <span>YouTube</span>
     </a>
     <a href="#" id="mobileToggleDrawer" class="mobile-nav-item" onclick="document.getElementById('drawerOverlay').classList.add('is-open'); return false;">
-      <span style="font-size: 16px;">📂</span>
+      <img src="/static/images/icon-type.png" class="nav-icon" width="16" height="16" alt="Categories">
       <span>Categories</span>
     </a>
     <a href="/owner/" target="_blank" class="mobile-nav-item">
-      <span style="font-size: 16px;">⚙️</span>
+      <img src="/static/images/icon-share.png" class="nav-icon" width="16" height="16" alt="Settings">
       <span>Owner</span>
     </a>
   </nav>
@@ -296,9 +296,9 @@
 
       <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
       
-      <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap;">
-        <span>💵 Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
-        <span>📍 Location: <span id="detailLocation">Remote</span></span>
+      <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap; align-items: center;">
+        <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
+        <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> Location: <span id="detailLocation">Remote</span></span>
       </div>
 
       <div style="margin-bottom: 16px;">
@@ -317,11 +317,19 @@
       </div>
 
       <!-- Action: Official External Application Link -->
+      <!-- Action: Official External Application Link -->
       <div style="text-align: center; background: var(--blue-light); padding: 22px; border-radius: 16px; border: 1px solid var(--blue-border);">
         <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px;">Official Application Link</h4>
         <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Click below to open the official application portal provided by the recruiter:</p>
         <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="button button-dark" style="width: 100%; justify-content: center; font-size: 15px; padding: 13px;">
           Apply via Official Application Link ↗
+        </a>
+      </div>
+
+      <!-- Action: Open Dedicated Shareable URL Page -->
+      <div style="margin-top: 14px; text-align: center;">
+        <a id="detailPageLink" href="#" class="button button-light" style="width: 100%; justify-content: center; font-size: 14px; padding: 11px;">
+          <img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="16" height="16" alt="Share"> Open Shareable Page & Direct URL ↗
         </a>
       </div>
 
