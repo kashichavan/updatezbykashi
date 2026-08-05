@@ -4,6 +4,13 @@ import uuid
 from django.db import migrations, models
 
 
+def gen_unique_uuids(apps, schema_editor):
+    JobPosting = apps.get_model('requirements', 'JobPosting')
+    for job in JobPosting.objects.all():
+        job.uuid = uuid.uuid4()
+        job.save(update_fields=['uuid'])
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,6 +18,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(gen_unique_uuids, reverse_code=migrations.RunPython.noop),
         migrations.AlterField(
             model_name='jobposting',
             name='uuid',
