@@ -25,10 +25,16 @@
         <div style="width:160px;height:160px;border-radius:50%;overflow:hidden;
                     border:4px solid rgba(255,255,255,0.25);
                     box-shadow:0 8px 32px rgba(0,0,0,0.4);">
-          <img src="{% static 'images/kashii-author.jpg' %}"
-               alt="Kashinath (Kashii) — Founder of Kashii Updatez"
-               style="width:100%;height:100%;object-fit:cover;object-position:top center;"
-               loading="eager">
+          <picture>
+            <source srcset="{% static 'images/kashii-author.webp' %}" type="image/webp">
+            <img src="{% static 'images/kashii-author.jpg' %}"
+                 alt="Kashinath (Kashii) — Founder of Kashii Updatez"
+                 style="width:100%;height:100%;object-fit:cover;object-position:top center;"
+                 loading="eager"
+                 decoding="async"
+                 width="160"
+                 height="160">
+          </picture>
         </div>
         <!-- Online dot -->
         <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;">

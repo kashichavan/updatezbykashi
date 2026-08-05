@@ -50,9 +50,18 @@
       </div>
 
       <nav class="nav-links">
-        <a href="/" class="active">Student Feed</a>
-        <a href="#about-creator">About Kashii</a>
-        <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700;">▶ Python Kashi</a>
+        <a href="/" class="active">
+          <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed">
+          Student Feed
+        </a>
+        <a href="#about-creator">
+          <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About">
+          About Kashii
+        </a>
+        <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700;">
+          <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube">
+          Python Kashi
+        </a>
         <a href="/owner/" target="_blank">Owner Portal ↗</a>
       </nav>
     </div>
@@ -74,11 +83,17 @@
         <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--subtle-border);">
           <div class="drawer-section-title">Connect with Kashii</div>
           <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="drawer-link" style="color: #dc2626; font-weight: 700;">
-            <span>▶ YouTube (@pythonkashi)</span>
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube">
+              YouTube (@pythonkashi)
+            </span>
             <span class="d-tag" style="background:#fee2e2; color:#dc2626;">Sub</span>
           </a>
           <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" class="drawer-link" style="color: #e1306c; font-weight: 700; margin-top: 6px;">
-            <span>📸 Instagram (@ikashii_07)</span>
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About">
+              Instagram (@ikashii_07)
+            </span>
             <span class="d-tag" style="background:#fce7f3; color:#be185d;">Follow</span>
           </a>
         </div>
@@ -247,16 +262,20 @@
   <!-- 8. Mobile Bottom Navigation Bar (Mobile First) -->
   <nav class="mobile-bottom-nav">
     <a href="/" class="mobile-nav-item active">
-      <span style="font-size: 16px;">🏠</span>
+      <img src="{% static 'images/icon-feed.png' %}" class="mobile-nav-icon" alt="Feed">
       <span>Feed</span>
+    </a>
+    <a href="#about-creator" class="mobile-nav-item">
+      <img src="{% static 'images/icon-about.png' %}" class="mobile-nav-icon" alt="About">
+      <span>About</span>
+    </a>
+    <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="mobile-nav-item">
+      <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" alt="YouTube">
+      <span>YouTube</span>
     </a>
     <a href="#" id="mobileToggleDrawer" class="mobile-nav-item" onclick="document.getElementById('drawerOverlay').classList.add('is-open'); return false;">
       <span style="font-size: 16px;">📂</span>
       <span>Categories</span>
-    </a>
-    <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="mobile-nav-item">
-      <span style="font-size: 16px; color: #dc2626;">▶</span>
-      <span>YouTube</span>
     </a>
     <a href="/owner/" target="_blank" class="mobile-nav-item">
       <span style="font-size: 16px;">⚙️</span>

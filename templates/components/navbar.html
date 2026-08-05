@@ -1,3 +1,4 @@
+{% load static %}
 <header class="site-header">
   <div class="wrap nav">
     <div style="display: flex; align-items: center; gap: 14px;">
@@ -14,9 +15,18 @@
     </div>
 
     <nav class="nav-links">
-      <a href="/" class="{% if request.path == '/' %}active{% endif %}">Student Feed</a>
-      <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">About Kashii</a>
-      <a href="/youtube/" class="{% if request.path == '/youtube/' %}active{% endif %}" style="color: #dc2626; font-weight: 700;">▶ Python Kashi</a>
+      <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+        <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed" width="18" height="18" decoding="async">
+        Student Feed
+      </a>
+      <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
+        <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About" width="18" height="18" decoding="async">
+        About Kashii
+      </a>
+      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700;">
+        <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube" width="18" height="18" decoding="async">
+        Python Kashi
+      </a>
     </nav>
   </div>
 </header>
@@ -37,11 +47,17 @@
       <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--subtle-border);">
         <div class="drawer-section-title">Connect with Kashii</div>
         <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="drawer-link" style="color: #dc2626; font-weight: 700;">
-          <span>▶ YouTube (@pythonkashi)</span>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube" width="18" height="18" decoding="async">
+            YouTube (@pythonkashi)
+          </span>
           <span class="d-tag" style="background:#fee2e2; color:#dc2626;">Sub</span>
         </a>
         <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="drawer-link" style="color: #e1306c; font-weight: 700; margin-top: 6px;">
-          <span>📸 Instagram (@ikashii_07)</span>
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About" width="18" height="18" decoding="async">
+            Instagram (@ikashii_07)
+          </span>
           <span class="d-tag" style="background:#fce7f3; color:#be185d;">Follow</span>
         </a>
       </div>
