@@ -62,6 +62,13 @@
 
   <!-- Paginated Grid Feed for Category -->
   <main>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
+      <div>
+        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);">📋 Active Requirements</h2>
+        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Sorted newest first — click any card to view details & apply</p>
+      </div>
+    </div>
+
     <div id="jobsGrid" class="vp-catalog-grid">
       <!-- Rendered via JS -->
     </div>
@@ -89,6 +96,7 @@
     <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap;">
       <span>💵 Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
       <span>📍 Location: <span id="detailLocation">Remote</span></span>
+      <span>📅 Posted: <span id="detailPostedDate">Today</span></span>
     </div>
 
     <div style="margin-bottom: 16px;">

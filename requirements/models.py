@@ -55,6 +55,10 @@ class JobPosting(models.Model):
     
     # 3-Day Auto Expiration Policy
     created_at = models.DateTimeField(auto_now_add=True)
+    posted_date = models.DateField(
+        default=timezone.now,
+        help_text="Date this requirement was posted (editable). Defaults to today."
+    )
     deadline = models.DateTimeField(help_text="Automatically set to 3 days after posting")
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -62,6 +66,9 @@ class JobPosting(models.Model):
         # Auto-set 3-day deadline upon creation if not explicitly set
         if not self.deadline:
             self.deadline = timezone.now() + timedelta(days=3)
+        # Auto-set posted_date from today if not set
+        if not self.posted_date:
+            self.posted_date = timezone.now().date()
         super().save(*args, **kwargs)
 
     def is_expired(self):
@@ -69,6 +76,17 @@ class JobPosting(models.Model):
 
     def get_skills_list(self):
         return [s.strip() for s in self.skills_required.split(',') if s.strip()]
+
+    def get_posted_date_display(self):
+        """Returns human-friendly date: 'Today', 'Yesterday', or 'Aug 3, 2026'"""
+        from datetime import timedelta as td
+        today = timezone.now().date()
+        yesterday = today - td(days=1)
+        if self.posted_date == today:
+            return 'Today'
+        elif self.posted_date == yesterday:
+            return 'Yesterday'
+        return self.posted_date.strftime('%b %d, %Y')
 
     def __str__(self):
         return f"{self.title} at {self.company_name} ({self.status})"

@@ -186,6 +186,16 @@ a {
   }
 }
 
+@media (max-width: 600px) {
+  .btn-insta-chat {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    padding: 13px 20px;
+    font-size: 14px;
+  }
+}
+
 .floating-chat-widget {
   position: fixed;
   bottom: 80px;
@@ -368,7 +378,7 @@ a {
 
 @keyframes marqueeScroll {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-33.333%); }
 }
 
 .client-card-3d {
@@ -395,6 +405,9 @@ a {
   height: 145px;
   object-fit: cover;
   display: block;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  /* Prevent blank flash while loading — image has explicit dimensions */
+  content-visibility: auto;
 }
 
 .client-card-3d .yt-play-overlay {

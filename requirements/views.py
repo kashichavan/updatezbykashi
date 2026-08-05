@@ -14,113 +14,92 @@ from django.db.models import Q, Count
 from django.core.cache import cache
 from .models import Category, JobPosting
 
+DEFAULT_YOUTUBE_VIDEOS = [
+    {
+        "video_id": "eJ1Jg6zLE5U",
+        "title": "Python OOP Project: Build a Swiggy Clone with SQLite",
+        "thumbnail_url": "https://img.youtube.com/vi/eJ1Jg6zLE5U/hqdefault.jpg",
+        "watch_url": "https://www.youtube.com/watch?v=eJ1Jg6zLE5U"
+    },
+    {
+        "video_id": "Sf-3x6uDYOg",
+        "title": "Django Day 5 | MVT Architecture | Create Endpoints",
+        "thumbnail_url": "https://img.youtube.com/vi/Sf-3x6uDYOg/hqdefault.jpg",
+        "watch_url": "https://www.youtube.com/watch?v=Sf-3x6uDYOg"
+    },
+    {
+        "video_id": "Ue5iDaQADfA",
+        "title": "Python Sets Explained | Python Tutorial 2026 | pythonkashi",
+        "thumbnail_url": "https://img.youtube.com/vi/Ue5iDaQADfA/hqdefault.jpg",
+        "watch_url": "https://www.youtube.com/watch?v=Ue5iDaQADfA"
+    },
+    {
+        "video_id": "AK87UIPioOQ",
+        "title": "Master Python Tuples in One Video | pythonkashi",
+        "thumbnail_url": "https://img.youtube.com/vi/AK87UIPioOQ/hqdefault.jpg",
+        "watch_url": "https://www.youtube.com/watch?v=AK87UIPioOQ"
+    },
+    {
+        "video_id": "TnWFxW5sJTo",
+        "title": "Python Lists Explained | Create, Modify & Slicing",
+        "thumbnail_url": "https://img.youtube.com/vi/TnWFxW5sJTo/hqdefault.jpg",
+        "watch_url": "https://www.youtube.com/watch?v=TnWFxW5sJTo"
+    },
+    {
+        "video_id": "-P4gExqsIuY",
+        "title": "Python Data Types Explained | pythonkashi",
+        "thumbnail_url": "https://img.youtube.com/vi/-P4gExqsIuY/hqdefault.jpg",
+        "watch_url": "https://www.youtube.com/watch?v=-P4gExqsIuY"
+    }
+]
+
+def get_cached_youtube_videos():
+    cached = cache.get('youtube_videos_feed')
+    if cached:
+        return cached
+    cache.set('youtube_videos_feed', DEFAULT_YOUTUBE_VIDEOS, 3600)
+    return DEFAULT_YOUTUBE_VIDEOS
+
 def sync_expired_jobs():
     """Automatically deletes postings older than 3 days (72 hours) so feed stays 100% fresh daily."""
     now = timezone.now()
     deleted_count, _ = JobPosting.objects.filter(deadline__lte=now).delete()
     if deleted_count > 0:
-        cache.clear() # Invalidate cache if expired jobs deleted
+        cache.clear()
+
+def api_ping(request):
+    """Ultra-fast Keep-Alive Heartbeat endpoint for UptimeRobot auto pings."""
+    return JsonResponse({
+        'status': 'ok',
+        'app': 'Kashii Updatez',
+        'timestamp': timezone.now().isoformat()
+    })
 
 def index_view(request):
     sync_expired_jobs()
-    return render(request, 'content/home.html')
+    videos = get_cached_youtube_videos()
+    return render(request, 'content/home.html', {'youtube_videos': videos})
 
 def about_view(request):
     return render(request, 'content/about.html')
 
 def youtube_view(request):
-    return render(request, 'content/youtube.html')
+    videos = get_cached_youtube_videos()
+    return render(request, 'content/youtube.html', {'youtube_videos': videos})
 
 def category_detail_view(request, slug):
     sync_expired_jobs()
     category = get_object_or_404(Category, slug=slug)
-    return render(request, 'content/category_detail.html', {'category': category})
+    videos = get_cached_youtube_videos()
+    return render(request, 'content/category_detail.html', {'category': category, 'youtube_videos': videos})
 
 def owner_view(request):
     sync_expired_jobs()
     return render(request, 'owner.html')
 
 def api_youtube_videos(request):
-    """Fetches real YouTube video thumbnails and titles directly from @pythonkashi channel with 10-min cache."""
-    cached_videos = cache.get('youtube_videos_feed')
-    if cached_videos:
-        return JsonResponse({'videos': cached_videos})
-
-    default_videos = [
-        {
-            "video_id": "eJ1Jg6zLE5U",
-            "title": "Python OOP Project: Build a Swiggy Clone with SQLite",
-            "thumbnail_url": "https://img.youtube.com/vi/eJ1Jg6zLE5U/hqdefault.jpg",
-            "watch_url": "https://www.youtube.com/watch?v=eJ1Jg6zLE5U"
-        },
-        {
-            "video_id": "Sf-3x6uDYOg",
-            "title": "Django Day 5 | MVT Architecture | Create Endpoints",
-            "thumbnail_url": "https://img.youtube.com/vi/Sf-3x6uDYOg/hqdefault.jpg",
-            "watch_url": "https://www.youtube.com/watch?v=Sf-3x6uDYOg"
-        },
-        {
-            "video_id": "Ue5iDaQADfA",
-            "title": "Python Sets Explained | Python Tutorial 2026 | pythonkashi",
-            "thumbnail_url": "https://img.youtube.com/vi/Ue5iDaQADfA/hqdefault.jpg",
-            "watch_url": "https://www.youtube.com/watch?v=Ue5iDaQADfA"
-        },
-        {
-            "video_id": "AK87UIPioOQ",
-            "title": "Master Python Tuples in One Video | pythonkashi",
-            "thumbnail_url": "https://img.youtube.com/vi/AK87UIPioOQ/hqdefault.jpg",
-            "watch_url": "https://www.youtube.com/watch?v=AK87UIPioOQ"
-        },
-        {
-            "video_id": "TnWFxW5sJTo",
-            "title": "Python Lists Explained | Create, Modify & Slicing",
-            "thumbnail_url": "https://img.youtube.com/vi/TnWFxW5sJTo/hqdefault.jpg",
-            "watch_url": "https://www.youtube.com/watch?v=TnWFxW5sJTo"
-        },
-        {
-            "video_id": "-P4gExqsIuY",
-            "title": "Python Data Types Explained | pythonkashi",
-            "thumbnail_url": "https://img.youtube.com/vi/-P4gExqsIuY/hqdefault.jpg",
-            "watch_url": "https://www.youtube.com/watch?v=-P4gExqsIuY"
-        }
-    ]
-
-    try:
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-
-        url = 'https://www.youtube.com/@pythonkashi/videos'
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'})
-        with urllib.request.urlopen(req, context=ctx, timeout=4) as resp:
-            html = resp.read().decode('utf-8')
-            video_ids = list(dict.fromkeys(re.findall(r'\"videoId\":\"([^\"]+)\"', html)))[:10]
-            
-            videos = []
-            for vid in video_ids:
-                oembed_url = f'https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={vid}&format=json'
-                try:
-                    oreq = urllib.request.Request(oembed_url, headers={'User-Agent': 'Mozilla/5.0'})
-                    with urllib.request.urlopen(oreq, context=ctx, timeout=2) as oresp:
-                        data = json.loads(oresp.read().decode('utf-8'))
-                        videos.append({
-                            'video_id': vid,
-                            'title': data.get('title', 'Python Kashi Tutorial'),
-                            'thumbnail_url': f'https://img.youtube.com/vi/{vid}/hqdefault.jpg',
-                            'watch_url': f'https://www.youtube.com/watch?v={vid}'
-                        })
-                except Exception:
-                    pass
-
-            if videos:
-                cache.set('youtube_videos_feed', videos, 600) # Cache for 10 mins
-                return JsonResponse({'videos': videos})
-
-    except Exception:
-        pass
-
-    cache.set('youtube_videos_feed', default_videos, 600)
-    return JsonResponse({'videos': default_videos})
+    videos = get_cached_youtube_videos()
+    return JsonResponse({'videos': videos})
 
 @csrf_exempt
 def api_owner_bulk_parse_and_post(request):
@@ -143,7 +122,6 @@ def api_owner_bulk_parse_and_post(request):
 
             created_jobs = []
 
-            # STRICT CATEGORY: Software & Tech
             software_category = Category.objects.filter(slug='software-tech').first()
             if not software_category:
                 software_category = Category.objects.create(
@@ -153,14 +131,12 @@ def api_owner_bulk_parse_and_post(request):
                 )
 
             for block in blocks:
-                # 1. Extract Apply Link
                 url_m = re.search(r'https?://[^\s]+', block)
                 apply_url = url_m.group(0).rstrip('.,;)*') if url_m else ""
 
                 if not apply_url:
                     continue
 
-                # 2. Extract Company
                 company = ""
                 mh_m = re.search(r'Mass Hiring Alert\s*-\s*([A-Za-z0-9\s]+)(?:\((.*?)\))?', block, re.IGNORECASE)
                 if mh_m:
@@ -179,7 +155,6 @@ def api_owner_bulk_parse_and_post(request):
                 if not company:
                     company = "Featured Hiring Partner"
 
-                # 3. Extract Role / Title
                 title = ""
                 if mh_m and mh_m.group(2):
                     title = mh_m.group(2).strip()
@@ -192,7 +167,6 @@ def api_owner_bulk_parse_and_post(request):
                 if not title:
                     title = "Software & Technology Opportunity"
 
-                # 4. Qualification, Eligibility, Batch & Exp
                 qual_m = re.search(r'(?:Qualification|Eligibility|Degree):\s*(.+)', block, re.IGNORECASE)
                 batch_m = re.search(r'(?:Batch|Graduation Year):\s*(.+)', block, re.IGNORECASE)
                 exp_m = re.search(r'(?:Experience):\s*(.+)', block, re.IGNORECASE)
@@ -203,15 +177,12 @@ def api_owner_bulk_parse_and_post(request):
                 if exp_m: elig_parts.append(f"Exp: {exp_m.group(1).strip()}")
                 eligibility = " • ".join(elig_parts) if elig_parts else "Open to all freshers & graduating batches."
 
-                # 5. Skills
                 skills_m = re.search(r'(?:Skills|Tech Stack):\s*(.+)', block, re.IGNORECASE)
                 skills_required = skills_m.group(1).strip() if skills_m else "Software Engineering, Problem Solving, Communication"
 
-                # 6. Location
                 loc_m = re.search(r'(?:Location\(s\)?|Location):\s*(.+)', block, re.IGNORECASE)
                 location = loc_m.group(1).strip() if loc_m else "Remote / Hybrid"
 
-                # 7. Salary
                 sal_m = re.search(r'(?:Salary|Stipend|Pay):\s*(.+)', block, re.IGNORECASE)
                 stipend_salary = sal_m.group(1).strip() if sal_m else "Competitive Salary (Freshers)"
 
@@ -240,7 +211,7 @@ def api_owner_bulk_parse_and_post(request):
 
                 created_jobs.append({'id': job.id, 'title': job.title, 'company': job.company_name})
 
-            cache.clear() # Invalidate cache on new job creation
+            cache.clear()
             return JsonResponse({
                 'success': True,
                 'count': len(created_jobs),
@@ -265,19 +236,15 @@ def api_owner_parse_and_post(request):
             if not raw_text:
                 return JsonResponse({'error': 'Raw text snippet cannot be empty.'}, status=400)
 
-            # 1. Extract Apply Link
             url_match = re.search(r'https?://[^\s]+', raw_text)
             apply_url = url_match.group(0).rstrip('.,;') if url_match else ""
 
-            # 2. Extract Company
             company_match = re.search(r'(?:Company|Organization):\s*(.+)', raw_text, re.IGNORECASE)
             company_name = company_match.group(1).strip() if company_match else "Featured Hiring Partner"
 
-            # 3. Extract Role / Title
             title_match = re.search(r'(?:Role|Title|Position|Job):\s*(.+)', raw_text, re.IGNORECASE)
             title = title_match.group(1).strip() if title_match else "Software & Technology Opportunity"
 
-            # 4. Extract Qualification & Experience for Eligibility
             qual_match = re.search(r'(?:Qualification|Eligibility|Degree):\s*(.+)', raw_text, re.IGNORECASE)
             exp_match = re.search(r'(?:Experience):\s*(.+)', raw_text, re.IGNORECASE)
             
@@ -288,15 +255,12 @@ def api_owner_parse_and_post(request):
                 eligibility_parts.append(f"Experience: {exp_match.group(1).strip()}")
             eligibility = " • ".join(eligibility_parts) if eligibility_parts else "Open to final year students and fresh graduates."
 
-            # 5. Extract Skills
             skills_match = re.search(r'(?:Skills|Tech Stack):\s*(.+)', raw_text, re.IGNORECASE)
             skills_required = skills_match.group(1).strip() if skills_match else "Software Engineering, Problem Solving, Communication"
 
-            # 6. Extract Location
             loc_match = re.search(r'(?:Location):\s*(.+)', raw_text, re.IGNORECASE)
             location = loc_match.group(1).strip() if loc_match else "Remote"
 
-            # 7. Extract Stipend / Salary
             salary_match = re.search(r'(?:Salary|Stipend|Pay):\s*(.+)', raw_text, re.IGNORECASE)
             stipend_salary = salary_match.group(1).strip() if salary_match else "Competitive Salary (Freshers)"
 
@@ -330,7 +294,7 @@ def api_owner_parse_and_post(request):
                 deadline=deadline,
             )
 
-            cache.clear() # Invalidate cache on new job creation
+            cache.clear()
             return JsonResponse({
                 'success': True,
                 'id': job.id,
@@ -355,15 +319,10 @@ def api_stats(request):
 
 def api_categories(request):
     sync_expired_jobs()
-    cached_cats = cache.get('categories_feed')
-    if cached_cats:
-        return JsonResponse({'categories': cached_cats})
-
     categories = list(Category.objects.annotate(
         active_count=Count('job_postings', filter=Q(job_postings__status='ACTIVE'))
     ).values('id', 'name', 'slug', 'icon', 'description', 'active_count'))
     
-    cache.set('categories_feed', categories, 300) # Cache for 5 mins
     return JsonResponse({'categories': categories})
 
 @csrf_exempt
@@ -461,7 +420,8 @@ def api_jobs(request):
         if cached_response:
             return JsonResponse(cached_response)
 
-        qs = JobPosting.objects.all().select_related('category')
+        # STRICT NEWEST-FIRST SORTING (-created_at)
+        qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
 
         if query:
             qs = qs.filter(
@@ -480,13 +440,15 @@ def api_jobs(request):
 
         if sort == 'deadline':
             qs = qs.order_by('deadline')
-        else:
-            qs = qs.order_by('-created_at')
 
         results = []
         now = timezone.now()
         for j in qs:
             time_left_seconds = max(0, int((j.deadline - now).total_seconds()))
+            
+            # Use the explicit posted_date field (editable in admin)
+            posted_date_display = j.get_posted_date_display()
+
             results.append({
                 'id': j.id,
                 'title': j.title,
@@ -513,6 +475,8 @@ def api_jobs(request):
                 'deadline': j.deadline.isoformat(),
                 'time_left_seconds': time_left_seconds,
                 'created_at': j.created_at.isoformat(),
+                'posted_date': j.posted_date.isoformat(),
+                'posted_date_display': posted_date_display,
             })
 
         try:
@@ -543,7 +507,7 @@ def api_jobs(request):
             'has_previous': page_int > 1,
         }
 
-        cache.set(cache_key, response_data, 120) # Cache for 2 mins
+        cache.set(cache_key, response_data, 120)
         return JsonResponse(response_data)
 
     elif request.method == 'POST':
@@ -594,6 +558,9 @@ def api_job_detail(request, pk):
         now = timezone.now()
         time_left_seconds = max(0, int((job.deadline - now).total_seconds()))
 
+        # Use the explicit posted_date field
+        posted_date_display = job.get_posted_date_display()
+
         return JsonResponse({
             'job': {
                 'id': job.id,
@@ -621,5 +588,7 @@ def api_job_detail(request, pk):
                 'deadline': job.deadline.isoformat(),
                 'time_left_seconds': time_left_seconds,
                 'created_at': job.created_at.isoformat(),
+                'posted_date': job.posted_date.isoformat(),
+                'posted_date_display': posted_date_display,
             }
         })

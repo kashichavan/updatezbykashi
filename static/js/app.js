@@ -5,11 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const state = {
     searchQuery: '',
-    category: window.CATEGORY_SLUG_OVERRIDE || 'all',
+    category: 'software-tech',
     jobType: 'all',
     sort: 'newest',
     page: 1,
-    pageSize: isHomePage ? 3 : 6, // Show top 3 on homepage, 6 on category pages
+    pageSize: isHomePage ? 3 : 6, // Show top 3 newest on homepage, 6 on category detail page
     totalPages: 1,
     totalCount: 0,
     jobs: [],
@@ -45,48 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function init() {
     setupGlobalDrawer();
     loadCategories();
-    loadYouTubeMarquee();
 
     if (isHomePage || isCategoryPage) {
       if (isHomePage) startTypewriter();
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const categoryParam = urlParams.get('category');
-      if (categoryParam && !window.CATEGORY_SLUG_OVERRIDE) {
-        state.category = categoryParam;
-      }
-
       loadJobs();
       setupHomePageListeners();
       startCountdownTimer();
-    }
-  }
-
-  // --- DYNAMIC REAL YOUTUBE 3D MARQUEE ENGINE ---
-
-  async function loadYouTubeMarquee() {
-    const track = document.getElementById('ytMarqueeTrack');
-    if (!track) return;
-
-    try {
-      const res = await fetch('/api/youtube/videos/');
-      const data = await res.json();
-      const videos = data.videos || [];
-
-      if (videos.length === 0) return;
-
-      const doubleVideos = [...videos, ...videos, ...videos];
-
-      track.innerHTML = doubleVideos.map(v => `
-        <a href="${escapeHtml(v.watch_url)}" target="_blank" rel="noopener" class="client-card-3d" title="${escapeHtml(v.title)}">
-          <img src="${escapeHtml(v.thumbnail_url)}" alt="${escapeHtml(v.title)}" loading="lazy">
-          <div class="yt-play-overlay">▶</div>
-          <div class="yt-title-bar">${escapeHtml(v.title)}</div>
-        </a>
-      `).join('');
-
-    } catch (err) {
-      console.error('Failed to load YouTube marquee:', err);
     }
   }
 
@@ -164,17 +129,18 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch('/api/categories/');
       const data = await res.json();
-      state.categories = data.categories;
+      state.categories = data.categories || [];
 
       if (categorySelect) {
-        categorySelect.innerHTML = '<option value="all">All Categories</option>' +
-          data.categories.map(c => `<option value="${c.slug}" ${state.category === c.slug ? 'selected' : ''}>${c.name} (${c.active_count})</option>`).join('');
+        categorySelect.innerHTML = data.categories.map(c => 
+          `<option value="${c.slug}" selected>${c.name} (${c.active_count})</option>`
+        ).join('');
       }
 
       if (drawerCategoryNav) {
         drawerCategoryNav.innerHTML = data.categories.map(c => `
           <a href="/category/${c.slug}/" class="drawer-link" data-slug="${c.slug}">
-            <span>${escapeHtml(c.name)}</span>
+            <span>💻 ${escapeHtml(c.name)}</span>
             <span class="d-tag">${c.active_count} OPEN</span>
           </a>
         `).join('');
@@ -185,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- PAGINATED JOBS ENGINE ---
+  // --- PAGINATED JOBS ENGINE (NEWEST FIRST) ---
 
   async function loadJobs() {
     if (!jobsGrid) return;
@@ -193,12 +159,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       jobsGrid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-          <div style="font-size: 14px; font-weight: 700; color: var(--blue-primary);">Syncing active 3-day student opportunities...</div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--blue-primary);">Syncing latest student requirements...</div>
         </div>`;
 
       const params = new URLSearchParams({
         q: state.searchQuery,
-        category: state.category,
+        category: 'software-tech',
         job_type: state.jobType,
         sort: state.sort,
         page: state.page,
@@ -249,12 +215,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const formattedTime = formatTimeLeft(j.time_left_seconds);
       const skillsHtml = j.skills_list.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
       const isDeactivated = j.status === 'EXPIRED' || j.time_left_seconds <= 0;
+      const postedDate = j.posted_date_display || 'Today';
+      const isNewToday = postedDate === 'Today';
 
       return `
         <div class="vp-product-card" data-id="${j.id}">
           <div class="vp-card-header">
             <span class="company-badge">${escapeHtml(j.company_name)}</span>
-            <span class="type-badge">${j.job_type_display}</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;">NEW</span>' : ''}
+              <span class="type-badge">${j.job_type_display}</span>
+            </div>
           </div>
 
           <div class="vp-card-content">
@@ -265,6 +236,16 @@ document.addEventListener('DOMContentLoaded', () => {
               <span style="color: var(--muted); font-weight: 500;">📍 ${escapeHtml(j.location)}</span>
             </div>
 
+            ${isNewToday ? `
+              <div style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-light);color:var(--blue-primary);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;border:1px solid var(--blue-border);margin-bottom:8px;">
+                📅 Posted Today
+              </div>
+            ` : `
+              <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;">
+                📅 Posted: <strong style="color:var(--ink);">${postedDate}</strong>
+              </div>
+            `}
+
             <p>${escapeHtml(j.description)}</p>
 
             <div class="skills-wrapper">
@@ -273,20 +254,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="vp-price-row">
               <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">
-                ⏱️ <span>${isDeactivated ? 'Deactivated (3-Day Limit)' : formattedTime}</span>
+                ⏱️ <span>${isDeactivated ? 'Deactivated' : formattedTime}</span>
               </div>
+            </div>
 
-              <div style="display: flex; gap: 6px;">
-                ${j.apply_url && !isDeactivated ? `
-                  <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener" class="button button-dark" style="padding: 7px 14px; font-size: 12px;" onclick="event.stopPropagation();">
-                    Apply via Link ↗
-                  </a>
-                ` : `
-                  <button class="button button-dark" disabled style="opacity: 0.5; padding: 7px 14px; font-size: 12px;">
-                    Deactivated
-                  </button>
-                `}
-              </div>
+            <!-- Apply Now Button — prominent, full width -->
+            <div style="margin-top:12px;">
+              ${!isDeactivated && j.apply_url ? `
+                <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener"
+                   onclick="event.stopPropagation();"
+                   style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);"
+                   onmouseover="this.style.background='var(--blue-dark)';this.style.transform='translateY(-1px)'"
+                   onmouseout="this.style.background='var(--blue-primary)';this.style.transform='translateY(0)'">
+                  🚀 Apply Now ↗
+                </a>
+              ` : isDeactivated ? `
+                <button disabled style="display:flex;align-items:center;justify-content:center;width:100%;padding:11px 0;background:#f1f5f9;color:#94a3b8;font-size:13px;font-weight:700;border-radius:10px;border:1px solid #e2e8f0;cursor:not-allowed;">
+                  ⛔ Deactivated
+                </button>
+              ` : `
+                <button data-open-id="${j.id}"
+                   style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;border:none;cursor:pointer;transition:background 0.2s;">
+                  📋 View Details &amp; Apply
+                </button>
+              `}
             </div>
           </div>
         </div>
@@ -294,8 +285,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
 
     document.querySelectorAll('.vp-product-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const id = card.dataset.id;
+      card.addEventListener('click', (e) => {
+        // Don't open modal when clicking the green Apply Now link
+        if (e.target.closest('a[href]')) return;
+        const openBtn = e.target.closest('[data-open-id]');
+        const id = openBtn ? openBtn.dataset.openId : card.dataset.id;
         state.activeJobId = id;
         loadJobDetail(id);
       });
@@ -310,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.totalPages <= 1) {
       paginationContainer.innerHTML = `
         <div style="font-size: 13px; font-weight: 600; color: var(--muted);">
-          Showing all ${state.totalCount} active student requirements
+          Showing latest ${state.totalCount} software & tech requirements
         </div>`;
       return;
     }
@@ -329,7 +323,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     paginationContainer.innerHTML = `
       <div style="font-size: 13px; font-weight: 600; color: var(--muted);">
-        Showing <strong>${startNum}–${endNum}</strong> of <strong>${state.totalCount}</strong> active student requirements
+        Showing <strong>${startNum}–${endNum}</strong> of <strong>${state.totalCount}</strong> active requirements (Newest First)
       </div>
 
       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -391,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('detailJobType').textContent = j.job_type_display;
     document.getElementById('detailSalary').textContent = j.stipend_salary;
     document.getElementById('detailLocation').textContent = j.location;
+    document.getElementById('detailPostedDate').textContent = j.posted_date_display || 'Today';
     document.getElementById('detailDescription').textContent = j.description;
     document.getElementById('detailEligibility').textContent = j.eligibility;
 
@@ -418,29 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
           state.page = 1;
           loadJobs();
         }, 300);
-      });
-    }
-
-    // Category Tabs redirect to dedicated page /category/<slug>/
-    document.querySelectorAll('.vp-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        const targetCategory = tab.dataset.category;
-        if (targetCategory === 'all') {
-          window.location.href = '/';
-        } else {
-          window.location.href = `/category/${targetCategory}/`;
-        }
-      });
-    });
-
-    if (categorySelect) {
-      categorySelect.addEventListener('change', (e) => {
-        const slug = e.target.value;
-        if (slug === 'all') {
-          window.location.href = '/';
-        } else {
-          window.location.href = `/category/${slug}/`;
-        }
       });
     }
 
@@ -477,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
           el.dataset.seconds = sec;
           el.querySelector('span').textContent = formatTimeLeft(sec);
         } else {
-          el.querySelector('span').textContent = 'Deactivated (3-Day Limit)';
+          el.querySelector('span').textContent = 'Deactivated';
         }
       });
     }, 1000);
