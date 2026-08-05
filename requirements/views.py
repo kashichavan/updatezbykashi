@@ -11,12 +11,15 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.text import slugify
 from django.db.models import Q, Count
+from django.core.cache import cache
 from .models import Category, JobPosting
 
 def sync_expired_jobs():
     """Automatically deletes postings older than 3 days (72 hours) so feed stays 100% fresh daily."""
     now = timezone.now()
-    JobPosting.objects.filter(deadline__lte=now).delete()
+    deleted_count, _ = JobPosting.objects.filter(deadline__lte=now).delete()
+    if deleted_count > 0:
+        cache.clear() # Invalidate cache if expired jobs deleted
 
 def index_view(request):
     sync_expired_jobs()
@@ -38,7 +41,11 @@ def owner_view(request):
     return render(request, 'owner.html')
 
 def api_youtube_videos(request):
-    """Fetches real YouTube video thumbnails and titles directly from @pythonkashi channel."""
+    """Fetches real YouTube video thumbnails and titles directly from @pythonkashi channel with 10-min cache."""
+    cached_videos = cache.get('youtube_videos_feed')
+    if cached_videos:
+        return JsonResponse({'videos': cached_videos})
+
     default_videos = [
         {
             "video_id": "eJ1Jg6zLE5U",
@@ -106,11 +113,13 @@ def api_youtube_videos(request):
                     pass
 
             if videos:
+                cache.set('youtube_videos_feed', videos, 600) # Cache for 10 mins
                 return JsonResponse({'videos': videos})
 
     except Exception:
         pass
 
+    cache.set('youtube_videos_feed', default_videos, 600)
     return JsonResponse({'videos': default_videos})
 
 @csrf_exempt
@@ -231,6 +240,7 @@ def api_owner_bulk_parse_and_post(request):
 
                 created_jobs.append({'id': job.id, 'title': job.title, 'company': job.company_name})
 
+            cache.clear() # Invalidate cache on new job creation
             return JsonResponse({
                 'success': True,
                 'count': len(created_jobs),
@@ -320,6 +330,7 @@ def api_owner_parse_and_post(request):
                 deadline=deadline,
             )
 
+            cache.clear() # Invalidate cache on new job creation
             return JsonResponse({
                 'success': True,
                 'id': job.id,
@@ -344,10 +355,16 @@ def api_stats(request):
 
 def api_categories(request):
     sync_expired_jobs()
-    categories = Category.objects.annotate(
+    cached_cats = cache.get('categories_feed')
+    if cached_cats:
+        return JsonResponse({'categories': cached_cats})
+
+    categories = list(Category.objects.annotate(
         active_count=Count('job_postings', filter=Q(job_postings__status='ACTIVE'))
-    ).values('id', 'name', 'slug', 'icon', 'description', 'active_count')
-    return JsonResponse({'categories': list(categories)})
+    ).values('id', 'name', 'slug', 'icon', 'description', 'active_count'))
+    
+    cache.set('categories_feed', categories, 300) # Cache for 5 mins
+    return JsonResponse({'categories': categories})
 
 @csrf_exempt
 def api_owner_categories(request):
@@ -362,6 +379,7 @@ def api_owner_categories(request):
             description = data.get('description', '').strip()
 
             cat = Category.objects.create(name=name, slug=slug, description=description)
+            cache.clear()
             return JsonResponse({'success': True, 'id': cat.id, 'name': cat.name}, status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
@@ -374,6 +392,7 @@ def api_owner_job_delete(request, pk):
     if request.method == 'DELETE':
         job = get_object_or_404(JobPosting, pk=pk)
         job.delete()
+        cache.clear()
         return JsonResponse({'success': True, 'message': 'Job posting deleted.'})
 
 @csrf_exempt
@@ -395,7 +414,6 @@ def api_admin_login(request):
                 raw_username = request.POST.get('username', '').strip()
                 password = request.POST.get('password', '').strip()
 
-            # Case-insensitive username lookup
             user_obj = User.objects.filter(username__iexact=raw_username).first()
             actual_username = user_obj.username if user_obj else raw_username
 
@@ -431,9 +449,20 @@ def api_jobs(request):
     sync_expired_jobs()
 
     if request.method == 'GET':
+        query = request.GET.get('q', '').strip()
+        category_slug = request.GET.get('category', '').strip()
+        job_type = request.GET.get('job_type', '').strip()
+        sort = request.GET.get('sort', 'newest')
+        page = request.GET.get('page', '1')
+        page_size = request.GET.get('page_size', '6')
+
+        cache_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{sort}_{page}_{page_size}"
+        cached_response = cache.get(cache_key)
+        if cached_response:
+            return JsonResponse(cached_response)
+
         qs = JobPosting.objects.all().select_related('category')
 
-        query = request.GET.get('q', '').strip()
         if query:
             qs = qs.filter(
                 Q(title__icontains=query) | 
@@ -443,15 +472,12 @@ def api_jobs(request):
                 Q(location__icontains=query)
             )
 
-        category_slug = request.GET.get('category', '').strip()
         if category_slug and category_slug != 'all':
             qs = qs.filter(category__slug=category_slug)
 
-        job_type = request.GET.get('job_type', '').strip()
         if job_type and job_type != 'all':
             qs = qs.filter(job_type=job_type)
 
-        sort = request.GET.get('sort', 'newest')
         if sort == 'deadline':
             qs = qs.order_by('deadline')
         else:
@@ -489,34 +515,36 @@ def api_jobs(request):
                 'created_at': j.created_at.isoformat(),
             })
 
-        # Pagination Logic (default 3 for homepage, 6 for catalog)
         try:
-            page = int(request.GET.get('page', 1))
+            page_int = int(page)
         except ValueError:
-            page = 1
+            page_int = 1
 
         try:
-            page_size = int(request.GET.get('page_size', 6))
+            page_size_int = int(page_size)
         except ValueError:
-            page_size = 6
+            page_size_int = 6
 
         total_count = len(results)
-        total_pages = max(1, (total_count + page_size - 1) // page_size)
-        page = min(max(1, page), total_pages)
+        total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
+        page_int = min(max(1, page_int), total_pages)
 
-        start_idx = (page - 1) * page_size
-        end_idx = start_idx + page_size
+        start_idx = (page_int - 1) * page_size_int
+        end_idx = start_idx + page_size_int
         paginated_results = results[start_idx:end_idx]
 
-        return JsonResponse({
+        response_data = {
             'jobs': paginated_results,
             'total_count': total_count,
             'total_pages': total_pages,
-            'current_page': page,
-            'page_size': page_size,
-            'has_next': page < total_pages,
-            'has_previous': page > 1,
-        })
+            'current_page': page_int,
+            'page_size': page_size_int,
+            'has_next': page_int < total_pages,
+            'has_previous': page_int > 1,
+        }
+
+        cache.set(cache_key, response_data, 120) # Cache for 2 mins
+        return JsonResponse(response_data)
 
     elif request.method == 'POST':
         if not (request.user.is_authenticated and request.user.is_staff):
@@ -547,6 +575,7 @@ def api_jobs(request):
                 deadline=deadline,
             )
 
+            cache.clear()
             return JsonResponse({'success': True, 'id': job.id, 'message': 'Opportunity published! Automatically active for 3 days.'}, status=201)
         except KeyError as e:
             return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
