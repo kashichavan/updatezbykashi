@@ -630,26 +630,27 @@ a {
   50% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
 }
 
-.vp-hero-copy h1 {
-  font-family: var(--font-serif);
+.vp-hero-copy h1, #typewriterText {
+  font-family: 'Consolas', 'Fira Code', 'Monaco', 'Courier New', monospace;
   font-size: 32px;
-  line-height: 1.15;
-  font-weight: 800;
+  line-height: 1.2;
+  font-weight: 700;
   color: var(--ink);
-  letter-spacing: -0.8px;
+  letter-spacing: -0.5px;
   margin-bottom: 14px;
 }
 
 @media (min-width: 768px) {
-  .vp-hero-copy h1 {
-    font-size: 44px;
+  .vp-hero-copy h1, #typewriterText {
+    font-size: 42px;
   }
 }
 
-.vp-hero-copy h1 em {
+.vp-hero-copy h1 em, #typewriterText em {
   font-style: italic;
-  font-weight: 300;
+  font-weight: 700;
   color: var(--blue-primary);
+  font-family: inherit;
 }
 
 .lead {
