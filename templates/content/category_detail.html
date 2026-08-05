@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} Opportunities — Kashii Updatez{% endblock %}
+
+{% block content %}
+<div class="wrap" style="margin-top: 24px;">
+
+  <!-- Dedicated Category Hero Banner -->
+  <div style="background: #ffffff; border-radius: 24px; border: 1px solid var(--subtle-border); padding: 36px 28px; box-shadow: var(--card-shadow); margin-bottom: 32px;">
+    <div style="font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px;">
+      <a href="/" style="color: var(--blue-primary); text-decoration: underline;">Home</a> &nbsp;›&nbsp; <span>{{ category.name }}</span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <span style="display: inline-block; padding: 4px 12px; background: var(--blue-light); color: var(--blue-primary); font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
+          🏷️ DEDICATED CATEGORY FEED
+        </span>
+        <h1 style="font: 700 36px var(--font-serif); margin: 0 0 8px; color: var(--ink);">{{ category.name }}</h1>
+        <p style="color: var(--muted); font-size: 15px; margin: 0; max-width: 650px;">
+          {{ category.description|default:"All active student requirements, internships, and opportunities in this category." }}
+        </p>
+      </div>
+
+      <a href="/" class="button button-light" style="padding: 10px 18px; font-size: 13px;">
+        ← Back to All Categories
+      </a>
+    </div>
+  </div>
+
+  <!-- Category Search & Filter Bar -->
+  <section id="catalogSection" class="vp-filter-bar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 14px; font-weight: 800; color: var(--blue-primary);">Filtering Category:</span>
+      <span class="company-badge" style="font-size: 13px; padding: 6px 14px;">{{ category.name }}</span>
+    </div>
+
+    <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">
+      <div class="search-box">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search within {{ category.name }}...">
+      </div>
+
+      <div class="filter-selects" style="display: flex; gap: 6px;">
+        <select id="filterJobType">
+          <option value="all">All Types</option>
+          <option value="INTERNSHIP">Internships</option>
+          <option value="FULL_TIME">Full-Time</option>
+          <option value="PART_TIME">Part-Time</option>
+        </select>
+
+        <select id="filterSort">
+          <option value="newest">Newest</option>
+          <option value="deadline">Closing Soon</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paginated Grid Feed for Category -->
+  <main>
+    <div id="jobsGrid" class="vp-catalog-grid">
+      <!-- Rendered via JS -->
+    </div>
+
+    <div id="paginationContainer" style="margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <!-- Dynamically populated via JS -->
+    </div>
+  </main>
+
+</div>
+
+<!-- Job Detail & Official Application Link Drawer -->
+<div id="detailModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <span id="detailCompany" class="company-badge">Company</span>
+        <span id="detailJobType" class="type-badge">Type</span>
+      </div>
+      <button id="btnCloseDetail" class="close-btn">✕</button>
+    </div>
+
+    <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
+    
+    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap;">
+      <span>💵 Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
+      <span>📍 Location: <span id="detailLocation">Remote</span></span>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Required Skills</div>
+      <div id="detailSkills" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Eligibility Criteria</div>
+      <p id="detailEligibility" style="color: var(--ink); font-size: 14px; margin: 0;"></p>
+    </div>
+
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Job Description & Responsibilities</div>
+      <p id="detailDescription" style="color: #475569; line-height: 1.6; white-space: pre-line; font-size: 14px; margin: 0;"></p>
+    </div>
+
+    <div style="text-align: center; background: var(--blue-light); padding: 22px; border-radius: 16px; border: 1px solid var(--blue-border);">
+      <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px;">Official Application Link</h4>
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Click below to open the official application portal provided by the recruiter:</p>
+      <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="button button-dark" style="width: 100%; justify-content: center; font-size: 15px; padding: 13px;">
+        Apply via Official Application Link ↗
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.CATEGORY_SLUG_OVERRIDE = "{{ category.slug }}";
+</script>
+{% endblock %}

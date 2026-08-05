@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Kashii Updatez — Daily Student Jobs & Python Kashi Learning Hub{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Explore daily student job opportunities, internships, and learn Python & Django with Python Kashi. Official direct apply links & 3-day active lifetime.{% endblock %}">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Flash Announcement Banner -->
+  {% include 'components/flash_banner.html' %}
+
+  <!-- Site Navigation Header -->
+  {% include 'components/navbar.html' %}
+
+  <!-- Main Content Body -->
+  {% block content %}{% endblock %}
+
+  <!-- Site Footer -->
+  {% include 'components/footer.html' %}
+
+  <!-- Floating Instagram Chat Widget (Bottom Right) -->
+  <a href="https://ig.me/m/ikashii_07" id="floatingChatWidget" class="floating-chat-widget" target="_blank" rel="noopener" title="Chat directly with Kashii on Instagram DM">
+    <span class="chat-icon">💬</span>
+    <span class="chat-label">Chat with Kashii</span>
+  </a>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

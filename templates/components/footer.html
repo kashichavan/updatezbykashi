@@ -1,0 +1,36 @@
+<!-- Site Footer -->
+<footer style="border-top: 1px solid var(--subtle-border); background: #ffffff; padding: 40px 0; margin-top: 60px;">
+  <div class="wrap" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    <div>
+      <a href="/" class="brand">Kashii<span>Updatez</span></a>
+      <p style="font-size: 13px; color: var(--muted); margin: 6px 0 0;">
+        Daily student requirements, job updates & Python coding tutorials by Kashinath (Kashii).
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700; font-size: 14px; text-decoration: none;">
+        ▶ YouTube (@pythonkashi)
+      </a>
+      <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" style="color: #e1306c; font-weight: 700; font-size: 14px; text-decoration: none;">
+        📸 Instagram (@ikashii_07)
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- Mobile Bottom Navigation Bar (Mobile First) -->
+<nav class="mobile-bottom-nav">
+  <a href="/" class="mobile-nav-item {% if request.path == '/' %}active{% endif %}">
+    <span style="font-size: 16px;">🏠</span>
+    <span>Feed</span>
+  </a>
+  <a href="/about/" class="mobile-nav-item {% if request.path == '/about/' %}active{% endif %}">
+    <span style="font-size: 16px;">👤</span>
+    <span>About</span>
+  </a>
+  <a href="/youtube/" class="mobile-nav-item {% if request.path == '/youtube/' %}active{% endif %}">
+    <span style="font-size: 16px; color: #dc2626;">▶</span>
+    <span>YouTube</span>
+  </a>
+</nav>

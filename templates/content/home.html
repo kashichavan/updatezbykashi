@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kashii Updatez — Daily Student Jobs & Requirements Feed{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <!-- Hero Section with Typewriter Headline & Animated Coding Terminal -->
+  <section class="vp-hero">
+    <div class="vp-hero-inner">
+      <div class="vp-hero-copy">
+        <div class="code-badge">
+          <span>⚡</span>
+          <span>KASHII_UPDATEZ_DAILY_ENGINE_2026</span>
+        </div>
+
+        <!-- Consolas Typewriter Headline -->
+        <h1 class="typing-headline" style="font-family: 'Consolas', 'Fira Code', 'Courier New', monospace; min-height: 90px;">
+          <span id="typewriterText"></span><span class="typewriter-cursor">|</span>
+        </h1>
+
+        <p class="lead">Every day fresh student requirements & opportunities are posted on Kashii Updatez. Go through eligibility criteria & apply directly via official application links!</p>
+
+        <div class="vp-trust-pills">
+          <span class="vp-pill">⚡ 3-Day Auto Deactivation</span>
+          <span class="vp-pill">🏢 Top Tech & Startups</span>
+          <span class="vp-pill">🔗 Official Direct Application Links</span>
+        </div>
+      </div>
+
+      <!-- Animated Coding Terminal Component -->
+      <div class="coding-terminal">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="t-dot red"></span>
+            <span class="t-dot yellow"></span>
+            <span class="t-dot green"></span>
+          </div>
+          <span class="terminal-title">kashii_updatez_engine.py</span>
+        </div>
+
+        <div class="terminal-body">
+          <div class="code-line">
+            <span class="code-prompt">$</span>
+            <span><span class="code-kw">import</span> kashii_updatez <span class="code-kw">as</span> ku</span>
+          </div>
+          <div class="code-line">
+            <span class="code-prompt">$</span>
+            <span>feed = ku.<span class="code-fn">fetch_daily_requirements</span>()</span>
+          </div>
+          <div class="code-line">
+            <span class="code-prompt">&gt;</span>
+            <span class="code-cm"># 100% Verified Student Opportunities</span>
+          </div>
+          <div class="code-line">
+            <span class="code-prompt">&gt;</span>
+            <span>[<span class="code-str">"Standard Chartered 2026"</span>, <span class="code-str">"Apple Intern"</span>]</span>
+          </div>
+          <div class="code-line">
+            <span class="code-prompt">$</span>
+            <span>ku.<span class="code-fn">enforce_rule</span>(lifetime=<span class="code-num">"72_HOURS"</span>)</span>
+          </div>
+          <div class="code-line" style="margin-top: 6px;">
+            <span class="code-prompt" style="color:#4ade80;">[SUCCESS]</span>
+            <span style="color:#4ade80; font-weight:700;">3-Day Expiration Engine Active</span>
+            <span class="typing-cursor"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFINITE 3D SEAMLESS MARQUEE SCROLL (PYTHON KASHI YOUTUBE VIDEOS) -->
+  <section style="margin-bottom: 28px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: #dc2626; font-weight: 800; font-size: 16px;">▶</span>
+        <h3 style="font: 700 18px var(--font-sans); margin: 0; color: var(--ink);">Latest Tutorials from @pythonkashi</h3>
+      </div>
+      <a href="/youtube/" style="font-size: 13px; font-weight: 700; color: #dc2626;">View All Videos ↗</a>
+    </div>
+
+    <div class="logo-marquee-wrapper" style="margin-bottom: 0;">
+      <div id="ytMarqueeTrack" class="logo-marquee-track">
+        <!-- Dynamically rendered via JS with real YouTube video thumbnails -->
+        <div style="padding: 20px; text-align: center; color: var(--muted); font-size: 13px;">Loading Python Kashi videos...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filter & Search Bar -->
+  <section id="catalogSection" class="vp-filter-bar">
+    <div class="vp-tabs">
+      <button class="vp-tab active" data-category="all">All Active</button>
+      <button class="vp-tab" data-category="software-tech">Software & Tech</button>
+      <button class="vp-tab" data-category="internships">Internships</button>
+      <button class="vp-tab" data-category="data-ai">Data & AI</button>
+      <button class="vp-tab" data-category="design-media">Design</button>
+      <button class="vp-tab" data-category="business-product">Business</button>
+    </div>
+
+    <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">
+      <div class="search-box">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search by role, company, skills (Python, React)...">
+      </div>
+
+      <div class="filter-selects" style="display: flex; gap: 6px;">
+        <select id="filterJobType">
+          <option value="all">All Types</option>
+          <option value="INTERNSHIP">Internships</option>
+          <option value="FULL_TIME">Full-Time</option>
+          <option value="PART_TIME">Part-Time</option>
+          <option value="FREELANCE">Freelance</option>
+        </select>
+
+        <select id="filterSort">
+          <option value="newest">Newest</option>
+          <option value="deadline">Closing Soon</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Catalog Grid Feed -->
+  <main>
+    <div id="jobsGrid" class="vp-catalog-grid">
+      <!-- Job Cards rendered via JS -->
+    </div>
+
+    <!-- PAGINATION CONTROLS CONTAINER -->
+    <div id="paginationContainer" style="margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <!-- Dynamically populated via JS -->
+    </div>
+  </main>
+
+  <!-- DEDICATED SECTION: CHAT WITH KASHII (INSTAGRAM DIRECT DEEP-LINK) -->
+  <section id="chat-kashii" style="margin: 50px 0 20px;">
+    <div style="background: linear-gradient(135deg, #0f172a, #1e1b4b); border-radius: 24px; padding: 40px 32px; color: #ffffff; box-shadow: var(--card-shadow); display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 32px; align-items: center;" class="chat-kashii-card">
+      <div>
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 6px; font-size: 11px; font-weight: 800; font-family: monospace; margin-bottom: 14px;">
+          💬 DIRECT MESSAGING & CAREER ADVICE
+        </span>
+        <h2 style="font: 700 32px var(--font-serif); margin: 0 0 12px; line-height: 1.2;">Have Questions? Chat Directly with <em>Kashii</em></h2>
+        <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
+          Got doubts about off-campus jobs, Python project reviews, or resume guidance? Send a direct message to <strong>Kashinath (@ikashii_07)</strong> on Instagram. On mobile devices, clicking below automatically opens your Instagram App to the direct chat page!
+        </p>
+
+        <a href="https://ig.me/m/ikashii_07" id="btnInstaDirect" class="button btn-insta-chat" target="_blank" rel="noopener">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+          <span>Chat with Kashii on Instagram DM ↗</span>
+        </a>
+      </div>
+
+      <div style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; padding: 24px; text-align: center;">
+        <div style="font-size: 36px; margin-bottom: 8px;">📱💬</div>
+        <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px;">Instant App Direct Launch</h4>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0 0 14px; line-height: 1.5;">Auto-opens Instagram Direct Inbox on iOS & Android smartphones.</p>
+        <span style="font-size: 11px; font-weight: 800; color: #f472b6; background: rgba(244, 114, 182, 0.15); padding: 4px 10px; border-radius: 99px;">@ikashii_07</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- Job Detail & Official Application Link Drawer -->
+<div id="detailModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <span id="detailCompany" class="company-badge">Company</span>
+        <span id="detailJobType" class="type-badge">Type</span>
+      </div>
+      <button id="btnCloseDetail" class="close-btn">✕</button>
+    </div>
+
+    <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
+    
+    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap;">
+      <span>💵 Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
+      <span>📍 Location: <span id="detailLocation">Remote</span></span>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Required Skills</div>
+      <div id="detailSkills" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+    </div>
+
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Eligibility Criteria</div>
+      <p id="detailEligibility" style="color: var(--ink); font-size: 14px; margin: 0;"></p>
+    </div>
+
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Job Description & Responsibilities</div>
+      <p id="detailDescription" style="color: #475569; line-height: 1.6; white-space: pre-line; font-size: 14px; margin: 0;"></p>
+    </div>
+
+    <!-- Action: Official External Application Link -->
+    <div style="text-align: center; background: var(--blue-light); padding: 22px; border-radius: 16px; border: 1px solid var(--blue-border);">
+      <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px;">Official Application Link</h4>
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Click below to open the official application portal provided by the recruiter:</p>
+      <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="button button-dark" style="width: 100%; justify-content: center; font-size: 15px; padding: 13px;">
+        Apply via Official Application Link ↗
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

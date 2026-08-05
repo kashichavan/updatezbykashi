@@ -1,0 +1,267 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kashii Updatez — Owner Management Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    /* Spacious & Breathable Owner Panel Styles */
+    .owner-container { width: 100%; max-width: 960px; margin: 32px auto; padding: 0 20px; }
+    
+    .owner-card { background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 24px; padding: 36px 32px; box-shadow: var(--card-shadow); }
+    @media (max-width: 768px) { .owner-card { padding: 24px 20px; border-radius: 20px; } }
+
+    .owner-tabs { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 6px; margin-bottom: 28px; }
+    .owner-tabs::-webkit-scrollbar { display: none; }
+    
+    .owner-tab { flex-shrink: 0; white-space: nowrap; padding: 11px 22px; border-radius: var(--radius-full); font-weight: 700; font-size: 14px; border: 1px solid var(--subtle-border); background: #ffffff; cursor: pointer; color: var(--ink); transition: var(--transition); }
+    .owner-tab.active { background: var(--blue-primary); color: #ffffff; border-color: var(--blue-primary); box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
+
+    .form-group { margin-bottom: 22px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: 0.2px; }
+    
+    .form-control { width: 100%; height: 50px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--subtle-border); background: #ffffff; font-family: var(--font-sans); font-size: 15px; color: var(--ink); outline: none; transition: var(--transition); }
+    .form-control:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); }
+    
+    textarea.form-control { height: auto; min-height: 150px; padding: 16px; line-height: 1.6; }
+
+    .form-row { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 768px) { .form-row { grid-template-columns: 1fr 1fr; } }
+
+    .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 20px; border-radius: 16px; border: 1px solid var(--subtle-border); }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
+    .data-table th, .data-table td { padding: 14px 18px; border-bottom: 1px solid var(--subtle-border); text-align: left; }
+    .data-table th { background: var(--paper); font-size: 12px; text-transform: uppercase; font-weight: 800; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <!-- Owner Header -->
+  <header class="site-header">
+    <div class="wrap nav">
+      <a href="/owner/" class="brand">
+        Kashii<span>Updatez</span> <small style="font-size: 11px; color: var(--blue-primary); margin-left: 8px; font-family: var(--font-sans); text-transform: uppercase; font-weight: 800; background: var(--blue-light); padding: 3px 8px; border-radius: 6px;">Secret Owner Portal</small>
+      </a>
+
+      <div id="ownerAuthBadge">
+        <!-- Auth status loaded via JS -->
+      </div>
+    </div>
+  </header>
+
+  <div class="owner-container">
+
+    <!-- View 1: Owner Login Screen (Clean Blank Inputs for Secure Auth) -->
+    <div id="ownerLoginView" class="owner-card" style="max-width: 460px; margin: 40px auto; display: none;">
+      <h2 style="font: 700 24px var(--font-serif); margin-bottom: 10px;">👑 Owner Authentication</h2>
+      <p style="font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5;">Enter your owner account credentials stored in the database to access portal features.</p>
+
+      <form id="formOwnerLogin">
+        <div class="form-group">
+          <label for="ownerUser">Username *</label>
+          <input type="text" id="ownerUser" class="form-control" placeholder="Enter owner username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="ownerPass">Password *</label>
+          <input type="password" id="ownerPass" class="form-control" placeholder="Enter owner password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; margin-top: 12px; padding: 14px; font-size: 15px;">
+          Log In as Owner
+        </button>
+      </form>
+    </div>
+
+    <!-- View 2: Owner Dashboard (If authenticated) -->
+    <div id="ownerDashboardView" style="display: none;">
+
+      <!-- Spacious Touch Tabs Bar -->
+      <div class="owner-tabs">
+        <button class="owner-tab active" data-tab="tabBulkParse">🚀 Bulk Multi-Job Parser</button>
+        <button class="owner-tab" data-tab="tabSmartParse">⚡ 1-Click Single Parser</button>
+        <button class="owner-tab" data-tab="tabPost">📝 Manual Form</button>
+        <button class="owner-tab" data-tab="tabJobs">📋 Manage Postings</button>
+        <button class="owner-tab" data-tab="tabCategory">🏷️ Categories</button>
+      </div>
+
+      <!-- Tab Content 0: Bulk Multi-Job Auto-Parser -->
+      <div id="tabBulkParse" class="owner-card tab-content">
+        <div style="margin-bottom: 24px;">
+          <span style="display: inline-block; padding: 4px 12px; background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
+            🚀 BULK MULTI-JOB AUTO-PARSER ENGINE
+          </span>
+          <h2 style="font: 700 24px var(--font-serif); margin: 0 0 8px;">Post 5, 7, or 20+ Jobs at Once!</h2>
+          <p style="font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6;">
+            Paste a single large message containing multiple numbered postings (1., 2., 3., 4., 5., 6., 7.). The engine automatically parses each company, role, skills, apply link, and publishes all opportunities under Software & Tech in 1 click!
+          </p>
+        </div>
+
+        <form id="formBulkParse">
+          <div class="form-group">
+            <label for="bulkTextSnippet">Paste Multiple Job Requirements (Numbered 1, 2, 3...) *</label>
+            <textarea id="bulkTextSnippet" class="form-control" rows="12" placeholder="Paste multiple jobs here, e.g.:
+
+1. *Apply Link:* https://jobs.standardchartered.com/...
+Company: Standard Chartered
+Role: Apprentice Technology GBS India 2026
+
+2. *Apply Link:* https://careers.cognizant.com/...
+Company: Cognizant
+Role: Developer
+
+3. Company Name: Zensar
+Role: DevOps Engineer Trainee
+Apply Link: https://forms.cloud.microsoft/...
+
+4. Siemens Healthineers is Hiring
+Role: Intern - Technical
+🔗 Apply Link: https://jobs.siemens-healthineers.com/..." required style="font-family: var(--font-code); font-size: 13px; line-height: 1.6;"></textarea>
+          </div>
+
+          <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 16px; font-size: 16px; background: #16a34a; border-color: #16a34a;">
+            🚀 Bulk Parse & Publish All Opportunities (1-Click)
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab Content 1: Smart Auto-Parser (Single Job Snippet) -->
+      <div id="tabSmartParse" class="owner-card tab-content" style="display: none;">
+        <div style="margin-bottom: 24px;">
+          <h2 style="font: 700 24px var(--font-serif); margin: 0 0 8px;">⚡ Single Job Auto-Parser</h2>
+          <p style="font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6;">
+            Paste a single raw job announcement text. Automatically extracts official apply URL, company name, role, qualification, skills, location, and sets a 3-day active lifetime!
+          </p>
+        </div>
+
+        <form id="formSmartParse">
+          <div class="form-group">
+            <label for="rawTextSnippet">Raw Job Text Snippet *</label>
+            <textarea id="rawTextSnippet" class="form-control" rows="8" placeholder="Paste raw snippet here..." required style="font-family: var(--font-code); font-size: 13px; line-height: 1.6;"></textarea>
+          </div>
+
+          <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 15px; font-size: 15px;">
+            ⚡ Parse & Publish Single Opportunity
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab Content 2: Manual Form Post -->
+      <div id="tabPost" class="owner-card tab-content" style="display: none;">
+        <div style="margin-bottom: 24px;">
+          <h2 style="font: 700 24px var(--font-serif); margin: 0 0 6px;">Manual Job Requirement Post</h2>
+          <span style="font-size: 13px; color: var(--blue-primary); font-weight: 700;">⚡ Automatically sets to 3-day active lifetime</span>
+        </div>
+
+        <form id="formOwnerPostJob">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pTitle">Job / Role Title *</label>
+              <input type="text" id="pTitle" class="form-control" placeholder="e.g. Software Engineer Intern" required>
+            </div>
+            <div class="form-group">
+              <label for="pCompany">Company / Organization *</label>
+              <input type="text" id="pCompany" class="form-control" placeholder="e.g. Stripe, Vercel" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pCategory">Category *</label>
+              <select id="pCategory" class="form-control" required></select>
+            </div>
+            <div class="form-group">
+              <label for="pJobType">Opportunity Type *</label>
+              <select id="pJobType" class="form-control" required>
+                <option value="INTERNSHIP" selected>Internship</option>
+                <option value="FULL_TIME">Full-Time Job</option>
+                <option value="PART_TIME">Part-Time Job</option>
+                <option value="FREELANCE">Freelance / Contract</option>
+                <option value="CAMPUS">Campus Drive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="pApplyUrl">Official External Application URL *</label>
+            <input type="url" id="pApplyUrl" class="form-control" placeholder="https://company.com/careers/job-link" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="pSalary">Stipend / Salary Range *</label>
+              <input type="text" id="pSalary" class="form-control" placeholder="e.g. Competitive Stipend" required>
+            </div>
+            <div class="form-group">
+              <label for="pLocation">Location Context</label>
+              <input type="text" id="pLocation" class="form-control" value="Remote" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="pSkills">Required Skills (Comma-separated) *</label>
+            <input type="text" id="pSkills" class="form-control" placeholder="e.g. Python, Django, React" required>
+          </div>
+
+          <div class="form-group">
+            <label for="pDescription">Job Description & Responsibilities *</label>
+            <textarea id="pDescription" class="form-control" rows="4" placeholder="Detail student responsibilities..." required></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="pEligibility">Eligibility & Batch Requirements</label>
+            <input type="text" id="pEligibility" class="form-control" placeholder="e.g. 2025/2026 Graduating CS Students">
+          </div>
+
+          <div style="padding: 14px 18px; background: var(--blue-light); border: 1px solid var(--blue-border); border-radius: 14px; font-size: 13px; color: var(--blue-primary); margin-bottom: 22px;">
+            ℹ️ <b>Auto 3-Day Rule:</b> Postings published here remain active on the student feed for 72 hours (3 days) and automatically delete afterwards.
+          </div>
+
+          <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 15px; font-size: 15px;">
+            🚀 Publish Opportunity (3-Day Lifetime)
+          </button>
+        </form>
+      </div>
+
+      <!-- Tab Content 3: Manage Job Postings -->
+      <div id="tabJobs" class="owner-card tab-content" style="display: none;">
+        <h2 style="font: 700 24px var(--font-serif); margin-bottom: 16px;">Manage Job Requirements</h2>
+        <div id="ownerJobsTableContainer" class="table-responsive">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <!-- Tab Content 4: Add & Manage Categories -->
+      <div id="tabCategory" class="owner-card tab-content" style="display: none;">
+        <h2 style="font: 700 24px var(--font-serif); margin-bottom: 16px;">Category Management</h2>
+        
+        <form id="formAddCategory" style="margin-bottom: 28px;">
+          <div class="form-group">
+            <label for="catName">New Category Name *</label>
+            <input type="text" id="catName" class="form-control" placeholder="e.g. Cybersecurity & Cloud" required>
+          </div>
+          <div class="form-group">
+            <label for="catDescription">Description</label>
+            <textarea id="catDescription" class="form-control" rows="2" placeholder="Brief description..."></textarea>
+          </div>
+          <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 14px;">
+            + Add Category
+          </button>
+        </form>
+
+        <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; letter-spacing: 0.5px;">Existing Categories</h4>
+        <div id="ownerCategoryList"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="{% static 'js/owner.js' %}"></script>
+</body>
+</html>

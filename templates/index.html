@@ -1,0 +1,316 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kashii Updatez — Daily Student Jobs & Python Kashi Learning Hub</title>
+  <meta name="description" content="Explore daily student job opportunities, internships, and learn Python & Django with Python Kashi. Official direct apply links & 3-day active lifetime.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <style>
+    .yt-section { background: #ffffff; border-radius: 20px; border: 1px solid var(--subtle-border); padding: 40px; margin: 40px 0; box-shadow: var(--card-shadow); }
+    .creator-badge { display: inline-flex; align-items: center; gap: 8px; font-family: monospace; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 6px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; margin-bottom: 12px; }
+    .yt-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px; }
+    .yt-card { background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: transform 0.25s ease, box-shadow 0.25s ease; }
+    .yt-card:hover { transform: translateY(-4px); box-shadow: var(--hover-shadow); border-color: #dc2626; }
+    .yt-thumb-placeholder { height: 160px; background: linear-gradient(135deg, #18181b, #27272a); color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+    .yt-play-icon { width: 50px; height: 50px; border-radius: 50%; background: #dc2626; color: #ffffff; display: grid; place-items: center; font-size: 20px; box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4); margin-bottom: 8px; }
+    .social-pill-yt { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 99px; background: #dc2626; color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s ease; }
+    .social-pill-yt:hover { background: #b91c1c; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35); }
+    .social-pill-ig { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 99px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.2s ease; }
+    .social-pill-ig:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(225, 48, 108, 0.35); }
+    @media (max-width: 992px) { .yt-card-grid { grid-template-columns: 1fr; } .yt-section { padding: 24px; } }
+  </style>
+</head>
+<body>
+
+  <!-- 1. Flash Announcement Banner -->
+  <div id="flashBanner" class="flash-banner">
+    <span><b>KASHII UPDATEZ</b> Everyday Student Requirements & Python Coding Tutorials by Python Kashi</span>
+    <button id="flashClose" class="flash-close">✕</button>
+  </div>
+
+  <!-- 2. Clean Student Site Navigation Header -->
+  <header class="site-header">
+    <div class="wrap nav">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <button id="btnToggleDrawer" class="vp-sidebar-btn" title="Categories Drawer">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          Categories
+        </button>
+
+        <a href="/" class="brand">
+          Kashii<span>Updatez</span>
+        </a>
+      </div>
+
+      <nav class="nav-links">
+        <a href="/" class="active">Student Feed</a>
+        <a href="#about-creator">About Kashii</a>
+        <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700;">▶ Python Kashi</a>
+        <a href="/owner/" target="_blank">Owner Portal ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 3. Off-Canvas Category Side Drawer -->
+  <div id="drawerOverlay" class="vp-drawer-overlay">
+    <div class="vp-side-drawer">
+      <div class="vp-drawer-header">
+        <span class="brand">Kashii<span>Updatez</span></span>
+        <button id="btnCloseDrawer" class="vp-drawer-close">✕</button>
+      </div>
+      <div class="vp-drawer-body">
+        <div class="drawer-section-title">Explore Categories</div>
+        <div id="drawerCategoryNav" class="drawer-nav">
+          <!-- Populated via JS -->
+        </div>
+
+        <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--subtle-border);">
+          <div class="drawer-section-title">Connect with Kashii</div>
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="drawer-link" style="color: #dc2626; font-weight: 700;">
+            <span>▶ YouTube (@pythonkashi)</span>
+            <span class="d-tag" style="background:#fee2e2; color:#dc2626;">Sub</span>
+          </a>
+          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" class="drawer-link" style="color: #e1306c; font-weight: 700; margin-top: 6px;">
+            <span>📸 Instagram (@ikashii_07)</span>
+            <span class="d-tag" style="background:#fce7f3; color:#be185d;">Follow</span>
+          </a>
+        </div>
+      </div>
+      <div style="padding: 16px 20px; border-top: 1px solid var(--subtle-border); background: var(--paper);">
+        <a href="/owner/" target="_blank" class="button button-light" style="width: 100%; justify-content: center;">
+          👑 Owner Portal ↗
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container Wrap -->
+  <div class="wrap">
+
+    <!-- 4. Hero Section -->
+    <section class="vp-hero">
+      <div class="vp-hero-inner">
+        <div class="vp-hero-copy">
+          <div class="code-badge">KASHII_UPDATEZ_DAILY_FEED_2026</div>
+          <h1>Daily Student Jobs & <em>Internship Requirements</em></h1>
+          <p class="lead">Every day fresh student requirements & opportunities are posted on Kashii Updatez. Go through eligibility criteria & apply directly via official application links!</p>
+
+          <div class="vp-trust-pills">
+            <span class="vp-pill">⚡ 3-Day Auto Deactivation</span>
+            <span class="vp-pill">🏢 Top Tech & Startups</span>
+            <span class="vp-pill">🔗 Official Direct Application Links</span>
+          </div>
+        </div>
+
+        <div class="vp-hero-art">
+          <h3 style="font: 700 24px var(--font-serif); margin-bottom: 8px;">Kashii Updatez Owner Panel</h3>
+          <p style="font-size: 14px; opacity: 0.9; margin-bottom: 16px;">Job postings and official application links are managed in the dedicated Owner Portal.</p>
+          <a href="/owner/" target="_blank" class="button button-light" style="align-self: flex-start; background: #ffffff; color: var(--blue-primary);">
+            Access Owner Portal ↗
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Filter & Search Bar -->
+    <section class="vp-filter-bar">
+      <div class="vp-tabs">
+        <button class="vp-tab active" data-category="all">All Active</button>
+        <button class="vp-tab" data-category="software-tech">Software & Tech</button>
+        <button class="vp-tab" data-category="internships">Internships</button>
+        <button class="vp-tab" data-category="data-ai">Data & AI</button>
+        <button class="vp-tab" data-category="design-media">Design</button>
+        <button class="vp-tab" data-category="business-product">Business</button>
+      </div>
+
+      <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">
+        <div class="search-box">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search by role, company, skills (Python, React)...">
+        </div>
+
+        <div class="filter-selects" style="display: flex; gap: 6px;">
+          <select id="filterJobType">
+            <option value="all">All Types</option>
+            <option value="INTERNSHIP">Internships</option>
+            <option value="FULL_TIME">Full-Time</option>
+            <option value="PART_TIME">Part-Time</option>
+            <option value="FREELANCE">Freelance</option>
+          </select>
+
+          <select id="filterSort">
+            <option value="newest">Newest</option>
+            <option value="deadline">Closing Soon</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Catalog Grid Feed -->
+    <main>
+      <div id="jobsGrid" class="vp-catalog-grid">
+        <!-- Job Cards rendered via JS -->
+      </div>
+    </main>
+
+    <!-- 7. ABOUT CREATOR & YOUTUBE SECTION (Python Kashi & @ikashii_07) -->
+    <section id="about-creator" class="yt-section">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+        <div style="max-width: 600px;">
+          <div class="creator-badge">▶ PYTHON KASHI & KASHII UPDATEZ</div>
+          <h2 style="font: 700 32px var(--font-serif); margin: 0 0 12px; letter-spacing: -0.5px;">Learn Coding & Get Daily Job Updates with <em>Kashii</em></h2>
+          <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">
+            Hey! I'm <strong>Kashinath (Kashii)</strong>. I created <strong>Kashii Updatez</strong> to deliver daily verified student job requirements & official application links with zero noise. On my YouTube channel <strong>@pythonkashi</strong>, I share free Python tutorials, Django web development courses, project builds, and career guidance for students!
+          </p>
+
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="social-pill-yt">
+              <span>▶ Subscribe @pythonkashi</span>
+            </a>
+            <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="social-pill-ig">
+              <span>📸 Follow @ikashii_07</span>
+            </a>
+          </div>
+        </div>
+
+        <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 18px; padding: 24px; text-align: center; width: 320px; max-width: 100%;">
+          <div style="width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark)); color: #ffffff; display: grid; place-items: center; font-size: 28px; font-weight: 800; margin: 0 auto 12px; font-family: var(--font-serif);">
+            K
+          </div>
+          <h3 style="font: 700 18px var(--font-sans); margin: 0 0 4px;">Kashinath (Kashii)</h3>
+          <span style="font-size: 12px; font-weight: 700; color: var(--blue-primary); background: var(--blue-light); padding: 3px 10px; border-radius: 99px;">Tech Educator & Founder</span>
+          <p style="font-size: 13px; color: var(--muted); margin: 12px 0 0; line-height: 1.5;">Helping students build real-world Python & Django projects and land tech roles in 2026.</p>
+        </div>
+      </div>
+
+      <!-- YouTube Videos / Tutorials Showcase -->
+      <div style="margin-top: 36px; padding-top: 28px; border-top: 1px solid var(--subtle-border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="font: 700 20px var(--font-serif); margin: 0;">Featured Tutorials on Python Kashi</h3>
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 700; color: #dc2626; text-decoration: underline;">
+            View All Videos on YouTube ↗
+          </a>
+        </div>
+
+        <div class="yt-card-grid">
+          <!-- Video Card 1 -->
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="yt-card">
+            <div class="yt-thumb-placeholder">
+              <div class="yt-play-icon">▶</div>
+              <span style="font-size: 12px; font-weight: 700; font-family: monospace; letter-spacing: 0.5px;">PYTHON FOR BEGINNERS</span>
+            </div>
+            <div style="padding: 16px;">
+              <h4 style="font: 700 16px var(--font-sans); margin: 0 0 6px; color: var(--ink);">Python Full Course for Students & Freshers 2026</h4>
+              <p style="font-size: 13px; color: var(--muted); margin: 0;">Learn Python programming from scratch with practical coding exercises and projects.</p>
+            </div>
+          </a>
+
+          <!-- Video Card 2 -->
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="yt-card">
+            <div class="yt-thumb-placeholder">
+              <div class="yt-play-icon">▶</div>
+              <span style="font-size: 12px; font-weight: 700; font-family: monospace; letter-spacing: 0.5px;">DJANGO SAAS BLUEPRINT</span>
+            </div>
+            <div style="padding: 16px;">
+              <h4 style="font: 700 16px var(--font-sans); margin: 0 0 6px; color: var(--ink);">Build Full-Stack Django REST Applications</h4>
+              <p style="font-size: 13px; color: var(--muted); margin: 0;">Learn how to build multi-tenant SaaS backends with Django, REST Framework & PostgreSQL.</p>
+            </div>
+          </a>
+
+          <!-- Video Card 3 -->
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="yt-card">
+            <div class="yt-thumb-placeholder">
+              <div class="yt-play-icon">▶</div>
+              <span style="font-size: 12px; font-weight: 700; font-family: monospace; letter-spacing: 0.5px;">TECH CAREER & JOBS</span>
+            </div>
+            <div style="padding: 16px;">
+              <h4 style="font: 700 16px var(--font-sans); margin: 0 0 6px; color: var(--ink);">How to Apply for Off-Campus Internships 2026</h4>
+              <p style="font-size: 13px; color: var(--muted); margin: 0;">Step-by-step guidance on resume building, tech preparation, and applying via direct links.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <!-- 8. Mobile Bottom Navigation Bar (Mobile First) -->
+  <nav class="mobile-bottom-nav">
+    <a href="/" class="mobile-nav-item active">
+      <span style="font-size: 16px;">🏠</span>
+      <span>Feed</span>
+    </a>
+    <a href="#" id="mobileToggleDrawer" class="mobile-nav-item" onclick="document.getElementById('drawerOverlay').classList.add('is-open'); return false;">
+      <span style="font-size: 16px;">📂</span>
+      <span>Categories</span>
+    </a>
+    <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="mobile-nav-item">
+      <span style="font-size: 16px; color: #dc2626;">▶</span>
+      <span>YouTube</span>
+    </a>
+    <a href="/owner/" target="_blank" class="mobile-nav-item">
+      <span style="font-size: 16px;">⚙️</span>
+      <span>Owner</span>
+    </a>
+  </nav>
+
+  <!-- Job Detail & Official Application Link Drawer -->
+  <div id="detailModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <span id="detailCompany" class="company-badge">Company</span>
+          <span id="detailJobType" class="type-badge">Type</span>
+        </div>
+        <button id="btnCloseDetail" class="close-btn">✕</button>
+      </div>
+
+      <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
+      
+      <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap;">
+        <span>💵 Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
+        <span>📍 Location: <span id="detailLocation">Remote</span></span>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Required Skills</div>
+        <div id="detailSkills" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Eligibility Criteria</div>
+        <p id="detailEligibility" style="color: var(--ink); font-size: 14px; margin: 0;"></p>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Job Description & Responsibilities</div>
+        <p id="detailDescription" style="color: #475569; line-height: 1.6; white-space: pre-line; font-size: 14px; margin: 0;"></p>
+      </div>
+
+      <!-- Action: Official External Application Link -->
+      <div style="text-align: center; background: var(--blue-light); padding: 22px; border-radius: 16px; border: 1px solid var(--blue-border);">
+        <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px;">Official Application Link</h4>
+        <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Click below to open the official application portal provided by the recruiter:</p>
+        <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="button button-dark" style="width: 100%; justify-content: center; font-size: 15px; padding: 13px;">
+          Apply via Official Application Link ↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
