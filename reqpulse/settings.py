@@ -52,7 +52,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'reqpulse.wsgi.application'
 ASGI_APPLICATION = 'reqpulse.asgi.application'
 
-# Production-Ready Dynamic Database Engine (PostgreSQL / MySQL / SQLite)
+# Render & Production PostgreSQL Database Engine
 if os.environ.get("DATABASE_URL"):
     try:
         import dj_database_url
@@ -137,12 +137,20 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # High-Performance Caching
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "kashii-updatez-cache",
+if os.environ.get("REDIS_URL"):
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.environ["REDIS_URL"],
+        }
     }
-}
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "kashii-updatez-cache",
+        }
+    }
 
 LOGIN_URL = "/owner/"
 
