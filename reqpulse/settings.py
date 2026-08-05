@@ -155,12 +155,14 @@ else:
 LOGIN_URL = "/owner/"
 
 CSRF_TRUSTED_ORIGINS = [
+    "https://kashiiupdatez.online",
+    "https://www.kashiiupdatez.online",
+    "http://kashiiupdatez.online",
+    "http://www.kashiiupdatez.online",
     "https://*",
     "http://*",
     "https://*.onrender.com",
     "http://*.onrender.com",
-    "https://*.railway.app",
-    "https://*.vercel.app",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
 ]
