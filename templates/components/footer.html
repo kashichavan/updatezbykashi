@@ -32,10 +32,6 @@
     <img src="{% static 'images/icon-about.png' %}" class="mobile-nav-icon" alt="About" width="22" height="22" decoding="async">
     <span>About</span>
   </a>
-  <a href="/sandbox/" class="mobile-nav-item {% if '/sandbox/' in request.path %}active{% endif %}">
-    <img src="{% static 'images/icon-apply.png' %}" class="mobile-nav-icon" alt="Sandbox" width="22" height="22" decoding="async">
-    <span>Sandbox</span>
-  </a>
   <a href="/youtube/" class="mobile-nav-item {% if request.path == '/youtube/' %}active{% endif %}">
     <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" alt="YouTube" width="22" height="22" decoding="async">
     <span>YouTube</span>
