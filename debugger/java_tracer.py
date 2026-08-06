@@ -702,7 +702,7 @@ class JavaExecutionTracer:
         )
         re_arr_decl = re.compile(
             r'^(int|double|String|long|float)\[\]\s+([a-zA-Z_$][a-zA-Z0-9_$]*)'
-            r'\s*=\s*(?:new [a-zA-Z]+\[\d+\]|\{([^}]*)\});?$'
+            r'\s*=\s*(?:new\s+[a-zA-Z0-9_$.<>]+\s*\[\s*\d*\s*\]|\{([^}]*)\});?$'
         )
         re_assign  = re.compile(
             r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?:\+|-|\*|\/|%)?=\s*(.+?);?$'
@@ -1082,6 +1082,38 @@ class JavaExecutionTracer:
 
             has_ex = False
             try:
+                # Array indexing bounds check e.g. arr[5] or list.get(10)
+                m_arr_idx = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[\s*([^\]]+)\s*\]', stripped)
+                if m_arr_idx:
+                    aname, idx_expr = m_arr_idx.groups()
+                    if aname in scope and scope[aname]['type'].endswith('[]'):
+                        idx_val = int(self.resolve_expr(idx_expr, scope))
+                        raw_str = scope[aname]['raw']
+                        if raw_str.startswith('[') and raw_str.endswith(']'):
+                            items = [x.strip() for x in raw_str[1:-1].split(',') if x.strip()]
+                            if idx_val < 0 or idx_val >= len(items):
+                                raise IndexError(f"java.lang.ArrayIndexOutOfBoundsException: Index {idx_val} out of bounds for length {len(items)}")
+
+                # String .charAt() bounds check
+                m_str_idx = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.charAt\s*\(\s*([^)]+)\s*\)', stripped)
+                if m_str_idx:
+                    sname, idx_expr = m_str_idx.groups()
+                    if sname in scope:
+                        sval = str(scope[sname]['raw']).strip('"\'')
+                        idx_val = int(self.resolve_expr(idx_expr, scope))
+                        if idx_val < 0 or idx_val >= len(sval):
+                            raise IndexError(f"java.lang.StringIndexOutOfBoundsException: String index out of range: {idx_val}")
+
+                # Explicit throw new statement e.g. throw new IllegalArgumentException("Invalid input");
+                if stripped.startswith('throw new '):
+                    m_th = re.search(r'throw\s+new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(\s*(.*?)\s*\)', stripped)
+                    if m_th:
+                        ex_cls = m_th.group(1)
+                        ex_msg = m_th.group(2).strip('"\'')
+                        raise RuntimeError(f"java.lang.{ex_cls}: {ex_msg}")
+                    else:
+                        raise RuntimeError("java.lang.Exception: User thrown exception")
+
                 # ── PRIORITY 3: System.out.println / System.out.print ─────────────
                 m_out = re_println.match(stripped)
                 if m_out:
@@ -1097,37 +1129,56 @@ class JavaExecutionTracer:
                         output = self.resolve_expr(arg, scope)
                     self.stdout_lines.append(f"[JVM] {output}")
 
-                # ── PRIORITY 4: Primitive variable declaration ─────────────────────
+                # ── PRIORITY 4: Array declaration ──────────────────────────────────
+                m_arr = re_arr_decl.match(stripped)
                 m_decl = re_prim_decl.match(stripped)
-                if m_decl and not m_out:
+                if m_arr and not m_out:
+                    jtype, vname, items_str = m_arr.groups()
+                    if items_str:
+                        items   = [x.strip() for x in items_str.split(',')]
+                        raw_val = f"[{', '.join(items)}]"
+                    else:
+                        raw_val = f"new {jtype}[]"
+                    is_prim = jtype in self.JAVA_PRIMITIVES
+                    scope[vname] = {
+                        'type':         f"{jtype}[]",
+                        'value':        repr(raw_val),
+                        'raw':          raw_val,
+                        'is_primitive': False,
+                        'mem_addr':     self._mem_addr(vname, False),
+                        'is_changed':   True
+                    }
+                    changed_keys = [vname]
+
+                # ── PRIORITY 5: Primitive variable declaration ─────────────────────
+                elif m_decl and not m_out:
                     jtype, vname, vexpr = m_decl.groups()
-                    resolved = self.resolve_expr(vexpr, scope)
+                    if '[' in vexpr and ']' in vexpr:
+                        m_sub_a = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[\s*([^\]]+)\s*\]', vexpr)
+                        if m_sub_a:
+                            aname, idx_e = m_sub_a.groups()
+                            if aname in scope and scope[aname]['type'].endswith('[]'):
+                                idx_val = int(self.resolve_expr(idx_e, scope))
+                                raw_str = scope[aname]['raw']
+                                if raw_str.startswith('[') and raw_str.endswith(']'):
+                                    items = [x.strip() for x in raw_str[1:-1].split(',') if x.strip()]
+                                    if idx_val < 0 or idx_val >= len(items):
+                                        raise IndexError(f"java.lang.ArrayIndexOutOfBoundsException: Index {idx_val} out of bounds for length {len(items)}")
+                                    else:
+                                        resolved = items[idx_val].strip('"\'')
+                                else:
+                                    resolved = self.resolve_expr(vexpr, scope)
+                            else:
+                                resolved = self.resolve_expr(vexpr, scope)
+                        else:
+                            resolved = self.resolve_expr(vexpr, scope)
+                    else:
+                        resolved = self.resolve_expr(vexpr, scope)
                     scope[vname] = self.serialize(resolved, jtype, name=vname)
                     changed_keys = [vname]
 
-                # ── PRIORITY 5: Array declaration ──────────────────────────────────
-                elif not m_out:
-                    m_arr = re_arr_decl.match(stripped)
-                    if m_arr:
-                        jtype, vname, items_str = m_arr.groups()
-                        if items_str:
-                            items   = [x.strip() for x in items_str.split(',')]
-                            raw_val = f"[{', '.join(items)}]"
-                        else:
-                            raw_val = f"new {jtype}[]"
-                        is_prim = jtype in self.JAVA_PRIMITIVES
-                        scope[vname] = {
-                            'type':         f"{jtype}[]",
-                            'value':        repr(raw_val),
-                            'raw':          raw_val,
-                            'is_primitive': False,
-                            'mem_addr':     self._mem_addr(vname, False),
-                            'is_changed':   False
-                        }
-                        changed_keys = [vname]
-
-                    # ── PRIORITY 6: Reassignment (age = age + 1) ──────────────────
-                    elif not m_decl:
+                # ── PRIORITY 6: Reassignment (age = age + 1) ──────────────────
+                elif not m_decl:
                         m_assign = re_assign.match(stripped)
                         if m_assign:
                             vname, vexpr = m_assign.groups()
