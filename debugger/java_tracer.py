@@ -188,9 +188,10 @@ class JavaExecutionTracer:
         if cls_node is None:
             raise ValueError("No class found in source")
 
-        self.static_fields[self.main_class] = {}
         call_stack = []
-        self._init_static_fields(self.main_class, call_stack)
+        for cname in self.classes:
+            self.static_fields[cname] = {}
+            self._init_static_fields(cname, call_stack)
 
         main_method = self._find_method(self.main_class, 'main')
         if main_method is None:
@@ -525,6 +526,10 @@ class JavaExecutionTracer:
         except ReturnSignal as ret:
             ret_val = ret.value
         finally:
+            if instance_obj is not None:
+                for k in instance_obj.fields:
+                    if k in m_scope:
+                        instance_obj.fields[k] = m_scope[k]['_value']
             call_stack.pop()
             self._emit(lineno, f"end of {fn_name}", 'return', call_stack, m_scope, [], fn_name=fn_name, ret_val=ret_val)
 
@@ -631,16 +636,19 @@ class JavaExecutionTracer:
     def _eval_member_reference(self, node, scope, call_stack, class_name):
         base_name = node.member
         if node.qualifier:
-            base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
-            val = self._get_field(base, base_name)
+            if node.qualifier == 'this' and 'this' in scope and isinstance(scope['this']['_value'], JavaObject):
+                val = scope['this']['_value'].fields.get(base_name, NULL)
+            else:
+                base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
+                val = self._get_field(base, base_name)
         else:
             if base_name in scope:
                 val = scope[base_name]['_value']
-            elif base_name in self.static_fields.get(class_name, {}):
-                val = self.static_fields[class_name][base_name]['_value']
             elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
                     and base_name in scope['this']['_value'].fields:
                 val = scope['this']['_value'].fields[base_name]
+            elif base_name in self.static_fields.get(class_name, {}):
+                val = self.static_fields[class_name][base_name]['_value']
             else:
                 raise JavaException("Error", f"cannot find symbol: variable {base_name}")
         val = self._apply_selectors(val, node.selectors, scope, call_stack, class_name)
@@ -676,16 +684,19 @@ class JavaExecutionTracer:
 
     def _write_ref(self, node, scope, call_stack, class_name, value):
         if node.qualifier:
+            if node.qualifier == 'this' and 'this' in scope and isinstance(scope['this']['_value'], JavaObject):
+                scope['this']['_value'].fields[node.member] = value
+                return
             base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
             self._set_field(base, node.member, value)
             return
         name = node.member
-        if name in scope:
-            scope[name]['_value'] = value
-            scope[name]['is_changed'] = True
-        elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
+        if 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
                 and name in scope['this']['_value'].fields:
             scope['this']['_value'].fields[name] = value
+        elif name in scope:
+            scope[name]['_value'] = value
+            scope[name]['is_changed'] = True
         elif name in self.static_fields.get(class_name, {}):
             self.static_fields[class_name][name]['_value'] = value
             self.static_fields[class_name][name]['is_changed'] = True
@@ -710,10 +721,13 @@ class JavaExecutionTracer:
     def _get_field(self, base, field):
         if isinstance(base, JavaObject):
             return base.fields.get(field, NULL)
+        if isinstance(base, str):
+            if base in self.static_fields and field in self.static_fields[base]:
+                return self.static_fields[base][field]['_value']
+            if field == 'length':
+                return len(base)
         if isinstance(base, JavaArray) and field == 'length':
             return len(base.items)
-        if isinstance(base, str) and field == 'length':
-            return len(base)
         return NULL
 
     def _set_field(self, base, field, value):
@@ -1119,9 +1133,6 @@ class JavaExecutionTracer:
                 except ReturnSignal:
                     pass
                 call_stack.pop()
-                for k in obj.fields:
-                    if k in cscope:
-                        obj.fields[k] = cscope[k]['_value']
             return obj
 
         addr = self._new_obj_addr(cname)
