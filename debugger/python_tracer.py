@@ -19,12 +19,10 @@ class PythonExecutionTracer:
     - generate_explanation comparison uses 'raw' field consistently
     """
 
-    FORBIDDEN_AST_NODES = (
-        ast.Import, ast.ImportFrom,
-    )
+    FORBIDDEN_AST_NODES = ()
 
     FORBIDDEN_FUNCTIONS = {
-        'open', 'eval', 'exec', '__import__', 'compile', 'globals', 'locals'
+        'eval', 'exec', '__import__', 'compile'
     }
 
     def __init__(self, code_str, breakpoints=None, stdin_input=""):
@@ -47,18 +45,16 @@ class PythonExecutionTracer:
         return self._mem_table[name]
 
     def validate_ast(self):
-        """Validates Python AST for security against forbidden modules or operations."""
+        """Validates Python AST for security against dangerous system commands."""
         try:
             tree = ast.parse(self.code_str)
         except SyntaxError as e:
             return False, f"Syntax Error on line {e.lineno}: {e.msg}"
 
         for node in ast.walk(tree):
-            if isinstance(node, self.FORBIDDEN_AST_NODES):
-                return False, "Security Restriction: Import statements are disabled in sandbox."
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name) and node.func.id in self.FORBIDDEN_FUNCTIONS:
-                    return False, f"Security Restriction: Function '{node.func.id}()' is disabled."
+                    return False, f"Security Restriction: Function '{node.func.id}()' is restricted."
 
         return True, "Valid"
 

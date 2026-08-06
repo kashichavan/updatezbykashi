@@ -130,6 +130,30 @@ class JavaScriptExecutionTracer:
                 return str(len(self._parse_array_items(raw_arr)))
             return expr
 
+        # ── Built-in JS Math & Object methods ───────────────────────────────
+        if 'Math.' in expr:
+            if m_sqrt := re.search(r'Math\.sqrt\s*\(\s*(.*?)\s*\)', expr):
+                import math
+                val = math.sqrt(float(self.js_resolve(m_sqrt.group(1), scope)))
+                return str(int(val) if val.is_integer() else val)
+            if m_fl := re.search(r'Math\.floor\s*\(\s*(.*?)\s*\)', expr):
+                return str(int(float(self.js_resolve(m_fl.group(1), scope))))
+            if m_abs := re.search(r'Math\.abs\s*\(\s*(.*?)\s*\)', expr):
+                return str(abs(float(self.js_resolve(m_abs.group(1), scope))))
+            if m_pow := re.search(r'Math\.pow\s*\(\s*(.*?)\s*,\s*(.*?)\s*\)', expr):
+                b = float(self.js_resolve(m_pow.group(1), scope))
+                p = float(self.js_resolve(m_pow.group(2), scope))
+                return str(int(b**p) if (b**p).is_integer() else b**p)
+            if 'Math.random()' in expr:
+                return "0.42"
+
+        if '.toUpperCase()' in expr:
+            vname = expr.split('.toUpperCase()')[0].strip()
+            return self.js_resolve(vname, scope).upper()
+        if '.toLowerCase()' in expr:
+            vname = expr.split('.toLowerCase()')[0].strip()
+            return self.js_resolve(vname, scope).lower()
+
         # ── Variable lookup ────────────────────────────────────────────────
         if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
             return scope.get(expr, {}).get('raw', expr)
