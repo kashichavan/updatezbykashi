@@ -270,25 +270,177 @@ class JavaExecutionTracer:
             if re.match(r'^(?:public|private|protected|static)\s+', bline) and '(' in bline:
                 continue
 
-            # Nested return call assignment: int res = add(a, b);
-            m_ret = re_call_ret.match(bline)
-            if m_ret:
-                tgt_var, sub_fn, sub_args_str = m_ret.groups()
-                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
-                sub_res = self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
-                                           re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
-                type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', bline)
-                jtype = type_m.group(1) if type_m else (local_scope[tgt_var]['type'] if tgt_var in local_scope else 'int')
-                local_scope[tgt_var] = self.serialize(sub_res, jtype, name=tgt_var)
-                continue
+            # Support for-loop unrolling inside static method
+            if bline.startswith('for ') or bline.startswith('for('):
+                m_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*;\s*(.+?)\)', bline)
+                if m_for:
+                    vname, start_val, op, end_val_raw, incr_expr = m_for.groups()
+                    start_i = int(start_val)
+                    end_i   = int(self.resolve_expr(end_val_raw, local_scope))
+                    hdr_lineno = body_lineno - 1
 
-            # Nested plain call: add(a, b);
-            m_plain = re_call2.match(bline)
-            if m_plain:
-                sub_fn, sub_args_str = m_plain.groups()
-                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
-                self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
-                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
+                    loop_body_lines = []
+                    loop_brace = bline.count('{') - bline.count('}')
+                    curr_idx = body_lineno
+                    while curr_idx < fn_info['end'] and loop_brace > 0:
+                        b_line = self.lines[curr_idx - 1].strip()
+                        curr_idx += 1
+                        loop_brace += b_line.count('{') - b_line.count('}')
+                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                            loop_body_lines.append((curr_idx - 1, b_line))
+
+                    step_val = -1 if ('--' in incr_expr or '-=' in incr_expr) else 1
+                    if op == '<=': iter_range = range(start_i, end_i + 1, step_val)
+                    elif op == '<': iter_range = range(start_i, end_i, step_val)
+                    elif op == '>=': iter_range = range(start_i, end_i - 1, step_val)
+                    elif op == '>': iter_range = range(start_i, end_i, step_val)
+                    else: iter_range = range(start_i, end_i + 1, step_val)
+
+                    for iter_val in list(iter_range)[:50]:
+                        local_scope[vname] = self.serialize(iter_val, 'int', name=vname)
+                        local_scope[vname]['is_changed'] = True
+                        expl_hdr = f"🔄 Loop iteration {vname} = {iter_val}"
+                        self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
+
+                        for b_lineno, b_line_str in loop_body_lines:
+                            m_out = re_println.match(b_line_str)
+                            if m_out:
+                                arg = m_out.group(1).strip()
+                                output = self.resolve_expr(arg, local_scope)
+                                self.stdout_lines.append(f"[JVM] {output}")
+                            elif re_assign.match(b_line_str):
+                                m_a = re_assign.match(b_line_str)
+                                vn, ve = m_a.groups()
+                                if vn in local_scope:
+                                    res_val = self.resolve_expr(ve, local_scope)
+                                    local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
+                                    local_scope[vn]['is_changed'] = True
+                            elif b_line_str.endswith('++') or b_line_str.endswith('--'):
+                                vn = b_line_str.rstrip(';+- ').strip()
+                                if vn in local_scope:
+                                    delta = 1 if '++' in b_line_str else -1
+                                    cur = int(local_scope[vn]['raw'])
+                                    local_scope[vn] = self.serialize(cur + delta, local_scope[vn]['type'], name=vn)
+                                    local_scope[vn]['is_changed'] = True
+
+                            for k in local_scope: local_scope[k]['is_changed'] = (k == vname or k in (b_line_str,))
+                            expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
+                            self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
+
+                    body_lineno = curr_idx
+                    continue
+
+            # Support while loop unrolling inside static method
+            if bline.startswith('while ') or bline.startswith('while('):
+                m_w = re.search(r'while\s*\(\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(<=|<|>=|>|!=)\s*(\d+|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', bline)
+                if m_w:
+                    vname, op, end_val_raw = m_w.groups()
+                    hdr_lineno = body_lineno - 1
+
+                    loop_body_lines = []
+                    loop_brace = bline.count('{') - bline.count('}')
+                    curr_idx = body_lineno
+                    while curr_idx < fn_info['end'] and loop_brace > 0:
+                        b_line = self.lines[curr_idx - 1].strip()
+                        curr_idx += 1
+                        loop_brace += b_line.count('{') - b_line.count('}')
+                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                            loop_body_lines.append((curr_idx - 1, b_line))
+
+                    for _ in range(50):
+                        if vname not in local_scope: break
+                        cur_i = int(local_scope[vname]['raw'])
+                        end_i = int(self.resolve_expr(end_val_raw, local_scope))
+                        cond = (cur_i <= end_i) if op == '<=' else (cur_i < end_i) if op == '<' else (cur_i >= end_i) if op == '>=' else (cur_i > end_i) if op == '>' else (cur_i != end_i)
+                        if not cond: break
+
+                        expl_hdr = f"🔄 While iteration {vname} = {cur_i}"
+                        self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
+
+                        for b_lineno, b_line_str in loop_body_lines:
+                            m_out = re_println.match(b_line_str)
+                            if m_out:
+                                arg = m_out.group(1).strip()
+                                output = self.resolve_expr(arg, local_scope)
+                                self.stdout_lines.append(f"[JVM] {output}")
+                            elif re_assign.match(b_line_str):
+                                m_a = re_assign.match(b_line_str)
+                                vn, ve = m_a.groups()
+                                if vn in local_scope:
+                                    res_val = self.resolve_expr(ve, local_scope)
+                                    local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
+                                    local_scope[vn]['is_changed'] = True
+                            elif b_line_str.endswith('++') or b_line_str.endswith('--') or '++' in b_line_str or '--' in b_line_str:
+                                vn = b_line_str.rstrip(';+- ').strip()
+                                if vn in local_scope:
+                                    delta = 1 if '++' in b_line_str else -1
+                                    cur = int(local_scope[vn]['raw'])
+                                    local_scope[vn] = self.serialize(cur + delta, local_scope[vn]['type'], name=vn)
+                                    local_scope[vn]['is_changed'] = True
+
+                            expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
+                            self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
+
+                    body_lineno = curr_idx
+                    continue
+
+            # Support do-while loop unrolling inside static method
+            if bline.startswith('do ') or bline.startswith('do{'):
+                hdr_lineno = body_lineno - 1
+                loop_body_lines = []
+                loop_brace = bline.count('{') - bline.count('}')
+                curr_idx = body_lineno
+                while_line_str = ""
+                while curr_idx < fn_info['end'] and loop_brace >= 0:
+                    b_line = self.lines[curr_idx - 1].strip()
+                    curr_idx += 1
+                    if 'while' in b_line and '(' in b_line and ')' in b_line:
+                        while_line_str = b_line
+                        break
+                    loop_brace += b_line.count('{') - b_line.count('}')
+                    if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                        loop_body_lines.append((curr_idx - 1, b_line))
+
+                m_dw = re.search(r'while\s*\(\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(<=|<|>=|>|!=)\s*(\d+|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', while_line_str)
+                vname = m_dw.group(1) if m_dw else 'i'
+                op = m_dw.group(2) if m_dw else '<='
+                end_val_raw = m_dw.group(3) if m_dw else '5'
+
+                for _ in range(50):
+                    if vname not in local_scope: break
+                    cur_i = int(local_scope[vname]['raw'])
+                    end_i = int(self.resolve_expr(end_val_raw, local_scope))
+                    cond = (cur_i <= end_i) if op == '<=' else (cur_i < end_i) if op == '<' else (cur_i >= end_i) if op == '>=' else (cur_i > end_i) if op == '>' else (cur_i != end_i)
+                    if not cond: break
+
+                    expl_hdr = f"🔄 Do-While iteration {vname} = {cur_i}"
+                    self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
+
+                    for b_lineno, b_line_str in loop_body_lines:
+                        m_out = re_println.match(b_line_str)
+                        if m_out:
+                            arg = m_out.group(1).strip()
+                            output = self.resolve_expr(arg, local_scope)
+                            self.stdout_lines.append(f"[JVM] {output}")
+                        elif re_assign.match(b_line_str):
+                            m_a = re_assign.match(b_line_str)
+                            vn, ve = m_a.groups()
+                            if vn in local_scope:
+                                res_val = self.resolve_expr(ve, local_scope)
+                                local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
+                                local_scope[vn]['is_changed'] = True
+                        elif b_line_str.endswith('++') or b_line_str.endswith('--') or '++' in b_line_str or '--' in b_line_str:
+                            vn = b_line_str.rstrip(';+- ').strip()
+                            if vn in local_scope:
+                                delta = 1 if '++' in b_line_str else -1
+                                cur = int(local_scope[vn]['raw'])
+                                local_scope[vn] = self.serialize(cur + delta, local_scope[vn]['type'], name=vn)
+                                local_scope[vn]['is_changed'] = True
+
+                        expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
+                        self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
+
+                body_lineno = curr_idx
                 continue
 
             # System.out.println
@@ -309,7 +461,7 @@ class JavaExecutionTracer:
                 self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [bname])
                 continue
 
-            # Reassignment
+            # Reassignment / Unary ++ / --
             ba = re_assign.match(bline)
             if ba:
                 rname, rexpr = ba.groups()
@@ -318,6 +470,36 @@ class JavaExecutionTracer:
                     rval = self.resolve_expr(rexpr, local_scope)
                     local_scope[rname] = self.serialize(rval, rtype, name=rname)
                     self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [rname])
+                continue
+            elif bline.endswith('++') or bline.endswith('--'):
+                rname = bline.rstrip(';+- ').strip()
+                if rname in local_scope:
+                    rtype = local_scope[rname]['type']
+                    delta = 1 if '++' in bline else -1
+                    rval = str(int(local_scope[rname]['raw']) + delta)
+                    local_scope[rname] = self.serialize(rval, rtype, name=rname)
+                    self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [rname])
+                continue
+
+            # Nested return call assignment: int res = add(a, b);
+            m_ret = re_call_ret.match(bline)
+            if m_ret:
+                tgt_var, sub_fn, sub_args_str = m_ret.groups()
+                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
+                sub_res = self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
+                                           re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
+                type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', bline)
+                jtype = type_m.group(1) if type_m else (local_scope[tgt_var]['type'] if tgt_var in local_scope else 'int')
+                local_scope[tgt_var] = self.serialize(sub_res, jtype, name=tgt_var)
+                continue
+
+            # Nested plain call: add(a, b);
+            m_plain = re_call2.match(bline)
+            if m_plain:
+                sub_fn, sub_args_str = m_plain.groups()
+                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
+                self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
+                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
                 continue
 
             # Return statement
