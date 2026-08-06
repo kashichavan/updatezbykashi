@@ -24,7 +24,10 @@ let currentFontSize      = 14;
 /* ─────────────────────────────────────────────────────────────────
    MOBILE BLOCKER DISMISS HANDLERS (close button & backdrop click)
 ───────────────────────────────────────────────────────────────── */
-function dismissMobileBlocker() {
+window.dismissMobileBlocker = function(event) {
+  if (event) {
+    try { event.stopPropagation(); } catch (e) {}
+  }
   try {
     sessionStorage.setItem('mobile_blocker_dismissed', 'true');
   } catch (e) {}
@@ -32,11 +35,12 @@ function dismissMobileBlocker() {
   const blocker = document.getElementById('mobileBlocker');
   if (blocker) {
     blocker.classList.add('hidden');
-    setTimeout(() => {
-      blocker.style.setProperty('display', 'none', 'important');
-    }, 300);
+    blocker.style.setProperty('display', 'none', 'important');
+    blocker.style.setProperty('visibility', 'hidden', 'important');
+    blocker.style.setProperty('opacity', '0', 'important');
+    blocker.style.setProperty('pointer-events', 'none', 'important');
   }
-}
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   try {

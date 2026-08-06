@@ -17,15 +17,15 @@
 {% block content %}
 
 <!-- ── MOBILE BLOCKER OVERLAY CARD ── -->
-<div class="mobile-blocker" id="mobileBlocker">
-  <div class="dbg-blocker-card">
-    <button class="dbg-blocker-close" id="btnBlockerClose" title="Close warning">✕</button>
+<div class="mobile-blocker" id="mobileBlocker" onclick="dismissMobileBlocker(event)" ontouchstart="dismissMobileBlocker(event)">
+  <div class="dbg-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+    <button class="dbg-blocker-close" id="btnBlockerClose" onclick="dismissMobileBlocker(event)" ontouchstart="dismissMobileBlocker(event)" title="Close warning">✕</button>
     <div class="dbg-blocker-icon-wrap">
       <span class="dbg-blocker-emoji">🖥️</span>
     </div>
     <h2 class="dbg-blocker-title">Desktop Recommended</h2>
     <p class="dbg-blocker-sub">
-      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> is designed for desktop & laptop screens.
+      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> is designed for desktop &amp; laptop screens.
     </p>
 
     <div class="dbg-blocker-browsers">
@@ -39,7 +39,7 @@
       📋 Open <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong> on your computer PC.
     </p>
 
-    <button class="dbg-blocker-dismiss-btn" id="btnBlockerContinue">
+    <button class="dbg-blocker-dismiss-btn" id="btnBlockerContinue" onclick="dismissMobileBlocker(event)" ontouchstart="dismissMobileBlocker(event)">
       Continue on Mobile IDE →
     </button>
   </div>
