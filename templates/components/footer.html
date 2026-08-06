@@ -36,9 +36,9 @@
     <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" alt="YouTube" width="22" height="22" decoding="async">
     <span>YouTube</span>
   </a>
-  <a href="#" class="mobile-nav-item" onclick="showDebuggerMobilePopup(); return false;" style="color:#2563eb;">
-    <img src="{% static 'images/icon-apply.png' %}" class="mobile-nav-icon" alt="Debugger" width="22" height="22" decoding="async" style="filter: hue-rotate(200deg) saturate(2) brightness(0.85);">
-    <span style="color:#2563eb; font-weight:700;">Debugger</span>
+  <a href="/debugger/" class="mobile-nav-item {% if '/debugger' in request.path %}active{% endif %}">
+    <img src="{% static 'images/icon-apply.png' %}" class="mobile-nav-icon" alt="Debugger" width="22" height="22" decoding="async">
+    <span>Debugger</span>
   </a>
 </nav>
 
