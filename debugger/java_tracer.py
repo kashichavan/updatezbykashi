@@ -1103,7 +1103,10 @@ class JavaExecutionTracer:
             for member in cls_node.body:
                 if isinstance(member, javalang.tree.FieldDeclaration) and 'static' not in (member.modifiers or []):
                     for decl in member.declarators:
-                        obj.fields[decl.name] = self._default_value(member.type)
+                        if decl.initializer is not None:
+                            obj.fields[decl.name] = self.eval_expr(decl.initializer, scope, call_stack, class_name)
+                        else:
+                            obj.fields[decl.name] = self._default_value(member.type)
             ctor = self._find_constructor(cname, len(args))
             if ctor:
                 cscope = {}
@@ -1119,11 +1122,6 @@ class JavaExecutionTracer:
                 for k in obj.fields:
                     if k in cscope:
                         obj.fields[k] = cscope[k]['_value']
-            elif len(cls_node.body) and any(isinstance(m, javalang.tree.FieldDeclaration) for m in cls_node.body):
-                field_names = [d.name for m in cls_node.body if isinstance(m, javalang.tree.FieldDeclaration)
-                               and 'static' not in (m.modifiers or []) for d in m.declarators]
-                for fname, a in zip(field_names, args):
-                    obj.fields[fname] = a
             return obj
 
         addr = self._new_obj_addr(cname)
