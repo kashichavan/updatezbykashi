@@ -877,6 +877,86 @@ class JavaExecutionTracer:
                     self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_else)
                     continue
 
+            # ── Control Flow: Try-Catch-Finally Execution ────────────────────
+            if stripped.startswith('try') or stripped.startswith('try {'):
+                hdr_lineno = i - 1
+                try_body_lines = []
+                catch_var_name = 'e'
+                catch_body_lines = []
+                finally_body_lines = []
+                has_exception = False
+                exception_obj = "java.lang.ArithmeticException: / by zero"
+
+                curr_idx = i
+                section = 'try'
+
+                while curr_idx < main_end:
+                    b_line = self.lines[curr_idx - 1].strip()
+                    curr_idx += 1
+                    if b_line.startswith('catch') or '} catch' in b_line:
+                        section = 'catch'
+                        m_cvar = re.search(r'catch\s*\(\s*(?:Exception|[a-zA-Z_$][a-zA-Z0-9_$]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', b_line)
+                        if m_cvar: catch_var_name = m_cvar.group(1)
+                        continue
+                    elif b_line.startswith('finally') or '} finally' in b_line:
+                        section = 'finally'
+                        continue
+                    elif b_line in ('}', '};') and section == 'finally':
+                        break
+
+                    if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                        if section == 'try':
+                            try_body_lines.append((curr_idx - 1, b_line))
+                            if '/ 0' in b_line or '/0' in b_line:
+                                has_exception = True
+                        elif section == 'catch':
+                            catch_body_lines.append((curr_idx - 1, b_line))
+                        elif section == 'finally':
+                            finally_body_lines.append((curr_idx - 1, b_line))
+
+                # Emit try header
+                self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [], explanation="🛡️ Entering try block")
+
+                # Try body lines
+                for b_lineno, b_line in try_body_lines:
+                    if '/ 0' in b_line or '/0' in b_line:
+                        self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation="⚠️ Exception thrown: java.lang.ArithmeticException: / by zero")
+                        break
+                    else:
+                        m_out = re_println.match(b_line)
+                        if m_out:
+                            arg = m_out.group(1).strip()
+                            output = self.resolve_expr(arg, scope)
+                            self.stdout_lines.append(f"[JVM] {output}")
+                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [])
+
+                # Catch block execution if exception occurred
+                if has_exception:
+                    scope[catch_var_name] = self.serialize(exception_obj, 'Exception', name=catch_var_name)
+                    scope[catch_var_name]['is_changed'] = True
+                    for b_lineno, b_line in catch_body_lines:
+                        m_out = re_println.match(b_line)
+                        if m_out:
+                            arg = m_out.group(1).strip()
+                            output = self.resolve_expr(arg, scope)
+                            self.stdout_lines.append(f"[JVM] {output}")
+                        for k in scope: scope[k]['is_changed'] = (k == catch_var_name)
+                        expl = self.explain('line', b_lineno, b_line, scope, [catch_var_name])
+                        self._emit(b_lineno, b_line, 'line', call_stack, scope, [catch_var_name], explanation=expl)
+
+                # Finally block execution always
+                for b_lineno, b_line in finally_body_lines:
+                    m_out = re_println.match(b_line)
+                    if m_out:
+                        arg = m_out.group(1).strip()
+                        output = self.resolve_expr(arg, scope)
+                        self.stdout_lines.append(f"[JVM] {output}")
+                    expl = self.explain('line', b_lineno, b_line, scope, [])
+                    self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=expl)
+
+                i = curr_idx
+                continue
+
             # Skip blanks, braces, comments, import statements, keywords & structure declarations
             if (not stripped
                     or stripped in ('{', '}', '};', 'try {', 'try', 'finally', 'finally {', 'break;', 'default:')
