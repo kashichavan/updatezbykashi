@@ -100,6 +100,15 @@ class JavaExecutionTracer:
         if expr.startswith("'") and expr.endswith("'") and len(expr) == 3:
             return expr[1]
 
+        # Java Scanner simulated inputs
+        if re.search(r'\.(?:next|nextInt|nextLine|nextDouble|nextFloat|nextLong|nextBoolean)\s*\(\s*\)', expr):
+            if 'nextInt' in expr: return "10"
+            if 'nextDouble' in expr: return "99.5"
+            if 'nextFloat' in expr: return "12.5"
+            if 'nextLong' in expr: return "1000"
+            if 'nextBoolean' in expr: return "true"
+            return "Kashi"
+
         # Plain variable reference
         if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
             return scope.get(expr, {}).get('raw', expr)
@@ -676,12 +685,14 @@ class JavaExecutionTracer:
                     i = curr_idx
                     continue
 
-            # Skip blanks, braces, comments, class/method declarations
+            # Skip blanks, braces, comments, import statements, class/method declarations
             if (not stripped
                     or stripped in ('{', '}', '};')
                     or stripped.startswith('//')
                     or stripped.startswith('/*')
                     or stripped.startswith('*')
+                    or stripped.startswith('import ')
+                    or stripped.startswith('package ')
                     or stripped.startswith('public class')
                     or stripped.startswith('class ')
                     or stripped.startswith('while ')
