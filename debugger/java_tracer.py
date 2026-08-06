@@ -113,6 +113,18 @@ class JavaExecutionTracer:
             if 'nextBoolean' in expr: return "true"
             return "Kashi"
 
+        # Java method calls on object instances (s.getName() -> field value)
+        m_getter = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\.get([a-zA-Z0-9_$]+)\s*\(\s*\)$', expr)
+        if m_getter:
+            obj_var, prop_name = m_getter.groups()
+            if obj_var in scope:
+                raw_obj = scope[obj_var].get('raw', '')
+                prop_lower = prop_name.lower()
+                # Check for pattern Student{name: 'Kashi'}
+                m_prop = re.search(re.escape(prop_lower) + r":\s*'([^']+)'", raw_obj, re.IGNORECASE)
+                if m_prop:
+                    return m_prop.group(1)
+
         # Plain variable reference
         if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
             return scope.get(expr, {}).get('raw', expr)
