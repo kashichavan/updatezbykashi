@@ -27,18 +27,18 @@ let currentFontSize      = 14;
 function dismissMobileBlocker() {
   const blocker = document.getElementById('mobileBlocker');
   if (blocker) {
-    blocker.style.display = 'none';
+    blocker.classList.add('dismissed');
+    blocker.style.setProperty('display', 'none', 'important');
   }
   const appWrap = document.querySelector('.debugger-app-wrap');
   if (appWrap) {
+    appWrap.classList.add('mobile-active');
     appWrap.style.setProperty('display', 'flex', 'important');
   }
 }
 
 function closeMobileBlocker(event) {
-  if (event && event.target && event.target.id === 'mobileBlocker') {
-    dismissMobileBlocker();
-  }
+  dismissMobileBlocker();
 }
 
 /* ─────────────────────────────────────────────────────────────────
