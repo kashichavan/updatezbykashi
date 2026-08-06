@@ -17,6 +17,15 @@ Design goals vs. the old regex engine:
 """
 
 import javalang
+from javalang.tree import (
+    ClassDeclaration, MethodDeclaration, FieldDeclaration,
+    LocalVariableDeclaration, VariableDeclarator, ClassCreator,
+    MethodInvocation, Assignment, IfStatement, ForStatement,
+    WhileStatement, ReturnStatement, BinaryOperation, Literal,
+    MemberReference, ConstructorDeclaration, StatementExpression,
+    BlockStatement, TryStatement, ArrayInitializer, ArrayCreator,
+    Cast, TernaryExpression, This, ArraySelector
+)
 import re
 
 
