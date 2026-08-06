@@ -700,6 +700,9 @@ class JavaExecutionTracer:
         re_prim_decl = re.compile(
             r'^(int|double|float|long|short|byte|char|boolean|String)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$'
         )
+        re_uninit_decl = re.compile(
+            r'^(int|double|float|long|short|byte|char|boolean|String)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*;?$'
+        )
         re_arr_decl = re.compile(
             r'^(int|double|String|long|float)\[\]\s+([a-zA-Z_$][a-zA-Z0-9_$]*)'
             r'\s*=\s*(?:new\s+[a-zA-Z0-9_$.<>]+\s*\[\s*\d*\s*\]|\{([^}]*)\});?$'
@@ -1176,6 +1179,12 @@ class JavaExecutionTracer:
                         resolved = self.resolve_expr(vexpr, scope)
                     scope[vname] = self.serialize(resolved, jtype, name=vname)
                     changed_keys = [vname]
+
+                # ── PRIORITY 5B: Uninitialized local variable check (double gpa;) ───
+                elif re_uninit_decl.match(stripped) and not m_out:
+                    m_un = re_uninit_decl.match(stripped)
+                    jtype, vname = m_un.groups()
+                    raise SyntaxError(f"java.lang.Error: Unresolved compilation problem: variable '{vname}' might not have been initialized")
 
                 # ── PRIORITY 6: Reassignment (age = age + 1) ──────────────────
                 elif not m_decl:
