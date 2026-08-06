@@ -147,14 +147,18 @@ class JavaExecutionTracer:
             if obj_var in scope:
                 raw_obj = scope[obj_var].get('raw', '')
                 prop_lower = prop_name.lower()
-                # Check for pattern Student{name: 'Kashi'}
                 m_prop = re.search(re.escape(prop_lower) + r":\s*'([^']+)'", raw_obj, re.IGNORECASE)
                 if m_prop:
                     return m_prop.group(1)
 
         # Plain variable reference
         if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
-            return scope.get(expr, {}).get('raw', expr)
+            if expr in scope:
+                raw_val = scope[expr].get('raw', expr)
+                if m_inner := re.search(r"'(.*?)'", str(raw_val)):
+                    return m_inner.group(1)
+                return str(raw_val)
+            return expr
 
         # ── Tokenise the expression respecting quoted strings ─────────────────
         # Split on + but keep quoted string parts intact
