@@ -115,6 +115,11 @@ def _display(val):
         return val
     if isinstance(val, float):
         return f"{val:.1f}" if val == int(val) and abs(val) < 1e15 else str(val)
+    if isinstance(val, set):
+        return "[" + ", ".join(_display(x) for x in sorted(val, key=lambda x: str(x))) + "]"
+    if isinstance(val, dict):
+        inner = ", ".join(f"{_display(k)}={_display(v)}" for k, v in val.items())
+        return f"{{{inner}}}"
     return str(val)
 
 
@@ -1061,10 +1066,17 @@ class JavaExecutionTracer:
             return self._math_call(node.member, args)
         if node.qualifier in ('String',) and node.member == 'valueOf':
             return _display(args[0])
-        if node.qualifier in ('Arrays',) and node.member == 'asList':
-            return JavaArray('Object', list(args))
-        if node.qualifier in ('Arrays',) and node.member == 'toString':
-            return _display(args[0]) if not isinstance(args[0], JavaArray) else repr(args[0])
+        if node.qualifier == 'Collections':
+            if node.member == 'sort' and args:
+                target_arr = args[0]
+                if isinstance(target_arr, JavaArray):
+                    target_arr.items.sort()
+                return NULL
+            if node.member == 'reverse' and args:
+                target_arr = args[0]
+                if isinstance(target_arr, JavaArray):
+                    target_arr.items.reverse()
+                return NULL
 
         if node.qualifier:
             if node.qualifier in self.classes:
@@ -1098,20 +1110,63 @@ class JavaExecutionTracer:
         if isinstance(base, str):
             return self._string_method(base, member, args)
         if isinstance(base, JavaArray):
-            if member == 'length':
+            if member in ('length', 'size'):
                 return len(base.items)
             if member == 'get':
                 return self._array_get(base, args[0])
-            if member == 'add':
+            if member in ('add', 'push'):
                 base.items.append(args[0])
-                return NULL
-            if member == 'size':
-                return len(base.items)
+                return True if member == 'add' else args[0]
+            if member in ('remove', 'delete'):
+                if args and args[0] in base.items:
+                    base.items.remove(args[0])
+                    return True
+                if args and isinstance(args[0], int) and 0 <= args[0] < len(base.items):
+                    return base.items.pop(args[0])
+                return False
+            if member == 'contains':
+                return args[0] in base.items if args else False
+            if member == 'pop':
+                return base.items.pop() if base.items else NULL
+            if member == 'poll':
+                return base.items.pop(0) if base.items else NULL
             if member == 'set':
                 self._array_set(base, args[0], args[1])
                 return NULL
             if member == 'toString':
                 return repr(base)
+        if isinstance(base, set):
+            if member == 'add':
+                base.add(args[0])
+                return True
+            if member == 'remove':
+                base.discard(args[0])
+                return True
+            if member in ('size', 'length'):
+                return len(base)
+            if member == 'contains':
+                return args[0] in base
+            if member == 'toString':
+                return "[" + ", ".join(_display(x) for x in sorted(base, key=lambda x: str(x))) + "]"
+        if isinstance(base, dict):
+            if member == 'put':
+                base[args[0]] = args[1]
+                return NULL
+            if member == 'get':
+                return base.get(args[0], NULL)
+            if member == 'remove':
+                return base.pop(args[0], NULL)
+            if member in ('size', 'length'):
+                return len(base)
+            if member == 'containsKey':
+                return args[0] in base
+            if member == 'keySet':
+                return JavaArray('Object', list(base.keys()))
+            if member == 'values':
+                return JavaArray('Object', list(base.values()))
+            if member == 'toString':
+                inner = ", ".join(f"{_display(k)}={_display(v)}" for k, v in base.items())
+                return f"{{{inner}}}"
         if isinstance(base, JavaObject):
             if member == 'getMessage' or member == 'toString':
                 return base.fields.get('__message__', repr(base))
@@ -1197,8 +1252,10 @@ class JavaExecutionTracer:
         cname = node.type.name
         args = [self.eval_expr(a, scope, call_stack, class_name) for a in node.arguments]
 
-        if cname in ('ArrayList', 'LinkedList', 'List'):
+        if cname in ('ArrayList', 'LinkedList', 'List', 'Stack', 'Queue'):
             return JavaArray('Object', [])
+        if cname in ('HashSet', 'TreeSet', 'Set'):
+            return set()
         if cname in ('HashMap', 'TreeMap', 'Map'):
             return {}
         if cname == 'StringBuilder':
