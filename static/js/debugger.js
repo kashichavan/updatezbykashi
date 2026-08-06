@@ -607,10 +607,11 @@ function applyInlineValueHints(upToIdx) {
 
     const hints = [];
 
-    // 1. Condition evaluation check hints
-    if (s.ai_explanation && (s.ai_explanation.includes('❓') || s.ai_explanation.includes('Checking'))) {
-      let condText = s.ai_explanation;
-      if (condText.length > 70) condText = condText.slice(0, 68) + '…';
+    // 1. Condition evaluation check hints (exact: (10 > 20) ➔ FALSE or (0 <= 3) ➔ TRUE)
+    if (s.ai_explanation && s.ai_explanation.includes('❓')) {
+      let condText = s.ai_explanation.replace(/^❓\s*(Condition|Loop Condition)\s*/, '');
+      condText = condText.replace(/^if\s*\(/i, '(').replace(/\s*\{$/,'');
+      if (condText.length > 55) condText = condText.slice(0, 53) + '…';
       hints.push({ text: condText, changed: true, isCond: true });
     }
 

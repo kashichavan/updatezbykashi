@@ -346,6 +346,30 @@ class JavaExecutionTracer:
             'ai_explanation': explanation,
         })
 
+    def _substitute_cond_values(self, text, scope):
+        if not text or not scope:
+            return text
+        sub = text
+        # If it's a for-loop line, target only the comparison expression between semicolons
+        if 'for' in sub and ';' in sub:
+            parts = sub.split(';')
+            if len(parts) >= 2:
+                cond_part = parts[1]
+                for var_name, data in sorted(scope.items(), key=lambda x: len(x[0]), reverse=True):
+                    if var_name.startswith('__') or var_name == 'this':
+                        continue
+                    val_str = _display(data.get('_value'))
+                    cond_part = re.sub(r'\b' + re.escape(var_name) + r'\b', val_str, cond_part)
+                return cond_part.strip()
+        
+        # General if / while / do-while condition substitution
+        for var_name, data in sorted(scope.items(), key=lambda x: len(x[0]), reverse=True):
+            if var_name.startswith('__') or var_name == 'this':
+                continue
+            val_str = _display(data.get('_value'))
+            sub = re.sub(r'\b' + re.escape(var_name) + r'\b', val_str, sub)
+        return sub.strip()
+
     def _explain(self, event, line_text, scope, changed, fn_name=None, ret_val=None):
         if event == 'call':
             return f"📞 Called method '{fn_name}()' → JVM pushed a new Stack Frame onto the Call Stack."
@@ -397,9 +421,11 @@ class JavaExecutionTracer:
 
         elif t == 'IfStatement':
             cond = self.eval_expr(node.condition, scope, call_stack, class_name)
+            is_true = self._truthy(cond)
+            sub_expr = self._substitute_cond_values(line_text, scope)
             self._emit(lineno, line_text, 'line', call_stack, scope, [],
-                       explanation=f"❓ Evaluating condition '{line_text}' ➔ {'TRUE' if self._truthy(cond) else 'FALSE'}")
-            if self._truthy(cond):
+                       explanation=f"❓ Condition ({sub_expr}) ➔ {'TRUE' if is_true else 'FALSE'}")
+            if is_true:
                 if isinstance(node.then_statement, list):
                     self._exec_block(node.then_statement, scope, call_stack, class_name)
                 else:
@@ -444,8 +470,9 @@ class JavaExecutionTracer:
                     if node.control and node.control.condition:
                         cond = self.eval_expr(node.control.condition, scope, call_stack, class_name)
                         is_true = self._truthy(cond)
+                        sub_expr = self._substitute_cond_values(line_text, scope)
                         self._emit(lineno, line_text, 'line', call_stack, scope, [],
-                                   explanation=f"❓ Checking loop condition '{line_text}' ➔ {'TRUE (Continuing loop)' if is_true else 'FALSE (Exiting loop)'}")
+                                   explanation=f"❓ Loop Condition ({sub_expr}) ➔ {'TRUE' if is_true else 'FALSE'}")
                         if not is_true:
                             break
                     else:
@@ -466,8 +493,9 @@ class JavaExecutionTracer:
             while True:
                 cond = self.eval_expr(node.condition, scope, call_stack, class_name)
                 is_true = self._truthy(cond)
+                sub_expr = self._substitute_cond_values(line_text, scope)
                 self._emit(lineno, line_text, 'line', call_stack, scope, [],
-                           explanation=f"❓ Checking while condition '{line_text}' ➔ {'TRUE (Looping)' if is_true else 'FALSE (Loop ended)'}")
+                           explanation=f"❓ Loop Condition ({sub_expr}) ➔ {'TRUE' if is_true else 'FALSE'}")
                 if not is_true:
                     break
                 try:
@@ -490,8 +518,9 @@ class JavaExecutionTracer:
                     break
                 cond = self.eval_expr(node.condition, scope, call_stack, class_name)
                 is_true = self._truthy(cond)
+                sub_expr = self._substitute_cond_values(line_text, scope)
                 self._emit(lineno, line_text, 'line', call_stack, scope, [],
-                           explanation=f"❓ Checking do-while condition '{line_text}' ➔ {'TRUE (Looping)' if is_true else 'FALSE (Loop ended)'}")
+                           explanation=f"❓ Loop Condition ({sub_expr}) ➔ {'TRUE' if is_true else 'FALSE'}")
                 if not is_true:
                     break
 
