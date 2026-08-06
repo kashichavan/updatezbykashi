@@ -713,9 +713,68 @@ class JavaExecutionTracer:
                     i = curr_idx
                     continue
 
+            # ── Control Flow: If / Else Branching ─────────────────────────────
+            if stripped.startswith('if ') or stripped.startswith('if(') or stripped.startswith('else if'):
+                m_cond = re.search(r'if\s*\((.*?)\)', stripped)
+                cond_val = True
+                if m_cond:
+                    cond_str = m_cond.group(1).strip()
+                    resolved_cond = self.resolve_expr(cond_str, scope)
+                    try:
+                        cond_val = bool(eval(resolved_cond, {"__builtins__": {}}))
+                    except Exception:
+                        cond_val = 'true' in str(resolved_cond).lower()
+
+                expl_if = f"❓ Evaluating condition '{stripped}' ➔ {'TRUE (taking IF branch)' if cond_val else 'FALSE (skipping to ELSE)'}"
+                self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_if)
+
+                if not cond_val:
+                    # Skip IF body lines to jump straight to ELSE / ELSE IF
+                    brace_cnt = stripped.count('{') - stripped.count('}')
+                    if brace_cnt == 0 and i < main_end and '{' in self.lines[i - 1]:
+                        brace_cnt = 1
+                    while i < main_end and brace_cnt > 0:
+                        b_line = self.lines[i - 1].strip()
+                        i += 1
+                        brace_cnt += b_line.count('{') - b_line.count('}')
+                continue
+
+            if stripped.startswith('else') or stripped.startswith('} else'):
+                # Look back in self.lines to find the matching 'if' condition and check if it was TRUE
+                prev_idx = i - 2
+                if_was_true = False
+                while prev_idx >= 0:
+                    pl = self.lines[prev_idx].strip()
+                    if pl.startswith('if') or pl.startswith('else if') or 'if(' in pl or 'if (' in pl:
+                        m_prev = re.search(r'if\s*\((.*?)\)', pl)
+                        if m_prev:
+                            res_p = self.resolve_expr(m_prev.group(1).strip(), scope)
+                            try:
+                                if_was_true = bool(eval(res_p, {"__builtins__": {}}))
+                            except Exception:
+                                if_was_true = 'true' in str(res_p).lower()
+                        break
+                    prev_idx -= 1
+
+                if if_was_true:
+                    # Skip the entire ELSE block body since IF condition was TRUE
+                    brace_cnt = stripped.count('{') - stripped.count('}')
+                    if brace_cnt <= 0:
+                        # e.g. "} else {" or "} else"
+                        brace_cnt = 1
+                    while i <= main_end and brace_cnt > 0:
+                        b_line = self.lines[i - 1].strip()
+                        i += 1
+                        brace_cnt += b_line.count('{') - b_line.count('}')
+                    continue
+                else:
+                    expl_else = f"🔀 Branching into else block."
+                    self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_else)
+                    continue
+
             # Skip blanks, braces, comments, import statements, keywords & structure declarations
             if (not stripped
-                    or stripped in ('{', '}', '};', 'try {', 'try', 'finally', 'finally {')
+                    or stripped in ('{', '}', '};', 'try {', 'try', 'finally', 'finally {', 'break;', 'default:')
                     or stripped.startswith('//')
                     or stripped.startswith('/*')
                     or stripped.startswith('*')
@@ -727,6 +786,7 @@ class JavaExecutionTracer:
                     or stripped.startswith('interface ')
                     or stripped.startswith('abstract class')
                     or stripped.startswith('catch')
+                    or stripped.startswith('case ')
                     or stripped.startswith('while ')
                     or stripped.startswith('while(')):
                 continue
