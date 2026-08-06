@@ -183,15 +183,23 @@ class JavaScriptExecutionTracer:
                 except Exception:
                     pass
 
+        # ── Array.length property ──────────────────────────────
+        resolved_expr = re.sub(
+            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.length',
+            lambda m: str(len(self._parse_array_items(scope[m.group(1)]['raw']))) if m.group(1) in scope else m.group(0),
+            resolved_expr
+        )
+
         # ── String concat with + ───────────────────────────────────────────
         # Build a resolved copy by substituting variables for eval
         if scope:
             for sv in sorted(scope.keys(), key=lambda x: -len(x)):
                 raw = scope[sv]['raw']
                 vtype = scope[sv]['type']
-                # For string/array types, wrap in quotes for Python eval
-                if vtype in ('string', 'array'):
+                if vtype == 'string':
                     replacement = f'"{raw}"'
+                elif vtype == 'array':
+                    replacement = raw
                 else:
                     replacement = raw
                 resolved_expr = re.sub(r'\b' + re.escape(sv) + r'\b', replacement, resolved_expr)
@@ -713,6 +721,14 @@ class JavaScriptExecutionTracer:
                             # New variable from function return
                             scope[tgt_var] = self.serialize_val(ret_value, name=tgt_var, scope=scope)
                         changed_keys = [tgt_var]
+
+                    # Synchronize mutated references (e.g. array mutations) back to outer scope
+                    for p_idx, param in enumerate(fn_info['params']):
+                        if p_idx < len(args_raw):
+                            arg_var = args_raw[p_idx]
+                            if arg_var in scope and param in local_scope:
+                                scope[arg_var] = local_scope[param]
+                                scope[arg_var]['is_changed'] = True
 
                     call_stack.pop()
                     self._emit(i, stripped, 'return', call_stack, scope, changed_keys, called_fn, ret_value)
