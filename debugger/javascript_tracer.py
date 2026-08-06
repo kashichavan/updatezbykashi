@@ -335,15 +335,56 @@ class JavaScriptExecutionTracer:
             raw_line = self.lines[i - 1]
             stripped  = raw_line.strip()
 
-            # Parse for-loop index initializer (e.g., for (let i = 0; i < 5; i++))
+            # Unroll for-loop iterations (e.g., for (let i = 1; i <= 5; i++))
             if stripped.startswith('for ') or stripped.startswith('for('):
-                m_for = re.search(r'for\s*\(\s*(?:let|var|const)?\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?)\s*;', stripped)
+                m_for = re.search(r'for\s*\(\s*(?:let|var|const)?\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+)\s*;\s*(.+?)\)', stripped)
                 if m_for:
-                    vname, vexpr = m_for.groups()
-                    resolved = self.js_resolve(vexpr.strip(), scope)
-                    scope[vname] = self.serialize_val(resolved, name=vname, scope=scope)
-                    scope[vname]['is_changed'] = True
-                continue
+                    vname, start_val, op, end_val, incr_expr = m_for.groups()
+                    start_i = int(start_val)
+                    end_i   = int(end_val)
+
+                    # Find loop body lines inside braces
+                    loop_body_lines = []
+                    loop_brace = stripped.count('{') - stripped.count('}')
+                    curr_idx = i
+                    while curr_idx < len(self.lines) and loop_brace > 0:
+                        b_line = self.lines[curr_idx - 1].strip()
+                        curr_idx += 1
+                        loop_brace += b_line.count('{') - b_line.count('}')
+                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                            loop_body_lines.append((curr_idx - 1, b_line))
+
+                    step_val = -1 if ('--' in incr_expr or '-=' in incr_expr) else 1
+                    if op == '<=': iter_range = range(start_i, end_i + 1, step_val)
+                    elif op == '<': iter_range = range(start_i, end_i, step_val)
+                    elif op == '>=': iter_range = range(start_i, end_i - 1, step_val)
+                    elif op == '>': iter_range = range(start_i, end_i, step_val)
+                    else: iter_range = range(start_i, end_i + 1, step_val)
+
+                    for iter_val in list(iter_range)[:50]:
+                        scope[vname] = self.serialize_val(str(iter_val), name=vname, scope=scope)
+                        scope[vname]['is_changed'] = True
+                        for b_lineno, b_line in loop_body_lines:
+                            m_l = re_log.match(b_line)
+                            if m_l:
+                                args_s = m_l.group(1)
+                                l_out = self.resolve_log_args(args_s, scope)
+                                self.stdout_lines.append(f"[JS] {l_out}")
+                            elif re_assign.match(b_line):
+                                m_a = re_assign.match(b_line)
+                                vn, ve = m_a.groups()
+                                if vn in scope:
+                                    res_v = self.js_resolve(ve.strip().rstrip(';'), scope)
+                                    scope[vn] = self.serialize_val(res_v, name=vn, scope=scope)
+                                    scope[vn]['is_changed'] = True
+
+                            for k in scope: scope[k]['is_changed'] = (k == vname)
+                            expl = self.explain('line', b_lineno, b_line, scope, [vname])
+                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [vname], explanation=expl)
+                            self.prev_variables = dict(scope)
+
+                    i = curr_idx
+                    continue
 
             if not stripped or stripped.startswith('//') or stripped in ('{', '}', '};') or stripped.startswith('while ') or stripped.startswith('while('):
                 continue

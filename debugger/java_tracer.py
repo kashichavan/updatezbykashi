@@ -366,16 +366,62 @@ class JavaExecutionTracer:
             stripped  = raw_line.strip()
             i += 1
 
-            # Parse for-loop variable initialization (e.g., for (int i = 1; i <= 5; i++))
+            # Unroll for-loop iterations (e.g., for (int i = 1; i <= 5; i++))
             if stripped.startswith('for ') or stripped.startswith('for('):
-                m_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?)\s*;', stripped)
+                m_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+)\s*;\s*(.+?)\)', stripped)
                 if m_for:
-                    vname, vexpr = m_for.groups()
-                    resolved = self.resolve_expr(vexpr, scope)
-                    scope[vname] = self.serialize(resolved, 'int', name=vname)
-                    scope[vname]['is_changed'] = True
-                    changed_keys = [vname]
-                continue
+                    vname, start_val, op, end_val, incr_expr = m_for.groups()
+                    start_i = int(start_val)
+                    end_i   = int(end_val)
+                    
+                    # Find loop body lines inside braces
+                    loop_body_lines = []
+                    loop_brace = stripped.count('{') - stripped.count('}')
+                    curr_idx = i
+                    while curr_idx < main_end and loop_brace > 0:
+                        b_line = self.lines[curr_idx - 1].strip()
+                        curr_idx += 1
+                        loop_brace += b_line.count('{') - b_line.count('}')
+                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                            loop_body_lines.append((curr_idx - 1, b_line))
+                    
+                    # Compute iteration range safely (max 50 iterations)
+                    step_val = -1 if ('--' in incr_expr or '-=' in incr_expr) else 1
+                    if op == '<=': iter_range = range(start_i, end_i + 1, step_val)
+                    elif op == '<': iter_range = range(start_i, end_i, step_val)
+                    elif op == '>=': iter_range = range(start_i, end_i - 1, step_val)
+                    elif op == '>': iter_range = range(start_i, end_i, step_val)
+                    else: iter_range = range(start_i, end_i + 1, step_val)
+                    
+                    for iter_val in list(iter_range)[:50]:
+                        scope[vname] = self.serialize(iter_val, 'int', name=vname)
+                        scope[vname]['is_changed'] = True
+                        
+                        # Emit loop header evaluation step
+                        expl_hdr = f"🔄 Loop iteration {vname} = {iter_val}"
+                        self._emit(i - 1, stripped, 'line', call_stack, scope, [vname], explanation=expl_hdr)
+                        
+                        for b_lineno, b_line in loop_body_lines:
+                            m_out = re_println.match(b_line)
+                            if m_out:
+                                arg = m_out.group(1).strip()
+                                output = self.resolve_expr(arg, scope)
+                                self.stdout_lines.append(f"[JVM] {output}")
+                            elif re_assign.match(b_line):
+                                m_a = re_assign.match(b_line)
+                                vn, ve = m_a.groups()
+                                if vn in scope:
+                                    res_val = self.resolve_expr(ve, scope)
+                                    scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
+                                    scope[vn]['is_changed'] = True
+                            
+                            for k in scope: scope[k]['is_changed'] = (k == vname)
+                            expl = self.explain('line', b_lineno, b_line, scope, [vname])
+                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [vname], explanation=expl)
+                            self.prev_variables = {k: dict(v) for k, v in scope.items()}
+                    
+                    i = curr_idx
+                    continue
 
             # Skip blanks, braces, comments, class/method declarations
             if (not stripped
