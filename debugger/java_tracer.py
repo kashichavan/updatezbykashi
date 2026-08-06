@@ -25,7 +25,7 @@ from javalang.tree import (
     MemberReference, ConstructorDeclaration, StatementExpression,
     BlockStatement, TryStatement, ArrayInitializer, ArrayCreator,
     Cast, TernaryExpression, This, ArraySelector, SuperConstructorInvocation,
-    ExplicitConstructorInvocation, EnhancedForControl
+    ExplicitConstructorInvocation, EnhancedForControl, SuperMethodInvocation
 )
 import re
 
@@ -613,6 +613,17 @@ class JavaExecutionTracer:
         if t == 'Assignment':
             return self._eval_assignment(node, scope, call_stack, class_name)
 
+        if t == 'SuperMethodInvocation':
+            args = [self.eval_expr(a, scope, call_stack, class_name) for a in (node.arguments or [])]
+            cls_n = self.classes.get(class_name)
+            super_name = cls_n.extends.name if (cls_n and cls_n.extends) else None
+            if super_name:
+                m = self._find_method(super_name, node.member, len(args))
+                if m:
+                    this_obj = scope.get('this', {}).get('_value', NULL)
+                    return self._call_method(super_name, m, args, this_obj if isinstance(this_obj, JavaObject) else None, call_stack)
+            raise JavaException("Error", f"cannot resolve super method {node.member}()")
+
         if t == 'MethodInvocation':
             return self._eval_method_invocation(node, scope, call_stack, class_name)
 
@@ -1056,6 +1067,10 @@ class JavaExecutionTracer:
             return _display(args[0]) if not isinstance(args[0], JavaArray) else repr(args[0])
 
         if node.qualifier:
+            if node.qualifier in self.classes:
+                m = self._find_method(node.qualifier, node.member, len(args))
+                if m:
+                    return self._call_method(node.qualifier, m, args, None, call_stack)
             base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
             return self._invoke_on(base, node, scope, call_stack, class_name, precomputed_args=args)
 
