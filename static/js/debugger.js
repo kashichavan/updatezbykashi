@@ -31,37 +31,44 @@ function dismissMobileBlocker() {
 
   const blocker = document.getElementById('mobileBlocker');
   if (blocker) {
-    blocker.classList.add('dismissed');
-    blocker.style.setProperty('display', 'none', 'important');
-  }
-  const appWrap = document.querySelector('.debugger-app-wrap');
-  if (appWrap) {
-    appWrap.classList.add('mobile-active');
-    appWrap.style.setProperty('display', 'flex', 'important');
+    blocker.classList.add('hidden');
+    setTimeout(() => {
+      blocker.style.setProperty('display', 'none', 'important');
+    }, 300);
   }
 }
 
-function closeMobileBlocker(event) {
-  dismissMobileBlocker();
-}
-
-/* Auto-dismiss blocker if previously dismissed in this browser session */
 document.addEventListener('DOMContentLoaded', () => {
   try {
     if (sessionStorage.getItem('mobile_blocker_dismissed') === 'true') {
-      dismissMobileBlocker();
+      const blocker = document.getElementById('mobileBlocker');
+      if (blocker) {
+        blocker.classList.add('hidden');
+        blocker.style.setProperty('display', 'none', 'important');
+      }
     }
   } catch (e) {}
 
   const blocker = document.getElementById('mobileBlocker');
+  const btnClose = document.getElementById('btnBlockerClose');
+  const btnContinue = document.getElementById('btnBlockerContinue');
+
+  if (btnClose) {
+    btnClose.addEventListener('click', dismissMobileBlocker);
+    btnClose.addEventListener('touchend', (e) => { e.preventDefault(); dismissMobileBlocker(); });
+  }
+
+  if (btnContinue) {
+    btnContinue.addEventListener('click', dismissMobileBlocker);
+    btnContinue.addEventListener('touchend', (e) => { e.preventDefault(); dismissMobileBlocker(); });
+  }
+
   if (blocker) {
-    ['click', 'touchstart', 'pointerdown', 'touchend'].forEach(evtType => {
-      blocker.addEventListener(evtType, (e) => {
-        if (e.target === blocker || e.target.classList.contains('dbg-blocker-close') || e.target.classList.contains('dbg-blocker-dismiss-btn')) {
-          e.preventDefault();
-          dismissMobileBlocker();
-        }
-      }, { passive: false });
+    blocker.addEventListener('click', (e) => {
+      if (e.target === blocker) dismissMobileBlocker();
+    });
+    blocker.addEventListener('touchend', (e) => {
+      if (e.target === blocker) { e.preventDefault(); dismissMobileBlocker(); }
     });
   }
 });
