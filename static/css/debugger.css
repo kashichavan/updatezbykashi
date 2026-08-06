@@ -948,3 +948,102 @@
   50%       { transform: translateY(-6px); }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE MOBILE STYLES (Mobile First IDE Polish)
+   ═══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .debugger-app-wrap {
+    padding: 8px !important;
+  }
+
+  .debugger-hero-strip {
+    flex-direction: column !alignment;
+    align-items: stretch !important;
+    padding: 12px 14px !important;
+    gap: 12px !important;
+  }
+
+  .debugger-hero-strip > div:first-child {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .debugger-hero-strip h1 {
+    font-size: 16px !important;
+  }
+
+  .debugger-hero-strip p {
+    font-size: 11px !important;
+  }
+
+  .debugger-hero-strip > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lang-tab-btn {
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .theme-select-dropdown {
+    width: 100%;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .playback-bar {
+    padding: 10px 12px !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+
+  .playback-bar > div:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .btn-start-debug {
+    grid-column: span 3;
+    justify-content: center;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+  }
+
+  .dbg-step-btn {
+    padding: 8px 6px !important;
+    font-size: 11px !important;
+    justify-content: center;
+  }
+
+  .playback-bar > div:last-child {
+    max-width: 100% !important;
+    width: 100%;
+  }
+
+  .ide-split-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  #monacoEditorContainer {
+    height: 340px !important;
+    min-height: 300px !important;
+  }
+
+  .inspector-column-box {
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  .card-vars, .card-stack, .card-term {
+    flex: none !important;
+    max-height: 300px;
+  }
+}
+
