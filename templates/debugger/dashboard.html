@@ -298,25 +298,31 @@
         </div>
       </div>
 
-      <!-- CARD 3: TERMINAL & STDIN CONSOLE INPUT -->
+      <!-- CARD 3: UNIFIED INTERACTIVE CONSOLE TERMINAL -->
       <div class="visual-card card-term">
-        <div class="visual-card-header">
+        <div class="visual-card-header" style="display:flex; justify-content:space-between; align-items:center;">
           <span style="display:inline-flex; align-items:center; gap:6px;">
-            <img src="{% static 'images/icon-type.png' %}" width="14" height="14" alt="Terminal">
-            Console Input &amp; Output
+            <img src="{% static 'images/icon-type.png' %}" width="14" height="14" alt="Console">
+            Interactive Console (Terminal)
           </span>
-          <span style="font-size:11px; color:#94a3b8;">stdin / stdout</span>
+          <span style="font-size:11px; color:#60a5fa; font-family:monospace; font-weight:700;">stdin &amp; stdout</span>
         </div>
-        <div class="visual-card-body" style="background:#050a14; color:#38bdf8; border-top:1px solid #23324d; display:flex; flex-direction:column; gap:8px; padding:10px;">
-          <div style="font-size:11px; font-weight:800; color:#94a3b8; display:flex; justify-content:space-between; align-items:center;">
-            <span>⌨️ Console Input (stdin — 1 input per line):</span>
-            <span style="font-size:10px; color:#60a5fa;">e.g. 10 \n Kashi</span>
+        <div class="visual-card-body" style="background:#050a14; color:#38bdf8; border-top:1px solid #23324d; display:flex; flex-direction:column; padding:12px; gap:8px;">
+          <!-- Single Combined Input / Output Terminal Shell -->
+          <div style="background:#0b1329; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#94a3b8; font-family:monospace; border-bottom:1px solid #1e293b; padding-bottom:6px;">
+              <span>&gt;_ Interactive Stdin Input Stream</span>
+              <span style="font-size:10px; color:#38bdf8;">(Type inputs below, 1 per line)</span>
+            </div>
+            <textarea id="stdinInput" rows="2" placeholder="&gt; Type input values here (e.g. 25 \n Kashi)..."
+                      style="width:100%; background:transparent; color:#38bdf8; border:none; outline:none; font-size:12px; font-family:'Consolas','Fira Code',monospace; line-height:1.5; resize:vertical; box-sizing:border-box;"></textarea>
           </div>
-          <textarea id="stdinInput" placeholder="Enter input values for Scanner / input() (one per line)..."
-                    style="width:100%; height:48px; background:#0b1329; color:#f8fafc; border:1px solid #1e293b; border-radius:6px; padding:6px 8px; font-size:12px; font-family:'Consolas','Fira Code',monospace; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
-          <div style="font-size:11px; font-weight:800; color:#94a3b8; margin-top:4px;">💻 Console Output (stdout):</div>
+          <!-- Terminal Program Output Stream -->
+          <div style="font-size:11px; color:#94a3b8; font-family:monospace; font-weight:700; margin-top:2px;">
+            $ Output Terminal Stream:
+          </div>
           <pre id="stdoutConsole"
-               style="margin:0; font-size:12px; white-space:pre-wrap; font-family:'Consolas','Fira Code',monospace; line-height:1.6; flex:1;">$ Console output will appear here...</pre>
+               style="margin:0; font-size:12px; color:#f8fafc; background:#0b1329; border:1px solid #1e293b; border-radius:8px; padding:10px; white-space:pre-wrap; font-family:'Consolas','Fira Code',monospace; line-height:1.6; min-height:60px;">$ Program output will stream here...</pre>
         </div>
       </div>
 
