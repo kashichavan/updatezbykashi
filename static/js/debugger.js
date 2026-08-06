@@ -646,8 +646,6 @@ function renderVariablesCards(vars) {
   keys.forEach((k, cardIdx) => {
     const v         = vars[k];
     const changed   = v.is_changed ? 'changed' : '';
-    const nameColor = v.is_changed ? '#60a5fa' : '#93c5fd';
-    const valColor  = v.is_changed ? '#ffffff' : '#e2e8f0';
 
     // Use raw for display — full, untruncated value
     const fullVal   = typeof v.value === 'object' ? JSON.stringify(v.value, null, 2) : String(v.raw ?? v.value);
