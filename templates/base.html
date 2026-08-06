@@ -29,7 +29,7 @@
   {% include 'components/footer.html' %}
 
   <!-- Floating Instagram Chat Widget (Bottom Right) -->
-  <a href="https://ig.me/m/ikashii_07" id="floatingChatWidget" class="floating-chat-widget" target="_blank" rel="noopener" title="Chat directly with Kashii on Instagram DM">
+  <a href="instagram://user?username=ikashii_07" id="floatingChatWidget" class="floating-chat-widget" title="Chat directly with Kashii on Instagram DM" onclick="(function(e){ var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); if (!isMobile) { e.preventDefault(); window.open('https://ig.me/m/ikashii_07', '_blank'); } })(event)">
     <span class="chat-icon"><img src="{% static 'images/icon-chat.png' %}" class="mobile-nav-icon" style="filter: brightness(0) invert(1);" width="22" height="22" alt="Chat" loading="eager" decoding="async"></span>
     <span class="chat-label">Chat with Kashii</span>
   </a>
