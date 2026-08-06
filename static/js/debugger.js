@@ -326,7 +326,41 @@ function highlightExecutingLines(currentLine, prevLine) {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   START DEBUGGING  (fetch trace from Django backend)
+   CLIENT-SIDE BROWSER TRACE CACHE ENGINE
+   Stores execution trace steps in sessionStorage + localStorage so identical
+   code snippets execute 0ms instantly from browser cache with zero server load.
+───────────────────────────────────────────────────────────────── */
+function getCacheKey(lang, codeStr, bps) {
+  const sortedBps = [...bps].sort((a, b) => a - b).join(',');
+  return `dbg_cache_${lang}_${sortedBps}_${btoa(encodeURIComponent(codeStr))}`;
+}
+
+function getTraceFromCache(lang, codeStr, bps) {
+  try {
+    const key = getCacheKey(lang, codeStr, bps);
+    const cached = sessionStorage.getItem(key) || localStorage.getItem(key);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch (err) {
+    console.warn("Trace cache read error:", err);
+  }
+  return null;
+}
+
+function setTraceInCache(lang, codeStr, bps, data) {
+  try {
+    const key = getCacheKey(lang, codeStr, bps);
+    const payload = JSON.stringify(data);
+    sessionStorage.setItem(key, payload);
+    localStorage.setItem(key, payload);
+  } catch (err) {
+    console.warn("Trace cache write error:", err);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   START DEBUGGING  (fetch trace from Django backend or Browser Cache)
 ───────────────────────────────────────────────────────────────── */
 async function startDebugging() {
   stopAutoPlay();
@@ -335,6 +369,18 @@ async function startDebugging() {
 
   const code   = editor.getValue();
   const banner = document.getElementById('aiExplainBanner');
+
+  // Check client-side browser cache first (0ms load, zero server requests!)
+  const cachedTrace = getTraceFromCache(currentLang, code, breakpoints);
+  if (cachedTrace && cachedTrace.status === 'success' && cachedTrace.steps.length > 0) {
+    debugSteps     = cachedTrace.steps;
+    currentStepIdx  = 0;
+    goToStep(0);
+    banner.innerHTML = `⚡ <strong>Instant Browser Cache Hit (0ms):</strong> Loaded trace locally with 0 server load!`;
+    showToast(`Loaded trace instantly from browser cache!`, 'success');
+    return;
+  }
+
   banner.innerHTML = `⏳ <strong>${currentLang.toUpperCase()} Debugger Engine:</strong> AST validation & compiling memory steps...`;
 
   const endpointMap = {
@@ -355,8 +401,10 @@ async function startDebugging() {
     if (data.status === 'success' && data.steps.length > 0) {
       debugSteps    = data.steps;
       currentStepIdx = 0;
+      // Save trace into browser cache for instant future replays
+      setTraceInCache(currentLang, code, breakpoints, data);
       goToStep(0);
-      showToast(`${currentLang.toUpperCase()} Debugger initialized!`, 'success');
+      showToast(`${currentLang.toUpperCase()} Debugger initialized & cached!`, 'success');
     } else {
       banner.innerHTML = `❌ <strong>Debugger Error:</strong> ${escapeHtml(data.message || 'Execution failed.')}`;
     }
