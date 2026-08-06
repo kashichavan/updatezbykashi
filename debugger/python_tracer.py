@@ -24,13 +24,14 @@ class PythonExecutionTracer:
     )
 
     FORBIDDEN_FUNCTIONS = {
-        'open', 'eval', 'exec', '__import__', 'compile', 'input', 'globals', 'locals'
+        'open', 'eval', 'exec', '__import__', 'compile', 'globals', 'locals'
     }
 
-    def __init__(self, code_str, breakpoints=None):
+    def __init__(self, code_str, breakpoints=None, stdin_input=""):
         self.code_str   = code_str
         self.lines      = code_str.splitlines()
         self.breakpoints = set(breakpoints or [])
+        self.stdin_queue = [line.strip() for line in stdin_input.splitlines() if line.strip()] if stdin_input else []
         self.steps      = []
         self.prev_variables = {}
         self.stdout_buffer  = io.StringIO()
@@ -237,11 +238,22 @@ class PythonExecutionTracer:
         old_stdout = sys.stdout
         sys.stdout = self.stdout_buffer
 
+        def _custom_input(prompt=""):
+            if prompt:
+                self.stdout_buffer.write(str(prompt))
+            if self.stdin_queue:
+                return self.stdin_queue.pop(0)
+            return "User Input"
+
+        import builtins
+        old_input = builtins.input
+        builtins.input = _custom_input
+
         start_time = time.time()
         try:
             compiled = compile(self.code_str, '<string>', 'exec')
             sys.settrace(self.trace_callback)
-            exec(compiled, {'__builtins__': __builtins__})  # nosec controlled sandbox
+            exec(compiled, {'__builtins__': builtins})  # nosec controlled sandbox
         except Exception as e:
             tb = traceback.format_exc()
             err_lineno = 1
@@ -261,6 +273,7 @@ class PythonExecutionTracer:
                 'ai_explanation': f"❌ {type(e).__name__}: {str(e)}"
             })
         finally:
+            builtins.input = old_input
             sys.settrace(None)
             sys.stdout = old_stdout
             # Flush final post-execution variable state & remaining stdout into the last step

@@ -61,11 +61,12 @@ def api_trace_python(request):
         data = json.loads(request.body.decode('utf-8'))
         code = data.get('code', '').strip()
         breakpoints = data.get('breakpoints', [])
+        stdin_input = data.get('stdin', '').strip()
 
         if not code:
             return JsonResponse({'status': 'error', 'message': 'Code string is empty'}, status=400)
 
-        tracer = PythonExecutionTracer(code, breakpoints=breakpoints)
+        tracer = PythonExecutionTracer(code, breakpoints=breakpoints, stdin_input=stdin_input)
         result = tracer.execute()
 
         if result['status'] == 'error':
