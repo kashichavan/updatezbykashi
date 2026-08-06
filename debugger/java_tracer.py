@@ -1,1536 +1,1133 @@
+"""
+Java Execution Tracer — AST-based (javalang), production-oriented rewrite.
+
+Design goals vs. the old regex engine:
+  - Real parsing (javalang) instead of line-by-line regex matching, so nested
+    expressions, operator precedence, multi-line statements, braces in
+    strings/comments, etc. are handled correctly by construction.
+  - Values are kept as real Python objects internally (int/float/str/bool/
+    JavaArray/JavaObject/None) during evaluation; string formatting only
+    happens when producing a trace step. This avoids the "stringly typed"
+    eval() hacks that made the old engine fragile.
+  - Control flow (return/break/continue) uses Python exceptions for clean
+    propagation through arbitrarily nested blocks, instead of manual line
+    index bookkeeping.
+  - Java exceptions are modeled as a real exception class carrying a Java
+    class name + message, and try/catch/finally matches against that.
+"""
+
+import javalang
 import re
 
-try:
-    import jpype
-    HAS_JPYPE = True
-except ImportError:
-    HAS_JPYPE = False
+
+# ─────────────────────────── Control-flow signals ───────────────────────────
+
+class ReturnSignal(Exception):
+    def __init__(self, value):
+        self.value = value
+
+
+class BreakSignal(Exception):
+    def __init__(self, label=None):
+        self.label = label
+
+
+class ContinueSignal(Exception):
+    def __init__(self, label=None):
+        self.label = label
+
+
+class JavaException(Exception):
+    """A simulated Java runtime/checked exception."""
+    def __init__(self, java_class, message=""):
+        self.java_class = java_class
+        self.message = message
+        super().__init__(f"{java_class}: {message}" if message else java_class)
+
+    def full_name(self):
+        if '.' in self.java_class:
+            return self.java_class
+        return f"java.lang.{self.java_class}"
+
+
+# ───────────────────────────── Value wrappers ────────────────────────────────
+
+class JavaNull:
+    """Singleton representing Java's null."""
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __repr__(self):
+        return "null"
+
+    def __bool__(self):
+        return False
+
+
+NULL = JavaNull()
+
+
+class JavaArray:
+    def __init__(self, elem_type, items):
+        self.elem_type = elem_type
+        self.items = items  # python list
+
+    def __repr__(self):
+        return "[" + ", ".join(_display(x) for x in self.items) + "]"
+
+    def __len__(self):
+        return len(self.items)
+
+
+class JavaObject:
+    """Instance of a user-defined class."""
+    def __init__(self, class_name, addr):
+        self.class_name = class_name
+        self.fields = {}
+        self.addr = addr
+
+    def __repr__(self):
+        inner = ", ".join(f"{k}={_display(v)}" for k, v in self.fields.items())
+        return f"{self.class_name}{{{inner}}}"
+
+
+def _display(val):
+    """String form used inside container reprs / user-visible output."""
+    if val is NULL or val is None:
+        return "null"
+    if isinstance(val, bool):
+        return "true" if val else "false"
+    if isinstance(val, str):
+        return val
+    if isinstance(val, float):
+        return f"{val:.1f}" if val == int(val) and abs(val) < 1e15 else str(val)
+    return str(val)
+
+
+# ─────────────────────────────── The interpreter ─────────────────────────────
 
 class JavaExecutionTracer:
-    """
-    Java 17 JVM Execution Tracer — Production Grade.
-    Combines pure Python AST JVM simulation engine with optional JPype1 native JVM binding.
-    """
-
     JAVA_PRIMITIVES = {'int', 'double', 'float', 'long', 'short', 'byte', 'char', 'boolean'}
 
     def __init__(self, code_str, breakpoints=None, stdin_input=""):
-        self.code_str    = code_str
-        self.lines       = code_str.splitlines()
+        self.code_str = code_str
+        self.lines = code_str.splitlines()
         self.breakpoints = set(breakpoints or [])
-        self.stdin_queue = [line.strip() for line in stdin_input.splitlines() if line.strip()] if stdin_input else []
-        self.steps       = []
+        self.stdin_queue = [l.strip() for l in stdin_input.splitlines() if l.strip()] if stdin_input else []
+
+        self.steps = []
         self.stdout_lines = []
-        self.prev_variables = {}
-        # Stable mem addresses — keyed by variable name, never change
-        self._mem_table   = {}
+
+        self._mem_table = {}
         self._mem_counter = 0x1000
+        self._obj_counter = 0
 
-    # ─── Stable memory address ────────────────────────────────────────────────
-    def _mem_addr(self, name, is_primitive):
-        if name not in self._mem_table:
+        self.classes = {}          # class_name -> ClassDeclaration node
+        self.static_fields = {}    # per-class static field scope, class_name -> dict
+        self.main_class = None
+
+        self._parse_error = None
+        try:
+            self.tree = javalang.parse.parse(code_str)
+            self._index_classes()
+        except (javalang.parser.JavaSyntaxError, javalang.tokenizer.LexerError) as e:
+            self.tree = None
+            self._parse_error = str(e)
+
+    # ── Setup ────────────────────────────────────────────────────────────────
+
+    def _index_classes(self):
+        for _, node in self.tree.filter(javalang.tree.ClassDeclaration):
+            self.classes[node.name] = node
+            if self.main_class is None:
+                self.main_class = node.name
+            for m in node.body:
+                if isinstance(m, javalang.tree.MethodDeclaration) and m.name == 'main':
+                    self.main_class = node.name
+
+    def _mem_addr(self, key, is_primitive):
+        if key not in self._mem_table:
             tag = 'STACK' if is_primitive else 'HEAP'
-            self._mem_table[name] = f"0xJVM_{tag}_{self._mem_counter:04x}"
-            self._mem_counter += 0x1A3   # deterministic stride
-        return self._mem_table[name]
+            self._mem_table[key] = f"0xJVM_{tag}_{self._mem_counter:04x}"
+            self._mem_counter += 0x1A3
+        return self._mem_table[key]
 
-    # ─── Serialization ────────────────────────────────────────────────────────
-    def serialize(self, val, val_type, name=None):
-        is_prim = val_type in self.JAVA_PRIMITIVES
-        raw_str = str(val)
-        if val_type in ('double', 'float'):
-            try:
-                fval = float(raw_str)
-                raw_str = f"{fval:.1f}" if fval.is_integer() else str(fval)
-            except ValueError:
-                pass
+    def _new_obj_addr(self, class_name):
+        self._obj_counter += 1
+        return f"{class_name}@{(0x1000 + self._obj_counter * 0x1A3):x}"
+
+    # ── Public entry point ─────────────────────────────────────────────────
+
+    def execute(self):
+        if self._parse_error:
+            self.stdout_lines.append(f"❌ Compilation error: {self._parse_error}")
+            self.steps.append({
+                'step_index': 0, 'line_number': 0, 'line_text': '',
+                'event_type': 'compile_error', 'is_breakpoint': False,
+                'stack_frames': [], 'variables': {},
+                'stdout': "\n".join(self.stdout_lines),
+                'ai_explanation': f"❌ Compilation failed: {self._parse_error}",
+            })
+            return {'status': 'error', 'execution_time_ms': 0.0,
+                    'total_steps': len(self.steps), 'steps': self.steps}
+
+        cls_node = self.classes.get(self.main_class)
+        if cls_node is None:
+            raise ValueError("No class found in source")
+
+        self.static_fields[self.main_class] = {}
+        call_stack = []
+        self._init_static_fields(self.main_class, call_stack)
+
+        main_method = self._find_method(self.main_class, 'main')
+        if main_method is None:
+            raise ValueError("No main() method found")
+
+        frame_label = f"{self.main_class}.main(String[] args)"
+        call_stack.append(frame_label)
+        scope = self.static_fields[self.main_class]
+
+        try:
+            self._exec_block(main_method.body, dict(scope), call_stack, self.main_class)
+        except JavaException as jexc:
+            full = jexc.full_name()
+            msg = f"Exception in thread \"main\" {full}" + (f": {jexc.message}" if jexc.message else "")
+            self.stdout_lines.append(f"❌ {msg}")
+            self._emit(0, '', 'exception', call_stack, {}, [], explanation=f"❌ {msg}")
+        except ReturnSignal:
+            pass
+
         return {
-            'type':         val_type,
-            'value':        repr(raw_str),
-            'raw':          raw_str,
-            'is_primitive': is_prim,
-            'mem_addr':     self._mem_addr(name or raw_str, is_prim),
-            'is_changed':   False
+            'status': 'success',
+            'execution_time_ms': 3.1,
+            'total_steps': len(self.steps),
+            'steps': self.steps,
         }
 
-    # ─── Explanation generator ────────────────────────────────────────────────
-    def explain(self, event, lineno, line_text, scope, changed, fn_name=None, ret_val=None):
+    def _init_static_fields(self, class_name, call_stack):
+        cls_node = self.classes[class_name]
+        scope = self.static_fields[class_name]
+        for member in cls_node.body:
+            if isinstance(member, javalang.tree.FieldDeclaration) and 'static' in (member.modifiers or []):
+                for decl in member.declarators:
+                    val = self.eval_expr(decl.initializer, scope, call_stack, class_name) \
+                        if decl.initializer is not None else self._default_value(member.type)
+                    self._declare(scope, decl.name, member.type, val)
+
+    # ── Method lookup ───────────────────────────────────────────────────────
+
+    def _find_method(self, class_name, name, arg_count=None):
+        cls_node = self.classes.get(class_name)
+        if cls_node is None:
+            return None
+        candidates = [m for m in cls_node.body
+                      if isinstance(m, javalang.tree.MethodDeclaration) and m.name == name]
+        if not candidates:
+            return None
+        if arg_count is None:
+            return candidates[0]
+        for m in candidates:
+            if len(m.parameters) == arg_count:
+                return m
+        return candidates[0]
+
+    def _find_constructor(self, class_name, arg_count=None):
+        cls_node = self.classes.get(class_name)
+        if cls_node is None:
+            return None
+        ctors = [m for m in cls_node.body if isinstance(m, javalang.tree.ConstructorDeclaration)]
+        if not ctors:
+            return None
+        if arg_count is None:
+            return ctors[0]
+        for c in ctors:
+            if len(c.parameters) == arg_count:
+                return c
+        return ctors[0]
+
+    # ── Type helpers ────────────────────────────────────────────────────────
+
+    def _type_name(self, type_node):
+        if type_node is None:
+            return 'void'
+        name = getattr(type_node, 'name', str(type_node))
+        dims = getattr(type_node, 'dimensions', None)
+        if dims:
+            name += '[]' * len(dims)
+        return name
+
+    def _default_value(self, type_node):
+        tname = self._type_name(type_node)
+        if tname in ('int', 'short', 'byte', 'long'):
+            return 0
+        if tname in ('double', 'float'):
+            return 0.0
+        if tname == 'boolean':
+            return False
+        if tname == 'char':
+            return '\u0000'
+        return NULL
+
+    def _is_primitive_type(self, tname):
+        return tname in self.JAVA_PRIMITIVES
+
+    # ── Scope bookkeeping / step recording helpers ─────────────────────────
+
+    def _declare(self, scope, name, type_node, value, changed=True):
+        tname = self._type_name(type_node) if not isinstance(type_node, str) else type_node
+        is_prim = self._is_primitive_type(tname.rstrip('[]')) and '[]' not in tname
+        key = f"{id(scope)}:{name}"
+        scope[name] = {
+            '_value': value,
+            'type': tname,
+            'is_primitive': is_prim,
+            'mem_addr': self._mem_addr(key, is_prim),
+            'is_changed': changed,
+        }
+
+    def _set(self, scope, name, value, changed=True):
+        if name in scope:
+            scope[name]['_value'] = value
+            scope[name]['is_changed'] = changed
+        else:
+            self._declare(scope, name, 'var', value, changed)
+
+    def _render_scope(self, scope):
+        out = {}
+        for k, v in scope.items():
+            val = v['_value']
+            raw = _display(val)
+            out[k] = {
+                'type': v['type'],
+                'value': repr(raw),
+                'raw': raw,
+                'is_primitive': v['is_primitive'],
+                'mem_addr': v['mem_addr'],
+                'is_changed': v.get('is_changed', False),
+            }
+        return out
+
+    def _emit(self, lineno, line_text, event, call_stack, scope, changed_names,
+              fn_name=None, ret_val=None, explanation=None):
+        for k in scope:
+            scope[k]['is_changed'] = k in changed_names
+        if explanation is None:
+            explanation = self._explain(event, line_text, scope, changed_names, fn_name, ret_val)
+        self.steps.append({
+            'step_index': len(self.steps),
+            'line_number': lineno,
+            'line_text': line_text,
+            'event_type': event,
+            'is_breakpoint': lineno in self.breakpoints,
+            'stack_frames': list(call_stack),
+            'variables': self._render_scope(scope),
+            'stdout': "\n".join(self.stdout_lines),
+            'ai_explanation': explanation,
+        })
+
+    def _explain(self, event, line_text, scope, changed, fn_name=None, ret_val=None):
         if event == 'call':
             return f"📞 Called method '{fn_name}()' → JVM pushed a new Stack Frame onto the Call Stack."
         if event == 'return':
-            return f"↩ Method '{fn_name}()' returned → Stack Frame popped. Value: {ret_val}"
-
-        new_vars = [k for k in changed if k not in self.prev_variables]
-        if new_vars:
-            details  = ', '.join([f"'{k}' = {scope[k]['raw']}" for k in new_vars if k in scope])
-            prim_tag = 'JVM Stack (primitive)' if scope[new_vars[0]]['is_primitive'] else 'JVM Heap (reference)'
-            return f"✨ Declared '{', '.join(new_vars)}' in {prim_tag}: {details}."
+            return f"↩ Method '{fn_name}()' returned → Stack Frame popped. Value: {_display(ret_val)}"
         if changed:
-            details = ', '.join([f"'{k}' → {scope[k]['raw']}" for k in changed if k in scope])
+            details = ', '.join(f"'{k}' = {_display(scope[k]['_value'])}" for k in changed if k in scope)
             return f"🔄 JVM memory updated: {details}."
         if 'System.out.print' in line_text:
-            return f"📤 System.out.println() — output sent to JVM stdout."
+            return "📤 System.out.println() — output sent to JVM stdout."
         return f"▶ Executed: '{line_text}'"
 
-    # ─── Expression resolver ──────────────────────────────────────────────────
-    def resolve_expr(self, expr, scope):
-        """
-        Resolve a Java expression to its string value.
-        Handles: string literals, variable references, arithmetic,
-                 string concatenation (+), boolean literals.
-        """
-        expr = expr.strip().rstrip(';').strip()
+    def _lineno(self, node, fallback=0):
+        pos = getattr(node, 'position', None)
+        return pos.line if pos else fallback
 
-        # Boolean literals
-        if expr in ('true', 'false'):
-            return expr
+    def _line_text(self, node, fallback=""):
+        ln = self._lineno(node, 0)
+        if 1 <= ln <= len(self.lines):
+            return self.lines[ln - 1].strip()
+        return fallback
 
-        # Plain string literal — only if there's no + concatenation outside quotes
-        if expr.startswith('"') and expr.endswith('"') and len(self._split_on_plus(expr)) == 1:
-            return expr[1:-1]
+    # ── Statement Execution ──────────────────────────────────────────────────
 
-        # Single char literal
-        if expr.startswith("'") and expr.endswith("'") and len(expr) == 3:
-            return expr[1]
+    def _exec_block(self, statements, scope, call_stack, class_name):
+        for stmt in statements:
+            self._exec_statement(stmt, scope, call_stack, class_name)
 
-        # Java Scanner inputs (uses user stdin queue if provided, else fallback defaults)
-        if re.search(r'\.(?:next|nextInt|nextLine|nextDouble|nextFloat|nextLong|nextBoolean)\s*\(\s*\)', expr):
-            if self.stdin_queue:
-                val = self.stdin_queue.pop(0)
-                if '.charAt(' in expr:
-                    m_ch = re.search(r'\.charAt\s*\(\s*(\d+)\s*\)', expr)
-                    idx = int(m_ch.group(1)) if m_ch else 0
-                    return val[idx] if idx < len(val) else val
-                return val
-            if 'nextInt' in expr: return "10"
-            if 'nextDouble' in expr: return "99.5"
-            if 'nextFloat' in expr: return "12.5"
-            if 'nextLong' in expr: return "1000"
-            if 'nextBoolean' in expr: return "true"
-            if '.charAt(' in expr: return "A"
-            return "Kashi"
+    def _exec_statement(self, node, scope, call_stack, class_name):
+        if node is None:
+            return
 
-        # Helper to extract raw string value safely
-        def _clean_str(val):
-            raw = str(val).strip('"\'')
-            if m_inner := re.search(r"'(.*?)'", raw):
-                return m_inner.group(1)
-            return raw
+        t = type(node).__name__
+        lineno = self._lineno(node)
+        line_text = self._line_text(node)
 
-        # String operations e.g. text.length(), text.toUpperCase(), text.substring(1), text.charAt(1)
-        if '.length()' in expr:
-            var_name = expr.split('.length()')[0].strip()
-            str_val = _clean_str(self.resolve_expr(var_name, scope))
-            return str(len(str_val))
-        if '.toUpperCase()' in expr:
-            var_name = expr.split('.toUpperCase()')[0].strip()
-            str_val = _clean_str(self.resolve_expr(var_name, scope))
-            return str_val.upper()
-        if '.toLowerCase()' in expr:
-            var_name = expr.split('.toLowerCase()')[0].strip()
-            str_val = _clean_str(self.resolve_expr(var_name, scope))
-            return str_val.lower()
-        if m_sub2 := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.substring\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)', expr):
-            vname, start_idx, end_idx = m_sub2.groups()
-            str_val = _clean_str(self.resolve_expr(vname, scope))
-            return str_val[int(start_idx):int(end_idx)]
-        if m_sub1 := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.substring\s*\(\s*(\d+)\s*\)', expr):
-            vname, start_idx = m_sub1.groups()
-            str_val = _clean_str(self.resolve_expr(vname, scope))
-            return str_val[int(start_idx):]
-        if m_char := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.charAt\s*\(\s*(\d+)\s*\)', expr):
-            vname, char_idx = m_char.groups()
-            str_val = _clean_str(self.resolve_expr(vname, scope))
-            idx = int(char_idx)
-            return str_val[idx] if idx < len(str_val) else ''
-        if m_cont := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.contains\s*\(\s*(.*?)\s*\)', expr):
-            vname, sub_str_raw = m_cont.groups()
-            str_val = _clean_str(self.resolve_expr(vname, scope))
-            sub_val = _clean_str(self.resolve_expr(sub_str_raw, scope))
-            return "true" if sub_val in str_val else "false"
-        # Exception .getMessage() method
-        if '.getMessage()' in expr:
-            vname = expr.split('.getMessage()')[0].strip()
-            if vname in scope:
-                raw_ex = str(scope[vname]['raw'])
-                if ':' in raw_ex:
-                    return raw_ex.split(':', 1)[1].strip()
-                return raw_ex
-            return "/ by zero"
-        # Map.Entry getter methods e.g. entry.getKey(), entry.getValue()
-        if '.getKey()' in expr:
-            vname = expr.split('.getKey()')[0].strip()
-            raw_entry = scope.get(vname, {}).get('raw', '1')
-            if '=' in raw_entry: return raw_entry.split('=')[0].strip()
-            return "1"
-        if '.getValue()' in expr:
-            vname = expr.split('.getValue()')[0].strip()
-            raw_entry = scope.get(vname, {}).get('raw', 'One')
-            if '=' in raw_entry: return raw_entry.split('=')[1].strip()
-            return "One"
+        if t == 'LocalVariableDeclaration':
+            changed = []
+            for decl in node.declarators:
+                val = self.eval_expr(decl.initializer, scope, call_stack, class_name) \
+                    if decl.initializer is not None else self._default_value(node.type)
+                self._declare(scope, decl.name, node.type, val)
+                changed.append(decl.name)
+            self._emit(lineno, line_text, 'line', call_stack, scope, changed)
 
-        # Java method calls on object instances (s.getName() -> field value)
-        m_getter = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\.get([a-zA-Z0-9_$]+)\s*\(\s*\)$', expr)
-        if m_getter:
-            obj_var, prop_name = m_getter.groups()
-            if obj_var in scope:
-                raw_obj = scope[obj_var].get('raw', '')
-                prop_lower = prop_name.lower()
-                m_prop = re.search(re.escape(prop_lower) + r":\s*'([^']+)'", raw_obj, re.IGNORECASE)
-                if m_prop:
-                    return m_prop.group(1)
+        elif t == 'StatementExpression':
+            self.eval_expr(node.expression, scope, call_stack, class_name)
+            self._emit(lineno, line_text, 'line', call_stack, scope, [])
 
-        # ── Method call evaluation e.g. subtract(multiply(increment(10))) or factorial(5) or n * factorial(n - 1)
-        if hasattr(self, '_current_methods'):
-            m_sub_fn = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^()]+)\)', expr)
-            if m_sub_fn and m_sub_fn.group(1) in self._current_methods and m_sub_fn.group(1) != 'main' and not expr.startswith('"'):
-                fn_name = m_sub_fn.group(1)
-                raw_args = m_sub_fn.group(2)
-                fn_meta = self._current_methods[fn_name]
-                args = [a.strip() for a in self._split_args(raw_args) if a.strip()]
-                eval_args = [self.resolve_expr(a, scope) for a in args]
-                m_scope = {}
-                for idx, p in enumerate(fn_meta.get('params', [])):
-                    pval = eval_args[idx] if idx < len(eval_args) else '0'
-                    m_scope[p['name']] = self.serialize(pval, p['type'], name=p['name'])
-
-                fn_res = None
-                for line_idx in range(fn_meta['start'], fn_meta['end'] + 1):
-                    if line_idx > len(self.lines): break
-                    l_str = self.lines[line_idx - 1].strip()
-                    if 'if' in l_str and '(' in l_str:
-                        m_c = re.search(r'if\s*\((.*?)\)', l_str)
-                        if m_c:
-                            c_eval = self.resolve_expr(m_c.group(1), m_scope)
-                            if 'true' in c_eval.lower() or c_eval == '1':
-                                if 'return ' in l_str:
-                                    ret_expr = re.search(r'return\s+([^;}]+)', l_str).group(1).strip()
-                                    fn_res = self.resolve_expr(ret_expr, m_scope)
-                                    break
-                                else:
-                                    nxt_l = self.lines[line_idx].strip() if line_idx < len(self.lines) else ''
-                                    if 'return ' in nxt_l:
-                                        ret_expr = re.search(r'return\s+([^;}]+)', nxt_l).group(1).strip()
-                                        fn_res = self.resolve_expr(ret_expr, m_scope)
-                                        break
-                    elif 'return ' in l_str:
-                        ret_expr = re.search(r'return\s+([^;}]+)', l_str).group(1).strip()
-                        fn_res = self.resolve_expr(ret_expr, m_scope)
-                        break
-
-                if fn_res is not None:
-                    # Replace fn call in expr with fn_res and evaluate remaining expression
-                    new_expr = expr[:m_sub_fn.start()] + str(fn_res) + expr[m_sub_fn.end():]
-                    return self.resolve_expr(new_expr, scope)
-
-        # Plain variable reference
-        if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
-            if expr in scope:
-                raw_val = scope[expr].get('raw', expr)
-                if m_inner := re.search(r"'(.*?)'", str(raw_val)):
-                    return m_inner.group(1)
-                return str(raw_val)
-            elif 'this' in scope and scope['this'].get('raw'):
-                raw_obj = str(scope['this']['raw'])
-                m_f = re.search(re.escape(expr) + r":'([^']+)'", raw_obj)
-                if m_f:
-                    return m_f.group(1)
-            return expr
-        # Split on + but keep quoted string parts intact
-        tokens = self._split_on_plus(expr)
-
-        if len(tokens) == 1:
-            # Single token — try arithmetic or variable lookup
-            tok = tokens[0].strip()
-            resolved = self._resolve_token(tok, scope)
-            # Try numeric eval after variable substitution
-            for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
-                raw_v = str(sdata['raw'])
-                if m_inner := re.search(r"'(.*?)'", raw_v):
-                    raw_v = m_inner.group(1)
-                resolved = re.sub(r'\b' + re.escape(sv) + r'\b', raw_v, resolved)
-            try:
-                # Evaluate arithmetic expressions with *, /, -, %
-                if any(op in resolved for op in ('*', '/', '-', '%')):
-                    val = eval(resolved, {"__builtins__": {}})   # nosec controlled
-                    return str(val)
-                val = eval(resolved, {"__builtins__": {}})   # nosec controlled
-                return str(val)
-            except ZeroDivisionError:
-                raise ZeroDivisionError("java.lang.ArithmeticException: / by zero")
-            except Exception:
-                return resolved.strip('"\'')
-
-        # Multiple + tokens → string/number concatenation
-        parts = [self._resolve_token(t.strip(), scope) for t in tokens]
-
-        # If any part is non-numeric treat all as string concat (no spaces)
-        all_numeric = all(self._is_numeric(p) for p in parts)
-        if all_numeric:
-            try:
-                # Arithmetic: evaluate with resolved numbers
-                rebuilt = '+'.join(parts)
-                return str(eval(rebuilt, {"__builtins__": {}}))  # nosec
-            except Exception:
-                pass
-
-        # Comparison or logical expression e.g. marks >= 90 or age + 1 > 18
-        if any(op in expr for op in ('>=', '<=', '==', '!=', '>', '<')):
-            rebuilt = expr
-            for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
-                raw_v = str(sdata['raw'])
-                if m_inner := re.search(r"'(.*?)'", raw_v):
-                    raw_v = m_inner.group(1)
-                rebuilt = re.sub(r'\b' + re.escape(sv) + r'\b', raw_v, rebuilt)
-            try:
-                return str(eval(rebuilt, {"__builtins__": {}}))  # nosec
-            except Exception:
-                pass
-
-        return ''.join(str(p) for p in parts)
-
-    def _split_args(self, args_str):
-        """Split argument string on commas respecting nested parentheses."""
-        args = []
-        curr = ''
-        depth = 0
-        for ch in args_str:
-            if ch == '(' or ch == '[':
-                depth += 1
-                curr += ch
-            elif ch == ')' or ch == ']':
-                depth -= 1
-                curr += ch
-            elif ch == ',' and depth == 0:
-                args.append(curr)
-                curr = ''
-            else:
-                curr += ch
-        if curr:
-            args.append(curr)
-        return args
-
-    def _split_on_plus(self, expr):
-        """Split on + while respecting quoted strings."""
-        tokens  = []
-        current = ''
-        in_str  = False
-        i       = 0
-        while i < len(expr):
-            ch = expr[i]
-            if ch == '"' and not in_str:
-                in_str  = True
-                current += ch
-            elif ch == '"' and in_str:
-                in_str  = False
-                current += ch
-            elif ch == '+' and not in_str:
-                tokens.append(current)
-                current = ''
-            else:
-                current += ch
-            i += 1
-        if current:
-            tokens.append(current)
-        return tokens
-
-    def _resolve_token(self, tok, scope):
-        """Resolve a single token: string literal, variable, or numeric."""
-        tok = tok.strip()
-        # String literal → strip quotes
-        if tok.startswith('"') and tok.endswith('"'):
-            return tok[1:-1]
-        if tok.startswith("'") and tok.endswith("'") and len(tok) == 3:
-            return tok[1]
-        # Variable reference
-        if tok in scope:
-            val_str = str(scope[tok]['raw'])
-            if m_inner := re.search(r"'(.*?)'", val_str):
-                return m_inner.group(1)
-            return val_str
-        elif 'this' in scope and scope['this'].get('raw'):
-            raw_obj = str(scope['this']['raw'])
-            m_f = re.search(re.escape(tok) + r":'([^']+)'", raw_obj)
-            if m_f:
-                return m_f.group(1)
-        # Bare numeric
-        try:
-            int(tok)
-            return tok
-        except ValueError:
-            pass
-        try:
-            float(tok)
-            return tok
-        except ValueError:
-            pass
-        # Check for uninitialized/undeclared variables or null property calls
-        if tok and not tok.isdigit() and not (tok.startswith('"') and tok.endswith('"')):
-            if tok not in scope and not self._is_numeric(tok):
-                # Integer.parseInt / Double.parseDouble checks
-                if 'Integer.parseInt' in tok or 'Double.parseDouble' in tok:
-                    raise ValueError("java.lang.NumberFormatException: For input string")
-                elif '.' in tok:
-                    parts = tok.split('.')
-                    if parts[0] in scope and scope[parts[0]]['raw'] in ('null', 'None'):
-                        raise NullPointerException(f"java.lang.NullPointerException: Cannot invoke '{parts[1]}' on null reference")
-
-        # Expression with variable substitution
-        resolved = tok
-        for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
-            resolved = re.sub(r'\b' + re.escape(sv) + r'\b', sdata['raw'], resolved)
-        try:
-            return str(eval(resolved, {"__builtins__": {}}))  # nosec
-        except ZeroDivisionError:
-            raise ZeroDivisionError("java.lang.ArithmeticException: / by zero")
-        except Exception:
-            return resolved.strip('"\'')
-
-    def _is_numeric(self, s):
-        try:
-            float(s)
-            return True
-        except (ValueError, TypeError):
-            return False
-
-    # ─── Pre-pass: detect method boundaries (single-pass, correct params) ────
-    def find_methods(self):
-        methods   = {}
-        method_re = re.compile(
-            r'(?:public|private|protected|static|void|int|double|String|boolean|long|float|char)?'
-            r'(?:\s+(?:public|private|protected|static|void|int|double|String|boolean|long|float|char))*'
-            r'\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\)\s*\{?'
-        )
-        brace_depth = 0
-        in_method   = None
-        start_line  = 0
-        params_buf  = []
-
-        for i, raw in enumerate(self.lines, start=1):
-            stripped = raw.strip()
-            m = method_re.search(stripped)
-            if m and not in_method:
-                mname      = m.group(1)
-                params_str = m.group(2).strip()
-                params     = []
-                if params_str:
-                    for p in params_str.split(','):
-                        p = p.strip()
-                        if p:
-                            parts = p.split()
-                            if len(parts) >= 2:
-                                params.append({'type': parts[0], 'name': parts[-1]})
-                start_line  = i
-                params_buf  = params
-                brace_depth = stripped.count('{') - stripped.count('}')
-                if brace_depth <= 0:
-                    methods[mname] = {
-                        'start':  start_line,
-                        'end':    i,
-                        'params': params_buf
-                    }
-                    in_method   = None
-                    brace_depth = 0
-                    params_buf  = []
+        elif t == 'IfStatement':
+            cond = self.eval_expr(node.condition, scope, call_stack, class_name)
+            self._emit(lineno, line_text, 'line', call_stack, scope, [],
+                       explanation=f"❓ Evaluating condition '{line_text}' ➔ {'TRUE' if self._truthy(cond) else 'FALSE'}")
+            if self._truthy(cond):
+                if isinstance(node.then_statement, list):
+                    self._exec_block(node.then_statement, scope, call_stack, class_name)
                 else:
-                    in_method   = mname
-            elif in_method:
-                brace_depth += stripped.count('{') - stripped.count('}')
-                if brace_depth <= 0:
-                    methods[in_method] = {
-                        'start':  start_line,
-                        'end':    i,
-                        'params': params_buf
-                    }
-                    in_method   = None
-                    brace_depth = 0
-                    params_buf  = []
-
-        return methods
-
-    def _exec_method(self, called_fn, args_list, caller_scope, call_stack, methods,
-                     re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return):
-        if called_fn not in methods or called_fn == 'main':
-            return 'void'
-
-        fn_info = methods[called_fn]
-        call_stack.append(f"{called_fn}()")
-        self._emit(fn_info['start'], self.lines[fn_info['start'] - 1].strip(), 'call', call_stack, caller_scope, [], called_fn)
-
-        local_scope = dict(caller_scope)
-        for p_idx, param in enumerate(fn_info.get('params', [])):
-            arg_raw = args_list[p_idx] if p_idx < len(args_list) else '0'
-            resolved = self.resolve_expr(arg_raw, caller_scope)
-            local_scope[param['name']] = self.serialize(resolved, param['type'], name=param['name'])
-
-        ret_val = 'void'
-        body_lineno = fn_info['start'] + 1
-        while body_lineno < fn_info['end']:
-            raw = self.lines[body_lineno - 1]
-            bline = raw.strip()
-            body_lineno += 1
-
-            if not bline or bline in ('{', '}', '};') or bline.startswith('//') or bline.startswith('/*'):
-                continue
-            if re.match(r'^(?:public|private|protected|static)\s+', bline) and '(' in bline:
-                continue
-
-            # Support for-each loop unrolling (e.g. for (String lang : langs) or for(Map.Entry<K,V> entry : map.entrySet()))
-            if bline.startswith('for ') or bline.startswith('for('):
-                m_fe = re.search(r'for\s*\(\s*([a-zA-Z0-9_$.<>,?\s]+)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*(.+?)\s*\)', bline)
-                if m_fe:
-                    ftype, vname, iterable_expr = m_fe.groups()
-                    arr_name = iterable_expr.split('.')[0].strip()
-                    hdr_lineno = body_lineno - 1
-
-                    loop_body_lines = []
-                    loop_brace = bline.count('{') - bline.count('}')
-                    curr_idx = body_lineno
-                    while curr_idx < fn_info['end'] and loop_brace > 0:
-                        b_line = self.lines[curr_idx - 1].strip()
-                        curr_idx += 1
-                        loop_brace += b_line.count('{') - b_line.count('}')
-                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
-                            loop_body_lines.append((curr_idx - 1, b_line))
-
-                    # Parse items from scope array / map entrySet
-                    arr_raw = local_scope.get(arr_name, {}).get('raw', '[]')
-                    items = []
-                    if arr_raw.startswith('[') and arr_raw.endswith(']'):
-                        inner = arr_raw[1:-1].strip()
-                        if inner:
-                            items = [x.strip().strip('"\'') for x in inner.split(',')]
-                    elif arr_name in local_scope:
-                        items = [10, 15, 20, 25, 30, 35, 40]
-                    if not items and 'Map' in ftype:
-                        items = ["1=One", "2=Two"]
-                    elif not items:
-                        items = ["item"]
-
-                    for item_val in items[:50]:
-                        local_scope[vname] = self.serialize(item_val, ftype, name=vname)
-                        local_scope[vname]['is_changed'] = True
-                        expl_hdr = f"🔄 For-Each iteration {vname} = {repr(item_val)}"
-                        self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
-
-                        skip_else = False
-                        for b_lineno, b_line_str in loop_body_lines:
-                            if 'if' in b_line_str and '(' in b_line_str:
-                                m_c = re.search(r'if\s*\((.*?)\)', b_line_str)
-                                if m_c:
-                                    c_res = self.resolve_expr(m_c.group(1), local_scope)
-                                    cond_b = eval(c_res, {"__builtins__": {}}) if self._is_numeric(c_res) or c_res in ('True', 'False') else ('true' in str(c_res).lower())
-                                    skip_else = bool(cond_b)
-                                    continue
-                            elif 'else' in b_line_str:
-                                continue
-
-                            if skip_else and ('-=' in b_line_str or 'total -=' in b_line_str):
-                                continue
-                            elif not skip_else and ('+=' in b_line_str or 'total +=' in b_line_str):
-                                continue
-
-                            m_out = re_println.match(b_line_str)
-                            if m_out:
-                                arg = m_out.group(1).strip()
-                                output = self.resolve_expr(arg, local_scope)
-                                self.stdout_lines.append(f"[JVM] {output}")
-                            elif re_assign.match(b_line_str):
-                                m_a = re_assign.match(b_line_str)
-                                vn, ve = m_a.groups()
-                                if vn in local_scope:
-                                    res_val = self.resolve_expr(ve, local_scope)
-                                    local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
-                                    local_scope[vn]['is_changed'] = True
-
-                            expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
-                            self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
-
-                    body_lineno = curr_idx
-                    continue
-
-                # Support indexed for-loop unrolling
-                m_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*;\s*(.+?)\)', bline)
-                if m_for:
-                    vname, start_val, op, end_val_raw, incr_expr = m_for.groups()
-                    start_i = int(start_val)
-                    end_i   = int(self.resolve_expr(end_val_raw, local_scope))
-                    hdr_lineno = body_lineno - 1
-
-                    loop_body_lines = []
-                    loop_brace = bline.count('{') - bline.count('}')
-                    curr_idx = body_lineno
-                    while curr_idx < fn_info['end'] and loop_brace > 0:
-                        b_line = self.lines[curr_idx - 1].strip()
-                        curr_idx += 1
-                        loop_brace += b_line.count('{') - b_line.count('}')
-                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
-                            loop_body_lines.append((curr_idx - 1, b_line))
-
-                    step_val = -1 if ('--' in incr_expr or '-=' in incr_expr) else 1
-                    if op == '<=': iter_range = range(start_i, end_i + 1, step_val)
-                    elif op == '<': iter_range = range(start_i, end_i, step_val)
-                    elif op == '>=': iter_range = range(start_i, end_i - 1, step_val)
-                    elif op == '>': iter_range = range(start_i, end_i, step_val)
-                    else: iter_range = range(start_i, end_i + 1, step_val)
-
-                    for iter_val in list(iter_range)[:50]:
-                        local_scope[vname] = self.serialize(iter_val, 'int', name=vname)
-                        local_scope[vname]['is_changed'] = True
-                        expl_hdr = f"🔄 Loop iteration {vname} = {iter_val}"
-                        self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
-
-                        for b_lineno, b_line_str in loop_body_lines:
-                            m_out = re_println.match(b_line_str)
-                            if m_out:
-                                arg = m_out.group(1).strip()
-                                output = self.resolve_expr(arg, local_scope)
-                                self.stdout_lines.append(f"[JVM] {output}")
-                            elif re_assign.match(b_line_str):
-                                m_a = re_assign.match(b_line_str)
-                                vn, ve = m_a.groups()
-                                if vn in local_scope:
-                                    res_val = self.resolve_expr(ve, local_scope)
-                                    local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
-                                    local_scope[vn]['is_changed'] = True
-                            elif b_line_str.endswith('++') or b_line_str.endswith('--'):
-                                vn = b_line_str.rstrip(';+- ').strip()
-                                if vn in local_scope:
-                                    delta = 1 if '++' in b_line_str else -1
-                                    cur = int(local_scope[vn]['raw'])
-                                    local_scope[vn] = self.serialize(cur + delta, local_scope[vn]['type'], name=vn)
-                                    local_scope[vn]['is_changed'] = True
-
-                            for k in local_scope: local_scope[k]['is_changed'] = (k == vname or k in (b_line_str,))
-                            expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
-                            self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
-
-                    body_lineno = curr_idx
-                    continue
-
-            # Support while loop unrolling inside static method
-            if bline.startswith('while ') or bline.startswith('while('):
-                m_w = re.search(r'while\s*\(\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(<=|<|>=|>|!=)\s*(\d+|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', bline)
-                if m_w:
-                    vname, op, end_val_raw = m_w.groups()
-                    hdr_lineno = body_lineno - 1
-
-                    loop_body_lines = []
-                    loop_brace = bline.count('{') - bline.count('}')
-                    curr_idx = body_lineno
-                    while curr_idx < fn_info['end'] and loop_brace > 0:
-                        b_line = self.lines[curr_idx - 1].strip()
-                        curr_idx += 1
-                        loop_brace += b_line.count('{') - b_line.count('}')
-                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
-                            loop_body_lines.append((curr_idx - 1, b_line))
-
-                    for _ in range(50):
-                        if vname not in local_scope: break
-                        cur_i = int(local_scope[vname]['raw'])
-                        end_i = int(self.resolve_expr(end_val_raw, local_scope))
-                        cond = (cur_i <= end_i) if op == '<=' else (cur_i < end_i) if op == '<' else (cur_i >= end_i) if op == '>=' else (cur_i > end_i) if op == '>' else (cur_i != end_i)
-                        if not cond: break
-
-                        expl_hdr = f"🔄 While iteration {vname} = {cur_i}"
-                        self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
-
-                        for b_lineno, b_line_str in loop_body_lines:
-                            m_out = re_println.match(b_line_str)
-                            if m_out:
-                                arg = m_out.group(1).strip()
-                                output = self.resolve_expr(arg, local_scope)
-                                self.stdout_lines.append(f"[JVM] {output}")
-                            elif re_assign.match(b_line_str):
-                                m_a = re_assign.match(b_line_str)
-                                vn, ve = m_a.groups()
-                                if vn in local_scope:
-                                    res_val = self.resolve_expr(ve, local_scope)
-                                    local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
-                                    local_scope[vn]['is_changed'] = True
-                            elif b_line_str.endswith('++') or b_line_str.endswith('--') or '++' in b_line_str or '--' in b_line_str:
-                                vn = b_line_str.rstrip(';+- ').strip()
-                                if vn in local_scope:
-                                    delta = 1 if '++' in b_line_str else -1
-                                    cur = int(local_scope[vn]['raw'])
-                                    local_scope[vn] = self.serialize(cur + delta, local_scope[vn]['type'], name=vn)
-                                    local_scope[vn]['is_changed'] = True
-
-                            expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
-                            self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
-
-                    body_lineno = curr_idx
-                    continue
-
-            # Support do-while loop unrolling inside static method
-            if bline.startswith('do ') or bline.startswith('do{'):
-                hdr_lineno = body_lineno - 1
-                loop_body_lines = []
-                loop_brace = bline.count('{') - bline.count('}')
-                curr_idx = body_lineno
-                while_line_str = ""
-                while curr_idx < fn_info['end'] and loop_brace >= 0:
-                    b_line = self.lines[curr_idx - 1].strip()
-                    curr_idx += 1
-                    if 'while' in b_line and '(' in b_line and ')' in b_line:
-                        while_line_str = b_line
-                        break
-                    loop_brace += b_line.count('{') - b_line.count('}')
-                    if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
-                        loop_body_lines.append((curr_idx - 1, b_line))
-
-                m_dw = re.search(r'while\s*\(\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(<=|<|>=|>|!=)\s*(\d+|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', while_line_str)
-                vname = m_dw.group(1) if m_dw else 'i'
-                op = m_dw.group(2) if m_dw else '<='
-                end_val_raw = m_dw.group(3) if m_dw else '5'
-
-                for _ in range(50):
-                    if vname not in local_scope: break
-                    cur_i = int(local_scope[vname]['raw'])
-                    end_i = int(self.resolve_expr(end_val_raw, local_scope))
-                    cond = (cur_i <= end_i) if op == '<=' else (cur_i < end_i) if op == '<' else (cur_i >= end_i) if op == '>=' else (cur_i > end_i) if op == '>' else (cur_i != end_i)
-                    if not cond: break
-
-                    expl_hdr = f"🔄 Do-While iteration {vname} = {cur_i}"
-                    self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
-
-                    for b_lineno, b_line_str in loop_body_lines:
-                        m_out = re_println.match(b_line_str)
-                        if m_out:
-                            arg = m_out.group(1).strip()
-                            output = self.resolve_expr(arg, local_scope)
-                            self.stdout_lines.append(f"[JVM] {output}")
-                        elif re_assign.match(b_line_str):
-                            m_a = re_assign.match(b_line_str)
-                            vn, ve = m_a.groups()
-                            if vn in local_scope:
-                                res_val = self.resolve_expr(ve, local_scope)
-                                local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
-                                local_scope[vn]['is_changed'] = True
-                        elif b_line_str.endswith('++') or b_line_str.endswith('--') or '++' in b_line_str or '--' in b_line_str:
-                            vn = b_line_str.rstrip(';+- ').strip()
-                            if vn in local_scope:
-                                delta = 1 if '++' in b_line_str else -1
-                                cur = int(local_scope[vn]['raw'])
-                                local_scope[vn] = self.serialize(cur + delta, local_scope[vn]['type'], name=vn)
-                                local_scope[vn]['is_changed'] = True
-
-                        expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
-                        self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
-
-                body_lineno = curr_idx
-                continue
-
-            # System.out.println
-            m_out = re_println.match(bline)
-            if m_out:
-                arg = m_out.group(1).strip()
-                output = self.resolve_expr(arg, local_scope)
-                self.stdout_lines.append(f"[JVM] {output}")
-                self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [])
-                continue
-
-            # Primitive decl
-            bm = re_prim_decl.match(bline)
-            if bm:
-                bjtype, bname, bexpr = bm.groups()
-                bval = self.resolve_expr(bexpr, local_scope)
-                local_scope[bname] = self.serialize(bval, bjtype, name=bname)
-                self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [bname])
-                continue
-
-            # Array decl (e.g. String[] langs = {"Java", "Python", "JavaScript"})
-            barr = re_arr_decl.match(bline)
-            if barr:
-                jtype, vname, items_str = barr.groups()
-                if items_str:
-                    items = [x.strip() for x in items_str.split(',')]
-                    raw_val = f"[{', '.join(items)}]"
+                    self._exec_statement(node.then_statement, scope, call_stack, class_name)
+            elif node.else_statement is not None:
+                if isinstance(node.else_statement, list):
+                    self._exec_block(node.else_statement, scope, call_stack, class_name)
                 else:
-                    raw_val = f"new {jtype}[]"
-                local_scope[vname] = {
-                    'type': f"{jtype}[]",
-                    'value': repr(raw_val),
-                    'raw': raw_val,
-                    'is_primitive': False,
-                    'mem_addr': self._mem_addr(vname, False),
-                    'is_changed': True
-                }
-                self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [vname])
-                continue
+                    self._exec_statement(node.else_statement, scope, call_stack, class_name)
 
-            # Reassignment / Unary ++ / -- / Member field assignment (this.name = name)
-            if bline.startswith('this.') or '.' in bline.split('=')[0]:
-                parts = bline.split('=')
-                field_name = parts[0].replace('this.', '').strip()
-                field_expr = parts[1].strip() if len(parts) > 1 else ''
-                res_val = self.resolve_expr(field_expr, local_scope)
-                if 'this' in local_scope:
-                    old_raw = local_scope['this'].get('raw', '')
-                    if '{' in old_raw and old_raw.endswith('}'):
-                        inner = old_raw[old_raw.find('{')+1:-1].strip()
-                        pairs = [p.strip() for p in inner.split(',') if p.strip() and not p.startswith(field_name + ':')]
-                        pairs.append(f"{field_name}:'{res_val}'")
-                        cls_n = old_raw.split('{')[0]
-                        new_raw = f"{cls_n}{{{', '.join(pairs)}}}"
+        elif t == 'ForStatement':
+            # Handle init control (variable decl or expression or VariableDeclaration)
+            if node.control.init:
+                inits = node.control.init if isinstance(node.control.init, list) else [node.control.init]
+                for init_item in inits:
+                    if type(init_item).__name__ == 'VariableDeclaration':
+                        for decl in init_item.declarators:
+                            val = self.eval_expr(decl.initializer, scope, call_stack, class_name) \
+                                if decl.initializer is not None else self._default_value(init_item.type)
+                            self._declare(scope, decl.name, init_item.type, val)
                     else:
-                        new_raw = f"Object{{{field_name}:'{res_val}'}}"
-                    local_scope['this']['raw'] = new_raw
-                    local_scope['this']['value'] = repr(new_raw)
-                    local_scope['this']['is_changed'] = True
-                for obj_name, obj_data in caller_scope.items():
-                    if not obj_data.get('is_primitive') and 'this' in local_scope and local_scope['this']['mem_addr'] == obj_data.get('mem_addr'):
-                        obj_data['raw'] = local_scope['this']['raw']
-                        obj_data['value'] = local_scope['this']['value']
-                        obj_data['is_changed'] = True
-            ba = re_assign.match(bline)
-            if ba:
-                rname, rexpr = ba.groups()
-                if rname in local_scope:
-                    rtype = local_scope[rname]['type']
-                    rval = self.resolve_expr(rexpr, local_scope)
-                    local_scope[rname] = self.serialize(rval, rtype, name=rname)
-                    self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [rname])
-                continue
-            elif bline.endswith('++') or bline.endswith('--'):
-                rname = bline.rstrip(';+- ').strip()
-                if rname in local_scope:
-                    rtype = local_scope[rname]['type']
-                    delta = 1 if '++' in bline else -1
-                    rval = str(int(local_scope[rname]['raw']) + delta)
-                    local_scope[rname] = self.serialize(rval, rtype, name=rname)
-                    self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [rname])
-                continue
+                        self._exec_statement(init_item, scope, call_stack, class_name)
 
-            # Nested return call assignment: int res = add(a, b);
-            m_ret = re_call_ret.match(bline)
-            if m_ret:
-                tgt_var, sub_fn, sub_args_str = m_ret.groups()
-                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
-                sub_res = self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
-                                           re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
-                type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', bline)
-                jtype = type_m.group(1) if type_m else (local_scope[tgt_var]['type'] if tgt_var in local_scope else 'int')
-                local_scope[tgt_var] = self.serialize(sub_res, jtype, name=tgt_var)
-                continue
-
-            # Nested plain call: add(a, b);
-            m_plain = re_call2.match(bline)
-            if m_plain:
-                sub_fn, sub_args_str = m_plain.groups()
-                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
-                self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
-                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
-                continue
-
-            # Return statement
-            mr = re_return.match(bline)
-            if mr:
-                ret_val = self.resolve_expr(mr.group(1), local_scope)
-                break
-
-        call_stack.pop()
-        self._emit(fn_info['end'], f"return {ret_val}", 'return', call_stack, caller_scope, [], called_fn, ret_val)
-        return ret_val
-
-    # ─── Core Execute ─────────────────────────────────────────────────────────
-    def execute(self):
-        scope      = {}
-        call_stack = ['Main.main(String[] args)']
-        methods    = self.find_methods()
-        self._current_methods = methods
-
-        re_prim_decl = re.compile(
-            r'^(int|double|float|long|short|byte|char|boolean|String)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$'
-        )
-        re_uninit_decl = re.compile(
-            r'^(int|double|float|long|short|byte|char|boolean|String)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*;?$'
-        )
-        re_arr_decl = re.compile(
-            r'^(int|double|String|long|float)\[\]\s+([a-zA-Z_$][a-zA-Z0-9_$]*)'
-            r'\s*=\s*(?:new\s+[a-zA-Z0-9_$.<>]+\s*\[\s*\d*\s*\]|\{([^}]*)\});?$'
-        )
-        re_assign  = re.compile(
-            r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?:\+|-|\*|\/|%)?=\s*(.+?);?$'
-        )
-        re_println  = re.compile(r'^System\.out\.print(?:ln)?\((.+)\);?$')
-        re_call_ret = re.compile(
-            r'^(?:(?:int|double|String|boolean|float|long|[a-zA-Z_$][a-zA-Z0-9_$]*)\s+)?'
-            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$.]*)\s*\((.*)\);?$'
-        )
-        re_call2   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$.]*)\(([^)]*)\);?$')
-        re_return  = re.compile(r'^return\s+(.*?);?$')
-
-        main_info = methods.get('main', None)
-        if main_info:
-            main_start = main_info['start']
-            main_end   = main_info['end']
-        else:
-            main_start = 1
-            main_end   = len(self.lines) + 1
-            for idx, l in enumerate(self.lines, start=1):
-                if 'main' in l and '(' in l:
-                    main_start = idx
+            while True:
+                if node.control.condition:
+                    cond = self.eval_expr(node.control.condition, scope, call_stack, class_name)
+                    if not self._truthy(cond):
+                        break
+                self._emit(lineno, line_text, 'line', call_stack, scope, [])
+                try:
+                    body = node.body if isinstance(node.body, list) else [node.body]
+                    self._exec_block(body, scope, call_stack, class_name)
+                except ContinueSignal:
+                    pass
+                except BreakSignal:
                     break
 
-        i = main_start + 1
-        while i < main_end:
-            raw_line = self.lines[i - 1]
-            stripped  = raw_line.strip()
-            i += 1
+                if node.control.update:
+                    for up in node.control.update:
+                        self.eval_expr(up, scope, call_stack, class_name)
 
-            # Join multi-line statements e.g. List<Integer> numbers = Arrays.asList(\n 10, 15, 20... \n);
-            if stripped and not stripped.endswith(';') and not stripped.endswith('{') and not stripped.endswith('}') and not stripped.startswith('//') and not stripped.startswith('if') and not stripped.startswith('for') and not stripped.startswith('while') and not stripped.startswith('try') and not stripped.startswith('catch') and not stripped.startswith('finally'):
-                line_idx_start = i - 1
-                stmt_buf = [stripped]
-                while i < main_end:
-                    nxt = self.lines[i - 1].strip()
-                    stmt_buf.append(nxt)
-                    i += 1
-                    if nxt.endswith(';') or nxt.endswith('{') or nxt.endswith('}'):
-                        break
-                stripped = ' '.join(stmt_buf)
+        elif t == 'WhileStatement':
+            while True:
+                cond = self.eval_expr(node.condition, scope, call_stack, class_name)
+                if not self._truthy(cond):
+                    break
+                self._emit(lineno, line_text, 'line', call_stack, scope, [])
+                try:
+                    body = node.body if isinstance(node.body, list) else [node.body]
+                    self._exec_block(body, scope, call_stack, class_name)
+                except ContinueSignal:
+                    pass
+                except BreakSignal:
+                    break
 
-            # Unroll for-each loops e.g. for (String lang : langs) or for (Map.Entry<K,V> entry : map.entrySet())
-            if (stripped.startswith('for ') or stripped.startswith('for(')) and ':' in stripped:
-                m_fe = re.search(r'for\s*\(\s*([a-zA-Z0-9_$.<>,?\s]+)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*(.+?)\s*\)', stripped)
-                if m_fe:
-                    ftype, vname, iterable_expr = m_fe.groups()
-                    arr_name = iterable_expr.split('.')[0].strip()
-                    hdr_lineno = i - 1
+        elif t == 'DoStatement':
+            while True:
+                self._emit(lineno, line_text, 'line', call_stack, scope, [])
+                try:
+                    body = node.body if isinstance(node.body, list) else [node.body]
+                    self._exec_block(body, scope, call_stack, class_name)
+                except ContinueSignal:
+                    pass
+                except BreakSignal:
+                    break
+                cond = self.eval_expr(node.condition, scope, call_stack, class_name)
+                if not self._truthy(cond):
+                    break
 
-                    loop_body_lines = []
-                    loop_brace = stripped.count('{') - stripped.count('}')
-                    curr_idx = i
-                    while curr_idx < main_end and loop_brace > 0:
-                        b_line = self.lines[curr_idx - 1].strip()
-                        curr_idx += 1
-                        loop_brace += b_line.count('{') - b_line.count('}')
-                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
-                            loop_body_lines.append((curr_idx - 1, b_line))
+        elif t == 'ReturnStatement':
+            val = self.eval_expr(node.expression, scope, call_stack, class_name) if node.expression else NULL
+            self._emit(lineno, line_text, 'return', call_stack, scope, [], ret_val=val)
+            raise ReturnSignal(val)
 
-                    arr_raw = scope.get(arr_name, {}).get('raw', '[]')
-                    items = []
-                    if arr_raw.startswith('[') and arr_raw.endswith(']'):
-                        inner = arr_raw[1:-1].strip()
-                        if inner:
-                            items = [x.strip().strip('"\'') for x in inner.split(',')]
-                    elif arr_name in scope:
-                        items = [10, 15, 20, 25, 30, 35, 40]
-                    if not items and 'Map' in ftype:
-                        items = ["1=One", "2=Two"]
-                    elif not items:
-                        items = ["Java", "Python"]
+        elif t == 'BreakStatement':
+            raise BreakSignal(node.goto)
 
-                    for item_val in items[:50]:
-                        scope[vname] = self.serialize(item_val, ftype, name=vname)
-                        scope[vname]['is_changed'] = True
+        elif t == 'ContinueStatement':
+            raise ContinueSignal(node.goto)
 
-                        expl_hdr = f"🔄 For-Each iteration {vname} = {repr(item_val)}"
-                        self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [vname], explanation=expl_hdr)
+        elif t == 'BlockStatement':
+            body = node.statements if hasattr(node, 'statements') else (node.body if hasattr(node, 'body') else [])
+            self._exec_block(body, scope, call_stack, class_name)
 
-                        for b_lineno, b_line in loop_body_lines:
-                            m_out = re_println.match(b_line)
-                            if m_out:
-                                arg = m_out.group(1).strip()
-                                output = self.resolve_expr(arg, scope)
-                                self.stdout_lines.append(f"[JVM] {output}")
-                            elif re_assign.match(b_line):
-                                m_a = re_assign.match(b_line)
-                                vn, ve = m_a.groups()
-                                if vn in scope:
-                                    res_val = self.resolve_expr(ve, scope)
-                                    scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
-                                    scope[vn]['is_changed'] = True
-
-                            for k in scope: scope[k]['is_changed'] = (k == vname)
-                            expl = self.explain('line', b_lineno, b_line, scope, [vname])
-                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [vname], explanation=expl)
-                            self.prev_variables = {k: dict(v) for k, v in scope.items()}
-
-                    i = curr_idx
-                    continue
-
-            # Unroll for-loop iterations (e.g., for (int i = 1; i <= 5; i++))
-            if stripped.startswith('for ') or stripped.startswith('for('):
-                m_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+)\s*;\s*(.+?)\)', stripped)
-                if m_for:
-                    vname, start_val, op, end_val, incr_expr = m_for.groups()
-                    start_i = int(start_val)
-                    end_i   = int(end_val)
-                    hdr_lineno = i - 1
-                    
-                    # Find loop body lines inside braces
-                    loop_body_lines = []
-                    loop_brace = stripped.count('{') - stripped.count('}')
-                    curr_idx = i
-                    while curr_idx < main_end and loop_brace > 0:
-                        b_line = self.lines[curr_idx - 1].strip()
-                        curr_idx += 1
-                        loop_brace += b_line.count('{') - b_line.count('}')
-                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
-                            loop_body_lines.append((curr_idx - 1, b_line))
-                    
-                    # Compute iteration range safely (max 50 iterations)
-                    step_val = -1 if ('--' in incr_expr or '-=' in incr_expr) else 1
-                    if op == '<=': iter_range = range(start_i, end_i + 1, step_val)
-                    elif op == '<': iter_range = range(start_i, end_i, step_val)
-                    elif op == '>=': iter_range = range(start_i, end_i - 1, step_val)
-                    elif op == '>': iter_range = range(start_i, end_i, step_val)
-                    else: iter_range = range(start_i, end_i + 1, step_val)
-                    
-                    for iter_val in list(iter_range)[:50]:
-                        scope[vname] = self.serialize(iter_val, 'int', name=vname)
-                        scope[vname]['is_changed'] = True
-                        
-                        # Emit loop header evaluation step
-                        expl_hdr = f"🔄 Loop iteration {vname} = {iter_val}"
-                        self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [vname], explanation=expl_hdr)
-                        
-                        for b_lineno, b_line in loop_body_lines:
-                            # Nested loop handling e.g. for (int j = 1; j <= 3; j++)
-                            m_nest_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+)\s*;\s*(.+?)\)', b_line)
-                            if m_nest_for:
-                                j_name, j_start, j_op, j_end, j_incr = m_nest_for.groups()
-                                j_s = int(j_start)
-                                j_e = int(j_end)
-                                j_step = -1 if ('--' in j_incr or '-=' in j_incr) else 1
-                                if j_op == '<=': j_range = range(j_s, j_e + 1, j_step)
-                                elif j_op == '<': j_range = range(j_s, j_e, j_step)
-                                elif j_op == '>=': j_range = range(j_s, j_e - 1, j_step)
-                                else: j_range = range(j_s, j_e + 1, j_step)
-
-                                for j_val in list(j_range)[:50]:
-                                    scope[j_name] = self.serialize(j_val, 'int', name=j_name)
-                                    scope[j_name]['is_changed'] = True
-                                    expl_nest = f"🔄 Inner loop iteration {j_name} = {j_val}"
-                                    self._emit(b_lineno, b_line, 'line', call_stack, scope, [j_name], explanation=expl_nest)
-
-                                    # Execute inner loop body lines
-                                    for in_lineno, in_line in loop_body_lines:
-                                        if in_line.startswith('for') or in_line.startswith('}') or not in_line:
-                                            continue
-                                        m_in_out = re_println.match(in_line)
-                                        if m_in_out:
-                                            arg = m_in_out.group(1).strip()
-                                            output = self.resolve_expr(arg, scope)
-                                            self.stdout_lines.append(f"[JVM] {output}")
-                                            self._emit(in_lineno, in_line, 'line', call_stack, scope, [vname, j_name])
-                                continue
-
-                            m_out = re_println.match(b_line)
-                            if m_out:
-                                arg = m_out.group(1).strip()
-                                output = self.resolve_expr(arg, scope)
-                                self.stdout_lines.append(f"[JVM] {output}")
-                            elif re_assign.match(b_line):
-                                m_a = re_assign.match(b_line)
-                                vn, ve = m_a.groups()
-                                if vn in scope:
-                                    res_val = self.resolve_expr(ve, scope)
-                                    scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
-                                    scope[vn]['is_changed'] = True
-                            
-                            for k in scope: scope[k]['is_changed'] = (k == vname)
-                            expl = self.explain('line', b_lineno, b_line, scope, [vname])
-                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [vname], explanation=expl)
-                            self.prev_variables = {k: dict(v) for k, v in scope.items()}
-                    
-                    i = curr_idx
-                    continue
-
-            # ── Control Flow: If / Else-If / Else Branching ───────────────────
-            if stripped.startswith('if ') or stripped.startswith('if(') or 'else if' in stripped or stripped.startswith('} else if'):
-                m_cond = re.search(r'if\s*\((.*?)\)', stripped)
-                cond_val = True
-                if m_cond:
-                    cond_str = m_cond.group(1).strip()
-                    resolved_cond = self.resolve_expr(cond_str, scope)
-                    try:
-                        cond_val = bool(eval(resolved_cond, {"__builtins__": {}}))
-                    except Exception:
-                        cond_val = 'true' in str(resolved_cond).lower()
-
-                expl_if = f"❓ Evaluating condition '{stripped}' ➔ {'TRUE (taking branch)' if cond_val else 'FALSE (skipping branch)'}"
-                self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_if)
-
-                if not cond_val:
-                    # Skip this IF body to reach next ELSE IF or ELSE
-                    brace_cnt = stripped.count('{') - stripped.count('}')
-                    if brace_cnt <= 0: brace_cnt = 1
-                    while i <= main_end and brace_cnt > 0:
-                        b_line = self.lines[i - 1].strip()
-                        if ('else if' in b_line or b_line.startswith('} else')) and brace_cnt == 1:
-                            break
-                        i += 1
-                        brace_cnt += b_line.count('{') - b_line.count('}')
-                else:
-                    # Condition TRUE: execute body line-by-line, then skip all trailing else if/else blocks
-                    body_start = i
-                    brace_cnt = stripped.count('{') - stripped.count('}')
-                    if brace_cnt <= 0: brace_cnt = 1
-                    while i <= main_end and brace_cnt > 0:
-                        b_line = self.lines[i - 1].strip()
-                        i += 1
-                        brace_cnt += b_line.count('{') - b_line.count('}')
-                    # Now advance i past all subsequent else if / else blocks
-                    while i <= main_end:
-                        nxt_line = self.lines[i - 1].strip()
-                        if 'else if' in nxt_line or nxt_line.startswith('} else') or nxt_line.startswith('else'):
-                            bc = nxt_line.count('{') - nxt_line.count('}')
-                            if bc <= 0: bc = 1
-                            while i <= main_end and bc > 0:
-                                bl = self.lines[i - 1].strip()
-                                i += 1
-                                bc += bl.count('{') - bl.count('}')
-                        else:
-                            break
-                    chain_end = i
-                    # Execute body lines between body_start and body end
-                    i = body_start
-                    while i < chain_end and i <= main_end:
-                        l_text = self.lines[i - 1].strip()
-                        if ('else if' in l_text or l_text.startswith('} else') or l_text.startswith('else')) and i > body_start:
-                            i = chain_end
-                            break
-                        i += 1
-                        if not l_text or l_text in ('{', '}', '};') or l_text.startswith('//'):
-                            continue
-                        m_out = re_println.match(l_text)
-                        if m_out:
-                            arg = m_out.group(1).strip()
-                            output = self.resolve_expr(arg, scope)
-                            self.stdout_lines.append(f"[JVM] {output}")
-                            self._emit(i - 1, l_text, 'line', call_stack, scope, [])
-                        elif re_assign.match(l_text):
-                            m_a = re_assign.match(l_text)
-                            vn, ve = m_a.groups()
-                            if vn in scope:
-                                res_val = self.resolve_expr(ve, scope)
-                                scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
-                                scope[vn]['is_changed'] = True
-                                self._emit(i - 1, l_text, 'line', call_stack, scope, [vn])
-                    i = chain_end - 1
-                continue
-
-            if (stripped.startswith('else') or stripped.startswith('} else')) and 'else if' not in stripped:
-                # Look back in self.lines to find the matching 'if' condition and check if it was TRUE
-                prev_idx = i - 2
-                if_was_true = False
-                while prev_idx >= 0:
-                    pl = self.lines[prev_idx].strip()
-                    if pl.startswith('if') or pl.startswith('else if') or 'if(' in pl or 'if (' in pl:
-                        m_prev = re.search(r'if\s*\((.*?)\)', pl)
-                        if m_prev:
-                            res_p = self.resolve_expr(m_prev.group(1).strip(), scope)
-                            try:
-                                if_was_true = bool(eval(res_p, {"__builtins__": {}}))
-                            except Exception:
-                                if_was_true = 'true' in str(res_p).lower()
-                        break
-                    prev_idx -= 1
-
-                if if_was_true:
-                    # Skip the entire ELSE block body since IF condition was TRUE
-                    brace_cnt = stripped.count('{') - stripped.count('}')
-                    if brace_cnt <= 0:
-                        # e.g. "} else {" or "} else"
-                        brace_cnt = 1
-                    while i <= main_end and brace_cnt > 0:
-                        b_line = self.lines[i - 1].strip()
-                        i += 1
-                        brace_cnt += b_line.count('{') - b_line.count('}')
-                    continue
-                else:
-                    expl_else = f"🔀 Branching into else block."
-                    self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_else)
-                    continue
-
-            # ── Control Flow: Try-Catch-Finally Execution ────────────────────
-            if stripped.startswith('try') or stripped.startswith('try {'):
-                hdr_lineno = i - 1
-                try_body_lines = []
-                catch_var_name = 'e'
-                catch_body_lines = []
-                finally_body_lines = []
-                has_exception = False
-                exception_obj = "java.lang.ArithmeticException: / by zero"
-
-                curr_idx = i
-                section = 'try'
-
-                while curr_idx < main_end:
-                    b_line = self.lines[curr_idx - 1].strip()
-                    curr_idx += 1
-                    if b_line.startswith('catch') or '} catch' in b_line:
-                        section = 'catch'
-                        m_cvar = re.search(r'catch\s*\(\s*(?:Exception|[a-zA-Z_$][a-zA-Z0-9_$]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', b_line)
-                        if m_cvar: catch_var_name = m_cvar.group(1)
-                        continue
-                    elif b_line.startswith('finally') or '} finally' in b_line:
-                        section = 'finally'
-                        continue
-                    elif b_line in ('}', '};') and section in ('catch', 'finally'):
-                        break
-
-                    if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
-                        if section == 'try':
-                            try_body_lines.append((curr_idx - 1, b_line))
-                            if '/ 0' in b_line or '/0' in b_line:
-                                has_exception = True
-                        elif section == 'catch':
-                            catch_body_lines.append((curr_idx - 1, b_line))
-                        elif section == 'finally':
-                            finally_body_lines.append((curr_idx - 1, b_line))
-
-                # Emit try header
-                self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [], explanation="🛡️ Entering try block")
-
-                # Try body lines with full Java Exception evaluation
-                for b_lineno, b_line in try_body_lines:
-                    line_has_ex = False
-                    if '/ 0' in b_line or '/0' in b_line:
-                        line_has_ex = True
-                        has_exception = True
-                        exception_obj = "java.lang.ArithmeticException: / by zero"
-                    elif '.null' in b_line.lower() or 'null.' in b_line.lower():
-                        line_has_ex = True
-                        has_exception = True
-                        exception_obj = "java.lang.NullPointerException: Cannot invoke method on null object"
-                    elif 'arr[' in b_line or 'array[' in b_line or 'list.get(' in b_line:
-                        line_has_ex = True
-                        has_exception = True
-                        exception_obj = "java.lang.ArrayIndexOutOfBoundsException: Index out of bounds"
-                    elif 'Integer.parseInt' in b_line or 'Double.parseDouble' in b_line:
-                        line_has_ex = True
-                        has_exception = True
-                        exception_obj = "java.lang.NumberFormatException: For input string"
-                    elif 'throw new' in b_line:
-                        line_has_ex = True
-                        has_exception = True
-                        m_th = re.search(r'throw\s+new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(\s*(.*?)\s*\)', b_line)
-                        if m_th:
-                            exception_obj = f"java.lang.{m_th.group(1)}: {m_th.group(2).strip('\"\'')}"
-                        else:
-                            exception_obj = "java.lang.Exception: User thrown exception"
-
-                    if line_has_ex:
-                        self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=f"⚠️ Exception thrown: {exception_obj}")
-                        break
-                    else:
-                        m_out = re_println.match(b_line)
-                        if m_out:
-                            arg = m_out.group(1).strip()
-                            output = self.resolve_expr(arg, scope)
-                            self.stdout_lines.append(f"[JVM] {output}")
-                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [])
-                        elif re_prim_decl.match(b_line):
-                            m_p = re_prim_decl.match(b_line)
-                            ptype, pname, pexpr = m_p.groups()
-                            try:
-                                pval = self.resolve_expr(pexpr, scope)
-                            except ZeroDivisionError as zd:
-                                line_has_ex = True
-                                has_exception = True
-                                exception_obj = str(zd)
-                                self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=f"⚠️ Exception thrown: {exception_obj}")
-                                break
-                            scope[pname] = self.serialize(pval, ptype, name=pname)
-                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [pname])
-                        elif re_assign.match(b_line):
-                            m_a = re_assign.match(b_line)
-                            vn, ve = m_a.groups()
-                            if vn in scope:
-                                try:
-                                    res_val = self.resolve_expr(ve, scope)
-                                except ZeroDivisionError as zd:
-                                    line_has_ex = True
-                                    has_exception = True
-                                    exception_obj = str(zd)
-                                    self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=f"⚠️ Exception thrown: {exception_obj}")
-                                    break
-                                scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
-                                scope[vn]['is_changed'] = True
-                                self._emit(b_lineno, b_line, 'line', call_stack, scope, [vn])
-
-                # Catch block execution if exception occurred
-                if has_exception:
-                    scope[catch_var_name] = self.serialize(exception_obj, 'Exception', name=catch_var_name)
-                    scope[catch_var_name]['is_changed'] = True
-                    for b_lineno, b_line in catch_body_lines:
-                        m_out = re_println.match(b_line)
-                        if m_out:
-                            arg = m_out.group(1).strip()
-                            output = self.resolve_expr(arg, scope)
-                            self.stdout_lines.append(f"[JVM] {output}")
-                        for k in scope: scope[k]['is_changed'] = (k == catch_var_name)
-                        expl = self.explain('line', b_lineno, b_line, scope, [catch_var_name])
-                        self._emit(b_lineno, b_line, 'line', call_stack, scope, [catch_var_name], explanation=expl)
-
-                # Finally block execution always
-                for b_lineno, b_line in finally_body_lines:
-                    m_out = re_println.match(b_line)
-                    if m_out:
-                        arg = m_out.group(1).strip()
-                        output = self.resolve_expr(arg, scope)
-                        self.stdout_lines.append(f"[JVM] {output}")
-                    expl = self.explain('line', b_lineno, b_line, scope, [])
-                    self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=expl)
-
-                i = curr_idx
-                continue
-
-            # Skip blanks, braces, comments, import statements, keywords & structure declarations
-            if (not stripped
-                    or stripped in ('{', '}', '};', 'try {', 'try', 'finally', 'finally {', 'break;', 'default:')
-                    or stripped.startswith('//')
-                    or stripped.startswith('/*')
-                    or stripped.startswith('*')
-                    or stripped.startswith('import ')
-                    or stripped.startswith('package ')
-                    or stripped.startswith('public class')
-                    or stripped.startswith('class ')
-                    or stripped.startswith('enum ')
-                    or stripped.startswith('interface ')
-                    or stripped.startswith('abstract class')
-                    or stripped.startswith('catch')
-                    or stripped.startswith('case ')
-                    or stripped.startswith('while ')
-                    or stripped.startswith('while(')):
-                continue
-            if (re.match(r'^(?:public|private|protected|static|final|abstract)\s+', stripped)
-                    and ('(' in stripped or '{' in stripped)):
-                continue
-
-            # ── Reset changed_keys for this iteration ─────────────────────────
-            changed_keys = []
-            handled      = False
-
-            # ── PRIORITY 1: Method call with return-value assignment ───────────
-            m_call_ret = re_call_ret.match(stripped)
-            if m_call_ret:
-                tgt_var, called_fn_raw, args_raw_str = m_call_ret.groups()
-                called_fn = called_fn_raw.split('.')[-1]
-                args_list = [a.strip() for a in args_raw_str.split(',') if a.strip()] if args_raw_str.strip() else []
-                if called_fn in methods and called_fn != 'main':
-                    handled = True
-                    expl_call = f"📞 Calling method '{called_fn}()'"
-                    self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_call)
-
-                    ret_value = self._exec_method(called_fn, args_list, scope, call_stack, methods,
-                                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
-                    if ret_value == 'void':
-                        ret_value = self.resolve_expr(called_fn_raw + '(' + args_raw_str + ')', scope)
-                    type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', stripped)
-                    jtype  = type_m.group(1) if type_m else (scope[tgt_var]['type'] if tgt_var in scope else 'int')
-                    scope[tgt_var] = self.serialize(ret_value, jtype, name=tgt_var)
-                    changed_keys   = [tgt_var]
-                    self.prev_variables = {k: dict(v) for k, v in scope.items()}
-
-            if handled:
-                continue
-
-            # ── PRIORITY 2: Plain method call (no assignment) ─────────────────
-            m_call2 = re_call2.match(stripped)
-            if m_call2:
-                called_fn_raw, args_raw = m_call2.groups()
-                called_fn = called_fn_raw.split('.')[-1]
-                obj_var = called_fn_raw.split('.')[0] if '.' in called_fn_raw else None
-                args_list = [a.strip() for a in args_raw.split(',') if a.strip()] if args_raw.strip() else []
-                if called_fn in methods and called_fn != 'main':
-                    handled = True
-                    expl_call = f"📞 Calling method '{called_fn}()'"
-                    self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_call)
-
-                    # Pass instance object variables into method scope
-                    call_scope = dict(scope)
-                    if obj_var and obj_var in scope:
-                        call_scope['this'] = scope[obj_var]
-
-                    self._exec_method(called_fn, args_list, call_scope, call_stack, methods, re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
-                    self.prev_variables = {k: dict(v) for k, v in scope.items()}
-
-            if handled:
-                continue
-
-            has_ex = False
+        elif t == 'TryStatement':
             try:
-                # Array indexing bounds check e.g. arr[5] or list.get(10)
-                m_arr_idx = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[\s*([^\]]+)\s*\]', stripped)
-                if m_arr_idx:
-                    aname, idx_expr = m_arr_idx.groups()
-                    if aname in scope and scope[aname]['type'].endswith('[]'):
-                        idx_val = int(self.resolve_expr(idx_expr, scope))
-                        raw_str = scope[aname]['raw']
-                        if raw_str.startswith('[') and raw_str.endswith(']'):
-                            items = [x.strip() for x in raw_str[1:-1].split(',') if x.strip()]
-                            if idx_val < 0 or idx_val >= len(items):
-                                raise IndexError(f"java.lang.ArrayIndexOutOfBoundsException: Index {idx_val} out of bounds for length {len(items)}")
+                body = node.block if isinstance(node.block, list) else [node.block]
+                self._exec_block(body, scope, call_stack, class_name)
+            except JavaException as jexc:
+                caught = False
+                for catch_clause in (node.catches or []):
+                    param = catch_clause.parameter
+                    ptypes = getattr(param, 'types', [getattr(param, 'type', None)])
+                    c_types = [self._type_name(pt) for pt in ptypes if pt]
+                    if any(ct in jexc.full_name() or jexc.java_class in ct or ct in ('Exception', 'Throwable', 'RuntimeException') for ct in c_types):
+                        c_scope = dict(scope)
+                        self._declare(c_scope, param.name, c_types[0] if c_types else 'Exception', jexc)
+                        c_body = catch_clause.block if isinstance(catch_clause.block, list) else [catch_clause.block]
+                        self._exec_block(c_body, c_scope, call_stack, class_name)
+                        caught = True
+                        break
+                if not caught:
+                    raise jexc
+            finally:
+                if node.finally_block:
+                    f_body = node.finally_block if isinstance(node.finally_block, list) else [node.finally_block]
+                    self._exec_block(f_body, scope, call_stack, class_name)
 
-                # String .charAt() bounds check
-                m_str_idx = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.charAt\s*\(\s*([^)]+)\s*\)', stripped)
-                if m_str_idx:
-                    sname, idx_expr = m_str_idx.groups()
-                    if sname in scope:
-                        sval = str(scope[sname]['raw']).strip('"\'')
-                        idx_val = int(self.resolve_expr(idx_expr, scope))
-                        if idx_val < 0 or idx_val >= len(sval):
-                            raise IndexError(f"java.lang.StringIndexOutOfBoundsException: String index out of range: {idx_val}")
+    # ── Method invocation & execution helpers ───────────────────────────────
 
-                # Explicit throw new statement e.g. throw new IllegalArgumentException("Invalid input");
-                if stripped.startswith('throw new '):
-                    m_th = re.search(r'throw\s+new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(\s*(.*?)\s*\)', stripped)
-                    if m_th:
-                        ex_cls = m_th.group(1)
-                        ex_msg = m_th.group(2).strip('"\'')
-                        raise RuntimeError(f"java.lang.{ex_cls}: {ex_msg}")
-                    else:
-                        raise RuntimeError("java.lang.Exception: User thrown exception")
+    def _call_method(self, class_name, method_node, args, instance_obj, call_stack):
+        fn_name = method_node.name
+        frame_label = f"{class_name}.{fn_name}()"
+        call_stack.append(frame_label)
 
-                # ── PRIORITY 3: System.out.println / System.out.print ─────────────
-                m_out = re_println.match(stripped)
-                if m_out:
-                    arg = m_out.group(1).strip()
-                    # If arg contains a method call e.g. square(5) or p.add(10,20)
-                    m_sub_fn = re.match(r'^(?:[a-zA-Z_$][a-zA-Z0-9_$]*\.)?([a-zA-Z_$][a-zA-Z0-9_$]*)\(([^)]*)\)$', arg)
-                    if m_sub_fn and m_sub_fn.group(1) in methods and m_sub_fn.group(1) != 'main':
-                        fn_name = m_sub_fn.group(1)
-                        f_args = [a.strip() for a in m_sub_fn.group(2).split(',') if a.strip()] if m_sub_fn.group(2).strip() else []
-                        output = self._exec_method(fn_name, f_args, scope, call_stack, methods,
-                                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
-                    else:
-                        output = self.resolve_expr(arg, scope)
-                    self.stdout_lines.append(f"[JVM] {output}")
+        m_scope = dict(self.static_fields.get(class_name, {}))
+        if instance_obj is not None:
+            self._declare(m_scope, 'this', class_name, instance_obj, changed=False)
+            for k, v in instance_obj.fields.items():
+                self._declare(m_scope, k, 'var', v, changed=False)
 
-                # ── PRIORITY 4: Array declaration ──────────────────────────────────
-                m_arr = re_arr_decl.match(stripped)
-                m_decl = re_prim_decl.match(stripped)
-                if m_arr and not m_out:
-                    jtype, vname, items_str = m_arr.groups()
-                    if items_str:
-                        items   = [x.strip() for x in items_str.split(',')]
-                        raw_val = f"[{', '.join(items)}]"
-                    else:
-                        raw_val = f"new {jtype}[]"
-                    is_prim = jtype in self.JAVA_PRIMITIVES
-                    scope[vname] = {
-                        'type':         f"{jtype}[]",
-                        'value':        repr(raw_val),
-                        'raw':          raw_val,
-                        'is_primitive': False,
-                        'mem_addr':     self._mem_addr(vname, False),
-                        'is_changed':   True
-                    }
-                    changed_keys = [vname]
+        for p, a in zip(method_node.parameters, args):
+            self._declare(m_scope, p.name, p.type, a)
 
-                # ── PRIORITY 4B: Object / Collection Instance Declaration e.g. List<Integer> numbers = Arrays.asList(...)
-                m_gen_decl = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$<>,?\s]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$', stripped)
-                if m_gen_decl and not m_out and not m_arr and ('new ' in stripped or 'Arrays.asList' in stripped or 'List' in stripped or 'Map' in stripped or 'Set' in stripped):
-                    cls_type, vname, vexpr = m_gen_decl.groups()
-                    if 'Arrays.asList' in vexpr:
-                        m_args = re.search(r'Arrays\.asList\((.*)\)', vexpr)
-                        items_str = m_args.group(1) if m_args else "10, 15, 20, 25, 30, 35, 40"
-                        items = [x.strip() for x in self._split_args(items_str) if x.strip()]
-                        raw_obj = f"[{', '.join(items)}]"
-                    elif 'new ' in vexpr:
-                        constr_m = re.search(r'new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\((.*)\)', vexpr)
-                        constr_cls = constr_m.group(1) if constr_m else 'Object'
-                        raw_obj = f"{constr_cls}@{self._mem_counter:x}"
-                    else:
-                        raw_obj = self.resolve_expr(vexpr, scope)
+        lineno = self._lineno(method_node)
+        self._emit(lineno, self._line_text(method_node), 'call', call_stack, m_scope, [], fn_name=fn_name)
 
-                    scope[vname] = {
-                        'type': cls_type,
-                        'value': repr(raw_obj),
-                        'raw': raw_obj,
-                        'is_primitive': False,
-                        'mem_addr': self._mem_addr(vname, False),
-                        'is_changed': True
-                    }
-                    changed_keys = [vname]
+        ret_val = NULL
+        try:
+            self._exec_block(method_node.body, m_scope, call_stack, class_name)
+        except ReturnSignal as ret:
+            ret_val = ret.value
+        finally:
+            call_stack.pop()
+            self._emit(lineno, f"end of {fn_name}", 'return', call_stack, m_scope, [], fn_name=fn_name, ret_val=ret_val)
 
-                # ── PRIORITY 5: Primitive variable declaration ─────────────────────
-                elif m_decl and not m_out:
-                    jtype, vname, vexpr = m_decl.groups()
-                    if '[' in vexpr and ']' in vexpr:
-                        m_sub_a = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[\s*([^\]]+)\s*\]', vexpr)
-                        if m_sub_a:
-                            aname, idx_e = m_sub_a.groups()
-                            if aname in scope and scope[aname]['type'].endswith('[]'):
-                                idx_val = int(self.resolve_expr(idx_e, scope))
-                                raw_str = scope[aname]['raw']
-                                if raw_str.startswith('[') and raw_str.endswith(']'):
-                                    items = [x.strip() for x in raw_str[1:-1].split(',') if x.strip()]
-                                    if idx_val < 0 or idx_val >= len(items):
-                                        raise IndexError(f"java.lang.ArrayIndexOutOfBoundsException: Index {idx_val} out of bounds for length {len(items)}")
-                                    else:
-                                        resolved = items[idx_val].strip('"\'')
-                                else:
-                                    resolved = self.resolve_expr(vexpr, scope)
-                            else:
-                                resolved = self.resolve_expr(vexpr, scope)
-                        else:
-                            resolved = self.resolve_expr(vexpr, scope)
-                    else:
-                        resolved = self.resolve_expr(vexpr, scope)
-                    scope[vname] = self.serialize(resolved, jtype, name=vname)
-                    changed_keys = [vname]
+        return ret_val
 
-                # ── PRIORITY 5B: Uninitialized local variable check (double gpa;) ───
-                elif re_uninit_decl.match(stripped) and not m_out:
-                    m_un = re_uninit_decl.match(stripped)
-                    jtype, vname = m_un.groups()
-                    raise SyntaxError(f"java.lang.Error: Unresolved compilation problem: variable '{vname}' might not have been initialized")
+    # ── Expression evaluation ───────────────────────────────────────────────
 
-                # ── PRIORITY 6: Reassignment (age = age + 1) ──────────────────
-                elif not m_decl:
-                        m_assign = re_assign.match(stripped)
-                        if m_assign:
-                            vname, vexpr = m_assign.groups()
-                            if vname in scope:
-                                old_type = scope[vname]['type']
-                                resolved = self.resolve_expr(vexpr, scope)
-                                scope[vname] = self.serialize(resolved, old_type, name=vname)
-                                scope[vname]['is_changed'] = True
-                                changed_keys = [vname]
-            except Exception as exc:
-                has_ex = True
-                err_msg = str(exc) if 'java.lang.' in str(exc) else f"java.lang.ArithmeticException: / by zero"
-                self.stdout_lines.append(f"❌ Exception in thread \"main\" {err_msg}")
-                self._emit(i - 1, stripped, 'exception', call_stack, scope, [], explanation=f"❌ Exception in thread \"main\" {err_msg}")
-                break
+    def eval_expr(self, node, scope, call_stack, class_name):
+        if node is None:
+            return NULL
 
-            # ── Emit normal step ───────────────────────────────────────────────
-            if not has_ex:
-                for k in scope:
-                    scope[k]['is_changed'] = k in changed_keys
-                explanation = self.explain('line', i - 1, stripped, scope, changed_keys)
-                self._emit(i - 1, stripped, 'line', call_stack, scope, changed_keys, explanation=explanation)
-                self.prev_variables = {k: dict(v) for k, v in scope.items()}
+        t = type(node).__name__
 
-        return {
-            'status':            'success',
-            'execution_time_ms': 3.1,
-            'total_steps':       len(self.steps),
-            'steps':             self.steps
-        }
+        if t == 'Literal':
+            val = self._eval_literal(node)
+            return self._apply_prefix_nonmutating(node.prefix_operators, val)
 
-    def _emit(self, lineno, line_text, event, call_stack, scope, changed,
-              fn_name=None, ret_val=None, explanation=None):
-        if explanation is None:
-            explanation = self.explain(event, lineno, line_text, scope, changed, fn_name, ret_val)
-        # Deep-copy scope so mutations after emit don't affect stored step
-        scope_copy = {k: dict(v) for k, v in scope.items()}
-        for k in scope_copy:
-            scope_copy[k]['is_changed'] = k in changed
-        self.steps.append({
-            'step_index':    len(self.steps),
-            'line_number':   lineno,
-            'line_text':     line_text,
-            'event_type':    event,
-            'is_breakpoint': lineno in self.breakpoints,
-            'stack_frames':  list(call_stack),
-            'variables':     scope_copy,
-            'stdout':        "\n".join(self.stdout_lines),
-            'ai_explanation': explanation
-        })
+        if t == 'MemberReference':
+            return self._eval_member_reference(node, scope, call_stack, class_name)
+
+        if t == 'This':
+            base = scope.get('this', {}).get('_value', NULL)
+            return self._apply_selectors(base, node.selectors, scope, call_stack, class_name)
+
+        if t == 'BinaryOperation':
+            return self._eval_binary(node, scope, call_stack, class_name)
+
+        if t == 'Assignment':
+            return self._eval_assignment(node, scope, call_stack, class_name)
+
+        if t == 'MethodInvocation':
+            return self._eval_method_invocation(node, scope, call_stack, class_name)
+
+        if t == 'ClassCreator':
+            return self._eval_class_creator(node, scope, call_stack, class_name)
+
+        if t == 'ArrayCreator':
+            return self._eval_array_creator(node, scope, call_stack, class_name)
+
+        if t == 'ArrayInitializer':
+            return JavaArray('Object', [self.eval_expr(e, scope, call_stack, class_name) for e in node.initializers])
+
+        if t == 'Cast':
+            val = self.eval_expr(node.expression, scope, call_stack, class_name)
+            return self._apply_cast(self._type_name(node.type), val)
+
+        if t == 'TernaryExpression':
+            cond = self.eval_expr(node.condition, scope, call_stack, class_name)
+            branch = node.if_true if self._truthy(cond) else node.if_false
+            return self.eval_expr(branch, scope, call_stack, class_name)
+
+        raise JavaException("UnsupportedOperationException", f"Cannot evaluate node type {t}")
+
+    def _eval_literal(self, node):
+        v = node.value
+        if v is None:
+            return NULL
+        if v == 'null':
+            return NULL
+        if v in ('true', 'false'):
+            return v == 'true'
+        if isinstance(v, str):
+            if v.startswith('"') and v.endswith('"'):
+                return self._unescape(v[1:-1])
+            if v.startswith("'") and v.endswith("'"):
+                inner = self._unescape(v[1:-1])
+                return inner if inner else '\u0000'
+            vv = v.replace('_', '')
+            try:
+                if vv.lower().endswith(('l',)):
+                    return int(vv[:-1], 0)
+                if vv.lower().endswith(('f', 'd')):
+                    return float(vv[:-1])
+                if '.' in vv or ('e' in vv.lower() and not vv.lower().startswith('0x')):
+                    return float(vv)
+                return int(vv, 0) if vv.lower().startswith('0x') or vv.startswith('0b') else int(vv)
+            except ValueError:
+                return v
+        return v
+
+    def _unescape(self, s):
+        return (s.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"')
+                 .replace("\\'", "'").replace('\\\\', '\\'))
+
+    def _truthy(self, val):
+        if isinstance(val, bool):
+            return val
+        if val is NULL:
+            return False
+        return bool(val)
+
+    def _apply_cast(self, tname, val):
+        try:
+            if tname in ('int', 'short', 'byte', 'long'):
+                return int(val)
+            if tname in ('double', 'float'):
+                return float(val)
+            if tname == 'char':
+                return chr(int(val)) if isinstance(val, (int, float)) else (str(val)[:1] or '\u0000')
+        except (ValueError, TypeError):
+            pass
+        return val
+
+    def _eval_member_reference(self, node, scope, call_stack, class_name):
+        base_name = node.member
+        if node.qualifier:
+            base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
+            val = self._get_field(base, base_name)
+        else:
+            if base_name in scope:
+                val = scope[base_name]['_value']
+            elif base_name in self.static_fields.get(class_name, {}):
+                val = self.static_fields[class_name][base_name]['_value']
+            elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
+                    and base_name in scope['this']['_value'].fields:
+                val = scope['this']['_value'].fields[base_name]
+            else:
+                raise JavaException("Error", f"cannot find symbol: variable {base_name}")
+        val = self._apply_selectors(val, node.selectors, scope, call_stack, class_name)
+
+        prefixes = node.prefix_operators or []
+        postfixes = node.postfix_operators or []
+
+        for pre in prefixes:
+            if pre in ('++', '--'):
+                val = val + 1 if pre == '++' else val - 1
+                self._write_ref(node, scope, call_stack, class_name, val)
+        val = self._apply_prefix_nonmutating([p for p in prefixes if p not in ('++', '--')], val)
+
+        for post in postfixes:
+            if post in ('++', '--'):
+                old = val
+                val = val + 1 if post == '++' else val - 1
+                self._write_ref(node, scope, call_stack, class_name, val)
+                return old
+        return val
+
+    def _apply_prefix_nonmutating(self, ops, val):
+        for op in (ops or []):
+            if op == '-':
+                val = -val
+            elif op == '+':
+                pass
+            elif op == '!':
+                val = not self._truthy(val)
+            elif op == '~':
+                val = ~int(val)
+        return val
+
+    def _write_ref(self, node, scope, call_stack, class_name, value):
+        if node.qualifier:
+            base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
+            self._set_field(base, node.member, value)
+            return
+        name = node.member
+        if name in scope:
+            scope[name]['_value'] = value
+            scope[name]['is_changed'] = True
+        elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
+                and name in scope['this']['_value'].fields:
+            scope['this']['_value'].fields[name] = value
+        elif name in self.static_fields.get(class_name, {}):
+            self.static_fields[class_name][name]['_value'] = value
+            self.static_fields[class_name][name]['is_changed'] = True
+        else:
+            self._set(scope, name, value, True)
+
+    def _resolve_qualifier(self, qualifier, scope, call_stack, class_name):
+        parts = qualifier.split('.')
+        if parts[0] in scope:
+            cur = scope[parts[0]]['_value']
+        elif parts[0] in self.static_fields.get(class_name, {}):
+            cur = self.static_fields[class_name][parts[0]]['_value']
+        elif parts[0] == 'this':
+            cur = scope.get('this', {}).get('_value', NULL)
+        else:
+            cur = parts[0]
+            return cur
+        for p in parts[1:]:
+            cur = self._get_field(cur, p)
+        return cur
+
+    def _get_field(self, base, field):
+        if isinstance(base, JavaObject):
+            return base.fields.get(field, NULL)
+        if isinstance(base, JavaArray) and field == 'length':
+            return len(base.items)
+        if isinstance(base, str) and field == 'length':
+            return len(base)
+        return NULL
+
+    def _set_field(self, base, field, value):
+        if isinstance(base, JavaObject):
+            base.fields[field] = value
+
+    def _apply_selectors(self, val, selectors, scope, call_stack, class_name):
+        for sel in (selectors or []):
+            t = type(sel).__name__
+            if t == 'ArraySelector':
+                idx = self.eval_expr(sel.index, scope, call_stack, class_name)
+                val = self._array_get(val, idx)
+            elif t == 'MethodInvocation':
+                val = self._invoke_on(val, sel, scope, call_stack, class_name)
+            elif t == 'MemberReference':
+                val = self._get_field(val, sel.member)
+        return val
+
+    def _array_get(self, arr, idx):
+        if not isinstance(arr, JavaArray):
+            raise JavaException("NullPointerException", "Cannot load from null array")
+        idx = int(idx)
+        if idx < 0 or idx >= len(arr.items):
+            raise JavaException("ArrayIndexOutOfBoundsException",
+                                 f"Index {idx} out of bounds for length {len(arr.items)}")
+        return arr.items[idx]
+
+    def _array_set(self, arr, idx, value):
+        if not isinstance(arr, JavaArray):
+            raise JavaException("NullPointerException", "Cannot store to null array")
+        idx = int(idx)
+        if idx < 0 or idx >= len(arr.items):
+            raise JavaException("ArrayIndexOutOfBoundsException",
+                                 f"Index {idx} out of bounds for length {len(arr.items)}")
+        arr.items[idx] = value
+
+    # ── Binary operators ──────────────────────────────────────────────────────
+
+    def _eval_binary(self, node, scope, call_stack, class_name):
+        op = node.operator
+        if op == '&&':
+            left = self.eval_expr(node.operandl, scope, call_stack, class_name)
+            if not self._truthy(left):
+                return False
+            return self._truthy(self.eval_expr(node.operandr, scope, call_stack, class_name))
+        if op == '||':
+            left = self.eval_expr(node.operandl, scope, call_stack, class_name)
+            if self._truthy(left):
+                return True
+            return self._truthy(self.eval_expr(node.operandr, scope, call_stack, class_name))
+
+        l = self.eval_expr(node.operandl, scope, call_stack, class_name)
+        r = self.eval_expr(node.operandr, scope, call_stack, class_name)
+
+        if op == '+':
+            if isinstance(l, str) or isinstance(r, str):
+                return _display(l) + _display(r)
+            return self._num_op(l, r, lambda a, b: a + b, op)
+        if op == '-':
+            return self._num_op(l, r, lambda a, b: a - b, op)
+        if op == '*':
+            return self._num_op(l, r, lambda a, b: a * b, op)
+        if op == '/':
+            if r == 0:
+                if isinstance(l, int) and isinstance(r, int):
+                    raise JavaException("ArithmeticException", "/ by zero")
+                return float('inf') if l > 0 else float('-inf') if l < 0 else float('nan')
+            if isinstance(l, int) and isinstance(r, int):
+                q = abs(l) // abs(r)
+                return q if (l < 0) == (r < 0) else -q
+            return l / r
+        if op == '%':
+            if r == 0:
+                raise JavaException("ArithmeticException", "/ by zero")
+            if isinstance(l, int) and isinstance(r, int):
+                m = abs(l) % abs(r)
+                return -m if l < 0 else m
+            return __import__('math').fmod(l, r)
+        if op == '==':
+            return self._java_equals(l, r)
+        if op == '!=':
+            return not self._java_equals(l, r)
+        if op == '>':
+            return l > r
+        if op == '<':
+            return l < r
+        if op == '>=':
+            return l >= r
+        if op == '<=':
+            return l <= r
+        if op == '&':
+            return int(l) & int(r) if not isinstance(l, bool) else (l and r)
+        if op == '|':
+            return int(l) | int(r) if not isinstance(l, bool) else (l or r)
+        if op == '^':
+            return int(l) ^ int(r) if not isinstance(l, bool) else (l != r)
+        if op == '<<':
+            return int(l) << int(r)
+        if op == '>>':
+            return int(l) >> int(r)
+
+        raise JavaException("UnsupportedOperationException", f"operator {op}")
+
+    def _java_equals(self, l, r):
+        if l is NULL or r is NULL:
+            return l is r
+        return l == r
+
+    def _num_op(self, l, r, fn, op):
+        if isinstance(l, str) or isinstance(r, str):
+            raise JavaException("Error", f"bad operand types for {op}")
+        result = fn(l, r)
+        if isinstance(l, int) and isinstance(r, int):
+            return int(result)
+        return float(result)
+
+    # ── Assignment ───────────────────────────────────────────────────────────
+
+    COMPOUND_OPS = {'+=': '+', '-=': '-', '*=': '*', '/=': '/', '%=': '%',
+                     '&=': '&', '|=': '|', '^=': '^', '<<=': '<<', '>>=': '>>'}
+
+    def _eval_assignment(self, node, scope, call_stack, class_name):
+        target = node.expressionl
+        op = node.type
+        rhs = self.eval_expr(node.value, scope, call_stack, class_name)
+
+        if op != '=':
+            base_op = self.COMPOUND_OPS[op]
+            cur = self.eval_expr(target, scope, call_stack, class_name)
+            if base_op == '+' and isinstance(cur, str):
+                rhs = cur + _display(rhs)
+            else:
+                rhs = self._eval_binary_values(cur, rhs, base_op)
+
+        self._assign_to(target, rhs, scope, call_stack, class_name)
+        return rhs
+
+    def _eval_binary_values(self, l, r, op):
+        if op == '+':
+            if isinstance(l, str) or isinstance(r, str):
+                return _display(l) + _display(r)
+            return self._num_op(l, r, lambda a, b: a + b, op)
+        if op == '-':
+            return self._num_op(l, r, lambda a, b: a - b, op)
+        if op == '*':
+            return self._num_op(l, r, lambda a, b: a * b, op)
+        if op == '/':
+            if r == 0:
+                if isinstance(l, int) and isinstance(r, int):
+                    raise JavaException("ArithmeticException", "/ by zero")
+                return float('inf')
+            if isinstance(l, int) and isinstance(r, int):
+                q = abs(l) // abs(r)
+                return q if (l < 0) == (r < 0) else -q
+            return l / r
+        if op == '%':
+            if r == 0:
+                raise JavaException("ArithmeticException", "/ by zero")
+            if isinstance(l, int) and isinstance(r, int):
+                m = abs(l) % abs(r)
+                return -m if l < 0 else m
+            return __import__('math').fmod(l, r)
+        if op == '&': return int(l) & int(r)
+        if op == '|': return int(l) | int(r)
+        if op == '^': return int(l) ^ int(r)
+        if op == '<<': return int(l) << int(r)
+        if op == '>>': return int(l) >> int(r)
+        return r
+
+    def _assign_to(self, target, value, scope, call_stack, class_name):
+        t = type(target).__name__
+        if t == 'MemberReference':
+            if target.selectors:
+                base_name = target.member
+                if base_name in scope:
+                    base_val = scope[base_name]['_value']
+                elif base_name in self.static_fields.get(class_name, {}):
+                    base_val = self.static_fields[class_name][base_name]['_value']
+                elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject):
+                    base_val = scope['this']['_value'].fields.get(base_name, NULL)
+                else:
+                    raise JavaException("Error", f"cannot find symbol: {base_name}")
+
+                sels = target.selectors
+                cur = base_val
+                for sel in sels[:-1]:
+                    if type(sel).__name__ == 'ArraySelector':
+                        idx = self.eval_expr(sel.index, scope, call_stack, class_name)
+                        cur = self._array_get(cur, idx)
+                    elif type(sel).__name__ == 'MemberReference':
+                        cur = self._get_field(cur, sel.member)
+                last = sels[-1]
+                if type(last).__name__ == 'ArraySelector':
+                    idx = self.eval_expr(last.index, scope, call_stack, class_name)
+                    self._array_set(cur, idx, value)
+                elif type(last).__name__ == 'MemberReference':
+                    self._set_field(cur, last.member, value)
+                if base_name in scope:
+                    scope[base_name]['is_changed'] = True
+                return
+            self._write_ref(target, scope, call_stack, class_name, value)
+            return
+        if t == 'This':
+            return
+        raise JavaException("Error", f"invalid assignment target {t}")
+
+    # ── Method invocation ───────────────────────────────────────────────────
+
+    def _eval_method_invocation(self, node, scope, call_stack, class_name):
+        args = [self.eval_expr(a, scope, call_stack, class_name) for a in node.arguments]
+
+        if node.qualifier in ('System.out', 'System.err'):
+            text = ''.join(_display(a) for a in args)
+            if node.member == 'println':
+                self.stdout_lines.append(f"[JVM] {text}")
+            elif node.member == 'print':
+                if self.stdout_lines and not self.stdout_lines[-1].startswith("❌"):
+                    self.stdout_lines[-1] = self.stdout_lines[-1] + text
+                else:
+                    self.stdout_lines.append(f"[JVM] {text}")
+            return NULL
+
+        if node.qualifier and node.qualifier.split('.')[0] in ('sc', 'scanner', 'input', 'reader') \
+                or (node.qualifier and self._is_scanner_var(node.qualifier, scope)):
+            return self._scanner_call(node.member)
+
+        if node.qualifier in ('Integer', 'Long', 'Short', 'Byte') and node.member == 'parseInt' \
+                or (node.qualifier in ('Integer',) and node.member.startswith('parse')):
+            return self._parse_number(args[0], int)
+        if node.qualifier in ('Double', 'Float') and node.member.startswith('parse'):
+            return self._parse_number(args[0], float)
+        if node.qualifier == 'Boolean' and node.member == 'parseBoolean':
+            return str(args[0]).lower() == 'true'
+        if node.qualifier in ('Math',):
+            return self._math_call(node.member, args)
+        if node.qualifier in ('String',) and node.member == 'valueOf':
+            return _display(args[0])
+        if node.qualifier in ('Arrays',) and node.member == 'asList':
+            return JavaArray('Object', list(args))
+        if node.qualifier in ('Arrays',) and node.member == 'toString':
+            return _display(args[0]) if not isinstance(args[0], JavaArray) else repr(args[0])
+
+        if node.qualifier:
+            base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
+            return self._invoke_on(base, node, scope, call_stack, class_name, precomputed_args=args)
+
+        this_obj = scope.get('this', {}).get('_value') if 'this' in scope else None
+        if this_obj is not None and isinstance(this_obj, JavaObject):
+            m = self._find_method(this_obj.class_name, node.member, len(args))
+            if m:
+                return self._call_method(this_obj.class_name, m, args, this_obj, call_stack)
+        m = self._find_method(class_name, node.member, len(args))
+        if m:
+            return self._call_method(class_name, m, args, None, call_stack)
+
+        raise JavaException("Error", f"cannot find method {node.member}()")
+
+    def _is_scanner_var(self, qualifier, scope):
+        root = qualifier.split('.')[0]
+        entry = scope.get(root)
+        return bool(entry and entry.get('type') == 'Scanner')
+
+    def _invoke_on(self, base, node, scope, call_stack, class_name, precomputed_args=None):
+        args = precomputed_args if precomputed_args is not None else \
+            [self.eval_expr(a, scope, call_stack, class_name) for a in node.arguments]
+        member = node.member
+
+        if isinstance(base, str):
+            return self._string_method(base, member, args)
+        if isinstance(base, JavaArray):
+            if member == 'length':
+                return len(base.items)
+            if member == 'get':
+                return self._array_get(base, args[0])
+            if member == 'add':
+                base.items.append(args[0])
+                return NULL
+            if member == 'size':
+                return len(base.items)
+            if member == 'set':
+                self._array_set(base, args[0], args[1])
+                return NULL
+            if member == 'toString':
+                return repr(base)
+        if isinstance(base, JavaObject):
+            if member == 'getMessage' or member == 'toString':
+                return base.fields.get('__message__', repr(base))
+            m = self._find_method(base.class_name, member, len(args))
+            if m:
+                return self._call_method(base.class_name, m, args, base, call_stack)
+        if isinstance(base, JavaException):
+            if member == 'getMessage':
+                return base.message
+        raise JavaException("Error", f"cannot resolve method {member}() on {base!r}")
+
+    def _string_method(self, s, member, args):
+        if member == 'length': return len(s)
+        if member == 'toUpperCase': return s.upper()
+        if member == 'toLowerCase': return s.lower()
+        if member == 'trim': return s.strip()
+        if member == 'isEmpty': return len(s) == 0
+        if member == 'equals': return s == _display(args[0]) if args else False
+        if member == 'equalsIgnoreCase': return s.lower() == _display(args[0]).lower()
+        if member == 'contains': return _display(args[0]) in s
+        if member == 'startsWith': return s.startswith(_display(args[0]))
+        if member == 'endsWith': return s.endswith(_display(args[0]))
+        if member == 'indexOf': return s.find(_display(args[0]))
+        if member == 'concat': return s + _display(args[0])
+        if member == 'compareTo':
+            o = _display(args[0])
+            return (s > o) - (s < o)
+        if member == 'toString': return s
+        if member == 'charAt':
+            idx = int(args[0])
+            if idx < 0 or idx >= len(s):
+                raise JavaException("StringIndexOutOfBoundsException", f"String index out of range: {idx}")
+            return s[idx]
+        if member == 'substring':
+            start = int(args[0])
+            end = int(args[1]) if len(args) > 1 else len(s)
+            if start < 0 or end > len(s) or start > end:
+                raise JavaException("StringIndexOutOfBoundsException", f"begin {start}, end {end}, length {len(s)}")
+            return s[start:end]
+        if member == 'replace':
+            return s.replace(_display(args[0]), _display(args[1]))
+        if member == 'split':
+            return JavaArray('String', re.split(_display(args[0]), s))
+        raise JavaException("Error", f"unknown String method {member}()")
+
+    def _parse_number(self, val, caster):
+        try:
+            return caster(_display(val).strip())
+        except ValueError:
+            raise JavaException("NumberFormatException", f"For input string: \"{_display(val)}\"")
+
+    def _math_call(self, member, args):
+        import math
+        a = args[0] if args else 0
+        if member == 'abs': return abs(a)
+        if member == 'sqrt': return math.sqrt(a)
+        if member == 'pow': return math.pow(a, args[1])
+        if member == 'max': return max(a, args[1])
+        if member == 'min': return min(a, args[1])
+        if member == 'floor': return math.floor(a)
+        if member == 'ceil': return math.ceil(a)
+        if member == 'round': return round(a)
+        if member == 'random': return __import__('random').random()
+        raise JavaException("Error", f"unknown Math method {member}()")
+
+    def _scanner_call(self, member):
+        if self.stdin_queue:
+            val = self.stdin_queue.pop(0)
+        else:
+            defaults = {'nextInt': '10', 'nextDouble': '99.5', 'nextFloat': '12.5',
+                        'nextLong': '1000', 'nextBoolean': 'true', 'next': 'Kashi',
+                        'nextLine': 'Kashi'}
+            val = defaults.get(member, 'Kashi')
+        if member == 'nextInt': return self._parse_number(val, int)
+        if member in ('nextDouble', 'nextFloat'): return self._parse_number(val, float)
+        if member == 'nextLong': return self._parse_number(val, int)
+        if member == 'nextBoolean': return str(val).lower() == 'true'
+        return val
+
+    # ── Object / array creation ────────────────────────────────────────────
+
+    def _eval_class_creator(self, node, scope, call_stack, class_name):
+        cname = node.type.name
+        args = [self.eval_expr(a, scope, call_stack, class_name) for a in node.arguments]
+
+        if cname in ('ArrayList', 'LinkedList', 'List'):
+            return JavaArray('Object', [])
+        if cname in ('HashMap', 'TreeMap', 'Map'):
+            return {}
+        if cname == 'StringBuilder':
+            return _display(args[0]) if args else ''
+        if cname == 'Scanner':
+            return "Scanner"
+        if cname in ('ArithmeticException', 'RuntimeException', 'Exception', 'IllegalArgumentException',
+                     'NullPointerException', 'IllegalStateException', 'Error'):
+            msg = _display(args[0]) if args else ''
+            return JavaException(cname, msg)
+
+        if cname in self.classes:
+            addr = self._new_obj_addr(cname)
+            obj = JavaObject(cname, addr)
+            cls_node = self.classes[cname]
+            for member in cls_node.body:
+                if isinstance(member, javalang.tree.FieldDeclaration) and 'static' not in (member.modifiers or []):
+                    for decl in member.declarators:
+                        obj.fields[decl.name] = self._default_value(member.type)
+            ctor = self._find_constructor(cname, len(args))
+            if ctor:
+                cscope = {}
+                self._declare(cscope, 'this', cname, obj, changed=False)
+                for p, a in zip(ctor.parameters, args):
+                    self._declare(cscope, p.name, p.type, a)
+                call_stack.append(f"{cname}.<init>({', '.join(_display(a) for a in args)})")
+                try:
+                    self._exec_block(ctor.body, cscope, call_stack, cname)
+                except ReturnSignal:
+                    pass
+                call_stack.pop()
+                for k in obj.fields:
+                    if k in cscope:
+                        obj.fields[k] = cscope[k]['_value']
+            elif len(cls_node.body) and any(isinstance(m, javalang.tree.FieldDeclaration) for m in cls_node.body):
+                field_names = [d.name for m in cls_node.body if isinstance(m, javalang.tree.FieldDeclaration)
+                               and 'static' not in (m.modifiers or []) for d in m.declarators]
+                for fname, a in zip(field_names, args):
+                    obj.fields[fname] = a
+            return obj
+
+        addr = self._new_obj_addr(cname)
+        obj = JavaObject(cname, addr)
+        return obj
+
+    def _eval_array_creator(self, node, scope, call_stack, class_name):
+        etype = self._type_name(node.type)
+        if node.initializer:
+            items = [self.eval_expr(e, scope, call_stack, class_name) for e in node.initializer.initializers]
+            return JavaArray(etype, items)
+        if node.dimensions:
+            size = self.eval_expr(node.dimensions[0], scope, call_stack, class_name) if node.dimensions[0] else 0
+            default = self._default_value(node.type)
+            return JavaArray(etype, [default] * int(size))
+        return JavaArray(etype, [])
