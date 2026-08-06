@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/java/trace/', views.api_trace_java, name='api_trace_java'),
     path('api/compare/', views.api_compare_languages, name='api_compare_languages'),
     path('api/history/', views.api_session_history, name='api_session_history'),
+    path('api/submissions/', views.api_judge0_submission, name='api_judge0_submission'),
 ]
