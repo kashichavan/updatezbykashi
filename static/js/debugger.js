@@ -632,36 +632,40 @@ function clearInlineValueHints() {
    a scrollable block. Lists/dicts/arrays get an expand toggle.
 ───────────────────────────────────────────────────────────────── */
 function renderVariablesCards(vars) {
-  const container = document.getElementById('variablesContainer');
-  const keys      = Object.keys(vars || {});
+  const varContainer = document.getElementById('variablesContainer');
+  const objContainer = document.getElementById('objectsContainer');
+  const keys         = Object.keys(vars || {});
 
   if (keys.length === 0) {
-    container.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;font-size:12px;">No variables initialized at this step.</div>';
+    if (varContainer) varContainer.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;font-size:12px;">No variables initialized at this step.</div>';
+    if (objContainer) objContainer.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:16px;font-size:12px;">No object instances allocated on Heap yet.</div>';
     return;
   }
 
-  // Threshold: values longer than this get a collapsed block with expand toggle
   const COLLAPSE_THRESHOLD = 60;
+  let varHtml = '';
+  let objHtml = '';
 
-  let html = '';
   keys.forEach((k, cardIdx) => {
     const v         = vars[k];
     const changed   = v.is_changed ? 'changed' : '';
-
-    // Use raw for display — full, untruncated value
     const fullVal   = typeof v.value === 'object' ? JSON.stringify(v.value, null, 2) : String(v.raw ?? v.value);
     const isLong    = fullVal.length > COLLAPSE_THRESHOLD;
-    const isComplex = ['list', 'dict', 'array', 'object', 'tuple', 'set'].includes(v.type)
-                   || (typeof v.type === 'string' && v.type.endsWith('[]'));
 
-    const cardId    = `varcard-${cardIdx}-${k}`;
-    const blockId   = `varval-${cardIdx}-${k}`;
-    const btnId     = `varbtn-${cardIdx}-${k}`;
+    // Detect if this variable is an object instance, array, list, dict, or reference pointer
+    const isObject = !v.is_primitive
+                  || ['list', 'dict', 'array', 'object', 'tuple', 'set'].includes(v.type)
+                  || (typeof v.type === 'string' && (v.type.endsWith('[]') || v.type.includes('.')))
+                  || (v.mem_addr && v.mem_addr.includes('HEAP'))
+                  || fullVal.startsWith('{')
+                  || fullVal.startsWith('[');
 
-    // ── Value block: full for short, collapsible for long ──────────────────
+    const cardId  = `varcard-${cardIdx}-${k}`;
+    const blockId = `varval-${cardIdx}-${k}`;
+    const btnId   = `varbtn-${cardIdx}-${k}`;
+
     let valueBlock;
     if (!isLong) {
-      // Short value — show inline on the right
       valueBlock = `
         <div style="text-align:right; display:flex; flex-direction:column; gap:4px; align-items:flex-end; max-width:55%;">
           <div class="var-val-text" style="font-size:13px; font-weight:900;
@@ -670,7 +674,6 @@ function renderVariablesCards(vars) {
           <span class="mem-pointer-tag">${escapeHtml(v.mem_addr)}</span>
         </div>`;
     } else {
-      // Long value — collapsible full block below the header row
       valueBlock = `
         <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
           <span class="mem-pointer-tag">${escapeHtml(v.mem_addr)}</span>
@@ -680,24 +683,24 @@ function renderVariablesCards(vars) {
               var btn = document.getElementById('${btnId}');
               var open = b.style.display !== 'none';
               b.style.display = open ? 'none' : 'block';
-              btn.textContent  = open ? '+ expand' : '− collapse';
+              btn.textContent  = open ? '+ expand fields' : '− collapse';
             })()"
             style="background:none; border:1px solid var(--border-subtle); border-radius:6px;
                    color:var(--accent); font-size:10px; font-weight:800; cursor:pointer;
                    padding:2px 8px; font-family:monospace; white-space:nowrap;">
-            + expand
+            + expand fields
           </button>
         </div>`;
     }
 
-    html += `
+    const cardMarkup = `
       <div class="var-pill-card ${changed}" id="${cardId}"
            style="flex-direction:column; align-items:stretch; gap:6px;">
 
-        <!-- ── Header row: name + type + mem (+ expand btn for long values) ── -->
+        <!-- ── Header row: name + type + mem ── -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
           <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
-            <div class="var-name-text">${escapeHtml(k)}</div>
+            <div class="var-name-text">${isObject ? '📦 ' : '⚡ '}${escapeHtml(k)}</div>
             <div class="var-type-text">
               type: <em class="var-type-em">${escapeHtml(v.type)}</em>
             </div>
@@ -706,8 +709,9 @@ function renderVariablesCards(vars) {
         </div>
 
         ${ isLong ? `
-        <!-- ── Full value block (collapsible) ── -->
-        <div id="${blockId}" style="display:none;">
+        <!-- ── Collapsible Internal Fields & Properties ── -->
+        <div id="${blockId}" style="display:none; margin-top:4px;">
+          <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">Internal Fields &amp; State:</div>
           <pre class="var-val-text" style="margin:0; padding:8px 10px;
                       background:var(--bg-app); border:1px solid var(--border-subtle);
                       border-radius:8px; font-size:11px; font-weight:600;
@@ -718,9 +722,20 @@ function renderVariablesCards(vars) {
 
       </div>
     `;
+
+    if (isObject) {
+      objHtml += cardMarkup;
+    } else {
+      varHtml += cardMarkup;
+    }
   });
 
-  container.innerHTML = html;
+  if (varContainer) {
+    varContainer.innerHTML = varHtml || '<div style="color:#94a3b8;text-align:center;padding:16px;font-size:12px;">No primitive variables at this step.</div>';
+  }
+  if (objContainer) {
+    objContainer.innerHTML = objHtml || '<div style="color:#94a3b8;text-align:center;padding:16px;font-size:12px;">No object instances allocated on Heap yet.</div>';
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────
