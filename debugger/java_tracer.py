@@ -366,6 +366,17 @@ class JavaExecutionTracer:
             stripped  = raw_line.strip()
             i += 1
 
+            # Parse for-loop variable initialization (e.g., for (int i = 1; i <= 5; i++))
+            if stripped.startswith('for ') or stripped.startswith('for('):
+                m_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?)\s*;', stripped)
+                if m_for:
+                    vname, vexpr = m_for.groups()
+                    resolved = self.resolve_expr(vexpr, scope)
+                    scope[vname] = self.serialize(resolved, 'int', name=vname)
+                    scope[vname]['is_changed'] = True
+                    changed_keys = [vname]
+                continue
+
             # Skip blanks, braces, comments, class/method declarations
             if (not stripped
                     or stripped in ('{', '}', '};')
@@ -374,8 +385,6 @@ class JavaExecutionTracer:
                     or stripped.startswith('*')
                     or stripped.startswith('public class')
                     or stripped.startswith('class ')
-                    or stripped.startswith('for ')
-                    or stripped.startswith('for(')
                     or stripped.startswith('while ')
                     or stripped.startswith('while(')):
                 continue

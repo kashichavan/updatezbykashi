@@ -335,7 +335,17 @@ class JavaScriptExecutionTracer:
             raw_line = self.lines[i - 1]
             stripped  = raw_line.strip()
 
-            if not stripped or stripped.startswith('//') or stripped in ('{', '}', '};') or stripped.startswith('for ') or stripped.startswith('for(') or stripped.startswith('while ') or stripped.startswith('while('):
+            # Parse for-loop index initializer (e.g., for (let i = 0; i < 5; i++))
+            if stripped.startswith('for ') or stripped.startswith('for('):
+                m_for = re.search(r'for\s*\(\s*(?:let|var|const)?\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?)\s*;', stripped)
+                if m_for:
+                    vname, vexpr = m_for.groups()
+                    resolved = self.js_resolve(vexpr.strip(), scope)
+                    scope[vname] = self.serialize_val(resolved, name=vname, scope=scope)
+                    scope[vname]['is_changed'] = True
+                continue
+
+            if not stripped or stripped.startswith('//') or stripped in ('{', '}', '};') or stripped.startswith('while ') or stripped.startswith('while('):
                 continue
 
             changed_keys = []
