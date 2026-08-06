@@ -1,6 +1,6 @@
 """
-Java AST & Regex feature extraction engine.
-Parses Java source files to collect symbols, version metadata, comments, and language features.
+Java AST parser & tree-sitter feature extraction engine.
+Parses Java source code using Tree-Sitter AST parser with regex fallback.
 """
 
 import re
@@ -8,22 +8,29 @@ from pathlib import Path
 from typing import List, Set, Union
 from openjdk_analyzer.metadata import JavaFileMetadata
 
+try:
+    import tree_sitter_java as tsjava
+    from tree_sitter import Language, Parser
+    JAVA_LANGUAGE = Language(tsjava.language())
+    TS_PARSER = Parser(JAVA_LANGUAGE)
+    HAS_TREE_SITTER = True
+except Exception:
+    HAS_TREE_SITTER = False
+
 
 class JavaFileAnalyzer:
-    """Analyzes a Java file content to extract metadata, features, and symbols."""
+    """Analyzes Java file content to extract AST symbols, features, and metadata using Tree-Sitter."""
 
-    # Regex patterns for Java language constructs
+    # Regex fallback patterns
     RE_PACKAGE = re.compile(r"^\s*package\s+([a-zA-Z0-9_.]+)\s*;", re.MULTILINE)
     RE_IMPORT = re.compile(r"^\s*import\s+(?:static\s+)?([a-zA-Z0-9_.*]+)\s*;", re.MULTILINE)
 
-    # Declarations
     RE_CLASS = re.compile(r"\b(?:public|protected|private|static|final|abstract|sealed|non-sealed)?\s*class\s+([a-zA-Z0-9_$]+)", re.MULTILINE)
     RE_INTERFACE = re.compile(r"\b(?:public|protected|private|static|sealed|non-sealed)?\s*interface\s+([a-zA-Z0-9_$]+)", re.MULTILINE)
     RE_ENUM = re.compile(r"\b(?:public|protected|private|static)?\s*enum\s+([a-zA-Z0-9_$]+)", re.MULTILINE)
     RE_RECORD = re.compile(r"\b(?:public|protected|private|static|final)?\s*record\s+([a-zA-Z0-9_$]+)", re.MULTILINE)
     RE_ANNOTATION_DEF = re.compile(r"\b@interface\s+([a-zA-Z0-9_$]+)", re.MULTILINE)
 
-    # Features
     RE_SEALED = re.compile(r"\b(?:sealed|non-sealed|permits)\b")
     RE_GENERICS = re.compile(r"<[A-Za-z0-9_$,\s\?extends\super]+>")
     RE_WILDCARD = re.compile(r"<\s*\?\s*(?:extends|super)?\s*[^>]*>")
@@ -43,15 +50,12 @@ class JavaFileAnalyzer:
     RE_VIRTUAL_THREADS = re.compile(r"\b(?:ofVirtual|startVirtualThread)\b")
     RE_PREVIEW = re.compile(r"\b--enable-preview\b|@PreviewFeature")
 
-    # Version detector pattern e.g. @since 17, --release 21, @requires jdk.version
     RE_JAVA_VERSION = re.compile(r"(?:@since|--release|source|target)\s+([0-9]+)")
-
-    # Symbols
     RE_METHOD = re.compile(r"\b(?:public|protected|private|static|final|native|synchronized|abstract|default)?\s+(?:<[^>]+>\s+)?([a-zA-Z0-9_<>\[\]]+)\s+([a-zA-Z0-9_$]+)\s*\(([^)]*)\)\s*(?:throws\s+[a-zA-Z0-9_$,\s]+)?\s*[\{;]")
     RE_FIELD = re.compile(r"\b(?:public|protected|private|static|final|transient|volatile)\s+([a-zA-Z0-9_<>\[\]]+)\s+([a-zA-Z0-9_$]+)\s*(?:=.*?)?;", re.MULTILINE)
 
     def analyze(self, file_path: Path, sha256_hash: str, repo_root: Path) -> JavaFileMetadata:
-        """Parses a Java file and generates a JavaFileMetadata dataclass instance."""
+        """Parses Java file using Tree-Sitter AST parser with regex fallback."""
         abs_path = str(file_path.resolve())
         rel_path = str(file_path.relative_to(repo_root)) if repo_root in file_path.parents or file_path.is_relative_to(repo_root) else str(file_path)
 
@@ -89,12 +93,119 @@ class JavaFileAnalyzer:
 
         meta.comment_count = comment_lines
 
-        # Package & Imports
+        # Use Tree-Sitter AST parsing if available
+        if HAS_TREE_SITTER:
+            try:
+                tree = TS_PARSER.parse(bytes(content, "utf-8"))
+                root = tree.root_node
+                features: Set[str] = set()
+
+                def traverse(node):
+                    ntype = node.type
+                    if ntype == "package_declaration":
+                        meta.package = content[node.start_byte:node.end_byte].replace("package", "").replace(";", "").strip()
+                    elif ntype == "import_declaration":
+                        imp = content[node.start_byte:node.end_byte].replace("import", "").replace("static", "").replace(";", "").strip()
+                        meta.imports.append(imp)
+                    elif ntype == "class_declaration":
+                        for child in node.children:
+                            if child.type == "identifier":
+                                cname = content[child.start_byte:child.end_byte]
+                                if not meta.classes:
+                                    meta.classes.append(cname)
+                                else:
+                                    meta.nested_classes.append(cname)
+                                break
+                        features.add("classes")
+                    elif ntype == "interface_declaration":
+                        for child in node.children:
+                            if child.type == "identifier":
+                                meta.interfaces.append(content[child.start_byte:child.end_byte])
+                                break
+                        features.add("interfaces")
+                    elif ntype == "enum_declaration":
+                        for child in node.children:
+                            if child.type == "identifier":
+                                meta.enums.append(content[child.start_byte:child.end_byte])
+                                break
+                        features.add("enums")
+                    elif ntype == "record_declaration":
+                        for child in node.children:
+                            if child.type == "identifier":
+                                meta.records.append(content[child.start_byte:child.end_byte])
+                                break
+                        features.add("records")
+                    elif ntype == "annotation_type_declaration":
+                        for child in node.children:
+                            if child.type == "identifier":
+                                meta.annotations.append(content[child.start_byte:child.end_byte])
+                                break
+                    elif ntype == "method_declaration":
+                        mname = ""
+                        for child in node.children:
+                            if child.type == "identifier":
+                                mname = content[child.start_byte:child.end_byte]
+                                break
+                        if mname and mname not in ("if", "while", "for", "switch", "catch"):
+                            meta.methods.append(mname)
+                    elif ntype == "constructor_declaration":
+                        for child in node.children:
+                            if child.type == "identifier":
+                                meta.constructors.append(content[child.start_byte:child.end_byte])
+                                break
+                    elif ntype == "lambda_expression":
+                        features.add("lambdas")
+                    elif ntype == "switch_expression":
+                        features.add("switch expressions")
+                    elif ntype == "try_statement":
+                        features.add("exceptions")
+
+                    for child in node.children:
+                        traverse(child)
+
+                traverse(root)
+
+                # Supplementary feature checks
+                if "abstract" in content: features.add("abstract classes")
+                if self.RE_SEALED.search(content): features.add("sealed classes")
+                if self.RE_GENERICS.search(content): features.add("generics")
+                if self.RE_WILDCARD.search(content): features.add("wildcards")
+                if self.RE_ARRAY.search(content): features.add("arrays")
+                if self.RE_LOOPS.search(content): features.add("loops")
+                if self.RE_PATTERN_MATCHING.search(content): features.add("pattern matching")
+                if self.RE_STREAMS.search(content): features.add("streams")
+                if self.RE_ANNOTATION_USAGE.search(content): features.add("annotations")
+                if self.RE_MODULES.search(content): features.add("modules")
+                if self.RE_THREADS.search(content): features.add("threads")
+                if self.RE_SYNCHRONIZED.search(content): features.add("synchronized")
+                if self.RE_REFLECTION.search(content): features.add("reflection")
+                if self.RE_TEXT_BLOCKS.search(content): features.add("text blocks")
+                if self.RE_VIRTUAL_THREADS.search(content): features.add("virtual threads")
+                if self.RE_PREVIEW.search(content): features.add("preview features")
+
+                meta.features = sorted(list(features))
+            except Exception:
+                self._regex_fallback(content, meta)
+        else:
+            self._regex_fallback(content, meta)
+
+        ver_match = self.RE_JAVA_VERSION.search(content)
+        if ver_match:
+            meta.java_version = f"JDK {ver_match.group(1)}"
+
+        if "@compile/fail" in content or "@build/fail" in content:
+            meta.expected_compile = "fail"
+        elif "@compile" in content or "@run" in content:
+            meta.expected_compile = "pass"
+
+        return meta
+
+    def _regex_fallback(self, content: str, meta: JavaFileMetadata):
+        """Fallback regex parser if Tree-Sitter is unavailable."""
         pkg_match = self.RE_PACKAGE.search(content)
         meta.package = pkg_match.group(1) if pkg_match else ""
         meta.imports = self.RE_IMPORT.findall(content)
 
-        # Symbol extraction
         all_classes = self.RE_CLASS.findall(content)
         meta.interfaces = self.RE_INTERFACE.findall(content)
         meta.enums = self.RE_ENUM.findall(content)
@@ -105,7 +216,6 @@ class JavaFileAnalyzer:
             meta.classes = [all_classes[0]]
             meta.nested_classes = all_classes[1:]
 
-        # Methods, Constructors, Fields
         methods_found = self.RE_METHOD.findall(content)
         for return_type, method_name, params in methods_found:
             if method_name in all_classes:
@@ -116,14 +226,7 @@ class JavaFileAnalyzer:
         fields_found = self.RE_FIELD.findall(content)
         meta.fields = [f"{ftype} {fname}" for ftype, fname in fields_found]
 
-        # Java Version Detection
-        ver_match = self.RE_JAVA_VERSION.search(content)
-        if ver_match:
-            meta.java_version = f"JDK {ver_match.group(1)}"
-
-        # Feature Detection per spec #4
         features: Set[str] = set()
-
         if all_classes: features.add("classes")
         if meta.interfaces: features.add("interfaces")
         if "abstract" in content: features.add("abstract classes")
@@ -149,11 +252,3 @@ class JavaFileAnalyzer:
         if self.RE_PREVIEW.search(content): features.add("preview features")
 
         meta.features = sorted(list(features))
-
-        # Expected compile check heuristic (jtreg tags @compile/fail)
-        if "@compile/fail" in content or "@build/fail" in content:
-            meta.expected_compile = "fail"
-        elif "@compile" in content or "@run" in content:
-            meta.expected_compile = "pass"
-
-        return meta
