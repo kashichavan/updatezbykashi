@@ -124,8 +124,8 @@ else:
         },
     }
 
-# Ultra-Fast Static Asset Caching (WhiteNoise 1-Year Max Age)
-WHITENOISE_MAX_AGE = 31536000 # 1 year immutable caching for images & static assets
+# Immediate Static Asset Expiration (Prevents stale browser caching of JS/CSS)
+WHITENOISE_MAX_AGE = 0
 WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 
 MEDIA_URL = '/media/'
