@@ -373,7 +373,11 @@ class JavaExecutionTracer:
                     or stripped.startswith('/*')
                     or stripped.startswith('*')
                     or stripped.startswith('public class')
-                    or stripped.startswith('class ')):
+                    or stripped.startswith('class ')
+                    or stripped.startswith('for ')
+                    or stripped.startswith('for(')
+                    or stripped.startswith('while ')
+                    or stripped.startswith('while(')):
                 continue
             if (re.match(r'^(?:public|private|protected|static)\s+', stripped)
                     and '(' in stripped):

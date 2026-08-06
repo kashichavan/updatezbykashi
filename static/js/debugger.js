@@ -332,7 +332,14 @@ function highlightExecutingLines(currentLine, prevLine) {
 ───────────────────────────────────────────────────────────────── */
 function getCacheKey(lang, codeStr, bps) {
   const sortedBps = [...bps].sort((a, b) => a - b).join(',');
-  return `dbg_cache_${lang}_${sortedBps}_${btoa(encodeURIComponent(codeStr))}`;
+  // Safe hash encoding for strings containing Unicode/newlines in loops
+  let hash = 0;
+  const str = `${lang}_${sortedBps}_${codeStr}`;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return `dbg_cache_${hash}`;
 }
 
 function getTraceFromCache(lang, codeStr, bps) {

@@ -335,7 +335,7 @@ class JavaScriptExecutionTracer:
             raw_line = self.lines[i - 1]
             stripped  = raw_line.strip()
 
-            if not stripped or stripped.startswith('//') or stripped in ('{', '}', '};'):
+            if not stripped or stripped.startswith('//') or stripped in ('{', '}', '};') or stripped.startswith('for ') or stripped.startswith('for(') or stripped.startswith('while ') or stripped.startswith('while('):
                 continue
 
             changed_keys = []
