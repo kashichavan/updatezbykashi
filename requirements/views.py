@@ -393,6 +393,45 @@ def api_owner_job_delete(request, pk):
         return JsonResponse({'success': True, 'message': 'Job posting deleted.'})
 
 @csrf_exempt
+def api_owner_job_update(request, pk):
+    if not (request.user.is_authenticated and request.user.is_staff):
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method in ['POST', 'PUT']:
+        try:
+            job = get_object_or_404(JobPosting, pk=pk)
+            data = json.loads(request.body)
+
+            if 'title' in data:
+                job.title = data['title'].strip()
+            if 'company_name' in data:
+                job.company_name = data['company_name'].strip()
+            if 'category_id' in data:
+                cat = get_object_or_404(Category, id=data['category_id'])
+                job.category = cat
+            if 'job_type' in data:
+                job.job_type = data['job_type']
+            if 'apply_url' in data:
+                job.apply_url = data['apply_url'].strip()
+            if 'stipend_salary' in data:
+                job.stipend_salary = data['stipend_salary'].strip()
+            if 'location' in data:
+                job.location = data['location'].strip()
+                job.is_remote = 'remote' in job.location.lower()
+            if 'skills_required' in data:
+                job.skills_required = data['skills_required'].strip()
+            if 'description' in data:
+                job.description = data['description'].strip()
+            if 'eligibility' in data:
+                job.eligibility = data['eligibility'].strip()
+
+            job.save()
+            cache.clear()
+            return JsonResponse({'success': True, 'message': 'Posting updated successfully!', 'id': job.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
 def api_admin_login(request):
     if request.method == 'POST':
         try:

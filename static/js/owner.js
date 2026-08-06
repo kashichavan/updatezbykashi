@@ -240,8 +240,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <tr>
               <th>ID</th>
               <th>Company & Role</th>
+              <th>Apply Link</th>
               <th>Category</th>
-              <th>Location</th>
               <th>Time Left (3-Day Limit)</th>
               <th>Actions</th>
             </tr>
@@ -254,19 +254,35 @@ document.addEventListener('DOMContentLoaded', () => {
                   <strong>${escapeHtml(j.company_name)}</strong><br>
                   <span style="color: var(--muted);">${escapeHtml(j.title)}</span>
                 </td>
+                <td>
+                  <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: var(--blue-primary); font-size: 12px; font-weight: 700; word-break: break-all;">
+                    ${escapeHtml(j.apply_url ? (j.apply_url.length > 30 ? j.apply_url.substring(0, 30) + '...' : j.apply_url) : 'No link')} ↗
+                  </a>
+                </td>
                 <td>${escapeHtml(j.category_name)}</td>
-                <td>${escapeHtml(j.location)}</td>
                 <td><span style="font-weight: 700; color: var(--blue-primary);">${j.time_left_seconds > 0 ? Math.ceil(j.time_left_seconds / 3600) + 'h left' : 'Expired'}</span></td>
                 <td>
-                  <button class="button button-light btn-delete-job" data-id="${j.id}" style="padding: 4px 10px; font-size: 11px; color: #ef4444; border-color: #fca5a5;">
-                    Delete
-                  </button>
+                  <div style="display: flex; gap: 6px;">
+                    <button class="button button-light btn-edit-job" data-id="${j.id}" style="padding: 4px 10px; font-size: 11px; color: var(--blue-primary); border-color: var(--blue-border);">
+                      ✏️ Edit
+                    </button>
+                    <button class="button button-light btn-delete-job" data-id="${j.id}" style="padding: 4px 10px; font-size: 11px; color: #ef4444; border-color: #fca5a5;">
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       `;
+
+      document.querySelectorAll('.btn-edit-job').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          await openEditModal(id);
+        });
+      });
 
       document.querySelectorAll('.btn-delete-job').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -281,6 +297,92 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Failed to load jobs:', err);
       jobsTableContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444;">Error loading jobs list.</div>';
     }
+  }
+
+  // --- EDIT JOB MODAL LOGIC ---
+  const editModal = document.getElementById('editJobModal');
+  const formEditJob = document.getElementById('formEditJob');
+  const btnCloseEditModal = document.getElementById('btnCloseEditModal');
+  const btnCancelEdit = document.getElementById('btnCancelEdit');
+
+  async function openEditModal(id) {
+    try {
+      // Load categories into modal select
+      const catRes = await fetch('/api/categories/');
+      const catData = await catRes.json();
+      const eCategorySelect = document.getElementById('eCategory');
+      if (eCategorySelect) {
+        eCategorySelect.innerHTML = catData.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      }
+
+      // Fetch job details
+      const res = await fetch(`/api/jobs/${id}/`);
+      const data = await res.json();
+      const job = data.job;
+
+      document.getElementById('eJobId').value = job.id;
+      document.getElementById('eTitle').value = job.title;
+      document.getElementById('eCompany').value = job.company_name;
+      if (eCategorySelect) {
+        const matchingCat = catData.categories.find(c => c.slug === job.category_slug);
+        if (matchingCat) eCategorySelect.value = matchingCat.id;
+      }
+      document.getElementById('eJobType').value = job.job_type;
+      document.getElementById('eApplyUrl').value = job.apply_url || '';
+      document.getElementById('eSalary').value = job.stipend_salary;
+      document.getElementById('eLocation').value = job.location;
+      document.getElementById('eSkills').value = job.skills_required;
+      document.getElementById('eDescription').value = job.description;
+      document.getElementById('eEligibility').value = job.eligibility || '';
+
+      if (editModal) editModal.style.display = 'block';
+    } catch (err) {
+      showToast('Error loading posting details for edit.', 'error');
+    }
+  }
+
+  function closeEditModal() {
+    if (editModal) editModal.style.display = 'none';
+  }
+
+  if (btnCloseEditModal) btnCloseEditModal.addEventListener('click', closeEditModal);
+  if (btnCancelEdit) btnCancelEdit.addEventListener('click', closeEditModal);
+
+  if (formEditJob) {
+    formEditJob.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('eJobId').value;
+      const payload = {
+        title: document.getElementById('eTitle').value.trim(),
+        company_name: document.getElementById('eCompany').value.trim(),
+        category_id: parseInt(document.getElementById('eCategory').value),
+        job_type: document.getElementById('eJobType').value,
+        apply_url: document.getElementById('eApplyUrl').value.trim(),
+        stipend_salary: document.getElementById('eSalary').value.trim(),
+        location: document.getElementById('eLocation').value.trim(),
+        skills_required: document.getElementById('eSkills').value.trim(),
+        description: document.getElementById('eDescription').value.trim(),
+        eligibility: document.getElementById('eEligibility').value.trim(),
+      };
+
+      try {
+        const res = await fetch(`/api/owner/jobs/${id}/update/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast('Job posting updated successfully!', 'success');
+          closeEditModal();
+          loadJobsList();
+        } else {
+          showToast(data.error || 'Failed to update job posting.', 'error');
+        }
+      } catch (err) {
+        showToast('Error saving job posting updates.', 'error');
+      }
+    });
   }
 
   async function deleteJob(id) {
