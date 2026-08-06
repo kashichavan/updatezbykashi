@@ -23,10 +23,11 @@ class JavaExecutionTracer:
 
     JAVA_PRIMITIVES = {'int', 'double', 'float', 'long', 'short', 'byte', 'char', 'boolean'}
 
-    def __init__(self, code_str, breakpoints=None):
+    def __init__(self, code_str, breakpoints=None, stdin_input=""):
         self.code_str    = code_str
         self.lines       = code_str.splitlines()
         self.breakpoints = set(breakpoints or [])
+        self.stdin_queue = [line.strip() for line in stdin_input.splitlines() if line.strip()] if stdin_input else []
         self.steps       = []
         self.stdout_lines = []
         self.prev_variables = {}
@@ -67,6 +68,7 @@ class JavaExecutionTracer:
             return f"📞 Called method '{fn_name}()' → JVM pushed a new Stack Frame onto the Call Stack."
         if event == 'return':
             return f"↩ Method '{fn_name}()' returned → Stack Frame popped. Value: {ret_val}"
+
         new_vars = [k for k in changed if k not in self.prev_variables]
         if new_vars:
             details  = ', '.join([f"'{k}' = {scope[k]['raw']}" for k in new_vars if k in scope])
@@ -100,8 +102,10 @@ class JavaExecutionTracer:
         if expr.startswith("'") and expr.endswith("'") and len(expr) == 3:
             return expr[1]
 
-        # Java Scanner simulated inputs
+        # Java Scanner inputs (uses user stdin queue if provided, else fallback defaults)
         if re.search(r'\.(?:next|nextInt|nextLine|nextDouble|nextFloat|nextLong|nextBoolean)\s*\(\s*\)', expr):
+            if self.stdin_queue:
+                return self.stdin_queue.pop(0)
             if 'nextInt' in expr: return "10"
             if 'nextDouble' in expr: return "99.5"
             if 'nextFloat' in expr: return "12.5"

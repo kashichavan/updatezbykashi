@@ -139,10 +139,12 @@ def api_trace_java(request):
         code = data.get('code', '').strip()
         breakpoints = data.get('breakpoints', [])
 
+        stdin_input = data.get('stdin', '').strip()
+
         if not code:
             return JsonResponse({'status': 'error', 'message': 'Code string is empty'}, status=400)
 
-        tracer = JavaExecutionTracer(code, breakpoints=breakpoints)
+        tracer = JavaExecutionTracer(code, breakpoints=breakpoints, stdin_input=stdin_input)
         result = tracer.execute()
 
         session = DebugSession.objects.create(

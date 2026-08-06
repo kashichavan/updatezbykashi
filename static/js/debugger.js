@@ -386,21 +386,21 @@ function highlightExecutingLines(currentLine, prevLine) {
    Stores execution trace steps in sessionStorage + localStorage so identical
    code snippets execute 0ms instantly from browser cache with zero server load.
 ───────────────────────────────────────────────────────────────── */
-function getCacheKey(lang, codeStr, bps) {
+function getCacheKey(lang, codeStr, bps, stdinStr) {
   const sortedBps = [...bps].sort((a, b) => a - b).join(',');
   // Safe hash encoding for strings containing Unicode/newlines in loops
   let hash = 0;
-  const str = `${lang}_${sortedBps}_${codeStr}`;
+  const str = `${lang}_${sortedBps}_${codeStr}_${stdinStr || ''}`;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
-  return `dbg_v2_cache_${hash}`;
+  return `dbg_v3_cache_${hash}`;
 }
 
-function getTraceFromCache(lang, codeStr, bps) {
+function getTraceFromCache(lang, codeStr, bps, stdinStr) {
   try {
-    const key = getCacheKey(lang, codeStr, bps);
+    const key = getCacheKey(lang, codeStr, bps, stdinStr);
     const cached = sessionStorage.getItem(key) || localStorage.getItem(key);
     if (cached) {
       return JSON.parse(cached);
@@ -411,9 +411,9 @@ function getTraceFromCache(lang, codeStr, bps) {
   return null;
 }
 
-function setTraceInCache(lang, codeStr, bps, data) {
+function setTraceInCache(lang, codeStr, bps, stdinStr, data) {
   try {
-    const key = getCacheKey(lang, codeStr, bps);
+    const key = getCacheKey(lang, codeStr, bps, stdinStr);
     const payload = JSON.stringify(data);
     sessionStorage.setItem(key, payload);
     localStorage.setItem(key, payload);
@@ -430,11 +430,12 @@ async function startDebugging() {
   clearInlineValueHints();
   activeDecorations = editor ? editor.deltaDecorations(activeDecorations, []) : [];
 
-  const code   = editor.getValue();
-  const banner = document.getElementById('aiExplainBanner');
+  const code     = editor.getValue();
+  const stdinVal = (document.getElementById('stdinInput') ? document.getElementById('stdinInput').value : '').trim();
+  const banner   = document.getElementById('aiExplainBanner');
 
   // Check client-side browser cache first (0ms load, zero server requests!)
-  const cachedTrace = getTraceFromCache(currentLang, code, breakpoints);
+  const cachedTrace = getTraceFromCache(currentLang, code, breakpoints, stdinVal);
   if (cachedTrace && cachedTrace.status === 'success' && cachedTrace.steps.length > 0) {
     debugSteps     = cachedTrace.steps;
     currentStepIdx  = 0;
@@ -457,7 +458,7 @@ async function startDebugging() {
     const response = await fetch(endpoint, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ code, breakpoints })
+      body:    JSON.stringify({ code, breakpoints, stdin: stdinVal })
     });
     const data = await response.json();
 
@@ -465,7 +466,7 @@ async function startDebugging() {
       debugSteps    = data.steps;
       currentStepIdx = 0;
       // Save trace into browser cache for instant future replays
-      setTraceInCache(currentLang, code, breakpoints, data);
+      setTraceInCache(currentLang, code, breakpoints, stdinVal, data);
       goToStep(0);
       showToast(`${currentLang.toUpperCase()} Debugger initialized & cached!`, 'success');
     } else {
