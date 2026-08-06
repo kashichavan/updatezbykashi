@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Beginner Code Execution Debugger | Python Kashi{% endblock %}
+{% block title %}🖥️ Beginner Code Execution Debugger | Python Kashi{% endblock %}
 {% block meta_description %}Interactive step-by-step code debugger for beginners. Watch Python, JavaScript, and Java code run line-by-line with visual memory allocation.{% endblock %}
 
 {% block extra_css %}
@@ -63,9 +63,18 @@
     <!-- Language Tabs + Theme Selector -->
     <div style="display:flex; gap:10px; flex-shrink:0; align-items:center; flex-wrap:wrap;">
       <div style="display:flex; gap:8px;">
-        <button id="langPython" class="lang-tab-btn active" onclick="switchLanguage('python')">🐍 Python 3</button>
-        <button id="langJS"     class="lang-tab-btn"        onclick="switchLanguage('javascript')">⚡ JavaScript</button>
-        <button id="langJava"   class="lang-tab-btn"        onclick="switchLanguage('java')">☕ Java 17</button>
+        <button id="langPython" class="lang-tab-btn active" onclick="switchLanguage('python')">
+          <img src="{% static 'images/icon-feed.png' %}" class="tab-png-icon" width="16" height="16" alt="Python">
+          Python 3
+        </button>
+        <button id="langJS"     class="lang-tab-btn"        onclick="switchLanguage('javascript')">
+          <img src="{% static 'images/icon-apply.png' %}" class="tab-png-icon" width="16" height="16" alt="JavaScript">
+          JavaScript
+        </button>
+        <button id="langJava"   class="lang-tab-btn"        onclick="switchLanguage('java')">
+          <img src="{% static 'images/icon-company.png' %}" class="tab-png-icon" width="16" height="16" alt="Java">
+          Java 17
+        </button>
       </div>
 
       <!-- Theme Selector Dropdown -->
@@ -129,7 +138,10 @@
     <!-- LEFT: MONACO CODE EDITOR -->
     <div class="editor-card-box">
       <div class="editor-card-header">
-        <span id="editorFileTitle">🐍 main.py</span>
+        <span id="editorFileTitle" style="display:inline-flex; align-items:center; gap:6px;">
+          <img src="{% static 'images/icon-type.png' %}" width="14" height="14" alt="File">
+          main.py
+        </span>
         <!-- Font Size Controls -->
         <div style="display:flex; align-items:center; gap:6px;">
           <span style="font-size:11px; color:#94a3b8; font-weight:600;">Font:</span>
@@ -148,7 +160,10 @@
       <!-- CARD 1: VARIABLES & MEMORY -->
       <div class="visual-card card-vars">
         <div class="visual-card-header">
-          <span>🧠 Variables &amp; Memory Inspector</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <img src="{% static 'images/icon-type.png' %}" width="14" height="14" alt="Vars">
+            Variables &amp; Memory Inspector
+          </span>
           <span style="font-size:11px; color:#94a3b8;">Live State</span>
         </div>
         <div class="visual-card-body">
@@ -164,7 +179,10 @@
       <!-- CARD 2: CALL STACK FRAMES -->
       <div class="visual-card card-stack">
         <div class="visual-card-header">
-          <span>📚 Call Stack Frames</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <img src="{% static 'images/icon-location.png' %}" width="14" height="14" alt="Stack">
+            Call Stack Frames
+          </span>
           <span style="font-size:11px; color:#94a3b8;">Execution Depth</span>
         </div>
         <div class="visual-card-body">
@@ -179,7 +197,10 @@
       <!-- CARD 3: TERMINAL OUTPUT -->
       <div class="visual-card card-term">
         <div class="visual-card-header">
-          <span>💻 Terminal Output</span>
+          <span style="display:inline-flex; align-items:center; gap:6px;">
+            <img src="{% static 'images/icon-type.png' %}" width="14" height="14" alt="Terminal">
+            Terminal Output
+          </span>
           <span style="font-size:11px; color:#94a3b8;">stdout</span>
         </div>
         <div class="visual-card-body" style="background:#050a14; color:#38bdf8; border-top:1px solid #23324d;">

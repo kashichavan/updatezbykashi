@@ -265,8 +265,8 @@ function switchLanguage(lang) {
   const idMap = { python: 'langPython', javascript: 'langJS', java: 'langJava' };
   document.getElementById(idMap[lang]).classList.add('active');
 
-  const titleMap = { python: '🐍 main.py', javascript: '⚡ app.js', java: '☕ Main.java' };
-  document.getElementById('editorFileTitle').textContent = titleMap[lang];
+  const titleMap = { python: 'main.py', javascript: 'app.js', java: 'Main.java' };
+  document.getElementById('editorFileTitle').innerHTML = `<img src="/static/images/icon-type.png" width="14" height="14" alt="File"> ${titleMap[lang]}`;
 
   if (editor) {
     monaco.editor.setModelLanguage(editor.getModel(), lang);
