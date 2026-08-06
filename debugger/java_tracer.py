@@ -113,23 +113,41 @@ class JavaExecutionTracer:
             if 'nextBoolean' in expr: return "true"
             return "Kashi"
 
-        # String operations e.g. text.length(), text.toUpperCase(), text.substring(0, 4)
+        # Helper to extract raw string value safely
+        def _clean_str(val):
+            raw = str(val).strip('"\'')
+            if m_inner := re.search(r"'(.*?)'", raw):
+                return m_inner.group(1)
+            return raw
+
+        # String operations e.g. text.length(), text.toUpperCase(), text.substring(1), text.charAt(1)
         if '.length()' in expr:
             var_name = expr.split('.length()')[0].strip()
-            str_val = self.resolve_expr(var_name, scope)
-            return str(len(str_val.strip('"\'')))
+            str_val = _clean_str(self.resolve_expr(var_name, scope))
+            return str(len(str_val))
         if '.toUpperCase()' in expr:
             var_name = expr.split('.toUpperCase()')[0].strip()
-            str_val = self.resolve_expr(var_name, scope)
-            return str_val.strip('"\'').upper()
+            str_val = _clean_str(self.resolve_expr(var_name, scope))
+            return str_val.upper()
         if '.toLowerCase()' in expr:
             var_name = expr.split('.toLowerCase()')[0].strip()
-            str_val = self.resolve_expr(var_name, scope)
-            return str_val.strip('"\'').lower()
-        if m_sub := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.substring\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)', expr):
-            vname, start_idx, end_idx = m_sub.groups()
-            str_val = self.resolve_expr(vname, scope).strip('"\'')
+            str_val = _clean_str(self.resolve_expr(var_name, scope))
+            return str_val.lower()
+        if m_sub2 := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.substring\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)', expr):
+            vname, start_idx, end_idx = m_sub2.groups()
+            str_val = _clean_str(self.resolve_expr(vname, scope))
             return str_val[int(start_idx):int(end_idx)]
+        if m_sub1 := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.substring\s*\(\s*(\d+)\s*\)', expr):
+            vname, start_idx = m_sub1.groups()
+            str_val = _clean_str(self.resolve_expr(vname, scope))
+            return str_val[int(start_idx):]
+        if m_char := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.charAt\s*\(\s*(\d+)\s*\)', expr):
+            vname, char_idx = m_char.groups()
+            str_val = _clean_str(self.resolve_expr(vname, scope))
+            idx = int(char_idx)
+            return str_val[idx] if idx < len(str_val) else ''
+        if m_valof := re.search(r'(?:Integer|Double|Float|Long|Boolean)\.valueOf\s*\(\s*(.*?)\s*\)', expr):
+            return self.resolve_expr(m_valof.group(1), scope)
 
         # Java method calls on object instances (s.getName() -> field value)
         m_getter = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\.get([a-zA-Z0-9_$]+)\s*\(\s*\)$', expr)
