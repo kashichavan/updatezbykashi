@@ -316,31 +316,33 @@
         </div>
       </div>
 
-      <!-- CARD 3: UNIFIED INTERACTIVE CONSOLE TERMINAL -->
+      <!-- CARD 3: 100% UNIFIED SINGLE SHELL TERMINAL CONSOLE -->
       <div class="visual-card card-term">
         <div class="visual-card-header" style="display:flex; justify-content:space-between; align-items:center;">
           <span style="display:inline-flex; align-items:center; gap:6px;">
             <img src="{% static 'images/icon-type.png' %}" width="14" height="14" alt="Console">
-            Interactive Console (Terminal)
+            Interactive Terminal Shell
           </span>
-          <span style="font-size:11px; color:#60a5fa; font-family:monospace; font-weight:700;">stdin &amp; stdout</span>
+          <span style="font-size:11px; color:#38bdf8; font-family:monospace; font-weight:800;">Single Shell (stdin + stdout)</span>
         </div>
-        <div class="visual-card-body" style="background:#050a14; color:#38bdf8; border-top:1px solid #23324d; display:flex; flex-direction:column; padding:12px; gap:8px;">
-          <!-- Single Combined Input / Output Terminal Shell -->
-          <div style="background:#0b1329; border:1px solid #1e293b; border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; font-size:11px; color:#94a3b8; font-family:monospace; border-bottom:1px solid #1e293b; padding-bottom:6px;">
-              <span>&gt;_ Interactive Stdin Input Stream</span>
-              <span style="font-size:10px; color:#38bdf8;">(Type inputs below, 1 per line)</span>
+        <div class="visual-card-body" style="background:#050a14; color:#38bdf8; border-top:1px solid #23324d; padding:12px; display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:11px; font-weight:800; color:#94a3b8; font-family:monospace; margin-bottom:4px;">
+            $ bash / jvm terminal shell
+          </div>
+
+          <!-- Single Unified Shell Viewport -->
+          <div style="background:#0b1329; border:1px solid #1e293b; border-radius:10px; padding:12px; font-family:'Consolas','Fira Code',monospace; font-size:12px; display:flex; flex-direction:column; gap:10px;">
+            <!-- Live Program Output Stream -->
+            <pre id="stdoutConsole"
+                 style="margin:0; font-size:12px; color:#38bdf8; background:transparent; border:none; padding:0; white-space:pre-wrap; font-family:'Consolas','Fira Code',monospace; line-height:1.6;">$ Program output will stream here...</pre>
+
+            <!-- Single Line Interactive Prompt Input -->
+            <div style="display:flex; align-items:center; gap:8px; border-top:1px solid #1e293b; padding-top:8px;">
+              <span style="color:#60a5fa; font-weight:900;">&gt;_ stdin:</span>
+              <textarea id="stdinInput" rows="1" placeholder="Type input here (press Enter / 1 per line)..."
+                        style="flex:1; background:transparent; color:#f8fafc; border:none; outline:none; font-size:12px; font-family:'Consolas','Fira Code',monospace; resize:none; box-sizing:border-box;"></textarea>
             </div>
-            <textarea id="stdinInput" rows="2" placeholder="&gt; Type input values here (e.g. 25 \n Kashi)..."
-                      style="width:100%; background:transparent; color:#38bdf8; border:none; outline:none; font-size:12px; font-family:'Consolas','Fira Code',monospace; line-height:1.5; resize:vertical; box-sizing:border-box;"></textarea>
           </div>
-          <!-- Terminal Program Output Stream -->
-          <div style="font-size:11px; color:#94a3b8; font-family:monospace; font-weight:700; margin-top:2px;">
-            $ Output Terminal Stream:
-          </div>
-          <pre id="stdoutConsole"
-               style="margin:0; font-size:12px; color:#f8fafc; background:#0b1329; border:1px solid #1e293b; border-radius:8px; padding:10px; white-space:pre-wrap; font-family:'Consolas','Fira Code',monospace; line-height:1.6; min-height:60px;">$ Program output will stream here...</pre>
         </div>
       </div>
 
