@@ -288,25 +288,17 @@ require(['vs/editor/editor.main'], function () {
     stdinElem.addEventListener('keydown', (evt) => {
       if (evt.key === 'Enter' && !evt.shiftKey) {
         evt.preventDefault();
-        if (debugSteps.length > 0 && currentStepIdx < debugSteps.length - 1) {
-          startDebugging().then(() => {
-            if (currentStepIdx < debugSteps.length - 1) nextStep();
-          });
-        } else {
-          startDebugging();
-        }
+        startDebugging(true).then(() => {
+          if (debugSteps.length > 0) goToStep(debugSteps.length - 1);
+        });
       }
     });
   }
   if (btnSub) {
     btnSub.addEventListener('click', () => {
-      if (debugSteps.length > 0 && currentStepIdx < debugSteps.length - 1) {
-        startDebugging().then(() => {
-          if (currentStepIdx < debugSteps.length - 1) nextStep();
-        });
-      } else {
-        startDebugging();
-      }
+      startDebugging(true).then(() => {
+        if (debugSteps.length > 0) goToStep(debugSteps.length - 1);
+      });
     });
   }
 });
@@ -425,7 +417,7 @@ function getCacheKey(lang, codeStr, bps, stdinStr) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
-  return `dbg_v12_cache_${hash}`;
+  return `dbg_v13_cache_${hash}`;
 }
 
 function getTraceFromCache(lang, codeStr, bps, stdinStr) {
@@ -455,7 +447,7 @@ function setTraceInCache(lang, codeStr, bps, stdinStr, data) {
 /* ─────────────────────────────────────────────────────────────────
    START DEBUGGING  (fetch trace from Django backend or Browser Cache)
 ───────────────────────────────────────────────────────────────── */
-async function startDebugging() {
+async function startDebugging(forceRefresh = false) {
   stopAutoPlay();
   clearInlineValueHints();
   activeDecorations = editor ? editor.deltaDecorations(activeDecorations, []) : [];
@@ -464,15 +456,17 @@ async function startDebugging() {
   const stdinVal = (document.getElementById('stdinInput') ? document.getElementById('stdinInput').value : '').trim();
   const banner   = document.getElementById('aiExplainBanner');
 
-  // Check client-side browser cache first (0ms load, zero server requests!)
-  const cachedTrace = getTraceFromCache(currentLang, code, breakpoints, stdinVal);
-  if (cachedTrace && cachedTrace.status === 'success' && cachedTrace.steps.length > 0) {
-    debugSteps     = cachedTrace.steps;
-    currentStepIdx  = 0;
-    goToStep(0);
-    banner.innerHTML = `⚡ <strong>Instant Browser Cache Hit (0ms):</strong> Loaded trace locally with 0 server load!`;
-    showToast(`Loaded trace instantly from browser cache!`, 'success');
-    return;
+  // Check client-side browser cache first (skip if user forces refresh with new input)
+  if (!forceRefresh) {
+    const cachedTrace = getTraceFromCache(currentLang, code, breakpoints, stdinVal);
+    if (cachedTrace && cachedTrace.status === 'success' && cachedTrace.steps.length > 0) {
+      debugSteps     = cachedTrace.steps;
+      currentStepIdx  = 0;
+      goToStep(0);
+      banner.innerHTML = `⚡ <strong>Instant Browser Cache Hit (0ms):</strong> Loaded trace locally with 0 server load!`;
+      showToast(`Loaded trace instantly from browser cache!`, 'success');
+      return;
+    }
   }
 
   banner.innerHTML = `⏳ <strong>${currentLang.toUpperCase()} Debugger Engine:</strong> AST validation & compiling memory steps...`;
