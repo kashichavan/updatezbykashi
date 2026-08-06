@@ -395,7 +395,7 @@ function getCacheKey(lang, codeStr, bps) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
-  return `dbg_cache_${hash}`;
+  return `dbg_v2_cache_${hash}`;
 }
 
 function getTraceFromCache(lang, codeStr, bps) {
