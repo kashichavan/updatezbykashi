@@ -261,12 +261,27 @@ class JavaExecutionTracer:
             return tok
         except ValueError:
             pass
+        # Check for uninitialized/undeclared variables or null property calls
+        if tok and not tok.isdigit() and not (tok.startswith('"') and tok.endswith('"')):
+            if tok not in scope and not self._is_numeric(tok):
+                # Integer.parseInt / Double.parseDouble checks
+                if 'Integer.parseInt' in tok or 'Double.parseDouble' in tok:
+                    raise ValueError("java.lang.NumberFormatException: For input string")
+                if '.' in tok:
+                    parts = tok.split('.')
+                    if parts[0] in scope and scope[parts[0]]['raw'] in ('null', 'None'):
+                        raise NullPointerException(f"java.lang.NullPointerException: Cannot invoke '{parts[1]}' on null reference")
+                elif re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', tok):
+                    raise NameError(f"java.lang.NullPointerException: Cannot resolve symbol '{tok}'")
+
         # Expression with variable substitution
         resolved = tok
         for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
             resolved = re.sub(r'\b' + re.escape(sv) + r'\b', sdata['raw'], resolved)
         try:
             return str(eval(resolved, {"__builtins__": {}}))  # nosec
+        except ZeroDivisionError:
+            raise ZeroDivisionError("java.lang.ArithmeticException: / by zero")
         except Exception:
             return resolved.strip('"\'')
 
