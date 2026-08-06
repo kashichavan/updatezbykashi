@@ -702,6 +702,10 @@ class JavaExecutionTracer:
                 args_list = [a.strip() for a in args_raw_str.split(',') if a.strip()] if args_raw_str.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
+                    # Emit line step at call site before jumping into method
+                    expl_call = f"📞 Calling method '{called_fn}()'"
+                    self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_call)
+
                     ret_value = self._exec_method(called_fn, args_list, scope, call_stack, methods,
                                                   re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
                     type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', stripped)
@@ -720,6 +724,10 @@ class JavaExecutionTracer:
                 args_list = [a.strip() for a in args_raw.split(',') if a.strip()] if args_raw.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
+                    # Emit line step at call site before jumping into method
+                    expl_call = f"📞 Calling method '{called_fn}()'"
+                    self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_call)
+
                     self._exec_method(called_fn, args_list, scope, call_stack, methods, re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
                     self.prev_variables = {k: dict(v) for k, v in scope.items()}
 
