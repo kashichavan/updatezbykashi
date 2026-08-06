@@ -288,13 +288,25 @@ require(['vs/editor/editor.main'], function () {
     stdinElem.addEventListener('keydown', (evt) => {
       if (evt.key === 'Enter' && !evt.shiftKey) {
         evt.preventDefault();
-        startDebugging();
+        if (debugSteps.length > 0 && currentStepIdx < debugSteps.length - 1) {
+          startDebugging().then(() => {
+            if (currentStepIdx < debugSteps.length - 1) nextStep();
+          });
+        } else {
+          startDebugging();
+        }
       }
     });
   }
   if (btnSub) {
     btnSub.addEventListener('click', () => {
-      startDebugging();
+      if (debugSteps.length > 0 && currentStepIdx < debugSteps.length - 1) {
+        startDebugging().then(() => {
+          if (currentStepIdx < debugSteps.length - 1) nextStep();
+        });
+      } else {
+        startDebugging();
+      }
     });
   }
 });
@@ -413,7 +425,7 @@ function getCacheKey(lang, codeStr, bps, stdinStr) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
-  return `dbg_v11_cache_${hash}`;
+  return `dbg_v12_cache_${hash}`;
 }
 
 function getTraceFromCache(lang, codeStr, bps, stdinStr) {
@@ -568,14 +580,20 @@ function goToStep(idx) {
     consoleElem.textContent = streamOutput || '$ Program execution completed.';
   }
 
-  // Highlight & focus interactive stdin input box if current line requires user input
+  // VS Code Interactive Debugger Pause: Stop on input() lines and wait for user terminal input
   const lineTxt = (step.line_text || '').toLowerCase();
   const stdinInput = document.getElementById('stdinInput');
-  if (stdinInput && (lineTxt.includes('input(') || lineTxt.includes('scanner') || lineTxt.includes('.next'))) {
+  const isInputLine = lineTxt.includes('input(') || lineTxt.includes('scanner') || lineTxt.includes('.next');
+
+  if (stdinInput && isInputLine) {
+    stopAutoPlay();
     stdinInput.style.border = '2px solid #10b981';
-    stdinInput.style.boxShadow = '0 0 16px rgba(16,185,129,0.5)';
-    stdinInput.placeholder = `👉 Line ${step.line_number} requires input! Type value & press Enter ↵...`;
+    stdinInput.style.boxShadow = '0 0 16px rgba(16,185,129,0.6)';
+    stdinInput.placeholder = `⏸ VS Code Paused on Line ${step.line_number}: Enter value & press Enter ↵ to continue...`;
     stdinInput.focus();
+
+    document.getElementById('aiExplainBanner').innerHTML =
+      `⏸ <strong>VS Code Debugger Paused on Line ${step.line_number}:</strong> Awaiting interactive input in terminal below. Type value and press <strong>Enter ↵</strong> to step forward!`;
   } else if (stdinInput) {
     stdinInput.style.border = 'none';
     stdinInput.style.boxShadow = 'none';
