@@ -243,6 +243,93 @@ class JavaExecutionTracer:
 
         return methods
 
+    def _exec_method(self, called_fn, args_list, caller_scope, call_stack, methods,
+                     re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return):
+        if called_fn not in methods or called_fn == 'main':
+            return 'void'
+
+        fn_info = methods[called_fn]
+        call_stack.append(f"{called_fn}()")
+        self._emit(fn_info['start'], self.lines[fn_info['start'] - 1].strip(), 'call', call_stack, caller_scope, [], called_fn)
+
+        local_scope = dict(caller_scope)
+        for p_idx, param in enumerate(fn_info.get('params', [])):
+            arg_raw = args_list[p_idx] if p_idx < len(args_list) else '0'
+            resolved = self.resolve_expr(arg_raw, caller_scope)
+            local_scope[param['name']] = self.serialize(resolved, param['type'], name=param['name'])
+
+        ret_val = 'void'
+        body_lineno = fn_info['start'] + 1
+        while body_lineno < fn_info['end']:
+            raw = self.lines[body_lineno - 1]
+            bline = raw.strip()
+            body_lineno += 1
+
+            if not bline or bline in ('{', '}', '};') or bline.startswith('//') or bline.startswith('/*'):
+                continue
+            if re.match(r'^(?:public|private|protected|static)\s+', bline) and '(' in bline:
+                continue
+
+            # Nested return call assignment: int res = add(a, b);
+            m_ret = re_call_ret.match(bline)
+            if m_ret:
+                tgt_var, sub_fn, sub_args_str = m_ret.groups()
+                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
+                sub_res = self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
+                                           re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
+                type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', bline)
+                jtype = type_m.group(1) if type_m else (local_scope[tgt_var]['type'] if tgt_var in local_scope else 'int')
+                local_scope[tgt_var] = self.serialize(sub_res, jtype, name=tgt_var)
+                continue
+
+            # Nested plain call: add(a, b);
+            m_plain = re_call2.match(bline)
+            if m_plain:
+                sub_fn, sub_args_str = m_plain.groups()
+                sub_args = [a.strip() for a in sub_args_str.split(',') if a.strip()] if sub_args_str.strip() else []
+                self._exec_method(sub_fn, sub_args, local_scope, call_stack, methods,
+                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
+                continue
+
+            # System.out.println
+            m_out = re_println.match(bline)
+            if m_out:
+                arg = m_out.group(1).strip()
+                output = self.resolve_expr(arg, local_scope)
+                self.stdout_lines.append(f"[JVM] {output}")
+                self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [])
+                continue
+
+            # Primitive decl
+            bm = re_prim_decl.match(bline)
+            if bm:
+                bjtype, bname, bexpr = bm.groups()
+                bval = self.resolve_expr(bexpr, local_scope)
+                local_scope[bname] = self.serialize(bval, bjtype, name=bname)
+                self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [bname])
+                continue
+
+            # Reassignment
+            ba = re_assign.match(bline)
+            if ba:
+                rname, rexpr = ba.groups()
+                if rname in local_scope:
+                    rtype = local_scope[rname]['type']
+                    rval = self.resolve_expr(rexpr, local_scope)
+                    local_scope[rname] = self.serialize(rval, rtype, name=rname)
+                    self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [rname])
+                continue
+
+            # Return statement
+            mr = re_return.match(bline)
+            if mr:
+                ret_val = self.resolve_expr(mr.group(1), local_scope)
+                break
+
+        call_stack.pop()
+        self._emit(fn_info['end'], f"return {ret_val}", 'return', call_stack, local_scope, [], called_fn, ret_val)
+        return ret_val
+
     # ─── Core Execute ─────────────────────────────────────────────────────────
     def execute(self):
         scope      = {}
@@ -300,59 +387,15 @@ class JavaExecutionTracer:
             m_call_ret = re_call_ret.match(stripped)
             if m_call_ret:
                 tgt_var, called_fn, args_raw_str = m_call_ret.groups()
-                args_list = [a.strip() for a in args_raw_str.split(',') if a.strip()]
+                args_list = [a.strip() for a in args_raw_str.split(',') if a.strip()] if args_raw_str.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
-                    call_stack.append(f"{called_fn}()")
-                    self._emit(i - 1, stripped, 'call', call_stack, scope, [], called_fn)
-
-                    fn_info    = methods[called_fn]
-                    local_scope = dict(scope)
-
-                    # Bind parameters to resolved argument values
-                    for p_idx, param in enumerate(fn_info.get('params', [])):
-                        arg_raw  = args_list[p_idx] if p_idx < len(args_list) else '0'
-                        resolved = self.resolve_expr(arg_raw, scope)
-                        local_scope[param['name']] = self.serialize(
-                            resolved, param['type'], name=param['name'])
-
-                    ret_value = 'void'
-                    for body_lineno in range(fn_info['start'] + 1, fn_info['end']):
-                        bline = self.lines[body_lineno - 1].strip()
-                        if not bline or bline in ('{', '}') or bline.startswith('//'):
-                            continue
-                        bm = re_prim_decl.match(bline)
-                        if bm:
-                            bjtype, bname, bexpr = bm.groups()
-                            bval = self.resolve_expr(bexpr, local_scope)
-                            local_scope[bname] = self.serialize(bval, bjtype, name=bname)
-                        else:
-                            bassign = re_assign.match(bline)
-                            if bassign:
-                                rname, rexpr = bassign.groups()
-                                if rname in local_scope:
-                                    rtype = local_scope[rname]['type']
-                                    rval = self.resolve_expr(rexpr, local_scope)
-                                    local_scope[rname] = self.serialize(rval, rtype, name=rname)
-                                    local_scope[rname]['is_changed'] = True
-                        mr = re_return.match(bline)
-                        if mr:
-                            ret_value = self.resolve_expr(mr.group(1), local_scope)
-                        body_changed = [
-                            k for k in local_scope
-                            if k not in scope
-                            or scope.get(k, {}).get('raw') != local_scope[k].get('raw')
-                        ]
-                        self._emit(body_lineno, bline, 'line', call_stack, local_scope, body_changed)
-
-                    # Assign return value to target variable
+                    ret_value = self._exec_method(called_fn, args_list, scope, call_stack, methods,
+                                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
                     type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', stripped)
                     jtype  = type_m.group(1) if type_m else (scope[tgt_var]['type'] if tgt_var in scope else 'int')
                     scope[tgt_var] = self.serialize(ret_value, jtype, name=tgt_var)
                     changed_keys   = [tgt_var]
-
-                    call_stack.pop()
-                    self._emit(i - 1, stripped, 'return', call_stack, scope, changed_keys, called_fn, ret_value)
                     self.prev_variables = {k: dict(v) for k, v in scope.items()}
 
             if handled:
@@ -362,35 +405,10 @@ class JavaExecutionTracer:
             m_call2 = re_call2.match(stripped)
             if m_call2:
                 called_fn, args_raw = m_call2.groups()
-                args_list = [a.strip() for a in args_raw.split(',') if a.strip()]
+                args_list = [a.strip() for a in args_raw.split(',') if a.strip()] if args_raw.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
-                    call_stack.append(f"{called_fn}()")
-                    self._emit(i - 1, stripped, 'call', call_stack, scope, [], called_fn)
-                    fn_info    = methods[called_fn]
-                    local_scope = dict(scope)
-                    for p_idx, param in enumerate(fn_info.get('params', [])):
-                        arg_raw  = args_list[p_idx] if p_idx < len(args_list) else '0'
-                        resolved = self.resolve_expr(arg_raw, scope)
-                        local_scope[param['name']] = self.serialize(
-                            resolved, param['type'], name=param['name'])
-                    for body_lineno in range(fn_info['start'] + 1, fn_info['end']):
-                        bline = self.lines[body_lineno - 1].strip()
-                        if not bline or bline in ('{', '}') or bline.startswith('//'):
-                            continue
-                        bm = re_prim_decl.match(bline)
-                        if bm:
-                            bjtype, bname, bexpr = bm.groups()
-                            bval = self.resolve_expr(bexpr, local_scope)
-                            local_scope[bname] = self.serialize(bval, bjtype, name=bname)
-                        body_changed = [
-                            k for k in local_scope
-                            if k not in scope
-                            or scope.get(k, {}).get('raw') != local_scope[k].get('raw')
-                        ]
-                        self._emit(body_lineno, bline, 'line', call_stack, local_scope, body_changed)
-                    call_stack.pop()
-                    self._emit(i - 1, stripped, 'return', call_stack, scope, [], called_fn, 'void')
+                    self._exec_method(called_fn, args_list, scope, call_stack, methods, re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
                     self.prev_variables = {k: dict(v) for k, v in scope.items()}
 
             if handled:
