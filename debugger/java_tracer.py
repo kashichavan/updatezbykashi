@@ -96,12 +96,18 @@ class JavaExecutionTracer:
         # Java Scanner inputs (uses user stdin queue if provided, else fallback defaults)
         if re.search(r'\.(?:next|nextInt|nextLine|nextDouble|nextFloat|nextLong|nextBoolean)\s*\(\s*\)', expr):
             if self.stdin_queue:
-                return self.stdin_queue.pop(0)
+                val = self.stdin_queue.pop(0)
+                if '.charAt(' in expr:
+                    m_ch = re.search(r'\.charAt\s*\(\s*(\d+)\s*\)', expr)
+                    idx = int(m_ch.group(1)) if m_ch else 0
+                    return val[idx] if idx < len(val) else val
+                return val
             if 'nextInt' in expr: return "10"
             if 'nextDouble' in expr: return "99.5"
             if 'nextFloat' in expr: return "12.5"
             if 'nextLong' in expr: return "1000"
             if 'nextBoolean' in expr: return "true"
+            if '.charAt(' in expr: return "A"
             return "Kashi"
 
         # Helper to extract raw string value safely
