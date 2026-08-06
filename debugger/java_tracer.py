@@ -713,9 +713,9 @@ class JavaExecutionTracer:
                     i = curr_idx
                     continue
 
-            # Skip blanks, braces, comments, import statements, class/method declarations
+            # Skip blanks, braces, comments, import statements, keywords & structure declarations
             if (not stripped
-                    or stripped in ('{', '}', '};')
+                    or stripped in ('{', '}', '};', 'try {', 'try', 'finally', 'finally {')
                     or stripped.startswith('//')
                     or stripped.startswith('/*')
                     or stripped.startswith('*')
@@ -723,11 +723,15 @@ class JavaExecutionTracer:
                     or stripped.startswith('package ')
                     or stripped.startswith('public class')
                     or stripped.startswith('class ')
+                    or stripped.startswith('enum ')
+                    or stripped.startswith('interface ')
+                    or stripped.startswith('abstract class')
+                    or stripped.startswith('catch')
                     or stripped.startswith('while ')
                     or stripped.startswith('while(')):
                 continue
-            if (re.match(r'^(?:public|private|protected|static)\s+', stripped)
-                    and '(' in stripped):
+            if (re.match(r'^(?:public|private|protected|static|final|abstract)\s+', stripped)
+                    and ('(' in stripped or '{' in stripped)):
                 continue
 
             # ── Reset changed_keys for this iteration ─────────────────────────

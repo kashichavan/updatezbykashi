@@ -632,19 +632,16 @@ function clearInlineValueHints() {
    a scrollable block. Lists/dicts/arrays get an expand toggle.
 ───────────────────────────────────────────────────────────────── */
 function renderVariablesCards(vars) {
-  const varContainer = document.getElementById('variablesContainer');
-  const objContainer = document.getElementById('objectsContainer');
-  const keys         = Object.keys(vars || {});
+  const container = document.getElementById('variablesContainer');
+  const keys      = Object.keys(vars || {});
 
   if (keys.length === 0) {
-    if (varContainer) varContainer.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;font-size:12px;">No variables initialized at this step.</div>';
-    if (objContainer) objContainer.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:16px;font-size:12px;">No object instances allocated on Heap yet.</div>';
+    if (container) container.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;font-size:12px;">No variables initialized at this step.</div>';
     return;
   }
 
   const COLLAPSE_THRESHOLD = 60;
-  let varHtml = '';
-  let objHtml = '';
+  let html = '';
 
   keys.forEach((k, cardIdx) => {
     const v         = vars[k];
@@ -652,7 +649,6 @@ function renderVariablesCards(vars) {
     const fullVal   = typeof v.value === 'object' ? JSON.stringify(v.value, null, 2) : String(v.raw ?? v.value);
     const isLong    = fullVal.length > COLLAPSE_THRESHOLD;
 
-    // Detect if this variable is an object instance, array, list, dict, or reference pointer
     const isObject = !v.is_primitive
                   || ['list', 'dict', 'array', 'object', 'tuple', 'set'].includes(v.type)
                   || (typeof v.type === 'string' && (v.type.endsWith('[]') || v.type.includes('.')))
@@ -683,17 +679,17 @@ function renderVariablesCards(vars) {
               var btn = document.getElementById('${btnId}');
               var open = b.style.display !== 'none';
               b.style.display = open ? 'none' : 'block';
-              btn.textContent  = open ? '+ expand fields' : '− collapse';
+              btn.textContent  = open ? '+ expand' : '− collapse';
             })()"
             style="background:none; border:1px solid var(--border-subtle); border-radius:6px;
                    color:var(--accent); font-size:10px; font-weight:800; cursor:pointer;
                    padding:2px 8px; font-family:monospace; white-space:nowrap;">
-            + expand fields
+            + expand
           </button>
         </div>`;
     }
 
-    const cardMarkup = `
+    html += `
       <div class="var-pill-card ${changed}" id="${cardId}"
            style="flex-direction:column; align-items:stretch; gap:6px;">
 
@@ -722,20 +718,9 @@ function renderVariablesCards(vars) {
 
       </div>
     `;
-
-    if (isObject) {
-      objHtml += cardMarkup;
-    } else {
-      varHtml += cardMarkup;
-    }
   });
 
-  if (varContainer) {
-    varContainer.innerHTML = varHtml || '<div style="color:#94a3b8;text-align:center;padding:16px;font-size:12px;">No primitive variables at this step.</div>';
-  }
-  if (objContainer) {
-    objContainer.innerHTML = objHtml || '<div style="color:#94a3b8;text-align:center;padding:16px;font-size:12px;">No object instances allocated on Heap yet.</div>';
-  }
+  if (container) container.innerHTML = html;
 }
 
 /* ─────────────────────────────────────────────────────────────────

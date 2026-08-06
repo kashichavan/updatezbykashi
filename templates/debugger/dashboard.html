@@ -261,38 +261,20 @@
     <!-- RIGHT: INSPECTORS COLUMN -->
     <div class="inspector-column-box">
 
-      <!-- CARD 1: VARIABLES & PRIMITIVES -->
+      <!-- CARD 1: UNIFIED VARIABLES & MEMORY INSPECTOR -->
       <div class="visual-card card-vars">
         <div class="visual-card-header">
           <span style="display:inline-flex; align-items:center; gap:6px;">
             <img src="{% static 'images/icon-type.png' %}" width="14" height="14" alt="Vars">
-            Variables &amp; Stack Inspector
+            Variables &amp; Memory Inspector
           </span>
-          <span style="font-size:11px; color:#94a3b8;">Primitives &amp; Refs</span>
+          <span style="font-size:11px; color:#94a3b8;">Live Variables &amp; Objects</span>
         </div>
         <div class="visual-card-body">
           <div id="variablesContainer">
             <div style="color:#94a3b8; text-align:center; padding:24px 10px;">
               Click <strong style="color:#38bdf8">Start Debugging</strong>
               to inspect memory allocations line-by-line.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CARD 2: OBJECTS & HEAP INSTANCES INSPECTOR -->
-      <div class="visual-card card-objects">
-        <div class="visual-card-header">
-          <span style="display:inline-flex; align-items:center; gap:6px;">
-            <img src="{% static 'images/icon-company.png' %}" width="14" height="14" alt="Objects">
-            Objects &amp; Heap Memory Inspector
-          </span>
-          <span style="font-size:11px; color:#38bdf8; font-weight:700;">Heap Pointers</span>
-        </div>
-        <div class="visual-card-body">
-          <div id="objectsContainer">
-            <div style="color:#94a3b8; text-align:center; padding:18px 10px; font-size:12px;">
-              No object instances allocated on Heap yet.
             </div>
           </div>
         </div>
