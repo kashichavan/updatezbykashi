@@ -511,6 +511,26 @@ class JavaExecutionTracer:
                 self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [bname])
                 continue
 
+            # Array decl (e.g. String[] langs = {"Java", "Python", "JavaScript"})
+            barr = re_arr_decl.match(bline)
+            if barr:
+                jtype, vname, items_str = barr.groups()
+                if items_str:
+                    items = [x.strip() for x in items_str.split(',')]
+                    raw_val = f"[{', '.join(items)}]"
+                else:
+                    raw_val = f"new {jtype}[]"
+                local_scope[vname] = {
+                    'type': f"{jtype}[]",
+                    'value': repr(raw_val),
+                    'raw': raw_val,
+                    'is_primitive': False,
+                    'mem_addr': self._mem_addr(vname, False),
+                    'is_changed': True
+                }
+                self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [vname])
+                continue
+
             # Reassignment / Unary ++ / --
             ba = re_assign.match(bline)
             if ba:
