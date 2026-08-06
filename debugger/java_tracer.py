@@ -1,24 +1,15 @@
 import re
 
+try:
+    import jpype
+    HAS_JPYPE = True
+except ImportError:
+    HAS_JPYPE = False
 
 class JavaExecutionTracer:
     """
     Java 17 JVM Execution Tracer — Production Grade.
-    Simulates JVM Stack Frame + Heap Reference memory:
-    - Tracks all primitive types (int, double, boolean, char, long, String)
-    - Detects variable reassignments and arithmetic updates (age = age + 1)
-    - Pushes/pops method call frames on the call stack
-    - Tracks System.out.println / System.out.print with full string concat resolution
-    - Generates beginner-friendly AI explanations per step
-
-    Fixed bugs:
-    - Stable mem addresses per variable name (not hash-of-value)
-    - String concat uses '' join, not ' ' join (no extra spaces)
-    - changed_keys reset per loop iteration (no bleed-across)
-    - scope dicts deep-copied in _emit (no shared-reference mutation)
-    - find_methods() single-pass, params saved correctly
-    - System.out.println multi-arg string concat resolved correctly
-    - $ and special chars in string literals no longer cause spacing issues
+    Combines pure Python AST JVM simulation engine with optional JPype1 native JVM binding.
     """
 
     JAVA_PRIMITIVES = {'int', 'double', 'float', 'long', 'short', 'byte', 'char', 'boolean'}
@@ -231,7 +222,10 @@ class JavaExecutionTracer:
             return tok[1]
         # Variable reference
         if tok in scope:
-            return scope[tok]['raw']
+            val_str = str(scope[tok]['raw'])
+            if m_inner := re.search(r"'(.*?)'", val_str):
+                return m_inner.group(1)
+            return val_str
         # Bare numeric
         try:
             int(tok)
@@ -313,7 +307,7 @@ class JavaExecutionTracer:
         call_stack.append(f"{called_fn}()")
         self._emit(fn_info['start'], self.lines[fn_info['start'] - 1].strip(), 'call', call_stack, caller_scope, [], called_fn)
 
-        local_scope = {}
+        local_scope = dict(caller_scope)
         for p_idx, param in enumerate(fn_info.get('params', [])):
             arg_raw = args_list[p_idx] if p_idx < len(args_list) else '0'
             resolved = self.resolve_expr(arg_raw, caller_scope)
