@@ -527,8 +527,28 @@ function goToStep(idx) {
 
   renderVariablesCards(step.variables);
   renderCallStack(step.stack_frames);
-  document.getElementById('stdoutConsole').textContent =
-    step.stdout || 'Console output will appear here...';
+
+  // Collect stdout output stream up to current step
+  let streamOutput = '';
+  if (step.stdout && Array.isArray(step.stdout)) {
+    streamOutput = step.stdout.join('\n');
+  } else if (typeof step.stdout === 'string' && step.stdout) {
+    streamOutput = step.stdout;
+  } else {
+    // Collect all stdout outputs up to current step index
+    const outLines = [];
+    for (let i = 0; i <= currentStepIdx; i++) {
+      if (debugSteps[i] && debugSteps[i].stdout_line) {
+        outLines.push(debugSteps[i].stdout_line);
+      }
+    }
+    streamOutput = outLines.join('\n') || (debugSteps[debugSteps.length - 1]?.stdout || '$ Program output will stream here...');
+  }
+
+  const consoleElem = document.getElementById('stdoutConsole');
+  if (consoleElem) {
+    consoleElem.textContent = streamOutput || '$ Program execution completed.';
+  }
 
   updateControls();
 }

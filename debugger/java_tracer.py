@@ -170,7 +170,10 @@ class JavaExecutionTracer:
             resolved = self._resolve_token(tok, scope)
             # Try numeric eval after variable substitution
             for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
-                resolved = re.sub(r'\b' + re.escape(sv) + r'\b', sdata['raw'], resolved)
+                raw_v = str(sdata['raw'])
+                if m_inner := re.search(r"'(.*?)'", raw_v):
+                    raw_v = m_inner.group(1)
+                resolved = re.sub(r'\b' + re.escape(sv) + r'\b', raw_v, resolved)
             try:
                 val = eval(resolved, {"__builtins__": {}})   # nosec controlled
                 return str(val)
@@ -596,13 +599,11 @@ class JavaExecutionTracer:
                 field_name = parts[0].replace('this.', '').strip()
                 field_expr = parts[1].strip() if len(parts) > 1 else ''
                 res_val = self.resolve_expr(field_expr, local_scope)
-                # Propagate field assignment back to caller_scope objects
                 for obj_name, obj_data in caller_scope.items():
                     if not obj_data.get('is_primitive'):
-                        if typeof_val := obj_data.get('raw'):
-                            obj_data['raw'] = f"{obj_data['type']}{{{field_name}: {repr(res_val)}}}"
-                            obj_data['value'] = repr(obj_data['raw'])
-                            obj_data['is_changed'] = True
+                        obj_data['raw'] = f"{obj_data['type']}{{{field_name}: '{res_val}'}}"
+                        obj_data['value'] = repr(obj_data['raw'])
+                        obj_data['is_changed'] = True
             ba = re_assign.match(bline)
             if ba:
                 rname, rexpr = ba.groups()
