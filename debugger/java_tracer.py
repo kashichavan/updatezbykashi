@@ -373,6 +373,7 @@ class JavaExecutionTracer:
                     vname, start_val, op, end_val, incr_expr = m_for.groups()
                     start_i = int(start_val)
                     end_i   = int(end_val)
+                    hdr_lineno = i - 1
                     
                     # Find loop body lines inside braces
                     loop_body_lines = []
@@ -399,7 +400,7 @@ class JavaExecutionTracer:
                         
                         # Emit loop header evaluation step
                         expl_hdr = f"🔄 Loop iteration {vname} = {iter_val}"
-                        self._emit(i - 1, stripped, 'line', call_stack, scope, [vname], explanation=expl_hdr)
+                        self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [vname], explanation=expl_hdr)
                         
                         for b_lineno, b_line in loop_body_lines:
                             m_out = re_println.match(b_line)
