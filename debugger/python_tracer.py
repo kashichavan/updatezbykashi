@@ -152,6 +152,23 @@ class PythonExecutionTracer:
         elif changed_vars:
             details = ", ".join([f"'{k}' → {current_vars[k]['raw']}" for k in changed_vars])
             return f"🔄 Memory updated: {details}."
+        elif any(kw in line_text for kw in ('if ', 'elif ', 'while ', 'for ')):
+            sub = line_text
+            for k, vdata in sorted(current_vars.items(), key=lambda x: len(x[0]), reverse=True):
+                val_str = str(vdata.get('raw'))
+                sub = re.sub(r'\b' + re.escape(k) + r'\b', val_str, sub)
+            def _eval_arr_access(match):
+                arr_repr = match.group(1)
+                idx_str = match.group(2)
+                try:
+                    idx = int(idx_str)
+                    items = [x.strip().strip('"\'') for x in arr_repr[1:-1].split(',')]
+                    if 0 <= idx < len(items): return items[idx]
+                except Exception: pass
+                return match.group(0)
+            sub = re.sub(r'(\[[^\]]+\])\[(\d+)\]', _eval_arr_access, sub)
+            sub = sub.rstrip(':').strip()
+            return f"❓ Condition ({sub})"
         else:
             return f"▶ Executed line {lineno}: '{line_text}'."
 

@@ -298,6 +298,23 @@ class JavaScriptExecutionTracer:
         if changed:
             details = ', '.join([f"'{k}' → {scope[k]['raw']}" for k in changed if k in scope])
             return f"🔄 Updated in memory: {details}"
+        if any(kw in line_text for kw in ('if ', 'if(', 'for ', 'for(', 'while ', 'while(')):
+            sub = line_text
+            for k, vdata in sorted(scope.items(), key=lambda x: len(x[0]), reverse=True):
+                val_str = str(vdata.get('raw'))
+                sub = re.sub(r'\b' + re.escape(k) + r'\b', val_str, sub)
+            def _eval_arr_access(match):
+                arr_repr = match.group(1)
+                idx_str = match.group(2)
+                try:
+                    idx = int(idx_str)
+                    items = [x.strip().strip('"\'') for x in arr_repr[1:-1].split(',')]
+                    if 0 <= idx < len(items): return items[idx]
+                except Exception: pass
+                return match.group(0)
+            sub = re.sub(r'(\[[^\]]+\])\[(\d+)\]', _eval_arr_access, sub)
+            sub = sub.rstrip('{').rstrip(';').strip()
+            return f"❓ Condition ({sub})"
         if 'console.log' in line_text:
             return f"📤 console.log() — output sent to terminal."
         return f"▶ Executed: '{line_text}'"

@@ -354,20 +354,30 @@ class JavaExecutionTracer:
         if 'for' in sub and ';' in sub:
             parts = sub.split(';')
             if len(parts) >= 2:
-                cond_part = parts[1]
-                for var_name, data in sorted(scope.items(), key=lambda x: len(x[0]), reverse=True):
-                    if var_name.startswith('__') or var_name == 'this':
-                        continue
-                    val_str = _display(data.get('_value'))
-                    cond_part = re.sub(r'\b' + re.escape(var_name) + r'\b', val_str, cond_part)
-                return cond_part.strip()
-        
-        # General if / while / do-while condition substitution
+                sub = parts[1]
+
+        # First substitute variable names
         for var_name, data in sorted(scope.items(), key=lambda x: len(x[0]), reverse=True):
             if var_name.startswith('__') or var_name == 'this':
                 continue
             val_str = _display(data.get('_value'))
             sub = re.sub(r'\b' + re.escape(var_name) + r'\b', val_str, sub)
+
+        # Evaluate array index accesses like [5, 2, 9, 1, 7][1] to direct element value (e.g. 2)
+        def _eval_arr_access(match):
+            arr_repr = match.group(1)
+            idx_str = match.group(2)
+            try:
+                idx = int(idx_str)
+                # Parse list representation [5, 2, 9, 1, 7] or ["a", "b"]
+                items = [x.strip().strip('"\'') for x in arr_repr[1:-1].split(',')]
+                if 0 <= idx < len(items):
+                    return items[idx]
+            except Exception:
+                pass
+            return match.group(0)
+
+        sub = re.sub(r'(\[[^\]]+\])\[(\d+)\]', _eval_arr_access, sub)
         return sub.strip()
 
     def _explain(self, event, line_text, scope, changed, fn_name=None, ret_val=None):

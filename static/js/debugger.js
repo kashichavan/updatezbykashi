@@ -627,11 +627,11 @@ function applyInlineValueHints(upToIdx) {
 
         if (isNew || isChanged) {
           let currVal = String(vdata.raw);
-          if (currVal.length > 40) currVal = currVal.slice(0, 38) + '…';
+          if (currVal.length > 120) currVal = currVal.slice(0, 118) + '…';
 
           if (isChanged && prevRaw !== null) {
             let pVal = String(prevRaw);
-            if (pVal.length > 20) pVal = pVal.slice(0, 18) + '…';
+            if (pVal.length > 60) pVal = pVal.slice(0, 58) + '…';
             hints.push({ text: `${name}: ${pVal} ➔ ${currVal}`, changed: true, isCond: false });
           } else {
             hints.push({ text: `${name} = ${currVal}`, changed: false, isCond: false });
