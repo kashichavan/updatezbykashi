@@ -54,6 +54,10 @@
           <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed">
           Student Feed
         </a>
+        <a href="/debugger/" style="color: #2563eb; font-weight: 800;">
+          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger">
+          Code Debugger
+        </a>
         <a href="#about-creator">
           <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About">
           About Kashii
@@ -81,8 +85,15 @@
         </div>
 
         <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--subtle-border);">
-          <div class="drawer-section-title">Connect with Kashii</div>
-          <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="drawer-link" style="color: #dc2626; font-weight: 700;">
+          <div class="drawer-section-title">Visual Tools &amp; Connect</div>
+          <a href="/debugger/" class="drawer-link" style="color: #2563eb; font-weight: 800;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger">
+              Visual Code Debugger
+            </span>
+            <span class="d-tag" style="background:#dbeafe; color:#1d4ed8;">IDE</span>
+          </a>
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="drawer-link" style="color: #dc2626; font-weight: 700; margin-top: 6px;">
             <span style="display: flex; align-items: center; gap: 8px;">
               <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube">
               YouTube (@pythonkashi)
@@ -125,13 +136,29 @@
         </div>
 
         <div class="vp-hero-art">
-          <h3 style="font: 700 24px var(--font-serif); margin-bottom: 8px;">Kashii Updatez Owner Panel</h3>
-          <p style="font-size: 14px; opacity: 0.9; margin-bottom: 16px;">Job postings and official application links are managed in the dedicated Owner Portal.</p>
-          <a href="/owner/" target="_blank" class="button button-light" style="align-self: flex-start; background: #ffffff; color: var(--blue-primary);">
-            Access Owner Portal ↗
+          <h3 style="font: 700 24px var(--font-serif); margin-bottom: 8px;">Visual Code Debugger IDE</h3>
+          <p style="font-size: 14px; opacity: 0.9; margin-bottom: 16px;">Step through Python, JavaScript &amp; Java code line-by-line with live memory visualizer!</p>
+          <a href="/debugger/" class="button button-light" style="align-self: flex-start; background: #ffffff; color: var(--blue-primary); font-weight: 800;">
+            Launch Code Debugger
           </a>
         </div>
       </div>
+    </section>
+
+    <!-- 4.5 Interactive Visual Debugger Feature Card -->
+    <section style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #ffffff; border-radius: 20px; padding: 24px 30px; margin: 20px 0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12); border: 1px solid #334155;">
+      <div style="max-width: 650px;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); margin-bottom: 8px;">
+          FEATURED: INTERACTIVE VISUAL CODE DEBUGGER
+        </span>
+        <h2 style="font: 800 22px var(--font-serif); margin: 0 0 6px; color: #f8fafc;">Step-by-step Execution &amp; Memory Allocation Tracer</h2>
+        <p style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.5;">
+          Watch Python, JavaScript &amp; Java code execute line-by-line. Inspect variables, heap memory pointers, call stacks, and live terminal output interactively!
+        </p>
+      </div>
+      <a href="/debugger/" style="padding: 12px 22px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; font-weight: 800; font-size: 13px; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.4); white-space: nowrap; transition: transform 0.2s ease;">
+        Launch Visual Debugger ↗
+      </a>
     </section>
 
     <!-- 5. Filter & Search Bar -->

@@ -36,4 +36,38 @@
     <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" alt="YouTube" width="22" height="22" decoding="async">
     <span>YouTube</span>
   </a>
+  <a href="#" class="mobile-nav-item" onclick="showDebuggerMobilePopup(); return false;" style="color:#2563eb;">
+    <img src="{% static 'images/icon-apply.png' %}" class="mobile-nav-icon" alt="Debugger" width="22" height="22" decoding="async" style="filter: hue-rotate(200deg) saturate(2) brightness(0.85);">
+    <span style="color:#2563eb; font-weight:700;">Debugger</span>
+  </a>
 </nav>
+
+<!-- Debugger Desktop-Only Popup (mobile) -->
+<div id="debuggerMobilePopup" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; padding:24px;">
+  <div style="background:linear-gradient(135deg,#0d1527,#1e293b); border:1px solid #334155; border-radius:20px; padding:32px 24px; max-width:360px; width:100%; text-align:center; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <button onclick="document.getElementById('debuggerMobilePopup').style.display='none';" style="position:absolute; top:14px; right:16px; background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer; line-height:1;">✕</button>
+    <div style="font-size:52px; margin-bottom:14px; animation:dbgFloat 2.5s ease-in-out infinite;">🖥️</div>
+    <h2 style="font-size:18px; font-weight:800; color:#f8fafc; margin:0 0 8px;">Open on Desktop Browser</h2>
+    <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 20px;">The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> requires a desktop or laptop to work properly.</p>
+    <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🌐</div>Chrome</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🦊</div>Firefox</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🧭</div>Safari</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🔷</div>Edge</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🎭</div>Brave</div>
+    </div>
+    <p style="color:#475569; font-size:11px; background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.15); border-radius:8px; padding:10px 14px; line-height:1.6; margin:0;">📋 Copy the URL <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong> and open it on your PC in any browser above.</p>
+  </div>
+</div>
+<style>
+  @keyframes dbgFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  #debuggerMobilePopup { display: none; }
+  #debuggerMobilePopup.open { display: flex; }
+</style>
+<script>
+  function showDebuggerMobilePopup() {
+    var el = document.getElementById('debuggerMobilePopup');
+    el.style.display = 'flex';
+    el.addEventListener('click', function(e){ if(e.target === el) el.style.display='none'; }, {once:false});
+  }
+</script>

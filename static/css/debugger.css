@@ -1,0 +1,829 @@
+/* ═══════════════════════════════════════════════════════════════════
+   DEBUGGER IDE  —  debugger.css
+   All theme palettes, layout, components, animations
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── GOOGLE FONT ── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+
+/* ═══════════════════════════════════════════════════════════════════
+   THEME PALETTES (CSS VARIABLES)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* 1. Light Blue (default) */
+:root,
+[data-theme="light-blue"] {
+  --bg-app:        #F5F9FF;
+  --bg-surface:    #FCFDFF;
+  --bg-card:       #FFFFFF;
+  --primary:       #2563EB;
+  --primary-hover: #1D4ED8;
+  --accent:        #60A5FA;
+  --text-main:     #1E293B;
+  --text-muted:    #64748B;
+  --border-subtle: #DBEAFE;
+  --header-bg:     #EFF6FF;
+  --header-text:   #1D4ED8;
+  --badge-bg:      rgba(37,99,235,0.10);
+  --badge-border:  rgba(37,99,235,0.25);
+  --badge-text:    #1D4ED8;
+  --term-bg:       #1E293B;
+  --term-text:     #60A5FA;
+  --pill-bg:       #F8FAFC;
+  --pill-border:   #E2E8F0;
+}
+
+/* 2. VS Code Dark */
+[data-theme="vscode-dark"] {
+  --bg-app:        #1E1E1E;
+  --bg-surface:    #252526;
+  --bg-card:       #2D2D30;
+  --primary:       #007ACC;
+  --primary-hover: #0062A3;
+  --accent:        #4FC1FF;
+  --text-main:     #D4D4D4;
+  --text-muted:    #858585;
+  --border-subtle: #3C3C3C;
+  --header-bg:     #252526;
+  --header-text:   #4FC1FF;
+  --badge-bg:      rgba(0,122,204,0.20);
+  --badge-border:  rgba(79,193,255,0.30);
+  --badge-text:    #4FC1FF;
+  --term-bg:       #181818;
+  --term-text:     #4FC1FF;
+  --pill-bg:       #252526;
+  --pill-border:   #3C3C3C;
+}
+
+/* 3. GitHub Dark */
+[data-theme="github-dark"] {
+  --bg-app:        #0D1117;
+  --bg-surface:    #161B22;
+  --bg-card:       #21262D;
+  --primary:       #58A6FF;
+  --primary-hover: #388BFD;
+  --accent:        #79C0FF;
+  --text-main:     #C9D1D9;
+  --text-muted:    #8B949E;
+  --border-subtle: #30363D;
+  --header-bg:     #161B22;
+  --header-text:   #79C0FF;
+  --badge-bg:      rgba(88,166,255,0.15);
+  --badge-border:  rgba(121,192,255,0.30);
+  --badge-text:    #79C0FF;
+  --term-bg:       #0D1117;
+  --term-text:     #79C0FF;
+  --pill-bg:       #161B22;
+  --pill-border:   #30363D;
+}
+
+/* 4. GitHub Light */
+[data-theme="github-light"] {
+  --bg-app:        #F6F8FA;
+  --bg-surface:    #FFFFFF;
+  --bg-card:       #FFFFFF;
+  --primary:       #0969DA;
+  --primary-hover: #0550AE;
+  --accent:        #218BFF;
+  --text-main:     #24292F;
+  --text-muted:    #57606A;
+  --border-subtle: #D0D7DE;
+  --header-bg:     #F3F4F6;
+  --header-text:   #0969DA;
+  --badge-bg:      rgba(9,105,218,0.10);
+  --badge-border:  rgba(33,139,255,0.25);
+  --badge-text:    #0969DA;
+  --term-bg:       #24292F;
+  --term-text:     #79C0FF;
+  --pill-bg:       #F6F8FA;
+  --pill-border:   #D0D7DE;
+}
+
+/* 5. Nord */
+[data-theme="nord"] {
+  --bg-app:        #2E3440;
+  --bg-surface:    #3B4252;
+  --bg-card:       #434C5E;
+  --primary:       #88C0D0;
+  --primary-hover: #81A1C1;
+  --accent:        #81A1C1;
+  --text-main:     #ECEFF4;
+  --text-muted:    #D8DEE9;
+  --border-subtle: #4C566A;
+  --header-bg:     #3B4252;
+  --header-text:   #88C0D0;
+  --badge-bg:      rgba(136,192,208,0.20);
+  --badge-border:  rgba(129,161,193,0.30);
+  --badge-text:    #88C0D0;
+  --term-bg:       #242933;
+  --term-text:     #88C0D0;
+  --pill-bg:       #3B4252;
+  --pill-border:   #4C566A;
+}
+
+/* 6. Ocean Blue */
+[data-theme="ocean-blue"] {
+  --bg-app:        #0F172A;
+  --bg-surface:    #1E293B;
+  --bg-card:       #334155;
+  --primary:       #38BDF8;
+  --primary-hover: #0284C7;
+  --accent:        #7DD3FC;
+  --text-main:     #F8FAFC;
+  --text-muted:    #94A3B8;
+  --border-subtle: #475569;
+  --header-bg:     #1E293B;
+  --header-text:   #38BDF8;
+  --badge-bg:      rgba(56,189,248,0.20);
+  --badge-border:  rgba(125,211,252,0.30);
+  --badge-text:    #38BDF8;
+  --term-bg:       #0B1329;
+  --term-text:     #38BDF8;
+  --pill-bg:       #1E293B;
+  --pill-border:   #475569;
+}
+
+/* 7. Emerald */
+[data-theme="emerald"] {
+  --bg-app:        #F0FDF4;
+  --bg-surface:    #ECFDF5;
+  --bg-card:       #FFFFFF;
+  --primary:       #16A34A;
+  --primary-hover: #15803D;
+  --accent:        #22C55E;
+  --text-main:     #064E3B;
+  --text-muted:    #047857;
+  --border-subtle: #A7F3D0;
+  --header-bg:     #DCFCE7;
+  --header-text:   #16A34A;
+  --badge-bg:      rgba(22,163,74,0.12);
+  --badge-border:  rgba(34,197,94,0.30);
+  --badge-text:    #15803D;
+  --term-bg:       #064E3B;
+  --term-text:     #A7F3D0;
+  --pill-bg:       #ECFDF5;
+  --pill-border:   #A7F3D0;
+}
+
+/* 8. Sunset */
+[data-theme="sunset"] {
+  --bg-app:        #FFF7ED;
+  --bg-surface:    #FFFBEB;
+  --bg-card:       #FFFFFF;
+  --primary:       #EA580C;
+  --primary-hover: #C2410C;
+  --accent:        #FB923C;
+  --text-main:     #7C2D12;
+  --text-muted:    #C2410C;
+  --border-subtle: #FFEDD5;
+  --header-bg:     #FFEDD5;
+  --header-text:   #EA580C;
+  --badge-bg:      rgba(234,88,12,0.12);
+  --badge-border:  rgba(251,146,60,0.30);
+  --badge-text:    #C2410C;
+  --term-bg:       #431407;
+  --term-text:     #FFEDD5;
+  --pill-bg:       #FFFBEB;
+  --pill-border:   #FFEDD5;
+}
+
+/* 9. Purple Pro */
+[data-theme="purple-pro"] {
+  --bg-app:        #FAF5FF;
+  --bg-surface:    #F3E8FF;
+  --bg-card:       #FFFFFF;
+  --primary:       #7C3AED;
+  --primary-hover: #6D28D9;
+  --accent:        #A855F7;
+  --text-main:     #4C1D95;
+  --text-muted:    #6D28D9;
+  --border-subtle: #E9D5FF;
+  --header-bg:     #F3E8FF;
+  --header-text:   #7C3AED;
+  --badge-bg:      rgba(124,58,237,0.12);
+  --badge-border:  rgba(168,85,247,0.30);
+  --badge-text:    #6D28D9;
+  --term-bg:       #3B0764;
+  --term-text:     #E9D5FF;
+  --pill-bg:       #F3E8FF;
+  --pill-border:   #E9D5FF;
+}
+
+/* 10. Midnight */
+[data-theme="midnight"] {
+  --bg-app:        #020617;
+  --bg-surface:    #0F172A;
+  --bg-card:       #1E293B;
+  --primary:       #3B82F6;
+  --primary-hover: #2563EB;
+  --accent:        #38BDF8;
+  --text-main:     #F8FAFC;
+  --text-muted:    #94A3B8;
+  --border-subtle: #334155;
+  --header-bg:     #0F172A;
+  --header-text:   #38BDF8;
+  --badge-bg:      rgba(59,130,246,0.20);
+  --badge-border:  rgba(56,189,248,0.30);
+  --badge-text:    #38BDF8;
+  --term-bg:       #020617;
+  --term-text:     #38BDF8;
+  --pill-bg:       #0F172A;
+  --pill-border:   #334155;
+}
+
+/* 11. Dracula */
+[data-theme="dracula"] {
+  --bg-app:        #282A36;
+  --bg-surface:    #21222C;
+  --bg-card:       #343746;
+  --primary:       #BD93F9;
+  --primary-hover: #A97CF6;
+  --accent:        #FF79C6;
+  --text-main:     #F8F8F2;
+  --text-muted:    #6272A4;
+  --border-subtle: #44475A;
+  --header-bg:     #21222C;
+  --header-text:   #BD93F9;
+  --badge-bg:      rgba(189,147,249,0.18);
+  --badge-border:  rgba(255,121,198,0.30);
+  --badge-text:    #BD93F9;
+  --term-bg:       #191A21;
+  --term-text:     #50FA7B;
+  --pill-bg:       #21222C;
+  --pill-border:   #44475A;
+}
+
+/* 12. Solarized Dark */
+[data-theme="solarized-dark"] {
+  --bg-app:        #002B36;
+  --bg-surface:    #073642;
+  --bg-card:       #0A3E4E;
+  --primary:       #2AA198;
+  --primary-hover: #1A7A72;
+  --accent:        #268BD2;
+  --text-main:     #839496;
+  --text-muted:    #586E75;
+  --border-subtle: #094050;
+  --header-bg:     #073642;
+  --header-text:   #2AA198;
+  --badge-bg:      rgba(42,161,152,0.18);
+  --badge-border:  rgba(38,139,210,0.30);
+  --badge-text:    #2AA198;
+  --term-bg:       #001F27;
+  --term-text:     #2AA198;
+  --pill-bg:       #073642;
+  --pill-border:   #094050;
+}
+
+/* 13. Monokai */
+[data-theme="monokai"] {
+  --bg-app:        #272822;
+  --bg-surface:    #1E1F1C;
+  --bg-card:       #2E2F2A;
+  --primary:       #A6E22E;
+  --primary-hover: #84B722;
+  --accent:        #66D9E8;
+  --text-main:     #F8F8F2;
+  --text-muted:    #75715E;
+  --border-subtle: #3E3D32;
+  --header-bg:     #1E1F1C;
+  --header-text:   #A6E22E;
+  --badge-bg:      rgba(166,226,46,0.15);
+  --badge-border:  rgba(102,217,232,0.30);
+  --badge-text:    #A6E22E;
+  --term-bg:       #1A1B16;
+  --term-text:     #66D9E8;
+  --pill-bg:       #1E1F1C;
+  --pill-border:   #3E3D32;
+}
+
+/* 14. Catppuccin Mocha */
+[data-theme="catppuccin"] {
+  --bg-app:        #1E1E2E;
+  --bg-surface:    #181825;
+  --bg-card:       #313244;
+  --primary:       #CBA6F7;
+  --primary-hover: #B692F5;
+  --accent:        #89DCEB;
+  --text-main:     #CDD6F4;
+  --text-muted:    #6C7086;
+  --border-subtle: #45475A;
+  --header-bg:     #181825;
+  --header-text:   #CBA6F7;
+  --badge-bg:      rgba(203,166,247,0.16);
+  --badge-border:  rgba(137,220,235,0.30);
+  --badge-text:    #CBA6F7;
+  --term-bg:       #11111B;
+  --term-text:     #A6E3A1;
+  --pill-bg:       #181825;
+  --pill-border:   #45475A;
+}
+
+/* 15. Rose Pine */
+[data-theme="rose-pine"] {
+  --bg-app:        #191724;
+  --bg-surface:    #1F1D2E;
+  --bg-card:       #26233A;
+  --primary:       #EBBCBA;
+  --primary-hover: #E4A09D;
+  --accent:        #9CCFD8;
+  --text-main:     #E0DEF4;
+  --text-muted:    #6E6A86;
+  --border-subtle: #403D52;
+  --header-bg:     #1F1D2E;
+  --header-text:   #EBBCBA;
+  --badge-bg:      rgba(235,188,186,0.15);
+  --badge-border:  rgba(156,207,216,0.30);
+  --badge-text:    #EBBCBA;
+  --term-bg:       #120F1D;
+  --term-text:     #9CCFD8;
+  --pill-bg:       #1F1D2E;
+  --pill-border:   #403D52;
+}
+
+/* ── SMOOTH TRANSITION FOR ALL THEMED ELEMENTS ── */
+.debugger-app-wrap,
+.debugger-hero-strip,
+.playback-bar,
+.step-story-banner,
+.editor-card-box,
+.editor-card-header,
+.visual-card,
+.visual-card-header,
+.visual-card-body,
+.var-pill-card,
+.lang-tab-btn,
+.dbg-step-btn,
+.brand-badge,
+.theme-select-dropdown {
+  transition: background-color 0.25s ease, color 0.25s ease,
+              border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   LAYOUT & COMPONENTS
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 1. DASHBOARD CONTAINER ── */
+.debugger-app-wrap {
+  background: var(--bg-app);
+  color: var(--text-main);
+  min-height: calc(100vh - 80px);
+  padding: 10px 16px 40px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ── HERO TOP STRIP ── */
+.debugger-hero-strip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 12px 18px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: 12px;
+  font-weight: 800;
+  font-family: monospace;
+  border-radius: 8px;
+  border: 1px solid var(--badge-border);
+}
+
+/* ── THEME SELECTOR DROPDOWN ── */
+.theme-select-dropdown {
+  padding: 7px 14px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.theme-select-dropdown:hover,
+.theme-select-dropdown:focus {
+  border-color: var(--primary);
+}
+
+/* ── LANGUAGE TABS ── */
+.lang-tab-btn {
+  padding: 8px 18px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-tab-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--accent);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
+}
+
+.lang-tab-btn:hover:not(.active) {
+  background: var(--bg-surface);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ── PLAYBACK CONTROLS BAR ── */
+.playback-bar {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+
+.btn-start-debug {
+  padding: 7px 18px;
+  background: var(--primary);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
+}
+
+.btn-start-debug:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.dbg-step-btn {
+  padding: 5px 13px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dbg-step-btn:hover:not(:disabled) {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.20);
+}
+
+.dbg-step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── AI STEP STORY BANNER ── */
+.step-story-banner {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  padding: 10px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+/* ── IDE GRID ── */
+.ide-split-grid {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .ide-split-grid { grid-template-columns: 1fr; }
+}
+
+/* ── CODE EDITOR CARD ── */
+.editor-card-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+}
+
+.editor-card-header {
+  background: var(--header-bg);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--header-text);
+}
+
+#monacoEditorContainer {
+  width: 100%;
+  height: calc(100vh - 260px);
+  min-height: 420px;
+}
+
+.font-size-btn {
+  padding: 3px 9px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  font-size: 13px;
+  font-weight: 900;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.font-size-btn:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* ── Active Executing Line ── */
+.active-executing-line {
+  background: rgba(37,99,235,0.22) !important;
+  border-left: 4px solid var(--primary) !important;
+}
+
+/* ── Previous Executed Line ── */
+.previous-executing-line {
+  background: rgba(96,165,250,0.12) !important;
+  border-left: 4px solid var(--accent) !important;
+}
+
+/* ── Inline value hint ── */
+.inline-value-hint {
+  color: var(--accent);
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  margin-left: 16px;
+  font-family: 'Consolas','Fira Code',monospace;
+  pointer-events: none;
+  background: var(--bg-surface);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Changed variable hint ── */
+.inline-value-changed {
+  color: #ffffff;
+  font-style: italic;
+  font-size: 12px;
+  font-weight: 800;
+  margin-left: 16px;
+  font-family: 'Consolas','Fira Code',monospace;
+  pointer-events: none;
+  background: var(--primary);
+  padding: 2px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 12px rgba(0,0,0,0.30);
+}
+
+/* ── INSPECTOR COLUMN ── */
+.inspector-column-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100vh - 260px);
+  min-height: 420px;
+}
+
+.visual-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.visual-card-header {
+  background: var(--header-bg);
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--header-text);
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.visual-card-body {
+  padding: 12px 16px;
+  overflow-y: auto;
+  font-family: 'Consolas','Fira Code',monospace;
+  font-size: 12px;
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+
+/* ── Variable pills ── */
+.var-pill-card {
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.3s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.var-pill-card.changed {
+  border-color: var(--primary);
+  background: var(--bg-surface);
+  box-shadow: 0 0 14px rgba(0,0,0,0.20);
+  animation: flashGlow 0.8s ease-in-out;
+}
+
+@keyframes flashGlow {
+  0%   { box-shadow: 0 0 22px var(--primary); }
+  60%  { box-shadow: 0 0 12px var(--accent);  }
+  100% { box-shadow: 0 0 14px rgba(0,0,0,0.20); }
+}
+
+/* ── Memory address tag ── */
+.mem-pointer-tag {
+  font-size: 10px;
+  font-family: 'Consolas','Fira Code',monospace;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  padding: 2px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--badge-border);
+  letter-spacing: 0.3px;
+}
+
+/* ── Inspector card flex fills ── */
+.card-vars  { flex: 2.2; min-height: 0; display: flex; flex-direction: column; }
+.card-stack { flex: 1.2; min-height: 0; display: flex; flex-direction: column; }
+.card-term  { flex: 1;   min-height: 0; display: flex; flex-direction: column; }
+.card-vars .visual-card-body,
+.card-stack .visual-card-body,
+.card-term  .visual-card-body { flex: 1; min-height: 0; overflow-y: auto; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE BLOCKER OVERLAY
+   ═══════════════════════════════════════════════════════════════════ */
+.mobile-blocker {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.75);
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+@media (max-width: 900px) {
+  .mobile-blocker        { display: flex; }
+  .debugger-app-wrap     { display: none !important; }
+}
+
+/* ── Mobile blocker card elements ── */
+.dbg-blocker-card {
+  background: linear-gradient(135deg, #0d1527, #1e293b);
+  border: 1px solid #334155;
+  border-radius: 20px;
+  padding: 32px 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.50);
+}
+
+.dbg-blocker-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.dbg-blocker-emoji {
+  font-size: 52px;
+  margin-bottom: 14px;
+  animation: dbgFloatPage 2.5s ease-in-out infinite;
+  display: block;
+}
+
+.dbg-blocker-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0 0 8px;
+}
+
+.dbg-blocker-sub {
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.dbg-blocker-browsers {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.dbg-browser-badge {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dbg-browser-badge .dbg-browser-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.dbg-blocker-hint {
+  color: #475569;
+  font-size: 11px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(59,130,246,0.15);
+  border-radius: 8px;
+  padding: 10px 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Animations ── */
+@keyframes dbgFloatPage {
+  0%, 100% { transform: translateY(0);   }
+  50%       { transform: translateY(-8px); }
+}

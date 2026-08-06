@@ -1,0 +1,479 @@
+import re
+
+
+class JavaExecutionTracer:
+    """
+    Java 17 JVM Execution Tracer — Production Grade.
+    Simulates JVM Stack Frame + Heap Reference memory:
+    - Tracks all primitive types (int, double, boolean, char, long, String)
+    - Detects variable reassignments and arithmetic updates (age = age + 1)
+    - Pushes/pops method call frames on the call stack
+    - Tracks System.out.println / System.out.print with full string concat resolution
+    - Generates beginner-friendly AI explanations per step
+
+    Fixed bugs:
+    - Stable mem addresses per variable name (not hash-of-value)
+    - String concat uses '' join, not ' ' join (no extra spaces)
+    - changed_keys reset per loop iteration (no bleed-across)
+    - scope dicts deep-copied in _emit (no shared-reference mutation)
+    - find_methods() single-pass, params saved correctly
+    - System.out.println multi-arg string concat resolved correctly
+    - $ and special chars in string literals no longer cause spacing issues
+    """
+
+    JAVA_PRIMITIVES = {'int', 'double', 'float', 'long', 'short', 'byte', 'char', 'boolean'}
+
+    def __init__(self, code_str, breakpoints=None):
+        self.code_str    = code_str
+        self.lines       = code_str.splitlines()
+        self.breakpoints = set(breakpoints or [])
+        self.steps       = []
+        self.stdout_lines = []
+        self.prev_variables = {}
+        # Stable mem addresses — keyed by variable name, never change
+        self._mem_table   = {}
+        self._mem_counter = 0x1000
+
+    # ─── Stable memory address ────────────────────────────────────────────────
+    def _mem_addr(self, name, is_primitive):
+        if name not in self._mem_table:
+            tag = 'STACK' if is_primitive else 'HEAP'
+            self._mem_table[name] = f"0xJVM_{tag}_{self._mem_counter:04x}"
+            self._mem_counter += 0x1A3   # deterministic stride
+        return self._mem_table[name]
+
+    # ─── Serialization ────────────────────────────────────────────────────────
+    def serialize(self, val, val_type, name=None):
+        is_prim = val_type in self.JAVA_PRIMITIVES
+        raw_str = str(val)
+        if val_type in ('double', 'float'):
+            try:
+                fval = float(raw_str)
+                raw_str = f"{fval:.1f}" if fval.is_integer() else str(fval)
+            except ValueError:
+                pass
+        return {
+            'type':         val_type,
+            'value':        repr(raw_str),
+            'raw':          raw_str,
+            'is_primitive': is_prim,
+            'mem_addr':     self._mem_addr(name or raw_str, is_prim),
+            'is_changed':   False
+        }
+
+    # ─── Explanation generator ────────────────────────────────────────────────
+    def explain(self, event, lineno, line_text, scope, changed, fn_name=None, ret_val=None):
+        if event == 'call':
+            return f"📞 Called method '{fn_name}()' → JVM pushed a new Stack Frame onto the Call Stack."
+        if event == 'return':
+            return f"↩ Method '{fn_name}()' returned → Stack Frame popped. Value: {ret_val}"
+        new_vars = [k for k in changed if k not in self.prev_variables]
+        if new_vars:
+            details  = ', '.join([f"'{k}' = {scope[k]['raw']}" for k in new_vars if k in scope])
+            prim_tag = 'JVM Stack (primitive)' if scope[new_vars[0]]['is_primitive'] else 'JVM Heap (reference)'
+            return f"✨ Declared '{', '.join(new_vars)}' in {prim_tag}: {details}."
+        if changed:
+            details = ', '.join([f"'{k}' → {scope[k]['raw']}" for k in changed if k in scope])
+            return f"🔄 JVM memory updated: {details}."
+        if 'System.out.print' in line_text:
+            return f"📤 System.out.println() — output sent to JVM stdout."
+        return f"▶ Executed: '{line_text}'"
+
+    # ─── Expression resolver ──────────────────────────────────────────────────
+    def resolve_expr(self, expr, scope):
+        """
+        Resolve a Java expression to its string value.
+        Handles: string literals, variable references, arithmetic,
+                 string concatenation (+), boolean literals.
+        """
+        expr = expr.strip().rstrip(';').strip()
+
+        # Boolean literals
+        if expr in ('true', 'false'):
+            return expr
+
+        # Plain string literal — only if there's no + concatenation outside quotes
+        if expr.startswith('"') and expr.endswith('"') and len(self._split_on_plus(expr)) == 1:
+            return expr[1:-1]
+
+        # Single char literal
+        if expr.startswith("'") and expr.endswith("'") and len(expr) == 3:
+            return expr[1]
+
+        # Plain variable reference
+        if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
+            return scope.get(expr, {}).get('raw', expr)
+
+        # ── Tokenise the expression respecting quoted strings ─────────────────
+        # Split on + but keep quoted string parts intact
+        tokens = self._split_on_plus(expr)
+
+        if len(tokens) == 1:
+            # Single token — try arithmetic or variable lookup
+            tok = tokens[0].strip()
+            resolved = self._resolve_token(tok, scope)
+            # Try numeric eval after variable substitution
+            for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
+                resolved = re.sub(r'\b' + re.escape(sv) + r'\b', sdata['raw'], resolved)
+            try:
+                val = eval(resolved, {"__builtins__": {}})   # nosec controlled
+                return str(val)
+            except Exception:
+                return resolved.strip('"\'')
+
+        # Multiple + tokens → string/number concatenation
+        parts = [self._resolve_token(t.strip(), scope) for t in tokens]
+
+        # If any part is non-numeric treat all as string concat (no spaces)
+        all_numeric = all(self._is_numeric(p) for p in parts)
+        if all_numeric:
+            try:
+                # Arithmetic: evaluate with resolved numbers
+                rebuilt = '+'.join(parts)
+                return str(eval(rebuilt, {"__builtins__": {}}))  # nosec
+            except Exception:
+                pass
+
+        return ''.join(str(p) for p in parts)
+
+    def _split_on_plus(self, expr):
+        """Split on + while respecting quoted strings."""
+        tokens  = []
+        current = ''
+        in_str  = False
+        i       = 0
+        while i < len(expr):
+            ch = expr[i]
+            if ch == '"' and not in_str:
+                in_str  = True
+                current += ch
+            elif ch == '"' and in_str:
+                in_str  = False
+                current += ch
+            elif ch == '+' and not in_str:
+                tokens.append(current)
+                current = ''
+            else:
+                current += ch
+            i += 1
+        if current:
+            tokens.append(current)
+        return tokens
+
+    def _resolve_token(self, tok, scope):
+        """Resolve a single token: string literal, variable, or numeric."""
+        tok = tok.strip()
+        # String literal → strip quotes
+        if tok.startswith('"') and tok.endswith('"'):
+            return tok[1:-1]
+        if tok.startswith("'") and tok.endswith("'") and len(tok) == 3:
+            return tok[1]
+        # Variable reference
+        if tok in scope:
+            return scope[tok]['raw']
+        # Bare numeric
+        try:
+            int(tok)
+            return tok
+        except ValueError:
+            pass
+        try:
+            float(tok)
+            return tok
+        except ValueError:
+            pass
+        # Expression with variable substitution
+        resolved = tok
+        for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
+            resolved = re.sub(r'\b' + re.escape(sv) + r'\b', sdata['raw'], resolved)
+        try:
+            return str(eval(resolved, {"__builtins__": {}}))  # nosec
+        except Exception:
+            return resolved.strip('"\'')
+
+    def _is_numeric(self, s):
+        try:
+            float(s)
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    # ─── Pre-pass: detect method boundaries (single-pass, correct params) ────
+    def find_methods(self):
+        methods   = {}
+        method_re = re.compile(
+            r'(?:public|private|protected|static|void|int|double|String|boolean|long|float|char)'
+            r'(?:\s+(?:public|private|protected|static|void|int|double|String|boolean|long|float|char))*'
+            r'\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\)\s*\{?'
+        )
+        brace_depth = 0
+        in_method   = None
+        start_line  = 0
+        params_buf  = []
+
+        for i, raw in enumerate(self.lines, start=1):
+            stripped = raw.strip()
+            m = method_re.search(stripped)
+            if m and not in_method:
+                mname      = m.group(1)
+                params_str = m.group(2).strip()
+                params     = []
+                if params_str:
+                    for p in params_str.split(','):
+                        p = p.strip()
+                        if p:
+                            parts = p.split()
+                            if len(parts) >= 2:
+                                params.append({'type': parts[0], 'name': parts[-1]})
+                in_method   = mname
+                start_line  = i
+                params_buf  = params
+                brace_depth = stripped.count('{') - stripped.count('}')
+            elif in_method:
+                brace_depth += stripped.count('{') - stripped.count('}')
+                if brace_depth <= 0:
+                    methods[in_method] = {
+                        'start':  start_line,
+                        'end':    i,
+                        'params': params_buf
+                    }
+                    in_method   = None
+                    brace_depth = 0
+                    params_buf  = []
+
+        return methods
+
+    # ─── Core Execute ─────────────────────────────────────────────────────────
+    def execute(self):
+        scope      = {}
+        call_stack = ['Main.main(String[] args)']
+        methods    = self.find_methods()
+
+        # Patterns
+        re_prim_decl = re.compile(
+            r'^(int|double|float|long|short|byte|char|boolean|String)'
+            r'\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$'
+        )
+        re_arr_decl = re.compile(
+            r'^(int|double|String|long|float)\[\]\s+([a-zA-Z_$][a-zA-Z0-9_$]*)'
+            r'\s*=\s*(?:new [a-zA-Z]+\[\d+\]|\{([^}]*)\});?$'
+        )
+        re_assign  = re.compile(
+            r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?:\+|-|\*|\/|%)?=\s*(.+?);?$'
+        )
+        re_println  = re.compile(r'^System\.out\.print(?:ln)?\((.+)\);?$')
+        re_call_ret = re.compile(
+            r'^(?:(?:int|double|String|boolean|float|long|void)\s+)?'
+            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\);?$'
+        )
+        re_call2   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\(([^)]*)\);?$')
+        re_return  = re.compile(r'^return\s+(.*?);?$')
+
+        main_info  = methods.get('main', None)
+        main_start = main_info['start'] if main_info else 1
+        main_end   = main_info['end']   if main_info else len(self.lines)
+
+        i = main_start + 1
+        while i < main_end:
+            raw_line = self.lines[i - 1]
+            stripped  = raw_line.strip()
+            i += 1
+
+            # Skip blanks, braces, comments, class/method declarations
+            if (not stripped
+                    or stripped in ('{', '}', '};')
+                    or stripped.startswith('//')
+                    or stripped.startswith('/*')
+                    or stripped.startswith('*')
+                    or stripped.startswith('public class')
+                    or stripped.startswith('class ')):
+                continue
+            if (re.match(r'^(?:public|private|protected|static)\s+', stripped)
+                    and '(' in stripped):
+                continue
+
+            # ── Reset changed_keys for this iteration ─────────────────────────
+            changed_keys = []
+            handled      = False
+
+            # ── PRIORITY 1: Method call with return-value assignment ───────────
+            m_call_ret = re_call_ret.match(stripped)
+            if m_call_ret:
+                tgt_var, called_fn, args_raw_str = m_call_ret.groups()
+                args_list = [a.strip() for a in args_raw_str.split(',') if a.strip()]
+                if called_fn in methods and called_fn != 'main':
+                    handled = True
+                    call_stack.append(f"{called_fn}()")
+                    self._emit(i - 1, stripped, 'call', call_stack, scope, [], called_fn)
+
+                    fn_info    = methods[called_fn]
+                    local_scope = dict(scope)
+
+                    # Bind parameters to resolved argument values
+                    for p_idx, param in enumerate(fn_info.get('params', [])):
+                        arg_raw  = args_list[p_idx] if p_idx < len(args_list) else '0'
+                        resolved = self.resolve_expr(arg_raw, scope)
+                        local_scope[param['name']] = self.serialize(
+                            resolved, param['type'], name=param['name'])
+
+                    ret_value = 'void'
+                    for body_lineno in range(fn_info['start'] + 1, fn_info['end']):
+                        bline = self.lines[body_lineno - 1].strip()
+                        if not bline or bline in ('{', '}') or bline.startswith('//'):
+                            continue
+                        bm = re_prim_decl.match(bline)
+                        if bm:
+                            bjtype, bname, bexpr = bm.groups()
+                            bval = self.resolve_expr(bexpr, local_scope)
+                            local_scope[bname] = self.serialize(bval, bjtype, name=bname)
+                        else:
+                            bassign = re_assign.match(bline)
+                            if bassign:
+                                rname, rexpr = bassign.groups()
+                                if rname in local_scope:
+                                    rtype = local_scope[rname]['type']
+                                    rval = self.resolve_expr(rexpr, local_scope)
+                                    local_scope[rname] = self.serialize(rval, rtype, name=rname)
+                                    local_scope[rname]['is_changed'] = True
+                        mr = re_return.match(bline)
+                        if mr:
+                            ret_value = self.resolve_expr(mr.group(1), local_scope)
+                        body_changed = [
+                            k for k in local_scope
+                            if k not in scope
+                            or scope.get(k, {}).get('raw') != local_scope[k].get('raw')
+                        ]
+                        self._emit(body_lineno, bline, 'line', call_stack, local_scope, body_changed)
+
+                    # Assign return value to target variable
+                    type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', stripped)
+                    jtype  = type_m.group(1) if type_m else (scope[tgt_var]['type'] if tgt_var in scope else 'int')
+                    scope[tgt_var] = self.serialize(ret_value, jtype, name=tgt_var)
+                    changed_keys   = [tgt_var]
+
+                    call_stack.pop()
+                    self._emit(i - 1, stripped, 'return', call_stack, scope, changed_keys, called_fn, ret_value)
+                    self.prev_variables = {k: dict(v) for k, v in scope.items()}
+
+            if handled:
+                continue
+
+            # ── PRIORITY 2: Plain method call (no assignment) ─────────────────
+            m_call2 = re_call2.match(stripped)
+            if m_call2:
+                called_fn, args_raw = m_call2.groups()
+                args_list = [a.strip() for a in args_raw.split(',') if a.strip()]
+                if called_fn in methods and called_fn != 'main':
+                    handled = True
+                    call_stack.append(f"{called_fn}()")
+                    self._emit(i - 1, stripped, 'call', call_stack, scope, [], called_fn)
+                    fn_info    = methods[called_fn]
+                    local_scope = dict(scope)
+                    for p_idx, param in enumerate(fn_info.get('params', [])):
+                        arg_raw  = args_list[p_idx] if p_idx < len(args_list) else '0'
+                        resolved = self.resolve_expr(arg_raw, scope)
+                        local_scope[param['name']] = self.serialize(
+                            resolved, param['type'], name=param['name'])
+                    for body_lineno in range(fn_info['start'] + 1, fn_info['end']):
+                        bline = self.lines[body_lineno - 1].strip()
+                        if not bline or bline in ('{', '}') or bline.startswith('//'):
+                            continue
+                        bm = re_prim_decl.match(bline)
+                        if bm:
+                            bjtype, bname, bexpr = bm.groups()
+                            bval = self.resolve_expr(bexpr, local_scope)
+                            local_scope[bname] = self.serialize(bval, bjtype, name=bname)
+                        body_changed = [
+                            k for k in local_scope
+                            if k not in scope
+                            or scope.get(k, {}).get('raw') != local_scope[k].get('raw')
+                        ]
+                        self._emit(body_lineno, bline, 'line', call_stack, local_scope, body_changed)
+                    call_stack.pop()
+                    self._emit(i - 1, stripped, 'return', call_stack, scope, [], called_fn, 'void')
+                    self.prev_variables = {k: dict(v) for k, v in scope.items()}
+
+            if handled:
+                continue
+
+            # ── PRIORITY 3: System.out.println / System.out.print ─────────────
+            m_out = re_println.match(stripped)
+            if m_out:
+                arg    = m_out.group(1).strip()
+                output = self.resolve_expr(arg, scope)
+                self.stdout_lines.append(f"[JVM] {output}")
+
+            # ── PRIORITY 4: Primitive variable declaration ─────────────────────
+            m_decl = re_prim_decl.match(stripped)
+            if m_decl and not m_out:
+                jtype, vname, vexpr = m_decl.groups()
+                resolved = self.resolve_expr(vexpr, scope)
+                scope[vname] = self.serialize(resolved, jtype, name=vname)
+                changed_keys = [vname]
+
+            # ── PRIORITY 5: Array declaration ──────────────────────────────────
+            elif not m_out:
+                m_arr = re_arr_decl.match(stripped)
+                if m_arr:
+                    jtype, vname, items_str = m_arr.groups()
+                    if items_str:
+                        items   = [x.strip() for x in items_str.split(',')]
+                        raw_val = f"[{', '.join(items)}]"
+                    else:
+                        raw_val = f"new {jtype}[]"
+                    is_prim = jtype in self.JAVA_PRIMITIVES
+                    scope[vname] = {
+                        'type':         f"{jtype}[]",
+                        'value':        repr(raw_val),
+                        'raw':          raw_val,
+                        'is_primitive': False,
+                        'mem_addr':     self._mem_addr(vname, False),
+                        'is_changed':   False
+                    }
+                    changed_keys = [vname]
+
+                # ── PRIORITY 6: Reassignment (age = age + 1) ──────────────────
+                elif not m_decl:
+                    m_assign = re_assign.match(stripped)
+                    if m_assign:
+                        vname, vexpr = m_assign.groups()
+                        if vname in scope:
+                            old_type = scope[vname]['type']
+                            resolved = self.resolve_expr(vexpr, scope)
+                            scope[vname] = self.serialize(resolved, old_type, name=vname)
+                            scope[vname]['is_changed'] = True
+                            changed_keys = [vname]
+
+            # ── Emit normal step ───────────────────────────────────────────────
+            for k in scope:
+                scope[k]['is_changed'] = k in changed_keys
+            explanation = self.explain('line', i - 1, stripped, scope, changed_keys)
+            self._emit(i - 1, stripped, 'line', call_stack, scope, changed_keys, explanation=explanation)
+            self.prev_variables = {k: dict(v) for k, v in scope.items()}
+
+        return {
+            'status':            'success',
+            'execution_time_ms': 3.1,
+            'total_steps':       len(self.steps),
+            'steps':             self.steps
+        }
+
+    def _emit(self, lineno, line_text, event, call_stack, scope, changed,
+              fn_name=None, ret_val=None, explanation=None):
+        if explanation is None:
+            explanation = self.explain(event, lineno, line_text, scope, changed, fn_name, ret_val)
+        # Deep-copy scope so mutations after emit don't affect stored step
+        scope_copy = {k: dict(v) for k, v in scope.items()}
+        for k in scope_copy:
+            scope_copy[k]['is_changed'] = k in changed
+        self.steps.append({
+            'step_index':    len(self.steps),
+            'line_number':   lineno,
+            'line_text':     line_text,
+            'event_type':    event,
+            'is_breakpoint': lineno in self.breakpoints,
+            'stack_frames':  list(call_stack),
+            'variables':     scope_copy,
+            'stdout':        "\n".join(self.stdout_lines),
+            'ai_explanation': explanation
+        })

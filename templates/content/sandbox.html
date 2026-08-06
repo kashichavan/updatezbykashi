@@ -1,0 +1,718 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Python Memory Visualizer & Line-by-Line Debugger | Python Kashi{% endblock %}
+{% block meta_description %}Interactive Python Visual Debugger by Python Kashi. Step through Python code line-by-line with visual Stack Frame & Heap Memory allocation diagrams.{% endblock %}
+
+{% block extra_css %}
+<!-- CodeMirror CDN for Code Editor -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+
+<style>
+  /* ── CODING SANDBOX LAYOUT ── */
+  .sandbox-header-strip {
+    background: #0f172a;
+    color: #ffffff;
+    padding: 22px 26px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+  }
+
+  .sandbox-title-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    font-size: 11px;
+    font-weight: 800;
+    font-family: monospace;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(147, 197, 253, 0.3);
+  }
+
+  /* Mode Switcher Tabs */
+  .mode-switch-bar {
+    display: flex;
+    background: #1e293b;
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+    border: 1px solid #334155;
+  }
+
+  .mode-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mode-btn.active {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+  }
+
+  /* Debugger Controls Bar */
+  .debugger-controls-bar {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .debug-step-btn {
+    padding: 8px 16px;
+    background: #334155;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .debug-step-btn:hover:not(:disabled) {
+    background: #2563eb;
+    border-color: #3b82f6;
+    transform: translateY(-1px);
+  }
+
+  .debug-step-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .step-explanation-box {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    color: #e0e7ff;
+    border: 1px solid #4338ca;
+    padding: 14px 20px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 14px rgba(67, 56, 202, 0.3);
+  }
+
+  .sandbox-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 960px) {
+    .sandbox-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── EDITOR CARD ── */
+  .editor-card {
+    background: #1e293b;
+    border-radius: 20px;
+    border: 1px solid #334155;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+
+  .editor-top-bar {
+    background: #0f172a;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #334155;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .btn-run {
+    padding: 8px 18px;
+    background: #22c55e;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 13px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+  }
+
+  .btn-run:hover {
+    background: #16a34a;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary-tool {
+    padding: 6px 12px;
+    background: #334155;
+    color: #e2e8f0;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary-tool:hover {
+    background: #475569;
+  }
+
+  .CodeMirror {
+    height: 440px !important;
+    font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.65;
+
+  }
+
+  /* Highlight active executing line in Editor */
+  .active-executing-line {
+    background: rgba(59, 130, 246, 0.35) !important;
+    border-left: 4px solid #3b82f6 !important;
+  }
+
+  /* ── VISUAL MEMORY ALLOCATOR CARD ── */
+  .memory-card {
+    background: #0f172a;
+    border-radius: 20px;
+    border: 1px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+
+  .memory-top-bar {
+    background: #1e293b;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #334155;
+  }
+
+  .memory-body {
+    padding: 18px;
+    height: 440px;
+    overflow-y: auto;
+    background: #090d16;
+  }
+
+  .memory-section-title {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #38bdf8;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stack-frame-box {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  .var-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    font-family: 'Consolas', monospace;
+    font-size: 12.5px;
+  }
+
+  .var-table th, .var-table td {
+    padding: 6px 10px;
+    border: 1px solid #334155;
+    text-align: left;
+  }
+
+  .var-table th {
+    background: #0f172a;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+
+  .var-table td {
+    color: #f8fafc;
+  }
+
+  .mem-addr-badge {
+    font-size: 10px;
+    font-family: monospace;
+    background: rgba(148, 163, 184, 0.15);
+    color: #94a3b8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+  }
+
+  .preset-row {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+  }
+
+  .preset-chip {
+    padding: 6px 14px;
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .preset-chip:hover {
+    background: var(--blue-light);
+    color: var(--blue-primary);
+    border-color: var(--blue-border);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap" style="margin-top: 24px;">
+
+  <!-- ── 1. HEADER BANNER ── -->
+  <div class="sandbox-header-strip">
+    <div>
+      <span class="sandbox-title-badge">
+        <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Sandbox">
+        PYTHON KASHI VISUAL MEMORY DEBUGGER
+      </span>
+      <h1 style="font: 800 32px var(--font-serif); margin: 0 0 6px; color: #ffffff; letter-spacing: -0.5px;">
+        Python Execution & Memory Visualizer
+      </h1>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0; max-width: 650px;">
+        Watch Python code execute step-by-step! Inspect Stack Frames, Heap Memory Allocation, and variable updates in real-time.
+      </p>
+    </div>
+
+    <div class="mode-switch-bar">
+      <button id="modeDebuggerBtn" class="mode-btn active" onclick="switchMode('debugger')">
+        🐛 Visual Debugger
+      </button>
+      <button id="modeInstantBtn" class="mode-btn" onclick="switchMode('instant')">
+        ⚡ Instant Runner
+      </button>
+    </div>
+  </div>
+
+  <!-- ── 2. PRESET PRACTICE TEMPLATES ── -->
+  <div style="margin-bottom: 10px;">
+    <span style="font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px;">Practice Code Lessons:</span>
+  </div>
+  <div class="preset-row">
+    <button class="preset-chip" onclick="loadLesson('variables')">1. Variables & Memory</button>
+    <button class="preset-chip" onclick="loadLesson('lists')">2. Lists & Append Allocation</button>
+    <button class="preset-chip" onclick="loadLesson('functions')">3. Functions & Stack Frames</button>
+    <button class="preset-chip" onclick="loadLesson('twosum')">4. LeetCode Two Sum Algorithm</button>
+  </div>
+
+  <!-- ── 3. DEBUGGER PLAYBACK CONTROLS ── -->
+  <div id="debuggerControls" class="debugger-controls-bar">
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <button id="btnStartDebug" class="debug-step-btn" style="background: #2563eb; border-color: #3b82f6;" onclick="startDebugging()">
+        Start Visual Debugger
+      </button>
+
+      <button id="btnFirst" class="debug-step-btn" onclick="goToStep(0)" disabled>⏮ First</button>
+      <button id="btnPrev" class="debug-step-btn" onclick="prevStep()" disabled>◀ Prev</button>
+      <button id="btnNext" class="debug-step-btn" onclick="nextStep()" disabled>Next ▶</button>
+      <button id="btnLast" class="debug-step-btn" onclick="goToStep(debugSteps.length - 1)" disabled>Last ⏭</button>
+      <button id="btnAutoPlay" class="debug-step-btn" onclick="toggleAutoPlay()" disabled>▶ Auto Step</button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span id="stepCounterBadge" style="font-size: 13px; font-weight: 800; color: #38bdf8; font-family: monospace;">
+        Step 0 / 0
+      </span>
+    </div>
+  </div>
+
+  <!-- ── 4. STEP EXPLANATION BANNER ── -->
+  <div id="stepExplanation" class="step-explanation-box">
+    <span>💡 Click "Start Visual Debugger" to trace Python execution line-by-line with memory allocations!</span>
+  </div>
+
+  <!-- ── 5. SPLIT IDE GRID ── -->
+  <div class="sandbox-grid">
+
+    <!-- LEFT: CODE EDITOR -->
+    <div class="editor-card">
+      <div class="editor-top-bar">
+        <span style="font-size: 13px; font-weight: 800; color: #f8fafc; font-family: monospace; display: flex; align-items: center; gap: 6px;">
+          🐍 main.py
+        </span>
+
+        <div style="display: flex; gap: 6px;">
+          <button class="btn-secondary-tool" onclick="resetCode()">🔄 Reset</button>
+          <button class="btn-secondary-tool" onclick="copyCode()">📋 Copy</button>
+        </div>
+      </div>
+
+      <!-- CodeMirror Textarea -->
+      <textarea id="codeEditor"></textarea>
+    </div>
+
+    <!-- RIGHT: VISUAL MEMORY ALLOCATOR & STACK INSPECTOR -->
+    <div class="memory-card">
+      <div class="memory-top-bar">
+        <span style="font-size: 13px; font-weight: 800; color: #38bdf8; font-family: monospace; display: flex; align-items: center; gap: 6px;">
+          🧠 Memory Allocator & Stack Frames
+        </span>
+        <button class="btn-secondary-tool" onclick="clearMemoryView()" style="padding: 4px 10px; font-size: 11px;">
+          Clear
+        </button>
+      </div>
+
+      <div id="memoryInspectorBody" class="memory-body">
+        <div class="memory-section-title">📦 Active Stack Frame</div>
+        <div id="stackFrameContainer" class="stack-frame-box">
+          <div style="font-size: 13px; font-weight: 700; color: #94a3b8;">Global Frame (No active execution)</div>
+          <p style="font-size: 12px; color: #64748b; margin: 6px 0 0;">Press "Start Visual Debugger" to trace memory allocation.</p>
+        </div>
+
+        <div class="memory-section-title">💾 Terminal Output (stdout)</div>
+        <div id="terminalStdout" style="background: #060911; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; font-family: monospace; font-size: 12.5px; color: #38bdf8; white-space: pre-wrap; min-height: 80px;">No output yet.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- CodeMirror JS dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+
+<script>
+  let editor;
+  let activeLineHandle = null;
+  let debugSteps = [];
+  let currentStepIdx = 0;
+  let autoPlayTimer = null;
+
+  const LESSONS = {
+    variables: `# 1. Python Variables & Memory Allocation
+name = "Kashinath"
+age = 22
+gpa = 3.9
+is_student = True
+
+# Updating age allocates a new integer object in Python memory!
+age = age + 1
+print(f"Student: {name}, Age: {age}")
+`,
+    lists: `# 2. Lists & Object Reference Allocation
+skills = ["Python", "Django"]
+print("Initial Skills List:", skills)
+
+# Modifying list in place (same memory address!)
+skills.append("JavaScript")
+skills.append("PostgreSQL")
+
+print("Updated Skills List:", skills)
+`,
+    functions: `# 3. Functions & Stack Frames
+def calculate_stipend(base, bonus):
+    total = base + bonus
+    return total
+
+company = "Google"
+stipend = calculate_stipend(3000, 500)
+print(f"Company: {company}, Stipend: \${stipend}")
+`,
+    twosum: `# 4. LeetCode Two Sum Algorithm
+def two_sum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        diff = target - num
+        if diff in seen:
+            return [seen[diff], i]
+        seen[num] = i
+    return []
+
+numbers = [2, 7, 11, 15]
+result = two_sum(numbers, 9)
+print("Two Sum Indices Result:", result)
+`
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+      mode: 'python',
+      theme: 'dracula',
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      autoCloseBrackets: true,
+      matchBrackets: true
+    });
+
+    editor.setValue(LESSONS.variables);
+
+    editor.setOption('extraKeys', {
+      'Ctrl-Enter': () => startDebugging(),
+      'Cmd-Enter': () => startDebugging()
+    });
+  });
+
+  function loadLesson(key) {
+    if (LESSONS[key]) {
+      stopAutoPlay();
+      editor.setValue(LESSONS[key]);
+      clearMemoryView();
+    }
+  }
+
+  function clearMemoryView() {
+    stopAutoPlay();
+    clearActiveHighlight();
+    debugSteps = [];
+    currentStepIdx = 0;
+    updateControls();
+    document.getElementById('stepExplanation').innerHTML = '<span>💡 Click "Start Visual Debugger" to trace Python execution line-by-line with memory allocations!</span>';
+    document.getElementById('stackFrameContainer').innerHTML = '<div style="font-size: 13px; font-weight: 700; color: #94a3b8;">Global Frame (Ready)</div>';
+    document.getElementById('terminalStdout').textContent = 'No output yet.';
+  }
+
+  function clearActiveHighlight() {
+    if (activeLineHandle !== null) {
+      editor.removeLineClass(activeLineHandle, 'background', 'active-executing-line');
+      activeLineHandle = null;
+    }
+  }
+
+  function highlightLine(lineNum) {
+    clearActiveHighlight();
+    if (lineNum > 0 && lineNum <= editor.lineCount()) {
+      activeLineHandle = editor.addLineClass(lineNum - 1, 'background', 'active-executing-line');
+      editor.scrollIntoView({ line: lineNum - 1, ch: 0 }, 100);
+    }
+  }
+
+  async function startDebugging() {
+    stopAutoPlay();
+    const code = editor.getValue();
+    const expBox = document.getElementById('stepExplanation');
+    expBox.innerHTML = '<span>⏳ Tracing execution and compiling memory allocation steps...</span>';
+
+    try {
+      const response = await fetch('/sandbox/api/debug/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+      });
+
+      const data = await response.json();
+      if (data.status === 'success' && data.steps.length > 0) {
+        debugSteps = data.steps;
+        currentStepIdx = 0;
+        goToStep(0);
+        showToast('Visual Debugger initialized!', 'success');
+      } else {
+        expBox.innerHTML = `<span>❌ Debugger Error: ${data.message || 'No execution steps returned.'}</span>`;
+      }
+    } catch (err) {
+      expBox.innerHTML = `<span>❌ Network Error connecting to Python Debugger backend.</span>`;
+    }
+  }
+
+  function goToStep(idx) {
+    if (debugSteps.length === 0) return;
+    currentStepIdx = Math.max(0, Math.min(idx, debugSteps.length - 1));
+    const step = debugSteps[currentStepIdx];
+
+    // Highlight active line
+    highlightLine(step.line);
+
+    // Update explanation box
+    document.getElementById('stepExplanation').innerHTML = `<span>${escapeHtml(step.explanation)}</span>`;
+
+    // Render visual Memory Allocator (Stack Frame + Heap Variables)
+    renderMemoryInspector(step);
+
+    // Update terminal stdout
+    document.getElementById('terminalStdout').textContent = step.stdout || 'No stdout output yet.';
+
+    updateControls();
+  }
+
+  function renderMemoryInspector(step) {
+    const container = document.getElementById('stackFrameContainer');
+    let html = `<div style="font-size: 13px; font-weight: 800; color: #38bdf8; margin-bottom: 6px;">📍 ${escapeHtml(step.stack_frame)}</div>`;
+
+    const vars = step.variables || {};
+    const keys = Object.keys(vars);
+
+    if (keys.length === 0) {
+      html += `<div style="font-size: 12px; color: #64748b;">No variables initialized in memory yet.</div>`;
+    } else {
+      html += `
+        <table class="var-table">
+          <thead>
+            <tr>
+              <th>Variable</th>
+              <th>Type</th>
+              <th>Allocated Value</th>
+              <th>Memory Pointer</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      keys.forEach(k => {
+        const item = vars[k];
+        let valStr = '';
+        if (typeof item.value === 'object') {
+          valStr = JSON.stringify(item.value);
+        } else {
+          valStr = String(item.value);
+        }
+
+        html += `
+          <tr>
+            <td style="color: #60a5fa; font-weight: 700;">${escapeHtml(k)}</td>
+            <td style="color: #a78bfa;">${escapeHtml(item.type)}</td>
+            <td style="color: #4ade80;">${escapeHtml(valStr)}</td>
+            <td><span class="mem-addr-badge">${escapeHtml(item.id)}</span></td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  function prevStep() {
+    if (currentStepIdx > 0) goToStep(currentStepIdx - 1);
+  }
+
+  function nextStep() {
+    if (currentStepIdx < debugSteps.length - 1) goToStep(currentStepIdx + 1);
+    else stopAutoPlay();
+  }
+
+  function toggleAutoPlay() {
+    if (autoPlayTimer) {
+      stopAutoPlay();
+    } else {
+      document.getElementById('btnAutoPlay').innerHTML = '⏸ Pause';
+      document.getElementById('btnAutoPlay').style.background = '#eab308';
+      autoPlayTimer = setInterval(() => {
+        if (currentStepIdx < debugSteps.length - 1) {
+          nextStep();
+        } else {
+          stopAutoPlay();
+        }
+      }, 1400);
+    }
+  }
+
+  function stopAutoPlay() {
+    if (autoPlayTimer) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+    }
+    const btn = document.getElementById('btnAutoPlay');
+    if (btn) {
+      btn.innerHTML = '▶ Auto Step';
+      btn.style.background = '#334155';
+    }
+  }
+
+  function updateControls() {
+    const total = debugSteps.length;
+    const curr = total > 0 ? currentStepIdx + 1 : 0;
+    document.getElementById('stepCounterBadge').textContent = `Step ${curr} / ${total}`;
+
+    document.getElementById('btnFirst').disabled = total === 0 || currentStepIdx === 0;
+    document.getElementById('btnPrev').disabled = total === 0 || currentStepIdx === 0;
+    document.getElementById('btnNext').disabled = total === 0 || currentStepIdx === total - 1;
+    document.getElementById('btnLast').disabled = total === 0 || currentStepIdx === total - 1;
+    document.getElementById('btnAutoPlay').disabled = total === 0;
+  }
+
+  function resetCode() {
+    loadLesson('variables');
+  }
+
+  function copyCode() {
+    const code = editor.getValue();
+    navigator.clipboard.writeText(code).then(() => {
+      showToast('📋 Code copied to clipboard!', 'info');
+    });
+  }
+
+  function switchMode(mode) {
+    if (mode === 'instant') {
+      showToast('⚡ Switched to Instant Execution Mode.', 'info');
+    } else {
+      showToast('Switched to Visual Debugger Mode.', 'info');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+</script>
+{% endblock %}
