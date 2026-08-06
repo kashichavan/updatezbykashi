@@ -16,50 +16,118 @@
 
 {% block content %}
 
-<!-- ── INLINE DISMISS SCRIPT (guarantees function is ready before touch/click) ── -->
+<!-- ── 100% SELF-CONTAINED INLINE MOBILE BLOCKER ── -->
+<style>
+  .mobile-blocker-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 999999;
+    background: rgba(4, 9, 20, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @media (max-width: 900px) {
+    .mobile-blocker-overlay {
+      display: flex !important;
+    }
+  }
+
+  .mobile-blocker-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 24px;
+    padding: 28px 22px 24px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.2);
+    box-sizing: border-box;
+  }
+
+  .mobile-blocker-x {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-blocker-x:active {
+    background: rgba(239, 68, 68, 0.4);
+    transform: scale(0.95);
+  }
+
+  .mobile-blocker-btn {
+    background: linear-gradient(135deg, #2563eb, #0284c7);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-blocker-btn:active {
+    transform: scale(0.98);
+  }
+</style>
+
 <script>
-window.dismissMobileBlocker = function(e) {
-  if (e) {
-    try { e.stopPropagation(); e.preventDefault(); } catch (err) {}
+  function forceCloseMobileBlocker(evt) {
+    if (evt) {
+      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
+    }
+    var overlay = document.getElementById('mobileBlockerOverlay');
+    if (overlay) {
+      overlay.style.setProperty('display', 'none', 'important');
+    }
   }
-  try { sessionStorage.setItem('mobile_blocker_dismissed', 'true'); } catch (err) {}
-  var b = document.getElementById('mobileBlocker');
-  if (b) {
-    b.style.setProperty('display', 'none', 'important');
-    b.style.setProperty('visibility', 'hidden', 'important');
-    b.style.setProperty('opacity', '0', 'important');
-    b.style.setProperty('pointer-events', 'none', 'important');
-  }
-};
-if (sessionStorage.getItem('mobile_blocker_dismissed') === 'true') {
-  document.write('<style>#mobileBlocker{display:none !important;}</style>');
-}
 </script>
 
-<!-- ── MOBILE BLOCKER OVERLAY CARD ── -->
-<div class="mobile-blocker" id="mobileBlocker" onclick="dismissMobileBlocker(event)" ontouchstart="dismissMobileBlocker(event)">
-  <div class="dbg-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
-    <button class="dbg-blocker-close" id="btnBlockerClose" onclick="dismissMobileBlocker(event)" ontouchstart="dismissMobileBlocker(event)" title="Close warning">✕</button>
-    <div class="dbg-blocker-icon-wrap">
-      <span class="dbg-blocker-emoji">🖥️</span>
-    </div>
-    <h2 class="dbg-blocker-title">Desktop Recommended</h2>
-    <p class="dbg-blocker-sub">
-      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> is designed for desktop &amp; laptop screens.
+<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)">
+  <div class="mobile-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+    <button class="mobile-blocker-x" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)" title="Close warning">✕</button>
+    <div style="font-size:42px; margin-bottom:12px;">🖥️</div>
+    <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 8px;">Desktop Recommended</h2>
+    <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 16px;">
+      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> is optimized for laptop and desktop screens.
     </p>
 
-    <div class="dbg-blocker-browsers">
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🌐</span>Chrome</div>
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🦊</span>Firefox</div>
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🧭</span>Safari</div>
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🔷</span>Edge</div>
+    <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🌐 Chrome</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🦊 Firefox</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🧭 Safari</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🔷 Edge</div>
     </div>
 
-    <p class="dbg-blocker-hint">
-      📋 Open <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong> on your computer PC.
-    </p>
+    <div style="color:#94a3b8; font-size:11px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:10px 12px; line-height:1.5;">
+      📋 Open <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong> on your PC.
+    </div>
 
-    <button class="dbg-blocker-dismiss-btn" id="btnBlockerContinue" onclick="dismissMobileBlocker(event)" ontouchstart="dismissMobileBlocker(event)">
+    <button class="mobile-blocker-btn" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)">
       Continue on Mobile IDE →
     </button>
   </div>
