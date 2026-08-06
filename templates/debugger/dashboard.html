@@ -16,33 +16,6 @@
 
 {% block content %}
 
-<!-- ── MOBILE BLOCKER (phones / tablets) ── -->
-<div class="mobile-blocker" id="mobileBlocker" onclick="dismissMobileBlocker()" ontouchstart="dismissMobileBlocker()">
-  <div class="dbg-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
-    <button class="dbg-blocker-close" onclick="dismissMobileBlocker()" ontouchstart="dismissMobileBlocker()" title="Dismiss warning">✕</button>
-    <span class="dbg-blocker-emoji">🖥️</span>
-    <h2 class="dbg-blocker-title">Open on Desktop Browser</h2>
-    <p class="dbg-blocker-sub">
-      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong>
-      is optimized for desktop screens.
-    </p>
-    <div class="dbg-blocker-browsers">
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🌐</span>Chrome</div>
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🦊</span>Firefox</div>
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🧭</span>Safari</div>
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🔷</span>Edge</div>
-      <div class="dbg-browser-badge"><span class="dbg-browser-icon">🎭</span>Brave</div>
-    </div>
-    <p class="dbg-blocker-hint">
-      📋 Copy the URL <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong>
-      and open it on your PC in any browser above.
-    </p>
-    <button class="dbg-blocker-dismiss-btn" onclick="dismissMobileBlocker()" ontouchstart="dismissMobileBlocker()">
-      Continue on Mobile Anyway →
-    </button>
-  </div>
-</div>
-
 <div class="debugger-app-wrap">
 
   <!-- ── 1. HERO TOP STRIP ── -->

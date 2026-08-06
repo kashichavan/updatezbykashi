@@ -738,10 +738,12 @@
 }
 
 @media (max-width: 900px) {
-  .mobile-blocker:not(.dismissed) { display: flex !important; }
-  .mobile-blocker.dismissed       { display: none !important; }
-  .debugger-app-wrap:not(.mobile-active) { display: none !important; }
-  .debugger-app-wrap.mobile-active       { display: flex !important; }
+  .debugger-app-wrap {
+    padding: 10px;
+  }
+  .ide-split-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 /* ── Mobile blocker card elements ── */
