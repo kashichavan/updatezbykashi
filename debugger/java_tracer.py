@@ -252,7 +252,7 @@ class JavaExecutionTracer:
         call_stack.append(f"{called_fn}()")
         self._emit(fn_info['start'], self.lines[fn_info['start'] - 1].strip(), 'call', call_stack, caller_scope, [], called_fn)
 
-        local_scope = dict(caller_scope)
+        local_scope = {}
         for p_idx, param in enumerate(fn_info.get('params', [])):
             arg_raw = args_list[p_idx] if p_idx < len(args_list) else '0'
             resolved = self.resolve_expr(arg_raw, caller_scope)
@@ -327,7 +327,7 @@ class JavaExecutionTracer:
                 break
 
         call_stack.pop()
-        self._emit(fn_info['end'], f"return {ret_val}", 'return', call_stack, local_scope, [], called_fn, ret_val)
+        self._emit(fn_info['end'], f"return {ret_val}", 'return', call_stack, caller_scope, [], called_fn, ret_val)
         return ret_val
 
     # ─── Core Execute ─────────────────────────────────────────────────────────
