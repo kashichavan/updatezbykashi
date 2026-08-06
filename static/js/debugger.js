@@ -574,26 +574,6 @@ function goToStep(idx) {
     consoleElem.textContent = streamOutput || '$ Program execution completed.';
   }
 
-  // VS Code Interactive Debugger Pause: Stop on input() lines and wait for user terminal input
-  const lineTxt = (step.line_text || '').toLowerCase();
-  const stdinInput = document.getElementById('stdinInput');
-  const isInputLine = lineTxt.includes('input(') || lineTxt.includes('scanner') || lineTxt.includes('.next');
-
-  if (stdinInput && isInputLine) {
-    stopAutoPlay();
-    stdinInput.style.border = '2px solid #10b981';
-    stdinInput.style.boxShadow = '0 0 16px rgba(16,185,129,0.6)';
-    stdinInput.placeholder = `⏸ VS Code Paused on Line ${step.line_number}: Enter value & press Enter ↵ to continue...`;
-    stdinInput.focus();
-
-    document.getElementById('aiExplainBanner').innerHTML =
-      `⏸ <strong>VS Code Debugger Paused on Line ${step.line_number}:</strong> Awaiting interactive input in terminal below. Type value and press <strong>Enter ↵</strong> to step forward!`;
-  } else if (stdinInput) {
-    stdinInput.style.border = 'none';
-    stdinInput.style.boxShadow = 'none';
-    stdinInput.placeholder = 'Type input here and press Enter to auto-run (e.g. Rahul)...';
-  }
-
   updateControls();
 }
 
