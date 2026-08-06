@@ -665,7 +665,7 @@ function renderVariablesCards(vars) {
       // Short value — show inline on the right
       valueBlock = `
         <div style="text-align:right; display:flex; flex-direction:column; gap:4px; align-items:flex-end; max-width:55%;">
-          <div style="font-size:13px; font-weight:900; color:${valColor};
+          <div class="var-val-text" style="font-size:13px; font-weight:900;
                       font-family:'Consolas','Fira Code',monospace; letter-spacing:0.3px;
                       word-break:break-all; white-space:pre-wrap;">${escapeHtml(fullVal)}</div>
           <span class="mem-pointer-tag">${escapeHtml(v.mem_addr)}</span>
@@ -698,10 +698,9 @@ function renderVariablesCards(vars) {
         <!-- ── Header row: name + type + mem (+ expand btn for long values) ── -->
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
           <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
-            <div style="font-size:13px; font-weight:800; color:${nameColor};
-                        font-family:'Consolas','Fira Code',monospace;">${escapeHtml(k)}</div>
-            <div style="font-size:11px; color:#94a3b8; font-weight:600;">
-              type: <em style="color:#38bdf8">${escapeHtml(v.type)}</em>
+            <div class="var-name-text">${escapeHtml(k)}</div>
+            <div class="var-type-text">
+              type: <em class="var-type-em">${escapeHtml(v.type)}</em>
             </div>
           </div>
           ${valueBlock}
@@ -710,10 +709,10 @@ function renderVariablesCards(vars) {
         ${ isLong ? `
         <!-- ── Full value block (collapsible) ── -->
         <div id="${blockId}" style="display:none;">
-          <pre style="margin:0; padding:8px 10px;
+          <pre class="var-val-text" style="margin:0; padding:8px 10px;
                       background:var(--bg-app); border:1px solid var(--border-subtle);
                       border-radius:8px; font-size:11px; font-weight:600;
-                      color:${valColor}; font-family:'Consolas','Fira Code',monospace;
+                      font-family:'Consolas','Fira Code',monospace;
                       white-space:pre-wrap; word-break:break-all;
                       max-height:200px; overflow-y:auto; line-height:1.6;">${escapeHtml(fullVal)}</pre>
         </div>` : '' }
