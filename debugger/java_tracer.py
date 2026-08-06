@@ -691,12 +691,12 @@ class JavaExecutionTracer:
             self._set_field(base, node.member, value)
             return
         name = node.member
-        if 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
-                and name in scope['this']['_value'].fields:
-            scope['this']['_value'].fields[name] = value
-        elif name in scope:
+        if name in scope:
             scope[name]['_value'] = value
             scope[name]['is_changed'] = True
+        elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
+                and name in scope['this']['_value'].fields:
+            scope['this']['_value'].fields[name] = value
         elif name in self.static_fields.get(class_name, {}):
             self.static_fields[class_name][name]['_value'] = value
             self.static_fields[class_name][name]['is_changed'] = True
@@ -931,6 +931,11 @@ class JavaExecutionTracer:
             self._write_ref(target, scope, call_stack, class_name, value)
             return
         if t == 'This':
+            if target.selectors:
+                cur = scope.get('this', {}).get('_value', NULL)
+                last = target.selectors[-1]
+                if type(last).__name__ == 'MemberReference':
+                    self._set_field(cur, last.member, value)
             return
         raise JavaException("Error", f"invalid assignment target {t}")
 
