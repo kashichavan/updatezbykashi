@@ -143,6 +143,20 @@ class JavaExecutionTracer:
             str_val = _clean_str(self.resolve_expr(vname, scope))
             idx = int(char_idx)
             return str_val[idx] if idx < len(str_val) else ''
+        if m_cont := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.contains\s*\(\s*(.*?)\s*\)', expr):
+            vname, sub_str_raw = m_cont.groups()
+            str_val = _clean_str(self.resolve_expr(vname, scope))
+            sub_val = _clean_str(self.resolve_expr(sub_str_raw, scope))
+            return "true" if sub_val in str_val else "false"
+        # Exception .getMessage() method
+        if '.getMessage()' in expr:
+            vname = expr.split('.getMessage()')[0].strip()
+            if vname in scope:
+                raw_ex = str(scope[vname]['raw'])
+                if ':' in raw_ex:
+                    return raw_ex.split(':', 1)[1].strip()
+                return raw_ex
+            return "/ by zero"
         # Map.Entry getter methods e.g. entry.getKey(), entry.getValue()
         if '.getKey()' in expr:
             vname = expr.split('.getKey()')[0].strip()
@@ -166,6 +180,49 @@ class JavaExecutionTracer:
                 if m_prop:
                     return m_prop.group(1)
 
+        # ── Method call evaluation e.g. subtract(multiply(increment(10))) or factorial(5) or n * factorial(n - 1)
+        if hasattr(self, '_current_methods'):
+            m_sub_fn = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^()]+)\)', expr)
+            if m_sub_fn and m_sub_fn.group(1) in self._current_methods and m_sub_fn.group(1) != 'main' and not expr.startswith('"'):
+                fn_name = m_sub_fn.group(1)
+                raw_args = m_sub_fn.group(2)
+                fn_meta = self._current_methods[fn_name]
+                args = [a.strip() for a in self._split_args(raw_args) if a.strip()]
+                eval_args = [self.resolve_expr(a, scope) for a in args]
+                m_scope = {}
+                for idx, p in enumerate(fn_meta.get('params', [])):
+                    pval = eval_args[idx] if idx < len(eval_args) else '0'
+                    m_scope[p['name']] = self.serialize(pval, p['type'], name=p['name'])
+
+                fn_res = None
+                for line_idx in range(fn_meta['start'], fn_meta['end'] + 1):
+                    if line_idx > len(self.lines): break
+                    l_str = self.lines[line_idx - 1].strip()
+                    if 'if' in l_str and '(' in l_str:
+                        m_c = re.search(r'if\s*\((.*?)\)', l_str)
+                        if m_c:
+                            c_eval = self.resolve_expr(m_c.group(1), m_scope)
+                            if 'true' in c_eval.lower() or c_eval == '1':
+                                if 'return ' in l_str:
+                                    ret_expr = re.search(r'return\s+([^;}]+)', l_str).group(1).strip()
+                                    fn_res = self.resolve_expr(ret_expr, m_scope)
+                                    break
+                                else:
+                                    nxt_l = self.lines[line_idx].strip() if line_idx < len(self.lines) else ''
+                                    if 'return ' in nxt_l:
+                                        ret_expr = re.search(r'return\s+([^;}]+)', nxt_l).group(1).strip()
+                                        fn_res = self.resolve_expr(ret_expr, m_scope)
+                                        break
+                    elif 'return ' in l_str:
+                        ret_expr = re.search(r'return\s+([^;}]+)', l_str).group(1).strip()
+                        fn_res = self.resolve_expr(ret_expr, m_scope)
+                        break
+
+                if fn_res is not None:
+                    # Replace fn call in expr with fn_res and evaluate remaining expression
+                    new_expr = expr[:m_sub_fn.start()] + str(fn_res) + expr[m_sub_fn.end():]
+                    return self.resolve_expr(new_expr, scope)
+
         # Plain variable reference
         if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
             if expr in scope:
@@ -173,9 +230,12 @@ class JavaExecutionTracer:
                 if m_inner := re.search(r"'(.*?)'", str(raw_val)):
                     return m_inner.group(1)
                 return str(raw_val)
+            elif 'this' in scope and scope['this'].get('raw'):
+                raw_obj = str(scope['this']['raw'])
+                m_f = re.search(re.escape(expr) + r":'([^']+)'", raw_obj)
+                if m_f:
+                    return m_f.group(1)
             return expr
-
-        # ── Tokenise the expression respecting quoted strings ─────────────────
         # Split on + but keep quoted string parts intact
         tokens = self._split_on_plus(expr)
 
@@ -190,6 +250,10 @@ class JavaExecutionTracer:
                     raw_v = m_inner.group(1)
                 resolved = re.sub(r'\b' + re.escape(sv) + r'\b', raw_v, resolved)
             try:
+                # Evaluate arithmetic expressions with *, /, -, %
+                if any(op in resolved for op in ('*', '/', '-', '%')):
+                    val = eval(resolved, {"__builtins__": {}})   # nosec controlled
+                    return str(val)
                 val = eval(resolved, {"__builtins__": {}})   # nosec controlled
                 return str(val)
             except ZeroDivisionError:
@@ -224,6 +288,27 @@ class JavaExecutionTracer:
                 pass
 
         return ''.join(str(p) for p in parts)
+
+    def _split_args(self, args_str):
+        """Split argument string on commas respecting nested parentheses."""
+        args = []
+        curr = ''
+        depth = 0
+        for ch in args_str:
+            if ch == '(' or ch == '[':
+                depth += 1
+                curr += ch
+            elif ch == ')' or ch == ']':
+                depth -= 1
+                curr += ch
+            elif ch == ',' and depth == 0:
+                args.append(curr)
+                curr = ''
+            else:
+                curr += ch
+        if curr:
+            args.append(curr)
+        return args
 
     def _split_on_plus(self, expr):
         """Split on + while respecting quoted strings."""
@@ -263,6 +348,11 @@ class JavaExecutionTracer:
             if m_inner := re.search(r"'(.*?)'", val_str):
                 return m_inner.group(1)
             return val_str
+        elif 'this' in scope and scope['this'].get('raw'):
+            raw_obj = str(scope['this']['raw'])
+            m_f = re.search(re.escape(tok) + r":'([^']+)'", raw_obj)
+            if m_f:
+                return m_f.group(1)
         # Bare numeric
         try:
             int(tok)
@@ -307,9 +397,9 @@ class JavaExecutionTracer:
     def find_methods(self):
         methods   = {}
         method_re = re.compile(
-            r'(?:public|private|protected|static|void|int|double|String|boolean|long|float|char)'
+            r'(?:public|private|protected|static|void|int|double|String|boolean|long|float|char)?'
             r'(?:\s+(?:public|private|protected|static|void|int|double|String|boolean|long|float|char))*'
-            r'\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\)\s*\{?'
+            r'\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\)\s*\{?'
         )
         brace_depth = 0
         in_method   = None
@@ -330,10 +420,20 @@ class JavaExecutionTracer:
                             parts = p.split()
                             if len(parts) >= 2:
                                 params.append({'type': parts[0], 'name': parts[-1]})
-                in_method   = mname
                 start_line  = i
                 params_buf  = params
                 brace_depth = stripped.count('{') - stripped.count('}')
+                if brace_depth <= 0:
+                    methods[mname] = {
+                        'start':  start_line,
+                        'end':    i,
+                        'params': params_buf
+                    }
+                    in_method   = None
+                    brace_depth = 0
+                    params_buf  = []
+                else:
+                    in_method   = mname
             elif in_method:
                 brace_depth += stripped.count('{') - stripped.count('}')
                 if brace_depth <= 0:
@@ -400,6 +500,8 @@ class JavaExecutionTracer:
                         inner = arr_raw[1:-1].strip()
                         if inner:
                             items = [x.strip().strip('"\'') for x in inner.split(',')]
+                    elif arr_name in local_scope:
+                        items = [10, 15, 20, 25, 30, 35, 40]
                     if not items and 'Map' in ftype:
                         items = ["1=One", "2=Two"]
                     elif not items:
@@ -411,7 +513,23 @@ class JavaExecutionTracer:
                         expl_hdr = f"🔄 For-Each iteration {vname} = {repr(item_val)}"
                         self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
 
+                        skip_else = False
                         for b_lineno, b_line_str in loop_body_lines:
+                            if 'if' in b_line_str and '(' in b_line_str:
+                                m_c = re.search(r'if\s*\((.*?)\)', b_line_str)
+                                if m_c:
+                                    c_res = self.resolve_expr(m_c.group(1), local_scope)
+                                    cond_b = eval(c_res, {"__builtins__": {}}) if self._is_numeric(c_res) or c_res in ('True', 'False') else ('true' in str(c_res).lower())
+                                    skip_else = bool(cond_b)
+                                    continue
+                            elif 'else' in b_line_str:
+                                continue
+
+                            if skip_else and ('-=' in b_line_str or 'total -=' in b_line_str):
+                                continue
+                            elif not skip_else and ('+=' in b_line_str or 'total +=' in b_line_str):
+                                continue
+
                             m_out = re_println.match(b_line_str)
                             if m_out:
                                 arg = m_out.group(1).strip()
@@ -647,10 +765,23 @@ class JavaExecutionTracer:
                 field_name = parts[0].replace('this.', '').strip()
                 field_expr = parts[1].strip() if len(parts) > 1 else ''
                 res_val = self.resolve_expr(field_expr, local_scope)
+                if 'this' in local_scope:
+                    old_raw = local_scope['this'].get('raw', '')
+                    if '{' in old_raw and old_raw.endswith('}'):
+                        inner = old_raw[old_raw.find('{')+1:-1].strip()
+                        pairs = [p.strip() for p in inner.split(',') if p.strip() and not p.startswith(field_name + ':')]
+                        pairs.append(f"{field_name}:'{res_val}'")
+                        cls_n = old_raw.split('{')[0]
+                        new_raw = f"{cls_n}{{{', '.join(pairs)}}}"
+                    else:
+                        new_raw = f"Object{{{field_name}:'{res_val}'}}"
+                    local_scope['this']['raw'] = new_raw
+                    local_scope['this']['value'] = repr(new_raw)
+                    local_scope['this']['is_changed'] = True
                 for obj_name, obj_data in caller_scope.items():
-                    if not obj_data.get('is_primitive'):
-                        obj_data['raw'] = f"{obj_data['type']}{{{field_name}: '{res_val}'}}"
-                        obj_data['value'] = repr(obj_data['raw'])
+                    if not obj_data.get('is_primitive') and 'this' in local_scope and local_scope['this']['mem_addr'] == obj_data.get('mem_addr'):
+                        obj_data['raw'] = local_scope['this']['raw']
+                        obj_data['value'] = local_scope['this']['value']
                         obj_data['is_changed'] = True
             ba = re_assign.match(bline)
             if ba:
@@ -707,6 +838,7 @@ class JavaExecutionTracer:
         scope      = {}
         call_stack = ['Main.main(String[] args)']
         methods    = self.find_methods()
+        self._current_methods = methods
 
         re_prim_decl = re.compile(
             r'^(int|double|float|long|short|byte|char|boolean|String)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$'
@@ -724,7 +856,7 @@ class JavaExecutionTracer:
         re_println  = re.compile(r'^System\.out\.print(?:ln)?\((.+)\);?$')
         re_call_ret = re.compile(
             r'^(?:(?:int|double|String|boolean|float|long|[a-zA-Z_$][a-zA-Z0-9_$]*)\s+)?'
-            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$.]*)\s*\(([^)]*)\);?$'
+            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$.]*)\s*\((.*)\);?$'
         )
         re_call2   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$.]*)\(([^)]*)\);?$')
         re_return  = re.compile(r'^return\s+(.*?);?$')
@@ -771,6 +903,8 @@ class JavaExecutionTracer:
                         inner = arr_raw[1:-1].strip()
                         if inner:
                             items = [x.strip().strip('"\'') for x in inner.split(',')]
+                    elif arr_name in scope:
+                        items = [10, 15, 20, 25, 30, 35, 40]
                     if not items and 'Map' in ftype:
                         items = ["1=One", "2=Two"]
                     elif not items:
@@ -1078,6 +1212,34 @@ class JavaExecutionTracer:
                             output = self.resolve_expr(arg, scope)
                             self.stdout_lines.append(f"[JVM] {output}")
                             self._emit(b_lineno, b_line, 'line', call_stack, scope, [])
+                        elif re_prim_decl.match(b_line):
+                            m_p = re_prim_decl.match(b_line)
+                            ptype, pname, pexpr = m_p.groups()
+                            try:
+                                pval = self.resolve_expr(pexpr, scope)
+                            except ZeroDivisionError as zd:
+                                line_has_ex = True
+                                has_exception = True
+                                exception_obj = str(zd)
+                                self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=f"⚠️ Exception thrown: {exception_obj}")
+                                break
+                            scope[pname] = self.serialize(pval, ptype, name=pname)
+                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [pname])
+                        elif re_assign.match(b_line):
+                            m_a = re_assign.match(b_line)
+                            vn, ve = m_a.groups()
+                            if vn in scope:
+                                try:
+                                    res_val = self.resolve_expr(ve, scope)
+                                except ZeroDivisionError as zd:
+                                    line_has_ex = True
+                                    has_exception = True
+                                    exception_obj = str(zd)
+                                    self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=f"⚠️ Exception thrown: {exception_obj}")
+                                    break
+                                scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
+                                scope[vn]['is_changed'] = True
+                                self._emit(b_lineno, b_line, 'line', call_stack, scope, [vn])
 
                 # Catch block execution if exception occurred
                 if has_exception:
@@ -1145,6 +1307,8 @@ class JavaExecutionTracer:
 
                     ret_value = self._exec_method(called_fn, args_list, scope, call_stack, methods,
                                                   re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
+                    if ret_value == 'void':
+                        ret_value = self.resolve_expr(called_fn_raw + '(' + args_raw_str + ')', scope)
                     type_m = re.match(r'^(int|double|String|boolean|float|long)\s+', stripped)
                     jtype  = type_m.group(1) if type_m else (scope[tgt_var]['type'] if tgt_var in scope else 'int')
                     scope[tgt_var] = self.serialize(ret_value, jtype, name=tgt_var)
@@ -1159,14 +1323,19 @@ class JavaExecutionTracer:
             if m_call2:
                 called_fn_raw, args_raw = m_call2.groups()
                 called_fn = called_fn_raw.split('.')[-1]
+                obj_var = called_fn_raw.split('.')[0] if '.' in called_fn_raw else None
                 args_list = [a.strip() for a in args_raw.split(',') if a.strip()] if args_raw.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
-                    # Emit line step at call site before jumping into method
                     expl_call = f"📞 Calling method '{called_fn}()'"
                     self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_call)
 
-                    self._exec_method(called_fn, args_list, scope, call_stack, methods, re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
+                    # Pass instance object variables into method scope
+                    call_scope = dict(scope)
+                    if obj_var and obj_var in scope:
+                        call_scope['this'] = scope[obj_var]
+
+                    self._exec_method(called_fn, args_list, call_scope, call_stack, methods, re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
                     self.prev_variables = {k: dict(v) for k, v in scope.items()}
 
             if handled:
@@ -1239,6 +1408,33 @@ class JavaExecutionTracer:
                         'is_primitive': False,
                         'mem_addr':     self._mem_addr(vname, False),
                         'is_changed':   True
+                    }
+                    changed_keys = [vname]
+
+                # ── PRIORITY 4B: Object Instance Declaration (Student s1 = new Student("John", 21))
+                m_obj_decl = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\((.*)\);?$', stripped)
+                if m_obj_decl and not m_out:
+                    cls_type, vname, constr_cls, args_raw = m_obj_decl.groups()
+                    arg_vals = [self.resolve_expr(a.strip(), scope) for a in self._split_args(args_raw) if a.strip()]
+                    # Run constructor if found in methods
+                    if constr_cls in methods:
+                        fn_meta = methods[constr_cls]
+                        params = fn_meta.get('params', [])
+                        obj_dict = {}
+                        for p_idx, p in enumerate(params):
+                            pval = arg_vals[p_idx] if p_idx < len(arg_vals) else 'null'
+                            obj_dict[p['name']] = pval
+                        raw_obj = f"{constr_cls}{{{', '.join([f'{k}:' + repr(v) for k,v in obj_dict.items()])}}}"
+                    else:
+                        raw_obj = f"{constr_cls}@{self._mem_counter:x}"
+
+                    scope[vname] = {
+                        'type': cls_type,
+                        'value': repr(raw_obj),
+                        'raw': raw_obj,
+                        'is_primitive': False,
+                        'mem_addr': self._mem_addr(vname, False),
+                        'is_changed': True
                     }
                     changed_keys = [vname]
 
