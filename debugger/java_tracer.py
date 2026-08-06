@@ -544,7 +544,19 @@ class JavaExecutionTracer:
                 self._emit(body_lineno - 1, bline, 'line', call_stack, local_scope, [vname])
                 continue
 
-            # Reassignment / Unary ++ / --
+            # Reassignment / Unary ++ / -- / Member field assignment (this.name = name)
+            if bline.startswith('this.') or '.' in bline.split('=')[0]:
+                parts = bline.split('=')
+                field_name = parts[0].replace('this.', '').strip()
+                field_expr = parts[1].strip() if len(parts) > 1 else ''
+                res_val = self.resolve_expr(field_expr, local_scope)
+                # Propagate field assignment back to caller_scope objects
+                for obj_name, obj_data in caller_scope.items():
+                    if not obj_data.get('is_primitive'):
+                        if typeof_val := obj_data.get('raw'):
+                            obj_data['raw'] = f"{obj_data['type']}{{{field_name}: {repr(res_val)}}}"
+                            obj_data['value'] = repr(obj_data['raw'])
+                            obj_data['is_changed'] = True
             ba = re_assign.match(bline)
             if ba:
                 rname, rexpr = ba.groups()
