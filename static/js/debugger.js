@@ -595,29 +595,47 @@ function applyInlineValueHints(upToIdx) {
   if (!model) return;
 
   const totalLines = model.getLineCount();
-  const lineHints  = {};  // lineNumber -> [{name, raw, changed}]
+  const lineHints  = {};  // lineNumber -> [{text, changed, isCond}]
 
   for (let i = 0; i <= upToIdx; i++) {
     const s = debugSteps[i];
-    if (!s || !s.variables) continue;
+    if (!s) continue;
 
     const lineNo  = s.line_number;
     const prevS   = i > 0 ? debugSteps[i - 1] : null;
     const prevVars = prevS ? prevS.variables : {};
 
     const hints = [];
-    for (const [name, vdata] of Object.entries(s.variables)) {
-      if (name.startsWith('__')) continue;
-      if (typeof vdata.raw === 'string' && vdata.raw.startsWith('<')) continue;
 
-      const prevRaw   = prevVars[name] ? prevVars[name].raw : null;
-      const isNew     = !(name in prevVars);
-      const isChanged = prevRaw !== null && prevRaw !== vdata.raw;
+    // 1. Condition evaluation check hints
+    if (s.ai_explanation && (s.ai_explanation.includes('❓') || s.ai_explanation.includes('Checking'))) {
+      let condText = s.ai_explanation;
+      if (condText.length > 70) condText = condText.slice(0, 68) + '…';
+      hints.push({ text: condText, changed: true, isCond: true });
+    }
 
-      if (isNew || isChanged) {
-        let displayVal = String(vdata.raw);
-        if (displayVal.length > 60) displayVal = displayVal.slice(0, 58) + '…';
-        hints.push({ name, raw: displayVal, changed: isChanged });
+    // 2. Variable state updates with previous value tracking (prevVal ➔ newVal)
+    if (s.variables) {
+      for (const [name, vdata] of Object.entries(s.variables)) {
+        if (name.startsWith('__') || name === 'this') continue;
+        if (typeof vdata.raw === 'string' && vdata.raw.startsWith('<')) continue;
+
+        const prevRaw   = prevVars[name] ? prevVars[name].raw : null;
+        const isNew     = !(name in prevVars);
+        const isChanged = prevRaw !== null && prevRaw !== vdata.raw;
+
+        if (isNew || isChanged) {
+          let currVal = String(vdata.raw);
+          if (currVal.length > 40) currVal = currVal.slice(0, 38) + '…';
+
+          if (isChanged && prevRaw !== null) {
+            let pVal = String(prevRaw);
+            if (pVal.length > 20) pVal = pVal.slice(0, 18) + '…';
+            hints.push({ text: `${name}: ${pVal} ➔ ${currVal}`, changed: true, isCond: false });
+          } else {
+            hints.push({ text: `${name} = ${currVal}`, changed: false, isCond: false });
+          }
+        }
       }
     }
 
@@ -640,15 +658,23 @@ function applyInlineValueHints(upToIdx) {
     if (isNaN(lineNo) || lineNo < 1 || lineNo > totalLines) continue;
 
     const maxCol         = model.getLineMaxColumn(lineNo);
-    const parts          = hints.map(h => `${h.name} = ${h.raw}`);
+    const parts          = hints.map(h => h.text);
     const annotationText = '  ⇒  ' + parts.join('   ');
     const className      = `inline-hint-line-${lineNo}`;
     const hasChanged     = hints.some(h => h.changed);
+    const hasCond        = hints.some(h => h.isCond);
 
-    const color  = hasChanged ? '#ffffff'              : '#7dd3fc';
-    const bg     = hasChanged ? '#2563eb'              : 'rgba(13,21,39,0.9)';
-    const border = hasChanged ? '1px solid #60a5fa'   : '1px solid rgba(56,189,248,0.35)';
-    const glow   = hasChanged ? '0 0 12px rgba(37,99,235,0.5)' : 'none';
+    let color  = hasChanged ? '#ffffff'            : '#7dd3fc';
+    let bg     = hasChanged ? '#2563eb'            : 'rgba(13,21,39,0.9)';
+    let border = hasChanged ? '1px solid #60a5fa' : '1px solid rgba(56,189,248,0.35)';
+    let glow   = hasChanged ? '0 0 12px rgba(37,99,235,0.5)' : 'none';
+
+    if (hasCond) {
+      bg     = 'rgba(124, 58, 237, 0.95)'; // violet accent for conditions
+      border = '1px solid #c084fc';
+      color  = '#f3e8ff';
+      glow   = '0 0 14px rgba(168,85,247,0.6)';
+    }
 
     const rule = `.${className}::after { content: ${JSON.stringify(annotationText)}; color: ${color}; background: ${bg}; padding: 2px 10px; border-radius: 6px; margin-left: 16px; font-family: 'Consolas','Fira Code',monospace; font-style: italic; font-weight: 800; font-size: 12px; border: ${border}; box-shadow: ${glow}; display: inline-block; pointer-events: none; letter-spacing: 0.3px; }`;
     cssRules.push(rule);

@@ -443,9 +443,13 @@ class JavaExecutionTracer:
                 while True:
                     if node.control and node.control.condition:
                         cond = self.eval_expr(node.control.condition, scope, call_stack, class_name)
-                        if not self._truthy(cond):
+                        is_true = self._truthy(cond)
+                        self._emit(lineno, line_text, 'line', call_stack, scope, [],
+                                   explanation=f"❓ Checking loop condition '{line_text}' ➔ {'TRUE (Continuing loop)' if is_true else 'FALSE (Exiting loop)'}")
+                        if not is_true:
                             break
-                    self._emit(lineno, line_text, 'line', call_stack, scope, [])
+                    else:
+                        self._emit(lineno, line_text, 'line', call_stack, scope, [])
                     try:
                         body = node.body if isinstance(node.body, list) else [node.body]
                         self._exec_block(body, scope, call_stack, class_name)
@@ -461,9 +465,11 @@ class JavaExecutionTracer:
         elif t == 'WhileStatement':
             while True:
                 cond = self.eval_expr(node.condition, scope, call_stack, class_name)
-                if not self._truthy(cond):
+                is_true = self._truthy(cond)
+                self._emit(lineno, line_text, 'line', call_stack, scope, [],
+                           explanation=f"❓ Checking while condition '{line_text}' ➔ {'TRUE (Looping)' if is_true else 'FALSE (Loop ended)'}")
+                if not is_true:
                     break
-                self._emit(lineno, line_text, 'line', call_stack, scope, [])
                 try:
                     body = node.body if isinstance(node.body, list) else [node.body]
                     self._exec_block(body, scope, call_stack, class_name)
@@ -483,7 +489,10 @@ class JavaExecutionTracer:
                 except BreakSignal:
                     break
                 cond = self.eval_expr(node.condition, scope, call_stack, class_name)
-                if not self._truthy(cond):
+                is_true = self._truthy(cond)
+                self._emit(lineno, line_text, 'line', call_stack, scope, [],
+                           explanation=f"❓ Checking do-while condition '{line_text}' ➔ {'TRUE (Looping)' if is_true else 'FALSE (Loop ended)'}")
+                if not is_true:
                     break
 
         elif t == 'ReturnStatement':
