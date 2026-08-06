@@ -25,6 +25,10 @@ let currentFontSize      = 14;
    MOBILE BLOCKER DISMISS HANDLERS (close button & backdrop click)
 ───────────────────────────────────────────────────────────────── */
 function dismissMobileBlocker() {
+  try {
+    sessionStorage.setItem('mobile_blocker_dismissed', 'true');
+  } catch (e) {}
+
   const blocker = document.getElementById('mobileBlocker');
   if (blocker) {
     blocker.classList.add('dismissed');
@@ -40,6 +44,27 @@ function dismissMobileBlocker() {
 function closeMobileBlocker(event) {
   dismissMobileBlocker();
 }
+
+/* Auto-dismiss blocker if previously dismissed in this browser session */
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    if (sessionStorage.getItem('mobile_blocker_dismissed') === 'true') {
+      dismissMobileBlocker();
+    }
+  } catch (e) {}
+
+  const blocker = document.getElementById('mobileBlocker');
+  if (blocker) {
+    ['click', 'touchstart', 'pointerdown', 'touchend'].forEach(evtType => {
+      blocker.addEventListener(evtType, (e) => {
+        if (e.target === blocker || e.target.classList.contains('dbg-blocker-close') || e.target.classList.contains('dbg-blocker-dismiss-btn')) {
+          e.preventDefault();
+          dismissMobileBlocker();
+        }
+      }, { passive: false });
+    });
+  }
+});
 
 /* ─────────────────────────────────────────────────────────────────
    LESSON / DEFAULT CODE SNIPPETS
