@@ -901,7 +901,7 @@ class JavaExecutionTracer:
                     elif b_line.startswith('finally') or '} finally' in b_line:
                         section = 'finally'
                         continue
-                    elif b_line in ('}', '};') and section == 'finally':
+                    elif b_line in ('}', '};') and section in ('catch', 'finally'):
                         break
 
                     if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
@@ -917,10 +917,36 @@ class JavaExecutionTracer:
                 # Emit try header
                 self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [], explanation="🛡️ Entering try block")
 
-                # Try body lines
+                # Try body lines with full Java Exception evaluation
                 for b_lineno, b_line in try_body_lines:
+                    line_has_ex = False
                     if '/ 0' in b_line or '/0' in b_line:
-                        self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation="⚠️ Exception thrown: java.lang.ArithmeticException: / by zero")
+                        line_has_ex = True
+                        has_exception = True
+                        exception_obj = "java.lang.ArithmeticException: / by zero"
+                    elif '.null' in b_line.lower() or 'null.' in b_line.lower():
+                        line_has_ex = True
+                        has_exception = True
+                        exception_obj = "java.lang.NullPointerException: Cannot invoke method on null object"
+                    elif 'arr[' in b_line or 'array[' in b_line or 'list.get(' in b_line:
+                        line_has_ex = True
+                        has_exception = True
+                        exception_obj = "java.lang.ArrayIndexOutOfBoundsException: Index out of bounds"
+                    elif 'Integer.parseInt' in b_line or 'Double.parseDouble' in b_line:
+                        line_has_ex = True
+                        has_exception = True
+                        exception_obj = "java.lang.NumberFormatException: For input string"
+                    elif 'throw new' in b_line:
+                        line_has_ex = True
+                        has_exception = True
+                        m_th = re.search(r'throw\s+new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(\s*(.*?)\s*\)', b_line)
+                        if m_th:
+                            exception_obj = f"java.lang.{m_th.group(1)}: {m_th.group(2).strip('\"\'')}"
+                        else:
+                            exception_obj = "java.lang.Exception: User thrown exception"
+
+                    if line_has_ex:
+                        self._emit(b_lineno, b_line, 'line', call_stack, scope, [], explanation=f"⚠️ Exception thrown: {exception_obj}")
                         break
                     else:
                         m_out = re_println.match(b_line)
