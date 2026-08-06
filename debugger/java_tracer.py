@@ -24,7 +24,8 @@ from javalang.tree import (
     WhileStatement, ReturnStatement, BinaryOperation, Literal,
     MemberReference, ConstructorDeclaration, StatementExpression,
     BlockStatement, TryStatement, ArrayInitializer, ArrayCreator,
-    Cast, TernaryExpression, This, ArraySelector
+    Cast, TernaryExpression, This, ArraySelector, SuperConstructorInvocation,
+    ExplicitConstructorInvocation, EnhancedForControl
 )
 import re
 
@@ -405,35 +406,52 @@ class JavaExecutionTracer:
                     self._exec_statement(node.else_statement, scope, call_stack, class_name)
 
         elif t == 'ForStatement':
-            # Handle init control (variable decl or expression or VariableDeclaration)
-            if node.control.init:
-                inits = node.control.init if isinstance(node.control.init, list) else [node.control.init]
-                for init_item in inits:
-                    if type(init_item).__name__ == 'VariableDeclaration':
-                        for decl in init_item.declarators:
-                            val = self.eval_expr(decl.initializer, scope, call_stack, class_name) \
-                                if decl.initializer is not None else self._default_value(init_item.type)
-                            self._declare(scope, decl.name, init_item.type, val)
-                    else:
-                        self._exec_statement(init_item, scope, call_stack, class_name)
-
-            while True:
-                if node.control.condition:
-                    cond = self.eval_expr(node.control.condition, scope, call_stack, class_name)
-                    if not self._truthy(cond):
+            if type(node.control).__name__ == 'EnhancedForControl':
+                ctrl = node.control
+                var_decl = ctrl.var
+                var_name = var_decl.declarators[0].name
+                var_type = var_decl.type
+                iterable_val = self.eval_expr(ctrl.iterable, scope, call_stack, class_name)
+                items = iterable_val.items if isinstance(iterable_val, JavaArray) else (iterable_val if isinstance(iterable_val, (list, tuple)) else [])
+                for item in items:
+                    self._declare(scope, var_name, var_type, item)
+                    self._emit(lineno, line_text, 'line', call_stack, scope, [var_name])
+                    try:
+                        body = node.body if isinstance(node.body, list) else [node.body]
+                        self._exec_block(body, scope, call_stack, class_name)
+                    except ContinueSignal:
+                        pass
+                    except BreakSignal:
                         break
-                self._emit(lineno, line_text, 'line', call_stack, scope, [])
-                try:
-                    body = node.body if isinstance(node.body, list) else [node.body]
-                    self._exec_block(body, scope, call_stack, class_name)
-                except ContinueSignal:
-                    pass
-                except BreakSignal:
-                    break
+            else:
+                if node.control and node.control.init:
+                    inits = node.control.init if isinstance(node.control.init, list) else [node.control.init]
+                    for init_item in inits:
+                        if type(init_item).__name__ == 'VariableDeclaration':
+                            for decl in init_item.declarators:
+                                val = self.eval_expr(decl.initializer, scope, call_stack, class_name) \
+                                    if decl.initializer is not None else self._default_value(init_item.type)
+                                self._declare(scope, decl.name, init_item.type, val)
+                        else:
+                            self._exec_statement(init_item, scope, call_stack, class_name)
 
-                if node.control.update:
-                    for up in node.control.update:
-                        self.eval_expr(up, scope, call_stack, class_name)
+                while True:
+                    if node.control and node.control.condition:
+                        cond = self.eval_expr(node.control.condition, scope, call_stack, class_name)
+                        if not self._truthy(cond):
+                            break
+                    self._emit(lineno, line_text, 'line', call_stack, scope, [])
+                    try:
+                        body = node.body if isinstance(node.body, list) else [node.body]
+                        self._exec_block(body, scope, call_stack, class_name)
+                    except ContinueSignal:
+                        pass
+                    except BreakSignal:
+                        break
+
+                    if node.control and node.control.update:
+                        for up in node.control.update:
+                            self.eval_expr(up, scope, call_stack, class_name)
 
         elif t == 'WhileStatement':
             while True:
@@ -501,6 +519,23 @@ class JavaExecutionTracer:
                 if node.finally_block:
                     f_body = node.finally_block if isinstance(node.finally_block, list) else [node.finally_block]
                     self._exec_block(f_body, scope, call_stack, class_name)
+
+        elif t in ('SuperConstructorInvocation', 'ExplicitConstructorInvocation'):
+            args = [self.eval_expr(a, scope, call_stack, class_name) for a in (node.arguments or [])]
+            cls_node = self.classes.get(class_name)
+            super_name = cls_node.extends.name if (cls_node and cls_node.extends) else class_name
+            ctor = self._find_constructor(super_name, len(args))
+            if ctor:
+                cscope = {}
+                this_obj = scope.get('this', {}).get('_value', NULL)
+                if isinstance(this_obj, JavaObject):
+                    self._declare(cscope, 'this', super_name, this_obj, changed=False)
+                for p, a in zip(ctor.parameters, args):
+                    self._declare(cscope, p.name, p.type, a)
+                try:
+                    self._exec_block(ctor.body, cscope, call_stack, super_name)
+                except ReturnSignal:
+                    pass
 
     # ── Method invocation & execution helpers ───────────────────────────────
 
@@ -580,6 +615,24 @@ class JavaExecutionTracer:
 
         if t == 'MethodInvocation':
             return self._eval_method_invocation(node, scope, call_stack, class_name)
+
+        if t in ('SuperConstructorInvocation', 'ExplicitConstructorInvocation'):
+            args = [self.eval_expr(a, scope, call_stack, class_name) for a in (node.arguments or [])]
+            cls_node = self.classes.get(class_name)
+            super_name = cls_node.extends.name if (cls_node and cls_node.extends) else class_name
+            ctor = self._find_constructor(super_name, len(args))
+            if ctor:
+                cscope = {}
+                this_obj = scope.get('this', {}).get('_value', NULL)
+                if isinstance(this_obj, JavaObject):
+                    self._declare(cscope, 'this', super_name, this_obj, changed=False)
+                for p, a in zip(ctor.parameters, args):
+                    self._declare(cscope, p.name, p.type, a)
+                try:
+                    self._exec_block(ctor.body, cscope, call_stack, super_name)
+                except ReturnSignal:
+                    pass
+            return NULL
 
         if t == 'ClassCreator':
             return self._eval_class_creator(node, scope, call_stack, class_name)
@@ -668,7 +721,16 @@ class JavaExecutionTracer:
             elif base_name in self.static_fields.get(class_name, {}):
                 val = self.static_fields[class_name][base_name]['_value']
             else:
-                raise JavaException("Error", f"cannot find symbol: variable {base_name}")
+                found_static = False
+                curr = class_name
+                while curr and curr in self.classes:
+                    if base_name in self.static_fields.get(curr, {}):
+                        val = self.static_fields[curr][base_name]['_value']
+                        found_static = True
+                        break
+                    curr = self.classes[curr].extends.name if self.classes[curr].extends else None
+                if not found_static:
+                    raise JavaException("Error", f"cannot find symbol: variable {base_name}")
         val = self._apply_selectors(val, node.selectors, scope, call_stack, class_name)
 
         prefixes = node.prefix_operators or []
