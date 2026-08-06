@@ -113,6 +113,24 @@ class JavaExecutionTracer:
             if 'nextBoolean' in expr: return "true"
             return "Kashi"
 
+        # String operations e.g. text.length(), text.toUpperCase(), text.substring(0, 4)
+        if '.length()' in expr:
+            var_name = expr.split('.length()')[0].strip()
+            str_val = self.resolve_expr(var_name, scope)
+            return str(len(str_val.strip('"\'')))
+        if '.toUpperCase()' in expr:
+            var_name = expr.split('.toUpperCase()')[0].strip()
+            str_val = self.resolve_expr(var_name, scope)
+            return str_val.strip('"\'').upper()
+        if '.toLowerCase()' in expr:
+            var_name = expr.split('.toLowerCase()')[0].strip()
+            str_val = self.resolve_expr(var_name, scope)
+            return str_val.strip('"\'').lower()
+        if m_sub := re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.substring\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)', expr):
+            vname, start_idx, end_idx = m_sub.groups()
+            str_val = self.resolve_expr(vname, scope).strip('"\'')
+            return str_val[int(start_idx):int(end_idx)]
+
         # Java method calls on object instances (s.getName() -> field value)
         m_getter = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\.get([a-zA-Z0-9_$]+)\s*\(\s*\)$', expr)
         if m_getter:
@@ -842,8 +860,16 @@ class JavaExecutionTracer:
             # ── PRIORITY 3: System.out.println / System.out.print ─────────────
             m_out = re_println.match(stripped)
             if m_out:
-                arg    = m_out.group(1).strip()
-                output = self.resolve_expr(arg, scope)
+                arg = m_out.group(1).strip()
+                # If arg contains a method call e.g. square(5) or p.add(10,20)
+                m_sub_fn = re.match(r'^(?:[a-zA-Z_$][a-zA-Z0-9_$]*\.)?([a-zA-Z_$][a-zA-Z0-9_$]*)\(([^)]*)\)$', arg)
+                if m_sub_fn and m_sub_fn.group(1) in methods and m_sub_fn.group(1) != 'main':
+                    fn_name = m_sub_fn.group(1)
+                    f_args = [a.strip() for a in m_sub_fn.group(2).split(',') if a.strip()] if m_sub_fn.group(2).strip() else []
+                    output = self._exec_method(fn_name, f_args, scope, call_stack, methods,
+                                              re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
+                else:
+                    output = self.resolve_expr(arg, scope)
                 self.stdout_lines.append(f"[JVM] {output}")
 
             # ── PRIORITY 4: Primitive variable declaration ─────────────────────
