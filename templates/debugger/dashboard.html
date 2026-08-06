@@ -96,6 +96,17 @@
 </style>
 
 <script>
+  function goBackToPreviousPage(evt) {
+    if (evt) {
+      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
+    }
+    if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  }
+
   function forceCloseMobileBlocker(evt) {
     if (evt) {
       try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
@@ -107,9 +118,9 @@
   }
 </script>
 
-<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)">
+<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="goBackToPreviousPage(event)" ontouchstart="goBackToPreviousPage(event)">
   <div class="mobile-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
-    <button class="mobile-blocker-x" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)" title="Close warning">✕</button>
+    <button class="mobile-blocker-x" onclick="goBackToPreviousPage(event)" ontouchstart="goBackToPreviousPage(event)" title="Go back to previous page">✕</button>
     <div style="font-size:42px; margin-bottom:12px;">🖥️</div>
     <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 8px;">Desktop Recommended</h2>
     <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 16px;">
