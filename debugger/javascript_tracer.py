@@ -170,16 +170,18 @@ class JavaScriptExecutionTracer:
 
         # ── Handle method calls embedded in expressions (e.g. names.join(", ")) ──────
         resolved_expr = expr
-        resolved_expr = re.sub(
-            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.join\(([^)]*)\)',
-            lambda m: f'"{self.js_resolve(m.group(0), scope)}"',
-            resolved_expr
-        )
-        resolved_expr = re.sub(
-            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.length',
-            lambda m: str(self.js_resolve(m.group(0), scope)),
-            resolved_expr
-        )
+        # ── Array element indexing arr[idx] ──────────────────────────────
+        m_arr_idx = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[(.*?)\]$', expr)
+        if m_arr_idx:
+            arr_n, idx_e = m_arr_idx.groups()
+            if arr_n in scope:
+                try:
+                    idx_val = int(float(self.js_resolve(idx_e, scope)))
+                    items = self._parse_array_items(scope[arr_n]['raw'])
+                    if 0 <= idx_val < len(items):
+                        return items[idx_val]
+                except Exception:
+                    pass
 
         # ── String concat with + ───────────────────────────────────────────
         # Build a resolved copy by substituting variables for eval
@@ -291,13 +293,6 @@ class JavaScriptExecutionTracer:
             return f"📞 Called function '{fn_name}()' — new execution context pushed onto the Call Stack."
         if event == 'return':
             return f"↩ Returned from '{fn_name}()' — execution context popped. Return value: {ret_val}"
-        new_vars = [k for k in changed if k not in self.prev_variables]
-        if new_vars:
-            details = ', '.join([f"'{k}' = {scope[k]['raw']}" for k in new_vars if k in scope])
-            return f"✨ Declared variable(s): {details}"
-        if changed:
-            details = ', '.join([f"'{k}' → {scope[k]['raw']}" for k in changed if k in scope])
-            return f"🔄 Updated in memory: {details}"
         if any(kw in line_text for kw in ('if ', 'if(', 'for ', 'for(', 'while ', 'while(')):
             sub = line_text
             for k, vdata in sorted(scope.items(), key=lambda x: len(x[0]), reverse=True):
@@ -312,11 +307,19 @@ class JavaScriptExecutionTracer:
                     if 0 <= idx < len(items): return items[idx]
                 except Exception: pass
                 return match.group(0)
+            sub = re.sub(r'(\d+)\s*\+\s*(\d+)', lambda m: str(int(m.group(1)) + int(m.group(2))), sub)
             sub = re.sub(r'(\[[^\]]+\])\[(\d+)\]', _eval_arr_access, sub)
             sub = sub.rstrip('{').rstrip(';').strip()
             return f"❓ Condition ({sub})"
-        if 'console.log' in line_text:
-            return f"📤 console.log() — output sent to terminal."
+        new_vars = [k for k in changed if k not in self.prev_variables]
+        if new_vars:
+            details = ', '.join([f"'{k}' = {scope[k]['raw']}" for k in new_vars if k in scope])
+            return f"✨ Declared variable(s): {details}"
+        if changed:
+            details = ', '.join([f"'{k}' → {scope[k]['raw']}" for k in changed if k in scope])
+            return f"🔄 Updated in memory: {details}"
+        if 'console.log' in line_text or 'process.stdout.write' in line_text:
+            return f"📤 Output sent to terminal."
         return f"▶ Executed: '{line_text}'"
 
     # ─── Core Execute ─────────────────────────────────────────────────────────
@@ -483,10 +486,192 @@ class JavaScriptExecutionTracer:
                         local_scope[param] = self.serialize_val(resolved, name=param, scope=local_scope)
 
                     ret_value = 'undefined'
-                    for body_lineno in range(fn_info['start'] + 1, fn_info['end']):
+                    b_idx = fn_info['start']
+                    while b_idx < fn_info['end']:
+                        b_idx += 1
+                        body_lineno = b_idx
                         body_line = self.lines[body_lineno - 1].strip()
                         if not body_line or body_line in ('{', '}', '};') or body_line.startswith('//'):
                             continue
+
+                        # Nested for loops inside function body
+                        if body_line.startswith('for ') or body_line.startswith('for('):
+                            m_for = re.search(r'for\s*\(\s*(?:let|var|const)?\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.*?);\s*\1\s*(<=|<|>=|>|!=)\s*(.*?);\s*(.+?)\)', body_line)
+                            m_of = re.search(r'for\s*\(\s*(?:let|var|const)?\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s+of\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\)', body_line)
+                            if m_for:
+                                vname, start_expr, op, end_expr, incr_expr = m_for.groups()
+                                start_val = int(float(self.js_resolve(start_expr, local_scope)))
+                                end_val = int(float(self.js_resolve(end_expr, local_scope)))
+                                step_val = -1 if ('--' in incr_expr or '-=' in incr_expr) else 1
+                                if op == '<=': iter_range = range(start_val, end_val + 1, step_val)
+                                elif op == '<': iter_range = range(start_val, end_val, step_val)
+                                else: iter_range = range(start_val, end_val + 1, step_val)
+
+                                sub_idx = body_lineno
+                                l_brace = body_line.count('{') - body_line.count('}')
+                                inner_lines = []
+                                while sub_idx < fn_info['end'] and l_brace > 0:
+                                    sub_line = self.lines[sub_idx].strip()
+                                    sub_idx += 1
+                                    l_brace += sub_line.count('{') - sub_line.count('}')
+                                    if sub_line and sub_line not in ('{', '}', '};') and not sub_line.startswith('//'):
+                                        inner_lines.append((sub_idx, sub_line))
+
+                                for iter_val in list(iter_range)[:50]:
+                                    local_scope[vname] = self.serialize_val(str(iter_val), name=vname, scope=local_scope)
+                                    expl = self.explain('line', body_lineno, body_line, local_scope, [vname])
+                                    self._emit(body_lineno, body_line, 'line', call_stack, local_scope, [vname], explanation=expl)
+                                    
+                                    s_idx = 0
+                                    while s_idx < len(inner_lines):
+                                        s_no, s_line = inner_lines[s_idx]
+                                        s_idx += 1
+                                        if s_line.startswith('for ') or s_line.startswith('for('):
+                                            m_inner_for = re.search(r'for\s*\(\s*(?:let|var|const)?\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.*?);\s*\1\s*(<=|<|>=|>|!=)\s*(.*?);\s*(.+?)\)', s_line)
+                                            if m_inner_for:
+                                                in_vname, in_start, in_op, in_end, in_incr = m_inner_for.groups()
+                                                in_s_val = int(float(self.js_resolve(in_start, local_scope)))
+                                                in_e_val = int(float(self.js_resolve(in_end, local_scope)))
+                                                in_step = -1 if ('--' in in_incr or '-=' in in_incr) else 1
+                                                in_range = range(in_s_val, in_e_val, in_step) if in_op == '<' else range(in_s_val, in_e_val + 1, in_step)
+                                                
+                                                # Collect nested inner block
+                                                nested_block = []
+                                                n_brace = s_line.count('{') - s_line.count('}')
+                                                while s_idx < len(inner_lines) and n_brace > 0:
+                                                    n_no, n_line = inner_lines[s_idx]
+                                                    s_idx += 1
+                                                    n_brace += n_line.count('{') - n_line.count('}')
+                                                    if n_line and n_line not in ('{', '}', '};') and not n_line.startswith('//'):
+                                                        nested_block.append((n_no, n_line))
+                                                
+                                                for in_val in list(in_range)[:50]:
+                                                    local_scope[in_vname] = self.serialize_val(str(in_val), name=in_vname, scope=local_scope)
+                                                    expl_in_for = self.explain('line', s_no, s_line, local_scope, [in_vname])
+                                                    self._emit(s_no, s_line, 'line', call_stack, local_scope, [in_vname], explanation=expl_in_for)
+                                                    
+                                                    # Check if condition e.g. if (arr[j] > arr[j + 1])
+                                                    cond_holds = True
+                                                    for n_no, n_line in nested_block:
+                                                        if n_line.startswith('if ') or n_line.startswith('if('):
+                                                            expl_if = self.explain('line', n_no, n_line, local_scope, [])
+                                                            self._emit(n_no, n_line, 'line', call_stack, local_scope, [], explanation=expl_if)
+                                                            m_if_cond = re.search(r'if\s*\((.*?)\)', n_line)
+                                                            if m_if_cond:
+                                                                c_expr = m_if_cond.group(1)
+                                                                if '>' in c_expr:
+                                                                    left_e, right_e = c_expr.split('>', 1)
+                                                                    l_val = float(self.js_resolve(left_e.strip(), local_scope))
+                                                                    r_val = float(self.js_resolve(right_e.strip(), local_scope))
+                                                                    cond_holds = (l_val > r_val)
+                                                                elif '<' in c_expr:
+                                                                    left_e, right_e = c_expr.split('<', 1)
+                                                                    l_val = float(self.js_resolve(left_e.strip(), local_scope))
+                                                                    r_val = float(self.js_resolve(right_e.strip(), local_scope))
+                                                                    cond_holds = (l_val < r_val)
+                                                        elif cond_holds:
+                                                            m_arr_i = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[(.*?)\]\s*=\s*(.+?)(?:;)?$', n_line)
+                                                            mb_i = re_decl.match(n_line)
+                                                            if m_arr_i:
+                                                                an, ie, ve = m_arr_i.groups()
+                                                                if an in local_scope:
+                                                                    try:
+                                                                        iv = int(float(self.js_resolve(ie, local_scope)))
+                                                                        ne = self.js_resolve(ve, local_scope)
+                                                                        ai = self._parse_array_items(local_scope[an]['raw'])
+                                                                        if 0 <= iv < len(ai):
+                                                                            ai[iv] = ne
+                                                                            local_scope[an] = self.serialize_val("[" + ", ".join(ai) + "]", name=an, scope=local_scope)
+                                                                            local_scope[an]['is_changed'] = True
+                                                                    except Exception: pass
+                                                            elif mb_i:
+                                                                bn, be = mb_i.groups()
+                                                                local_scope[bn] = self.serialize_val(self.js_resolve(be.strip().rstrip(';'), local_scope), name=bn, scope=local_scope)
+                                                            elif re_assign.match(n_line) and not mb_i:
+                                                                ma_i = re_assign.match(n_line)
+                                                                rn, re_x = ma_i.groups()
+                                                                if rn in local_scope:
+                                                                    local_scope[rn] = self.serialize_val(self.js_resolve(re_x.strip().rstrip(';'), local_scope), name=rn, scope=local_scope)
+                                                                    local_scope[rn]['is_changed'] = True
+
+                                                            expl_n = self.explain('line', n_no, n_line, local_scope, [])
+                                                            self._emit(n_no, n_line, 'line', call_stack, local_scope, [], explanation=expl_n)
+                                                continue
+
+                                        mb_i = re_decl.match(s_line)
+                                        m_arr_i = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[(.*?)\]\s*=\s*(.+?)(?:;)?$', s_line)
+                                        if m_arr_i:
+                                            an, ie, ve = m_arr_i.groups()
+                                            if an in local_scope:
+                                                try:
+                                                    iv = int(float(self.js_resolve(ie, local_scope)))
+                                                    ne = self.js_resolve(ve, local_scope)
+                                                    ai = self._parse_array_items(local_scope[an]['raw'])
+                                                    if 0 <= iv < len(ai):
+                                                        ai[iv] = ne
+                                                        local_scope[an] = self.serialize_val("[" + ", ".join(ai) + "]", name=an, scope=local_scope)
+                                                        local_scope[an]['is_changed'] = True
+                                                except Exception: pass
+                                        elif mb_i:
+                                            bn, be = mb_i.groups()
+                                            local_scope[bn] = self.serialize_val(self.js_resolve(be.strip().rstrip(';'), local_scope), name=bn, scope=local_scope)
+                                        elif re_assign.match(s_line) and not mb_i:
+                                            ma_i = re_assign.match(s_line)
+                                            rn, re_x = ma_i.groups()
+                                            if rn in local_scope:
+                                                local_scope[rn] = self.serialize_val(self.js_resolve(re_x.strip().rstrip(';'), local_scope), name=rn, scope=local_scope)
+                                                local_scope[rn]['is_changed'] = True
+
+                                        expl_s = self.explain('line', s_no, s_line, local_scope, [])
+                                        self._emit(s_no, s_line, 'line', call_stack, local_scope, [], explanation=expl_s)
+
+                                b_idx = sub_idx
+                                continue
+                            elif m_of:
+                                vname, arr_name = m_of.groups()
+                                if arr_name in local_scope:
+                                    items = self._parse_array_items(local_scope[arr_name]['raw'])
+                                    b_body_lines = []
+                                    l_brace = body_line.count('{') - body_line.count('}')
+                                    sub_idx = body_lineno
+                                    while sub_idx < fn_info['end'] and l_brace > 0:
+                                        sub_line = self.lines[sub_idx].strip()
+                                        sub_idx += 1
+                                        l_brace += sub_line.count('{') - sub_line.count('}')
+                                        if sub_line and sub_line not in ('{', '}', '};') and not sub_line.startswith('//'):
+                                            b_body_lines.append((sub_idx, sub_line))
+                                    for item in items:
+                                        local_scope[vname] = self.serialize_val(item, name=vname, scope=local_scope)
+                                        expl = self.explain('line', body_lineno, body_line, local_scope, [vname])
+                                        self._emit(body_lineno, body_line, 'line', call_stack, local_scope, [vname], explanation=expl)
+                                        for s_no, s_line in b_body_lines:
+                                            if 'process.stdout.write' in s_line or 'console.log' in s_line:
+                                                m_arg = re.search(r'\((.*?)\)', s_line)
+                                                if m_arg:
+                                                    l_out = self.resolve_log_args(m_arg.group(1), local_scope)
+                                                    self.stdout_lines.append(f"[JS] {l_out}")
+                                            expl_sub = self.explain('line', s_no, s_line, local_scope, [])
+                                            self._emit(s_no, s_line, 'line', call_stack, local_scope, [], explanation=expl_sub)
+                                    b_idx = sub_idx
+                                    continue
+
+                        # Array element assignment e.g. arr[j] = arr[j + 1]
+                        m_arr_assign = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\[(.*?)\]\s*=\s*(.+?)(?:;)?$', body_line)
+                        if m_arr_assign:
+                            aname, idx_expr, val_expr = m_arr_assign.groups()
+                            if aname in local_scope:
+                                try:
+                                    resolved_idx = self.js_resolve(idx_expr, local_scope)
+                                    idx_val = int(float(resolved_idx))
+                                    new_elem = self.js_resolve(val_expr, local_scope)
+                                    arr_items = self._parse_array_items(local_scope[aname]['raw'])
+                                    if 0 <= idx_val < len(arr_items):
+                                        arr_items[idx_val] = new_elem
+                                        new_raw = "[" + ", ".join(arr_items) + "]"
+                                        local_scope[aname] = self.serialize_val(new_raw, name=aname, scope=local_scope)
+                                        local_scope[aname]['is_changed'] = True
+                                except Exception:
+                                    pass
 
                         # Variable declaration inside function body
                         mb = re_decl.match(body_line)
@@ -496,7 +681,7 @@ class JavaScriptExecutionTracer:
                             local_scope[bname] = self.serialize_val(resolved_val, name=bname, scope=local_scope)
 
                         # Reassignment inside function body (x = x + 1, total = a + b)
-                        elif re_assign.match(body_line) and not mb:
+                        elif re_assign.match(body_line) and not mb and not m_arr_assign:
                             ma = re_assign.match(body_line)
                             rname, rexpr = ma.groups()
                             if rname in local_scope:
@@ -514,7 +699,8 @@ class JavaScriptExecutionTracer:
                             k for k in local_scope
                             if k not in scope or scope.get(k, {}).get('raw') != local_scope[k].get('raw')
                         ]
-                        self._emit(body_lineno, body_line, 'line', call_stack, local_scope, body_changed)
+                        expl = self.explain('line', body_lineno, body_line, local_scope, body_changed)
+                        self._emit(body_lineno, body_line, 'line', call_stack, local_scope, body_changed, explanation=expl)
 
                     # Write return value to assignment target in outer scope
                     if tgt_var:
