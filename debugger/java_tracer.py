@@ -643,10 +643,8 @@ class JavaExecutionTracer:
         call_stack = ['Main.main(String[] args)']
         methods    = self.find_methods()
 
-        # Patterns
         re_prim_decl = re.compile(
-            r'^([a-zA-Z_$][a-zA-Z0-9_$]*)'
-            r'\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$'
+            r'^(int|double|float|long|short|byte|char|boolean|String)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$'
         )
         re_arr_decl = re.compile(
             r'^(int|double|String|long|float)\[\]\s+([a-zA-Z_$][a-zA-Z0-9_$]*)'
@@ -657,7 +655,7 @@ class JavaExecutionTracer:
         )
         re_println  = re.compile(r'^System\.out\.print(?:ln)?\((.+)\);?$')
         re_call_ret = re.compile(
-            r'^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*)\s+)?'
+            r'^(?:(?:int|double|String|boolean|float|long|[a-zA-Z_$][a-zA-Z0-9_$]*)\s+)?'
             r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$.]*)\s*\(([^)]*)\);?$'
         )
         re_call2   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$.]*)\(([^)]*)\);?$')
@@ -824,7 +822,6 @@ class JavaExecutionTracer:
                 args_list = [a.strip() for a in args_raw_str.split(',') if a.strip()] if args_raw_str.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
-                    # Emit line step at call site before jumping into method
                     expl_call = f"📞 Calling method '{called_fn}()'"
                     self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_call)
 
