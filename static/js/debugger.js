@@ -421,15 +421,7 @@ function getCacheKey(lang, codeStr, bps, stdinStr) {
 }
 
 function getTraceFromCache(lang, codeStr, bps, stdinStr) {
-  try {
-    const key = getCacheKey(lang, codeStr, bps, stdinStr);
-    const cached = sessionStorage.getItem(key) || localStorage.getItem(key);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-  } catch (err) {
-    console.warn("Trace cache read error:", err);
-  }
+  // Trace caching disabled to guarantee fresh live execution on every debug run
   return null;
 }
 
