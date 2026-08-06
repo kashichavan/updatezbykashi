@@ -16,6 +16,26 @@
 
 {% block content %}
 
+<!-- ── INLINE DISMISS SCRIPT (guarantees function is ready before touch/click) ── -->
+<script>
+window.dismissMobileBlocker = function(e) {
+  if (e) {
+    try { e.stopPropagation(); e.preventDefault(); } catch (err) {}
+  }
+  try { sessionStorage.setItem('mobile_blocker_dismissed', 'true'); } catch (err) {}
+  var b = document.getElementById('mobileBlocker');
+  if (b) {
+    b.style.setProperty('display', 'none', 'important');
+    b.style.setProperty('visibility', 'hidden', 'important');
+    b.style.setProperty('opacity', '0', 'important');
+    b.style.setProperty('pointer-events', 'none', 'important');
+  }
+};
+if (sessionStorage.getItem('mobile_blocker_dismissed') === 'true') {
+  document.write('<style>#mobileBlocker{display:none !important;}</style>');
+}
+</script>
+
 <!-- ── MOBILE BLOCKER OVERLAY CARD ── -->
 <div class="mobile-blocker" id="mobileBlocker" onclick="dismissMobileBlocker(event)" ontouchstart="dismissMobileBlocker(event)">
   <div class="dbg-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
