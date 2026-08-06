@@ -155,10 +155,10 @@
         VISUAL DEBUGGER
       </span>
       <div>
-        <h1 style="font:800 20px var(--font-serif); margin:0; color:#ffffff;">
+        <h1 style="font:800 20px var(--font-serif); margin:0; color:var(--text-main);">
           Interactive Code Execution &amp; Memory Debugger
         </h1>
-        <p style="color:#94a3b8; font-size:12px; margin:2px 0 0;">
+        <p style="color:var(--text-muted); font-size:12px; margin:2px 0 0;">
           Step through Python, JavaScript &amp; Java line-by-line — watch memory allocation live
         </p>
       </div>
@@ -340,5 +340,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs/loader.min.js"></script>
 
 <!-- Debugger IDE Logic -->
-<script src="{% static 'js/debugger.js' %}?v=v14_force_refresh"></script>
+<script src="{% static 'js/debugger.js' %}?v=v16_light_theme_fix"></script>
 {% endblock %}
