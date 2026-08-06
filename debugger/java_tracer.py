@@ -270,8 +270,58 @@ class JavaExecutionTracer:
             if re.match(r'^(?:public|private|protected|static)\s+', bline) and '(' in bline:
                 continue
 
-            # Support for-loop unrolling inside static method
+            # Support for-each loop unrolling (e.g. for (String lang : langs))
             if bline.startswith('for ') or bline.startswith('for('):
+                m_fe = re.search(r'for\s*\(\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', bline)
+                if m_fe:
+                    ftype, vname, arr_name = m_fe.groups()
+                    hdr_lineno = body_lineno - 1
+
+                    loop_body_lines = []
+                    loop_brace = bline.count('{') - bline.count('}')
+                    curr_idx = body_lineno
+                    while curr_idx < fn_info['end'] and loop_brace > 0:
+                        b_line = self.lines[curr_idx - 1].strip()
+                        curr_idx += 1
+                        loop_brace += b_line.count('{') - b_line.count('}')
+                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                            loop_body_lines.append((curr_idx - 1, b_line))
+
+                    # Parse items from scope array
+                    arr_raw = local_scope.get(arr_name, {}).get('raw', '[]')
+                    items = []
+                    if arr_raw.startswith('[') and arr_raw.endswith(']'):
+                        inner = arr_raw[1:-1].strip()
+                        if inner:
+                            items = [x.strip().strip('"\'') for x in inner.split(',')]
+
+                    for item_val in items[:50]:
+                        local_scope[vname] = self.serialize(item_val, ftype, name=vname)
+                        local_scope[vname]['is_changed'] = True
+                        expl_hdr = f"🔄 For-Each iteration {vname} = {repr(item_val)}"
+                        self._emit(hdr_lineno, bline, 'line', call_stack, local_scope, [vname], explanation=expl_hdr)
+
+                        for b_lineno, b_line_str in loop_body_lines:
+                            m_out = re_println.match(b_line_str)
+                            if m_out:
+                                arg = m_out.group(1).strip()
+                                output = self.resolve_expr(arg, local_scope)
+                                self.stdout_lines.append(f"[JVM] {output}")
+                            elif re_assign.match(b_line_str):
+                                m_a = re_assign.match(b_line_str)
+                                vn, ve = m_a.groups()
+                                if vn in local_scope:
+                                    res_val = self.resolve_expr(ve, local_scope)
+                                    local_scope[vn] = self.serialize(res_val, local_scope[vn]['type'], name=vn)
+                                    local_scope[vn]['is_changed'] = True
+
+                            expl = self.explain('line', b_lineno, b_line_str, local_scope, [vname])
+                            self._emit(b_lineno, b_line_str, 'line', call_stack, local_scope, [vname], explanation=expl)
+
+                    body_lineno = curr_idx
+                    continue
+
+                # Support indexed for-loop unrolling
                 m_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+|[a-zA-Z_$][a-zA-Z0-9_$]*)\s*;\s*(.+?)\)', bline)
                 if m_for:
                     vname, start_val, op, end_val_raw, incr_expr = m_for.groups()
