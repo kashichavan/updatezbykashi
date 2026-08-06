@@ -210,6 +210,19 @@ class JavaExecutionTracer:
             except Exception:
                 pass
 
+        # Comparison or logical expression e.g. marks >= 90 or age + 1 > 18
+        if any(op in expr for op in ('>=', '<=', '==', '!=', '>', '<')):
+            rebuilt = expr
+            for sv, sdata in sorted(scope.items(), key=lambda x: -len(x[0])):
+                raw_v = str(sdata['raw'])
+                if m_inner := re.search(r"'(.*?)'", raw_v):
+                    raw_v = m_inner.group(1)
+                rebuilt = re.sub(r'\b' + re.escape(sv) + r'\b', raw_v, rebuilt)
+            try:
+                return str(eval(rebuilt, {"__builtins__": {}}))  # nosec
+            except Exception:
+                pass
+
         return ''.join(str(p) for p in parts)
 
     def _split_on_plus(self, expr):
@@ -267,12 +280,10 @@ class JavaExecutionTracer:
                 # Integer.parseInt / Double.parseDouble checks
                 if 'Integer.parseInt' in tok or 'Double.parseDouble' in tok:
                     raise ValueError("java.lang.NumberFormatException: For input string")
-                if '.' in tok:
+                elif '.' in tok:
                     parts = tok.split('.')
                     if parts[0] in scope and scope[parts[0]]['raw'] in ('null', 'None'):
                         raise NullPointerException(f"java.lang.NullPointerException: Cannot invoke '{parts[1]}' on null reference")
-                elif re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', tok):
-                    raise NameError(f"java.lang.NullPointerException: Cannot resolve symbol '{tok}'")
 
         # Expression with variable substitution
         resolved = tok
@@ -831,6 +842,36 @@ class JavaExecutionTracer:
                         self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [vname], explanation=expl_hdr)
                         
                         for b_lineno, b_line in loop_body_lines:
+                            # Nested loop handling e.g. for (int j = 1; j <= 3; j++)
+                            m_nest_for = re.search(r'for\s*\(\s*(?:int|double|float|long)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(\d+)\s*;\s*\1\s*(<=|<|>=|>|!=)\s*(\d+)\s*;\s*(.+?)\)', b_line)
+                            if m_nest_for:
+                                j_name, j_start, j_op, j_end, j_incr = m_nest_for.groups()
+                                j_s = int(j_start)
+                                j_e = int(j_end)
+                                j_step = -1 if ('--' in j_incr or '-=' in j_incr) else 1
+                                if j_op == '<=': j_range = range(j_s, j_e + 1, j_step)
+                                elif j_op == '<': j_range = range(j_s, j_e, j_step)
+                                elif j_op == '>=': j_range = range(j_s, j_e - 1, j_step)
+                                else: j_range = range(j_s, j_e + 1, j_step)
+
+                                for j_val in list(j_range)[:50]:
+                                    scope[j_name] = self.serialize(j_val, 'int', name=j_name)
+                                    scope[j_name]['is_changed'] = True
+                                    expl_nest = f"🔄 Inner loop iteration {j_name} = {j_val}"
+                                    self._emit(b_lineno, b_line, 'line', call_stack, scope, [j_name], explanation=expl_nest)
+
+                                    # Execute inner loop body lines
+                                    for in_lineno, in_line in loop_body_lines:
+                                        if in_line.startswith('for') or in_line.startswith('}') or not in_line:
+                                            continue
+                                        m_in_out = re_println.match(in_line)
+                                        if m_in_out:
+                                            arg = m_in_out.group(1).strip()
+                                            output = self.resolve_expr(arg, scope)
+                                            self.stdout_lines.append(f"[JVM] {output}")
+                                            self._emit(in_lineno, in_line, 'line', call_stack, scope, [vname, j_name])
+                                continue
+
                             m_out = re_println.match(b_line)
                             if m_out:
                                 arg = m_out.group(1).strip()
@@ -852,8 +893,8 @@ class JavaExecutionTracer:
                     i = curr_idx
                     continue
 
-            # ── Control Flow: If / Else Branching ─────────────────────────────
-            if stripped.startswith('if ') or stripped.startswith('if(') or stripped.startswith('else if'):
+            # ── Control Flow: If / Else-If / Else Branching ───────────────────
+            if stripped.startswith('if ') or stripped.startswith('if(') or 'else if' in stripped or stripped.startswith('} else if'):
                 m_cond = re.search(r'if\s*\((.*?)\)', stripped)
                 cond_val = True
                 if m_cond:
@@ -864,21 +905,69 @@ class JavaExecutionTracer:
                     except Exception:
                         cond_val = 'true' in str(resolved_cond).lower()
 
-                expl_if = f"❓ Evaluating condition '{stripped}' ➔ {'TRUE (taking IF branch)' if cond_val else 'FALSE (skipping to ELSE)'}"
+                expl_if = f"❓ Evaluating condition '{stripped}' ➔ {'TRUE (taking branch)' if cond_val else 'FALSE (skipping branch)'}"
                 self._emit(i - 1, stripped, 'line', call_stack, scope, [], explanation=expl_if)
 
                 if not cond_val:
-                    # Skip IF body lines to jump straight to ELSE / ELSE IF
+                    # Skip this IF body to reach next ELSE IF or ELSE
                     brace_cnt = stripped.count('{') - stripped.count('}')
-                    if brace_cnt == 0 and i < main_end and '{' in self.lines[i - 1]:
-                        brace_cnt = 1
-                    while i < main_end and brace_cnt > 0:
+                    if brace_cnt <= 0: brace_cnt = 1
+                    while i <= main_end and brace_cnt > 0:
+                        b_line = self.lines[i - 1].strip()
+                        if ('else if' in b_line or b_line.startswith('} else')) and brace_cnt == 1:
+                            break
+                        i += 1
+                        brace_cnt += b_line.count('{') - b_line.count('}')
+                else:
+                    # Condition TRUE: execute body line-by-line, then skip all trailing else if/else blocks
+                    body_start = i
+                    brace_cnt = stripped.count('{') - stripped.count('}')
+                    if brace_cnt <= 0: brace_cnt = 1
+                    while i <= main_end and brace_cnt > 0:
                         b_line = self.lines[i - 1].strip()
                         i += 1
                         brace_cnt += b_line.count('{') - b_line.count('}')
+                    # Now advance i past all subsequent else if / else blocks
+                    while i <= main_end:
+                        nxt_line = self.lines[i - 1].strip()
+                        if 'else if' in nxt_line or nxt_line.startswith('} else') or nxt_line.startswith('else'):
+                            bc = nxt_line.count('{') - nxt_line.count('}')
+                            if bc <= 0: bc = 1
+                            while i <= main_end and bc > 0:
+                                bl = self.lines[i - 1].strip()
+                                i += 1
+                                bc += bl.count('{') - bl.count('}')
+                        else:
+                            break
+                    chain_end = i
+                    # Execute body lines between body_start and body end
+                    i = body_start
+                    while i < chain_end and i <= main_end:
+                        l_text = self.lines[i - 1].strip()
+                        if ('else if' in l_text or l_text.startswith('} else') or l_text.startswith('else')) and i > body_start:
+                            i = chain_end
+                            break
+                        i += 1
+                        if not l_text or l_text in ('{', '}', '};') or l_text.startswith('//'):
+                            continue
+                        m_out = re_println.match(l_text)
+                        if m_out:
+                            arg = m_out.group(1).strip()
+                            output = self.resolve_expr(arg, scope)
+                            self.stdout_lines.append(f"[JVM] {output}")
+                            self._emit(i - 1, l_text, 'line', call_stack, scope, [])
+                        elif re_assign.match(l_text):
+                            m_a = re_assign.match(l_text)
+                            vn, ve = m_a.groups()
+                            if vn in scope:
+                                res_val = self.resolve_expr(ve, scope)
+                                scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
+                                scope[vn]['is_changed'] = True
+                                self._emit(i - 1, l_text, 'line', call_stack, scope, [vn])
+                    i = chain_end - 1
                 continue
 
-            if stripped.startswith('else') or stripped.startswith('} else'):
+            if (stripped.startswith('else') or stripped.startswith('} else')) and 'else if' not in stripped:
                 # Look back in self.lines to find the matching 'if' condition and check if it was TRUE
                 prev_idx = i - 2
                 if_was_true = False
