@@ -279,6 +279,24 @@ require(['vs/editor/editor.main'], function () {
       }
     }
   });
+
+  /* ── Interactive stdin Input listener: Enter to auto-submit ── */
+  const stdinElem = document.getElementById('stdinInput');
+  const btnSub    = document.getElementById('btnSubmitInput');
+
+  if (stdinElem) {
+    stdinElem.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter' && !evt.shiftKey) {
+        evt.preventDefault();
+        startDebugging();
+      }
+    });
+  }
+  if (btnSub) {
+    btnSub.addEventListener('click', () => {
+      startDebugging();
+    });
+  }
 });
 
 /* ─────────────────────────────────────────────────────────────────
@@ -395,7 +413,7 @@ function getCacheKey(lang, codeStr, bps, stdinStr) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
-  return `dbg_v9_cache_${hash}`;
+  return `dbg_v10_cache_${hash}`;
 }
 
 function getTraceFromCache(lang, codeStr, bps, stdinStr) {
