@@ -16,21 +16,21 @@
   --bg-app:        #F5F9FF;
   --bg-surface:    #FCFDFF;
   --bg-card:       #FFFFFF;
-  --primary:       #2563EB;
-  --primary-hover: #1D4ED8;
-  --accent:        #60A5FA;
-  --text-main:     #1E293B;
-  --text-muted:    #64748B;
-  --border-subtle: #DBEAFE;
+  --primary:       #1D4ED8;
+  --primary-hover: #1E40AF;
+  --accent:        #3B82F6;
+  --text-main:     #0F172A;
+  --text-muted:    #475569;
+  --border-subtle: #CBD5E1;
   --header-bg:     #EFF6FF;
   --header-text:   #1D4ED8;
-  --badge-bg:      rgba(37,99,235,0.10);
-  --badge-border:  rgba(37,99,235,0.25);
+  --badge-bg:      rgba(37,99,235,0.12);
+  --badge-border:  rgba(37,99,235,0.30);
   --badge-text:    #1D4ED8;
-  --term-bg:       #1E293B;
-  --term-text:     #60A5FA;
-  --pill-bg:       #F8FAFC;
-  --pill-border:   #E2E8F0;
+  --term-bg:       #0F172A;
+  --term-text:     #38BDF8;
+  --pill-bg:       #F1F5F9;
+  --pill-border:   #CBD5E1;
 }
 
 /* 2. VS Code Dark */
@@ -716,7 +716,7 @@
 .var-val-text {
   font-size: 13px;
   font-weight: 900;
-  color: var(--text-main);
+  color: var(--text-main) !important;
   font-family: 'Consolas','Fira Code',monospace;
   letter-spacing: 0.3px;
   word-break: break-all;
@@ -724,11 +724,11 @@
 }
 
 .var-pill-card.changed .var-name-text {
-  color: var(--primary-hover);
+  color: var(--primary);
 }
 
 .var-pill-card.changed .var-val-text {
-  color: var(--primary);
+  color: var(--primary) !important;
   font-weight: 900;
 }
 
