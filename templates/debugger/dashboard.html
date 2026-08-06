@@ -17,14 +17,14 @@
 {% block content %}
 
 <!-- ── MOBILE BLOCKER (phones / tablets) ── -->
-<div class="mobile-blocker" id="mobileBlocker">
-  <div class="dbg-blocker-card">
-    <button class="dbg-blocker-close" onclick="history.back()">✕</button>
+<div class="mobile-blocker" id="mobileBlocker" onclick="closeMobileBlocker(event)">
+  <div class="dbg-blocker-card" onclick="event.stopPropagation()">
+    <button class="dbg-blocker-close" onclick="dismissMobileBlocker()" title="Dismiss warning">✕</button>
     <span class="dbg-blocker-emoji">🖥️</span>
     <h2 class="dbg-blocker-title">Open on Desktop Browser</h2>
     <p class="dbg-blocker-sub">
       The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong>
-      requires a desktop or laptop to work properly.
+      is optimized for desktop screens.
     </p>
     <div class="dbg-blocker-browsers">
       <div class="dbg-browser-badge"><span class="dbg-browser-icon">🌐</span>Chrome</div>
@@ -37,6 +37,9 @@
       📋 Copy the URL <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong>
       and open it on your PC in any browser above.
     </p>
+    <button class="dbg-blocker-dismiss-btn" onclick="dismissMobileBlocker()">
+      Continue on Mobile Anyway →
+    </button>
   </div>
 </div>
 

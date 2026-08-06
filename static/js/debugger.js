@@ -22,6 +22,26 @@ let autoPlayTimer        = null;
 let currentFontSize      = 14;
 
 /* ─────────────────────────────────────────────────────────────────
+   MOBILE BLOCKER DISMISS HANDLERS (close button & backdrop click)
+───────────────────────────────────────────────────────────────── */
+function dismissMobileBlocker() {
+  const blocker = document.getElementById('mobileBlocker');
+  if (blocker) {
+    blocker.style.display = 'none';
+  }
+  const appWrap = document.querySelector('.debugger-app-wrap');
+  if (appWrap) {
+    appWrap.style.setProperty('display', 'flex', 'important');
+  }
+}
+
+function closeMobileBlocker(event) {
+  if (event && event.target && event.target.id === 'mobileBlocker') {
+    dismissMobileBlocker();
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
    LESSON / DEFAULT CODE SNIPPETS
 ───────────────────────────────────────────────────────────────── */
 const LESSONS = {
