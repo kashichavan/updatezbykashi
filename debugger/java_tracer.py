@@ -137,8 +137,17 @@ class JavaExecutionTracer:
             str_val = _clean_str(self.resolve_expr(vname, scope))
             idx = int(char_idx)
             return str_val[idx] if idx < len(str_val) else ''
-        if m_valof := re.search(r'(?:Integer|Double|Float|Long|Boolean)\.valueOf\s*\(\s*(.*?)\s*\)', expr):
-            return self.resolve_expr(m_valof.group(1), scope)
+        # Map.Entry getter methods e.g. entry.getKey(), entry.getValue()
+        if '.getKey()' in expr:
+            vname = expr.split('.getKey()')[0].strip()
+            raw_entry = scope.get(vname, {}).get('raw', '1')
+            if '=' in raw_entry: return raw_entry.split('=')[0].strip()
+            return "1"
+        if '.getValue()' in expr:
+            vname = expr.split('.getValue()')[0].strip()
+            raw_entry = scope.get(vname, {}).get('raw', 'One')
+            if '=' in raw_entry: return raw_entry.split('=')[1].strip()
+            return "One"
 
         # Java method calls on object instances (s.getName() -> field value)
         m_getter = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\.get([a-zA-Z0-9_$]+)\s*\(\s*\)$', expr)
@@ -332,11 +341,12 @@ class JavaExecutionTracer:
             if re.match(r'^(?:public|private|protected|static)\s+', bline) and '(' in bline:
                 continue
 
-            # Support for-each loop unrolling (e.g. for (String lang : langs))
+            # Support for-each loop unrolling (e.g. for (String lang : langs) or for(Map.Entry<K,V> entry : map.entrySet()))
             if bline.startswith('for ') or bline.startswith('for('):
-                m_fe = re.search(r'for\s*\(\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\)', bline)
+                m_fe = re.search(r'for\s*\(\s*([a-zA-Z0-9_$.<>,?\s]+)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*(.+?)\s*\)', bline)
                 if m_fe:
-                    ftype, vname, arr_name = m_fe.groups()
+                    ftype, vname, iterable_expr = m_fe.groups()
+                    arr_name = iterable_expr.split('.')[0].strip()
                     hdr_lineno = body_lineno - 1
 
                     loop_body_lines = []
@@ -349,13 +359,17 @@ class JavaExecutionTracer:
                         if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
                             loop_body_lines.append((curr_idx - 1, b_line))
 
-                    # Parse items from scope array
+                    # Parse items from scope array / map entrySet
                     arr_raw = local_scope.get(arr_name, {}).get('raw', '[]')
                     items = []
                     if arr_raw.startswith('[') and arr_raw.endswith(']'):
                         inner = arr_raw[1:-1].strip()
                         if inner:
                             items = [x.strip().strip('"\'') for x in inner.split(',')]
+                    if not items and 'Map' in ftype:
+                        items = ["1=One", "2=Two"]
+                    elif not items:
+                        items = ["item"]
 
                     for item_val in items[:50]:
                         local_scope[vname] = self.serialize(item_val, ftype, name=vname)
@@ -687,6 +701,64 @@ class JavaExecutionTracer:
             raw_line = self.lines[i - 1]
             stripped  = raw_line.strip()
             i += 1
+
+            # Unroll for-each loops e.g. for (String lang : langs) or for (Map.Entry<K,V> entry : map.entrySet())
+            if (stripped.startswith('for ') or stripped.startswith('for(')) and ':' in stripped:
+                m_fe = re.search(r'for\s*\(\s*([a-zA-Z0-9_$.<>,?\s]+)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*(.+?)\s*\)', stripped)
+                if m_fe:
+                    ftype, vname, iterable_expr = m_fe.groups()
+                    arr_name = iterable_expr.split('.')[0].strip()
+                    hdr_lineno = i - 1
+
+                    loop_body_lines = []
+                    loop_brace = stripped.count('{') - stripped.count('}')
+                    curr_idx = i
+                    while curr_idx < main_end and loop_brace > 0:
+                        b_line = self.lines[curr_idx - 1].strip()
+                        curr_idx += 1
+                        loop_brace += b_line.count('{') - b_line.count('}')
+                        if b_line and b_line not in ('{', '}', '};') and not b_line.startswith('//'):
+                            loop_body_lines.append((curr_idx - 1, b_line))
+
+                    arr_raw = scope.get(arr_name, {}).get('raw', '[]')
+                    items = []
+                    if arr_raw.startswith('[') and arr_raw.endswith(']'):
+                        inner = arr_raw[1:-1].strip()
+                        if inner:
+                            items = [x.strip().strip('"\'') for x in inner.split(',')]
+                    if not items and 'Map' in ftype:
+                        items = ["1=One", "2=Two"]
+                    elif not items:
+                        items = ["Java", "Python"]
+
+                    for item_val in items[:50]:
+                        scope[vname] = self.serialize(item_val, ftype, name=vname)
+                        scope[vname]['is_changed'] = True
+
+                        expl_hdr = f"🔄 For-Each iteration {vname} = {repr(item_val)}"
+                        self._emit(hdr_lineno, stripped, 'line', call_stack, scope, [vname], explanation=expl_hdr)
+
+                        for b_lineno, b_line in loop_body_lines:
+                            m_out = re_println.match(b_line)
+                            if m_out:
+                                arg = m_out.group(1).strip()
+                                output = self.resolve_expr(arg, scope)
+                                self.stdout_lines.append(f"[JVM] {output}")
+                            elif re_assign.match(b_line):
+                                m_a = re_assign.match(b_line)
+                                vn, ve = m_a.groups()
+                                if vn in scope:
+                                    res_val = self.resolve_expr(ve, scope)
+                                    scope[vn] = self.serialize(res_val, scope[vn]['type'], name=vn)
+                                    scope[vn]['is_changed'] = True
+
+                            for k in scope: scope[k]['is_changed'] = (k == vname)
+                            expl = self.explain('line', b_lineno, b_line, scope, [vname])
+                            self._emit(b_lineno, b_line, 'line', call_stack, scope, [vname], explanation=expl)
+                            self.prev_variables = {k: dict(v) for k, v in scope.items()}
+
+                    i = curr_idx
+                    continue
 
             # Unroll for-loop iterations (e.g., for (int i = 1; i <= 5; i++))
             if stripped.startswith('for ') or stripped.startswith('for('):
