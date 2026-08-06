@@ -160,6 +160,7 @@ class PythonExecutionTracer:
 
     def trace_callback(self, frame, event, arg):
         """Callback handler invoked by sys.settrace on every execution step."""
+        self._last_frame = frame
         if frame.f_code.co_filename != '<string>':
             return self.trace_callback
 
@@ -265,18 +266,18 @@ class PythonExecutionTracer:
             # Flush final post-execution variable state & remaining stdout into the last step
             if self.steps:
                 self.steps[-1]['stdout'] = self.stdout_buffer.getvalue()
-                # If there are steps, update last step's variables with final frame state
-                if 'frame' in locals() and frame:
+                if hasattr(self, '_last_frame') and self._last_frame:
                     final_vars = {}
-                    for k, v in frame.f_locals.items():
+                    for k, v in self._last_frame.f_locals.items():
                         if not k.startswith('__'):
                             ser = self.serialize_variable(k, v)
                             if ser is not None:
                                 final_vars[k] = ser
                     prev_step_vars = self.steps[-2]['variables'] if len(self.steps) > 1 else {}
                     for k, v in final_vars.items():
-                        if k not in prev_step_vars or prev_step_vars[k].get('raw') != v.get('raw'):
-                            v['is_changed'] = True
+                        is_new = k not in prev_step_vars
+                        is_changed = not is_new and prev_step_vars[k].get('raw') != v.get('raw')
+                        v['is_changed'] = is_new or is_changed
                     self.steps[-1]['variables'] = final_vars
 
         exec_time = round((time.time() - start_time) * 1000, 2)
