@@ -154,6 +154,16 @@ class JavaScriptExecutionTracer:
             vname = expr.split('.toLowerCase()')[0].strip()
             return self.js_resolve(vname, scope).lower()
 
+        # Property access check e.g. b.name or obj.age
+        if '.' in expr and not expr.startswith('Math.'):
+            parts = expr.split('.', 1)
+            obj_name = parts[0].strip()
+            prop_name = parts[1].strip()
+            if obj_name in scope:
+                raw_obj = scope[obj_name].get('raw', '').strip()
+                if raw_obj in ('null', 'undefined'):
+                    raise TypeError(f"Uncaught TypeError: Cannot read properties of {raw_obj} (reading '{prop_name}')")
+
         # ── Variable lookup ────────────────────────────────────────────────
         if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
             return scope.get(expr, {}).get('raw', expr)
@@ -509,58 +519,67 @@ class JavaScriptExecutionTracer:
             if handled:
                 continue
 
-            # ── PRIORITY 3: console.log ────────────────────────────────────
-            m_log = re_log.match(stripped)
-            if m_log:
-                args_str = m_log.group(1)
-                log_output = self.resolve_log_args(args_str, scope)
-                self.stdout_lines.append(f"[JS] {log_output}")
+            has_ex = False
+            try:
+                # ── PRIORITY 3: console.log ────────────────────────────────────
+                m_log = re_log.match(stripped)
+                if m_log:
+                    args_str = m_log.group(1)
+                    log_output = self.resolve_log_args(args_str, scope)
+                    self.stdout_lines.append(f"[JS] {log_output}")
 
-            # ── PRIORITY 4: Variable declaration ──────────────────────────
-            m_decl = re_decl.match(stripped)
-            if m_decl:
-                vname, vexpr = m_decl.groups()
-                resolved = self.js_resolve(vexpr.strip().rstrip(';'), scope)
-                scope[vname] = self.serialize_val(resolved, name=vname, scope=scope)
-                changed_keys = [vname]
-
-            # ── PRIORITY 5: Array .push() ──────────────────────────────────
-            elif re_push.match(stripped):
-                m_push = re_push.match(stripped)
-                arr_name, push_val = m_push.groups()
-                if arr_name in scope:
-                    old_raw = scope[arr_name]['raw'].strip()
-                    resolved_push = self.js_resolve(push_val.strip(), scope)
-                    # Wrap in quotes if it's a string value
-                    if not resolved_push.startswith('[') and not resolved_push.lstrip('-').replace('.','',1).isdigit():
-                        push_token = f'"{resolved_push}"'
-                    else:
-                        push_token = resolved_push
-                    if old_raw.startswith('[') and old_raw.endswith(']'):
-                        inner = old_raw[1:-1].strip()
-                        new_raw = f"[{inner}, {push_token}]" if inner else f"[{push_token}]"
-                    else:
-                        new_raw = f"[{push_token}]"
-                    scope[arr_name] = self.serialize_val(new_raw, name=arr_name, scope=scope)
-                    scope[arr_name]['is_changed'] = True
-                    changed_keys = [arr_name]
-
-            # ── PRIORITY 6: Reassignment (age = age + 1, x += 2) ──────────
-            elif re_assign.match(stripped) and not m_decl:
-                m_assign = re_assign.match(stripped)
-                vname, vexpr = m_assign.groups()
-                if vname in scope:
+                # ── PRIORITY 4: Variable declaration ──────────────────────────
+                m_decl = re_decl.match(stripped)
+                if m_decl:
+                    vname, vexpr = m_decl.groups()
                     resolved = self.js_resolve(vexpr.strip().rstrip(';'), scope)
                     scope[vname] = self.serialize_val(resolved, name=vname, scope=scope)
-                    scope[vname]['is_changed'] = True
                     changed_keys = [vname]
 
+                # ── PRIORITY 5: Array .push() ──────────────────────────────────
+                elif re_push.match(stripped):
+                    m_push = re_push.match(stripped)
+                    arr_name, push_val = m_push.groups()
+                    if arr_name in scope:
+                        old_raw = scope[arr_name]['raw'].strip()
+                        resolved_push = self.js_resolve(push_val.strip(), scope)
+                        # Wrap in quotes if it's a string value
+                        if not resolved_push.startswith('[') and not resolved_push.lstrip('-').replace('.','',1).isdigit():
+                            push_token = f'"{resolved_push}"'
+                        else:
+                            push_token = resolved_push
+                        if old_raw.startswith('[') and old_raw.endswith(']'):
+                            inner = old_raw[1:-1].strip()
+                            new_raw = f"[{inner}, {push_token}]" if inner else f"[{push_token}]"
+                        else:
+                            new_raw = f"[{push_token}]"
+                        scope[arr_name] = self.serialize_val(new_raw, name=arr_name, scope=scope)
+                        scope[arr_name]['is_changed'] = True
+                        changed_keys = [arr_name]
+
+                # ── PRIORITY 6: Reassignment (age = age + 1, x += 2) ──────────
+                elif re_assign.match(stripped) and not m_decl:
+                    m_assign = re_assign.match(stripped)
+                    vname, vexpr = m_assign.groups()
+                    if vname in scope:
+                        resolved = self.js_resolve(vexpr.strip().rstrip(';'), scope)
+                        scope[vname] = self.serialize_val(resolved, name=vname, scope=scope)
+                        scope[vname]['is_changed'] = True
+                        changed_keys = [vname]
+            except Exception as exc:
+                has_ex = True
+                err_msg = str(exc) if 'TypeError' in str(exc) or 'Uncaught' in str(exc) else "TypeError: Cannot read properties of null/undefined"
+                self.stdout_lines.append(f"❌ Uncaught {err_msg}")
+                self._emit(i, stripped, 'exception', call_stack, scope, [], explanation=f"❌ Uncaught {err_msg}")
+                break
+
             # ── Emit step ──────────────────────────────────────────────────
-            for k in scope:
-                scope[k]['is_changed'] = k in changed_keys
-            explanation = self.explain(event, i, stripped, scope, changed_keys)
-            self._emit(i, stripped, event, call_stack, scope, changed_keys, explanation=explanation)
-            self.prev_variables = dict(scope)
+            if not has_ex:
+                for k in scope:
+                    scope[k]['is_changed'] = k in changed_keys
+                explanation = self.explain(event, i, stripped, scope, changed_keys)
+                self._emit(i, stripped, event, call_stack, scope, changed_keys, explanation=explanation)
+                self.prev_variables = dict(scope)
 
         return {
             'status': 'success',

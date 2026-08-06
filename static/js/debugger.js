@@ -538,8 +538,18 @@ function goToStep(idx) {
   highlightExecutingLines(step.line_number, prevLine);
   applyInlineValueHints(currentStepIdx);
 
-  document.getElementById('aiExplainBanner').innerHTML =
-    `💡 <strong>Line ${step.line_number}:</strong> ${escapeHtml(step.ai_explanation)}`;
+  const banner = document.getElementById('aiExplainBanner');
+  if (step.event_type === 'exception') {
+    banner.style.background = 'rgba(239, 68, 68, 0.15)';
+    banner.style.border = '1px solid #ef4444';
+    banner.style.color = '#fca5a5';
+    banner.innerHTML = `❌ <strong>Line ${step.line_number} Exception:</strong> ${escapeHtml(step.ai_explanation)}`;
+  } else {
+    banner.style.background = '';
+    banner.style.border = '';
+    banner.style.color = '';
+    banner.innerHTML = `💡 <strong>Line ${step.line_number}:</strong> ${escapeHtml(step.ai_explanation)}`;
+  }
 
   renderVariablesCards(step.variables);
   renderCallStack(step.stack_frames);
@@ -564,6 +574,11 @@ function goToStep(idx) {
   const consoleElem = document.getElementById('stdoutConsole');
   if (consoleElem) {
     consoleElem.textContent = streamOutput || '$ Program execution completed.';
+    if (step.event_type === 'exception') {
+      consoleElem.style.color = '#ef4444';
+    } else {
+      consoleElem.style.color = '';
+    }
   }
 
   updateControls();

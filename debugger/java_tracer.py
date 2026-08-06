@@ -192,6 +192,8 @@ class JavaExecutionTracer:
             try:
                 val = eval(resolved, {"__builtins__": {}})   # nosec controlled
                 return str(val)
+            except ZeroDivisionError:
+                raise ZeroDivisionError("java.lang.ArithmeticException: / by zero")
             except Exception:
                 return resolved.strip('"\'')
 
@@ -698,9 +700,17 @@ class JavaExecutionTracer:
         re_call2   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$.]*)\(([^)]*)\);?$')
         re_return  = re.compile(r'^return\s+(.*?);?$')
 
-        main_info  = methods.get('main', None)
-        main_start = main_info['start'] if main_info else 1
-        main_end   = main_info['end']   if main_info else len(self.lines)
+        main_info = methods.get('main', None)
+        if main_info:
+            main_start = main_info['start']
+            main_end   = main_info['end']
+        else:
+            main_start = 1
+            main_end   = len(self.lines) + 1
+            for idx, l in enumerate(self.lines, start=1):
+                if 'main' in l and '(' in l:
+                    main_start = idx
+                    break
 
         i = main_start + 1
         while i < main_end:
@@ -1055,68 +1065,77 @@ class JavaExecutionTracer:
             if handled:
                 continue
 
-            # ── PRIORITY 3: System.out.println / System.out.print ─────────────
-            m_out = re_println.match(stripped)
-            if m_out:
-                arg = m_out.group(1).strip()
-                # If arg contains a method call e.g. square(5) or p.add(10,20)
-                m_sub_fn = re.match(r'^(?:[a-zA-Z_$][a-zA-Z0-9_$]*\.)?([a-zA-Z_$][a-zA-Z0-9_$]*)\(([^)]*)\)$', arg)
-                if m_sub_fn and m_sub_fn.group(1) in methods and m_sub_fn.group(1) != 'main':
-                    fn_name = m_sub_fn.group(1)
-                    f_args = [a.strip() for a in m_sub_fn.group(2).split(',') if a.strip()] if m_sub_fn.group(2).strip() else []
-                    output = self._exec_method(fn_name, f_args, scope, call_stack, methods,
-                                              re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
-                else:
-                    output = self.resolve_expr(arg, scope)
-                self.stdout_lines.append(f"[JVM] {output}")
-
-            # ── PRIORITY 4: Primitive variable declaration ─────────────────────
-            m_decl = re_prim_decl.match(stripped)
-            if m_decl and not m_out:
-                jtype, vname, vexpr = m_decl.groups()
-                resolved = self.resolve_expr(vexpr, scope)
-                scope[vname] = self.serialize(resolved, jtype, name=vname)
-                changed_keys = [vname]
-
-            # ── PRIORITY 5: Array declaration ──────────────────────────────────
-            elif not m_out:
-                m_arr = re_arr_decl.match(stripped)
-                if m_arr:
-                    jtype, vname, items_str = m_arr.groups()
-                    if items_str:
-                        items   = [x.strip() for x in items_str.split(',')]
-                        raw_val = f"[{', '.join(items)}]"
+            has_ex = False
+            try:
+                # ── PRIORITY 3: System.out.println / System.out.print ─────────────
+                m_out = re_println.match(stripped)
+                if m_out:
+                    arg = m_out.group(1).strip()
+                    # If arg contains a method call e.g. square(5) or p.add(10,20)
+                    m_sub_fn = re.match(r'^(?:[a-zA-Z_$][a-zA-Z0-9_$]*\.)?([a-zA-Z_$][a-zA-Z0-9_$]*)\(([^)]*)\)$', arg)
+                    if m_sub_fn and m_sub_fn.group(1) in methods and m_sub_fn.group(1) != 'main':
+                        fn_name = m_sub_fn.group(1)
+                        f_args = [a.strip() for a in m_sub_fn.group(2).split(',') if a.strip()] if m_sub_fn.group(2).strip() else []
+                        output = self._exec_method(fn_name, f_args, scope, call_stack, methods,
+                                                  re_prim_decl, re_arr_decl, re_assign, re_println, re_call_ret, re_call2, re_return)
                     else:
-                        raw_val = f"new {jtype}[]"
-                    is_prim = jtype in self.JAVA_PRIMITIVES
-                    scope[vname] = {
-                        'type':         f"{jtype}[]",
-                        'value':        repr(raw_val),
-                        'raw':          raw_val,
-                        'is_primitive': False,
-                        'mem_addr':     self._mem_addr(vname, False),
-                        'is_changed':   False
-                    }
+                        output = self.resolve_expr(arg, scope)
+                    self.stdout_lines.append(f"[JVM] {output}")
+
+                # ── PRIORITY 4: Primitive variable declaration ─────────────────────
+                m_decl = re_prim_decl.match(stripped)
+                if m_decl and not m_out:
+                    jtype, vname, vexpr = m_decl.groups()
+                    resolved = self.resolve_expr(vexpr, scope)
+                    scope[vname] = self.serialize(resolved, jtype, name=vname)
                     changed_keys = [vname]
 
-                # ── PRIORITY 6: Reassignment (age = age + 1) ──────────────────
-                elif not m_decl:
-                    m_assign = re_assign.match(stripped)
-                    if m_assign:
-                        vname, vexpr = m_assign.groups()
-                        if vname in scope:
-                            old_type = scope[vname]['type']
-                            resolved = self.resolve_expr(vexpr, scope)
-                            scope[vname] = self.serialize(resolved, old_type, name=vname)
-                            scope[vname]['is_changed'] = True
-                            changed_keys = [vname]
+                # ── PRIORITY 5: Array declaration ──────────────────────────────────
+                elif not m_out:
+                    m_arr = re_arr_decl.match(stripped)
+                    if m_arr:
+                        jtype, vname, items_str = m_arr.groups()
+                        if items_str:
+                            items   = [x.strip() for x in items_str.split(',')]
+                            raw_val = f"[{', '.join(items)}]"
+                        else:
+                            raw_val = f"new {jtype}[]"
+                        is_prim = jtype in self.JAVA_PRIMITIVES
+                        scope[vname] = {
+                            'type':         f"{jtype}[]",
+                            'value':        repr(raw_val),
+                            'raw':          raw_val,
+                            'is_primitive': False,
+                            'mem_addr':     self._mem_addr(vname, False),
+                            'is_changed':   False
+                        }
+                        changed_keys = [vname]
+
+                    # ── PRIORITY 6: Reassignment (age = age + 1) ──────────────────
+                    elif not m_decl:
+                        m_assign = re_assign.match(stripped)
+                        if m_assign:
+                            vname, vexpr = m_assign.groups()
+                            if vname in scope:
+                                old_type = scope[vname]['type']
+                                resolved = self.resolve_expr(vexpr, scope)
+                                scope[vname] = self.serialize(resolved, old_type, name=vname)
+                                scope[vname]['is_changed'] = True
+                                changed_keys = [vname]
+            except Exception as exc:
+                has_ex = True
+                err_msg = str(exc) if 'java.lang.' in str(exc) else f"java.lang.ArithmeticException: / by zero"
+                self.stdout_lines.append(f"❌ Exception in thread \"main\" {err_msg}")
+                self._emit(i - 1, stripped, 'exception', call_stack, scope, [], explanation=f"❌ Exception in thread \"main\" {err_msg}")
+                break
 
             # ── Emit normal step ───────────────────────────────────────────────
-            for k in scope:
-                scope[k]['is_changed'] = k in changed_keys
-            explanation = self.explain('line', i - 1, stripped, scope, changed_keys)
-            self._emit(i - 1, stripped, 'line', call_stack, scope, changed_keys, explanation=explanation)
-            self.prev_variables = {k: dict(v) for k, v in scope.items()}
+            if not has_ex:
+                for k in scope:
+                    scope[k]['is_changed'] = k in changed_keys
+                explanation = self.explain('line', i - 1, stripped, scope, changed_keys)
+                self._emit(i - 1, stripped, 'line', call_stack, scope, changed_keys, explanation=explanation)
+                self.prev_variables = {k: dict(v) for k, v in scope.items()}
 
         return {
             'status':            'success',

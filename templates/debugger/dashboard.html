@@ -146,6 +146,17 @@
 
 <div class="debugger-app-wrap">
 
+  <!-- ── 0. TOP RESTRICTION NOTICE BANNER (THEME ADAPTIVE) ── -->
+  <div style="background:var(--badge-bg); border:1px solid var(--badge-border); border-radius:10px; padding:10px 16px; margin-bottom:12px; color:var(--text-main); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+    <span style="display:inline-flex; align-items:center; gap:8px;">
+      <span style="font-size:15px;">ℹ️</span>
+      <span><strong>Sandbox Notice:</strong> Dynamic runtime input (e.g. <code>input()</code> in Python or <code>Scanner</code> in Java) is <strong>not directly supported</strong> in web sandbox mode.</span>
+    </span>
+    <span style="font-size:10px; background:var(--badge-border); color:var(--header-text); padding:3px 10px; border-radius:6px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;">
+      Sandbox Mode
+    </span>
+  </div>
+
   <!-- ── 1. HERO TOP STRIP ── -->
   <div class="debugger-hero-strip" style="padding:10px 18px; margin-bottom:10px;">
     <div style="display:flex; align-items:center; gap:12px; flex:1;">
@@ -228,17 +239,6 @@
         Step 0 / 0
       </span>
     </div>
-  </div>
-
-  <!-- ── TOP RESTRICTION NOTICE BANNER (THEME ADAPTIVE) ── -->
-  <div style="background:var(--badge-bg); border:1px solid var(--badge-border); border-radius:10px; padding:10px 16px; margin-bottom:14px; color:var(--text-main); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-    <span style="display:inline-flex; align-items:center; gap:8px;">
-      <span style="font-size:15px;">ℹ️</span>
-      <span><strong>Sandbox Notice:</strong> Dynamic runtime input (e.g. <code>input()</code> in Python or <code>Scanner</code> in Java) is <strong>not directly supported</strong> in web sandbox mode.</span>
-    </span>
-    <span style="font-size:10px; background:var(--badge-border); color:var(--header-text); padding:3px 10px; border-radius:6px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;">
-      Sandbox Mode
-    </span>
   </div>
 
   <!-- ── 3. AI STEP STORY BANNER ── -->
@@ -340,5 +340,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs/loader.min.js"></script>
 
 <!-- Debugger IDE Logic -->
-<script src="{% static 'js/debugger.js' %}?v=v17_theme_adaptive"></script>
+<script src="{% static 'js/debugger.js' %}?v=v20_all_exceptions_blocked"></script>
 {% endblock %}
