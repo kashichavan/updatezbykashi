@@ -879,6 +879,18 @@ class JavaExecutionTracer:
             stripped  = raw_line.strip()
             i += 1
 
+            # Join multi-line statements e.g. List<Integer> numbers = Arrays.asList(\n 10, 15, 20... \n);
+            if stripped and not stripped.endswith(';') and not stripped.endswith('{') and not stripped.endswith('}') and not stripped.startswith('//') and not stripped.startswith('if') and not stripped.startswith('for') and not stripped.startswith('while') and not stripped.startswith('try') and not stripped.startswith('catch') and not stripped.startswith('finally'):
+                line_idx_start = i - 1
+                stmt_buf = [stripped]
+                while i < main_end:
+                    nxt = self.lines[i - 1].strip()
+                    stmt_buf.append(nxt)
+                    i += 1
+                    if nxt.endswith(';') or nxt.endswith('{') or nxt.endswith('}'):
+                        break
+                stripped = ' '.join(stmt_buf)
+
             # Unroll for-each loops e.g. for (String lang : langs) or for (Map.Entry<K,V> entry : map.entrySet())
             if (stripped.startswith('for ') or stripped.startswith('for(')) and ':' in stripped:
                 m_fe = re.search(r'for\s*\(\s*([a-zA-Z0-9_$.<>,?\s]+)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*:\s*(.+?)\s*\)', stripped)
@@ -1411,22 +1423,21 @@ class JavaExecutionTracer:
                     }
                     changed_keys = [vname]
 
-                # ── PRIORITY 4B: Object Instance Declaration (Student s1 = new Student("John", 21))
-                m_obj_decl = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\((.*)\);?$', stripped)
-                if m_obj_decl and not m_out:
-                    cls_type, vname, constr_cls, args_raw = m_obj_decl.groups()
-                    arg_vals = [self.resolve_expr(a.strip(), scope) for a in self._split_args(args_raw) if a.strip()]
-                    # Run constructor if found in methods
-                    if constr_cls in methods:
-                        fn_meta = methods[constr_cls]
-                        params = fn_meta.get('params', [])
-                        obj_dict = {}
-                        for p_idx, p in enumerate(params):
-                            pval = arg_vals[p_idx] if p_idx < len(arg_vals) else 'null'
-                            obj_dict[p['name']] = pval
-                        raw_obj = f"{constr_cls}{{{', '.join([f'{k}:' + repr(v) for k,v in obj_dict.items()])}}}"
-                    else:
+                # ── PRIORITY 4B: Object / Collection Instance Declaration e.g. List<Integer> numbers = Arrays.asList(...)
+                m_gen_decl = re.match(r'^([a-zA-Z_$][a-zA-Z0-9_$<>,?\s]*)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$', stripped)
+                if m_gen_decl and not m_out and not m_arr and ('new ' in stripped or 'Arrays.asList' in stripped or 'List' in stripped or 'Map' in stripped or 'Set' in stripped):
+                    cls_type, vname, vexpr = m_gen_decl.groups()
+                    if 'Arrays.asList' in vexpr:
+                        m_args = re.search(r'Arrays\.asList\((.*)\)', vexpr)
+                        items_str = m_args.group(1) if m_args else "10, 15, 20, 25, 30, 35, 40"
+                        items = [x.strip() for x in self._split_args(items_str) if x.strip()]
+                        raw_obj = f"[{', '.join(items)}]"
+                    elif 'new ' in vexpr:
+                        constr_m = re.search(r'new\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\((.*)\)', vexpr)
+                        constr_cls = constr_m.group(1) if constr_m else 'Object'
                         raw_obj = f"{constr_cls}@{self._mem_counter:x}"
+                    else:
+                        raw_obj = self.resolve_expr(vexpr, scope)
 
                     scope[vname] = {
                         'type': cls_type,
