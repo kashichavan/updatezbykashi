@@ -590,7 +590,7 @@ class JavaExecutionTracer:
 
         # Patterns
         re_prim_decl = re.compile(
-            r'^(int|double|float|long|short|byte|char|boolean|String)'
+            r'^([a-zA-Z_$][a-zA-Z0-9_$]*)'
             r'\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?);?$'
         )
         re_arr_decl = re.compile(
@@ -602,10 +602,10 @@ class JavaExecutionTracer:
         )
         re_println  = re.compile(r'^System\.out\.print(?:ln)?\((.+)\);?$')
         re_call_ret = re.compile(
-            r'^(?:(?:int|double|String|boolean|float|long|void)\s+)?'
-            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\);?$'
+            r'^(?:(?:[a-zA-Z_$][a-zA-Z0-9_$]*)\s+)?'
+            r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([a-zA-Z_$][a-zA-Z0-9_$.]*)\s*\(([^)]*)\);?$'
         )
-        re_call2   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\(([^)]*)\);?$')
+        re_call2   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$.]*)\(([^)]*)\);?$')
         re_return  = re.compile(r'^return\s+(.*?);?$')
 
         main_info  = methods.get('main', None)
@@ -698,7 +698,8 @@ class JavaExecutionTracer:
             # ── PRIORITY 1: Method call with return-value assignment ───────────
             m_call_ret = re_call_ret.match(stripped)
             if m_call_ret:
-                tgt_var, called_fn, args_raw_str = m_call_ret.groups()
+                tgt_var, called_fn_raw, args_raw_str = m_call_ret.groups()
+                called_fn = called_fn_raw.split('.')[-1]
                 args_list = [a.strip() for a in args_raw_str.split(',') if a.strip()] if args_raw_str.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
@@ -720,7 +721,8 @@ class JavaExecutionTracer:
             # ── PRIORITY 2: Plain method call (no assignment) ─────────────────
             m_call2 = re_call2.match(stripped)
             if m_call2:
-                called_fn, args_raw = m_call2.groups()
+                called_fn_raw, args_raw = m_call2.groups()
+                called_fn = called_fn_raw.split('.')[-1]
                 args_list = [a.strip() for a in args_raw.split(',') if a.strip()] if args_raw.strip() else []
                 if called_fn in methods and called_fn != 'main':
                     handled = True
