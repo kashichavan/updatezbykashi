@@ -231,19 +231,20 @@ class JavaExecutionTracer:
     # ── Method lookup ───────────────────────────────────────────────────────
 
     def _find_method(self, class_name, name, arg_count=None):
-        cls_node = self.classes.get(class_name)
-        if cls_node is None:
-            return None
-        candidates = [m for m in cls_node.body
-                      if isinstance(m, javalang.tree.MethodDeclaration) and m.name == name]
-        if not candidates:
-            return None
-        if arg_count is None:
-            return candidates[0]
-        for m in candidates:
-            if len(m.parameters) == arg_count:
-                return m
-        return candidates[0]
+        curr = class_name
+        while curr and curr in self.classes:
+            cls_node = self.classes[curr]
+            candidates = [m for m in cls_node.body
+                          if isinstance(m, javalang.tree.MethodDeclaration) and m.name == name]
+            if candidates:
+                if arg_count is None:
+                    return candidates[0]
+                for m in candidates:
+                    if len(m.parameters) == arg_count:
+                        return m
+                return candidates[0]
+            curr = cls_node.extends.name if cls_node.extends else None
+        return None
 
     def _find_constructor(self, class_name, arg_count=None):
         cls_node = self.classes.get(class_name)
@@ -553,6 +554,23 @@ class JavaExecutionTracer:
         if t == 'This':
             base = scope.get('this', {}).get('_value', NULL)
             return self._apply_selectors(base, node.selectors, scope, call_stack, class_name)
+
+        if t == 'SuperMemberReference':
+            cls_n = self.classes.get(class_name)
+            super_name = cls_n.extends.name if (cls_n and cls_n.extends) else None
+            if super_name and super_name in self.classes:
+                super_cls = self.classes[super_name]
+                for m in super_cls.body:
+                    if isinstance(m, javalang.tree.FieldDeclaration):
+                        for decl in m.declarators:
+                            if decl.name == node.member:
+                                if decl.initializer is not None:
+                                    return self.eval_expr(decl.initializer, scope, call_stack, super_name)
+                                return self._default_value(m.type)
+            this_obj = scope.get('this', {}).get('_value', NULL)
+            if isinstance(this_obj, JavaObject):
+                return this_obj.fields.get(node.member, NULL)
+            return NULL
 
         if t == 'BinaryOperation':
             return self._eval_binary(node, scope, call_stack, class_name)
@@ -1118,14 +1136,19 @@ class JavaExecutionTracer:
         if cname in self.classes:
             addr = self._new_obj_addr(cname)
             obj = JavaObject(cname, addr)
-            cls_node = self.classes[cname]
-            for member in cls_node.body:
-                if isinstance(member, javalang.tree.FieldDeclaration) and 'static' not in (member.modifiers or []):
-                    for decl in member.declarators:
-                        if decl.initializer is not None:
-                            obj.fields[decl.name] = self.eval_expr(decl.initializer, scope, call_stack, class_name)
-                        else:
-                            obj.fields[decl.name] = self._default_value(member.type)
+            curr = cname
+            class_hierarchy = []
+            while curr and curr in self.classes:
+                class_hierarchy.append(self.classes[curr])
+                curr = self.classes[curr].extends.name if self.classes[curr].extends else None
+            for cls_n in reversed(class_hierarchy):
+                for member in cls_n.body:
+                    if isinstance(member, javalang.tree.FieldDeclaration) and 'static' not in (member.modifiers or []):
+                        for decl in member.declarators:
+                            if decl.initializer is not None:
+                                obj.fields[decl.name] = self.eval_expr(decl.initializer, scope, call_stack, class_name)
+                            else:
+                                obj.fields[decl.name] = self._default_value(member.type)
             ctor = self._find_constructor(cname, len(args))
             if ctor:
                 cscope = {}
