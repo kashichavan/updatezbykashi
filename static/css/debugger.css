@@ -723,6 +723,12 @@
   white-space: pre-wrap;
 }
 
+[data-theme="light-blue"] .var-val-text,
+[data-theme="github-light"] .var-val-text,
+:root:not([data-theme="vscode-dark"]):not([data-theme="github-dark"]) .var-val-text {
+  color: #000000 !important;
+}
+
 .var-pill-card.changed .var-name-text {
   color: var(--primary);
 }
