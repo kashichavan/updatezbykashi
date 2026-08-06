@@ -413,7 +413,7 @@ function getCacheKey(lang, codeStr, bps, stdinStr) {
     hash = ((hash << 5) - hash) + str.charCodeAt(i);
     hash |= 0;
   }
-  return `dbg_v10_cache_${hash}`;
+  return `dbg_v11_cache_${hash}`;
 }
 
 function getTraceFromCache(lang, codeStr, bps, stdinStr) {
@@ -566,6 +566,20 @@ function goToStep(idx) {
   const consoleElem = document.getElementById('stdoutConsole');
   if (consoleElem) {
     consoleElem.textContent = streamOutput || '$ Program execution completed.';
+  }
+
+  // Highlight & focus interactive stdin input box if current line requires user input
+  const lineTxt = (step.line_text || '').toLowerCase();
+  const stdinInput = document.getElementById('stdinInput');
+  if (stdinInput && (lineTxt.includes('input(') || lineTxt.includes('scanner') || lineTxt.includes('.next'))) {
+    stdinInput.style.border = '2px solid #10b981';
+    stdinInput.style.boxShadow = '0 0 16px rgba(16,185,129,0.5)';
+    stdinInput.placeholder = `👉 Line ${step.line_number} requires input! Type value & press Enter ↵...`;
+    stdinInput.focus();
+  } else if (stdinInput) {
+    stdinInput.style.border = 'none';
+    stdinInput.style.boxShadow = 'none';
+    stdinInput.placeholder = 'Type input here and press Enter to auto-run (e.g. Rahul)...';
   }
 
   updateControls();
