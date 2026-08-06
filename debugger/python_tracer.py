@@ -239,7 +239,13 @@ class PythonExecutionTracer:
                 self.stdout_buffer.write(str(prompt))
             if self.stdin_queue:
                 return self.stdin_queue.pop(0)
-            return "User Input"
+            # Smart fallback defaults if user left stdin empty
+            p_str = str(prompt).lower()
+            if 'name' in p_str or 'string' in p_str or 'text' in p_str:
+                return "Rahul"
+            if 'salary' in p_str or 'float' in p_str or 'double' in p_str or 'price' in p_str:
+                return "75000.50"
+            return "25"
 
         import builtins
         old_input = builtins.input
