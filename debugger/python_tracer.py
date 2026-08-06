@@ -2,6 +2,7 @@ import sys
 import io
 import ast
 import time
+import re
 import traceback
 
 class PythonExecutionTracer:
@@ -146,13 +147,7 @@ class PythonExecutionTracer:
             if k in self.prev_variables and self.prev_variables[k].get('raw') != v.get('raw')
         ]
 
-        if new_vars:
-            details = ", ".join([f"'{k}' = {current_vars[k]['raw']}" for k in new_vars])
-            return f"✨ Initialized new variable(s): {details}."
-        elif changed_vars:
-            details = ", ".join([f"'{k}' → {current_vars[k]['raw']}" for k in changed_vars])
-            return f"🔄 Memory updated: {details}."
-        elif any(kw in line_text for kw in ('if ', 'elif ', 'while ', 'for ')):
+        if any(kw in line_text for kw in ('if ', 'elif ', 'while ', 'for ')):
             sub = line_text
             for k, vdata in sorted(current_vars.items(), key=lambda x: len(x[0]), reverse=True):
                 val_str = str(vdata.get('raw'))
@@ -166,9 +161,17 @@ class PythonExecutionTracer:
                     if 0 <= idx < len(items): return items[idx]
                 except Exception: pass
                 return match.group(0)
+            # Evaluate indexing arithmetic first (e.g. 0 + 1 => 1)
+            sub = re.sub(r'(\d+)\s*\+\s*(\d+)', lambda m: str(int(m.group(1)) + int(m.group(2))), sub)
             sub = re.sub(r'(\[[^\]]+\])\[(\d+)\]', _eval_arr_access, sub)
             sub = sub.rstrip(':').strip()
             return f"❓ Condition ({sub})"
+        elif new_vars:
+            details = ", ".join([f"'{k}' = {current_vars[k]['raw']}" for k in new_vars])
+            return f"✨ Initialized new variable(s): {details}."
+        elif changed_vars:
+            details = ", ".join([f"'{k}' → {current_vars[k]['raw']}" for k in changed_vars])
+            return f"🔄 Memory updated: {details}."
         else:
             return f"▶ Executed line {lineno}: '{line_text}'."
 
