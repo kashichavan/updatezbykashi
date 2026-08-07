@@ -676,17 +676,22 @@ body.debugger-has-maximized {
   overflow: hidden !important;
 }
 
+.maximized-full-workspace .debugger-hero-strip,
+.maximized-full-workspace > div:first-child {
+  display: none !important;
+}
+
 .maximized-full-workspace .ide-split-grid {
   flex: 1 !important;
-  height: calc(100vh - 120px) !important;
+  height: calc(100vh - 110px) !important;
 }
 
 .maximized-full-workspace #monacoEditorContainer {
-  height: calc(100vh - 170px) !important;
+  height: calc(100vh - 150px) !important;
 }
 
 .maximized-full-workspace .inspector-column-box {
-  height: calc(100vh - 125px) !important;
+  height: calc(100vh - 110px) !important;
 }
 
 /* ── Active Executing Line ── */
