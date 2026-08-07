@@ -645,7 +645,7 @@ function applyInlineValueHints(upToIdx) {
     const prevStdout = prevS ? (prevS.stdout || '') : '';
     if (curStdout.length > prevStdout.length) {
       let newlyPrinted = curStdout.slice(prevStdout.length).trim();
-      newlyPrinted = newlyPrinted.replace(/^\[JS\]\s*/, '').trim();
+      newlyPrinted = newlyPrinted.replace(/^\[(?:JS|JVM)\]\s*/, '').trim();
       if (newlyPrinted) {
         const firstLinePrint = newlyPrinted.split('\n')[0];
         let cleanPrint = firstLinePrint.length > 50 ? firstLinePrint.slice(0, 48) + '…' : firstLinePrint;

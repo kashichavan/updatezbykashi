@@ -880,18 +880,59 @@ class JavaExecutionTracer:
             args = [self.eval_expr(a, scope, call_stack, class_name) for a in (node.arguments or [])]
             cls_node = self.classes.get(class_name)
             super_name = cls_node.extends.name if (cls_node and cls_node.extends) else class_name
+            this_obj = scope.get('this', {}).get('_value', NULL)
             ctor = self._find_constructor(super_name, len(args))
             if ctor:
                 cscope = {}
-                this_obj = scope.get('this', {}).get('_value', NULL)
                 if isinstance(this_obj, JavaObject):
                     self._declare(cscope, 'this', super_name, this_obj, changed=False)
                 for p, a in zip(ctor.parameters, args):
                     self._declare(cscope, p.name, p.type, a)
+                frame_label = f"{super_name}.<init>({', '.join(_display(a) for a in args)})"
+                call_stack.append(frame_label)
+                self._emit(self._lineno(ctor), self._line_text(ctor, f"{super_name} constructor"), 'call', call_stack, cscope, [], fn_name=f"{super_name}.<init>")
+                # Run instance initializer blocks for super_name
+                snode = self.classes.get(super_name)
+                if snode:
+                    for member in snode.body:
+                        if isinstance(member, list) and not self._is_static_block(member):
+                            init_scope = {}
+                            if isinstance(this_obj, JavaObject):
+                                self._declare(init_scope, 'this', super_name, this_obj, changed=False)
+                            call_stack.append(f"{super_name}.<init-block>")
+                            self._emit(0, f"instance initializer block for {super_name}", 'call', call_stack, init_scope, [], fn_name=f"{super_name}.<init-block>")
+                            try:
+                                self._exec_block(member, init_scope, call_stack, super_name)
+                            except ReturnSignal:
+                                pass
+                            finally:
+                                call_stack.pop()
+                                self._emit(0, f"end of instance initializer for {super_name}", 'return', call_stack, scope, [], fn_name=f"{super_name}.<init-block>")
                 try:
                     self._exec_block(ctor.body, cscope, call_stack, super_name)
                 except ReturnSignal:
                     pass
+                finally:
+                    call_stack.pop()
+                    self._emit(self._lineno(node), f"end of {super_name}.<init>", 'return', call_stack, scope, [], fn_name=f"{super_name}.<init>")
+
+                # Run instance initializer blocks for subclass (class_name) after super(...) completes
+                cnode = self.classes.get(class_name)
+                if cnode:
+                    for member in cnode.body:
+                        if isinstance(member, list) and not self._is_static_block(member):
+                            init_scope = {}
+                            if isinstance(this_obj, JavaObject):
+                                self._declare(init_scope, 'this', class_name, this_obj, changed=False)
+                            call_stack.append(f"{class_name}.<init-block>")
+                            self._emit(0, f"instance initializer block for {class_name}", 'call', call_stack, init_scope, [], fn_name=f"{class_name}.<init-block>")
+                            try:
+                                self._exec_block(member, init_scope, call_stack, class_name)
+                            except ReturnSignal:
+                                pass
+                            finally:
+                                call_stack.pop()
+                                self._emit(0, f"end of instance initializer for {class_name}", 'return', call_stack, scope, [], fn_name=f"{class_name}.<init-block>")
             return NULL
 
         if t in ('ClassCreator', 'InnerClassCreator'):

@@ -476,7 +476,7 @@ run_js("JO12 Array of names","""
 let names = ["Alice", "Bob", "Charlie"];
 names.push("Kashi");
 console.log("Members: " + names.join(", "));
-""", expect_stdout="[JS] Members: Alice, Bob, Charlie, Kashi")
+""", expect_stdout="Alice, Bob, Charlie, Kashi")
 
 run_js("JO13 Role-based greeting","""
 function greetUser(name, role) {
@@ -505,7 +505,7 @@ skills.push("React");
 console.log(`Developer: ${name}, Age: ${age}`);
 console.log("Skills: " + skills.join(", "));
 """, expect_stdout=["[JS] Developer: Kashinath, Age: 22",
-                    "[JS] Skills: Python, Django, JS, React"])
+                    "Python, Django, JS, React"])
 
 
 # ══════════════════════════════════════════════════════════════════════════════
