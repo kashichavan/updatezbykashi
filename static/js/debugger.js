@@ -421,7 +421,13 @@ function getCacheKey(lang, codeStr, bps, stdinStr) {
 }
 
 function getTraceFromCache(lang, codeStr, bps, stdinStr) {
-  // Trace caching disabled to guarantee fresh live execution on every debug run
+  try {
+    const key = getCacheKey(lang, codeStr, bps, stdinStr);
+    const cached = sessionStorage.getItem(key) || localStorage.getItem(key);
+    if (cached) return JSON.parse(cached);
+  } catch (err) {
+    console.warn("Trace cache read error:", err);
+  }
   return null;
 }
 
@@ -671,7 +677,7 @@ function applyInlineValueHints(upToIdx) {
     let glow   = hasChanged ? '0 0 12px rgba(37,99,235,0.5)' : 'none';
 
     if (hasCond) {
-      bg     = 'rgba(124, 58, 237, 0.95)'; // violet accent for conditions
+      bg     = 'rgba(124, 58, 237, 0.95)';
       border = '1px solid #c084fc';
       color  = '#f3e8ff';
       glow   = '0 0 14px rgba(168,85,247,0.6)';
@@ -864,5 +870,33 @@ function escapeHtml(str) {
     .replace(/</g,  '&lt;')
     .replace(/>/g,  '&gt;')
     .replace(/"/g,  '&quot;');
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SECTION FULLSCREEN MAXIMIZE TOGGLE
+───────────────────────────────────────────────────────────────── */
+function toggleSectionMaximize(containerElem) {
+  if (!containerElem) return;
+  const isMaximized = containerElem.classList.contains('maximized-section');
+  
+  // Close any existing maximized sections first
+  document.querySelectorAll('.maximized-section').forEach(el => {
+    el.classList.remove('maximized-section');
+    const btn = el.querySelector('.section-maximize-btn');
+    if (btn) btn.innerHTML = '⛶ Maximize';
+  });
+
+  if (!isMaximized) {
+    containerElem.classList.add('maximized-section');
+    const btn = containerElem.querySelector('.section-maximize-btn');
+    if (btn) btn.innerHTML = '✕ Restore';
+  }
+
+  // Trigger Monaco Editor layout update if editor was inside maximized section
+  setTimeout(() => {
+    if (window.editor && editor.layout) {
+      editor.layout();
+    }
+  }, 100);
 }
 

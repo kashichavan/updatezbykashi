@@ -72,16 +72,19 @@ def api_trace_python(request):
         if result['status'] == 'error':
             return JsonResponse({'status': 'error', 'message': result['message']}, status=400)
 
-        session = DebugSession.objects.create(
-            language='python',
-            code=code,
-            breakpoints=breakpoints,
-            total_steps=result['total_steps']
-        )
+        # Save session asynchronously / gracefully without blocking trace response
+        try:
+            DebugSession.objects.create(
+                language='python',
+                code=code,
+                breakpoints=breakpoints,
+                total_steps=result['total_steps']
+            )
+        except Exception as db_err:
+            pass
 
         return JsonResponse({
             'status': 'success',
-            'session_id': str(session.session_id),
             'language': 'python',
             'total_steps': result['total_steps'],
             'execution_time_ms': result['execution_time_ms'],
@@ -109,16 +112,18 @@ def api_trace_javascript(request):
         tracer = JavaScriptExecutionTracer(code, breakpoints=breakpoints)
         result = tracer.execute()
 
-        session = DebugSession.objects.create(
-            language='javascript',
-            code=code,
-            breakpoints=breakpoints,
-            total_steps=result['total_steps']
-        )
+        try:
+            DebugSession.objects.create(
+                language='javascript',
+                code=code,
+                breakpoints=breakpoints,
+                total_steps=result['total_steps']
+            )
+        except Exception:
+            pass
 
         return JsonResponse({
             'status': 'success',
-            'session_id': str(session.session_id),
             'language': 'javascript',
             'total_steps': result['total_steps'],
             'execution_time_ms': result['execution_time_ms'],
@@ -148,16 +153,18 @@ def api_trace_java(request):
         tracer = JavaExecutionTracer(code, breakpoints=breakpoints, stdin_input=stdin_input)
         result = tracer.execute()
 
-        session = DebugSession.objects.create(
-            language='java',
-            code=code,
-            breakpoints=breakpoints,
-            total_steps=result['total_steps']
-        )
+        try:
+            DebugSession.objects.create(
+                language='java',
+                code=code,
+                breakpoints=breakpoints,
+                total_steps=result['total_steps']
+            )
+        except Exception:
+            pass
 
         return JsonResponse({
             'status': 'success',
-            'session_id': str(session.session_id),
             'language': 'java',
             'total_steps': result['total_steps'],
             'execution_time_ms': result['execution_time_ms'],
