@@ -219,6 +219,7 @@
   </div>
 
   <!-- ── 2. PLAYBACK CONTROLS BAR ── -->
+  <div id="playbackBarPlaceholder" style="display:none;"></div>
   <div class="playback-bar">
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
       <button id="btnStart"    class="btn-start-debug" onclick="startDebugging()">Start Debugging</button>
@@ -358,5 +359,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs/loader.min.js"></script>
 
 <!-- Debugger IDE Logic -->
-<script src="{% static 'js/debugger.js' %}?v=v34_maximize_restore_fix"></script>
+<script src="{% static 'js/debugger.js' %}?v=v35_playback_bar_in_maximized"></script>
 {% endblock %}

@@ -878,7 +878,9 @@ function escapeHtml(str) {
 function toggleSectionMaximize(containerElem) {
   if (!containerElem) return;
   const isMaximized = containerElem.classList.contains('maximized-section');
-  
+  const playbackBar = document.querySelector('.playback-bar');
+  const originalBarPlaceholder = document.getElementById('playbackBarPlaceholder');
+
   // Close any existing maximized sections first
   document.querySelectorAll('.maximized-section').forEach(el => {
     el.classList.remove('maximized-section');
@@ -891,8 +893,17 @@ function toggleSectionMaximize(containerElem) {
     document.body.classList.add('debugger-has-maximized');
     const btn = containerElem.querySelector('.section-maximize-btn');
     if (btn) btn.innerHTML = '✕ Restore';
+
+    // Move playback bar into top of maximized section if available
+    if (playbackBar && originalBarPlaceholder) {
+      containerElem.insertBefore(playbackBar, containerElem.firstChild);
+    }
   } else {
     document.body.classList.remove('debugger-has-maximized');
+    // Restore playback bar back to original position above AI banner
+    if (playbackBar && originalBarPlaceholder) {
+      originalBarPlaceholder.parentNode.insertBefore(playbackBar, originalBarPlaceholder.nextSibling);
+    }
   }
 
   // Trigger Monaco Editor layout update when expanding or restoring

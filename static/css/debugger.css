@@ -634,14 +634,25 @@ body.debugger-has-maximized {
   margin: 0 !important;
 }
 
+.maximized-section .playback-bar {
+  border-radius: 0 !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  margin: 0 !important;
+  padding: 8px 16px !important;
+  box-shadow: none !important;
+}
+
 .maximized-section #monacoEditorContainer {
-  height: calc(100vh - 70px) !important;
+  height: calc(100vh - 125px) !important;
   flex: 1 !important;
 }
 
 .maximized-section .visual-card-body {
-  height: calc(100vh - 70px) !important;
-  max-height: calc(100vh - 70px) !important;
+  height: calc(100vh - 125px) !important;
+  max-height: calc(100vh - 125px) !important;
   flex: 1 !important;
 }
 
