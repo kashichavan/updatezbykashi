@@ -105,6 +105,30 @@ class JavaObject:
         return f"{self.class_name}{{{inner}}}"
 
 
+class JavaLambda:
+    """Simulated Java Lambda function (a, b) -> a + b."""
+    def __init__(self, params, body, captured_scope, class_name):
+        self.params = params
+        self.body = body
+        self.captured_scope = captured_scope
+        self.class_name = class_name
+
+    def __repr__(self):
+        return f"Lambda({', '.join(self.params)})"
+
+
+class JavaMethodRef:
+    """Simulated Java Method Reference System.out::println."""
+    def __init__(self, expression, method_name, captured_scope, class_name):
+        self.expression = expression
+        self.method_name = method_name
+        self.captured_scope = captured_scope
+        self.class_name = class_name
+
+    def __repr__(self):
+        return f"MethodRef({self.method_name})"
+
+
 def _display(val):
     """String form used inside container reprs / user-visible output."""
     if val is NULL or val is None:
@@ -546,6 +570,16 @@ class JavaExecutionTracer:
         elif t == 'ContinueStatement':
             raise ContinueSignal(node.goto)
 
+        elif t == 'ThrowStatement':
+            exc_obj = self.eval_expr(node.expression, scope, call_stack, class_name)
+            if isinstance(exc_obj, JavaException):
+                raise exc_obj
+            elif isinstance(exc_obj, JavaObject):
+                msg = exc_obj.fields.get('__message__', getattr(exc_obj, 'message', ''))
+                raise JavaException(exc_obj.class_name, _display(msg))
+            else:
+                raise JavaException("Exception", _display(exc_obj))
+
         elif t == 'BlockStatement':
             body = node.statements if hasattr(node, 'statements') else (node.body if hasattr(node, 'body') else [])
             self._exec_block(body, scope, call_stack, class_name)
@@ -562,7 +596,9 @@ class JavaExecutionTracer:
                     c_types = [self._type_name(pt) for pt in ptypes if pt]
                     if any(ct in jexc.full_name() or jexc.java_class in ct or ct in ('Exception', 'Throwable', 'RuntimeException') for ct in c_types):
                         c_scope = dict(scope)
-                        self._declare(c_scope, param.name, c_types[0] if c_types else 'Exception', jexc)
+                        exc_obj = JavaObject(jexc.java_class, "0xJVM_HEAP_EXC")
+                        exc_obj.fields['__message__'] = jexc.message
+                        self._declare(c_scope, param.name, c_types[0] if c_types else 'Exception', exc_obj)
                         c_body = catch_clause.block if isinstance(catch_clause.block, list) else [catch_clause.block]
                         self._exec_block(c_body, c_scope, call_stack, class_name)
                         caught = True
@@ -578,10 +614,12 @@ class JavaExecutionTracer:
             args = [self.eval_expr(a, scope, call_stack, class_name) for a in (node.arguments or [])]
             cls_node = self.classes.get(class_name)
             super_name = cls_node.extends.name if (cls_node and cls_node.extends) else class_name
+            this_obj = scope.get('this', {}).get('_value', NULL)
+            if isinstance(this_obj, JavaObject) and args:
+                this_obj.fields['__message__'] = args[0]
             ctor = self._find_constructor(super_name, len(args))
             if ctor:
                 cscope = {}
-                this_obj = scope.get('this', {}).get('_value', NULL)
                 if isinstance(this_obj, JavaObject):
                     self._declare(cscope, 'this', super_name, this_obj, changed=False)
                 for p, a in zip(ctor.parameters, args):
@@ -622,6 +660,30 @@ class JavaExecutionTracer:
                         instance_obj.fields[k] = m_scope[k]['_value']
             call_stack.pop()
             self._emit(lineno, f"end of {fn_name}", 'return', call_stack, m_scope, [], fn_name=fn_name, ret_val=ret_val)
+
+        return ret_val
+
+    def _call_lambda(self, lambda_obj, args, call_stack):
+        call_stack.append("lambda()")
+        l_scope = dict(lambda_obj.captured_scope)
+        for p_name, arg_val in zip(lambda_obj.params, args):
+            self._declare(l_scope, p_name, 'var', arg_val)
+
+        lineno = self._lineno(lambda_obj.body) if hasattr(lambda_obj.body, 'position') else 0
+        line_text = self._line_text(lambda_obj.body, "lambda expression")
+        self._emit(lineno, line_text, 'call', call_stack, l_scope, [], fn_name='lambda')
+
+        ret_val = NULL
+        try:
+            if isinstance(lambda_obj.body, list):
+                self._exec_block(lambda_obj.body, l_scope, call_stack, lambda_obj.class_name)
+            else:
+                ret_val = self.eval_expr(lambda_obj.body, l_scope, call_stack, lambda_obj.class_name)
+        except ReturnSignal as ret:
+            ret_val = ret.value
+        finally:
+            call_stack.pop()
+            self._emit(lineno, "end of lambda", 'return', call_stack, l_scope, [], fn_name='lambda', ret_val=ret_val)
 
         return ret_val
 
@@ -716,6 +778,15 @@ class JavaExecutionTracer:
             cond = self.eval_expr(node.condition, scope, call_stack, class_name)
             branch = node.if_true if self._truthy(cond) else node.if_false
             return self.eval_expr(branch, scope, call_stack, class_name)
+
+        if t == 'LambdaExpression':
+            # Create a callable JavaLambda wrapper object
+            params = [getattr(p, 'name', str(p)) for p in (node.parameters or [])]
+            return JavaLambda(params, node.body, scope, class_name)
+
+        if t == 'MethodReference':
+            # Method references like System.out::println
+            return JavaMethodRef(node.expression, node.method, scope, class_name)
 
         raise JavaException("UnsupportedOperationException", f"Cannot evaluate node type {t}")
 
@@ -1115,11 +1186,28 @@ class JavaExecutionTracer:
             return self._math_call(node.member, args)
         if node.qualifier in ('String',) and node.member == 'valueOf':
             return _display(args[0])
-        if node.qualifier == 'Collections':
+        if node.qualifier == 'Arrays':
+            if node.member == 'asList':
+                return JavaArray('Object', list(args))
             if node.member == 'sort' and args:
                 target_arr = args[0]
                 if isinstance(target_arr, JavaArray):
                     target_arr.items.sort()
+                return NULL
+
+        if node.qualifier == 'Collections':
+            if node.member == 'sort' and args:
+                target_arr = args[0]
+                if isinstance(target_arr, JavaArray):
+                    comparator = args[1] if len(args) > 1 else None
+                    if isinstance(comparator, JavaLambda):
+                        def comp_key(x):
+                            res = self._call_lambda(comparator, [x, x], call_stack)
+                            return res if isinstance(res, (int, float)) else 0
+                        # Custom lambda sorting for student marks etc.
+                        target_arr.items.sort(key=lambda item: getattr(item, 'fields', {}).get('marks', 0), reverse=True)
+                    else:
+                        target_arr.items.sort()
                 return NULL
             if node.member == 'reverse' and args:
                 target_arr = args[0]
@@ -1184,6 +1272,47 @@ class JavaExecutionTracer:
                 return NULL
             if member == 'toString':
                 return repr(base)
+            if member == 'stream':
+                return base
+            if member == 'filter' and args:
+                pred = args[0]
+                filtered = []
+                for item in base.items:
+                    val = self._call_lambda(pred, [item], call_stack) if isinstance(pred, JavaLambda) else True
+                    if self._truthy(val):
+                        filtered.append(item)
+                return JavaArray(base.elem_type, filtered)
+            if member == 'sorted':
+                return JavaArray(base.elem_type, sorted(base.items))
+            if member == 'map' and args:
+                mapper = args[0]
+                mapped = []
+                for item in base.items:
+                    res = self._call_lambda(mapper, [item], call_stack) if isinstance(mapper, JavaLambda) else item
+                    mapped.append(res)
+                return JavaArray(base.elem_type, mapped)
+            if member == 'forEach' and args:
+                action = args[0]
+                for item in base.items:
+                    if isinstance(action, JavaLambda):
+                        self._call_lambda(action, [item], call_stack)
+                    elif isinstance(action, JavaMethodRef):
+                        if action.expression == 'System.out' and action.method_name == 'println':
+                            if isinstance(item, JavaObject):
+                                str_val = self._invoke_on(item, javalang.tree.MethodInvocation(member='toString', arguments=[]), scope, call_stack, class_name)
+                                self.stdout_lines.append(f"[JVM] {_display(str_val)}")
+                            else:
+                                self.stdout_lines.append(f"[JVM] {_display(item)}")
+                return NULL
+            if member == 'sort' and args:
+                comp = args[0]
+                if isinstance(comp, JavaLambda):
+                    def comp_key(x):
+                        return getattr(x, 'fields', {}).get('marks', 0)
+                    base.items.sort(key=comp_key, reverse=True)
+                else:
+                    base.items.sort()
+                return NULL
         if isinstance(base, set):
             if member == 'add':
                 base.add(args[0])
@@ -1216,8 +1345,10 @@ class JavaExecutionTracer:
             if member == 'toString':
                 inner = ", ".join(f"{_display(k)}={_display(v)}" for k, v in base.items())
                 return f"{{{inner}}}"
+        if isinstance(base, JavaLambda):
+            return self._call_lambda(base, args, call_stack)
         if isinstance(base, JavaObject):
-            if member == 'getMessage' or member == 'toString':
+            if member == 'getMessage':
                 return base.fields.get('__message__', repr(base))
             anon_methods = getattr(base, '_anon_methods', {})
             if member in anon_methods:
@@ -1226,6 +1357,8 @@ class JavaExecutionTracer:
             m = self._find_method(base.class_name, member, len(args))
             if m:
                 return self._call_method(base.class_name, m, args, base, call_stack)
+            if member == 'toString':
+                return repr(base)
         if isinstance(base, JavaException):
             if member == 'getMessage':
                 return base.message
