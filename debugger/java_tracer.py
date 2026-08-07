@@ -651,10 +651,16 @@ class JavaExecutionTracer:
                     self._declare(cscope, 'this', super_name, this_obj, changed=False)
                 for p, a in zip(ctor.parameters, args):
                     self._declare(cscope, p.name, p.type, a)
+                frame_label = f"{super_name}.<init>({', '.join(_display(a) for a in args)})"
+                call_stack.append(frame_label)
+                self._emit(self._lineno(ctor), self._line_text(ctor, f"{super_name} constructor"), 'call', call_stack, cscope, [], fn_name=f"{super_name}.<init>")
                 try:
                     self._exec_block(ctor.body, cscope, call_stack, super_name)
                 except ReturnSignal:
                     pass
+                finally:
+                    call_stack.pop()
+                    self._emit(lineno, f"end of {super_name}.<init>", 'return', call_stack, scope, [], fn_name=f"{super_name}.<init>")
 
     # ── Method invocation & execution helpers ───────────────────────────────
 
@@ -1559,22 +1565,32 @@ class JavaExecutionTracer:
             # If node has an anonymous body attached (e.g. new Greeting() { public void sayHello() { ... } })
             if getattr(node, 'body', None):
                 obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
-            # Execute constructor hierarchy starting from base superclass down to derived class
-            for cls_n in class_hierarchy:
-                c_name = cls_n.name
-                ctor = self._find_constructor(c_name, len(args) if c_name == cname else None)
+            # Execute implicit super constructor if class extends another class and doesn't call super(...) explicitly
+            curr = cname
+            ancestors = []
+            while curr and curr in self.classes:
+                ancestors.append(curr)
+                curr = self.classes[curr].extends.name if self.classes[curr].extends else None
+            
+            # Run implicit constructors from top-most ancestor down to current target class
+            for anc in reversed(ancestors):
+                ctor = self._find_constructor(anc, len(args) if anc == cname else 0)
                 if ctor:
                     cscope = {}
-                    self._declare(cscope, 'this', c_name, obj, changed=False)
-                    if c_name == cname:
+                    self._declare(cscope, 'this', anc, obj, changed=False)
+                    if anc == cname:
                         for p, a in zip(ctor.parameters, args):
                             self._declare(cscope, p.name, p.type, a)
-                    call_stack.append(f"{c_name}.<init>({', '.join(_display(a) for a in args) if c_name == cname else ''})")
+                    frame_label = f"{anc}.<init>({', '.join(_display(a) for a in args) if anc == cname else ''})"
+                    call_stack.append(frame_label)
+                    self._emit(self._lineno(ctor), self._line_text(ctor, f"{anc} constructor"), 'call', call_stack, cscope, [], fn_name=f"{anc}.<init>")
                     try:
-                        self._exec_block(ctor.body, cscope, call_stack, c_name)
+                        self._exec_block(ctor.body, cscope, call_stack, anc)
                     except ReturnSignal:
                         pass
-                    call_stack.pop()
+                    finally:
+                        call_stack.pop()
+                        self._emit(self._lineno(node), f"end of {anc}.<init>", 'return', call_stack, scope, [], fn_name=f"{anc}.<init>")
             return obj
 
         addr = self._new_obj_addr(cname)
