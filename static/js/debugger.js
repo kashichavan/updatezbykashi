@@ -888,14 +888,17 @@ function toggleSectionMaximize(containerElem) {
 
   if (!isMaximized) {
     containerElem.classList.add('maximized-section');
+    document.body.classList.add('debugger-has-maximized');
     const btn = containerElem.querySelector('.section-maximize-btn');
     if (btn) btn.innerHTML = '✕ Restore';
+  } else {
+    document.body.classList.remove('debugger-has-maximized');
   }
 
-  // Trigger Monaco Editor layout update if editor was inside maximized section
+  // Trigger Monaco Editor layout update when expanding or restoring
   setTimeout(() => {
-    if (window.editor && editor.layout) {
-      editor.layout();
+    if (window.editor && typeof window.editor.layout === 'function') {
+      window.editor.layout();
     }
   }, 100);
 }

@@ -614,6 +614,10 @@
 }
 
 /* Fullscreen Maximized Section Overlay */
+body.debugger-has-maximized {
+  overflow: hidden !important;
+}
+
 .maximized-section {
   position: fixed !important;
   top: 12px !important;
@@ -624,18 +628,20 @@
   height: calc(100vh - 24px) !important;
   z-index: 99999 !important;
   border-radius: 16px !important;
-  box-shadow: 0 0 40px rgba(0,0,0,0.85), 0 0 0 9999px rgba(0,0,0,0.7) !important;
+  box-shadow: 0 0 40px rgba(0,0,0,0.85), 0 0 0 9999px rgba(0,0,0,0.75) !important;
   display: flex !important;
   flex-direction: column !important;
+  margin: 0 !important;
 }
 
 .maximized-section #monacoEditorContainer {
-  height: calc(100vh - 80px) !important;
+  height: calc(100vh - 70px) !important;
   flex: 1 !important;
 }
 
 .maximized-section .visual-card-body {
-  max-height: calc(100vh - 80px) !important;
+  height: calc(100vh - 70px) !important;
+  max-height: calc(100vh - 70px) !important;
   flex: 1 !important;
 }
 
