@@ -236,6 +236,8 @@ class JavaExecutionTracer:
         call_stack.append(frame_label)
         scope = self.static_fields[self.main_class]
 
+        self._emit(self._lineno(main_method), self._line_text(main_method, f"public static void main(String[] args) {{"), 'call', call_stack, dict(scope), [], fn_name=f"{self.main_class}.main")
+
         try:
             self._exec_block(main_method.body, dict(scope), call_stack, self.main_class)
         except JavaException as jexc:
