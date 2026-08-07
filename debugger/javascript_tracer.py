@@ -96,12 +96,31 @@ class JavaScriptExecutionTracer:
         if scope is None:
             scope = {}
 
-        # ── Template literal: `...${var}...` ──────────────────────────────
+        # ── Inline Array.join in any expression ─────────────────────────────────────
+        def replace_join(match):
+            arr_name = match.group(1)
+            sep_raw = match.group(2)
+            sep = sep_raw.strip().strip('"\'')
+            if arr_name in scope:
+                raw_arr = scope[arr_name]['raw'].strip()
+                items = self._parse_array_items(raw_arr)
+                cleaned_items = []
+                for item in items:
+                    it = item.strip()
+                    if (it.startswith('"') and it.endswith('"')) or (it.startswith("'") and it.endswith("'")):
+                        it = it[1:-1]
+                    cleaned_items.append(it)
+                return sep.join(cleaned_items)
+            return match.group(0)
+        expr = re.sub(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.join\(([^)]*)\)', replace_join, expr)
+
+        # ── Template literal: `...${...}...` ──────────────────────────────
         if expr.startswith('`') and expr.endswith('`'):
             inner = expr[1:-1]
             def replace_tmpl(m):
-                key = m.group(1).strip()
-                return scope.get(key, {}).get('raw', key)
+                inner_expr = m.group(1).strip()
+                # Recursively resolve the inner expression (handles joins, arithmetic, etc.)
+                return self.js_resolve(inner_expr, scope)
             return re.sub(r'\$\{([^}]+)\}', replace_tmpl, inner)
 
         # ── Array.join(sep) ────────────────────────────────────────────────

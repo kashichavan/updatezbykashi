@@ -138,7 +138,10 @@ def _display(val):
     if isinstance(val, str):
         return val
     if isinstance(val, float):
-        return f"{val:.1f}" if val == int(val) and abs(val) < 1e15 else str(val)
+        # Preserve the exact floating‑point representation.
+        # Using ``repr`` keeps a trailing “.0” for whole numbers (e.g. 3.0 → "3.0").
+        # If you prefer a single‑decimal format you could use ``f"{val:.1f}"``.
+        return repr(val)
     if isinstance(val, set):
         return "[" + ", ".join(_display(x) for x in sorted(val, key=lambda x: str(x))) + "]"
     if isinstance(val, dict):
@@ -225,8 +228,16 @@ class JavaExecutionTracer:
 
         call_stack = []
         for cname in self.classes:
-            self.static_fields[cname] = {}
-            self._init_static_fields(cname, call_stack)
+            # Ensure we only run static initialization once per class during this trace
+            if not hasattr(self, '_static_initialized'):
+                self._static_initialized = set()
+            if cname not in self._static_initialized:
+                self.static_fields[cname] = {}
+                self._init_static_fields(cname, call_stack)
+                self._static_initialized.add(cname)
+            else:
+                # Static init already performed – keep existing static fields dict
+                self.static_fields[cname] = self.static_fields.get(cname, {})
 
         main_method = self._find_method(self.main_class, 'main')
         if main_method is None:
@@ -256,6 +267,13 @@ class JavaExecutionTracer:
         }
 
     def _init_static_fields(self, class_name, call_stack):
+        # Run static initialization only once per class during a debugging session
+        if not hasattr(self, '_static_initialized'):
+            self._static_initialized = set()
+        if class_name in self._static_initialized:
+            return
+        self._static_initialized.add(class_name)
+
         cls_node = self.classes[class_name]
         scope = self.static_fields[class_name]
         for member in cls_node.body:
@@ -1583,7 +1601,8 @@ class JavaExecutionTracer:
                         init_scope = {}
                         self._declare(init_scope, 'this', cls_n.name, obj, changed=False)
                         call_stack.append(f"{cls_n.name}.<init-block>")
-                        self._emit(0, f"instance initializer block for {cls_n.name}", 'call', call_stack, init_scope, [], fn_name=f"{cls_n.name}.<init-block>")
+                        init_line = member[0].position.line if hasattr(member[0], 'position') and member[0].position else self._lineno(node)
+                        self._emit(init_line, f"instance initializer block for {cls_n.name}", 'call', call_stack, init_scope, [], fn_name=f"{cls_n.name}.<init-block>")
                         try:
                             self._exec_block(member, init_scope, call_stack, cls_n.name)
                         except ReturnSignal:
@@ -1607,6 +1626,22 @@ class JavaExecutionTracer:
                 if ctor:
                     cscope = {}
                     self._declare(cscope, 'this', anc, obj, changed=False)
+                    # Emit instance initializer blocks for this class before its constructor body
+                    anc_node = self.classes.get(anc)
+                    if anc_node:
+                        for member in anc_node.body:
+                            if isinstance(member, list):
+                                init_scope = {}
+                                self._declare(init_scope, 'this', anc, obj, changed=False)
+                                call_stack.append(f"{anc}.<init-block>")
+                                self._emit(0, f"instance initializer block for {anc}", 'call', call_stack, init_scope, [], fn_name=f"{anc}.<init-block>")
+                                try:
+                                    self._exec_block(member, init_scope, call_stack, anc)
+                                except ReturnSignal:
+                                    pass
+                                finally:
+                                    call_stack.pop()
+                                    self._emit(0, f"end of instance initializer for {anc}", 'return', call_stack, scope, [], fn_name=f"{anc}.<init-block>")
                     if anc == cname:
                         for p, a in zip(ctor.parameters, args):
                             self._declare(cscope, p.name, p.type, a)
