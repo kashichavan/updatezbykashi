@@ -273,10 +273,7 @@ require(['vs/editor/editor.main'], function () {
       activeDecorations = editor.deltaDecorations(activeDecorations, []);
       clearInlineValueHints();
       updateControls();
-      const banner = document.getElementById('aiExplainBanner');
-      if (banner) {
-        banner.innerHTML = '✏️ <strong>Code Edited:</strong> Click <strong>Start Debugging</strong> to evaluate your new code line-by-line!';
-      }
+      updateBannerMessage('✏️ <strong>Code Edited:</strong> Click <strong>Start Debugging</strong> to evaluate your new code line-by-line!');
     }
   });
 
@@ -360,8 +357,7 @@ function switchLanguage(lang) {
   updateControls();
 
   const capLang = lang.charAt(0).toUpperCase() + lang.slice(1);
-  document.getElementById('aiExplainBanner').innerHTML =
-    `💡 <strong>Switched to ${capLang}:</strong> Code loaded! Set breakpoints then click <strong>Start Debugging</strong>.`;
+  updateBannerMessage(`💡 <strong>Switched to ${capLang}:</strong> Code loaded! Set breakpoints then click <strong>Start Debugging</strong>.`);
   document.getElementById('variablesContainer').innerHTML =
     '<div style="color:#64748b;text-align:center;padding:12px;">Switch complete — run debugger to inspect variables.</div>';
   document.getElementById('callStackList').innerHTML =
@@ -442,6 +438,21 @@ function setTraceInCache(lang, codeStr, bps, stdinStr, data) {
   }
 }
 
+function updateBannerMessage(htmlContent, bgStyle = '', borderStyle = '', colorStyle = '') {
+  const banner = document.getElementById('aiExplainBanner');
+  const bannerText = document.getElementById('aiExplainBannerText');
+  if (banner) {
+    banner.style.background = bgStyle;
+    banner.style.border = borderStyle;
+    banner.style.color = colorStyle;
+  }
+  if (bannerText) {
+    bannerText.innerHTML = htmlContent;
+  } else if (banner) {
+    banner.innerHTML = htmlContent;
+  }
+}
+
 /* ─────────────────────────────────────────────────────────────────
    START DEBUGGING  (fetch trace from Django backend or Browser Cache)
 ───────────────────────────────────────────────────────────────── */
@@ -452,7 +463,6 @@ async function startDebugging(forceRefresh = false) {
 
   const code     = editor.getValue();
   const stdinVal = (document.getElementById('stdinInput') ? document.getElementById('stdinInput').value : '').trim();
-  const banner   = document.getElementById('aiExplainBanner');
 
   // Check client-side browser cache first (skip if user forces refresh with new input)
   if (!forceRefresh) {
@@ -461,13 +471,13 @@ async function startDebugging(forceRefresh = false) {
       debugSteps     = cachedTrace.steps;
       currentStepIdx  = 0;
       goToStep(0);
-      banner.innerHTML = `⚡ <strong>Instant Browser Cache Hit (0ms):</strong> Loaded trace locally with 0 server load!`;
+      updateBannerMessage(`⚡ <strong>Instant Browser Cache Hit (0ms):</strong> Loaded trace locally with 0 server load!`);
       showToast(`Loaded trace instantly from browser cache!`, 'success');
       return;
     }
   }
 
-  banner.innerHTML = `⏳ <strong>${currentLang.toUpperCase()} Debugger Engine:</strong> AST validation & compiling memory steps...`;
+  updateBannerMessage(`⏳ <strong>${currentLang.toUpperCase()} Debugger Engine:</strong> AST validation & compiling memory steps...`);
 
   const endpointMap = {
     python:     '/debugger/api/python/trace/',
@@ -492,10 +502,10 @@ async function startDebugging(forceRefresh = false) {
       goToStep(0);
       showToast(`${currentLang.toUpperCase()} Debugger initialized & cached!`, 'success');
     } else {
-      banner.innerHTML = `❌ <strong>Debugger Error:</strong> ${escapeHtml(data.message || 'Execution failed.')}`;
+      updateBannerMessage(`❌ <strong>Debugger Error:</strong> ${escapeHtml(data.message || 'Execution failed.')}`);
     }
   } catch (err) {
-    banner.innerHTML = '❌ <strong>Error:</strong> Could not connect to Django Debugger Backend.';
+    updateBannerMessage('❌ <strong>Error:</strong> Could not connect to Django Debugger Backend.');
   }
 }
 
@@ -544,17 +554,10 @@ function goToStep(idx) {
   highlightExecutingLines(step.line_number, prevLine);
   applyInlineValueHints(currentStepIdx);
 
-  const banner = document.getElementById('aiExplainBanner');
   if (step.event_type === 'exception') {
-    banner.style.background = 'rgba(239, 68, 68, 0.15)';
-    banner.style.border = '1px solid #ef4444';
-    banner.style.color = '#fca5a5';
-    banner.innerHTML = `❌ <strong>Line ${step.line_number} Exception:</strong> ${escapeHtml(step.ai_explanation)}`;
+    updateBannerMessage(`❌ <strong>Line ${step.line_number} Exception:</strong> ${escapeHtml(step.ai_explanation)}`, 'rgba(239, 68, 68, 0.15)', '1px solid #ef4444', '#fca5a5');
   } else {
-    banner.style.background = '';
-    banner.style.border = '';
-    banner.style.color = '';
-    banner.innerHTML = `💡 <strong>Line ${step.line_number}:</strong> ${escapeHtml(step.ai_explanation)}`;
+    updateBannerMessage(`💡 <strong>Line ${step.line_number}:</strong> ${escapeHtml(step.ai_explanation)}`, '', '', '');
   }
 
   renderVariablesCards(step.variables);
