@@ -23,9 +23,9 @@
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: 999999;
-    background: rgba(4, 9, 20, 0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(4, 9, 20, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     align-items: center;
     justify-content: center;
     padding: 20px;
@@ -33,7 +33,7 @@
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 992px) {
     .mobile-blocker-overlay {
       display: flex !important;
     }
@@ -41,38 +41,15 @@
 
   .mobile-blocker-card {
     background: linear-gradient(145deg, #0f172a, #1e293b);
-    border: 1px solid rgba(56, 189, 248, 0.35);
+    border: 1px solid rgba(239, 68, 68, 0.4);
     border-radius: 24px;
-    padding: 28px 22px 24px;
-    max-width: 360px;
+    padding: 32px 24px 28px;
+    max-width: 380px;
     width: 100%;
     text-align: center;
     position: relative;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.2);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 30px rgba(239, 68, 68, 0.25);
     box-sizing: border-box;
-  }
-
-  .mobile-blocker-x {
-    position: absolute;
-    top: 14px; right: 14px;
-    width: 38px; height: 38px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    color: #ffffff;
-    font-size: 18px;
-    font-weight: 800;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .mobile-blocker-x:active {
-    background: rgba(239, 68, 68, 0.4);
-    transform: scale(0.95);
   }
 
   .mobile-blocker-btn {
@@ -106,40 +83,22 @@
       window.location.href = '/';
     }
   }
-
-  function forceCloseMobileBlocker(evt) {
-    if (evt) {
-      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
-    }
-    var overlay = document.getElementById('mobileBlockerOverlay');
-    if (overlay) {
-      overlay.style.setProperty('display', 'none', 'important');
-    }
-  }
 </script>
 
-<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="goBackToPreviousPage(event)" ontouchstart="goBackToPreviousPage(event)">
-  <div class="mobile-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
-    <button class="mobile-blocker-x" onclick="goBackToPreviousPage(event)" ontouchstart="goBackToPreviousPage(event)" title="Go back to previous page">✕</button>
-    <div style="font-size:42px; margin-bottom:12px;">🖥️</div>
-    <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 8px;">Desktop Recommended</h2>
+<div class="mobile-blocker-overlay" id="mobileBlockerOverlay">
+  <div class="mobile-blocker-card">
+    <div style="font-size:48px; margin-bottom:12px;">💻 Desktop &amp; Laptop Only</div>
+    <h2 style="font-size:22px; font-weight:800; color:#ffffff; margin:0 0 8px;">Desktop Required</h2>
     <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 16px;">
-      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> is optimized for laptop and desktop screens.
+      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> requires a larger screen layout and keyboard controls. Mobile devices are not supported.
     </p>
 
-    <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🌐 Chrome</div>
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🦊 Firefox</div>
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🧭 Safari</div>
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🔷 Edge</div>
+    <div style="color:#f87171; font-size:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:12px 14px; line-height:1.5; font-weight:600; margin-bottom:16px;">
+      ⚠️ Please open <strong style="color:#ffffff;">kashiiupdatez.online/debugger/</strong> on a Laptop or Desktop browser (Chrome, Firefox, Safari, Edge).
     </div>
 
-    <div style="color:#94a3b8; font-size:11px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:10px 12px; line-height:1.5;">
-      📋 Open <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong> on your PC.
-    </div>
-
-    <button class="mobile-blocker-btn" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)">
-      Continue on Mobile IDE →
+    <button class="mobile-blocker-btn" onclick="goBackToPreviousPage(event)" ontouchstart="goBackToPreviousPage(event)">
+      ← Back to Home / Student Feed
     </button>
   </div>
 </div>
