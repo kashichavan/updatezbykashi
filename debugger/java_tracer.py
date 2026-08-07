@@ -174,9 +174,11 @@ class JavaExecutionTracer:
 
         self._parse_error = None
         try:
+            self.tokens = list(javalang.tokenizer.tokenize(code_str))
             self.tree = javalang.parse.parse(code_str)
             self._index_classes()
         except (javalang.parser.JavaSyntaxError, javalang.tokenizer.LexerError) as e:
+            self.tokens = []
             self.tree = None
             self._parse_error = str(e)
 
@@ -227,17 +229,7 @@ class JavaExecutionTracer:
             raise ValueError("No class found in source")
 
         call_stack = []
-        for cname in self.classes:
-            # Ensure we only run static initialization once per class during this trace
-            if not hasattr(self, '_static_initialized'):
-                self._static_initialized = set()
-            if cname not in self._static_initialized:
-                self.static_fields[cname] = {}
-                self._init_static_fields(cname, call_stack)
-                self._static_initialized.add(cname)
-            else:
-                # Static init already performed – keep existing static fields dict
-                self.static_fields[cname] = self.static_fields.get(cname, {})
+        self._ensure_static_init(self.main_class, call_stack)
 
         main_method = self._find_method(self.main_class, 'main')
         if main_method is None:
@@ -266,6 +258,37 @@ class JavaExecutionTracer:
             'steps': self.steps,
         }
 
+    def _ensure_static_init(self, class_name, call_stack=None):
+        if not hasattr(self, '_static_initialized'):
+            self._static_initialized = set()
+        if class_name not in self._static_initialized:
+            self.static_fields[class_name] = {}
+            self._init_static_fields(class_name, call_stack or [])
+
+    def _is_static_block(self, block_list):
+        if not block_list or not hasattr(self, 'tokens') or not self.tokens:
+            return False
+        first_stmt = block_list[0]
+        if not hasattr(first_stmt, 'position') or not first_stmt.position:
+            return False
+        pos = first_stmt.position
+        # Find token corresponding to first statement in block
+        idx = -1
+        for i, t in enumerate(self.tokens):
+            if t.position.line == pos.line and t.position.column == pos.column:
+                idx = i
+                break
+        if idx <= 0:
+            return False
+        # Look backwards to find the '{' for this block, and check if 'static' immediately precedes it
+        for i in range(idx - 1, -1, -1):
+            if self.tokens[i].value == '{':
+                # Check preceding non-whitespace token
+                if i > 0 and self.tokens[i - 1].value == 'static':
+                    return True
+                break
+        return False
+
     def _init_static_fields(self, class_name, call_stack):
         # Run static initialization only once per class during a debugging session
         if not hasattr(self, '_static_initialized'):
@@ -282,7 +305,7 @@ class JavaExecutionTracer:
                     val = self.eval_expr(decl.initializer, scope, call_stack, class_name) \
                         if decl.initializer is not None else self._default_value(member.type)
                     self._declare(scope, decl.name, member.type, val)
-            elif isinstance(member, list):
+            elif isinstance(member, list) and self._is_static_block(member):
                 call_stack.append(f"{class_name}.<clinit>")
                 self._emit(0, f"static initializer block for {class_name}", 'call', call_stack, scope, [], fn_name=f"{class_name}.<clinit>")
                 try:
@@ -371,6 +394,8 @@ class JavaExecutionTracer:
 
     def _declare(self, scope, name, type_node, value, changed=True):
         tname = self._type_name(type_node) if not isinstance(type_node, str) else type_node
+        if tname in ('double', 'float') and isinstance(value, int) and not isinstance(value, bool):
+            value = float(value)
         is_prim = self._is_primitive_type(tname.rstrip('[]')) and '[]' not in tname
         key = f"{id(scope)}:{name}"
         scope[name] = {
@@ -684,6 +709,23 @@ class JavaExecutionTracer:
                 frame_label = f"{super_name}.<init>({', '.join(_display(a) for a in args)})"
                 call_stack.append(frame_label)
                 self._emit(self._lineno(ctor), self._line_text(ctor, f"{super_name} constructor"), 'call', call_stack, cscope, [], fn_name=f"{super_name}.<init>")
+                # Run instance initializer blocks for super_name
+                snode = self.classes.get(super_name)
+                if snode:
+                    for member in snode.body:
+                        if isinstance(member, list) and not self._is_static_block(member):
+                            init_scope = {}
+                            if isinstance(this_obj, JavaObject):
+                                self._declare(init_scope, 'this', super_name, this_obj, changed=False)
+                            call_stack.append(f"{super_name}.<init-block>")
+                            self._emit(0, f"instance initializer block for {super_name}", 'call', call_stack, init_scope, [], fn_name=f"{super_name}.<init-block>")
+                            try:
+                                self._exec_block(member, init_scope, call_stack, super_name)
+                            except ReturnSignal:
+                                pass
+                            finally:
+                                call_stack.pop()
+                                self._emit(0, f"end of instance initializer for {super_name}", 'return', call_stack, scope, [], fn_name=f"{super_name}.<init-block>")
                 try:
                     self._exec_block(ctor.body, cscope, call_stack, super_name)
                 except ReturnSignal:
@@ -691,6 +733,24 @@ class JavaExecutionTracer:
                 finally:
                     call_stack.pop()
                     self._emit(lineno, f"end of {super_name}.<init>", 'return', call_stack, scope, [], fn_name=f"{super_name}.<init>")
+                
+                # Now that super(...) constructor has completed, run instance initializer blocks for subclass (class_name)
+                cnode = self.classes.get(class_name)
+                if cnode:
+                    for member in cnode.body:
+                        if isinstance(member, list) and not self._is_static_block(member):
+                            init_scope = {}
+                            if isinstance(this_obj, JavaObject):
+                                self._declare(init_scope, 'this', class_name, this_obj, changed=False)
+                            call_stack.append(f"{class_name}.<init-block>")
+                            self._emit(0, f"instance initializer block for {class_name}", 'call', call_stack, init_scope, [], fn_name=f"{class_name}.<init-block>")
+                            try:
+                                self._exec_block(member, init_scope, call_stack, class_name)
+                            except ReturnSignal:
+                                pass
+                            finally:
+                                call_stack.pop()
+                                self._emit(0, f"end of instance initializer for {class_name}", 'return', call_stack, scope, [], fn_name=f"{class_name}.<init-block>")
 
     # ── Method invocation & execution helpers ───────────────────────────────
 
@@ -946,12 +1006,6 @@ class JavaExecutionTracer:
                         found_var = True
                         break
                 if not found_var:
-                    for c_key, c_scope in self.static_fields.items():
-                        if base_name in c_scope:
-                            val = c_scope[base_name]['_value']
-                            found_var = True
-                            break
-                if not found_var:
                     curr = class_name
                     while curr and curr in self.classes:
                         if base_name in self.static_fields.get(curr, {}):
@@ -959,6 +1013,12 @@ class JavaExecutionTracer:
                             found_var = True
                             break
                         curr = self.classes[curr].extends.name if self.classes[curr].extends else None
+                if not found_var:
+                    for c_key, c_scope in self.static_fields.items():
+                        if base_name in c_scope:
+                            val = c_scope[base_name]['_value']
+                            found_var = True
+                            break
                 if not found_var:
                     raise JavaException("Error", f"cannot find symbol: variable {base_name}")
         val = self._apply_selectors(val, node.selectors, scope, call_stack, class_name)
@@ -1007,11 +1067,18 @@ class JavaExecutionTracer:
         elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject) \
                 and name in scope['this']['_value'].fields:
             scope['this']['_value'].fields[name] = value
-        elif name in self.static_fields.get(class_name, {}):
-            self.static_fields[class_name][name]['_value'] = value
-            self.static_fields[class_name][name]['is_changed'] = True
         else:
-            self._set(scope, name, value, True)
+            written_static = False
+            curr = class_name
+            while curr and curr in self.classes:
+                if name in self.static_fields.get(curr, {}):
+                    self.static_fields[curr][name]['_value'] = value
+                    self.static_fields[curr][name]['is_changed'] = True
+                    written_static = True
+                    break
+                curr = self.classes[curr].extends.name if self.classes[curr].extends else None
+            if not written_static:
+                self._set(scope, name, value, True)
 
     def _resolve_qualifier(self, qualifier, scope, call_stack, class_name):
         parts = qualifier.split('.')
@@ -1315,6 +1382,15 @@ class JavaExecutionTracer:
 
         arg_types = ['double' if isinstance(a, float) else ('int' if isinstance(a, int) else ('boolean' if isinstance(a, bool) else 'String')) for a in args]
 
+        if node.qualifier == 'String' and node.member == 'format' and args:
+            fmt = _display(args[0])
+            fmt_args = tuple(_display(a) if not isinstance(a, (int, float)) else a for a in args[1:])
+            try:
+                res_val = fmt % fmt_args
+            except Exception:
+                res_val = fmt
+            return res_val
+
         res_val = NULL
         if node.qualifier:
             if node.qualifier in self.classes:
@@ -1397,6 +1473,19 @@ class JavaExecutionTracer:
                     res = self._call_lambda(mapper, [item], call_stack) if isinstance(mapper, JavaLambda) else item
                     mapped.append(res)
                 res_val = JavaArray(base.elem_type, mapped)
+            elif member == 'reduce' and args:
+                if len(args) == 2:
+                    accum = args[0]
+                    reducer = args[1]
+                    for item in base.items:
+                        accum = self._call_lambda(reducer, [accum, item], call_stack) if isinstance(reducer, JavaLambda) else accum
+                    res_val = accum
+                elif len(args) == 1:
+                    reducer = args[0]
+                    accum = base.items[0] if base.items else NULL
+                    for item in base.items[1:]:
+                        accum = self._call_lambda(reducer, [accum, item], call_stack) if isinstance(reducer, JavaLambda) else accum
+                    res_val = accum
             elif member == 'forEach' and args:
                 action = args[0]
                 for item in base.items:
@@ -1508,6 +1597,7 @@ class JavaExecutionTracer:
             if start < 0 or end > len(s) or start > end:
                 raise JavaException("StringIndexOutOfBoundsException", f"begin {start}, end {end}, length {len(s)}")
             return s[start:end]
+        if member == 'reverse': return s[::-1]
         if member == 'replace':
             return s.replace(_display(args[0]), _display(args[1]))
         if member == 'split':
@@ -1589,6 +1679,10 @@ class JavaExecutionTracer:
             while curr and curr in self.classes:
                 class_hierarchy.append(self.classes[curr])
                 curr = self.classes[curr].extends.name if self.classes[curr].extends else None
+            # Ensure static init runs in top-down order for ancestors
+            for cls_n in reversed(class_hierarchy):
+                self._ensure_static_init(cls_n.name, call_stack)
+
             for cls_n in reversed(class_hierarchy):
                 for member in cls_n.body:
                     if isinstance(member, javalang.tree.FieldDeclaration) and 'static' not in (member.modifiers or []):
@@ -1597,64 +1691,60 @@ class JavaExecutionTracer:
                                 obj.fields[decl.name] = self.eval_expr(decl.initializer, scope, call_stack, class_name)
                             else:
                                 obj.fields[decl.name] = self._default_value(member.type)
-                    elif isinstance(member, list):
-                        init_scope = {}
-                        self._declare(init_scope, 'this', cls_n.name, obj, changed=False)
-                        call_stack.append(f"{cls_n.name}.<init-block>")
-                        init_line = member[0].position.line if hasattr(member[0], 'position') and member[0].position else self._lineno(node)
-                        self._emit(init_line, f"instance initializer block for {cls_n.name}", 'call', call_stack, init_scope, [], fn_name=f"{cls_n.name}.<init-block>")
+            # If node has an anonymous body attached (e.g. new Greeting() { public void sayHello() { ... } })
+            if getattr(node, 'body', None):
+                obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
+            ctor = self._find_constructor(cname, len(args))
+            if ctor:
+                cscope = {}
+                self._declare(cscope, 'this', cname, obj, changed=False)
+                for p, a in zip(ctor.parameters, args):
+                    self._declare(cscope, p.name, p.type, a)
+                frame_label = f"{cname}.<init>({', '.join(_display(a) for a in args)})"
+                call_stack.append(frame_label)
+                self._emit(self._lineno(ctor), self._line_text(ctor, f"{cname} constructor"), 'call', call_stack, cscope, [], fn_name=f"{cname}.<init>")
+                # If class does not extend another class, run its instance initializer blocks here before constructor body
+                cnode = self.classes.get(cname)
+                if cnode and not cnode.extends:
+                    for member in cnode.body:
+                        if isinstance(member, list) and not self._is_static_block(member):
+                            init_scope = {}
+                            self._declare(init_scope, 'this', cname, obj, changed=False)
+                            call_stack.append(f"{cname}.<init-block>")
+                            self._emit(0, f"instance initializer block for {cname}", 'call', call_stack, init_scope, [], fn_name=f"{cname}.<init-block>")
+                            try:
+                                self._exec_block(member, init_scope, call_stack, cname)
+                            except ReturnSignal:
+                                pass
+                            finally:
+                                call_stack.pop()
+                                self._emit(0, f"end of instance initializer for {cname}", 'return', call_stack, scope, [], fn_name=f"{cname}.<init-block>")
+                try:
+                    self._exec_block(ctor.body, cscope, call_stack, cname)
+                except ReturnSignal:
+                    pass
+                finally:
+                    call_stack.pop()
+                    self._emit(self._lineno(node), f"end of {cname}.<init>", 'return', call_stack, scope, [], fn_name=f"{cname}.<init>")
+            else:
+                # Default implicit constructor chaining when subclass defines no explicit constructor
+                cnode = self.classes.get(cname)
+                super_name = cnode.extends.name if (cnode and cnode.extends) else None
+                if super_name:
+                    parent_ctor = self._find_constructor(super_name, 0)
+                    if parent_ctor:
+                        pscope = {}
+                        self._declare(pscope, 'this', super_name, obj, changed=False)
+                        frame_label = f"{super_name}.<init>()"
+                        call_stack.append(frame_label)
+                        self._emit(self._lineno(parent_ctor), self._line_text(parent_ctor, f"{super_name} constructor"), 'call', call_stack, pscope, [], fn_name=f"{super_name}.<init>")
                         try:
-                            self._exec_block(member, init_scope, call_stack, cls_n.name)
+                            self._exec_block(parent_ctor.body, pscope, call_stack, super_name)
                         except ReturnSignal:
                             pass
                         finally:
                             call_stack.pop()
-                            self._emit(0, f"end of instance initializer for {cls_n.name}", 'return', call_stack, scope, [], fn_name=f"{cls_n.name}.<init-block>")
-            # If node has an anonymous body attached (e.g. new Greeting() { public void sayHello() { ... } })
-            if getattr(node, 'body', None):
-                obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
-            # Execute implicit super constructor if class extends another class and doesn't call super(...) explicitly
-            curr = cname
-            ancestors = []
-            while curr and curr in self.classes:
-                ancestors.append(curr)
-                curr = self.classes[curr].extends.name if self.classes[curr].extends else None
-            
-            # Run implicit constructors from top-most ancestor down to current target class
-            for anc in reversed(ancestors):
-                ctor = self._find_constructor(anc, len(args) if anc == cname else 0)
-                if ctor:
-                    cscope = {}
-                    self._declare(cscope, 'this', anc, obj, changed=False)
-                    # Emit instance initializer blocks for this class before its constructor body
-                    anc_node = self.classes.get(anc)
-                    if anc_node:
-                        for member in anc_node.body:
-                            if isinstance(member, list):
-                                init_scope = {}
-                                self._declare(init_scope, 'this', anc, obj, changed=False)
-                                call_stack.append(f"{anc}.<init-block>")
-                                self._emit(0, f"instance initializer block for {anc}", 'call', call_stack, init_scope, [], fn_name=f"{anc}.<init-block>")
-                                try:
-                                    self._exec_block(member, init_scope, call_stack, anc)
-                                except ReturnSignal:
-                                    pass
-                                finally:
-                                    call_stack.pop()
-                                    self._emit(0, f"end of instance initializer for {anc}", 'return', call_stack, scope, [], fn_name=f"{anc}.<init-block>")
-                    if anc == cname:
-                        for p, a in zip(ctor.parameters, args):
-                            self._declare(cscope, p.name, p.type, a)
-                    frame_label = f"{anc}.<init>({', '.join(_display(a) for a in args) if anc == cname else ''})"
-                    call_stack.append(frame_label)
-                    self._emit(self._lineno(ctor), self._line_text(ctor, f"{anc} constructor"), 'call', call_stack, cscope, [], fn_name=f"{anc}.<init>")
-                    try:
-                        self._exec_block(ctor.body, cscope, call_stack, anc)
-                    except ReturnSignal:
-                        pass
-                    finally:
-                        call_stack.pop()
-                        self._emit(self._lineno(node), f"end of {anc}.<init>", 'return', call_stack, scope, [], fn_name=f"{anc}.<init>")
+                            self._emit(0, f"end of {super_name}.<init>", 'return', call_stack, scope, [], fn_name=f"{super_name}.<init>")
             return obj
 
         addr = self._new_obj_addr(cname)

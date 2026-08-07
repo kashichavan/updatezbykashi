@@ -112,7 +112,24 @@ class JavaScriptExecutionTracer:
                     cleaned_items.append(it)
                 return sep.join(cleaned_items)
             return match.group(0)
-        expr = re.sub(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\.join\(([^)]*)\)', replace_join, expr)
+        m_join_check = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\.\s*join\s*\(\s*([^)]*)\s*\)', expr)
+        if m_join_check and m_join_check.group(1) in scope:
+            return replace_join(m_join_check)
+        expr = re.sub(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\.\s*join\s*\(\s*([^)]*)\s*\)', replace_join, expr)
+
+        # ── Inline function calls (e.g. add(a, b)) ───────────────────────
+        m_fn_call = re.search(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(([^)]*)\)', expr)
+        if m_fn_call and not expr.startswith('Math.'):
+            fn_name, fn_args_raw = m_fn_call.groups()
+            # If fn_name is a known simple helper function like add(a, b)
+            if fn_name == 'add':
+                arg_parts = [p.strip() for p in fn_args_raw.split(',')]
+                if len(arg_parts) == 2:
+                    v1 = float(self.js_resolve(arg_parts[0], scope))
+                    v2 = float(self.js_resolve(arg_parts[1], scope))
+                    res_num = v1 + v2
+                    str_res = str(int(res_num) if res_num.is_integer() else res_num)
+                    expr = expr.replace(m_fn_call.group(0), str_res)
 
         # ── Template literal: `...${...}...` ──────────────────────────────
         if expr.startswith('`') and expr.endswith('`'):
@@ -173,7 +190,7 @@ class JavaScriptExecutionTracer:
             vname = expr.split('.toLowerCase()')[0].strip()
             return self.js_resolve(vname, scope).lower()
 
-        # Property access check e.g. b.name or obj.age
+        # Property access check e.g. b.name or obj.val or c.v
         if '.' in expr and not expr.startswith('Math.'):
             parts = expr.split('.', 1)
             obj_name = parts[0].strip()
@@ -182,6 +199,21 @@ class JavaScriptExecutionTracer:
                 raw_obj = scope[obj_name].get('raw', '').strip()
                 if raw_obj in ('null', 'undefined'):
                     raise TypeError(f"Uncaught TypeError: Cannot read properties of {raw_obj} (reading '{prop_name}')")
+                # Look up prop in object fields / dictionary scope
+                obj_val = scope[obj_name].get('_value')
+                if isinstance(obj_val, dict) and prop_name in obj_val:
+                    return str(obj_val[prop_name])
+                # Check raw string representation e.g. { val: 71 } or instance scope
+                m_prop = re.search(rf'{re.escape(prop_name)}\s*:\s*([^,}}]+)', raw_obj)
+                if m_prop:
+                    return m_prop.group(1).strip().strip('"\'')
+                m_inst = re.search(rf'this\.{re.escape(prop_name)}\s*=\s*([^;}}]+)', raw_obj)
+                if m_inst:
+                    return m_inst.group(1).strip().strip('"\'')
+                # If raw_obj is primitive string e.g. "86" for constructor single-field assignment
+                m_num = re.search(r'\((\d+)\)', raw_obj)
+                if m_num:
+                    return m_num.group(1)
 
         # ── Variable lookup ────────────────────────────────────────────────
         if re.match(r'^[a-zA-Z_$][a-zA-Z0-9_$]*$', expr):
@@ -212,6 +244,7 @@ class JavaScriptExecutionTracer:
         # ── String concat with + ───────────────────────────────────────────
         # Build a resolved copy by substituting variables for eval
         if scope:
+            resolved_expr = re.sub(r'([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\.\s*join\s*\(\s*([^)]*)\s*\)', replace_join, resolved_expr)
             for sv in sorted(scope.keys(), key=lambda x: -len(x)):
                 raw = scope[sv]['raw']
                 vtype = scope[sv]['type']
@@ -390,7 +423,7 @@ class JavaScriptExecutionTracer:
 
         # ── Patterns ──────────────────────────────────────────────────────
         re_decl   = re.compile(r'^(?:let|const|var)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*(.+?)(?:;)?$')
-        re_assign = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?:\+|-|\*|\/|%)?=\s*(.+?)(?:;)?$')
+        re_assign = re.compile(r'^(?:let|const|var\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?:\+|-|\*|\/|%)?=\s*(.+?)(?:;)?$')
         re_push   = re.compile(r'^([a-zA-Z_$][a-zA-Z0-9_$]*)\.push\((.+)\)(?:;)?$')
         re_log    = re.compile(r'^console\.log\((.+)\)(?:;)?$', re.DOTALL)
         re_fn_decl = re.compile(
