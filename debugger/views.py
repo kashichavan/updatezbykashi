@@ -9,6 +9,9 @@ from .java_tracer import JavaExecutionTracer
 from .comparator import MultiLanguageComparator
 from .history_manager import SessionHistoryManager
 
+from django.views.decorators.cache import never_cache
+
+@never_cache
 def debugger_dashboard_view(request):
     """Renders the main Interactive Debugger IDE Dashboard."""
     return render(request, 'debugger/dashboard.html')
