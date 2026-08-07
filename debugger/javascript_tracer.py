@@ -423,17 +423,34 @@ class JavaScriptExecutionTracer:
                     elif op == '>': iter_range = range(start_i, end_i, step_val)
                     else: iter_range = range(start_i, end_i + 1, step_val)
 
-                    for iter_val in list(iter_range)[:50]:
+                    for iter_val in list(iter_range)[:500]:
                         scope[vname] = self.serialize_val(str(iter_val), name=vname, scope=scope)
                         scope[vname]['is_changed'] = True
                         for b_lineno, b_line in loop_body_lines:
                             m_l = re_log.match(b_line)
+                            m_p = re_push.match(b_line)
+                            m_a = re_assign.match(b_line)
                             if m_l:
                                 args_s = m_l.group(1)
                                 l_out = self.resolve_log_args(args_s, scope)
                                 self.stdout_lines.append(f"[JS] {l_out}")
-                            elif re_assign.match(b_line):
-                                m_a = re_assign.match(b_line)
+                            elif m_p:
+                                arr_name, push_val = m_p.groups()
+                                if arr_name in scope:
+                                    old_raw = scope[arr_name]['raw'].strip()
+                                    resolved_push = self.js_resolve(push_val.strip(), scope)
+                                    if not resolved_push.startswith('[') and not resolved_push.lstrip('-').replace('.','',1).isdigit():
+                                        push_token = f'"{resolved_push}"'
+                                    else:
+                                        push_token = resolved_push
+                                    if old_raw.startswith('[') and old_raw.endswith(']'):
+                                        inner = old_raw[1:-1].strip()
+                                        new_raw = f"[{inner}, {push_token}]" if inner else f"[{push_token}]"
+                                    else:
+                                        new_raw = f"[{push_token}]"
+                                    scope[arr_name] = self.serialize_val(new_raw, name=arr_name, scope=scope)
+                                    scope[arr_name]['is_changed'] = True
+                            elif m_a:
                                 vn, ve = m_a.groups()
                                 if vn in scope:
                                     res_v = self.js_resolve(ve.strip().rstrip(';'), scope)
@@ -525,7 +542,7 @@ class JavaScriptExecutionTracer:
                                     if sub_line and sub_line not in ('{', '}', '};') and not sub_line.startswith('//'):
                                         inner_lines.append((sub_idx, sub_line))
 
-                                for iter_val in list(iter_range)[:50]:
+                                for iter_val in list(iter_range)[:500]:
                                     local_scope[vname] = self.serialize_val(str(iter_val), name=vname, scope=local_scope)
                                     expl = self.explain('line', body_lineno, body_line, local_scope, [vname])
                                     self._emit(body_lineno, body_line, 'line', call_stack, local_scope, [vname], explanation=expl)
@@ -553,7 +570,7 @@ class JavaScriptExecutionTracer:
                                                     if n_line and n_line not in ('{', '}', '};') and not n_line.startswith('//'):
                                                         nested_block.append((n_no, n_line))
                                                 
-                                                for in_val in list(in_range)[:50]:
+                                                for in_val in list(in_range)[:500]:
                                                     local_scope[in_vname] = self.serialize_val(str(in_val), name=in_vname, scope=local_scope)
                                                     expl_in_for = self.explain('line', s_no, s_line, local_scope, [in_vname])
                                                     self._emit(s_no, s_line, 'line', call_stack, local_scope, [in_vname], explanation=expl_in_for)
