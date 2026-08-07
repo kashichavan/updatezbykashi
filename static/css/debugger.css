@@ -828,10 +828,28 @@ body.debugger-has-maximized {
   white-space: pre-wrap;
 }
 
+/* Light themes -> Black text for maximum readability */
 [data-theme="light-blue"] .var-val-text,
 [data-theme="github-light"] .var-val-text,
-:root:not([data-theme="vscode-dark"]):not([data-theme="github-dark"]) .var-val-text {
+[data-theme="emerald"] .var-val-text,
+[data-theme="sunset"] .var-val-text,
+[data-theme="purple-pro"] .var-val-text,
+:root:not([data-theme]) .var-val-text {
   color: #000000 !important;
+}
+
+/* Dark themes -> Pure White text for maximum contrast */
+[data-theme="vscode-dark"] .var-val-text,
+[data-theme="github-dark"] .var-val-text,
+[data-theme="midnight"] .var-val-text,
+[data-theme="ocean-blue"] .var-val-text,
+[data-theme="nord"] .var-val-text,
+[data-theme="dracula"] .var-val-text,
+[data-theme="solarized-dark"] .var-val-text,
+[data-theme="monokai"] .var-val-text,
+[data-theme="catppuccin"] .var-val-text,
+[data-theme="rose-pine"] .var-val-text {
+  color: #FFFFFF !important;
 }
 
 .var-pill-card.changed .var-name-text {
