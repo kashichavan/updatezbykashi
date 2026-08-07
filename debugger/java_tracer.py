@@ -187,6 +187,11 @@ class JavaExecutionTracer:
             for m in node.body:
                 if isinstance(m, javalang.tree.MethodDeclaration) and m.name == 'main':
                     self.main_class = node.name
+                elif isinstance(m, javalang.tree.ClassDeclaration):
+                    self.classes[m.name] = m
+                    self.classes[f"{node.name}.{m.name}"] = m
+        for _, node in self.tree.filter(javalang.tree.InterfaceDeclaration):
+            self.classes[node.name] = node
 
     def _mem_addr(self, key, is_primitive):
         if key not in self._mem_table:
@@ -260,20 +265,36 @@ class JavaExecutionTracer:
 
     # ── Method lookup ───────────────────────────────────────────────────────
 
-    def _find_method(self, class_name, name, arg_count=None):
+    def _find_method(self, class_name, name, arg_count=None, types=None):
         curr = class_name
-        while curr and curr in self.classes:
+        visited = set()
+        while curr and curr in self.classes and curr not in visited:
+            visited.add(curr)
             cls_node = self.classes[curr]
             candidates = [m for m in cls_node.body
                           if isinstance(m, javalang.tree.MethodDeclaration) and m.name == name]
             if candidates:
                 if arg_count is None:
                     return candidates[0]
+                if types:
+                    for m in candidates:
+                        if len(m.parameters) == arg_count:
+                            param_types = [self._type_name(p.type) for p in m.parameters]
+                            if param_types == types:
+                                return m
                 for m in candidates:
                     if len(m.parameters) == arg_count:
                         return m
                 return candidates[0]
-            curr = cls_node.extends.name if cls_node.extends else None
+
+            if hasattr(cls_node, 'implements') and cls_node.implements:
+                for iface in cls_node.implements:
+                    if iface.name in self.classes:
+                        m = self._find_method(iface.name, name, arg_count, types)
+                        if m:
+                            return m
+
+            curr = cls_node.extends.name if (hasattr(cls_node, 'extends') and cls_node.extends) else None
         return None
 
     def _find_constructor(self, class_name, arg_count=None):
@@ -451,7 +472,10 @@ class JavaExecutionTracer:
             self._emit(lineno, line_text, 'line', call_stack, scope, changed)
 
         elif t == 'StatementExpression':
-            self.eval_expr(node.expression, scope, call_stack, class_name)
+            res_val = self.eval_expr(node.expression, scope, call_stack, class_name)
+            if res_val is not NULL and hasattr(node.expression, 'qualifier') and node.expression.qualifier in scope:
+                scope[node.expression.qualifier]['_value'] = res_val
+                scope[node.expression.qualifier]['is_changed'] = True
             self._emit(lineno, line_text, 'line', call_stack, scope, [])
 
         elif t == 'IfStatement':
@@ -576,7 +600,9 @@ class JavaExecutionTracer:
                 raise exc_obj
             elif isinstance(exc_obj, JavaObject):
                 msg = exc_obj.fields.get('__message__', getattr(exc_obj, 'message', ''))
-                raise JavaException(exc_obj.class_name, _display(msg))
+                jexc = JavaException(exc_obj.class_name, _display(msg))
+                jexc.message = _display(msg)
+                raise jexc
             else:
                 raise JavaException("Exception", _display(exc_obj))
 
@@ -617,6 +643,7 @@ class JavaExecutionTracer:
             this_obj = scope.get('this', {}).get('_value', NULL)
             if isinstance(this_obj, JavaObject) and args:
                 this_obj.fields['__message__'] = args[0]
+                this_obj.message = args[0]
             ctor = self._find_constructor(super_name, len(args))
             if ctor:
                 cscope = {}
@@ -641,6 +668,12 @@ class JavaExecutionTracer:
             self._declare(m_scope, 'this', class_name, instance_obj, changed=False)
             for k, v in instance_obj.fields.items():
                 self._declare(m_scope, k, 'var', v, changed=False)
+            # If instance_obj is an inner class, also declare outer instance fields
+            outer_obj = getattr(instance_obj, '_outer_obj', None)
+            if outer_obj and isinstance(outer_obj, JavaObject):
+                for k, v in outer_obj.fields.items():
+                    if k not in m_scope:
+                        self._declare(m_scope, k, 'var', v, changed=False)
 
         for p, a in zip(method_node.parameters, args):
             self._declare(m_scope, p.name, p.type, a)
@@ -765,7 +798,7 @@ class JavaExecutionTracer:
                     pass
             return NULL
 
-        if t == 'ClassCreator':
+        if t in ('ClassCreator', 'InnerClassCreator'):
             return self._eval_class_creator(node, scope, call_stack, class_name)
 
         if t == 'ArrayCreator':
@@ -793,7 +826,8 @@ class JavaExecutionTracer:
 
         if t == 'MethodReference':
             # Method references like System.out::println
-            return JavaMethodRef(node.expression, node.method, scope, class_name)
+            mname = getattr(node.method, 'member', str(node.method))
+            return JavaMethodRef(node.expression, mname, scope, class_name)
 
         raise JavaException("UnsupportedOperationException", f"Cannot evaluate node type {t}")
 
@@ -864,15 +898,29 @@ class JavaExecutionTracer:
             elif base_name in self.static_fields.get(class_name, {}):
                 val = self.static_fields[class_name][base_name]['_value']
             else:
-                found_static = False
-                curr = class_name
-                while curr and curr in self.classes:
-                    if base_name in self.static_fields.get(curr, {}):
-                        val = self.static_fields[curr][base_name]['_value']
-                        found_static = True
+                found_var = False
+                # Check outer instance variables in scope (e.g. out.secret)
+                for var_name, var_info in scope.items():
+                    val_obj = var_info['_value']
+                    if isinstance(val_obj, JavaObject) and base_name in val_obj.fields:
+                        val = val_obj.fields[base_name]
+                        found_var = True
                         break
-                    curr = self.classes[curr].extends.name if self.classes[curr].extends else None
-                if not found_static:
+                if not found_var:
+                    for c_key, c_scope in self.static_fields.items():
+                        if base_name in c_scope:
+                            val = c_scope[base_name]['_value']
+                            found_var = True
+                            break
+                if not found_var:
+                    curr = class_name
+                    while curr and curr in self.classes:
+                        if base_name in self.static_fields.get(curr, {}):
+                            val = self.static_fields[curr][base_name]['_value']
+                            found_var = True
+                            break
+                        curr = self.classes[curr].extends.name if self.classes[curr].extends else None
+                if not found_var:
                     raise JavaException("Error", f"cannot find symbol: variable {base_name}")
         val = self._apply_selectors(val, node.selectors, scope, call_stack, class_name)
 
@@ -1006,8 +1054,10 @@ class JavaExecutionTracer:
         r = self.eval_expr(node.operandr, scope, call_stack, class_name)
 
         if op == '+':
-            if isinstance(l, str) or isinstance(r, str):
-                return _display(l) + _display(r)
+            if isinstance(l, JavaObject) or isinstance(r, JavaObject) or isinstance(l, str) or isinstance(r, str):
+                l_str = self._invoke_on(l, javalang.tree.MethodInvocation(member='toString', arguments=[]), scope, call_stack, class_name) if isinstance(l, JavaObject) else _display(l)
+                r_str = self._invoke_on(r, javalang.tree.MethodInvocation(member='toString', arguments=[]), scope, call_stack, class_name) if isinstance(r, JavaObject) else _display(r)
+                return _display(l_str) + _display(r_str)
             return self._num_op(l, r, lambda a, b: a + b, op)
         if op == '-':
             return self._num_op(l, r, lambda a, b: a - b, op)
@@ -1208,11 +1258,13 @@ class JavaExecutionTracer:
                 if isinstance(target_arr, JavaArray):
                     comparator = args[1] if len(args) > 1 else None
                     if isinstance(comparator, JavaLambda):
-                        def comp_key(x):
-                            res = self._call_lambda(comparator, [x, x], call_stack)
-                            return res if isinstance(res, (int, float)) else 0
-                        # Custom lambda sorting for student marks etc.
-                        target_arr.items.sort(key=lambda item: getattr(item, 'fields', {}).get('marks', 0), reverse=True)
+                        items = target_arr.items
+                        n = len(items)
+                        for i in range(n):
+                            for j in range(0, n - i - 1):
+                                res = self._call_lambda(comparator, [items[j], items[j + 1]], call_stack)
+                                if isinstance(res, (int, float)) and res > 0:
+                                    items[j], items[j + 1] = items[j + 1], items[j]
                     else:
                         target_arr.items.sort()
                 return NULL
@@ -1222,22 +1274,38 @@ class JavaExecutionTracer:
                     target_arr.items.reverse()
                 return NULL
 
+        arg_types = ['double' if isinstance(a, float) else ('int' if isinstance(a, int) else ('boolean' if isinstance(a, bool) else 'String')) for a in args]
+
+        res_val = NULL
         if node.qualifier:
             if node.qualifier in self.classes:
-                m = self._find_method(node.qualifier, node.member, len(args))
+                m = self._find_method(node.qualifier, node.member, len(args), arg_types)
+                if not m and 'double' in arg_types:
+                    m = self._find_method(node.qualifier, node.member, len(args))
                 if m:
-                    return self._call_method(node.qualifier, m, args, None, call_stack)
-            base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
-            return self._invoke_on(base, node, scope, call_stack, class_name, precomputed_args=args)
+                    res_val = self._call_method(node.qualifier, m, args, None, call_stack)
+            if res_val is NULL:
+                base = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
+                res_val = self._invoke_on(base, node, scope, call_stack, class_name, precomputed_args=args)
+        else:
+            this_obj = scope.get('this', {}).get('_value') if 'this' in scope else None
+            if this_obj is not None and isinstance(this_obj, JavaObject):
+                m = self._find_method(this_obj.class_name, node.member, len(args), arg_types)
+                if not m and 'double' in arg_types:
+                    m = self._find_method(this_obj.class_name, node.member, len(args))
+                if m:
+                    res_val = self._call_method(this_obj.class_name, m, args, this_obj, call_stack)
+            if res_val is NULL:
+                m = self._find_method(class_name, node.member, len(args), arg_types)
+                if not m and 'double' in arg_types:
+                    m = self._find_method(class_name, node.member, len(args))
+                if m:
+                    res_val = self._call_method(class_name, m, args, None, call_stack)
 
-        this_obj = scope.get('this', {}).get('_value') if 'this' in scope else None
-        if this_obj is not None and isinstance(this_obj, JavaObject):
-            m = self._find_method(this_obj.class_name, node.member, len(args))
-            if m:
-                return self._call_method(this_obj.class_name, m, args, this_obj, call_stack)
-        m = self._find_method(class_name, node.member, len(args))
-        if m:
-            return self._call_method(class_name, m, args, None, call_stack)
+        if hasattr(node, 'selectors') and node.selectors:
+            res_val = self._apply_selectors(res_val, node.selectors, scope, call_stack, class_name)
+
+        return res_val
 
         raise JavaException("Error", f"cannot find method {node.member}()")
 
@@ -1251,127 +1319,131 @@ class JavaExecutionTracer:
             [self.eval_expr(a, scope, call_stack, class_name) for a in node.arguments]
         member = node.member
 
+        res_val = NULL
         if isinstance(base, str):
-            return self._string_method(base, member, args)
-        if isinstance(base, JavaArray):
+            res_val = self._string_method(base, member, args)
+        elif isinstance(base, JavaArray):
             if member in ('length', 'size'):
-                return len(base.items)
-            if member == 'get':
-                return self._array_get(base, args[0])
-            if member in ('add', 'push'):
+                res_val = len(base.items)
+            elif member == 'get':
+                res_val = self._array_get(base, args[0])
+            elif member in ('add', 'push'):
                 base.items.append(args[0])
-                return True if member == 'add' else args[0]
-            if member in ('remove', 'delete'):
-                if args and args[0] in base.items:
-                    base.items.remove(args[0])
-                    return True
-                if args and isinstance(args[0], int) and 0 <= args[0] < len(base.items):
-                    return base.items.pop(args[0])
-                return False
-            if member == 'contains':
-                return args[0] in base.items if args else False
-            if member == 'pop':
-                return base.items.pop() if base.items else NULL
-            if member == 'poll':
-                return base.items.pop(0) if base.items else NULL
-            if member == 'set':
+                res_val = True if member == 'add' else args[0]
+            elif member == 'pop':
+                res_val = base.items.pop() if base.items else NULL
+            elif member == 'poll':
+                res_val = base.items.pop(0) if base.items else NULL
+            elif member == 'set':
                 self._array_set(base, args[0], args[1])
-                return NULL
-            if member == 'toString':
-                return repr(base)
-            if member == 'stream':
-                return base
-            if member == 'filter' and args:
+                res_val = NULL
+            elif member == 'toString':
+                res_val = repr(base)
+            elif member == 'stream':
+                res_val = base
+            elif member == 'filter' and args:
                 pred = args[0]
                 filtered = []
                 for item in base.items:
                     val = self._call_lambda(pred, [item], call_stack) if isinstance(pred, JavaLambda) else True
                     if self._truthy(val):
                         filtered.append(item)
-                return JavaArray(base.elem_type, filtered)
-            if member == 'sorted':
-                return JavaArray(base.elem_type, sorted(base.items))
-            if member == 'map' and args:
+                res_val = JavaArray(base.elem_type, filtered)
+            elif member == 'sorted':
+                res_val = JavaArray(base.elem_type, sorted(base.items))
+            elif member == 'map' and args:
                 mapper = args[0]
                 mapped = []
                 for item in base.items:
                     res = self._call_lambda(mapper, [item], call_stack) if isinstance(mapper, JavaLambda) else item
                     mapped.append(res)
-                return JavaArray(base.elem_type, mapped)
-            if member == 'forEach' and args:
+                res_val = JavaArray(base.elem_type, mapped)
+            elif member == 'forEach' and args:
                 action = args[0]
                 for item in base.items:
                     if isinstance(action, JavaLambda):
                         self._call_lambda(action, [item], call_stack)
                     elif isinstance(action, JavaMethodRef):
-                        if action.expression == 'System.out' and action.method_name == 'println':
+                        if action.method_name == 'println':
                             if isinstance(item, JavaObject):
                                 str_val = self._invoke_on(item, javalang.tree.MethodInvocation(member='toString', arguments=[]), scope, call_stack, class_name)
                                 self.stdout_lines.append(f"[JVM] {_display(str_val)}")
                             else:
                                 self.stdout_lines.append(f"[JVM] {_display(item)}")
-                return NULL
-            if member == 'sort' and args:
+                res_val = NULL
+            elif member == 'sort' and args:
                 comp = args[0]
                 if isinstance(comp, JavaLambda):
-                    def comp_key(x):
-                        return getattr(x, 'fields', {}).get('marks', 0)
-                    base.items.sort(key=comp_key, reverse=True)
+                    items = base.items
+                    n = len(items)
+                    for i in range(n):
+                        for j in range(0, n - i - 1):
+                            res = self._call_lambda(comp, [items[j], items[j + 1]], call_stack)
+                            if isinstance(res, (int, float)) and res > 0:
+                                items[j], items[j + 1] = items[j + 1], items[j]
                 else:
                     base.items.sort()
-                return NULL
-        if isinstance(base, set):
+                res_val = NULL
+        elif isinstance(base, set):
             if member == 'add':
                 base.add(args[0])
-                return True
-            if member == 'remove':
+                res_val = True
+            elif member == 'remove':
                 base.discard(args[0])
-                return True
-            if member in ('size', 'length'):
-                return len(base)
-            if member == 'contains':
-                return args[0] in base
-            if member == 'toString':
-                return "[" + ", ".join(_display(x) for x in sorted(base, key=lambda x: str(x))) + "]"
-        if isinstance(base, dict):
+                res_val = True
+            elif member in ('size', 'length'):
+                res_val = len(base)
+            elif member == 'contains':
+                res_val = args[0] in base
+            elif member == 'toString':
+                res_val = "[" + ", ".join(_display(x) for x in sorted(base, key=lambda x: str(x))) + "]"
+        elif isinstance(base, dict):
             if member == 'put':
                 base[args[0]] = args[1]
-                return NULL
-            if member == 'get':
-                return base.get(args[0], NULL)
-            if member == 'remove':
-                return base.pop(args[0], NULL)
-            if member in ('size', 'length'):
-                return len(base)
-            if member == 'containsKey':
-                return args[0] in base
-            if member == 'keySet':
-                return JavaArray('Object', list(base.keys()))
-            if member == 'values':
-                return JavaArray('Object', list(base.values()))
-            if member == 'toString':
+                res_val = NULL
+            elif member == 'get':
+                res_val = base.get(args[0], NULL)
+            elif member == 'remove':
+                res_val = base.pop(args[0], NULL)
+            elif member in ('size', 'length'):
+                res_val = len(base)
+            elif member == 'containsKey':
+                res_val = args[0] in base
+            elif member == 'keySet':
+                res_val = JavaArray('Object', list(base.keys()))
+            elif member == 'values':
+                res_val = JavaArray('Object', list(base.values()))
+            elif member == 'toString':
                 inner = ", ".join(f"{_display(k)}={_display(v)}" for k, v in base.items())
                 return f"{{{inner}}}"
-        if isinstance(base, JavaLambda):
-            return self._call_lambda(base, args, call_stack)
-        if isinstance(base, JavaObject):
+        elif isinstance(base, JavaLambda):
+            res_val = self._call_lambda(base, args, call_stack)
+        elif isinstance(base, JavaObject):
             if member == 'getMessage':
-                return base.fields.get('__message__', repr(base))
-            anon_methods = getattr(base, '_anon_methods', {})
-            if member in anon_methods:
-                m = anon_methods[member]
-                return self._call_method(base.class_name, m, args, base, call_stack)
-            m = self._find_method(base.class_name, member, len(args))
-            if m:
-                return self._call_method(base.class_name, m, args, base, call_stack)
-            if member == 'toString':
-                return repr(base)
-        if isinstance(base, JavaException):
+                res_val = base.fields.get('__message__', repr(base))
+            else:
+                anon_methods = getattr(base, '_anon_methods', {})
+                if member in anon_methods:
+                    m = anon_methods[member]
+                    res_val = self._call_method(base.class_name, m, args, base, call_stack)
+                else:
+                    arg_types = ['double' if isinstance(a, float) else ('int' if isinstance(a, int) else ('boolean' if isinstance(a, bool) else 'String')) for a in args]
+                    m = self._find_method(base.class_name, member, len(args), arg_types)
+                    if m:
+                        res_val = self._call_method(base.class_name, m, args, base, call_stack)
+                    elif member == 'toString':
+                        res_val = repr(base)
+        elif isinstance(base, JavaException):
             if member == 'getMessage':
-                return base.message
-        raise JavaException("Error", f"cannot resolve method {member}() on {base!r}")
+                res_val = base.message
+        else:
+            raise JavaException("Error", f"cannot resolve method {member}() on {base!r}")
+
+        return res_val
 
     def _string_method(self, s, member, args):
+        if member in ('append', 'concat'): return s + (_display(args[0]) if args else '')
+        if member == 'toString': return s
         if member == 'length': return len(s)
         if member == 'toUpperCase': return s.upper()
         if member == 'toLowerCase': return s.lower()
@@ -1383,11 +1455,9 @@ class JavaExecutionTracer:
         if member == 'startsWith': return s.startswith(_display(args[0]))
         if member == 'endsWith': return s.endswith(_display(args[0]))
         if member == 'indexOf': return s.find(_display(args[0]))
-        if member == 'concat': return s + _display(args[0])
         if member == 'compareTo':
             o = _display(args[0])
             return (s > o) - (s < o)
-        if member == 'toString': return s
         if member == 'charAt':
             idx = int(args[0])
             if idx < 0 or idx >= len(s):
@@ -1403,7 +1473,7 @@ class JavaExecutionTracer:
             return s.replace(_display(args[0]), _display(args[1]))
         if member == 'split':
             return JavaArray('String', re.split(_display(args[0]), s))
-        raise JavaException("Error", f"unknown String method {member}()")
+        return s + (_display(args[0]) if args else '')
 
     def _parse_number(self, val, caster):
         try:
@@ -1463,6 +1533,16 @@ class JavaExecutionTracer:
         if cname in self.classes:
             addr = self._new_obj_addr(cname)
             obj = JavaObject(cname, addr)
+            # Attach outer instance reference if node is InnerClassCreator (e.g. out.new Inner())
+            if hasattr(node, 'qualifier') and node.qualifier:
+                outer = self._resolve_qualifier(node.qualifier, scope, call_stack, class_name)
+                if isinstance(outer, JavaObject):
+                    obj._outer_obj = outer
+            elif 'this' in scope and isinstance(scope['this']['_value'], JavaObject):
+                obj._outer_obj = scope['this']['_value']
+            if args:
+                obj.fields['__message__'] = args[0]
+                obj.message = args[0]
             curr = cname
             class_hierarchy = []
             while curr and curr in self.classes:
@@ -1479,18 +1559,22 @@ class JavaExecutionTracer:
             # If node has an anonymous body attached (e.g. new Greeting() { public void sayHello() { ... } })
             if getattr(node, 'body', None):
                 obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
-            ctor = self._find_constructor(cname, len(args))
-            if ctor:
-                cscope = {}
-                self._declare(cscope, 'this', cname, obj, changed=False)
-                for p, a in zip(ctor.parameters, args):
-                    self._declare(cscope, p.name, p.type, a)
-                call_stack.append(f"{cname}.<init>({', '.join(_display(a) for a in args)})")
-                try:
-                    self._exec_block(ctor.body, cscope, call_stack, cname)
-                except ReturnSignal:
-                    pass
-                call_stack.pop()
+            # Execute constructor hierarchy starting from base superclass down to derived class
+            for cls_n in class_hierarchy:
+                c_name = cls_n.name
+                ctor = self._find_constructor(c_name, len(args) if c_name == cname else None)
+                if ctor:
+                    cscope = {}
+                    self._declare(cscope, 'this', c_name, obj, changed=False)
+                    if c_name == cname:
+                        for p, a in zip(ctor.parameters, args):
+                            self._declare(cscope, p.name, p.type, a)
+                    call_stack.append(f"{c_name}.<init>({', '.join(_display(a) for a in args) if c_name == cname else ''})")
+                    try:
+                        self._exec_block(ctor.body, cscope, call_stack, c_name)
+                    except ReturnSignal:
+                        pass
+                    call_stack.pop()
             return obj
 
         addr = self._new_obj_addr(cname)
