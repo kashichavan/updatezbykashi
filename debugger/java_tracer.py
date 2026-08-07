@@ -1219,6 +1219,10 @@ class JavaExecutionTracer:
         if isinstance(base, JavaObject):
             if member == 'getMessage' or member == 'toString':
                 return base.fields.get('__message__', repr(base))
+            anon_methods = getattr(base, '_anon_methods', {})
+            if member in anon_methods:
+                m = anon_methods[member]
+                return self._call_method(base.class_name, m, args, base, call_stack)
             m = self._find_method(base.class_name, member, len(args))
             if m:
                 return self._call_method(base.class_name, m, args, base, call_stack)
@@ -1332,6 +1336,9 @@ class JavaExecutionTracer:
                                 obj.fields[decl.name] = self.eval_expr(decl.initializer, scope, call_stack, class_name)
                             else:
                                 obj.fields[decl.name] = self._default_value(member.type)
+            # If node has an anonymous body attached (e.g. new Greeting() { public void sayHello() { ... } })
+            if getattr(node, 'body', None):
+                obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
             ctor = self._find_constructor(cname, len(args))
             if ctor:
                 cscope = {}
@@ -1348,6 +1355,8 @@ class JavaExecutionTracer:
 
         addr = self._new_obj_addr(cname)
         obj = JavaObject(cname, addr)
+        if getattr(node, 'body', None):
+            obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
         return obj
 
     def _eval_array_creator(self, node, scope, call_stack, class_name):
