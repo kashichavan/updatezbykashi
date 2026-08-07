@@ -1552,6 +1552,8 @@ class JavaExecutionTracer:
             return JavaException(cname, msg)
 
         if cname in self.classes:
+            # Emit a distinct step for the "new" operation so UI can highlight the allocation line
+            self._emit(self._lineno(node), f"new {cname}()", 'new', call_stack, {}, [], fn_name=f"new {cname}")
             addr = self._new_obj_addr(cname)
             obj = JavaObject(cname, addr)
             # Attach outer instance reference if node is InnerClassCreator (e.g. out.new Inner())

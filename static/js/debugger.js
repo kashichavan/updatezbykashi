@@ -556,6 +556,10 @@ function goToStep(idx) {
 
   if (step.event_type === 'exception') {
     updateBannerMessage(`❌ <strong>Line ${step.line_number} Exception:</strong> ${escapeHtml(step.ai_explanation)}`, 'rgba(239, 68, 68, 0.15)', '1px solid #ef4444', '#fca5a5');
+  } else if (step.event_type === 'new') {
+    // Highlight allocation of a new object
+    const className = step.ai_explanation || step.line_text || '';
+    updateBannerMessage(`🆕 <strong>Allocate:</strong> ${escapeHtml(className)}`, 'rgba(34, 197, 94, 0.15)', '1px solid #22c55e', '#a7f3d0');
   } else {
     updateBannerMessage(`💡 <strong>Line ${step.line_number}:</strong> ${escapeHtml(step.ai_explanation)}`, '', '', '');
   }
