@@ -231,11 +231,14 @@ class PythonExecutionTracer:
 
         self.prev_variables = {k: dict(v) for k, v in current_vars.items()}
 
+        ret_val_repr = repr(arg) if event == 'return' else None
+
         self.steps.append({
             'step_index':    len(self.steps),
             'line_number':   lineno,
             'line_text':     line_text,
             'event_type':    event,
+            'return_value':  ret_val_repr,
             'is_breakpoint': lineno in self.breakpoints,
             'stack_frames':  call_stack,
             'variables':     dict(current_vars),

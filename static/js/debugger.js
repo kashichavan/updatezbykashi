@@ -621,10 +621,35 @@ function applyInlineValueHints(upToIdx) {
       let condText = s.ai_explanation.replace(/^❓\s*(Condition|Loop Condition)\s*/, '');
       condText = condText.replace(/^if\s*\(/i, '(').replace(/\s*\{$/,'');
       if (condText.length > 55) condText = condText.slice(0, 53) + '…';
-      hints.push({ text: condText, changed: true, isCond: true });
+      hints.push({ text: condText, changed: true, isCond: true, isReturn: false, isPrint: false });
     }
 
-    // 2. Variable state updates with previous value tracking (prevVal ➔ newVal)
+    // 2. Return statements & function call return values
+    if (s.event_type === 'return' || s.return_value !== undefined && s.return_value !== null) {
+      const retValStr = s.return_value !== undefined && s.return_value !== null ? String(s.return_value) : '';
+      if (retValStr) {
+        let cleanRet = retValStr.length > 60 ? retValStr.slice(0, 58) + '…' : retValStr;
+        hints.push({ text: `↩ return: ${cleanRet}`, changed: true, isCond: false, isReturn: true, isPrint: false });
+      }
+    } else if (s.line_text && s.line_text.startsWith('return ')) {
+      const retExpr = s.line_text.replace(/^return\s+/, '').replace(/;$/, '').trim();
+      hints.push({ text: `↩ return ${retExpr}`, changed: true, isCond: false, isReturn: true, isPrint: false });
+    }
+
+    // 3. Printed output (print / console.log / System.out.println) beside line
+    const curStdout = s.stdout || '';
+    const prevStdout = prevS ? (prevS.stdout || '') : '';
+    if (curStdout.length > prevStdout.length) {
+      let newlyPrinted = curStdout.slice(prevStdout.length).trim();
+      newlyPrinted = newlyPrinted.replace(/^\[JS\]\s*/, '').trim();
+      if (newlyPrinted) {
+        const firstLinePrint = newlyPrinted.split('\n')[0];
+        let cleanPrint = firstLinePrint.length > 50 ? firstLinePrint.slice(0, 48) + '…' : firstLinePrint;
+        hints.push({ text: `🖨️ print ➔ ${cleanPrint}`, changed: true, isCond: false, isReturn: false, isPrint: true });
+      }
+    }
+
+    // 4. Variable state updates with previous value tracking (prevVal ➔ newVal)
     if (s.variables) {
       for (const [name, vdata] of Object.entries(s.variables)) {
         if (name.startsWith('__') || name === 'this') continue;
@@ -641,9 +666,9 @@ function applyInlineValueHints(upToIdx) {
           if (isChanged && prevRaw !== null) {
             let pVal = String(prevRaw);
             if (pVal.length > 60) pVal = pVal.slice(0, 58) + '…';
-            hints.push({ text: `${name}: ${pVal} ➔ ${currVal}`, changed: true, isCond: false });
+            hints.push({ text: `${name}: ${pVal} ➔ ${currVal}`, changed: true, isCond: false, isReturn: false, isPrint: false });
           } else {
-            hints.push({ text: `${name} = ${currVal}`, changed: false, isCond: false });
+            hints.push({ text: `${name} = ${currVal}`, changed: false, isCond: false, isReturn: false, isPrint: false });
           }
         }
       }
@@ -673,13 +698,25 @@ function applyInlineValueHints(upToIdx) {
     const className      = `inline-hint-line-${lineNo}`;
     const hasChanged     = hints.some(h => h.changed);
     const hasCond        = hints.some(h => h.isCond);
+    const hasReturn      = hints.some(h => h.isReturn);
+    const hasPrint       = hints.some(h => h.isPrint);
 
     let color  = hasChanged ? '#ffffff'            : '#7dd3fc';
     let bg     = hasChanged ? '#2563eb'            : 'rgba(13,21,39,0.9)';
     let border = hasChanged ? '1px solid #60a5fa' : '1px solid rgba(56,189,248,0.35)';
     let glow   = hasChanged ? '0 0 12px rgba(37,99,235,0.5)' : 'none';
 
-    if (hasCond) {
+    if (hasReturn) {
+      bg     = 'rgba(16, 185, 129, 0.95)';
+      border = '1px solid #34d399';
+      color  = '#ecfdf5';
+      glow   = '0 0 14px rgba(52,211,153,0.6)';
+    } else if (hasPrint) {
+      bg     = 'rgba(234, 179, 8, 0.95)';
+      border = '1px solid #fde047';
+      color  = '#fefce8';
+      glow   = '0 0 14px rgba(250,204,21,0.6)';
+    } else if (hasCond) {
       bg     = 'rgba(124, 58, 237, 0.95)';
       border = '1px solid #c084fc';
       color  = '#f3e8ff';

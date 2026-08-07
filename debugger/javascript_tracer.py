@@ -835,6 +835,7 @@ class JavaScriptExecutionTracer:
             'line_number':  lineno,
             'line_text':    line_text,
             'event_type':   event,
+            'return_value': str(ret_val) if ret_val is not None else None,
             'is_breakpoint': lineno in self.breakpoints,
             'stack_frames': list(call_stack),
             'variables':    {k: dict(v) for k, v in scope.items()},
