@@ -656,6 +656,39 @@ body.debugger-has-maximized {
   flex: 1 !important;
 }
 
+/* ── Full Workspace Maximized Overlay ── */
+.maximized-full-workspace {
+  position: fixed !important;
+  top: 8px !important;
+  left: 8px !important;
+  right: 8px !important;
+  bottom: 8px !important;
+  width: calc(100vw - 16px) !important;
+  height: calc(100vh - 16px) !important;
+  z-index: 99999 !important;
+  background: var(--bg-app) !important;
+  border-radius: 16px !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 0 9999px rgba(0,0,0,0.85) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.maximized-full-workspace .ide-split-grid {
+  flex: 1 !important;
+  height: calc(100vh - 120px) !important;
+}
+
+.maximized-full-workspace #monacoEditorContainer {
+  height: calc(100vh - 170px) !important;
+}
+
+.maximized-full-workspace .inspector-column-box {
+  height: calc(100vh - 125px) !important;
+}
+
 /* ── Active Executing Line ── */
 .active-executing-line {
   background: rgba(37,99,235,0.22) !important;

@@ -244,8 +244,15 @@
 
   <!-- ── 3. AI STEP STORY BANNER ── -->
   <div id="aiExplainBanner" class="step-story-banner">
-    💡 <strong>Beginner Guide:</strong> Select a language above → set breakpoints by clicking on
-    line numbers → click <strong>"Start Debugging"</strong>!
+    <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
+      <span id="aiExplainBannerText">
+        💡 <strong>Beginner Guide:</strong> Select a language above → set breakpoints by clicking on
+        line numbers → click <strong>"Start Debugging"</strong>!
+      </span>
+      <button class="section-maximize-btn" id="btnMaximizeWorkspace" onclick="toggleFullWorkspaceMaximize()" title="Maximize Full IDE Workspace" style="flex-shrink:0;">
+        ⛶ Maximize IDE
+      </button>
+    </div>
   </div>
 
   <!-- ── 4. SPLIT IDE GRID ── -->
@@ -359,5 +366,5 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs/loader.min.js"></script>
 
 <!-- Debugger IDE Logic -->
-<script src="{% static 'js/debugger.js' %}?v=v37_compact_var_pills"></script>
+<script src="{% static 'js/debugger.js' %}?v=v38_full_workspace_maximize"></script>
 {% endblock %}

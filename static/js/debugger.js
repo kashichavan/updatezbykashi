@@ -914,3 +914,31 @@ function toggleSectionMaximize(containerElem) {
   }, 100);
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   FULL WORKSPACE MAXIMIZE TOGGLE
+───────────────────────────────────────────────────────────────── */
+function toggleFullWorkspaceMaximize() {
+  const appWrap = document.querySelector('.debugger-app-wrap');
+  const btn = document.getElementById('btnMaximizeWorkspace');
+  if (!appWrap) return;
+
+  const isMaximized = appWrap.classList.contains('maximized-full-workspace');
+
+  if (!isMaximized) {
+    appWrap.classList.add('maximized-full-workspace');
+    document.body.classList.add('debugger-has-maximized');
+    if (btn) btn.innerHTML = '✕ Restore IDE';
+  } else {
+    appWrap.classList.remove('maximized-full-workspace');
+    document.body.classList.remove('debugger-has-maximized');
+    if (btn) btn.innerHTML = '⛶ Maximize IDE';
+  }
+
+  // Trigger Monaco Editor layout recalculation
+  setTimeout(() => {
+    if (window.editor && typeof window.editor.layout === 'function') {
+      window.editor.layout();
+    }
+  }, 100);
+}
+
