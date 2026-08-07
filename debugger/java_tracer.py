@@ -675,10 +675,14 @@ class JavaExecutionTracer:
 
         ret_val = NULL
         try:
-            if isinstance(lambda_obj.body, list):
-                self._exec_block(lambda_obj.body, l_scope, call_stack, lambda_obj.class_name)
+            body_node = lambda_obj.body
+            if type(body_node).__name__ == 'BlockStatement':
+                body_statements = getattr(body_node, 'statements', []) or getattr(body_node, 'body', [])
+                self._exec_block(body_statements, l_scope, call_stack, lambda_obj.class_name)
+            elif isinstance(body_node, list):
+                self._exec_block(body_node, l_scope, call_stack, lambda_obj.class_name)
             else:
-                ret_val = self.eval_expr(lambda_obj.body, l_scope, call_stack, lambda_obj.class_name)
+                ret_val = self.eval_expr(body_node, l_scope, call_stack, lambda_obj.class_name)
         except ReturnSignal as ret:
             ret_val = ret.value
         finally:
@@ -781,7 +785,10 @@ class JavaExecutionTracer:
 
         if t == 'LambdaExpression':
             # Create a callable JavaLambda wrapper object
-            params = [getattr(p, 'name', str(p)) for p in (node.parameters or [])]
+            params = []
+            for p in (node.parameters or []):
+                pname = getattr(p, 'name', None) or getattr(p, 'member', None) or str(p)
+                params.append(pname)
             return JavaLambda(params, node.body, scope, class_name)
 
         if t == 'MethodReference':
