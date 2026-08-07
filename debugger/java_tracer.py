@@ -262,6 +262,16 @@ class JavaExecutionTracer:
                     val = self.eval_expr(decl.initializer, scope, call_stack, class_name) \
                         if decl.initializer is not None else self._default_value(member.type)
                     self._declare(scope, decl.name, member.type, val)
+            elif isinstance(member, list):
+                call_stack.append(f"{class_name}.<clinit>")
+                self._emit(0, f"static initializer block for {class_name}", 'call', call_stack, scope, [], fn_name=f"{class_name}.<clinit>")
+                try:
+                    self._exec_block(member, scope, call_stack, class_name)
+                except ReturnSignal:
+                    pass
+                finally:
+                    call_stack.pop()
+                    self._emit(0, f"end of static initializer for {class_name}", 'return', call_stack, scope, [], fn_name=f"{class_name}.<clinit>")
 
     # ── Method lookup ───────────────────────────────────────────────────────
 
@@ -815,7 +825,10 @@ class JavaExecutionTracer:
 
         if t == 'Cast':
             val = self.eval_expr(node.expression, scope, call_stack, class_name)
-            return self._apply_cast(self._type_name(node.type), val)
+            val = self._apply_cast(self._type_name(node.type), val)
+            if hasattr(node, 'selectors') and node.selectors:
+                val = self._apply_selectors(val, node.selectors, scope, call_stack, class_name)
+            return val
 
         if t == 'TernaryExpression':
             cond = self.eval_expr(node.condition, scope, call_stack, class_name)
@@ -1562,6 +1575,18 @@ class JavaExecutionTracer:
                                 obj.fields[decl.name] = self.eval_expr(decl.initializer, scope, call_stack, class_name)
                             else:
                                 obj.fields[decl.name] = self._default_value(member.type)
+                    elif isinstance(member, list):
+                        init_scope = {}
+                        self._declare(init_scope, 'this', cls_n.name, obj, changed=False)
+                        call_stack.append(f"{cls_n.name}.<init-block>")
+                        self._emit(0, f"instance initializer block for {cls_n.name}", 'call', call_stack, init_scope, [], fn_name=f"{cls_n.name}.<init-block>")
+                        try:
+                            self._exec_block(member, init_scope, call_stack, cls_n.name)
+                        except ReturnSignal:
+                            pass
+                        finally:
+                            call_stack.pop()
+                            self._emit(0, f"end of instance initializer for {cls_n.name}", 'return', call_stack, scope, [], fn_name=f"{cls_n.name}.<init-block>")
             # If node has an anonymous body attached (e.g. new Greeting() { public void sayHello() { ... } })
             if getattr(node, 'body', None):
                 obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
