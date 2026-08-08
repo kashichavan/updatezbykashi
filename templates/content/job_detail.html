@@ -1321,18 +1321,22 @@
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
 
-      // 4. Header Tag Badge & Dynamic Animated Fire Particles
+      // 4. Header Tag Badge & Multi-Layer Dynamic Fire Animation
       ctx.fillStyle = '#ff0077'; // HDR Neon Pink
       ctx.beginPath();
       ctx.roundRect(300, 540, 720, 130, 64);
       ctx.fill();
 
-      // Animated Fire Particles
-      for (let i = 0; i < 12; i++) {
-        const fireX = 360 + Math.sin(now / 150 + i) * 35;
-        const fireY = 590 - (now / 15 % 50) - (i * 4);
-        const fireRadius = Math.max(0, 14 - (now / 15 % 50) / 4);
-        ctx.fillStyle = `rgba(255, ${120 + i * 10}, 0, ${0.8 - (now / 15 % 50) / 60})`;
+      // Dynamic Flame & Rising Embers Particle Simulation (DeepakKV Inspired)
+      for (let i = 0; i < 24; i++) {
+        const fireX = 350 + (i % 6) * 16 + Math.sin(now / 120 + i) * 20;
+        const speed = (i % 4) + 1;
+        const fireY = 600 - ((now / 10 * speed + i * 25) % 80);
+        const fireRadius = Math.max(0, 18 - ((now / 10 * speed + i * 25) % 80) / 4);
+        
+        // HDR Flame Colors (Red -> Orange -> Yellow Core)
+        const gVal = Math.min(255, Math.floor(80 + ((600 - fireY) * 2.5)));
+        ctx.fillStyle = `rgba(255, ${gVal}, 0, ${0.9 - ((600 - fireY) / 90)})`;
         ctx.beginPath();
         ctx.arc(fireX, fireY, fireRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -1361,12 +1365,15 @@
       ctx.font = '900 64px Consolas, "Courier New", monospace';
       ctx.fillText('Company : ' + companyName + ' is hiring!', 300, 810);
 
-      // 7. Multiline Job Title - TYPEWRITER ANIMATION (Shifted down right above details container)
+      // 7. Multiline Job Title - TYPEWRITER ANIMATION WITH BLINKING CURSOR
       const charCount = Math.floor(titleText.length * Math.min(progress * 2.2, 1.0));
-      const currentTitleText = titleText.substring(0, charCount);
+      const isTyping = progress < 0.9 && charCount < titleText.length;
+      const blinkingCursor = (isTyping && Math.floor(now / 300) % 2 === 0) ? '▌' : '';
+      const currentTitleText = titleText.substring(0, charCount) + blinkingCursor;
+      
       const words = currentTitleText.split(' ');
       let line = '';
-      let y = 1000; // Shifted down right above description/details box
+      let y = 1000; // Positioned directly above details box
 
       ctx.font = '900 96px Consolas, "Courier New", monospace';
 
