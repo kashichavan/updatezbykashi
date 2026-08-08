@@ -1139,11 +1139,12 @@
     ctx.font = '700 30px sans-serif';
     ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
 
-    // Trigger Image Download
-    const imageURI = canvas.toDataURL('image/png');
+    // Trigger Image Download via Django API Endpoint for mobile compatibility
+    const imageUrl = "/api/jobs/{{ job.id }}/ig-story-image/";
     const link = document.createElement('a');
-    link.download = `IG_Story_{{ job.company_name }}_{{ job.id }}.png`;
-    link.href = imageURI;
+    link.download = `IG_Story_{{ job.company_name }}.png`;
+    link.href = imageUrl;
+    link.target = '_blank';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1156,11 +1157,21 @@
 
   function copyIgStoryLinkOnly() {
     const url = "{{ share_url }}";
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
     navigator.clipboard.writeText(url).then(() => {
       const btn = document.getElementById('btnCopyIgLink');
       const orig = btn.innerText;
-      btn.innerText = '✅ Link Sticker Copied!';
-      setTimeout(() => { btn.innerText = orig; }, 2500);
+      btn.innerText = '✅ Link Sticker Copied! Opening IG...';
+      if (window.showToast) window.showToast("✅ Link copied! Add to IG Story Link Sticker", "success");
+
+      if (isMobile) {
+        setTimeout(() => {
+          window.location.href = "instagram://story-camera";
+        }, 600);
+      }
+
+      setTimeout(() => { btn.innerText = orig; }, 3000);
     }).catch(err => {
       alert('Apply URL:\n' + url);
     });
