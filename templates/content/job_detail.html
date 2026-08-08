@@ -759,40 +759,17 @@
 
 <script>
   async function openIgStoryModal() {
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const url = "{{ share_url }}";
 
-    // 1. Copy Apply URL text to clipboard first
+    // 1. Auto-copy direct job link for IG Link Sticker
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
+        if (window.showToast) window.showToast("✅ Apply Link copied for IG Story Link Sticker!", "success");
       }
     } catch (e) {}
 
-    // 2. On Mobile: Render 9:16 Story Card Image & Copy to Clipboard + Launch Instagram App
-    if (isMobile) {
-      try {
-        const fileBlob = await generateIgStoryImageBlob();
-        if (fileBlob && navigator.clipboard && window.ClipboardItem) {
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'image/png': fileBlob })
-          ]);
-          if (window.showToast) window.showToast("✅ Story Image & Link Copied! Paste in IG Story", "success");
-        }
-      } catch (err) {
-        console.log("Clipboard image copy fallback:", err);
-      }
-
-      // Launch Instagram App Story Camera
-      window.location.href = "instagram://story-camera";
-      setTimeout(function() {
-        window.location.href = "https://instagram.com";
-      }, 1200);
-
-      return;
-    }
-
-    // 3. Desktop view modal fallback
+    // 2. Open interactive 9:16 Visual Story Creator Modal (Works on all mobile & desktop devices)
     const modal = document.getElementById('igStoryModal');
     if (modal) {
       modal.style.display = 'flex';
