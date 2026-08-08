@@ -1385,67 +1385,71 @@
       }
       ctx.fillText(line, 160, y + 10);
 
-      // Details Inset Container (Fixed Bounds & Vertical Gap)
+      // Extended Details Inset Container (Clean 1-Column Vertical Stack Layout)
       const detY = Math.max(y + 80, 710);
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(150, detY, 780, 360, 32);
+      ctx.roundRect(150, detY, 780, 480, 32);
       ctx.fill();
       ctx.stroke();
 
-      // Row 1: Stipend & Job Type (With Emojis)
+      // Item 1: Stipend / Salary
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('STIPEND / SALARY', 190, detY + 30);
+      ctx.font = '900 18px Consolas, "Courier New", monospace';
+      ctx.fillText('STIPEND / SALARY', 190, detY + 25);
       ctx.fillStyle = '#34d399';
-      ctx.font = '900 30px Consolas, "Courier New", monospace';
-      ctx.fillText('💰 ' + stipend, 190, detY + 60);
+      ctx.font = '900 26px Consolas, "Courier New", monospace';
+      const dispStipend = stipend.length > 38 ? stipend.substring(0, 38) + '...' : stipend;
+      ctx.fillText('💰  ' + dispStipend, 190, detY + 52);
 
+      // Item 2: Job Type
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('JOB TYPE', 560, detY + 30);
+      ctx.font = '900 18px Consolas, "Courier New", monospace';
+      ctx.fillText('JOB TYPE', 190, detY + 115);
       ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 30px Consolas, "Courier New", monospace';
-      ctx.fillText('⚡ ' + jobType, 560, detY + 60);
+      ctx.font = '900 26px Consolas, "Courier New", monospace';
+      ctx.fillText('⚡  ' + jobType, 190, detY + 142);
 
-      // Row 2: Location & Deadline (With Emojis)
+      // Item 3: Location
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('LOCATION', 190, detY + 130);
+      ctx.font = '900 18px Consolas, "Courier New", monospace';
+      ctx.fillText('LOCATION', 190, detY + 205);
       ctx.fillStyle = '#f4f4f5';
-      ctx.font = '700 28px Consolas, "Courier New", monospace';
-      ctx.fillText('📍 ' + location, 190, detY + 160);
+      ctx.font = '700 26px Consolas, "Courier New", monospace';
+      const dispLoc = location.length > 38 ? location.substring(0, 38) + '...' : location;
+      ctx.fillText('📍  ' + dispLoc, 190, detY + 232);
 
+      // Item 4: Deadline
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('DEADLINE', 560, detY + 130);
+      ctx.font = '900 18px Consolas, "Courier New", monospace';
+      ctx.fillText('APPLICATION DEADLINE', 190, detY + 295);
       ctx.fillStyle = '#f43f5e';
-      ctx.font = '700 28px Consolas, "Courier New", monospace';
-      ctx.fillText('⏳ ' + deadline, 560, detY + 160);
+      ctx.font = '700 26px Consolas, "Courier New", monospace';
+      ctx.fillText('⏳  ' + deadline, 190, detY + 322);
 
-      // Row 3: Skills Required (With Emojis)
+      // Item 5: Skills Required
       if (skills) {
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '900 20px Consolas, "Courier New", monospace';
-        ctx.fillText('SKILLS REQUIRED', 190, detY + 235);
+        ctx.font = '900 18px Consolas, "Courier New", monospace';
+        ctx.fillText('SKILLS REQUIRED', 190, detY + 385);
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 26px Consolas, "Courier New", monospace';
-        const displaySkills = skills.length > 30 ? skills.substring(0, 30) + '...' : skills;
-        ctx.fillText('🛠️ ' + displaySkills, 190, detY + 265);
+        ctx.font = '700 24px Consolas, "Courier New", monospace';
+        const displaySkills = skills.length > 38 ? skills.substring(0, 38) + '...' : skills;
+        ctx.fillText('🛠️  ' + displaySkills, 190, detY + 412);
       } else {
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '900 20px Consolas, "Courier New", monospace';
-        ctx.fillText('ELIGIBILITY', 190, detY + 235);
+        ctx.font = '900 18px Consolas, "Courier New", monospace';
+        ctx.fillText('ELIGIBILITY', 190, detY + 385);
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 26px Consolas, "Courier New", monospace';
-        ctx.fillText('🎓 All Batches Eligible', 190, detY + 265);
+        ctx.font = '700 24px Consolas, "Courier New", monospace';
+        ctx.fillText('🎓  All Eligible Batches / Students', 190, detY + 412);
       }
 
       // High-Visibility Blinking Pulse Link Sticker CTA (Inside Outer Box Bounds)
       const stickerPulse = 1.0 + Math.sin(now / 180) * 0.04;
-      const btnY = detY + 395;
+      const btnY = detY + 510;
 
       ctx.save();
       ctx.translate(540, btnY + 50);
