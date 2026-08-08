@@ -671,3 +671,97 @@ def api_job_detail(request, pk):
                 'posted_date_display': posted_date_display,
             }
         })
+
+def api_job_ig_story_image(request, pk):
+    from io import BytesIO
+    from django.http import HttpResponse
+    from PIL import Image, ImageDraw, ImageFont
+
+    job = get_object_or_404(JobPosting, pk=pk)
+
+    # 1080x1920 9:16 Canvas
+    img = Image.new('RGB', (1080, 1920), color='#090d16')
+    draw = ImageDraw.Draw(img)
+
+    # Premium Radial & Linear Ambient Glows
+    for y in range(1920):
+        r = int(9 + (15 - 9) * (y / 1920))
+        g = int(13 + (23 - 13) * (y / 1920))
+        b = int(22 + (42 - 22) * (y / 1920))
+        draw.line([(0, y), (1080, y)], fill=(r, g, b))
+
+    # Decorative Ambient Lighting Orbs
+    draw.ellipse([700, 100, 1200, 600], fill=(131, 58, 180, 50))
+    draw.ellipse([-100, 1300, 450, 1850], fill=(37, 99, 235, 45))
+
+    # Main Classy Card Outline & Solid Dark Background
+    draw.rounded_rectangle([90, 240, 990, 1680], radius=52, fill=(15, 23, 42), outline=(56, 189, 248), width=3)
+    draw.rounded_rectangle([94, 244, 986, 1676], radius=48, fill=(17, 24, 39))
+
+    # Load Typography Fonts
+    try:
+        font_badge = ImageFont.truetype("Helvetica-Bold", 30)
+        font_handle = ImageFont.truetype("Helvetica", 32)
+        font_company = ImageFont.truetype("Helvetica-Bold", 44)
+        font_title = ImageFont.truetype("Helvetica-Bold", 60)
+        font_label = ImageFont.truetype("Helvetica-Bold", 32)
+        font_val = ImageFont.truetype("Helvetica", 38)
+        font_btn = ImageFont.truetype("Helvetica-Bold", 38)
+        font_domain = ImageFont.truetype("Helvetica-Bold", 28)
+    except Exception:
+        font_badge = font_handle = font_company = font_title = font_label = font_val = font_btn = font_domain = ImageFont.load_default()
+
+    # 1. Top Category & Handle Header
+    draw.rounded_rectangle([150, 300, 530, 375], radius=38, fill=(236, 72, 153))
+    draw.text((180, 322), "🔥 NEW REQUIREMENT", fill=(255, 255, 255), font=font_badge)
+    draw.text((710, 322), "@ikashii_07", fill=(148, 163, 184), font=font_handle)
+
+    # Divider Line
+    draw.line([(150, 410), (930, 410)], fill=(51, 65, 85), width=2)
+
+    # 2. Company Name & Title Header
+    draw.text((150, 450), job.company_name.upper(), fill=(56, 189, 248), font=font_company)
+
+    # Multiline Job Title
+    words = job.title.split()
+    line = ""
+    y_pos = 530
+    for word in words:
+        test = line + word + " "
+        if len(test) > 20 and line:
+            draw.text((150, y_pos), line, fill=(255, 255, 255), font=font_title)
+            line = word + " "
+            y_pos += 76
+        else:
+            line = test
+    if line:
+        draw.text((150, y_pos), line, fill=(255, 255, 255), font=font_title)
+
+    # 3. Classy Details Section (Card Inset)
+    box_top = max(y_pos + 70, 780)
+    draw.rounded_rectangle([150, box_top, 930, box_top + 400], radius=36, fill=(30, 41, 59), outline=(71, 85, 105), width=2)
+
+    # Detail Item 1: Salary / Stipend
+    draw.text((190, box_top + 50), "STIPEND / SALARY", fill=(148, 163, 184), font=font_label)
+    draw.text((190, box_top + 95), f"💼  {job.stipend_salary}", fill=(52, 211, 153), font=font_val)
+
+    # Detail Item 2: Location
+    draw.text((190, box_top + 175), "LOCATION", fill=(148, 163, 184), font=font_label)
+    draw.text((190, box_top + 220), f"📍  {job.location}", fill=(244, 244, 245), font=font_val)
+
+    # Detail Item 3: Eligibility
+    draw.text((190, box_top + 300), "ELIGIBILITY", fill=(148, 163, 184), font=font_label)
+    draw.text((190, box_top + 345), "🎓  All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
+
+    # 4. Link Sticker Call-To-Action Button
+    btn_y = box_top + 470
+    draw.rounded_rectangle([150, btn_y, 930, btn_y + 120], radius=60, fill=(225, 48, 108))
+    draw.text((540, btn_y + 40), "🔗 Tap Link Sticker Below to Apply ↗", fill=(255, 255, 255), font=font_btn, anchor="mm")
+
+    # Domain Attribution Footer
+    draw.text((540, btn_y + 170), "kashiiupdatez.online", fill=(148, 163, 184), font=font_domain, anchor="mm")
+
+    buf = BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return HttpResponse(buf.getvalue(), content_type='image/png')
