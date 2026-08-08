@@ -698,21 +698,33 @@ def api_job_ig_story_image(request, pk):
     draw.rounded_rectangle([90, 240, 990, 1680], radius=52, fill=(15, 23, 42), outline=(56, 189, 248), width=3)
     draw.rounded_rectangle([94, 244, 986, 1676], radius=48, fill=(17, 24, 39))
 
-    # Load Typography Fonts
-    try:
-        font_badge = ImageFont.truetype("Helvetica-Bold", 30)
-        font_handle = ImageFont.truetype("Helvetica", 32)
-        font_company = ImageFont.truetype("Helvetica-Bold", 44)
-        font_title = ImageFont.truetype("Helvetica-Bold", 60)
-        font_label = ImageFont.truetype("Helvetica-Bold", 32)
-        font_val = ImageFont.truetype("Helvetica", 38)
-        font_btn = ImageFont.truetype("Helvetica-Bold", 38)
-        font_domain = ImageFont.truetype("Helvetica-Bold", 28)
-    except Exception:
-        font_badge = font_handle = font_company = font_title = font_label = font_val = font_btn = font_domain = ImageFont.load_default()
+    # Load High-Quality System TTF Fonts
+    font_paths = [
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "Arial.ttf"
+    ]
+
+    def get_font(size, bold=False):
+        for path in font_paths:
+            try:
+                return ImageFont.truetype(path, size)
+            except Exception:
+                pass
+        return ImageFont.load_default()
+
+    font_badge = get_font(30, bold=True)
+    font_handle = get_font(32)
+    font_company = get_font(44, bold=True)
+    font_title = get_font(58, bold=True)
+    font_label = get_font(30, bold=True)
+    font_val = get_font(38, bold=True)
+    font_btn = get_font(38, bold=True)
+    font_domain = get_font(28, bold=True)
 
     # 1. Top Category & Handle Header
-    draw.rounded_rectangle([150, 300, 530, 375], radius=38, fill=(236, 72, 153))
+    draw.rounded_rectangle([150, 300, 560, 375], radius=38, fill=(236, 72, 153))
     draw.text((180, 322), "🔥 NEW REQUIREMENT", fill=(255, 255, 255), font=font_badge)
     draw.text((710, 322), "@ikashii_07", fill=(148, 163, 184), font=font_handle)
 
@@ -737,23 +749,23 @@ def api_job_ig_story_image(request, pk):
     if line:
         draw.text((150, y_pos), line, fill=(255, 255, 255), font=font_title)
 
-    # 3. Classy Details Section (Card Inset)
+    # 3. Classy Details Section (Card Inset matching HTML Preview)
     box_top = max(y_pos + 70, 780)
     draw.rounded_rectangle([150, box_top, 930, box_top + 400], radius=36, fill=(30, 41, 59), outline=(71, 85, 105), width=2)
 
     # Detail Item 1: Salary / Stipend
-    draw.text((190, box_top + 50), "STIPEND / SALARY", fill=(148, 163, 184), font=font_label)
-    draw.text((190, box_top + 95), f"💼  {job.stipend_salary}", fill=(52, 211, 153), font=font_val)
+    draw.text((190, box_top + 45), "STIPEND / SALARY", fill=(148, 163, 184), font=font_label)
+    draw.text((190, box_top + 90), f"💼  {job.stipend_salary}", fill=(52, 211, 153), font=font_val)
 
     # Detail Item 2: Location
-    draw.text((190, box_top + 175), "LOCATION", fill=(148, 163, 184), font=font_label)
-    draw.text((190, box_top + 220), f"📍  {job.location}", fill=(244, 244, 245), font=font_val)
+    draw.text((190, box_top + 165), "LOCATION", fill=(148, 163, 184), font=font_label)
+    draw.text((190, box_top + 210), f"📍  {job.location}", fill=(244, 244, 245), font=font_val)
 
     # Detail Item 3: Eligibility
-    draw.text((190, box_top + 300), "ELIGIBILITY", fill=(148, 163, 184), font=font_label)
-    draw.text((190, box_top + 345), "🎓  All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
+    draw.text((190, box_top + 285), "ELIGIBILITY", fill=(148, 163, 184), font=font_label)
+    draw.text((190, box_top + 330), "🎓  All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
 
-    # 4. Link Sticker Call-To-Action Button
+    # 4. Link Sticker Call-To-Action Button (Instagram Gradient)
     btn_y = box_top + 470
     draw.rounded_rectangle([150, btn_y, 930, btn_y + 120], radius=60, fill=(225, 48, 108))
     draw.text((540, btn_y + 40), "🔗 Tap Link Sticker Below to Apply ↗", fill=(255, 255, 255), font=font_btn, anchor="mm")
