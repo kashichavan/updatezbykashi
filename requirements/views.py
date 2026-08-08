@@ -1,7 +1,9 @@
+import os
 import json
 import re
 import urllib.request
 import ssl
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -753,22 +755,56 @@ def api_job_ig_story_image(request, pk):
     box_top = max(y_pos + 70, 780)
     draw.rounded_rectangle([150, box_top, 930, box_top + 400], radius=36, fill=(30, 41, 59), outline=(71, 85, 105), width=2)
 
+    # Load PNG Icon Assets
+    static_img_dir = os.path.join(settings.BASE_DIR, 'static', 'images')
+    
+    def load_png_icon(filename, size=(38, 38)):
+        try:
+            path = os.path.join(static_img_dir, filename)
+            icon = Image.open(path).convert("RGBA")
+            icon = icon.resize(size, Image.Resampling.LANCZOS)
+            return icon
+        except Exception:
+            return None
+
+    icon_salary = load_png_icon('icon-salary.png')
+    icon_location = load_png_icon('icon-location.png')
+    icon_eligibility = load_png_icon('icon-type.png')
+    icon_link = load_png_icon('icon-apply.png', size=(42, 42))
+
     # Detail Item 1: Salary / Stipend
     draw.text((190, box_top + 45), "STIPEND / SALARY", fill=(148, 163, 184), font=font_label)
-    draw.text((190, box_top + 90), f"💼  {job.stipend_salary}", fill=(52, 211, 153), font=font_val)
+    if icon_salary:
+        img.paste(icon_salary, (190, box_top + 92), icon_salary)
+        draw.text((240, box_top + 90), f"{job.stipend_salary}", fill=(52, 211, 153), font=font_val)
+    else:
+        draw.text((190, box_top + 90), f"{job.stipend_salary}", fill=(52, 211, 153), font=font_val)
 
     # Detail Item 2: Location
     draw.text((190, box_top + 165), "LOCATION", fill=(148, 163, 184), font=font_label)
-    draw.text((190, box_top + 210), f"📍  {job.location}", fill=(244, 244, 245), font=font_val)
+    if icon_location:
+        img.paste(icon_location, (190, box_top + 212), icon_location)
+        draw.text((240, box_top + 210), f"{job.location}", fill=(244, 244, 245), font=font_val)
+    else:
+        draw.text((190, box_top + 210), f"{job.location}", fill=(244, 244, 245), font=font_val)
 
     # Detail Item 3: Eligibility
     draw.text((190, box_top + 285), "ELIGIBILITY", fill=(148, 163, 184), font=font_label)
-    draw.text((190, box_top + 330), "🎓  All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
+    if icon_eligibility:
+        img.paste(icon_eligibility, (190, box_top + 332), icon_eligibility)
+        draw.text((240, box_top + 330), "All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
+    else:
+        draw.text((190, box_top + 330), "All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
 
     # 4. Link Sticker Call-To-Action Button (Instagram Gradient)
     btn_y = box_top + 470
     draw.rounded_rectangle([150, btn_y, 930, btn_y + 120], radius=60, fill=(225, 48, 108))
-    draw.text((540, btn_y + 40), "🔗 Tap Link Sticker Below to Apply ↗", fill=(255, 255, 255), font=font_btn, anchor="mm")
+    
+    if icon_link:
+        img.paste(icon_link, (200, btn_y + 39), icon_link)
+        draw.text((560, btn_y + 40), "Tap Link Sticker Below to Apply", fill=(255, 255, 255), font=font_btn, anchor="mm")
+    else:
+        draw.text((540, btn_y + 40), "Tap Link Sticker Below to Apply ->", fill=(255, 255, 255), font=font_btn, anchor="mm")
 
     # Domain Attribution Footer
     draw.text((540, btn_y + 170), "kashiiupdatez.online", fill=(148, 163, 184), font=font_domain, anchor="mm")

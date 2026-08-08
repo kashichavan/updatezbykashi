@@ -676,34 +676,41 @@
           <h2 style="font-size: 20px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ job.title }}</h2>
         </div>
 
-        <!-- Classy Details Inset Card -->
+        <!-- Classy Details Inset Card with Real PNG Icons -->
         <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
           <div>
             <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">STIPEND / SALARY</div>
             <div style="font-size: 13px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 6px;">
-              <span>💼</span> {{ job.stipend_salary }}
+              <img src="{% static 'images/icon-salary.png' %}" width="16" height="16" alt="Salary"> {{ job.stipend_salary }}
             </div>
           </div>
           <div>
             <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">LOCATION</div>
             <div style="font-size: 12px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 6px;">
-              <span>📍</span> {{ job.location }}
+              <img src="{% static 'images/icon-location.png' %}" width="16" height="16" alt="Location"> {{ job.location }}
             </div>
           </div>
           <div>
             <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">ELIGIBILITY</div>
             <div style="font-size: 12px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 6px;">
-              <span>🎓</span> All Eligible Batches / Students
+              <img src="{% static 'images/icon-type.png' %}" width="16" height="16" alt="Eligibility"> All Eligible Batches / Students
             </div>
           </div>
         </div>
 
-        <!-- Link Sticker Target Badge -->
-        <div style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px;">
-          <span>🔗 Tap Link Sticker Below to Apply</span> ↗
+        <!-- Animated Blinking Link Sticker Placement Badge -->
+        <div class="ig-blinking-sticker" style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px; animation: pulseGlow 1.5s infinite alternate;">
+          <img src="{% static 'images/icon-apply.png' %}" width="16" height="16" style="filter: brightness(0) invert(1);" alt="Link">
+          <span>Tap Link Sticker Below to Apply</span> ↗
         </div>
         <div style="font-size: 10px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online</div>
       </div>
+      <style>
+        @keyframes pulseGlow {
+          0% { transform: scale(1); box-shadow: 0 4px 14px rgba(225, 48, 108, 0.4); }
+          100% { transform: scale(1.03); box-shadow: 0 8px 24px rgba(225, 48, 108, 0.8), 0 0 15px rgba(255,255,255,0.6); }
+        }
+      </style>
     </div>
 
     <!-- Story Text Caption Snippet -->
