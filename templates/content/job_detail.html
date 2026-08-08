@@ -721,7 +721,7 @@
         <!-- Animated Blinking Link Sticker Placement Badge -->
         <div class="ig-blinking-sticker" style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px; animation: pulseGlow 1.5s infinite alternate;">
           <img src="{% static 'images/icon-apply.png' %}" width="16" height="16" style="filter: brightness(0) invert(1);" alt="Link">
-          <span>Tap Link Sticker Below to Apply</span> ↗
+          <span>🔗 Link in Bio - Click to Apply ↗</span>
         </div>
         <div style="font-size: 10px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online</div>
       </div>
@@ -1314,129 +1314,143 @@
       ctx.fillStyle = orb2;
       ctx.fillRect(0, 0, 1080, 1920);
 
-      // Main Outer Glass Card Box
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      // Main Outer Glass Card Box (Precise 1080x1920 Proportions)
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(90, 240, 900, 1440, 48);
+      ctx.roundRect(90, 220, 900, 1480, 48);
       ctx.fill();
       ctx.stroke();
 
       ctx.textBaseline = 'top';
+      ctx.textAlign = 'left';
 
       // Top Tag Badge Header
       ctx.fillStyle = '#ec4899';
       ctx.beginPath();
-      ctx.roundRect(150, 290, 370, 65, 32);
+      ctx.roundRect(150, 270, 360, 65, 32);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 24px Consolas, "Courier New", monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText('🔥 NEW REQUIREMENT', 180, 310);
+      ctx.fillText('🔥 NEW REQUIREMENT', 180, 290);
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = '800 28px Consolas, "Courier New", monospace';
-      ctx.fillText('@ikashii_07', 710, 310);
+      ctx.textAlign = 'right';
+      ctx.fillText('@ikashii_07', 930, 290);
+      ctx.textAlign = 'left';
 
       // Horizontal Divider Line
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(150, 385);
-      ctx.lineTo(930, 385);
+      ctx.moveTo(150, 365);
+      ctx.lineTo(930, 365);
       ctx.stroke();
 
-      // Company Name & Role Title (Consolas Monospace)
+      // Company Name (Cyan Accent Header)
       ctx.fillStyle = '#38bdf8';
       ctx.font = '900 36px Consolas, "Courier New", monospace';
-      ctx.fillText(companyName, 150, 420);
+      ctx.fillText(companyName, 150, 395);
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 48px Consolas, "Courier New", monospace';
-      
+      // Multiline Job Title - HIGHLIGHTED YELLOW / NEON WITH BACKPLATE GLOW
       const words = titleText.split(' ');
       let line = '';
-      let y = 480;
+      let y = 455;
+
+      ctx.font = '900 48px Consolas, "Courier New", monospace';
+
+      // Title Highlight Background Glow Box
+      const textHeight = Math.ceil(words.length / 2) * 58 + 20;
+      ctx.fillStyle = 'rgba(253, 224, 71, 0.12)';
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(140, 445, 800, textHeight, 20);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#fde047'; // Vibrant Gold/Yellow Highlight
       for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > 740 && n > 0) {
-          ctx.fillText(line, 150, y);
+        if (ctx.measureText(testLine).width > 750 && n > 0) {
+          ctx.fillText(line, 160, y + 10);
           line = words[n] + ' ';
-          y += 62;
+          y += 58;
         } else {
           line = testLine;
         }
       }
-      ctx.fillText(line, 150, y);
+      ctx.fillText(line, 160, y + 10);
 
-      // Extended Details Inset Box (Consolas Monospace)
-      const detY = Math.max(y + 70, 720);
+      // Details Inset Container (Fixed Bounds & Vertical Gap)
+      const detY = Math.max(y + 80, 710);
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(150, detY, 780, 430, 32);
+      ctx.roundRect(150, detY, 780, 360, 32);
       ctx.fill();
       ctx.stroke();
 
-      // Row 1: Stipend & Job Type
+      // Row 1: Stipend & Job Type (With Emojis)
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('STIPEND / SALARY', 190, detY + 35);
+      ctx.fillText('STIPEND / SALARY', 190, detY + 30);
       ctx.fillStyle = '#34d399';
-      ctx.font = '900 32px Consolas, "Courier New", monospace';
-      ctx.fillText('💼  ' + stipend, 190, detY + 70);
+      ctx.font = '900 30px Consolas, "Courier New", monospace';
+      ctx.fillText('💰 ' + stipend, 190, detY + 60);
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('JOB TYPE', 560, detY + 35);
+      ctx.fillText('JOB TYPE', 560, detY + 30);
       ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 32px Consolas, "Courier New", monospace';
-      ctx.fillText('⚡  ' + jobType, 560, detY + 70);
+      ctx.font = '900 30px Consolas, "Courier New", monospace';
+      ctx.fillText('⚡ ' + jobType, 560, detY + 60);
 
-      // Row 2: Location & Deadline
+      // Row 2: Location & Deadline (With Emojis)
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('LOCATION', 190, detY + 145);
+      ctx.fillText('LOCATION', 190, detY + 130);
       ctx.fillStyle = '#f4f4f5';
-      ctx.font = '700 30px Consolas, "Courier New", monospace';
-      ctx.fillText('📍  ' + location, 190, detY + 180);
+      ctx.font = '700 28px Consolas, "Courier New", monospace';
+      ctx.fillText('📍 ' + location, 190, detY + 160);
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 20px Consolas, "Courier New", monospace';
-      ctx.fillText('DEADLINE', 560, detY + 145);
+      ctx.fillText('DEADLINE', 560, detY + 130);
       ctx.fillStyle = '#f43f5e';
-      ctx.font = '700 30px Consolas, "Courier New", monospace';
-      ctx.fillText('⏳  ' + deadline, 560, detY + 180);
+      ctx.font = '700 28px Consolas, "Courier New", monospace';
+      ctx.fillText('⏳ ' + deadline, 560, detY + 160);
 
-      // Row 3: Skills Required
+      // Row 3: Skills Required (With Emojis)
       if (skills) {
         ctx.fillStyle = '#94a3b8';
         ctx.font = '900 20px Consolas, "Courier New", monospace';
-        ctx.fillText('SKILLS REQUIRED', 190, detY + 255);
+        ctx.fillText('SKILLS REQUIRED', 190, detY + 235);
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 28px Consolas, "Courier New", monospace';
-        const displaySkills = skills.length > 32 ? skills.substring(0, 32) + '...' : skills;
-        ctx.fillText('🛠️  ' + displaySkills, 190, detY + 290);
+        ctx.font = '700 26px Consolas, "Courier New", monospace';
+        const displaySkills = skills.length > 30 ? skills.substring(0, 30) + '...' : skills;
+        ctx.fillText('🛠️ ' + displaySkills, 190, detY + 265);
       } else {
         ctx.fillStyle = '#94a3b8';
         ctx.font = '900 20px Consolas, "Courier New", monospace';
-        ctx.fillText('ELIGIBILITY', 190, detY + 255);
+        ctx.fillText('ELIGIBILITY', 190, detY + 235);
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 28px Consolas, "Courier New", monospace';
-        ctx.fillText('🎓  All Eligible Batches / Students', 190, detY + 290);
+        ctx.font = '700 26px Consolas, "Courier New", monospace';
+        ctx.fillText('🎓 All Batches Eligible', 190, detY + 265);
       }
 
-      // High-Visibility Blinking Pulse Link Sticker CTA (Consolas)
+      // High-Visibility Blinking Pulse Link Sticker CTA (Inside Outer Box Bounds)
       const stickerPulse = 1.0 + Math.sin(now / 180) * 0.04;
-      const btnY = detY + 490;
+      const btnY = detY + 395;
 
       ctx.save();
-      ctx.translate(540, btnY + 55);
+      ctx.translate(540, btnY + 50);
       ctx.scale(stickerPulse, stickerPulse);
-      ctx.translate(-540, -(btnY + 55));
+      ctx.translate(-540, -(btnY + 50));
 
       const btnGrad = ctx.createLinearGradient(150, btnY, 930, btnY);
       btnGrad.addColorStop(0, '#e1306c');
@@ -1444,21 +1458,21 @@
       btnGrad.addColorStop(1, '#fcb045');
       ctx.fillStyle = btnGrad;
       ctx.beginPath();
-      ctx.roundRect(150, btnY, 780, 110, 55);
+      ctx.roundRect(150, btnY, 780, 100, 50);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 32px Consolas, "Courier New", monospace';
+      ctx.font = '900 28px Consolas, "Courier New", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 55);
+      ctx.fillText('🔗 Link in Bio - Click to Apply ↗', 540, btnY + 50);
       ctx.restore();
 
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '800 26px Consolas, "Courier New", monospace';
+      ctx.font = '800 24px Consolas, "Courier New", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
+      ctx.fillText('kashiiupdatez.online', 540, btnY + 125);
 
       ctx.restore(); // Restore main card transform
 
