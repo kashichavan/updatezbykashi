@@ -761,38 +761,38 @@
   async function openIgStoryModal() {
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     const url = "{{ share_url }}";
-    const shareText = "🔥 {{ job.company_name }} is hiring for {{ job.title }}!\n💼 Stipend: {{ job.stipend_salary }}\n📍 Location: {{ job.location }}\n\nApply Link:\n" + url;
 
-    // 1. Always copy direct apply link for IG Link Sticker
+    // 1. Copy Apply URL text to clipboard first
     try {
-      await navigator.clipboard.writeText(url);
-      if (window.showToast) window.showToast("✅ Link copied for IG Story Link Sticker!", "success");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      }
     } catch (e) {}
 
-    // 2. On Mobile Devices: Render 9:16 Canvas Story Image & trigger Native Share Sheet to Instagram
-    if (isMobile && navigator.canShare) {
+    // 2. On Mobile: Render 9:16 Story Card Image & Copy to Clipboard + Launch Instagram App
+    if (isMobile) {
       try {
-        const file = await generateIgStoryImageFile();
-        if (file && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: "{{ job.company_name }} Hiring - {{ job.title }}",
-            text: shareText,
-            url: url,
-            files: [file]
-          });
-          return;
+        const fileBlob = await generateIgStoryImageBlob();
+        if (fileBlob && navigator.clipboard && window.ClipboardItem) {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': fileBlob })
+          ]);
+          if (window.showToast) window.showToast("✅ Story Image & Link Copied! Paste in IG Story", "success");
         }
       } catch (err) {
-        console.log("Native share dismissed or unavailable, opening story camera fallback:", err);
+        console.log("Clipboard image copy fallback:", err);
       }
 
-      // Fallback if native file share sheet is cancelled or unsupported
+      // Launch Instagram App Story Camera
       window.location.href = "instagram://story-camera";
-      setTimeout(() => { window.open("https://instagram.com", "_blank"); }, 1200);
+      setTimeout(function() {
+        window.location.href = "https://instagram.com";
+      }, 1200);
+
       return;
     }
 
-    // 3. Desktop View: Open interactive Story Creator Modal
+    // 3. Desktop view modal fallback
     const modal = document.getElementById('igStoryModal');
     if (modal) {
       modal.style.display = 'flex';
@@ -800,6 +800,116 @@
       modal.style.visibility = 'visible';
       modal.classList.add('active');
     }
+  }
+
+  function generateIgStoryImageBlob() {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext('2d');
+
+      // Background Gradient
+      const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
+      grad.addColorStop(0, '#0f172a');
+      grad.addColorStop(0.5, '#1e1b4b');
+      grad.addColorStop(1, '#31103f');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1920);
+
+      // Glowing Orbs
+      const orb1 = ctx.createRadialGradient(900, 200, 10, 900, 200, 450);
+      orb1.addColorStop(0, 'rgba(236, 72, 153, 0.45)');
+      orb1.addColorStop(1, 'rgba(236, 72, 153, 0)');
+      ctx.fillStyle = orb1;
+      ctx.fillRect(0, 0, 1080, 1920);
+
+      // Card Container
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(100, 260, 880, 1380, 48);
+      ctx.fill();
+      ctx.stroke();
+
+      // Header Tag
+      ctx.fillStyle = '#ec4899';
+      ctx.beginPath();
+      ctx.roundRect(160, 320, 360, 70, 35);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 28px sans-serif';
+      ctx.fillText('🔥 NEW REQUIREMENT', 190, 366);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '800 32px sans-serif';
+      ctx.fillText('@ikashii_07', 720, 366);
+
+      // Company & Title
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '900 38px sans-serif';
+      ctx.fillText("{{ job.company_name }}".toUpperCase(), 160, 470);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 58px sans-serif';
+      const words = "{{ job.title }}".split(' ');
+      let line = '';
+      let y = 560;
+      for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > 760 && n > 0) {
+          ctx.fillText(line, 160, y);
+          line = words[n] + ' ';
+          y += 72;
+        } else { line = testLine; }
+      }
+      ctx.fillText(line, 160, y);
+
+      // Details Inset Box
+      const detY = Math.max(y + 80, 780);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(160, detY, 760, 360, 32);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#34d399';
+      ctx.font = '900 40px sans-serif';
+      ctx.fillText('💼  Stipend: {{ job.stipend_salary }}', 200, detY + 90);
+
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '700 36px sans-serif';
+      ctx.fillText('📍  Location: {{ job.location }}', 200, detY + 180);
+      ctx.fillText('🎓  Batch: All Eligible Students', 200, detY + 270);
+
+      // Link Sticker Badge
+      const btnY = detY + 440;
+      const btnGrad = ctx.createLinearGradient(160, btnY, 920, btnY);
+      btnGrad.addColorStop(0, '#833ab4');
+      btnGrad.addColorStop(0.5, '#fd1d1d');
+      btnGrad.addColorStop(1, '#fcb045');
+      ctx.fillStyle = btnGrad;
+      ctx.beginPath();
+      ctx.roundRect(160, btnY, 760, 110, 55);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 36px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 68);
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '700 30px sans-serif';
+      ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
+
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, 'image/png');
+    });
   }
 
   function generateIgStoryImageFile() {
