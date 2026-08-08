@@ -676,26 +676,46 @@
           <h2 style="font-size: 20px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ job.title }}</h2>
         </div>
 
-        <!-- Classy Details Inset Card with Real PNG Icons -->
-        <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-          <div>
-            <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">STIPEND / SALARY</div>
-            <div style="font-size: 13px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 6px;">
-              <img src="{% static 'images/icon-salary.png' %}" width="16" height="16" alt="Salary"> {{ job.stipend_salary }}
+        <!-- Classy Details Inset Card with Extended Job Info -->
+        <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px;">
+          <div style="display: flex; justify-content: space-between; gap: 8px;">
+            <div style="flex: 1;">
+              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">STIPEND / SALARY</div>
+              <div style="font-size: 12px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-salary.png' %}" width="14" height="14" alt="Salary"> {{ job.stipend_salary }}
+              </div>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">JOB TYPE</div>
+              <div style="font-size: 12px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-feed.png' %}" width="14" height="14" alt="Type"> {{ job.get_job_type_display }}
+              </div>
             </div>
           </div>
-          <div>
-            <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">LOCATION</div>
-            <div style="font-size: 12px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 6px;">
-              <img src="{% static 'images/icon-location.png' %}" width="16" height="16" alt="Location"> {{ job.location }}
+
+          <div style="display: flex; justify-content: space-between; gap: 8px;">
+            <div style="flex: 1;">
+              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">LOCATION</div>
+              <div style="font-size: 11px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-location.png' %}" width="14" height="14" alt="Location"> {{ job.location }}
+              </div>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">DEADLINE</div>
+              <div style="font-size: 11px; font-weight: 700; color: #f43f5e; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-date.png' %}" width="14" height="14" alt="Deadline"> {{ job.deadline|date:"M d, Y" }}
+              </div>
             </div>
           </div>
+
+          {% if job.skills_required %}
           <div>
-            <div style="font-size: 9px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">ELIGIBILITY</div>
-            <div style="font-size: 12px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 6px;">
-              <img src="{% static 'images/icon-type.png' %}" width="16" height="16" alt="Eligibility"> All Eligible Batches / Students
+            <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">SKILLS REQUIRED</div>
+            <div style="font-size: 11px; font-weight: 700; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              ⚡ {{ job.skills_required }}
             </div>
           </div>
+          {% endif %}
         </div>
 
         <!-- Animated Blinking Link Sticker Placement Badge -->
@@ -1225,6 +1245,10 @@
     const stipend = "{{ job.stipend_salary }}";
     const location = "{{ job.location }}";
 
+    const jobType = "{{ job.get_job_type_display }}";
+    const deadline = "{{ job.deadline|date:'M d, Y' }}";
+    const skills = "{{ job.skills_required|default:'' }}";
+
     // Setup Canvas MediaRecorder stream with High Resolution & Smooth FPS
     const stream = canvas.captureStream(60);
     let mimeType = 'video/mp4;codecs=avc1';
@@ -1290,121 +1314,150 @@
       ctx.fillStyle = orb2;
       ctx.fillRect(0, 0, 1080, 1920);
 
-      // Card Inset
+      // Main Outer Glass Card Box
       ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(100, 260, 880, 1380, 48);
+      ctx.roundRect(90, 240, 900, 1440, 48);
       ctx.fill();
       ctx.stroke();
+
+      ctx.textBaseline = 'top';
 
       // Top Tag Badge Header
       ctx.fillStyle = '#ec4899';
       ctx.beginPath();
-      ctx.roundRect(160, 320, 370, 70, 35);
+      ctx.roundRect(150, 290, 370, 65, 32);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 28px sans-serif';
-      ctx.fillText('🔥 NEW REQUIREMENT', 190, 366);
+      ctx.font = '900 24px Consolas, "Courier New", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText('🔥 NEW REQUIREMENT', 180, 310);
 
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '800 32px sans-serif';
-      ctx.fillText('@ikashii_07', 710, 366);
+      ctx.font = '800 28px Consolas, "Courier New", monospace';
+      ctx.fillText('@ikashii_07', 710, 310);
 
-      // Divider Line
+      // Horizontal Divider Line
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(160, 415);
-      ctx.lineTo(920, 415);
+      ctx.moveTo(150, 385);
+      ctx.lineTo(930, 385);
       ctx.stroke();
 
-      // Company Name & Role
+      // Company Name & Role Title (Consolas Monospace)
       ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 40px sans-serif';
-      ctx.fillText(companyName, 160, 470);
+      ctx.font = '900 36px Consolas, "Courier New", monospace';
+      ctx.fillText(companyName, 150, 420);
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 56px sans-serif';
+      ctx.font = '900 48px Consolas, "Courier New", monospace';
       
       const words = titleText.split(' ');
       let line = '';
-      let y = 560;
+      let y = 480;
       for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' ';
         if (ctx.measureText(testLine).width > 740 && n > 0) {
-          ctx.fillText(line, 160, y);
+          ctx.fillText(line, 150, y);
           line = words[n] + ' ';
-          y += 72;
+          y += 62;
         } else {
           line = testLine;
         }
       }
-      ctx.fillText(line, 160, y);
+      ctx.fillText(line, 150, y);
 
-      // Details Box Inset
-      const detY = Math.max(y + 80, 780);
+      // Extended Details Inset Box (Consolas Monospace)
+      const detY = Math.max(y + 70, 720);
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(160, detY, 760, 360, 32);
+      ctx.roundRect(150, detY, 780, 430, 32);
       ctx.fill();
       ctx.stroke();
 
-      // Detail 1: Stipend
+      // Row 1: Stipend & Job Type
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 24px sans-serif';
-      ctx.fillText('STIPEND / SALARY', 200, detY + 50);
+      ctx.font = '900 20px Consolas, "Courier New", monospace';
+      ctx.fillText('STIPEND / SALARY', 190, detY + 35);
       ctx.fillStyle = '#34d399';
-      ctx.font = '900 38px sans-serif';
-      ctx.fillText('💼  ' + stipend, 200, detY + 95);
+      ctx.font = '900 32px Consolas, "Courier New", monospace';
+      ctx.fillText('💼  ' + stipend, 190, detY + 70);
 
-      // Detail 2: Location
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 24px sans-serif';
-      ctx.fillText('LOCATION', 200, detY + 175);
-      ctx.fillStyle = '#f4f4f5';
-      ctx.font = '700 36px sans-serif';
-      ctx.fillText('📍  ' + location, 200, detY + 220);
+      ctx.font = '900 20px Consolas, "Courier New", monospace';
+      ctx.fillText('JOB TYPE', 560, detY + 35);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '900 32px Consolas, "Courier New", monospace';
+      ctx.fillText('⚡  ' + jobType, 560, detY + 70);
 
-      // Detail 3: Eligibility
+      // Row 2: Location & Deadline
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 24px sans-serif';
-      ctx.fillText('ELIGIBILITY', 200, detY + 300);
+      ctx.font = '900 20px Consolas, "Courier New", monospace';
+      ctx.fillText('LOCATION', 190, detY + 145);
       ctx.fillStyle = '#f4f4f5';
-      ctx.font = '700 36px sans-serif';
-      ctx.fillText('🎓  All Eligible Batches / Students', 200, detY + 345);
+      ctx.font = '700 30px Consolas, "Courier New", monospace';
+      ctx.fillText('📍  ' + location, 190, detY + 180);
 
-      // High-Visibility Blinking Pulse Link Sticker CTA
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '900 20px Consolas, "Courier New", monospace';
+      ctx.fillText('DEADLINE', 560, detY + 145);
+      ctx.fillStyle = '#f43f5e';
+      ctx.font = '700 30px Consolas, "Courier New", monospace';
+      ctx.fillText('⏳  ' + deadline, 560, detY + 180);
+
+      // Row 3: Skills Required
+      if (skills) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '900 20px Consolas, "Courier New", monospace';
+        ctx.fillText('SKILLS REQUIRED', 190, detY + 255);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 28px Consolas, "Courier New", monospace';
+        const displaySkills = skills.length > 32 ? skills.substring(0, 32) + '...' : skills;
+        ctx.fillText('🛠️  ' + displaySkills, 190, detY + 290);
+      } else {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '900 20px Consolas, "Courier New", monospace';
+        ctx.fillText('ELIGIBILITY', 190, detY + 255);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '700 28px Consolas, "Courier New", monospace';
+        ctx.fillText('🎓  All Eligible Batches / Students', 190, detY + 290);
+      }
+
+      // High-Visibility Blinking Pulse Link Sticker CTA (Consolas)
       const stickerPulse = 1.0 + Math.sin(now / 180) * 0.04;
-      const btnY = detY + 440;
+      const btnY = detY + 490;
 
       ctx.save();
       ctx.translate(540, btnY + 55);
       ctx.scale(stickerPulse, stickerPulse);
       ctx.translate(-540, -(btnY + 55));
 
-      const btnGrad = ctx.createLinearGradient(160, btnY, 920, btnY);
+      const btnGrad = ctx.createLinearGradient(150, btnY, 930, btnY);
       btnGrad.addColorStop(0, '#e1306c');
       btnGrad.addColorStop(0.5, '#fd1d1d');
       btnGrad.addColorStop(1, '#fcb045');
       ctx.fillStyle = btnGrad;
       ctx.beginPath();
-      ctx.roundRect(160, btnY, 760, 110, 55);
+      ctx.roundRect(150, btnY, 780, 110, 55);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 36px sans-serif';
+      ctx.font = '900 32px Consolas, "Courier New", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 68);
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 55);
       ctx.restore();
 
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '800 28px sans-serif';
+      ctx.font = '800 26px Consolas, "Courier New", monospace';
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
       ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
 
       ctx.restore(); // Restore main card transform
