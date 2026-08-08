@@ -640,9 +640,9 @@
 </div>
 
 <!-- ── INSTAGRAM STORY SHARE & CARD CREATOR MODAL ────────────────────── -->
-<div id="igStoryModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
-  <div style="background: #ffffff; width: 100%; max-width: 500px; border-radius: 28px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); position: relative; border: 1px solid rgba(225, 48, 108, 0.25); max-height: 90vh; overflow-y: auto;">
-    <button type="button" onclick="closeIgStoryModal()" style="position: absolute; top: 18px; right: 18px; background: #f1f5f9; border: none; width: 34px; height: 34px; border-radius: 50%; color: #64748b; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 18px; z-index: 10;">✕</button>
+<div id="igStoryModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 12px; overflow-y: auto;">
+  <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 24px; padding: 18px 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); position: relative; border: 1px solid rgba(225, 48, 108, 0.25); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+    <button type="button" onclick="closeIgStoryModal()" style="position: absolute; top: 14px; right: 14px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; color: #64748b; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
 
     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: grid; place-items: center; color: white; flex-shrink: 0;">
@@ -1028,6 +1028,26 @@
     canvas.width = 1080;
     canvas.height = 1920;
     const ctx = canvas.getContext('2d');
+
+    // Canvas roundRect Polyfill for iOS & Android WebViews
+    if (!ctx.roundRect) {
+      ctx.roundRect = function(x, y, w, h, r) {
+        if (typeof r === 'number') r = [r, r, r, r];
+        const [tl, tr, br, bl] = r;
+        this.beginPath();
+        this.moveTo(x + tl, y);
+        this.lineTo(x + w - tr, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + tr);
+        this.lineTo(x + w, y + h - br);
+        this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+        this.lineTo(x + bl, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - bl);
+        this.lineTo(x, y + tl);
+        this.quadraticCurveTo(x, y, x + tl, y);
+        this.closePath();
+        return this;
+      };
+    }
 
     // Background Gradient (Dark Glassmorphism Theme)
     const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
