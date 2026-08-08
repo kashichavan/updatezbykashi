@@ -572,9 +572,9 @@
           <a id="shareWaBtn" href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}" target="_blank" rel="noopener" class="share-pill share-pill-wa">
             <img src="{% static 'images/icon-whatsapp.png' %}" width="20" height="20" alt="WhatsApp" loading="eager" decoding="async"> Share on WhatsApp
           </a>
-          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="share-pill share-pill-ig">
-            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram" loading="eager" decoding="async"> DM @ikashii_07
-          </a>
+          <button type="button" onclick="openIgStoryModal()" class="share-pill share-pill-ig">
+            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram Story" loading="eager" decoding="async"> Share as IG Story
+          </button>
           <button id="copyUrlBtn" class="share-pill" onclick="copyShareUrl()">
             <img src="{% static 'images/icon-share.png' %}" width="20" height="20" alt="Share" loading="eager" decoding="async"> Copy Direct Link
           </button>
@@ -583,15 +583,17 @@
 
       <!-- Founder & YouTube Hub Banner -->
       <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 20px; padding: 20px; text-align: center;">
-        <div style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark)); color: #ffffff; display: grid; place-items: center; font-size: 22px; font-weight: 800; margin: 0 auto 10px; font-family: var(--font-serif);">
-          K
+        <div style="font-size: 11px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">Official Creator Hub</div>
+        <h4 style="font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 8px;">Learn Python, Django & Daily Requirements with Kashii</h4>
+        <p style="font-size: 13px; color: var(--muted); margin: 0 0 14px; line-height: 1.5;">Join 10,000+ students learning real-world fullstack development & daily career updates.</p>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="button button-dark" style="background: #dc2626; font-size: 13px; padding: 8px 16px;">
+            <img src="{% static 'images/icon-youtube.png' %}" width="16" height="16" alt="YouTube"> YouTube @pythonkashi
+          </a>
+          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="button button-light" style="font-size: 13px; padding: 8px 16px;">
+            <img src="{% static 'images/icon-chat.png' %}" width="16" height="16" alt="Instagram"> DM @ikashii_07
+          </a>
         </div>
-        <h4 style="font-size: 15px; font-weight: 700; margin: 0 0 2px;">Kashinath (Kashii)</h4>
-        <span style="font-size: 11px; font-weight: 700; color: var(--blue-primary); background: var(--blue-light); padding: 2px 8px; border-radius: 99px;">Tech Educator</span>
-        <p style="font-size: 12px; color: var(--muted); margin: 8px 0 12px;">Learn Python & Django tutorials on YouTube @pythonkashi.</p>
-        <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="font-size: 13px; font-weight: 700; color: #dc2626; text-decoration: none; display:inline-flex; align-items:center; gap:6px;">
-          <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" width="16" height="16" alt="YouTube"> Subscribe YouTube (@pythonkashi) ↗
-        </a>
       </div>
 
     </aside>
@@ -637,6 +639,97 @@
 
 </div>
 
+<!-- ── INSTAGRAM STORY SHARE & CARD CREATOR MODAL ────────────────────── -->
+<div id="igStoryModal" class="modal-overlay" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+  <div style="background: #ffffff; width: 100%; max-width: 500px; border-radius: 28px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35); position: relative; border: 1px solid rgba(225, 48, 108, 0.25); max-height: 90vh; overflow-y: auto;">
+    <button type="button" onclick="closeIgStoryModal()" style="position: absolute; top: 18px; right: 18px; background: #f1f5f9; border: none; width: 34px; height: 34px; border-radius: 50%; color: #64748b; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 18px; z-index: 10;">✕</button>
+
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+      <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: grid; place-items: center; color: white; flex-shrink: 0;">
+        <img src="{% static 'images/icon-chat.png' %}" width="24" height="24" style="filter: brightness(0) invert(1);" alt="Instagram">
+      </div>
+      <div>
+        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a;">Instagram Story Creator</h3>
+        <p style="font-size: 12px; color: #64748b; margin: 0;">Visual 9:16 Story Card + Link Sticker</p>
+      </div>
+    </div>
+
+    <!-- ── 9:16 VISUAL STORY CARD PREVIEW ────────────────────────── -->
+    <div style="margin-bottom: 20px; text-align: center;">
+      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">🎨 Story Card Preview (9:16 Format):</label>
+      
+      <div id="igStoryCardPreview" style="background: linear-gradient(145deg, #0f172a, #1e1b4b, #31103f); border-radius: 20px; padding: 24px 20px; color: #ffffff; text-align: left; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 16px 32px rgba(0,0,0,0.4); max-width: 320px; margin: 0 auto;">
+        
+        <!-- Background Glow Orbs -->
+        <div style="position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; border-radius: 50%; background: rgba(236, 72, 153, 0.35); filter: blur(35px); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -30px; left: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(99, 102, 241, 0.35); filter: blur(30px); pointer-events: none;"></div>
+
+        <!-- Header Tag -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; position: relative; z-index: 2;">
+          <span style="font-size: 10px; font-weight: 900; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 4px 10px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.8px; color: #ffffff; box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);">🔥 NEW REQUIREMENT</span>
+          <span style="font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 0.3px;">@ikashii_07</span>
+        </div>
+
+        <!-- Company & Job Title -->
+        <div style="position: relative; z-index: 2; margin-bottom: 16px;">
+          <div style="font-size: 12px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">{{ job.company_name }}</div>
+          <h2 style="font-size: 20px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ job.title }}</h2>
+        </div>
+
+        <!-- Details Box -->
+        <div style="position: relative; z-index: 2; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(8px); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+          <div style="font-size: 12px; color: #cbd5e1; display: flex; align-items: center; gap: 6px;">
+            <span>💼</span> <strong style="color: #34d399;">{{ job.stipend_salary }}</strong>
+          </div>
+          <div style="font-size: 12px; color: #cbd5e1; display: flex; align-items: center; gap: 6px;">
+            <span>📍</span> <span>{{ job.location }}</span>
+          </div>
+          <div style="font-size: 12px; color: #cbd5e1; display: flex; align-items: center; gap: 6px;">
+            <span>🎓</span> <span>Batch: All Eligible Students</span>
+          </div>
+        </div>
+
+        <!-- Link Sticker Placement Badge -->
+        <div style="position: relative; z-index: 2; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); border-radius: 99px; padding: 10px 14px; text-align: center; font-size: 12px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span>🔗 Tap Link Sticker Below to Apply</span> ↗
+        </div>
+        <div style="font-size: 9px; text-align: center; color: #94a3b8; margin-top: 6px; font-weight: 700;">kashiiupdatez.online</div>
+      </div>
+    </div>
+
+    <!-- Story Text Caption Snippet -->
+    <div style="margin-bottom: 16px;">
+      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Formatted Story Caption:</label>
+      <div id="igStoryCaptionText" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 12px; color: #1e293b; font-family: monospace; white-space: pre-wrap; line-height: 1.5; max-height: 90px; overflow-y: auto;">🔥 {{ job.company_name }} is hiring!
+📌 Role: {{ job.title }}
+💼 Stipend/Salary: {{ job.stipend_salary }}
+📍 Location: {{ job.location }}
+
+👇 Apply Link:
+{{ share_url }}</div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button type="button" id="btnDownloadIgCard" onclick="downloadIgStoryCardImage()" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+        📥 1. Download Story Card Image
+      </button>
+
+      <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.3);">
+        🔗 2. Copy Apply Link (For IG Link Sticker)
+      </button>
+
+      <button type="button" id="btnCopyIgCaption" onclick="copyIgStoryCaption()" class="button" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; justify-content: center; font-weight: 700; font-size: 13px; padding: 10px; border-radius: 12px;">
+        📋 3. Copy Caption Text
+      </button>
+
+      <a href="https://instagram.com" target="_blank" rel="noopener" class="button" style="background: #0f172a; color: #ffffff; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; text-decoration: none;">
+        🚀 4. Open Instagram App / Web ↗
+      </a>
+    </div>
+  </div>
+</div>
+
 <!-- ── STICKY MOBILE BOTTOM APPLY BAR (MOBILE-FIRST 1-THUMB TAP) ───── -->
 {% if job.apply_url %}
 <div class="mobile-sticky-apply-bar">
@@ -656,6 +749,171 @@
 {% endif %}
 
 <script>
+  function openIgStoryModal() {
+    const modal = document.getElementById('igStoryModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeIgStoryModal() {
+    const modal = document.getElementById('igStoryModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function copyIgStoryCaption() {
+    const text = document.getElementById('igStoryCaptionText').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btnCopyIgCaption');
+      const orig = btn.innerText;
+      btn.innerText = '✅ Caption & Text Copied!';
+      setTimeout(() => { btn.innerText = orig; }, 2500);
+    }).catch(err => {
+      alert('Copied Text:\n' + text);
+    });
+  }
+
+  function downloadIgStoryCardImage() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1920;
+    const ctx = canvas.getContext('2d');
+
+    // Background Gradient (Dark Glassmorphism Theme)
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
+    grad.addColorStop(0, '#0f172a');
+    grad.addColorStop(0.5, '#1e1b4b');
+    grad.addColorStop(1, '#31103f');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // Decorative Glowing Orbs
+    const orb1 = ctx.createRadialGradient(900, 200, 10, 900, 200, 450);
+    orb1.addColorStop(0, 'rgba(236, 72, 153, 0.45)');
+    orb1.addColorStop(1, 'rgba(236, 72, 153, 0)');
+    ctx.fillStyle = orb1;
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    const orb2 = ctx.createRadialGradient(200, 1700, 10, 200, 1700, 400);
+    orb2.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
+    orb2.addColorStop(1, 'rgba(99, 102, 241, 0)');
+    ctx.fillStyle = orb2;
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // Main Card Container (Glass Box)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.roundRect(100, 260, 880, 1380, 48);
+    ctx.fill();
+    ctx.stroke();
+
+    // Top Badge Header
+    ctx.fillStyle = '#ec4899';
+    ctx.beginPath();
+    ctx.roundRect(160, 320, 360, 70, 35);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 28px sans-serif';
+    ctx.fillText('🔥 NEW REQUIREMENT', 190, 366);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '800 32px sans-serif';
+    ctx.fillText('@ikashii_07', 720, 366);
+
+    // Company Name & Role
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = '900 38px sans-serif';
+    const compName = "{{ job.company_name }}".toUpperCase();
+    ctx.fillText(compName, 160, 470);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 58px sans-serif';
+    const titleText = "{{ job.title }}";
+    
+    // Word wrap title if long
+    const words = titleText.split(' ');
+    let line = '';
+    let y = 560;
+    for (let n = 0; n < words.length; n++) {
+      let testLine = line + words[n] + ' ';
+      let metrics = ctx.measureText(testLine);
+      if (metrics.width > 760 && n > 0) {
+        ctx.fillText(line, 160, y);
+        line = words[n] + ' ';
+        y += 72;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, 160, y);
+
+    // Inner Details Box
+    const detY = Math.max(y + 80, 780);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(160, detY, 760, 360, 32);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#34d399';
+    ctx.font = '900 40px sans-serif';
+    ctx.fillText('💼  Stipend: {{ job.stipend_salary }}', 200, detY + 90);
+
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = '700 36px sans-serif';
+    ctx.fillText('📍  Location: {{ job.location }}', 200, detY + 180);
+    ctx.fillText('🎓  Batch: All Eligible Students', 200, detY + 270);
+
+    // Link Sticker Banner Badge
+    const btnY = detY + 440;
+    const btnGrad = ctx.createLinearGradient(160, btnY, 920, btnY);
+    btnGrad.addColorStop(0, '#833ab4');
+    btnGrad.addColorStop(0.5, '#fd1d1d');
+    btnGrad.addColorStop(1, '#fcb045');
+    ctx.fillStyle = btnGrad;
+    ctx.beginPath();
+    ctx.roundRect(160, btnY, 760, 110, 55);
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 68);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '700 30px sans-serif';
+    ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
+
+    // Trigger Image Download
+    const imageURI = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = `IG_Story_{{ job.company_name }}_{{ job.id }}.png`;
+    link.href = imageURI;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    const btn = document.getElementById('btnDownloadIgCard');
+    const orig = btn.innerText;
+    btn.innerText = '✅ HD Story Image Downloaded!';
+    setTimeout(() => { btn.innerText = orig; }, 3000);
+  }
+
+  function copyIgStoryLinkOnly() {
+    const url = "{{ share_url }}";
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('btnCopyIgLink');
+      const orig = btn.innerText;
+      btn.innerText = '✅ Link Sticker Copied!';
+      setTimeout(() => { btn.innerText = orig; }, 2500);
+    }).catch(err => {
+      alert('Apply URL:\n' + url);
+    });
+  }
+
   function copyShareUrl() {
     const url = "{{ share_url }}";
     navigator.clipboard.writeText(url).then(() => {
