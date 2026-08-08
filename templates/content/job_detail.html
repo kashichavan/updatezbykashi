@@ -1139,15 +1139,18 @@
     ctx.font = '700 30px sans-serif';
     ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
 
-    // Trigger Image Download via Django API Endpoint for mobile compatibility
-    const imageUrl = "/api/jobs/{{ job.id }}/ig-story-image/";
-    const link = document.createElement('a');
-    link.download = `IG_Story_{{ job.company_name }}.png`;
-    link.href = imageUrl;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Export exact canvas visual rendering as PNG for download
+    try {
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
+      const link = document.createElement('a');
+      link.download = `IG_Story_{{ job.company_name }}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      window.open("/api/jobs/{{ job.id }}/ig-story-image/", "_blank");
+    }
 
     const btn = document.getElementById('btnDownloadIgCard');
     const orig = btn.innerText;
