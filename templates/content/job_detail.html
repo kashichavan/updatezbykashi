@@ -720,9 +720,9 @@
 
     <!-- Action Buttons -->
     <div style="display: flex; flex-direction: column; gap: 10px;">
-      <button type="button" id="btnDownloadIgCard" onclick="downloadIgStoryCardImage()" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);">
+      <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); text-decoration: none; display: flex; align-items: center; gap: 8px;">
         📥 1. Download Story Card Image
-      </button>
+      </a>
 
       <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.3);">
         🔗 2. Copy Apply Link (For IG Link Sticker)
