@@ -1249,7 +1249,7 @@
     const deadline = "{{ job.deadline|date:'M d, Y' }}";
     const skills = "{{ job.skills_required|default:'' }}";
 
-    // Setup Canvas MediaRecorder stream with High Resolution & Smooth FPS
+    // Setup Canvas MediaRecorder stream with Ultra HD Resolution & Smooth 60 FPS (16 Mbps)
     const stream = canvas.captureStream(60);
     let mimeType = 'video/mp4;codecs=avc1';
     if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp9';
@@ -1257,7 +1257,7 @@
 
     let mediaRecorder;
     try {
-      mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 8000000 });
+      mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 16000000 });
     } catch (e) {
       mediaRecorder = new MediaRecorder(stream);
     }
@@ -1349,10 +1349,10 @@
       ctx.font = '900 32px Consolas, "Courier New", monospace';
       ctx.fillText('Company : ' + companyName + ' is hiring!', 150, 395);
 
-      // Multiline Job Title - Shifted Below with Blinking Backplate
+      // Multiline Job Title - Shifted Down for Clean Alignment
       const words = titleText.split(' ');
       let line = '';
-      let y = 475; // Shifted below for clear visual separation
+      let y = 485; // Shifted further down for clear spacing
 
       ctx.font = '900 48px Consolas, "Courier New", monospace';
 
@@ -1364,7 +1364,7 @@
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(140, 465, 800, textHeight, 20);
+      ctx.roundRect(140, 475, 800, textHeight, 20);
       ctx.fill();
       ctx.stroke();
 
