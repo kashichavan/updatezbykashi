@@ -1350,29 +1350,31 @@
       ctx.lineTo(930, 365);
       ctx.stroke();
 
-      // Company Name (Cyan Accent Header)
+      // Company Header (e.g. Company : Test Yantra is hiring!)
       ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 36px Consolas, "Courier New", monospace';
-      ctx.fillText(companyName, 150, 395);
+      ctx.font = '900 32px Consolas, "Courier New", monospace';
+      ctx.fillText('Company : ' + companyName + ' is hiring!', 150, 395);
 
-      // Multiline Job Title - HIGHLIGHTED YELLOW / NEON WITH BACKPLATE GLOW
+      // Multiline Job Title - BLINKING WHITE HIGHLIGHTED BACKPLATE
       const words = titleText.split(' ');
       let line = '';
       let y = 455;
 
       ctx.font = '900 48px Consolas, "Courier New", monospace';
 
-      // Title Highlight Background Glow Box
+      // Blinking Pulse Opacity (White Glow Box)
+      const blinkAlpha = 0.15 + Math.sin(now / 200) * 0.08;
       const textHeight = Math.ceil(words.length / 2) * 58 + 20;
-      ctx.fillStyle = 'rgba(253, 224, 71, 0.12)';
-      ctx.strokeStyle = '#fde047';
+
+      ctx.fillStyle = `rgba(255, 255, 255, ${blinkAlpha})`;
+      ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.roundRect(140, 445, 800, textHeight, 20);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = '#fde047'; // Vibrant Gold/Yellow Highlight
+      ctx.fillStyle = '#ffffff'; // Bright Pure White
       for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' ';
         if (ctx.measureText(testLine).width > 750 && n > 0) {
