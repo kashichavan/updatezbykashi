@@ -1292,29 +1292,23 @@
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1.0);
 
-      // Clean Solid Dark Gradient Background
+      // Background Gradient Matching .job-hero-card (#0f172a to #1e3a5f)
       const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
       bgGrad.addColorStop(0, '#0f172a');
-      bgGrad.addColorStop(0.5, '#1e1b4b');
-      bgGrad.addColorStop(1, '#31103f');
+      bgGrad.addColorStop(0.6, '#1e3a5f');
+      bgGrad.addColorStop(1, '#0f172a');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, 1080, 1920);
 
-      // Ambient Soft Glow Orbs
+      // Ambient Blue Soft Glow Orb
       const glowScale = 1.0 + Math.sin(now / 500) * 0.08;
-      const orb1 = ctx.createRadialGradient(900, 250, 10, 900, 250, 480 * glowScale);
-      orb1.addColorStop(0, 'rgba(236, 72, 153, 0.35)');
-      orb1.addColorStop(1, 'rgba(236, 72, 153, 0)');
+      const orb1 = ctx.createRadialGradient(900, 250, 10, 900, 250, 500 * glowScale);
+      orb1.addColorStop(0, 'rgba(37, 99, 235, 0.35)');
+      orb1.addColorStop(1, 'rgba(37, 99, 235, 0)');
       ctx.fillStyle = orb1;
       ctx.fillRect(0, 0, 1080, 1920);
 
-      const orb2 = ctx.createRadialGradient(200, 1650, 10, 200, 1650, 420 * glowScale);
-      orb2.addColorStop(0, 'rgba(56, 189, 248, 0.3)');
-      orb2.addColorStop(1, 'rgba(56, 189, 248, 0)');
-      ctx.fillStyle = orb2;
-      ctx.fillRect(0, 0, 1080, 1920);
-
-      // Main Outer Glass Card Box (Precise 1080x1920 Proportions)
+      // Main Outer Glass Card Box (Matching Hero Card Aesthetic)
       ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 4;
@@ -1355,22 +1349,22 @@
       ctx.font = '900 32px Consolas, "Courier New", monospace';
       ctx.fillText('Company : ' + companyName + ' is hiring!', 150, 395);
 
-      // Multiline Job Title - BLINKING WHITE HIGHLIGHTED BACKPLATE
+      // Multiline Job Title - Shifted Below with Blinking Backplate
       const words = titleText.split(' ');
       let line = '';
-      let y = 455;
+      let y = 475; // Shifted below for clear visual separation
 
       ctx.font = '900 48px Consolas, "Courier New", monospace';
 
-      // Blinking Pulse Opacity (White Glow Box)
-      const blinkAlpha = 0.15 + Math.sin(now / 200) * 0.08;
+      // Blinking Backplate Box
+      const titleBlinkAlpha = 0.15 + Math.sin(now / 180) * 0.08;
       const textHeight = Math.ceil(words.length / 2) * 58 + 20;
 
-      ctx.fillStyle = `rgba(255, 255, 255, ${blinkAlpha})`;
+      ctx.fillStyle = `rgba(255, 255, 255, ${titleBlinkAlpha})`;
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(140, 445, 800, textHeight, 20);
+      ctx.roundRect(140, 465, 800, textHeight, 20);
       ctx.fill();
       ctx.stroke();
 
@@ -1388,7 +1382,7 @@
       ctx.fillText(line, 160, y + 10);
 
       // Extended Details Inset Container (Clean 1-Column Vertical Stack Layout)
-      const detY = Math.max(y + 80, 710);
+      const detY = Math.max(y + 90, 730);
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 2;
@@ -1449,11 +1443,13 @@
         ctx.fillText('🎓  All Eligible Batches / Students', 190, detY + 412);
       }
 
-      // High-Visibility Blinking Pulse Link Sticker CTA (Inside Outer Box Bounds)
-      const stickerPulse = 1.0 + Math.sin(now / 180) * 0.04;
+      // High-Visibility Blinking Pulse Link Sticker CTA (Whole Button Section Blinks)
+      const stickerPulse = 1.0 + Math.sin(now / 150) * 0.04;
+      const stickerAlpha = 0.85 + Math.sin(now / 150) * 0.15; // Complete Blinking Pulse
       const btnY = detY + 510;
 
       ctx.save();
+      ctx.globalAlpha = stickerAlpha;
       ctx.translate(540, btnY + 50);
       ctx.scale(stickerPulse, stickerPulse);
       ctx.translate(-540, -(btnY + 50));
