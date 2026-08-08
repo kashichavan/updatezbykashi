@@ -1321,11 +1321,22 @@
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
 
-      // 4. Header Tag Badge
+      // 4. Header Tag Badge & Dynamic Animated Fire Particles
       ctx.fillStyle = '#ff0077'; // HDR Neon Pink
       ctx.beginPath();
       ctx.roundRect(300, 540, 720, 130, 64);
       ctx.fill();
+
+      // Animated Fire Particles
+      for (let i = 0; i < 12; i++) {
+        const fireX = 360 + Math.sin(now / 150 + i) * 35;
+        const fireY = 590 - (now / 15 % 50) - (i * 4);
+        const fireRadius = Math.max(0, 14 - (now / 15 % 50) / 4);
+        ctx.fillStyle = `rgba(255, ${120 + i * 10}, 0, ${0.8 - (now / 15 % 50) / 60})`;
+        ctx.beginPath();
+        ctx.arc(fireX, fireY, fireRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 48px Consolas, "Courier New", monospace';
@@ -1348,12 +1359,14 @@
       // 6. Company Header
       ctx.fillStyle = '#00f0ff'; // HDR Electric Cyan
       ctx.font = '900 64px Consolas, "Courier New", monospace';
-      ctx.fillText('Company : ' + companyName + ' is hiring!', 300, 790);
+      ctx.fillText('Company : ' + companyName + ' is hiring!', 300, 810);
 
-      // 7. Multiline Job Title - Positioned Down with Blinking HDR White Backplate
-      const words = titleText.split(' ');
+      // 7. Multiline Job Title - TYPEWRITER ANIMATION (Shifted down right above details container)
+      const charCount = Math.floor(titleText.length * Math.min(progress * 2.2, 1.0));
+      const currentTitleText = titleText.substring(0, charCount);
+      const words = currentTitleText.split(' ');
       let line = '';
-      let y = 970; // Shifted down for clean spacing
+      let y = 1000; // Shifted down right above description/details box
 
       ctx.font = '900 96px Consolas, "Courier New", monospace';
 
@@ -1364,7 +1377,7 @@
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(280, 950, 1600, textHeight, 40);
+      ctx.roundRect(280, 980, 1600, textHeight, 40);
       ctx.fill();
       ctx.stroke();
 
@@ -1381,8 +1394,8 @@
       }
       ctx.fillText(line, 320, y + 20);
 
-      // 8. 4K Extended Details Container (Single-Column Vertical Stack)
-      const detY = Math.max(y + 180, 1460);
+      // 8. 4K Extended Details Container (Directly Below Title)
+      const detY = Math.max(y + 120, 1420);
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 4;
