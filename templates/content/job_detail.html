@@ -1215,9 +1215,10 @@
     btn.innerText = '🎬 Generating Animated Video (5s)...';
     btn.disabled = true;
 
+    // 4K Ultra HD Resolution Canvas (2160 x 3840 9:16 Vertical UHD)
     const canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 1920;
+    canvas.width = 2160;
+    canvas.height = 3840;
     const ctx = canvas.getContext('2d');
 
     // roundRect polyfill
@@ -1249,7 +1250,7 @@
     const deadline = "{{ job.deadline|date:'M d, Y' }}";
     const skills = "{{ job.skills_required|default:'' }}";
 
-    // Setup Canvas MediaRecorder stream with Ultra HD Resolution & Smooth 60 FPS (16 Mbps)
+    // Setup 4K 60FPS Stream with 32 Mbps High Bitrate Video Encoder
     const stream = canvas.captureStream(60);
     let mimeType = 'video/mp4;codecs=avc1';
     if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp9';
@@ -1257,7 +1258,7 @@
 
     let mediaRecorder;
     try {
-      mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 16000000 });
+      mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 32000000 });
     } catch (e) {
       mediaRecorder = new MediaRecorder(stream);
     }
@@ -1272,19 +1273,19 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Story_Video_{{ job.company_name }}.mp4`;
+      link.download = `Story_4K_Video_{{ job.company_name }}.mp4`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
 
-      btn.innerText = '✅ Animated Video Downloaded!';
+      btn.innerText = '✅ 4K HDR Video Downloaded!';
       btn.disabled = false;
       setTimeout(() => { btn.innerText = origText; }, 3500);
     };
 
     mediaRecorder.start();
 
-    // 5-Second Smooth Animation Loop
+    // 5-Second 60 FPS 4K HDR Animation Loop
     let startTime = performance.now();
     const duration = 5000;
 
@@ -1292,189 +1293,188 @@
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1.0);
 
-      // Background Gradient Matching .job-hero-card (#0f172a to #1e3a5f)
-      const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
-      bgGrad.addColorStop(0, '#0f172a');
-      bgGrad.addColorStop(0.6, '#1e3a5f');
-      bgGrad.addColorStop(1, '#0f172a');
+      // 1. Rich HDR Background Gradient (#090d16 -> #1e3a5f -> #090d16)
+      const bgGrad = ctx.createLinearGradient(0, 0, 2160, 3840);
+      bgGrad.addColorStop(0, '#090d16');
+      bgGrad.addColorStop(0.5, '#1e3a5f');
+      bgGrad.addColorStop(1, '#090d16');
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 1080, 1920);
+      ctx.fillRect(0, 0, 2160, 3840);
 
-      // Ambient Blue Soft Glow Orb
+      // 2. High-Dynamic-Range Ambient Cyan Glow Orb
       const glowScale = 1.0 + Math.sin(now / 500) * 0.08;
-      const orb1 = ctx.createRadialGradient(900, 250, 10, 900, 250, 500 * glowScale);
-      orb1.addColorStop(0, 'rgba(37, 99, 235, 0.35)');
-      orb1.addColorStop(1, 'rgba(37, 99, 235, 0)');
+      const orb1 = ctx.createRadialGradient(1800, 500, 20, 1800, 500, 1000 * glowScale);
+      orb1.addColorStop(0, 'rgba(0, 240, 255, 0.4)');
+      orb1.addColorStop(1, 'rgba(0, 240, 255, 0)');
       ctx.fillStyle = orb1;
-      ctx.fillRect(0, 0, 1080, 1920);
+      ctx.fillRect(0, 0, 2160, 3840);
 
-      // Main Outer Glass Card Box (Matching Hero Card Aesthetic)
+      // 3. Main 4K Outer Glass Card Box
       ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#00f0ff'; // Vibrant HDR Cyan Border
+      ctx.lineWidth = 8;
       ctx.beginPath();
-      ctx.roundRect(90, 220, 900, 1480, 48);
+      ctx.roundRect(180, 440, 1800, 2960, 96);
       ctx.fill();
       ctx.stroke();
 
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
 
-      // Top Tag Badge Header
-      ctx.fillStyle = '#ec4899';
+      // 4. Header Tag Badge
+      ctx.fillStyle = '#ff0077'; // HDR Neon Pink
       ctx.beginPath();
-      ctx.roundRect(150, 270, 360, 65, 32);
+      ctx.roundRect(300, 540, 720, 130, 64);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 24px Consolas, "Courier New", monospace';
-      ctx.fillText('🔥 NEW REQUIREMENT', 180, 290);
+      ctx.font = '900 48px Consolas, "Courier New", monospace';
+      ctx.fillText('🔥 NEW REQUIREMENT', 360, 580);
 
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '800 28px Consolas, "Courier New", monospace';
+      ctx.font = '800 56px Consolas, "Courier New", monospace';
       ctx.textAlign = 'right';
-      ctx.fillText('@ikashii_07', 930, 290);
+      ctx.fillText('@ikashii_07', 1860, 580);
       ctx.textAlign = 'left';
 
-      // Horizontal Divider Line
+      // 5. Horizontal Divider
       ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.moveTo(150, 365);
-      ctx.lineTo(930, 365);
+      ctx.moveTo(300, 730);
+      ctx.lineTo(1860, 730);
       ctx.stroke();
 
-      // Company Header (e.g. Company : Test Yantra is hiring!)
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 32px Consolas, "Courier New", monospace';
-      ctx.fillText('Company : ' + companyName + ' is hiring!', 150, 395);
+      // 6. Company Header
+      ctx.fillStyle = '#00f0ff'; // HDR Electric Cyan
+      ctx.font = '900 64px Consolas, "Courier New", monospace';
+      ctx.fillText('Company : ' + companyName + ' is hiring!', 300, 790);
 
-      // Multiline Job Title - Shifted Down for Clean Alignment
+      // 7. Multiline Job Title - Positioned Down with Blinking HDR White Backplate
       const words = titleText.split(' ');
       let line = '';
-      let y = 485; // Shifted further down for clear spacing
+      let y = 970; // Shifted down for clean spacing
 
-      ctx.font = '900 48px Consolas, "Courier New", monospace';
+      ctx.font = '900 96px Consolas, "Courier New", monospace';
 
-      // Blinking Backplate Box
-      const titleBlinkAlpha = 0.15 + Math.sin(now / 180) * 0.08;
-      const textHeight = Math.ceil(words.length / 2) * 58 + 20;
+      const titleBlinkAlpha = 0.18 + Math.sin(now / 180) * 0.10;
+      const textHeight = Math.ceil(words.length / 2) * 116 + 40;
 
       ctx.fillStyle = `rgba(255, 255, 255, ${titleBlinkAlpha})`;
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(140, 475, 800, textHeight, 20);
+      ctx.roundRect(280, 950, 1600, textHeight, 40);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = '#ffffff'; // Bright Pure White
+      ctx.fillStyle = '#ffffff'; // Vivid Pure White
       for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > 750 && n > 0) {
-          ctx.fillText(line, 160, y + 10);
+        if (ctx.measureText(testLine).width > 1500 && n > 0) {
+          ctx.fillText(line, 320, y + 20);
           line = words[n] + ' ';
-          y += 58;
+          y += 116;
         } else {
           line = testLine;
         }
       }
-      ctx.fillText(line, 160, y + 10);
+      ctx.fillText(line, 320, y + 20);
 
-      // Extended Details Inset Container (Clean 1-Column Vertical Stack Layout)
-      const detY = Math.max(y + 90, 730);
+      // 8. 4K Extended Details Container (Single-Column Vertical Stack)
+      const detY = Math.max(y + 180, 1460);
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(150, detY, 780, 480, 32);
+      ctx.roundRect(300, detY, 1560, 960, 64);
       ctx.fill();
       ctx.stroke();
 
       // Item 1: Stipend / Salary
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 18px Consolas, "Courier New", monospace';
-      ctx.fillText('STIPEND / SALARY', 190, detY + 25);
-      ctx.fillStyle = '#34d399';
-      ctx.font = '900 26px Consolas, "Courier New", monospace';
+      ctx.font = '900 36px Consolas, "Courier New", monospace';
+      ctx.fillText('STIPEND / SALARY', 380, detY + 50);
+      ctx.fillStyle = '#00ff9d'; // HDR Emerald Green
+      ctx.font = '900 52px Consolas, "Courier New", monospace';
       const dispStipend = stipend.length > 38 ? stipend.substring(0, 38) + '...' : stipend;
-      ctx.fillText('💰  ' + dispStipend, 190, detY + 52);
+      ctx.fillText('💰  ' + dispStipend, 380, detY + 104);
 
       // Item 2: Job Type
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 18px Consolas, "Courier New", monospace';
-      ctx.fillText('JOB TYPE', 190, detY + 115);
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 26px Consolas, "Courier New", monospace';
-      ctx.fillText('⚡  ' + jobType, 190, detY + 142);
+      ctx.font = '900 36px Consolas, "Courier New", monospace';
+      ctx.fillText('JOB TYPE', 380, detY + 230);
+      ctx.fillStyle = '#00f0ff'; // HDR Cyan
+      ctx.font = '900 52px Consolas, "Courier New", monospace';
+      ctx.fillText('⚡  ' + jobType, 380, detY + 284);
 
       // Item 3: Location
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 18px Consolas, "Courier New", monospace';
-      ctx.fillText('LOCATION', 190, detY + 205);
-      ctx.fillStyle = '#f4f4f5';
-      ctx.font = '700 26px Consolas, "Courier New", monospace';
+      ctx.font = '900 36px Consolas, "Courier New", monospace';
+      ctx.fillText('LOCATION', 380, detY + 410);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 52px Consolas, "Courier New", monospace';
       const dispLoc = location.length > 38 ? location.substring(0, 38) + '...' : location;
-      ctx.fillText('📍  ' + dispLoc, 190, detY + 232);
+      ctx.fillText('📍  ' + dispLoc, 380, detY + 464);
 
       // Item 4: Deadline
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '900 18px Consolas, "Courier New", monospace';
-      ctx.fillText('APPLICATION DEADLINE', 190, detY + 295);
-      ctx.fillStyle = '#f43f5e';
-      ctx.font = '700 26px Consolas, "Courier New", monospace';
-      ctx.fillText('⏳  ' + deadline, 190, detY + 322);
+      ctx.font = '900 36px Consolas, "Courier New", monospace';
+      ctx.fillText('APPLICATION DEADLINE', 380, detY + 590);
+      ctx.fillStyle = '#ff0055'; // HDR Coral Pink
+      ctx.font = '700 52px Consolas, "Courier New", monospace';
+      ctx.fillText('⏳  ' + deadline, 380, detY + 644);
 
       // Item 5: Skills Required
       if (skills) {
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '900 18px Consolas, "Courier New", monospace';
-        ctx.fillText('SKILLS REQUIRED', 190, detY + 385);
+        ctx.font = '900 36px Consolas, "Courier New", monospace';
+        ctx.fillText('SKILLS REQUIRED', 380, detY + 770);
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 24px Consolas, "Courier New", monospace';
+        ctx.font = '700 48px Consolas, "Courier New", monospace';
         const displaySkills = skills.length > 38 ? skills.substring(0, 38) + '...' : skills;
-        ctx.fillText('🛠️  ' + displaySkills, 190, detY + 412);
+        ctx.fillText('🛠️  ' + displaySkills, 380, detY + 824);
       } else {
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '900 18px Consolas, "Courier New", monospace';
-        ctx.fillText('ELIGIBILITY', 190, detY + 385);
+        ctx.font = '900 36px Consolas, "Courier New", monospace';
+        ctx.fillText('ELIGIBILITY', 380, detY + 770);
         ctx.fillStyle = '#cbd5e1';
-        ctx.font = '700 24px Consolas, "Courier New", monospace';
-        ctx.fillText('🎓  All Eligible Batches / Students', 190, detY + 412);
+        ctx.font = '700 48px Consolas, "Courier New", monospace';
+        ctx.fillText('🎓  All Eligible Batches / Students', 380, detY + 824);
       }
 
-      // High-Visibility Blinking Pulse Link Sticker CTA (Whole Button Section Blinks)
+      // 9. 4K High-Visibility Pulsing Link Sticker CTA
       const stickerPulse = 1.0 + Math.sin(now / 150) * 0.04;
-      const stickerAlpha = 0.85 + Math.sin(now / 150) * 0.15; // Complete Blinking Pulse
-      const btnY = detY + 510;
+      const stickerAlpha = 0.85 + Math.sin(now / 150) * 0.15;
+      const btnY = detY + 1020;
 
       ctx.save();
       ctx.globalAlpha = stickerAlpha;
-      ctx.translate(540, btnY + 50);
+      ctx.translate(1080, btnY + 100);
       ctx.scale(stickerPulse, stickerPulse);
-      ctx.translate(-540, -(btnY + 50));
+      ctx.translate(-1080, -(btnY + 100));
 
-      const btnGrad = ctx.createLinearGradient(150, btnY, 930, btnY);
+      const btnGrad = ctx.createLinearGradient(300, btnY, 1860, btnY);
       btnGrad.addColorStop(0, '#e1306c');
       btnGrad.addColorStop(0.5, '#fd1d1d');
       btnGrad.addColorStop(1, '#fcb045');
       ctx.fillStyle = btnGrad;
       ctx.beginPath();
-      ctx.roundRect(150, btnY, 780, 100, 50);
+      ctx.roundRect(300, btnY, 1560, 200, 100);
       ctx.fill();
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 28px Consolas, "Courier New", monospace';
+      ctx.font = '900 56px Consolas, "Courier New", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('🔗 Link in Bio - Click to Apply ↗', 540, btnY + 50);
+      ctx.fillText('🔗 Link in Bio - Click to Apply ↗', 1080, btnY + 100);
       ctx.restore();
 
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '800 24px Consolas, "Courier New", monospace';
+      ctx.font = '800 48px Consolas, "Courier New", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillText('kashiiupdatez.online', 540, btnY + 125);
+      ctx.fillText('kashiiupdatez.online', 1080, btnY + 250);
 
       ctx.restore(); // Restore main card transform
 
