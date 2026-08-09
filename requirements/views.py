@@ -813,3 +813,8 @@ def api_job_ig_story_image(request, pk):
     img.save(buf, format='PNG')
     buf.seek(0)
     return HttpResponse(buf.getvalue(), content_type='image/png')
+
+def custom_404_view(request, exception=None):
+    """Custom 404 handler for expired jobs, deleted requirements, or non-existent URLs."""
+    return render(request, '404.html', status=404)
+
