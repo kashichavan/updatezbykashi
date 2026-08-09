@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security & Environment Settings
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-v!!z*5s(9!i#1fq_=ob307z06h_&(*n!f4d5hi48s80jav*d19")
-DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true" and os.environ.get("DEBUG", "true").lower() == "true"
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true" or os.environ.get("DEBUG", "false").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
 
