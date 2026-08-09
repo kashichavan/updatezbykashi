@@ -816,5 +816,10 @@ def api_job_ig_story_image(request, pk):
 
 def custom_404_view(request, exception=None):
     """Custom 404 handler for expired jobs, deleted requirements, or non-existent URLs."""
-    return render(request, '404.html', status=404)
+    response = render(request, '404.html', status=404)
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
+
 
