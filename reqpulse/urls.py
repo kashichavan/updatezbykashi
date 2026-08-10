@@ -5,6 +5,7 @@ from requirements.views import custom_404_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('instagram/', include(('instaautomation.urls', 'instaautomation'), namespace='instaautomation')),
     path('debugger/', include(('debugger.urls', 'debugger'), namespace='debugger')),
     path('debug/', RedirectView.as_view(url='/debugger/', permanent=False)),
     path('debuger/', RedirectView.as_view(url='/debugger/', permanent=False)),

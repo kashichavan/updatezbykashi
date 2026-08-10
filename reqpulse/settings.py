@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'requirements',
     'debugger',
+    'instaautomation',
 ]
 
 MIDDLEWARE = [

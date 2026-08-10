@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat with {% if conversation.participant_username %}@{{ conversation.participant_username }}{% else %}{{ conversation.participant_id }}{% endif %} | Kashii Updatez{% endblock %}
+
+{% block content %}
+<div class="wrap" style="margin-top: 40px; margin-bottom: 80px; max-width: 760px;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+    <div>
+      <a href="{% url 'instaautomation:conversations' %}" style="font-size: 13px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
+        ← All Conversations
+      </a>
+      <h1 style="font-size: 22px; font-weight: 800; margin: 6px 0 0; color: var(--ink);">
+        Chat with {% if conversation.participant_username %}@{{ conversation.participant_username }}{% else %}User {{ conversation.participant_id }}{% endif %}
+      </h1>
+    </div>
+    <span style="font-size: 12px; background: rgba(56, 189, 248, 0.15); color: var(--blue-primary); padding: 4px 10px; border-radius: 8px; font-weight: 700;">
+      Connected: @{{ account.username }}
+    </span>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 28px; box-shadow: 0 12px 32px rgba(0,0,0,0.05); min-height: 380px; display: flex; flex-direction: column; justify-content: space-between;">
+    
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      {% for msg in messages_list %}
+        <div style="display: flex; flex-direction: column; align-self: {% if msg.direction == 'OUTGOING' %}flex-end{% else %}flex-start{% endif %}; max-width: 80%;">
+          
+          <div style="padding: 14px 18px; border-radius: 18px; font-size: 14px; line-height: 1.5;
+                      {% if msg.direction == 'OUTGOING' %}background: linear-gradient(135deg, #0284c7, #0369a1); color: #ffffff; border-bottom-right-radius: 4px;{% else %}background: rgba(0,0,0,0.05); color: var(--ink); border-bottom-left-radius: 4px;{% endif %}">
+            {{ msg.message_text|linebreaksbr }}
+          </div>
+
+          <div style="font-size: 11px; color: var(--muted); margin-top: 4px; align-self: {% if msg.direction == 'OUTGOING' %}flex-end{% else %}flex-start{% endif %};">
+            {% if msg.direction == 'OUTGOING' %}Bot (@{{ account.username }}){% else %}{% if conversation.participant_username %}@{{ conversation.participant_username }}{% else %}User{% endif %}{% endif %} • {{ msg.created_at|date:"H:i M d" }}
+          </div>
+
+        </div>
+      {% empty %}
+        <div style="text-align: center; color: var(--muted); padding: 40px;">No messages logged yet.</div>
+      {% endfor %}
+    </div>
+
+    {% if conversation.awaiting_confirmation %}
+      <div style="margin-top: 24px; padding: 14px; background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); border-radius: 12px; font-size: 13px; color: #d97706; font-weight: 700; text-align: center;">
+        ⏳ User is currently in the Follow + DONE workflow. Awaiting keyword reply: <code>{{ conversation.active_automation.confirmation_keyword|default:"DONE" }}</code>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Edit Automation{% else %}Create Automation{% endif %} | Kashii Updatez{% endblock %}
+
+{% block content %}
+<div class="wrap" style="margin-top: 40px; margin-bottom: 80px; max-width: 720px;">
+  
+  <div style="margin-bottom: 24px;">
+    <a href="{% url 'instaautomation:dashboard' %}" style="font-size: 13px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
+      ← Back to Dashboard
+    </a>
+  </div>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 36px; box-shadow: 0 12px 32px rgba(0,0,0,0.05);">
+    
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px;">
+      <div>
+        <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--ink);">
+          {% if is_edit %}Edit Automation Rule{% else %}Create Comment &amp; DM Automation{% endif %}
+        </h1>
+        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Connected to @{{ account.username }}</p>
+      </div>
+      <span style="font-size: 28px;">⚡</span>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      
+      <!-- Automation Name -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Rule Name *
+        </label>
+        <input type="text" name="name" value="{{ automation.name|default:'' }}" placeholder="e.g. Python Guide Automation" required
+               style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
+      </div>
+
+      <!-- Trigger Keywords -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Trigger Keywords (Comma Separated) *
+        </label>
+        <input type="text" name="keywords" value="{{ automation.keywords|default:'' }}" placeholder="e.g. python, python guide, learn python" required
+               style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
+        <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">When an Instagram user comments any of these keywords, the automation will trigger.</p>
+      </div>
+
+      <!-- Public Comment Reply -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Public Comment Reply
+        </label>
+        <input type="text" name="comment_reply" value="{{ automation.comment_reply|default:'Thanks! 👋 Check your DM.' }}" placeholder="Thanks! 👋 Check your DM."
+               style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
+      </div>
+
+      <!-- Initial DM Message -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Initial Private DM Message
+        </label>
+        <textarea name="dm_message" rows="3" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink); font-family: inherit;">{{ automation.dm_message|default:'Hey {{username}} 👋 Follow us and reply DONE to receive the resource.' }}</textarea>
+        <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">Available variables: <code>{{username}}</code></p>
+      </div>
+
+      <!-- Confirmation Keyword -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Confirmation Keyword
+        </label>
+        <input type="text" name="confirmation_keyword" value="{{ automation.confirmation_keyword|default:'DONE' }}" placeholder="DONE"
+               style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
+        <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">The keyword the user must reply in DM (e.g. DONE) to unlock final resource link.</p>
+      </div>
+
+      <!-- Resource URL -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Resource URL
+        </label>
+        <input type="url" name="resource_url" value="{{ automation.resource_url|default:'' }}" placeholder="https://kashiiupdatez.online/category/software-tech/"
+               style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
+      </div>
+
+      <!-- Final DM Message -->
+      <div style="margin-bottom: 24px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Final DM Delivery Message
+        </label>
+        <textarea name="final_message" rows="3" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink); font-family: inherit;">{{ automation.final_message|default:'Awesome! 🎉 Here is your guide: {{resource_url}}' }}</textarea>
+        <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">Available variables: <code>{{username}}</code>, <code>{{resource_url}}</code></p>
+      </div>
+
+      <!-- Is Active Switch -->
+      <div style="margin-bottom: 28px; display: flex; align-items: center; gap: 10px;">
+        <input type="checkbox" id="is_active" name="is_active" {% if automation %}{% if automation.is_active %}checked{% endif %}{% else %}checked{% endif %} style="width: 18px; height: 18px;">
+        <label for="is_active" style="font-weight: 700; font-size: 14px; color: var(--ink);">Enable this automation rule immediately</label>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button type="submit" class="button button-primary" style="flex: 1; justify-content: center; font-size: 15px; padding: 12px;">
+          {% if is_edit %}Save Changes{% else %}Create Automation Rule{% endif %}
+        </button>
+        <a href="{% url 'instaautomation:dashboard' %}" class="button" style="padding: 12px 20px; font-weight: 700; background: var(--surface); color: var(--ink); border: 1px solid var(--border); text-decoration: none;">
+          Cancel
+        </a>
+      </div>
+    </form>
+
+  </div>
+</div>
+{% endblock %}
