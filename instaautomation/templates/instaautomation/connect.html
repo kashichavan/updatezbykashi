@@ -23,9 +23,32 @@
       Log in with your official Instagram account to authorize automated comment replies, instant DMs, and resource delivery.
     </p>
 
-    <a href="{% url 'instaautomation:connect' %}" class="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px 28px; font-size: 16px; font-weight: 700; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border-radius: 14px; text-decoration: none; box-shadow: 0 12px 28px rgba(225, 48, 108, 0.35);">
-      <span>⚡ Log In with Instagram</span> ↗
+    <a href="{% url 'instaautomation:connect' %}" class="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 16px 28px; font-size: 16px; font-weight: 700; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border-radius: 14px; text-decoration: none; box-shadow: 0 12px 28px rgba(225, 48, 108, 0.35); margin-bottom: 28px;">
+      <span>⚡ Connect via Instagram Login</span> ↗
     </a>
+
+    <!-- Alternative Method: Direct Access Token Connection -->
+    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px; margin-top: 12px; text-align: left;">
+      <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 6px;">Alternative: Connect via Direct Access Token</h3>
+      <p style="font-size: 12px; color: #94a3b8; margin: 0 0 16px;">If you already generated an Instagram User Access Token (from Graph API Explorer / Meta App), paste it below to connect instantly without OAuth dialog.</p>
+
+      <form method="POST" action="{% url 'instaautomation:connect' %}">
+        {% csrf_token %}
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-size: 11px; font-weight: 800; color: #cbd5e1; margin-bottom: 4px; text-transform: uppercase;">Instagram Username *</label>
+          <input type="text" name="username" placeholder="ikashii_07" required style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px;">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; font-size: 11px; font-weight: 800; color: #cbd5e1; margin-bottom: 4px; text-transform: uppercase;">Instagram User Access Token *</label>
+          <input type="password" name="access_token" placeholder="EAAG..." required style="width: 100%; padding: 10px 14px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: #fff; font-size: 14px; font-family: monospace;">
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 800; background: var(--blue-primary); color: #fff; border: none; border-radius: 10px; cursor: pointer;">
+          🔑 Connect Account with Token
+        </button>
+      </form>
+    </div>
 
     <div style="margin-top: 24px; font-size: 12px; color: #64748b;">
       🔒 100% Safe &amp; Official. We never ask for your Instagram password.

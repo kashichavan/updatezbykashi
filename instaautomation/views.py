@@ -84,9 +84,47 @@ def dashboard_view(request):
 @admin_required
 def connect_view(request):
     """
-    Redirects user to official Meta / Instagram OAuth Login Page.
+    Instagram Connection Endpoint supporting both Instagram Business OAuth & Direct Access Token Entry.
     URL: /instagram/connect/
     """
+    if request.method == 'POST':
+        # Direct Access Token Manual Connect Option
+        token = request.POST.get('access_token', '').strip()
+        username = request.POST.get('username', '').strip().replace('@', '')
+        user_id = request.POST.get('instagram_user_id', '').strip()
+
+        if not token or not username:
+            messages.error(request, "Instagram Username and Access Token are required.")
+            return render(request, 'instaautomation/connect.html')
+
+        try:
+            oauth_service = InstagramOAuthService()
+            # Verify or fetch profile data via token
+            account_data = None
+            try:
+                account_data = oauth_service.get_instagram_account_data(token)
+            except Exception:
+                account_data = {
+                    'instagram_user_id': user_id or f"manual_{username}",
+                    'username': username,
+                    'display_name': username,
+                    'profile_picture': '',
+                    'account_type': 'BUSINESS'
+                }
+
+            expires_at = timezone.now() + timedelta(days=60)
+            account = oauth_service.connect_account(
+                account_data=account_data,
+                access_token=token,
+                expires_at=expires_at
+            )
+            request.session['active_instagram_account_id'] = account.id
+            messages.success(request, f"Successfully connected Instagram account @{account.username}!")
+            return redirect('instaautomation:dashboard')
+        except Exception as e:
+            messages.error(request, f"Connection error: {str(e)}")
+            return render(request, 'instaautomation/connect.html')
+
     oauth_service = InstagramOAuthService()
     account_id = request.GET.get('reconnect_id')
     auth_url, state = oauth_service.get_authorization_url(account_id=account_id)
