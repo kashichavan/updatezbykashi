@@ -20,9 +20,9 @@ class InstagramOAuthService:
 
     @classmethod
     def get_app_credentials(cls):
-        app_id = getattr(settings, 'META_APP_ID', '') or os.environ.get('META_APP_ID', '')
+        app_id = getattr(settings, 'META_APP_ID', '1062757692535729') or os.environ.get('META_APP_ID', '1062757692535729')
         app_secret = getattr(settings, 'META_APP_SECRET', '') or os.environ.get('META_APP_SECRET', '')
-        redirect_uri = getattr(settings, 'INSTAGRAM_REDIRECT_URI', '') or os.environ.get('INSTAGRAM_REDIRECT_URI', '')
+        redirect_uri = getattr(settings, 'INSTAGRAM_REDIRECT_URI', 'https://kashiiupdatez.online/instagram/oauth/callback/') or os.environ.get('INSTAGRAM_REDIRECT_URI', 'https://kashiiupdatez.online/instagram/oauth/callback/')
         return app_id, app_secret, redirect_uri
 
     @classmethod
