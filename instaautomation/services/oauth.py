@@ -45,9 +45,13 @@ class InstagramOAuthService:
             state = f"{state}:{account_id}"
             
         scopes = [
-            'instagram_business_basic',
-            'instagram_business_manage_messages',
-            'instagram_business_manage_comments'
+            'instagram_basic',
+            'instagram_manage_comments',
+            'instagram_manage_messages',
+            'pages_show_list',
+            'pages_read_engagement',
+            'pages_manage_metadata',
+            'public_profile'
         ]
         
         params = {
@@ -55,11 +59,9 @@ class InstagramOAuthService:
             'redirect_uri': redirect_uri,
             'response_type': 'code',
             'scope': ','.join(scopes),
-            'enable_fb_login': '0',
-            'force_authentication': '1',
             'state': state
         }
-        return f"{INSTAGRAM_BUSINESS_OAUTH_AUTHORIZE_URL}?{urllib.parse.urlencode(params)}", state
+        return f"https://www.facebook.com/v19.0/dialog/oauth?{urllib.parse.urlencode(params)}", state
 
     def exchange_code(self, code):
         app_id, app_secret, redirect_uri = self.get_app_credentials()
