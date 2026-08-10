@@ -346,3 +346,119 @@ def conversation_detail_view(request, pk):
         'messages_list': messages_list
     })
 
+# ==============================================================================
+# SUPERPROFILE API EQUIVALENT JSON ENDPOINTS
+# ==============================================================================
+
+@csrf_exempt
+def api_get_instagram_connect_url(request):
+    """
+    Superprofile equivalent API: GET /instagram/api/adm/get_instagram_connect_url
+    Returns Instagram Business OAuth authUrl JSON payload.
+    """
+    oauth_service = InstagramOAuthService()
+    account = get_active_account(request)
+    account_id = account.id if account else None
+    auth_url, state = oauth_service.get_authorization_url(account_id=account_id)
+    return JsonResponse({
+        'status': True,
+        'data': {
+            'authUrl': auth_url,
+            'state': state
+        }
+    })
+
+@csrf_exempt
+def api_get_instagram_details(request):
+    """
+    Superprofile equivalent API: GET /instagram/api/adm/get_instagram_details
+    Returns connected Instagram account details JSON payload.
+    """
+    account = get_active_account(request)
+    if not account:
+        return JsonResponse({'status': False, 'data': None, 'message': 'No connected Instagram account'}, status=404)
+
+    return JsonResponse({
+        'status': True,
+        'data': {
+            'id': account.id,
+            'instagramUserId': account.instagram_user_id,
+            'username': account.username,
+            'displayName': account.display_name,
+            'profilePicture': account.profile_picture,
+            'accountType': account.account_type,
+            'isConnected': account.is_connected,
+            'isTokenValid': account.is_token_valid,
+            'connectionStatus': account.connection_status,
+            'lastSyncedAt': account.last_synced_at.isoformat() if account.last_synced_at else None
+        }
+    })
+
+@csrf_exempt
+def api_get_messenger_details(request):
+    """
+    Superprofile equivalent API: GET /instagram/api/adm/get_messenger_details
+    Returns active automations and conversation counts JSON payload.
+    """
+    account = get_active_account(request)
+    if not account:
+        return JsonResponse({'status': False, 'data': {'automations': [], 'conversationsCount': 0}})
+
+    automations = CommentAutomation.objects.filter(instagram_account=account, is_active=True)
+    conv_count = InstagramConversation.objects.filter(instagram_account=account).count()
+
+    automations_data = [{
+        'id': auto.id,
+        'name': auto.name,
+        'keywords': auto.get_keywords_list(),
+        'commentReply': auto.comment_reply,
+        'dmMessage': auto.dm_message,
+        'confirmationKeyword': auto.confirmation_keyword,
+        'finalMessage': auto.final_message,
+        'resourceUrl': auto.resource_url,
+        'isActive': auto.is_active
+    } for auto in automations]
+
+    return JsonResponse({
+        'status': True,
+        'data': {
+            'automations': automations_data,
+            'conversationsCount': conv_count
+        }
+    })
+
+@csrf_exempt
+def api_get_auto_dm_analytics(request):
+    """
+    Superprofile equivalent API: GET /instagram/api/adm/get_auto_dm_analytics
+    Returns real-time comment and DM automation analytics JSON payload.
+    """
+    account = get_active_account(request)
+    if not account:
+        return JsonResponse({'status': True, 'data': {'totalComments': 0, 'totalDms': 0, 'successfulExecutions': 0}})
+
+    total_comments = AutomationExecution.objects.filter(
+        automation__instagram_account=account,
+        event_type=AutomationExecution.EventType.COMMENT
+    ).count()
+
+    total_dms = InstagramMessage.objects.filter(
+        conversation__instagram_account=account,
+        direction=InstagramMessage.Direction.OUTGOING
+    ).count()
+
+    successful_executions = AutomationExecution.objects.filter(
+        automation__instagram_account=account,
+        status=AutomationExecution.Status.SUCCESS
+    ).count()
+
+    return JsonResponse({
+        'status': True,
+        'data': {
+            'totalComments': total_comments,
+            'totalDms': total_dms,
+            'successfulExecutions': successful_executions
+        }
+    })
+
+

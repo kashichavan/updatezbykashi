@@ -6,17 +6,16 @@ from django.utils import timezone
 from datetime import timedelta
 import requests
 
-INSTAGRAM_OAUTH_AUTHORIZE_URL = "https://www.instagram.com/oauth/authorize"
-META_OAUTH_AUTHORIZE_URL = INSTAGRAM_OAUTH_AUTHORIZE_URL
 META_OAUTH_TOKEN_URL = "https://graph.facebook.com/v19.0/oauth/access_token"
 META_GRAPH_URL = "https://graph.facebook.com/v19.0"
+INSTAGRAM_BUSINESS_OAUTH_AUTHORIZE_URL = "https://www.instagram.com/oauth/authorize"
+META_OAUTH_AUTHORIZE_URL = INSTAGRAM_BUSINESS_OAUTH_AUTHORIZE_URL
 
 _PENDING_STATES = {}
 
 class InstagramOAuthService:
     """
-    Handles Meta / Instagram Graph API OAuth flow using state validation
-    and token exchange.
+    Handles Instagram Business OAuth flow matching Superprofile.bio API specs.
     """
 
     @classmethod
@@ -46,23 +45,21 @@ class InstagramOAuthService:
             state = f"{state}:{account_id}"
             
         scopes = [
-            'instagram_basic',
-            'instagram_manage_comments',
-            'instagram_manage_messages',
-            'pages_show_list',
-            'pages_read_engagement',
-            'pages_manage_metadata',
-            'public_profile'
+            'instagram_business_basic',
+            'instagram_business_manage_messages',
+            'instagram_business_manage_comments'
         ]
         
         params = {
             'client_id': app_id,
             'redirect_uri': redirect_uri,
-            'scope': ','.join(scopes),
             'response_type': 'code',
+            'scope': ','.join(scopes),
+            'enable_fb_login': '0',
+            'force_authentication': '1',
             'state': state
         }
-        return f"{META_OAUTH_AUTHORIZE_URL}?{urllib.parse.urlencode(params)}", state
+        return f"{INSTAGRAM_BUSINESS_OAUTH_AUTHORIZE_URL}?{urllib.parse.urlencode(params)}", state
 
     def exchange_code(self, code):
         app_id, app_secret, redirect_uri = self.get_app_credentials()

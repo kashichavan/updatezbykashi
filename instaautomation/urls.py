@@ -29,4 +29,10 @@ urlpatterns = [
 
     # Meta Webhook Endpoint
     path('api/instagram/webhook/', instagram_webhook, name='webhook'),
+
+    # Superprofile Equivalent API Endpoints
+    path('api/adm/get_instagram_connect_url', views.api_get_instagram_connect_url, name='api_get_instagram_connect_url'),
+    path('api/adm/get_instagram_details', views.api_get_instagram_details, name='api_get_instagram_details'),
+    path('api/adm/get_messenger_details', views.api_get_messenger_details, name='api_get_messenger_details'),
+    path('api/adm/get_auto_dm_analytics', views.api_get_auto_dm_analytics, name='api_get_auto_dm_analytics'),
 ]
