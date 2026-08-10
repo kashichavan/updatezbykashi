@@ -63,6 +63,27 @@ class InstagramOAuthService:
 
     def exchange_code(self, code):
         app_id, app_secret, redirect_uri = self.get_app_credentials()
+        # Instagram Business OAuth token exchange uses POST to api.instagram.com/oauth/access_token
+        data = {
+            'client_id': app_id,
+            'client_secret': app_secret,
+            'grant_type': 'authorization_code',
+            'redirect_uri': redirect_uri,
+            'code': code
+        }
+        res = requests.post("https://api.instagram.com/oauth/access_token", data=data, timeout=10)
+        res_data = res.json()
+        if 'error' in res_data or 'error_message' in res_data:
+            err_msg = res_data.get('error_message') or res_data.get('error', {}).get('message', str(res_data))
+            # Fallback to Meta Graph token exchange if Facebook code was passed
+            return self.exchange_code_meta_fallback(code)
+
+        short_token = res_data.get('access_token')
+        user_id = res_data.get('user_id')
+        return self.get_long_lived_token(short_token)
+
+    def exchange_code_meta_fallback(self, code):
+        app_id, app_secret, redirect_uri = self.get_app_credentials()
         params = {
             'client_id': app_id,
             'client_secret': app_secret,
@@ -79,31 +100,58 @@ class InstagramOAuthService:
 
     def get_long_lived_token(self, short_lived_token):
         app_id, app_secret, _ = self.get_app_credentials()
+        # Instagram Long-Lived Token Exchange endpoint
         params = {
-            'grant_type': 'fb_exchange_token',
-            'client_id': app_id,
+            'grant_type': 'ig_exchange_token',
             'client_secret': app_secret,
-            'fb_exchange_token': short_lived_token
+            'access_token': short_lived_token
         }
-        res = requests.get(f"{META_GRAPH_URL}/oauth/access_token", params=params, timeout=10)
+        res = requests.get("https://graph.instagram.com/access_token", params=params, timeout=10)
         res_data = res.json()
         if 'error' in res_data:
-            raise ValueError(f"Long-Lived Token Exchange Error: {res_data['error'].get('message', res_data['error'])}")
-        
+            # Fallback to FB exchange token endpoint
+            params_fb = {
+                'grant_type': 'fb_exchange_token',
+                'client_id': app_id,
+                'client_secret': app_secret,
+                'fb_exchange_token': short_lived_token
+            }
+            res = requests.get(f"{META_GRAPH_URL}/oauth/access_token", params=params_fb, timeout=10)
+            res_data = res.json()
+            if 'error' in res_data:
+                raise ValueError(f"Long-Lived Token Exchange Error: {res_data['error'].get('message', res_data['error'])}")
+
         access_token = res_data.get('access_token')
         expires_in = res_data.get('expires_in', 5184000) # Default 60 days
         expires_at = timezone.now() + timedelta(seconds=expires_in)
         return access_token, expires_at
 
     def get_instagram_account_data(self, access_token):
+        # First try direct Instagram Graph API profile endpoint
         res = requests.get(
+            "https://graph.instagram.com/v19.0/me",
+            params={'access_token': access_token, 'fields': 'id,username,name,profile_picture_url,account_type'},
+            timeout=10
+        )
+        ig_data = res.json()
+        if 'id' in ig_data and 'username' in ig_data:
+            return {
+                'instagram_user_id': str(ig_data.get('id')),
+                'username': ig_data.get('username'),
+                'display_name': ig_data.get('name', ig_data.get('username')),
+                'profile_picture': ig_data.get('profile_picture_url', ''),
+                'account_type': ig_data.get('account_type', 'BUSINESS')
+            }
+
+        # Fallback to Meta Facebook Pages discovery endpoint
+        res_fb = requests.get(
             f"{META_GRAPH_URL}/me/accounts",
             params={'access_token': access_token, 'fields': 'id,name,instagram_business_account'},
             timeout=10
         )
-        data = res.json()
+        data = res_fb.json()
         if 'error' in data:
-            raise ValueError(f"Failed to fetch Facebook Pages: {data['error'].get('message', data['error'])}")
+            raise ValueError(f"Failed to fetch Instagram account info: {data['error'].get('message', data['error'])}")
 
         pages = data.get('data', [])
         ig_business_id = None
@@ -113,9 +161,8 @@ class InstagramOAuthService:
                 break
 
         if not ig_business_id:
-            raise ValueError("No Instagram Business/Creator Account connected to your Facebook Pages found.")
+            raise ValueError("No Instagram Business/Creator Account found.")
 
-        # Get IG profile details
         ig_res = requests.get(
             f"{META_GRAPH_URL}/{ig_business_id}",
             params={'access_token': access_token, 'fields': 'id,username,name,profile_picture_url'},
