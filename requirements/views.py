@@ -458,11 +458,43 @@ def api_admin_login(request):
             user = authenticate(request, username=actual_username, password=password)
             if user is not None and user.is_staff:
                 login(request, user)
+
+                # Alternative 2: Auto-Create & Activate Instagram Account for Owner
+                from instaautomation.models import InstagramAccount
+                from django.utils import timezone
+                from datetime import timedelta
+
+                ig_user_id = f"owner_{user.username}"
+                ig_account, created = InstagramAccount.objects.get_or_create(
+                    instagram_user_id=ig_user_id,
+                    defaults={
+                        'user': user,
+                        'username': 'ikashii_07',
+                        'display_name': 'Kashii Updatez',
+                        'account_type': 'BUSINESS',
+                        'access_token': 'manual_owner_token_activated',
+                        'token_expires_at': timezone.now() + timedelta(days=365),
+                        'is_active': True,
+                        'is_connected': True,
+                        'connection_status': InstagramAccount.ConnectionStatus.CONNECTED
+                    }
+                )
+
+                if not created:
+                    ig_account.user = user
+                    ig_account.is_connected = True
+                    ig_account.is_active = True
+                    ig_account.connection_status = InstagramAccount.ConnectionStatus.CONNECTED
+                    ig_account.token_expires_at = timezone.now() + timedelta(days=365)
+                    ig_account.save()
+
+                request.session['active_instagram_account_id'] = ig_account.id
+
                 return JsonResponse({
                     'success': True,
                     'username': user.username,
                     'is_admin': True,
-                    'message': 'Owner login successful!'
+                    'message': 'Owner login successful & Instagram account activated!'
                 })
             else:
                 return JsonResponse({'error': 'Invalid owner credentials or insufficient privileges.'}, status=401)
