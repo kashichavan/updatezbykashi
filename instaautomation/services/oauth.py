@@ -6,7 +6,8 @@ from django.utils import timezone
 from datetime import timedelta
 import requests
 
-META_OAUTH_AUTHORIZE_URL = "https://www.facebook.com/v19.0/dialog/oauth"
+INSTAGRAM_OAUTH_AUTHORIZE_URL = "https://www.instagram.com/oauth/authorize"
+META_OAUTH_AUTHORIZE_URL = INSTAGRAM_OAUTH_AUTHORIZE_URL
 META_OAUTH_TOKEN_URL = "https://graph.facebook.com/v19.0/oauth/access_token"
 META_GRAPH_URL = "https://graph.facebook.com/v19.0"
 

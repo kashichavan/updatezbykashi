@@ -23,10 +23,6 @@
         <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger" width="18" height="18" decoding="async">
         Code Debugger
       </a>
-      <a href="/instagram/" class="{% if '/instagram' in request.path %}active{% endif %}">
-        <img src="{% static 'images/icon-chat.png' %}" class="nav-icon" alt="Insta Automation" width="18" height="18" decoding="async">
-        Insta Automation
-      </a>
       <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
         <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About" width="18" height="18" decoding="async">
         About Kashii
@@ -53,20 +49,13 @@
       </div>
 
       <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--subtle-border);">
-        <div class="drawer-section-title">Visual Tools &amp; Automation</div>
+        <div class="drawer-section-title">Visual Tools &amp; Connect</div>
         <a href="/debugger/" class="drawer-link {% if '/debugger' in request.path %}active{% endif %}">
           <span style="display: flex; align-items: center; gap: 8px;">
             <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger" width="18" height="18" decoding="async">
             Visual Code Debugger
           </span>
           <span class="d-tag">IDE</span>
-        </a>
-        <a href="/instagram/" class="drawer-link {% if '/instagram' in request.path %}active{% endif %}" style="color: #e1306c; font-weight: 700; margin-top: 6px;">
-          <span style="display: flex; align-items: center; gap: 8px;">
-            <img src="{% static 'images/icon-chat.png' %}" class="nav-icon" alt="Insta Automation" width="18" height="18" decoding="async">
-            Insta Automation Engine
-          </span>
-          <span class="d-tag" style="background:#fce7f3; color:#be185d;">Bot</span>
         </a>
         <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="drawer-link" style="color: #dc2626; font-weight: 700; margin-top: 6px;">
           <span style="display: flex; align-items: center; gap: 8px;">
