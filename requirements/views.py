@@ -459,42 +459,30 @@ def api_admin_login(request):
             if user is not None and user.is_staff:
                 login(request, user)
 
-                # Alternative 2: Auto-Create & Activate Instagram Account for Owner
-                from instaautomation.models import InstagramAccount
-                from django.utils import timezone
-                from datetime import timedelta
+                # Generate SimpleJWT Tokens for Owner
+                from rest_framework_simplejwt.tokens import RefreshToken
+                refresh = RefreshToken.for_user(user)
 
-                ig_user_id = f"owner_{user.username}"
-                ig_account, created = InstagramAccount.objects.get_or_create(
-                    instagram_user_id=ig_user_id,
-                    defaults={
-                        'user': user,
-                        'username': 'ikashii_07',
-                        'display_name': 'Kashii Updatez',
-                        'account_type': 'BUSINESS',
-                        'access_token': 'manual_owner_token_activated',
-                        'token_expires_at': timezone.now() + timedelta(days=365),
-                        'is_active': True,
-                        'is_connected': True,
-                        'connection_status': InstagramAccount.ConnectionStatus.CONNECTED
-                    }
-                )
-
-                if not created:
-                    ig_account.user = user
-                    ig_account.is_connected = True
-                    ig_account.is_active = True
-                    ig_account.connection_status = InstagramAccount.ConnectionStatus.CONNECTED
-                    ig_account.token_expires_at = timezone.now() + timedelta(days=365)
-                    ig_account.save()
-
-                request.session['active_instagram_account_id'] = ig_account.id
+                # Cache owner credentials & JWT session details in high-performance Redis/LocMem cache (24 hours)
+                cache_key = f"owner_session_{user.id}"
+                user_session_data = {
+                    'user_id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'is_staff': user.is_staff,
+                    'access_token': str(refresh.access_token),
+                    'authenticated_at': timezone.now().isoformat()
+                }
+                cache.set(cache_key, user_session_data, 86400)
 
                 return JsonResponse({
                     'success': True,
                     'username': user.username,
                     'is_admin': True,
-                    'message': 'Owner login successful & Instagram account activated!'
+                    'access': str(refresh.access_token),
+                    'refresh': str(refresh),
+                    'cached_session': True,
+                    'message': 'Owner JWT authentication successful & credentials cached!'
                 })
             else:
                 return JsonResponse({'error': 'Invalid owner credentials or insufficient privileges.'}, status=401)

@@ -40,7 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function checkAuthStatus() {
     try {
-      const res = await fetch('/api/admin/status/');
+      const jwtAccess = localStorage.getItem('owner_jwt_access');
+      const headers = {};
+      if (jwtAccess) {
+        headers['Authorization'] = `Bearer ${jwtAccess}`;
+      }
+      const res = await fetch('/api/admin/status/', { headers });
       const data = await res.json();
       if (data.is_admin) {
         showDashboard(data.username);
@@ -65,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (authBadge) {
       authBadge.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; font-weight: 700; color: var(--ink);"><img src="/static/images/icon-apply.png" class="nav-icon" width="14" height="14" alt="Owner"> Owner: <strong>${escapeHtml(username)}</strong></span>
+          <span style="font-size: 13px; font-weight: 700; color: var(--ink);"><img src="/static/images/icon-apply.png" class="nav-icon" width="14" height="14" alt="Owner"> Owner: <strong>${escapeHtml(username)}</strong> <span style="background: rgba(34, 197, 94, 0.15); color: #16a34a; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-family: monospace;">JWT AUTH</span></span>
           <button id="btnLogoutOwner" class="button button-light" style="padding: 6px 12px; font-size: 12px;">Logout</button>
         </div>
       `;
@@ -88,7 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showToast('Owner authenticated successfully!', 'success');
+          if (data.access) {
+            localStorage.setItem('owner_jwt_access', data.access);
+            localStorage.setItem('owner_jwt_refresh', data.refresh);
+          }
+          showToast('Owner JWT authenticated successfully!', 'success');
           const urlParams = new URLSearchParams(window.location.search);
           const nextUrl = urlParams.get('next');
           if (nextUrl) {
@@ -107,8 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function handleLogout() {
     try {
+      localStorage.removeItem('owner_jwt_access');
+      localStorage.removeItem('owner_jwt_refresh');
       await fetch('/api/admin/logout/', { method: 'POST' });
-      showToast('Logged out of owner session.', 'success');
+      showToast('Logged out of owner JWT session.', 'success');
       showLoginScreen();
     } catch (err) {
       console.error('Logout error:', err);
