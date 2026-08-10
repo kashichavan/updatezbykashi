@@ -3,7 +3,13 @@ from django.urls import reverse
 from unittest.mock import patch
 from instaautomation.services.oauth import InstagramOAuthService
 
+from django.contrib.auth.models import User
+
 class InstagramOAuthTest(TestCase):
+    def setUp(self):
+        self.staff_user = User.objects.create_user(username='adminstaff', password='password123', is_staff=True)
+        self.client.login(username='adminstaff', password='password123')
+
     def test_state_generation_and_validation(self):
         state = InstagramOAuthService.generate_state()
         self.assertTrue(InstagramOAuthService.validate_state(state))

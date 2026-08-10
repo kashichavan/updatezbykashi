@@ -1,6 +1,7 @@
 import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
@@ -16,6 +17,16 @@ from .models import (
 from .services.oauth import InstagramOAuthService
 from .services.instagram_api import InstagramAPI
 
+def admin_required(view_func):
+    """
+    Decorator that restricts access strictly to logged-in admin / staff users.
+    Redirects unauthenticated or non-staff users to /owner/ (admin portal).
+    """
+    return user_passes_test(
+        lambda user: user.is_authenticated and user.is_staff,
+        login_url='/owner/'
+    )(view_func)
+
 def get_active_account(request):
     """
     Helper to select active account from session or default to the most recent connected account.
@@ -27,6 +38,7 @@ def get_active_account(request):
             return acc
     return InstagramAccount.objects.filter(is_connected=True).first()
 
+@admin_required
 def dashboard_view(request):
     """
     Main Instagram Automation Dashboard
@@ -69,6 +81,7 @@ def dashboard_view(request):
     }
     return render(request, 'instaautomation/dashboard.html', context)
 
+@admin_required
 def connect_view(request):
     """
     Redirects user to official Meta / Instagram OAuth Login Page.
@@ -79,6 +92,7 @@ def connect_view(request):
     auth_url, state = oauth_service.get_authorization_url(account_id=account_id)
     return redirect(auth_url)
 
+@admin_required
 def oauth_callback_view(request):
     """
     Official Meta / Instagram OAuth Callback Endpoint.
@@ -125,6 +139,7 @@ def oauth_callback_view(request):
 
     return redirect('instaautomation:dashboard')
 
+@admin_required
 def reconnect_view(request, pk=None):
     """
     Reconnects an existing Instagram account.
@@ -138,6 +153,7 @@ def reconnect_view(request, pk=None):
     auth_url, _ = oauth_service.get_authorization_url(account_id=account.id)
     return redirect(auth_url)
 
+@admin_required
 def disconnect_view(request, pk=None):
     """
     Disconnects an Instagram account (clears credentials, marks inactive).
@@ -150,6 +166,7 @@ def disconnect_view(request, pk=None):
         messages.info(request, f"Disconnected Instagram account @{account.username}.")
     return redirect('instaautomation:dashboard')
 
+@admin_required
 def switch_account_view(request, pk):
     """
     Switch currently active Instagram account in session.
@@ -160,6 +177,7 @@ def switch_account_view(request, pk):
     messages.success(request, f"Switched to Instagram account @{account.username}")
     return redirect('instaautomation:dashboard')
 
+@admin_required
 def account_detail_view(request):
     """
     Account Overview & Meta API Status Page
@@ -185,6 +203,7 @@ def account_detail_view(request):
     }
     return render(request, 'instaautomation/account.html', context)
 
+@admin_required
 def automation_list_view(request):
     """
     List all Comment & DM Automations
@@ -200,6 +219,7 @@ def automation_list_view(request):
         'automations': automations
     })
 
+@admin_required
 def automation_create_view(request):
     """
     Create a new Comment & DM Automation
@@ -240,6 +260,7 @@ def automation_create_view(request):
 
     return render(request, 'instaautomation/automation_form.html', {'account': account})
 
+@admin_required
 def automation_edit_view(request, pk):
     """
     Edit an existing Automation Rule
@@ -268,6 +289,7 @@ def automation_edit_view(request, pk):
         'is_edit': True
     })
 
+@admin_required
 def automation_toggle_view(request, pk):
     """
     Enable/Disable Automation Rule
@@ -280,6 +302,7 @@ def automation_toggle_view(request, pk):
     messages.success(request, f"Automation '{automation.name}' {status_str}.")
     return redirect('instaautomation:automation_list')
 
+@admin_required
 def automation_delete_view(request, pk):
     """
     Delete an Automation Rule
@@ -291,6 +314,7 @@ def automation_delete_view(request, pk):
     messages.info(request, f"Automation '{name}' deleted.")
     return redirect('instaautomation:automation_list')
 
+@admin_required
 def conversations_view(request):
     """
     List Conversations
@@ -306,6 +330,7 @@ def conversations_view(request):
         'conversations': conversations
     })
 
+@admin_required
 def conversation_detail_view(request, pk):
     """
     Conversation Detail View showing chat message history
@@ -320,3 +345,4 @@ def conversation_detail_view(request, pk):
         'conversation': conversation,
         'messages_list': messages_list
     })
+
