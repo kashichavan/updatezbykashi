@@ -89,6 +89,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (res.ok && data.success) {
           showToast('Owner authenticated successfully!', 'success');
+          const urlParams = new URLSearchParams(window.location.search);
+          const nextUrl = urlParams.get('next');
+          if (nextUrl) {
+            window.location.href = nextUrl;
+            return;
+          }
           showDashboard(data.username);
         } else {
           showToast(data.error || 'Invalid owner credentials.', 'error');
