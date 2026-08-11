@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       jobsTableContainer.innerHTML = `
-        <table class="data-table">
+        <table class="studio-table">
           <thead>
             <tr>
               <th>ID</th>
@@ -326,31 +326,31 @@ document.addEventListener('DOMContentLoaded', () => {
               const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
               return `
               <tr>
-                <td>#${j.id}</td>
+                <td><span style="font-family: monospace; font-weight: 700; color: #94a3b8;">#${j.id}</span></td>
                 <td>
-                  <strong>${escapeHtml(j.company_name)}</strong><br>
-                  <span style="color: var(--muted); font-size: 13px;">${escapeHtml(j.title)}</span>
+                  <strong style="color: #ffffff; font-size: 15px;">${escapeHtml(j.company_name)}</strong><br>
+                  <span style="color: #94a3b8; font-size: 13px;">${escapeHtml(j.title)}</span>
                 </td>
                 <td>
-                  <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: var(--blue-primary); font-size: 12px; font-weight: 700; word-break: break-all;">
+                  <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: var(--neon-cyan); font-size: 12px; font-weight: 700; word-break: break-all; text-decoration: none;">
                     ${escapeHtml(j.apply_url ? (j.apply_url.length > 30 ? j.apply_url.substring(0, 30) + '...' : j.apply_url) : 'No link')} ↗
                   </a>
                 </td>
-                <td>${escapeHtml(j.category_name)}</td>
+                <td><span style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">${escapeHtml(j.category_name)}</span></td>
                 <td>
-                  <span style="display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; ${isExpired ? 'background: rgba(239, 68, 68, 0.1); color: #ef4444;' : 'background: rgba(34, 197, 94, 0.1); color: #16a34a;'}">
+                  <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; ${isExpired ? 'background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3);' : 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);'}">
                     ${isExpired ? '🔴 Unpublished / Expired' : '🟢 Active (' + Math.ceil(j.time_left_seconds / 3600) + 'h left)'}
                   </span>
                 </td>
                 <td>
-                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <button class="button button-light btn-toggle-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 700; color: ${isExpired ? '#16a34a' : '#d97706'}; border-color: ${isExpired ? '#bbf7d0' : '#fef3c7'};">
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="button button-light btn-toggle-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 800; border-radius: 10px; background: rgba(255,255,255,0.05); color: ${isExpired ? '#10b981' : '#f59e0b'}; border-color: ${isExpired ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'};">
                       ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
                     </button>
-                    <button class="button button-light btn-edit-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; color: var(--blue-primary); border-color: var(--blue-border);">
+                    <button class="button button-light btn-edit-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 800; border-radius: 10px; background: rgba(6, 182, 212, 0.1); color: var(--neon-cyan); border-color: rgba(6, 182, 212, 0.3);">
                       ✏️ Edit
                     </button>
-                    <button class="button button-light btn-delete-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; color: #ef4444; border-color: #fca5a5;">
+                    <button class="button button-light btn-delete-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 800; border-radius: 10px; background: rgba(244, 63, 94, 0.1); color: #f43f5e; border-color: rgba(244, 63, 94, 0.3);">
                       🗑️ Delete
                     </button>
                   </div>
@@ -360,16 +360,16 @@ document.addEventListener('DOMContentLoaded', () => {
           </tbody>
         </table>
 
-        <!-- Server-backed Pagination Controls -->
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--paper); border-top: 1px solid var(--subtle-border); border-radius: 0 0 16px 16px;">
-          <div style="font-size: 13px; color: var(--muted); font-weight: 600;">
-            Showing Page <strong>${data.current_page}</strong> of <strong>${data.total_pages}</strong> (${data.total_count} total postings)
+        <!-- Dark Glass Pagination Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: rgba(15, 23, 42, 0.9); border-top: 1px solid var(--studio-border); border-radius: 0 0 20px 20px;">
+          <div style="font-size: 13px; color: var(--studio-muted); font-weight: 600;">
+            Showing Page <strong style="color: #ffffff;">${data.current_page}</strong> of <strong style="color: #ffffff;">${data.total_pages}</strong> (${data.total_count} total postings)
           </div>
-          <div style="display: flex; gap: 8px;">
-            <button id="btnPrevPage" class="button button-light" style="padding: 8px 16px; font-size: 12px; font-weight: 700;" ${!data.has_previous ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+          <div style="display: flex; gap: 10px;">
+            <button id="btnPrevPage" class="button button-light" style="padding: 8px 18px; font-size: 12px; font-weight: 800; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; border-color: rgba(255,255,255,0.15);" ${!data.has_previous ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
               ← Previous
             </button>
-            <button id="btnNextPage" class="button button-light" style="padding: 8px 16px; font-size: 12px; font-weight: 700;" ${!data.has_next ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+            <button id="btnNextPage" class="button button-light" style="padding: 8px 18px; font-size: 12px; font-weight: 800; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; border-color: rgba(255,255,255,0.15);" ${!data.has_next ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
               Next →
             </button>
           </div>

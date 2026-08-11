@@ -1,319 +1,388 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Owner Management Workspace | Kashii Updatez{% endblock %}
+{% block title %}Owner Studio Workspace | Kashii Updatez Pro{% endblock %}
 
 {% block extra_css %}
 <style>
   :root {
-    --owner-primary: #2563eb;
-    --owner-primary-hover: #1d4ed8;
-    --owner-bg-dark: #0f172a;
-    --owner-card-bg: #ffffff;
-    --owner-border: #e2e8f0;
-    --owner-text-main: #0f172a;
-    --owner-text-muted: #64748b;
+    --studio-bg: #090d16;
+    --studio-surface: rgba(18, 24, 38, 0.75);
+    --studio-surface-hover: rgba(30, 41, 64, 0.85);
+    --studio-border: rgba(255, 255, 255, 0.08);
+    --studio-border-glow: rgba(99, 102, 241, 0.3);
+    
+    --neon-cyan: #06b6d4;
+    --neon-indigo: #6366f1;
+    --neon-purple: #a855f7;
+    --neon-emerald: #10b981;
+    --neon-rose: #f43f5e;
+
+    --studio-text: #f8fafc;
+    --studio-muted: #94a3b8;
   }
 
-  .owner-app-shell {
-    max-width: 1140px;
-    margin: 24px auto 90px;
+  body {
+    background-color: var(--studio-bg) !important;
+    color: var(--studio-text) !important;
+  }
+
+  .studio-app-wrapper {
+    max-width: 1200px;
+    margin: 28px auto 90px;
     padding: 0 16px;
-    font-family: var(--font-sans);
+    font-family: 'Plus Jakarta Sans', var(--font-sans);
   }
 
-  /* Header Card */
-  .owner-hero-banner {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-    border-radius: 24px;
-    padding: 32px;
-    color: #ffffff;
-    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.3);
+  /* Glassmorphism Header Studio Banner */
+  .studio-hero-card {
+    background: linear-gradient(135deg, rgba(18, 24, 38, 0.9) 0%, rgba(30, 27, 75, 0.85) 50%, rgba(15, 23, 42, 0.95) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 28px;
+    padding: 32px 36px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     margin-bottom: 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
+    position: relative;
+    overflow: hidden;
   }
 
-  .owner-hero-title {
-    font-size: 26px;
+  .studio-hero-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, rgba(99, 102, 241, 0) 70%);
+    pointer-events: none;
+  }
+
+  .studio-hero-title {
+    font-size: 28px;
     font-weight: 800;
     margin: 0 0 6px;
+    background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     display: flex;
     align-items: center;
     gap: 12px;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
 
-  .owner-hero-badge {
-    background: rgba(34, 197, 94, 0.2);
-    color: #4ade80;
-    border: 1px solid rgba(34, 197, 94, 0.4);
+  .studio-live-pill {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--neon-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.4);
     font-size: 11px;
     font-weight: 800;
-    padding: 3px 10px;
-    border-radius: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
     font-family: monospace;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
   }
 
-  /* Mobile-Native Pill Navigation Bar */
-  .owner-nav-pills {
+  /* Segmented Glass Navigation Tabs */
+  .studio-nav-bar {
     display: flex;
     gap: 8px;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     padding: 6px;
-    background: #f1f5f9;
-    border-radius: 18px;
-    border: 1px solid var(--owner-border);
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(16px);
+    border-radius: 22px;
+    border: 1px solid var(--studio-border);
     margin-bottom: 24px;
   }
-  .owner-nav-pills::-webkit-scrollbar { display: none; }
+  .studio-nav-bar::-webkit-scrollbar { display: none; }
 
-  .owner-nav-item {
+  .studio-nav-btn {
     flex: 1 0 auto;
     white-space: nowrap;
-    padding: 12px 20px;
-    border-radius: 13px;
+    padding: 14px 22px;
+    border-radius: 16px;
     font-weight: 700;
     font-size: 13px;
     border: none;
     background: transparent;
-    color: var(--owner-text-muted);
+    color: var(--studio-muted);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
   }
 
-  .owner-nav-item:hover { color: var(--owner-text-main); }
-  .owner-nav-item.active {
-    background: #ffffff;
-    color: var(--owner-primary);
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  .studio-nav-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .studio-nav-btn.active {
+    background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-indigo) 100%);
+    color: #ffffff;
+    box-shadow: 0 8px 24px -4px rgba(6, 182, 212, 0.4);
     font-weight: 800;
   }
 
-  /* Card Containers */
-  .owner-card-panel {
-    background: #ffffff;
-    border: 1px solid var(--owner-border);
-    border-radius: 24px;
-    padding: 32px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  /* Studio Glass Card Panels */
+  .studio-glass-panel {
+    background: var(--studio-surface);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid var(--studio-border);
+    border-radius: 28px;
+    padding: 36px;
+    box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.37);
   }
 
-  /* Form Elements */
-  .form-group-custom { margin-bottom: 22px; }
-  .form-label-custom { display: block; font-size: 13px; font-weight: 700; color: var(--owner-text-main); margin-bottom: 8px; }
-  .form-input-custom {
-    width: 100%;
-    height: 52px;
-    padding: 0 18px;
-    border-radius: 14px;
-    border: 1px solid var(--owner-border);
-    background: #ffffff;
-    font-size: 15px;
-    color: var(--owner-text-main);
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  .form-input-custom:focus {
-    border-color: var(--owner-primary);
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-  }
-  textarea.form-input-custom { height: auto; min-height: 160px; padding: 18px; line-height: 1.6; }
-
-  .form-grid-2 { display: grid; grid-template-columns: 1fr; gap: 20px; }
-  @media (min-width: 768px) { .form-grid-2 { grid-template-columns: 1fr 1fr; } }
-
-  .btn-submit-primary {
+  /* Form Elements in Dark Mode */
+  .form-group-studio { margin-bottom: 24px; }
+  .form-label-studio { display: block; font-size: 13px; font-weight: 700; color: #e2e8f0; margin-bottom: 10px; letter-spacing: 0.2px; }
+  
+  .form-input-studio {
     width: 100%;
     height: 54px;
-    background: var(--owner-primary);
+    padding: 0 20px;
+    border-radius: 16px;
+    border: 1px solid var(--studio-border);
+    background: rgba(15, 23, 42, 0.6);
+    font-size: 15px;
+    color: #ffffff;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  
+  .form-input-studio:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15);
+    background: rgba(15, 23, 42, 0.9);
+  }
+
+  textarea.form-input-studio { height: auto; min-height: 160px; padding: 20px; line-height: 1.6; }
+
+  .form-grid-2-studio { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  @media (min-width: 768px) { .form-grid-2-studio { grid-template-columns: 1fr 1fr; } }
+
+  .btn-studio-cyan {
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(135deg, var(--neon-cyan) 0%, var(--neon-indigo) 100%);
     color: #ffffff;
     font-size: 15px;
     font-weight: 800;
     border: none;
-    border-radius: 14px;
+    border-radius: 16px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    transition: background 0.2s ease;
+    gap: 10px;
+    box-shadow: 0 8px 24px -4px rgba(6, 182, 212, 0.4);
+    transition: all 0.25s ease;
   }
-  .btn-submit-primary:hover { background: var(--owner-primary-hover); }
+  
+  .btn-studio-cyan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -4px rgba(6, 182, 212, 0.6);
+  }
 
-  /* Data Table */
-  .table-responsive-wrapper {
+  /* Dark Glass Data Table & Mobile Cards */
+  .table-responsive-studio {
     width: 100%;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 18px;
-    border: 1px solid var(--owner-border);
-    margin-top: 16px;
+    border-radius: 20px;
+    border: 1px solid var(--studio-border);
+    margin-top: 18px;
   }
-  .owner-data-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 650px; }
-  .owner-data-table th, .owner-data-table td { padding: 14px 18px; border-bottom: 1px solid var(--owner-border); text-align: left; }
-  .owner-data-table th { background: #f8fafc; font-size: 11px; text-transform: uppercase; font-weight: 800; color: var(--owner-text-muted); }
+
+  .studio-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 680px; }
+  .studio-table th, .studio-table td { padding: 16px 20px; border-bottom: 1px solid var(--studio-border); text-align: left; }
+  .studio-table th { background: rgba(15, 23, 42, 0.9); font-size: 11px; text-transform: uppercase; font-weight: 800; color: var(--studio-muted); letter-spacing: 0.5px; }
+  .studio-table td { color: #f1f5f9; }
 
   @media (max-width: 640px) {
-    .owner-app-shell { margin-top: 16px; padding: 0 12px; }
-    .owner-hero-banner { padding: 24px 20px; border-radius: 20px; }
-    .owner-card-panel { padding: 22px 18px; border-radius: 20px; }
-    .owner-nav-item { font-size: 12px; padding: 10px 14px; }
-    .form-input-custom { height: 48px !important; font-size: 14px !important; }
+    .studio-app-wrapper { margin-top: 12px; padding: 0 10px; }
+    .studio-hero-card { padding: 22px 18px; border-radius: 20px; }
+    .studio-glass-panel { padding: 22px 18px; border-radius: 20px; }
+    .studio-nav-btn { font-size: 12px; padding: 10px 14px; border-radius: 12px; }
+    .form-input-studio { height: 48px !important; font-size: 14px !important; }
+    
+    /* Touch-Optimized Mobile Data Cards */
+    .table-responsive-studio { border: none; }
+    .studio-table th { display: none; }
+    .studio-table, .studio-table tbody, .studio-table tr, .studio-table td {
+      display: block;
+      width: 100%;
+    }
+    .studio-table tr {
+      background: rgba(18, 24, 38, 0.9);
+      border: 1px solid var(--studio-border);
+      border-radius: 20px;
+      margin-bottom: 14px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .studio-table td {
+      padding: 8px 0;
+      border-bottom: none;
+    }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="owner-app-shell">
+<div class="studio-app-wrapper">
 
-  <!-- View 1: Owner Login Screen (Rendered if not logged in) -->
-  <div id="ownerLoginView" class="owner-card-panel" style="max-width: 460px; margin: 40px auto; {% if is_owner_authenticated %}display: none;{% endif %}">
+  <!-- View 1: Owner Login Card (Dark Glass) -->
+  <div id="ownerLoginView" class="studio-glass-panel" style="max-width: 480px; margin: 40px auto; {% if is_owner_authenticated %}display: none;{% endif %}">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-      <h2 style="font-size: 24px; font-weight: 800; margin: 0; color: var(--owner-text-main);">👑 Owner Portal</h2>
-      <span style="font-size: 11px; font-weight: 800; background: rgba(37,99,235,0.1); color: var(--owner-primary); padding: 4px 10px; border-radius: 8px;">ADMIN AUTH</span>
+      <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">👑 Owner Studio</h2>
+      <span class="studio-live-pill">ADMIN AUTH</span>
     </div>
-    <p style="font-size: 14px; color: var(--owner-text-muted); margin-bottom: 24px; line-height: 1.5;">Sign in with your owner account to access bulk auto-parsers, post manager, and categories.</p>
+    <p style="font-size: 14px; color: var(--studio-muted); margin-bottom: 26px; line-height: 1.6;">Sign in with your owner credentials to unlock secret auto-parsers, posting management, and categories.</p>
 
     <form id="formOwnerLogin">
-      <div class="form-group-custom">
-        <label for="ownerUser" class="form-label-custom">Owner Username *</label>
-        <input type="text" id="ownerUser" class="form-input-custom" placeholder="Enter owner username" required autocomplete="username">
+      <div class="form-group-studio">
+        <label for="ownerUser" class="form-label-studio">Owner Username *</label>
+        <input type="text" id="ownerUser" class="form-input-studio" placeholder="Enter owner username" required autocomplete="username">
       </div>
-      <div class="form-group-custom">
-        <label for="ownerPass" class="form-label-custom">Owner Password *</label>
-        <input type="password" id="ownerPass" class="form-input-custom" placeholder="Enter owner password" required autocomplete="current-password">
+      <div class="form-group-studio">
+        <label for="ownerPass" class="form-label-studio">Owner Password *</label>
+        <input type="password" id="ownerPass" class="form-input-studio" placeholder="Enter owner password" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-submit-primary" style="margin-top: 12px;">
+      <button type="submit" class="btn-studio-cyan" style="margin-top: 10px;">
         Log In as Owner 🔑
       </button>
     </form>
   </div>
 
-  <!-- View 2: Owner Dashboard Workspace (Rendered if authenticated) -->
+  <!-- View 2: Owner Dashboard Workspace (Dark Glass Studio) -->
   <div id="ownerDashboardView" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
 
-    <!-- Hero Banner Header -->
-    <div class="owner-hero-banner">
+    <!-- Hero Glass Banner Header -->
+    <div class="studio-hero-card">
       <div>
-        <h1 class="owner-hero-title">
-          👑 Secret Owner Portal
-          <span class="owner-hero-badge">AUTHENTICATED</span>
+        <h1 class="studio-hero-title">
+          👑 Owner Studio Pro
+          <span class="studio-live-pill">AUTHENTICATED</span>
         </h1>
-        <p style="font-size: 14px; color: #94a3b8; margin: 0;">Manage daily student requirements, 1-click single parsers, bulk multi-job parsers, and categories.</p>
+        <p style="font-size: 14px; color: var(--studio-muted); margin: 0;">Manage daily student requirements, 1-click single parsers, bulk multi-job parsers, and categories.</p>
       </div>
 
-      <div id="ownerAuthBadge" style="display: flex; gap: 10px; align-items: center;">
+      <div id="ownerAuthBadge" style="display: flex; gap: 12px; align-items: center;">
         {% if is_owner_authenticated %}
         <span style="font-size: 13px; font-weight: 700; color: #ffffff;">
-          Owner: <strong>{{ owner_username }}</strong>
+          Owner: <strong style="color: var(--neon-cyan);">{{ owner_username }}</strong>
         </span>
-        <button id="btnLogoutOwner" class="button button-light" style="padding: 6px 14px; font-size: 12px; border-radius: 10px;">Logout</button>
+        <button id="btnLogoutOwner" class="button button-light" style="padding: 8px 16px; font-size: 12px; border-radius: 12px; background: rgba(255,255,255,0.1); color: #ffffff; border-color: rgba(255,255,255,0.2);">Logout</button>
         {% endif %}
       </div>
     </div>
 
     <!-- Segmented Navigation Pills Bar -->
-    <div class="owner-nav-pills">
-      <button class="owner-nav-item active" data-tab="tabBulkParse"><img src="{% static 'images/icon-apply.png' %}" width="16" height="16" alt="Bulk"> Bulk Multi-Job Parser</button>
-      <button class="owner-nav-item" data-tab="tabSmartParse"><img src="{% static 'images/icon-apply.png' %}" width="16" height="16" alt="Parser"> 1-Click Single Parser</button>
-      <button class="owner-nav-item" data-tab="tabPost"><img src="{% static 'images/icon-feed.png' %}" width="16" height="16" alt="Form"> Manual Form</button>
-      <button class="owner-nav-item" data-tab="tabJobs"><img src="{% static 'images/icon-feed.png' %}" width="16" height="16" alt="Postings"> Manage Postings</button>
-      <button class="owner-nav-item" data-tab="tabCategory"><img src="{% static 'images/icon-type.png' %}" width="16" height="16" alt="Categories"> Categories</button>
+    <div class="studio-nav-bar">
+      <button class="owner-nav-item studio-nav-btn active" data-tab="tabBulkParse"><img src="{% static 'images/icon-apply.png' %}" width="16" height="16" alt="Bulk"> Bulk Multi-Job Parser</button>
+      <button class="owner-nav-item studio-nav-btn" data-tab="tabSmartParse"><img src="{% static 'images/icon-apply.png' %}" width="16" height="16" alt="Parser"> 1-Click Single Parser</button>
+      <button class="owner-nav-item studio-nav-btn" data-tab="tabPost"><img src="{% static 'images/icon-feed.png' %}" width="16" height="16" alt="Form"> Manual Form</button>
+      <button class="owner-nav-item studio-nav-btn" data-tab="tabJobs"><img src="{% static 'images/icon-feed.png' %}" width="16" height="16" alt="Postings"> Manage Postings</button>
+      <button class="owner-nav-item studio-nav-btn" data-tab="tabCategory"><img src="{% static 'images/icon-type.png' %}" width="16" height="16" alt="Categories"> Categories</button>
     </div>
 
     <!-- Tab 1: Bulk Multi-Job Auto-Parser -->
-    <div id="tabBulkParse" class="owner-card-panel tab-content">
+    <div id="tabBulkParse" class="studio-glass-panel tab-content">
       <div style="margin-bottom: 24px;">
-        <span style="display: inline-block; padding: 4px 12px; background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
+        <span style="display: inline-block; padding: 4px 14px; background: rgba(16, 185, 129, 0.15); color: var(--neon-emerald); border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 8px; margin-bottom: 10px;">
           BULK MULTI-JOB AUTO-PARSER ENGINE
         </span>
-        <h2 style="font-size: 24px; font-weight: 800; margin: 0 0 8px;">Post 5, 7, or 20+ Jobs at Once!</h2>
-        <p style="font-size: 14px; color: var(--owner-text-muted); margin: 0; line-height: 1.6;">
-          Paste a single large message containing multiple numbered postings (1., 2., 3., 4., 5.). The parser automatically extracts each company, role, skills, apply link, and publishes all opportunities under Software &amp; Tech in 1 click!
+        <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 8px; color: #ffffff;">Post 5, 7, or 20+ Jobs at Once!</h2>
+        <p style="font-size: 14px; color: var(--studio-muted); margin: 0; line-height: 1.6;">
+          Paste a single large message containing multiple numbered postings (1., 2., 3., 4., 5.). The engine automatically parses each company, role, skills, apply link, and publishes all opportunities under Software &amp; Tech in 1 click!
         </p>
       </div>
 
       <form id="formBulkParse">
-        <div class="form-group-custom">
-          <label for="bulkRawText" class="form-label-custom">Raw Multi-Job Message (Contains multiple 1., 2., 3. postings) *</label>
-          <textarea id="bulkRawText" class="form-input-custom" rows="12" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
+        <div class="form-group-studio">
+          <label for="bulkRawText" class="form-label-studio">Raw Multi-Job Message (Contains multiple 1., 2., 3. postings) *</label>
+          <textarea id="bulkRawText" class="form-input-studio" rows="12" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
         </div>
 
-        <button type="submit" class="btn-submit-primary" style="background: #16a34a;">
+        <button type="submit" class="btn-studio-cyan" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 8px 24px -4px rgba(16, 185, 129, 0.4);">
           ⚡ Parse &amp; Publish ALL Jobs in Bulk
         </button>
       </form>
     </div>
 
     <!-- Tab 2: Single Job 1-Click Auto-Parser -->
-    <div id="tabSmartParse" class="owner-card-panel tab-content" style="display: none;">
+    <div id="tabSmartParse" class="studio-glass-panel tab-content" style="display: none;">
       <div style="margin-bottom: 24px;">
-        <span style="display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
+        <span style="display: inline-block; padding: 4px 14px; background: rgba(6, 182, 212, 0.15); color: var(--neon-cyan); border: 1px solid rgba(6, 182, 212, 0.3); font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 8px; margin-bottom: 10px;">
           1-CLICK SINGLE AUTO-PARSER
         </span>
-        <h2 style="font-size: 24px; font-weight: 800; margin: 0 0 8px;">Post 1 Single Job Snippet</h2>
-        <p style="font-size: 14px; color: var(--owner-text-muted); margin: 0; line-height: 1.6;">
+        <h2 style="font-size: 26px; font-weight: 800; margin: 0 0 8px; color: #ffffff;">Post 1 Single Job Snippet</h2>
+        <p style="font-size: 14px; color: var(--studio-muted); margin: 0; line-height: 1.6;">
           Paste raw message text for 1 opportunity. The parser extracts company name, job title, skills, apply link, and publishes it under Software &amp; Tech automatically!
         </p>
       </div>
 
       <form id="formSmartParse">
-        <div class="form-group-custom">
-          <label for="rawText" class="form-label-custom">Raw Job Requirement Snippet *</label>
-          <textarea id="rawText" class="form-input-custom" rows="8" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Apply Link: https://..." required></textarea>
+        <div class="form-group-studio">
+          <label for="rawText" class="form-label-studio">Raw Job Requirement Snippet *</label>
+          <textarea id="rawText" class="form-input-studio" rows="8" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Apply Link: https://..." required></textarea>
         </div>
 
-        <button type="submit" class="btn-submit-primary">
+        <button type="submit" class="btn-studio-cyan">
           ⚡ Parse &amp; Publish Single Job
         </button>
       </form>
     </div>
 
     <!-- Tab 3: Manual Form -->
-    <div id="tabPost" class="owner-card-panel tab-content" style="display: none;">
-      <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px;">Publish New Job Requirement</h2>
+    <div id="tabPost" class="studio-glass-panel tab-content" style="display: none;">
+      <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 22px; color: #ffffff;">Publish New Job Requirement</h2>
       <form id="formCreateJob">
-        <div class="form-grid-2">
-          <div class="form-group-custom"><label for="postTitle" class="form-label-custom">Job Title / Role *</label><input type="text" id="postTitle" class="form-input-custom" placeholder="e.g. Java Full Stack Developer" required></div>
-          <div class="form-group-custom"><label for="postCompany" class="form-label-custom">Company Name *</label><input type="text" id="postCompany" class="form-input-custom" placeholder="e.g. BNP Paribas" required></div>
+        <div class="form-grid-2-studio">
+          <div class="form-group-studio"><label for="postTitle" class="form-label-studio">Job Title / Role *</label><input type="text" id="postTitle" class="form-input-studio" placeholder="e.g. Java Full Stack Developer" required></div>
+          <div class="form-group-studio"><label for="postCompany" class="form-label-studio">Company Name *</label><input type="text" id="postCompany" class="form-input-studio" placeholder="e.g. BNP Paribas" required></div>
         </div>
-        <div class="form-grid-2">
-          <div class="form-group-custom"><label for="postCategory" class="form-label-custom">Category *</label><select id="postCategory" class="form-input-custom" required></select></div>
-          <div class="form-group-custom"><label for="postJobType" class="form-label-custom">Opportunity Type *</label><select id="postJobType" class="form-input-custom" required><option value="INTERNSHIP">Internship</option><option value="FULL_TIME" selected>Full-Time Job</option></select></div>
+        <div class="form-grid-2-studio">
+          <div class="form-group-studio"><label for="postCategory" class="form-label-studio">Category *</label><select id="postCategory" class="form-input-studio" required></select></div>
+          <div class="form-group-studio"><label for="postJobType" class="form-label-studio">Opportunity Type *</label><select id="postJobType" class="form-input-studio" required><option value="INTERNSHIP">Internship</option><option value="FULL_TIME" selected>Full-Time Job</option></select></div>
         </div>
-        <div class="form-group-custom"><label for="postApplyUrl" class="form-label-custom">Official External Application URL *</label><input type="url" id="postApplyUrl" class="form-input-custom" placeholder="https://..." required></div>
-        <div class="form-grid-2">
-          <div class="form-group-custom"><label for="postSalary" class="form-label-custom">Stipend / Salary *</label><input type="text" id="postSalary" class="form-input-custom" placeholder="e.g. Competitive Salary" required></div>
-          <div class="form-group-custom"><label for="postLocation" class="form-label-custom">Location *</label><input type="text" id="postLocation" class="form-input-custom" placeholder="e.g. Chennai / Mumbai, India" required></div>
+        <div class="form-group-studio"><label for="postApplyUrl" class="form-label-studio">Official External Application URL *</label><input type="url" id="postApplyUrl" class="form-input-studio" placeholder="https://..." required></div>
+        <div class="form-grid-2-studio">
+          <div class="form-group-studio"><label for="postSalary" class="form-label-studio">Stipend / Salary *</label><input type="text" id="postSalary" class="form-input-studio" placeholder="e.g. Competitive Salary" required></div>
+          <div class="form-group-studio"><label for="postLocation" class="form-label-studio">Location *</label><input type="text" id="postLocation" class="form-input-studio" placeholder="e.g. Chennai / Mumbai, India" required></div>
         </div>
-        <div class="form-group-custom"><label for="postSkills" class="form-label-custom">Required Skills *</label><input type="text" id="postSkills" class="form-input-custom" placeholder="e.g. Java, Spring Boot, REST APIs" required></div>
-        <div class="form-group-custom"><label for="postDescription" class="form-label-custom">Job Description *</label><textarea id="postDescription" class="form-input-custom" rows="4" placeholder="Detailed job description..." required></textarea></div>
-        <div class="form-group-custom"><label for="postEligibility" class="form-label-custom">Eligibility Requirements</label><input type="text" id="postEligibility" class="form-input-custom" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)"></div>
+        <div class="form-group-studio"><label for="postSkills" class="form-label-studio">Required Skills *</label><input type="text" id="postSkills" class="form-input-studio" placeholder="e.g. Java, Spring Boot, REST APIs" required></div>
+        <div class="form-group-studio"><label for="postDescription" class="form-label-studio">Job Description *</label><textarea id="postDescription" class="form-input-studio" rows="4" placeholder="Detailed job description..." required></textarea></div>
+        <div class="form-group-studio"><label for="postEligibility" class="form-label-studio">Eligibility Requirements</label><input type="text" id="postEligibility" class="form-input-studio" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)"></div>
 
-        <button type="submit" class="btn-submit-primary">
+        <button type="submit" class="btn-studio-cyan">
           Publish Job Posting
         </button>
       </form>
     </div>
 
     <!-- Tab 4: Manage Postings -->
-    <div id="tabJobs" class="owner-card-panel tab-content" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
-        <h2 style="font-size: 24px; font-weight: 800; margin: 0;">Active &amp; Expired Postings</h2>
+    <div id="tabJobs" class="studio-glass-panel tab-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px;">
+        <h2 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff;">Active &amp; Expired Postings</h2>
 
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <label for="ownerPageSize" style="font-size: 13px; font-weight: 700; color: var(--owner-text-muted);">Posts per page:</label>
-          <select id="ownerPageSize" class="form-input-custom" style="width: auto; height: 38px; padding: 0 12px; font-size: 13px; font-weight: 700;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label for="ownerPageSize" style="font-size: 13px; font-weight: 700; color: var(--studio-muted);">Posts per page:</label>
+          <select id="ownerPageSize" class="form-input-studio" style="width: auto; height: 42px; padding: 0 16px; font-size: 13px; font-weight: 700;">
             <option value="10" selected>10 Posts</option>
             <option value="25">25 Posts</option>
             <option value="50">50 Posts</option>
@@ -322,22 +391,22 @@
         </div>
       </div>
 
-      <div id="ownerJobsTableContainer" class="table-responsive-wrapper">
-        <div style="padding: 20px; text-align: center; color: var(--owner-text-muted);">Loading job postings...</div>
+      <div id="ownerJobsTableContainer" class="table-responsive-studio">
+        <div style="padding: 24px; text-align: center; color: var(--studio-muted);">Loading job postings...</div>
       </div>
     </div>
 
     <!-- Tab 5: Categories -->
-    <div id="tabCategory" class="owner-card-panel tab-content" style="display: none;">
-      <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 20px;">Category Management</h2>
-      <form id="formAddCategory" style="margin-bottom: 32px;">
-        <div class="form-grid-2">
-          <div class="form-group-custom"><label for="newCategoryName" class="form-label-custom">New Category Name *</label><input type="text" id="newCategoryName" class="form-input-custom" required></div>
-          <div class="form-group-custom"><label for="catDescription" class="form-label-custom">Description (Optional)</label><input type="text" id="catDescription" class="form-input-custom"></div>
+    <div id="tabCategory" class="studio-glass-panel tab-content" style="display: none;">
+      <h2 style="font-size: 26px; font-weight: 800; margin-bottom: 22px; color: #ffffff;">Category Management</h2>
+      <form id="formAddCategory" style="margin-bottom: 36px;">
+        <div class="form-grid-2-studio">
+          <div class="form-group-studio"><label for="newCategoryName" class="form-label-studio">New Category Name *</label><input type="text" id="newCategoryName" class="form-input-studio" required></div>
+          <div class="form-group-studio"><label for="catDescription" class="form-label-studio">Description (Optional)</label><input type="text" id="catDescription" class="form-input-studio"></div>
         </div>
-        <button type="submit" class="btn-submit-primary" style="width: auto; padding: 0 28px; height: 48px; font-size: 14px;">+ Add Category</button>
+        <button type="submit" class="btn-studio-cyan" style="width: auto; padding: 0 32px; height: 50px; font-size: 14px;">+ Add Category</button>
       </form>
-      <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--owner-text-main);">Existing Categories</h3>
+      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #ffffff;">Existing Categories</h3>
       <div id="ownerCategoryList"></div>
     </div>
 
@@ -345,31 +414,31 @@
 </div>
 
 <!-- Edit Job Requirement Modal -->
-<div id="editJobModal" style="display: none; position: fixed; inset: 0; z-index: 999; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); overflow-y: auto; padding: 20px 16px;">
-  <div style="background: #ffffff; border-radius: 28px; max-width: 680px; margin: 40px auto; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); border: 1px solid var(--owner-border);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="font-size: 22px; font-weight: 800; margin: 0;">Edit Job Requirement</h2>
-      <button id="btnCloseEditModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--owner-text-muted);">&times;</button>
+<div id="editJobModal" style="display: none; position: fixed; inset: 0; z-index: 999; background: rgba(9, 13, 22, 0.85); backdrop-filter: blur(12px); overflow-y: auto; padding: 20px 16px;">
+  <div style="background: rgba(18, 24, 38, 0.95); border-radius: 28px; max-width: 700px; margin: 40px auto; padding: 36px; box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.7); border: 1px solid var(--studio-border);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <h2 style="font-size: 24px; font-weight: 800; margin: 0; color: #ffffff;">Edit Job Requirement</h2>
+      <button id="btnCloseEditModal" style="background: none; border: none; font-size: 26px; cursor: pointer; color: var(--studio-muted);">&times;</button>
     </div>
 
     <form id="formEditJob">
       <input type="hidden" id="eJobId">
-      <div class="form-grid-2">
-        <div class="form-group-custom"><label for="eTitle" class="form-label-custom">Job Title / Role *</label><input type="text" id="eTitle" class="form-input-custom" required></div>
-        <div class="form-group-custom"><label for="eCompany" class="form-label-custom">Company Name *</label><input type="text" id="eCompany" class="form-input-custom" required></div>
+      <div class="form-grid-2-studio">
+        <div class="form-group-studio"><label for="eTitle" class="form-label-studio">Job Title / Role *</label><input type="text" id="eTitle" class="form-input-studio" required></div>
+        <div class="form-group-studio"><label for="eCompany" class="form-label-studio">Company Name *</label><input type="text" id="eCompany" class="form-input-studio" required></div>
       </div>
-      <div class="form-group-custom"><label for="eApplyUrl" class="form-label-custom">Official External Application URL *</label><input type="url" id="eApplyUrl" class="form-input-custom" required></div>
-      <div class="form-grid-2">
-        <div class="form-group-custom"><label for="eSalary" class="form-label-custom">Stipend / Salary *</label><input type="text" id="eSalary" class="form-input-custom" required></div>
-        <div class="form-group-custom"><label for="eLocation" class="form-label-custom">Location *</label><input type="text" id="eLocation" class="form-input-custom" required></div>
+      <div class="form-group-studio"><label for="eApplyUrl" class="form-label-studio">Official External Application URL *</label><input type="url" id="eApplyUrl" class="form-input-studio" required></div>
+      <div class="form-grid-2-studio">
+        <div class="form-group-studio"><label for="eSalary" class="form-label-studio">Stipend / Salary *</label><input type="text" id="eSalary" class="form-input-studio" required></div>
+        <div class="form-group-studio"><label for="eLocation" class="form-label-studio">Location *</label><input type="text" id="eLocation" class="form-input-studio" required></div>
       </div>
-      <div class="form-group-custom"><label for="eSkills" class="form-label-custom">Required Skills *</label><input type="text" id="eSkills" class="form-input-custom" required></div>
-      <div class="form-group-custom"><label for="eDescription" class="form-label-custom">Job Description *</label><textarea id="eDescription" class="form-input-custom" rows="4" required></textarea></div>
-      <div class="form-group-custom"><label for="eEligibility" class="form-label-custom">Eligibility Requirements</label><input type="text" id="eEligibility" class="form-input-custom"></div>
+      <div class="form-group-studio"><label for="eSkills" class="form-label-studio">Required Skills *</label><input type="text" id="eSkills" class="form-input-studio" required></div>
+      <div class="form-group-studio"><label for="eDescription" class="form-label-studio">Job Description *</label><textarea id="eDescription" class="form-input-studio" rows="4" required></textarea></div>
+      <div class="form-group-studio"><label for="eEligibility" class="form-label-studio">Eligibility Requirements</label><input type="text" id="eEligibility" class="form-input-studio"></div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-        <button type="button" id="btnCancelEdit" class="button button-light" style="padding: 12px 20px;">Cancel</button>
-        <button type="submit" class="btn-submit-primary" style="width: auto; padding: 0 24px; height: 48px;">Save Changes</button>
+      <div style="display: flex; justify-content: flex-end; gap: 14px; margin-top: 28px;">
+        <button type="button" id="btnCancelEdit" class="button button-light" style="padding: 12px 22px; background: rgba(255,255,255,0.08); color: #ffffff; border-color: rgba(255,255,255,0.15);">Cancel</button>
+        <button type="submit" class="btn-studio-cyan" style="width: auto; padding: 0 28px; height: 50px;">Save Changes</button>
       </div>
     </form>
   </div>
@@ -377,5 +446,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=202608112040"></script>
+<script src="{% static 'js/owner.js' %}?v=202608112046"></script>
 {% endblock %}
