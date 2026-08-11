@@ -10,6 +10,11 @@ urlpatterns = [
     path('job/<uuid:uuid>/', views.job_detail_view, name='job_detail'),
     path('job/<int:pk>/', views.job_detail_view, name='job_detail_pk'),
     path('owner/', views.owner_view, name='owner'),
+    path('owner/bulk-parser/', views.owner_view, name='owner_bulk_parser'),
+    path('owner/single-parser/', views.owner_view, name='owner_single_parser'),
+    path('owner/post-job/', views.owner_view, name='owner_post_job'),
+    path('owner/manage-jobs/', views.owner_view, name='owner_manage_jobs'),
+    path('owner/categories/', views.owner_view, name='owner_categories'),
 
     # Public API Endpoints
     path('api/stats/', views.api_stats, name='api_stats'),

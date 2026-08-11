@@ -21,21 +21,59 @@ document.addEventListener('DOMContentLoaded', () => {
     await checkAuthStatus();
   }
 
+  const tabUrlMap = {
+    'tabBulkParse': '/owner/bulk-parser/',
+    'tabSmartParse': '/owner/single-parser/',
+    'tabPost': '/owner/post-job/',
+    'tabJobs': '/owner/manage-jobs/',
+    'tabCategory': '/owner/categories/'
+  };
+
+  const urlTabMap = {
+    '/owner/bulk-parser/': 'tabBulkParse',
+    '/owner/single-parser/': 'tabSmartParse',
+    '/owner/post-job/': 'tabPost',
+    '/owner/manage-jobs/': 'tabJobs',
+    '/owner/categories/': 'tabCategory'
+  };
+
   function setupTabSwitching() {
     document.querySelectorAll('.owner-tab').forEach(tab => {
       tab.addEventListener('click', () => {
-        document.querySelectorAll('.owner-tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-
-        tab.classList.add('active');
         const targetId = tab.dataset.tab;
-        const targetEl = document.getElementById(targetId);
-        if (targetEl) targetEl.style.display = 'block';
-
-        if (targetId === 'tabJobs') loadJobsList();
-        if (targetId === 'tabCategory') loadCategoryList();
+        switchTab(targetId, true);
       });
     });
+
+    const currentPath = window.location.pathname;
+    if (urlTabMap[currentPath]) {
+      switchTab(urlTabMap[currentPath], false);
+    }
+
+    const pageSizeSelect = document.getElementById('ownerPageSize');
+    if (pageSizeSelect) {
+      pageSizeSelect.addEventListener('change', () => {
+        loadJobsList(1);
+      });
+    }
+  }
+
+  function switchTab(targetId, updateHistory = true) {
+    document.querySelectorAll('.owner-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+
+    const activeTabBtn = document.querySelector(`.owner-tab[data-tab="${targetId}"]`);
+    if (activeTabBtn) activeTabBtn.classList.add('active');
+
+    const targetEl = document.getElementById(targetId);
+    if (targetEl) targetEl.style.display = 'block';
+
+    if (updateHistory && tabUrlMap[targetId]) {
+      window.history.pushState({}, '', tabUrlMap[targetId]);
+    }
+
+    if (targetId === 'tabJobs') loadJobsList(1);
+    if (targetId === 'tabCategory') loadCategoryList();
   }
 
   async function checkAuthStatus() {
@@ -248,12 +286,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function loadJobsList() {
+  let currentJobsPage = 1;
+
+  async function loadJobsList(page = 1) {
     if (!jobsTableContainer) return;
+    currentJobsPage = page;
     jobsTableContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted);">Loading job postings...</div>';
 
+    const pageSizeSelect = document.getElementById('ownerPageSize');
+    const pageSize = pageSizeSelect ? pageSizeSelect.value : 10;
+
     try {
-      const res = await fetch('/api/jobs/?sort=newest');
+      const res = await fetch(`/api/jobs/?sort=newest&page=${page}&page_size=${pageSize}`);
       const data = await res.json();
       const jobs = data.jobs;
 
@@ -312,7 +356,31 @@ document.addEventListener('DOMContentLoaded', () => {
             `}).join('')}
           </tbody>
         </table>
+
+        <!-- Server-backed Pagination Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--paper); border-top: 1px solid var(--subtle-border); border-radius: 0 0 16px 16px;">
+          <div style="font-size: 13px; color: var(--muted); font-weight: 600;">
+            Showing Page <strong>${data.current_page}</strong> of <strong>${data.total_pages}</strong> (${data.total_count} total postings)
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btnPrevPage" class="button button-light" style="padding: 8px 16px; font-size: 12px; font-weight: 700;" ${!data.has_previous ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+              ← Previous
+            </button>
+            <button id="btnNextPage" class="button button-light" style="padding: 8px 16px; font-size: 12px; font-weight: 700;" ${!data.has_next ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+              Next →
+            </button>
+          </div>
+        </div>
       `;
+
+      const btnPrev = document.getElementById('btnPrevPage');
+      const btnNext = document.getElementById('btnNextPage');
+      if (btnPrev && data.has_previous) {
+        btnPrev.addEventListener('click', () => loadJobsList(data.current_page - 1));
+      }
+      if (btnNext && data.has_next) {
+        btnNext.addEventListener('click', () => loadJobsList(data.current_page + 1));
+      }
 
       document.querySelectorAll('.btn-toggle-job').forEach(btn => {
         btn.addEventListener('click', async () => {

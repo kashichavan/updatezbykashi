@@ -270,7 +270,20 @@
 
     <!-- Tab Content 3: Manage Postings -->
     <div id="tabJobs" class="owner-card tab-content" style="display: none;">
-      <h2 style="font: 700 24px var(--font-serif); margin-bottom: 12px;">Active &amp; Expired Postings</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+        <h2 style="font: 700 24px var(--font-serif); margin: 0;">Active &amp; Expired Postings</h2>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="ownerPageSize" style="font-size: 13px; font-weight: 700; color: var(--muted);">Posts per page:</label>
+          <select id="ownerPageSize" class="form-control" style="width: auto; height: 38px; padding: 0 12px; font-size: 13px; font-weight: 700;">
+            <option value="10" selected>10 Posts</option>
+            <option value="25">25 Posts</option>
+            <option value="50">50 Posts</option>
+            <option value="100">100 Posts</option>
+          </select>
+        </div>
+      </div>
+
       <div id="ownerJobsTableContainer" class="table-responsive">
         <div style="padding: 20px; text-align: center; color: var(--muted);">Loading job postings...</div>
       </div>
