@@ -65,9 +65,9 @@ class JobPosting(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Auto-set 3-day deadline upon creation if not explicitly set
+        # Auto-set 7-day deadline upon creation if not explicitly set
         if not self.deadline:
-            self.deadline = timezone.now() + timedelta(days=3)
+            self.deadline = timezone.now() + timedelta(days=7)
         # Auto-set posted_date from today if not set
         if not self.posted_date:
             self.posted_date = timezone.now().date()

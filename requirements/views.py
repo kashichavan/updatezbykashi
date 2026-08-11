@@ -231,7 +231,7 @@ def api_owner_bulk_parse_and_post(request):
                 stipend_salary = sal_m.group(1).strip() if sal_m else "Competitive Salary (Freshers)"
 
                 lower_title = title.lower() + " " + skills_required.lower()
-                deadline = timezone.now() + timedelta(days=3)
+                deadline = timezone.now() + timedelta(days=7)
                 description = f"{company} is hiring for {title}.\nKey Skills: {skills_required}.\nLocation: {location}."
 
                 job = JobPosting.objects.create(
@@ -260,7 +260,7 @@ def api_owner_bulk_parse_and_post(request):
                 'success': True,
                 'count': len(created_jobs),
                 'created_jobs': created_jobs,
-                'message': f'Successfully published {len(created_jobs)} opportunities under Software & Tech! Active for 3 days.'
+                'message': f'Successfully published {len(created_jobs)} opportunities under Software & Tech! Active for 7 days.'
             }, status=201)
 
         except Exception as e:
@@ -317,7 +317,7 @@ def api_owner_parse_and_post(request):
                 )
 
             description = f"{company_name} is hiring for {title}.\nKey Requirements & Skills: {skills_required}.\nLocation: {location}."
-            deadline = timezone.now() + timedelta(days=3)
+            deadline = timezone.now() + timedelta(days=7)
 
             job = JobPosting.objects.create(
                 title=title,
@@ -344,7 +344,7 @@ def api_owner_parse_and_post(request):
                 'id': job.id,
                 'title': job.title,
                 'company_name': job.company_name,
-                'message': 'Software & Tech opportunity auto-parsed and published! Active for 3 days.'
+                'message': 'Software & Tech opportunity auto-parsed and published! Active for 7 days.'
             }, status=201)
 
         except Exception as e:
@@ -409,7 +409,7 @@ def api_owner_job_toggle_status(request, pk):
             job.status = 'EXPIRED'
         else:
             job.status = 'ACTIVE'
-            job.deadline = timezone.now() + timedelta(days=3)
+            job.deadline = timezone.now() + timedelta(days=7)
         job.save(update_fields=['status', 'deadline'])
         cache.clear()
         return JsonResponse({
@@ -662,7 +662,7 @@ def api_jobs(request):
             data = json.loads(request.body)
             category = get_object_or_404(Category, id=data.get('category_id'))
 
-            deadline = timezone.now() + timedelta(days=3)
+            deadline = timezone.now() + timedelta(days=7)
 
             job = JobPosting.objects.create(
                 title=data['title'].strip(),
