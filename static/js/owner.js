@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function setupTabSwitching() {
-    document.querySelectorAll('.owner-tab').forEach(tab => {
+    document.querySelectorAll('.owner-nav-item').forEach(tab => {
       tab.addEventListener('click', () => {
         const targetId = tab.dataset.tab;
         switchTab(targetId, true);
@@ -62,10 +62,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function switchTab(targetId, updateHistory = true) {
-    document.querySelectorAll('.owner-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.owner-nav-item').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
 
-    const activeTabBtn = document.querySelector(`.owner-tab[data-tab="${targetId}"]`);
+    const activeTabBtn = document.querySelector(`.owner-nav-item[data-tab="${targetId}"]`);
     if (activeTabBtn) activeTabBtn.classList.add('active');
 
     const targetEl = document.getElementById(targetId);

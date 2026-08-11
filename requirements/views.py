@@ -135,7 +135,11 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
 
 def owner_view(request):
     sync_expired_jobs()
-    return render(request, 'owner.html')
+    is_admin = request.user.is_authenticated and request.user.is_staff
+    return render(request, 'owner.html', {
+        'is_owner_authenticated': is_admin,
+        'owner_username': request.user.username if is_admin else ''
+    })
 
 def api_youtube_videos(request):
     videos = get_cached_youtube_videos()
