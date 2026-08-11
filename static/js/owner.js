@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const urlTabMap = {
+    '/owner/': 'tabBulkParse',
     '/owner/bulk-parser/': 'tabBulkParse',
     '/owner/single-parser/': 'tabSmartParse',
     '/owner/post-job/': 'tabPost',
@@ -48,6 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentPath = window.location.pathname;
     if (urlTabMap[currentPath]) {
       switchTab(urlTabMap[currentPath], false);
+    } else {
+      switchTab('tabBulkParse', false);
     }
 
     const pageSizeSelect = document.getElementById('ownerPageSize');
