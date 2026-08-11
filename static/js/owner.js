@@ -7,10 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const formLogin = document.getElementById('formOwnerLogin');
   const formSmartParse = document.getElementById('formSmartParse');
   const formBulkParse = document.getElementById('formBulkParse');
-  const formPostJob = document.getElementById('formOwnerPostJob');
+  const formPostJob = document.getElementById('formCreateJob');
   const formAddCategory = document.getElementById('formAddCategory');
 
-  const categorySelect = document.getElementById('pCategory');
+  const categorySelect = document.getElementById('postCategory');
   const jobsTableContainer = document.getElementById('ownerJobsTableContainer');
   const categoryListContainer = document.getElementById('ownerCategoryList');
 
@@ -131,22 +131,25 @@ document.addEventListener('DOMContentLoaded', () => {
   if (formBulkParse) {
     formBulkParse.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const rawText = document.getElementById('bulkTextSnippet').value.trim();
+      const rawText = document.getElementById('bulkRawText').value.trim();
       if (!rawText) return;
 
       try {
         showToast('Processing bulk job text snippet...', 'success');
+        const jwtAccess = localStorage.getItem('owner_jwt_access');
+        const headers = { 'Content-Type': 'application/json' };
+        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
 
         const res = await fetch('/api/owner/bulk-parse-and-post/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ raw_text: rawText })
         });
         const data = await res.json();
 
         if (res.ok && data.success) {
           showToast(`🚀 ${data.message}`, 'success');
-          document.getElementById('bulkTextSnippet').value = '';
+          document.getElementById('bulkRawText').value = '';
         } else {
           showToast(data.error || 'Failed to bulk parse job postings.', 'error');
         }
@@ -162,20 +165,24 @@ document.addEventListener('DOMContentLoaded', () => {
   if (formSmartParse) {
     formSmartParse.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const rawText = document.getElementById('rawTextSnippet').value.trim();
+      const rawText = document.getElementById('rawText').value.trim();
       if (!rawText) return;
 
       try {
+        const jwtAccess = localStorage.getItem('owner_jwt_access');
+        const headers = { 'Content-Type': 'application/json' };
+        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
         const res = await fetch('/api/owner/parse-and-post/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ raw_text: rawText })
         });
         const data = await res.json();
 
         if (res.ok && data.success) {
           showToast(`⚡ ${data.message} (${data.company_name} - ${data.title})`, 'success');
-          document.getElementById('rawTextSnippet').value = '';
+          document.getElementById('rawText').value = '';
         } else {
           showToast(data.error || 'Failed to parse raw snippet.', 'error');
         }
@@ -192,23 +199,27 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
 
       const payload = {
-        title: document.getElementById('pTitle').value.trim(),
-        company_name: document.getElementById('pCompany').value.trim(),
-        category_id: parseInt(document.getElementById('pCategory').value),
-        job_type: document.getElementById('pJobType').value,
-        apply_url: document.getElementById('pApplyUrl').value.trim(),
-        stipend_salary: document.getElementById('pSalary').value.trim(),
-        location: document.getElementById('pLocation').value.trim(),
-        is_remote: document.getElementById('pLocation').value.toLowerCase().includes('remote'),
-        skills_required: document.getElementById('pSkills').value.trim(),
-        description: document.getElementById('pDescription').value.trim(),
-        eligibility: document.getElementById('pEligibility').value.trim() || 'Open to all graduating students',
+        title: document.getElementById('postTitle').value.trim(),
+        company_name: document.getElementById('postCompany').value.trim(),
+        category_id: parseInt(document.getElementById('postCategory').value),
+        job_type: document.getElementById('postJobType').value,
+        apply_url: document.getElementById('postApplyUrl').value.trim(),
+        stipend_salary: document.getElementById('postSalary').value.trim(),
+        location: document.getElementById('postLocation').value.trim(),
+        is_remote: document.getElementById('postLocation').value.toLowerCase().includes('remote'),
+        skills_required: document.getElementById('postSkills').value.trim(),
+        description: document.getElementById('postDescription').value.trim(),
+        eligibility: document.getElementById('postEligibility').value.trim() || 'Open to all graduating students',
       };
 
       try {
+        const jwtAccess = localStorage.getItem('owner_jwt_access');
+        const headers = { 'Content-Type': 'application/json' };
+        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
         const res = await fetch('/api/jobs/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -256,20 +267,22 @@ document.addEventListener('DOMContentLoaded', () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Company & Role</th>
+              <th>Company &amp; Role</th>
               <th>Apply Link</th>
               <th>Category</th>
-              <th>Time Left (3-Day Limit)</th>
+              <th>Status / Time Left</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            ${jobs.map(j => `
+            ${jobs.map(j => {
+              const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
+              return `
               <tr>
                 <td>#${j.id}</td>
                 <td>
                   <strong>${escapeHtml(j.company_name)}</strong><br>
-                  <span style="color: var(--muted);">${escapeHtml(j.title)}</span>
+                  <span style="color: var(--muted); font-size: 13px;">${escapeHtml(j.title)}</span>
                 </td>
                 <td>
                   <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: var(--blue-primary); font-size: 12px; font-weight: 700; word-break: break-all;">
@@ -277,22 +290,36 @@ document.addEventListener('DOMContentLoaded', () => {
                   </a>
                 </td>
                 <td>${escapeHtml(j.category_name)}</td>
-                <td><span style="font-weight: 700; color: var(--blue-primary);">${j.time_left_seconds > 0 ? Math.ceil(j.time_left_seconds / 3600) + 'h left' : 'Expired'}</span></td>
                 <td>
-                  <div style="display: flex; gap: 6px;">
-                    <button class="button button-light btn-edit-job" data-id="${j.id}" style="padding: 4px 10px; font-size: 11px; color: var(--blue-primary); border-color: var(--blue-border);">
+                  <span style="display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; ${isExpired ? 'background: rgba(239, 68, 68, 0.1); color: #ef4444;' : 'background: rgba(34, 197, 94, 0.1); color: #16a34a;'}">
+                    ${isExpired ? '🔴 Unpublished / Expired' : '🟢 Active (' + Math.ceil(j.time_left_seconds / 3600) + 'h left)'}
+                  </span>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button class="button button-light btn-toggle-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 700; color: ${isExpired ? '#16a34a' : '#d97706'}; border-color: ${isExpired ? '#bbf7d0' : '#fef3c7'};">
+                      ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
+                    </button>
+                    <button class="button button-light btn-edit-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; color: var(--blue-primary); border-color: var(--blue-border);">
                       ✏️ Edit
                     </button>
-                    <button class="button button-light btn-delete-job" data-id="${j.id}" style="padding: 4px 10px; font-size: 11px; color: #ef4444; border-color: #fca5a5;">
-                      Delete
+                    <button class="button button-light btn-delete-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; color: #ef4444; border-color: #fca5a5;">
+                      🗑️ Delete
                     </button>
                   </div>
                 </td>
               </tr>
-            `).join('')}
+            `}).join('')}
           </tbody>
         </table>
       `;
+
+      document.querySelectorAll('.btn-toggle-job').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          await toggleJobStatus(id);
+        });
+      });
 
       document.querySelectorAll('.btn-edit-job').forEach(btn => {
         btn.addEventListener('click', async () => {
@@ -402,9 +429,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  async function toggleJobStatus(id) {
+    try {
+      const jwtAccess = localStorage.getItem('owner_jwt_access');
+      const headers = {};
+      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
+      const res = await fetch(`/api/owner/jobs/${id}/toggle-status/`, { method: 'POST', headers });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(data.message || 'Job status updated!', 'success');
+        await loadJobsList();
+      } else {
+        showToast(data.error || 'Failed to toggle job status.', 'error');
+      }
+    } catch (err) {
+      showToast('Error toggling job status.', 'error');
+    }
+  }
+
   async function deleteJob(id) {
     try {
-      const res = await fetch(`/api/owner/jobs/${id}/delete/`, { method: 'DELETE' });
+      const jwtAccess = localStorage.getItem('owner_jwt_access');
+      const headers = {};
+      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
+      const res = await fetch(`/api/owner/jobs/${id}/delete/`, { method: 'POST', headers });
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('Posting deleted successfully.', 'success');
@@ -443,9 +493,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const description = document.getElementById('catDescription').value.trim();
 
       try {
+        const jwtAccess = localStorage.getItem('owner_jwt_access');
+        const headers = { 'Content-Type': 'application/json' };
+        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
         const res = await fetch('/api/owner/categories/', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ name, description })
         });
         const data = await res.json();

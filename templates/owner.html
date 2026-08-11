@@ -1,23 +1,53 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Owner Management Portal | Kashii Updatez{% endblock %}
+{% block title %}Owner Portal &amp; Management Dashboard | Kashii Updatez{% endblock %}
 
 {% block extra_css %}
 <style>
-  /* Premium Responsive Owner Management Dashboard */
-  .owner-container { width: 100%; max-width: 1040px; margin: 24px auto 90px; padding: 0 16px; }
-  
+  /* Premium Glassmorphic Owner Portal System */
+  :root {
+    --owner-bg: #090d16;
+    --owner-card: rgba(15, 23, 42, 0.75);
+    --owner-card-hover: rgba(30, 41, 59, 0.85);
+    --owner-border: rgba(255, 255, 255, 0.08);
+    --owner-glow: rgba(59, 130, 246, 0.15);
+  }
+
+  .owner-container { 
+    width: 100%; 
+    max-width: 1100px; 
+    margin: 28px auto 90px; 
+    padding: 0 16px; 
+  }
+
+  .owner-glass-header {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 58, 138, 0.85) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 28px;
+    padding: 32px;
+    color: #ffffff;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
   .owner-card { 
     background: #ffffff; 
     border: 1px solid var(--subtle-border); 
     border-radius: 24px; 
-    padding: 32px 28px; 
-    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); 
-    transition: var(--transition);
+    padding: 32px; 
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.05); 
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Mobile Navigation Segmented Control / Grid Pill Bar */
+  /* Segmented Pill Navigation Bar */
   .owner-tabs { 
     display: flex; 
     gap: 8px; 
@@ -27,7 +57,7 @@
     padding: 6px; 
     margin-bottom: 24px; 
     background: #f1f5f9;
-    border-radius: 18px;
+    border-radius: 20px;
     border: 1px solid var(--subtle-border);
   }
   .owner-tabs::-webkit-scrollbar { display: none; }
@@ -36,55 +66,41 @@
     flex: 1 0 auto; 
     text-align: center;
     white-space: nowrap; 
-    padding: 10px 18px; 
-    border-radius: 12px; 
+    padding: 12px 20px; 
+    border-radius: 14px; 
     font-weight: 700; 
     font-size: 13px; 
     border: none; 
     background: transparent; 
     cursor: pointer; 
     color: var(--muted); 
-    transition: var(--transition); 
+    transition: all 0.25s ease; 
     display: inline-flex; 
     align-items: center; 
     justify-content: center;
     gap: 8px; 
   }
 
+  .owner-tab:hover {
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.6);
+  }
+
   .owner-tab.active { 
     background: #ffffff; 
     color: var(--blue-primary); 
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08); 
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08); 
     font-weight: 800;
   }
 
-  /* Mobile View Select Dropdown for Small Screens */
-  .owner-mobile-select-wrap {
-    display: none;
-    margin-bottom: 20px;
-  }
-
-  @media (max-width: 640px) {
-    .owner-container { margin-top: 16px; padding: 0 12px; }
-    .owner-card { padding: 22px 18px; border-radius: 20px; }
-    .owner-tabs { display: flex; }
-    .owner-tab { font-size: 12px; padding: 8px 12px; }
-    
-    /* Touch friendly form inputs on mobile */
-    .form-control { height: 48px !important; font-size: 14px !important; }
-    textarea.form-control { min-height: 140px !important; }
-    
-    /* Stack form rows on mobile */
-    .form-row { grid-template-columns: 1fr !important; gap: 14px !important; }
-  }
-
-  .form-group { margin-bottom: 20px; }
+  /* Touch friendly form inputs */
+  .form-group { margin-bottom: 22px; }
   .form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 8px; letter-spacing: 0.2px; }
   
   .form-control { 
     width: 100%; 
-    height: 50px; 
-    padding: 0 16px; 
+    height: 52px; 
+    padding: 0 18px; 
     border-radius: 14px; 
     border: 1px solid var(--subtle-border); 
     background: #ffffff; 
@@ -92,11 +108,11 @@
     font-size: 15px; 
     color: var(--ink); 
     outline: none; 
-    transition: var(--transition); 
+    transition: all 0.2s ease; 
   }
   .form-control:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); }
   
-  textarea.form-control { height: auto; min-height: 160px; padding: 16px; line-height: 1.6; }
+  textarea.form-control { height: auto; min-height: 160px; padding: 18px; line-height: 1.6; }
 
   .form-row { display: grid; grid-template-columns: 1fr; gap: 20px; }
   @media (min-width: 768px) { .form-row { grid-template-columns: 1fr 1fr; } }
@@ -106,13 +122,21 @@
     overflow-x: auto; 
     -webkit-overflow-scrolling: touch; 
     margin-top: 16px; 
-    border-radius: 16px; 
+    border-radius: 18px; 
     border: 1px solid var(--subtle-border); 
   }
 
   .data-table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 600px; }
-  .data-table th, .data-table td { padding: 12px 16px; border-bottom: 1px solid var(--subtle-border); text-align: left; }
+  .data-table th, .data-table td { padding: 14px 18px; border-bottom: 1px solid var(--subtle-border); text-align: left; }
   .data-table th { background: var(--paper); font-size: 11px; text-transform: uppercase; font-weight: 800; color: var(--muted); letter-spacing: 0.5px; }
+
+  @media (max-width: 640px) {
+    .owner-container { margin-top: 16px; padding: 0 12px; }
+    .owner-glass-header { padding: 24px 20px; border-radius: 22px; }
+    .owner-card { padding: 22px 18px; border-radius: 20px; }
+    .owner-tab { font-size: 12px; padding: 10px 14px; }
+    .form-control { height: 48px !important; font-size: 14px !important; }
+  }
 </style>
 {% endblock %}
 
@@ -120,12 +144,12 @@
 <div class="owner-container">
 
   <!-- View 1: Owner Login Screen -->
-  <div id="ownerLoginView" class="owner-card" style="max-width: 480px; margin: 40px auto; display: none; box-shadow: 0 20px 50px rgba(15,23,42,0.15); border-radius: 28px; padding: 36px 32px;">
+  <div id="ownerLoginView" class="owner-card" style="max-width: 480px; margin: 40px auto; display: none; box-shadow: 0 20px 50px rgba(15,23,42,0.15); border-radius: 28px; padding: 40px 36px;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
       <h2 style="font-size: 24px; font-weight: 800; color: var(--ink); margin: 0;">👑 Owner Portal</h2>
-      <span style="font-size: 11px; font-weight: 800; background: rgba(37,99,235,0.1); color: var(--blue-primary); padding: 4px 10px; border-radius: 8px;">ADMIN ONLY</span>
+      <span style="font-size: 11px; font-weight: 800; background: rgba(37,99,235,0.1); color: var(--blue-primary); padding: 4px 12px; border-radius: 8px;">ADMIN AUTH</span>
     </div>
-    <p style="font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5;">Authenticate with your owner credentials to manage job postings, categories, and Insta Automation.</p>
+    <p style="font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.5;">Authenticate with your owner credentials to manage job postings, categories, and bulk multi-parsers.</p>
 
     <form id="formOwnerLogin">
       <div class="form-group">
@@ -136,7 +160,7 @@
         <label for="ownerPass">Owner Password *</label>
         <input type="password" id="ownerPass" class="form-control" placeholder="Enter owner password" required autocomplete="current-password">
       </div>
-      <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; margin-top: 12px; padding: 14px; font-size: 15px; border-radius: 12px; font-weight: 800;">
+      <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; margin-top: 12px; padding: 16px; font-size: 15px; border-radius: 14px; font-weight: 800;">
         Log In as Owner 🔑
       </button>
     </form>
@@ -145,18 +169,20 @@
   <!-- View 2: Owner Dashboard (If authenticated) -->
   <div id="ownerDashboardView" style="display: none;">
 
-    <!-- Dynamic Owner Portal Header Card -->
-    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); border-radius: 24px; padding: 28px 32px; color: #fff; box-shadow: 0 16px 40px rgba(15,23,42,0.25); margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <!-- Dynamic Glassmorphic Owner Header Card -->
+    <div class="owner-glass-header">
       <div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-          <h1 style="font-size: 24px; font-weight: 800; margin: 0; color: #ffffff;">👑 Secret Owner Portal</h1>
-          <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 12px;">ADMIN AUTHENTICATED</span>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+          <h1 style="font-size: 26px; font-weight: 800; margin: 0; color: #ffffff; letter-spacing: -0.02em;">👑 Secret Owner Portal</h1>
+          <span style="background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.4); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 12px; font-family: monospace;">AUTHENTICATED</span>
         </div>
-        <p style="font-size: 13px; color: #94a3b8; margin: 0;">Manage job postings, bulk multi-job auto-parsers, and categories.</p>
+        <p style="font-size: 14px; color: #94a3b8; margin: 0; line-height: 1.5;">Manage daily student requirements, 1-click single parsers, bulk multi-job parsers, and categories.</p>
       </div>
+
+      <div id="ownerAuthBadge" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
     </div>
 
-    <!-- Spacious Touch Tabs Bar -->
+    <!-- Segmented Touch Navigation Tabs Bar -->
     <div class="owner-tabs">
       <button class="owner-tab active" data-tab="tabBulkParse"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="16" height="16" alt="Bulk"> Bulk Multi-Job Parser</button>
       <button class="owner-tab" data-tab="tabSmartParse"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="16" height="16" alt="Parser"> 1-Click Single Parser</button>
@@ -169,7 +195,7 @@
     <div id="tabBulkParse" class="owner-card tab-content">
       <div style="margin-bottom: 24px;">
         <span style="display: inline-block; padding: 4px 12px; background: #dcfce7; color: #15803d; font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
-          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="18" height="18" alt="Bulk"> BULK MULTI-JOB AUTO-PARSER ENGINE
+          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="16" height="16" alt="Bulk"> BULK MULTI-JOB AUTO-PARSER ENGINE
         </span>
         <h2 style="font: 700 24px var(--font-serif); margin: 0 0 8px;">Post 5, 7, or 20+ Jobs at Once!</h2>
         <p style="font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6;">
@@ -183,7 +209,7 @@
           <textarea id="bulkRawText" class="form-control" rows="12" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
         </div>
 
-        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px; background: #16a34a; border-color: #16a34a;">
+        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 16px; font-size: 15px; background: #16a34a; border-color: #16a34a; border-radius: 14px; font-weight: 800;">
           ⚡ Parse &amp; Publish ALL Jobs in Bulk
         </button>
       </form>
@@ -193,7 +219,7 @@
     <div id="tabSmartParse" class="owner-card tab-content" style="display: none;">
       <div style="margin-bottom: 24px;">
         <span style="display: inline-block; padding: 4px 12px; background: #eff6ff; color: #1d4ed8; font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
-          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="18" height="18" alt="Parser"> 1-CLICK SINGLE AUTO-PARSER
+          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="16" height="16" alt="Parser"> 1-CLICK SINGLE AUTO-PARSER
         </span>
         <h2 style="font: 700 24px var(--font-serif); margin: 0 0 8px;">Post 1 Single Job Snippet</h2>
         <p style="font-size: 14px; color: var(--muted); margin: 0; line-height: 1.6;">
@@ -207,7 +233,7 @@
           <textarea id="rawText" class="form-control" rows="8" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Apply Link: https://..." required></textarea>
         </div>
 
-        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px;">
+        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 16px; font-size: 15px; border-radius: 14px; font-weight: 800;">
           ⚡ Parse &amp; Publish Single Job
         </button>
       </form>
@@ -216,68 +242,27 @@
     <!-- Tab Content 2: Manual Form -->
     <div id="tabPost" class="owner-card tab-content" style="display: none;">
       <h2 style="font: 700 24px var(--font-serif); margin-bottom: 20px;">Publish New Job Requirement</h2>
-
       <form id="formCreateJob">
         <div class="form-row">
-          <div class="form-group">
-            <label for="postTitle">Job Title / Role *</label>
-            <input type="text" id="postTitle" class="form-control" placeholder="e.g. Java Full Stack Developer" required>
-          </div>
-          <div class="form-group">
-            <label for="postCompany">Company Name *</label>
-            <input type="text" id="postCompany" class="form-control" placeholder="e.g. BNP Paribas" required>
-          </div>
+          <div class="form-group"><label for="postTitle">Job Title / Role *</label><input type="text" id="postTitle" class="form-control" required></div>
+          <div class="form-group"><label for="postCompany">Company Name *</label><input type="text" id="postCompany" class="form-control" required></div>
         </div>
-
         <div class="form-row">
-          <div class="form-group">
-            <label for="postCategory">Category *</label>
-            <select id="postCategory" class="form-control" required></select>
-          </div>
-          <div class="form-group">
-            <label for="postJobType">Opportunity Type *</label>
-            <select id="postJobType" class="form-control" required>
-              <option value="INTERNSHIP">Internship</option>
-              <option value="FULL_TIME" selected>Full-Time Job</option>
-              <option value="PART_TIME">Part-Time Job</option>
-              <option value="FREELANCE">Freelance / Contract</option>
-              <option value="CAMPUS">Campus Drive</option>
-            </select>
-          </div>
+          <div class="form-group"><label for="postCategory">Category *</label><select id="postCategory" class="form-control" required></select></div>
+          <div class="form-group"><label for="postJobType">Opportunity Type *</label><select id="postJobType" class="form-control" required><option value="INTERNSHIP">Internship</option><option value="FULL_TIME" selected>Full-Time Job</option></select></div>
         </div>
-
-        <div class="form-group">
-          <label for="postApplyUrl" style="color: var(--blue-primary); font-weight: 700;">Official External Application URL *</label>
-          <input type="url" id="postApplyUrl" class="form-control" placeholder="https://..." required style="border-color: var(--blue-primary); background: #f0f7ff;">
-        </div>
-
+        <div class="form-group"><label for="postApplyUrl">Official External Application URL *</label><input type="url" id="postApplyUrl" class="form-control" required></div>
         <div class="form-row">
-          <div class="form-group">
-            <label for="postSalary">Stipend / Salary Range *</label>
-            <input type="text" id="postSalary" class="form-control" placeholder="e.g. Competitive Salary (Freshers)" required>
-          </div>
-          <div class="form-group">
-            <label for="postLocation">Location *</label>
-            <input type="text" id="postLocation" class="form-control" placeholder="e.g. Chennai / Mumbai, India" required>
-          </div>
+          <div class="form-group"><label for="postSalary">Stipend / Salary *</label><input type="text" id="postSalary" class="form-control" required></div>
+          <div class="form-group"><label for="postLocation">Location *</label><input type="text" id="postLocation" class="form-control" required></div>
         </div>
-
-        <div class="form-group">
-          <label for="postSkills">Required Skills (Comma-separated) *</label>
-          <input type="text" id="postSkills" class="form-control" placeholder="e.g. Java, Spring Boot, REST APIs" required>
-        </div>
-
-        <div class="form-group">
-          <label for="postDescription">Job Description *</label>
-          <textarea id="postDescription" class="form-control" rows="4" placeholder="Detailed job description..." required></textarea>
-        </div>
-
+        <div class="form-group"><label for="postSkills">Required Skills *</label><input type="text" id="postSkills" class="form-control" required></div>
+        <div class="form-group"><label for="postDescription">Job Description *</label><textarea id="postDescription" class="form-control" rows="4" required></textarea></div>
         <div class="form-group">
           <label for="postEligibility">Eligibility Requirements</label>
           <input type="text" id="postEligibility" class="form-control" placeholder="e.g. B.E / B.Tech / M.Tech / MCA (2026 Batch)">
         </div>
-
-        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px;">
+        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 16px; font-size: 15px; border-radius: 14px; font-weight: 800;">
           Publish Job Posting
         </button>
       </form>
@@ -286,139 +271,54 @@
     <!-- Tab Content 3: Manage Postings -->
     <div id="tabJobs" class="owner-card tab-content" style="display: none;">
       <h2 style="font: 700 24px var(--font-serif); margin-bottom: 12px;">Active &amp; Expired Postings</h2>
-
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Company &amp; Title</th>
-              <th>Category</th>
-              <th>Posted Date</th>
-              <th>Deadline</th>
-              <th>Views</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="ownerJobsTableBody">
-            <!-- Loaded via JS -->
-          </tbody>
-        </table>
+      <div id="ownerJobsTableContainer" class="table-responsive">
+        <div style="padding: 20px; text-align: center; color: var(--muted);">Loading job postings...</div>
       </div>
     </div>
 
     <!-- Tab Content 4: Categories -->
     <div id="tabCategory" class="owner-card tab-content" style="display: none;">
-      <h2 style="font: 700 24px var(--font-serif); margin-bottom: 20px;">Manage Categories</h2>
-
-      <form id="formCreateCategory" style="margin-bottom: 32px;">
+      <h2 style="font: 700 24px var(--font-serif); margin-bottom: 20px;">Category Management</h2>
+      <form id="formAddCategory" style="margin-bottom: 32px;">
         <div class="form-row">
-          <div class="form-group">
-            <label for="catName">Category Name *</label>
-            <input type="text" id="catName" class="form-control" placeholder="e.g. Data Science & AI" required>
-          </div>
-          <div class="form-group">
-            <label for="catDescription">Description</label>
-            <input type="text" id="catDescription" class="form-control" placeholder="Short summary...">
-          </div>
+          <div class="form-group"><label for="newCategoryName">New Category Name *</label><input type="text" id="newCategoryName" class="form-control" required></div>
+          <div class="form-group"><label for="catDescription">Description (Optional)</label><input type="text" id="catDescription" class="form-control"></div>
         </div>
-        <button type="submit" class="button button-dark" style="width: 100%; justify-content: center; padding: 12px;">Create Category</button>
+        <button type="submit" class="button button-dark" style="padding: 12px 24px; font-size: 14px; border-radius: 12px; font-weight: 800;">+ Add Category</button>
       </form>
-
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Slug</th>
-              <th>Active Postings</th>
-            </tr>
-          </thead>
-          <tbody id="ownerCategoriesTableBody">
-            <!-- Loaded via JS -->
-          </tbody>
-        </table>
-      </div>
+      <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: var(--ink);">Existing Categories</h3>
+      <div id="ownerCategoryList"></div>
     </div>
 
   </div>
-
 </div>
 
-<!-- Modal: Edit Job Posting Drawer -->
-<div id="editJobModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 style="font: 700 20px var(--font-serif); margin: 0;">Edit Job Posting</h3>
-      <button id="btnCloseEditModal" class="close-btn">✕</button>
+<!-- Edit Job Requirement Modal -->
+<div id="editJobModal" style="display: none; position: fixed; inset: 0; z-index: 999; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); overflow-y: auto; padding: 20px 16px;">
+  <div style="background: #ffffff; border-radius: 28px; max-width: 680px; margin: 40px auto; padding: 32px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); border: 1px solid var(--subtle-border);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font: 700 22px var(--font-serif); margin: 0;">Edit Job Requirement</h2>
+      <button id="btnCloseEditModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted);">&times;</button>
     </div>
 
     <form id="formEditJob">
       <input type="hidden" id="eJobId">
-
       <div class="form-row">
-        <div class="form-group">
-          <label for="eTitle">Job Title / Role *</label>
-          <input type="text" id="eTitle" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label for="eCompany">Company Name *</label>
-          <input type="text" id="eCompany" class="form-control" required>
-        </div>
+        <div class="form-group"><label for="eTitle">Job Title / Role *</label><input type="text" id="eTitle" class="form-control" required></div>
+        <div class="form-group"><label for="eCompany">Company Name *</label><input type="text" id="eCompany" class="form-control" required></div>
       </div>
-
+      <div class="form-group"><label for="eApplyUrl">Official External Application URL *</label><input type="url" id="eApplyUrl" class="form-control" required></div>
       <div class="form-row">
-        <div class="form-group">
-          <label for="eCategory">Category *</label>
-          <select id="eCategory" class="form-control" required></select>
-        </div>
-        <div class="form-group">
-          <label for="eJobType">Opportunity Type *</label>
-          <select id="eJobType" class="form-control" required>
-            <option value="INTERNSHIP">Internship</option>
-            <option value="FULL_TIME">Full-Time Job</option>
-            <option value="PART_TIME">Part-Time Job</option>
-            <option value="FREELANCE">Freelance / Contract</option>
-            <option value="CAMPUS">Campus Drive</option>
-          </select>
-        </div>
+        <div class="form-group"><label for="eSalary">Stipend / Salary *</label><input type="text" id="eSalary" class="form-control" required></div>
+        <div class="form-group"><label for="eLocation">Location *</label><input type="text" id="eLocation" class="form-control" required></div>
       </div>
+      <div class="form-group"><label for="eSkills">Required Skills *</label><input type="text" id="eSkills" class="form-control" required></div>
+      <div class="form-group"><label for="eDescription">Job Description *</label><textarea id="eDescription" class="form-control" rows="4" required></textarea></div>
+      <div class="form-group"><label for="eEligibility">Eligibility Requirements</label><input type="text" id="eEligibility" class="form-control"></div>
 
-      <div class="form-group">
-        <label for="eApplyUrl" style="color: var(--blue-primary); font-weight: 700;">Official External Application URL *</label>
-        <input type="url" id="eApplyUrl" class="form-control" placeholder="https://..." required style="border-color: var(--blue-primary); background: #f0f7ff;">
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label for="eSalary">Stipend / Salary Range *</label>
-          <input type="text" id="eSalary" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label for="eLocation">Location *</label>
-          <input type="text" id="eLocation" class="form-control" required>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="eSkills">Required Skills (Comma-separated) *</label>
-        <input type="text" id="eSkills" class="form-control" required>
-      </div>
-
-      <div class="form-group">
-        <label for="eDescription">Job Description *</label>
-        <textarea id="eDescription" class="form-control" rows="4" required></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="eEligibility">Eligibility Requirements</label>
-        <input type="text" id="eEligibility" class="form-control">
-      </div>
-
-      <div style="display: flex; gap: 12px; margin-top: 24px;">
-        <button type="button" id="btnCancelEdit" class="button button-light" style="flex: 1; justify-content: center;">Cancel</button>
-        <button type="submit" class="button button-dark" style="flex: 2; justify-content: center; background: #2563eb;">Save &amp; Update Posting</button>
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+        <button type="button" id="btnCancelEdit" class="button button-light" style="padding: 12px 20px;">Cancel</button>
+        <button type="submit" class="button button-dark" style="padding: 12px 24px; font-weight: 800; border-radius: 12px;">Save Changes</button>
       </div>
     </form>
   </div>
@@ -426,5 +326,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=v2_owner_edit_modal"></script>
+<script src="{% static 'js/owner.js' %}?v=202608111956"></script>
 {% endblock %}

@@ -388,11 +388,32 @@ def api_owner_job_delete(request, pk):
     if not (request.user.is_authenticated and request.user.is_staff):
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
-    if request.method == 'DELETE':
+    if request.method in ['POST', 'DELETE']:
         job = get_object_or_404(JobPosting, pk=pk)
         job.delete()
         cache.clear()
-        return JsonResponse({'success': True, 'message': 'Job posting deleted.'})
+        return JsonResponse({'success': True, 'message': 'Job posting deleted successfully.'})
+
+@csrf_exempt
+def api_owner_job_toggle_status(request, pk):
+    if not (request.user.is_authenticated and request.user.is_staff):
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method in ['POST', 'PUT']:
+        job = get_object_or_404(JobPosting, pk=pk)
+        if job.status == 'ACTIVE':
+            job.status = 'EXPIRED'
+        else:
+            job.status = 'ACTIVE'
+            job.deadline = timezone.now() + timedelta(days=3)
+        job.save(update_fields=['status', 'deadline'])
+        cache.clear()
+        return JsonResponse({
+            'success': True,
+            'status': job.status,
+            'status_display': job.get_status_display(),
+            'message': f"Job status updated to {job.get_status_display()}."
+        })
 
 @csrf_exempt
 def api_owner_job_update(request, pk):
