@@ -518,9 +518,27 @@ def api_admin_logout(request):
 
 def api_admin_status(request):
     is_admin = request.user.is_authenticated and request.user.is_staff
+    username = request.user.username if is_admin else None
+
+    if not is_admin:
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            try:
+                from rest_framework_simplejwt.tokens import AccessToken
+                from django.contrib.auth.models import User
+                access = AccessToken(token)
+                user_id = access.get('user_id')
+                user = User.objects.filter(id=user_id, is_staff=True).first()
+                if user:
+                    is_admin = True
+                    username = user.username
+            except Exception:
+                pass
+
     return JsonResponse({
         'is_admin': is_admin,
-        'username': request.user.username if is_admin else None
+        'username': username
     })
 
 @csrf_exempt
