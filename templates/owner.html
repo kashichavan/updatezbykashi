@@ -630,7 +630,8 @@
 {% endblock %}
 
 {% block content %}
-<div class="crm-app-container">
+<div class="wrap" style="margin-top: 24px; margin-bottom: 80px;">
+  <div class="crm-app-container">
 
   <!-- LOGIN VIEW (If not authenticated) -->
   <div id="ownerLoginView" class="crm-login-wrapper" style="{% if is_owner_authenticated %}display: none;{% endif %}">
@@ -1038,6 +1039,7 @@
       </div>
     </form>
   </div>
+</div>
 </div>
 {% endblock %}
 
