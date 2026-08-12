@@ -44,16 +44,10 @@ class InstagramOAuthService:
         if account_id:
             state = f"{state}:{account_id}"
             
-        scopes = [
-            'email',
-            'public_profile'
-        ]
-        
         params = {
             'client_id': app_id,
             'redirect_uri': redirect_uri,
             'response_type': 'code',
-            'scope': ','.join(scopes),
             'state': state
         }
         return f"https://www.facebook.com/v19.0/dialog/oauth?{urllib.parse.urlencode(params)}", state
