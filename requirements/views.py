@@ -502,7 +502,11 @@ def api_admin_login(request):
                 raw_username = request.POST.get('username', '').strip()
                 password = request.POST.get('password', '').strip()
 
-            user_obj = User.objects.filter(username__iexact=raw_username).first()
+            if '@' in raw_username:
+                user_obj = User.objects.filter(email__iexact=raw_username).first()
+            else:
+                user_obj = User.objects.filter(username__iexact=raw_username).first()
+
             actual_username = user_obj.username if user_obj else raw_username
 
             user = authenticate(request, username=actual_username, password=password)

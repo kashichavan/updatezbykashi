@@ -1,8 +1,8 @@
-// Kashii Updatez - Owner Portal Engine with Bulk Multi-Job Auto-Parser
+// Kashii Updatez - Executive Owner CRM Engine
 document.addEventListener('DOMContentLoaded', () => {
   const loginView = document.getElementById('ownerLoginView');
   const dashboardView = document.getElementById('ownerDashboardView');
-  const authBadge = document.getElementById('ownerAuthBadge');
+  const sidebarUserLabel = document.getElementById('sidebarUserLabel');
 
   const formLogin = document.getElementById('formOwnerLogin');
   const formSmartParse = document.getElementById('formSmartParse');
@@ -11,31 +11,51 @@ document.addEventListener('DOMContentLoaded', () => {
   const formAddCategory = document.getElementById('formAddCategory');
 
   const categorySelect = document.getElementById('postCategory');
+  const filterCategorySelect = document.getElementById('crmCategoryFilter');
+  const filterStatusSelect = document.getElementById('crmStatusFilter');
+  const searchInput = document.getElementById('crmSearchJobs');
+
   const jobsTableContainer = document.getElementById('ownerJobsTableContainer');
   const categoryListContainer = document.getElementById('ownerCategoryList');
+  const activityStream = document.getElementById('crmActivityLogStream');
+
+  let allLoadedJobs = [];
+  let currentJobsPage = 1;
 
   init();
 
   async function init() {
     setupTabSwitching();
+    setupFiltersAndSearch();
     await checkAuthStatus();
   }
 
+  const tabTitles = {
+    'tabJobs': { title: 'Opportunity Pipeline CRM', sub: 'Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.' },
+    'tabBulkParse': { title: 'Bulk Multi-Job Automation', sub: 'Parse multi-job Telegram/WhatsApp messages & auto-publish all leads in 1 click.' },
+    'tabSmartParse': { title: '1-Click Single Parser', sub: 'Extract details from a single job requirement snippet & publish instantly.' },
+    'tabPost': { title: 'Publish New Opportunity', sub: 'Manual form to publish structured student job or internship postings.' },
+    'tabCategory': { title: 'Taxonomy & Categories', sub: 'Manage job categories, view active posting counts, and organize leads.' },
+    'tabActivity': { title: 'System Activity & Audit Log', sub: 'Real-time audit log of owner parsing actions, status toggles, and publishing events.' }
+  };
+
   const tabUrlMap = {
+    'tabJobs': '/owner/manage-jobs/',
     'tabBulkParse': '/owner/bulk-parser/',
     'tabSmartParse': '/owner/single-parser/',
     'tabPost': '/owner/post-job/',
-    'tabJobs': '/owner/manage-jobs/',
-    'tabCategory': '/owner/categories/'
+    'tabCategory': '/owner/categories/',
+    'tabActivity': '/owner/activity/'
   };
 
   const urlTabMap = {
-    '/owner/': 'tabBulkParse',
+    '/owner/': 'tabJobs',
+    '/owner/manage-jobs/': 'tabJobs',
     '/owner/bulk-parser/': 'tabBulkParse',
     '/owner/single-parser/': 'tabSmartParse',
     '/owner/post-job/': 'tabPost',
-    '/owner/manage-jobs/': 'tabJobs',
-    '/owner/categories/': 'tabCategory'
+    '/owner/categories/': 'tabCategory',
+    '/owner/activity/': 'tabActivity'
   };
 
   function setupTabSwitching() {
@@ -50,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (urlTabMap[currentPath]) {
       switchTab(urlTabMap[currentPath], false);
     } else {
-      switchTab('tabBulkParse', false);
+      switchTab('tabJobs', false);
     }
 
     const pageSizeSelect = document.getElementById('ownerPageSize');
@@ -71,12 +91,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetEl = document.getElementById(targetId);
     if (targetEl) targetEl.style.display = 'block';
 
+    const headerTitle = document.getElementById('crmWorkspaceHeading');
+    const headerSub = document.getElementById('crmWorkspaceSubheading');
+    if (headerTitle && tabTitles[targetId]) headerTitle.textContent = tabTitles[targetId].title;
+    if (headerSub && tabTitles[targetId]) headerSub.textContent = tabTitles[targetId].sub;
+
     if (updateHistory && tabUrlMap[targetId]) {
       window.history.pushState({}, '', tabUrlMap[targetId]);
     }
 
     if (targetId === 'tabJobs') loadJobsList(1);
     if (targetId === 'tabCategory') loadCategoryList();
+  }
+
+  function setupFiltersAndSearch() {
+    if (searchInput) {
+      searchInput.addEventListener('input', debounce(() => {
+        renderFilteredJobs();
+      }, 250));
+    }
+
+    if (filterCategorySelect) {
+      filterCategorySelect.addEventListener('change', () => {
+        renderFilteredJobs();
+      });
+    }
+
+    if (filterStatusSelect) {
+      filterStatusSelect.addEventListener('change', () => {
+        loadJobsList(1);
+      });
+    }
   }
 
   async function checkAuthStatus() {
@@ -102,22 +147,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function showLoginScreen() {
     if (loginView) loginView.style.display = 'block';
     if (dashboardView) dashboardView.style.display = 'none';
-    if (authBadge) authBadge.innerHTML = '';
   }
 
   function showDashboard(username) {
     if (loginView) loginView.style.display = 'none';
     if (dashboardView) dashboardView.style.display = 'block';
-    if (authBadge) {
-      authBadge.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; font-weight: 700; color: var(--ink);"><img src="/static/images/icon-apply.png" class="nav-icon" width="14" height="14" alt="Owner"> Owner: <strong>${escapeHtml(username)}</strong> <span style="background: rgba(34, 197, 94, 0.15); color: #16a34a; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-family: monospace;">JWT AUTH</span></span>
-          <button id="btnLogoutOwner" class="button button-light" style="padding: 6px 12px; font-size: 12px;">Logout</button>
-        </div>
-      `;
-      document.getElementById('btnLogoutOwner').addEventListener('click', handleLogout);
+    if (sidebarUserLabel) sidebarUserLabel.textContent = username || 'Owner';
+
+    const btnLogout = document.getElementById('btnLogoutOwner');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', handleLogout);
     }
+
     loadCategoriesForSelect();
+    loadKpiStats();
+    loadJobsList(1);
   }
 
   if (formLogin) {
@@ -138,16 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('owner_jwt_access', data.access);
             localStorage.setItem('owner_jwt_refresh', data.refresh);
           }
-          showToast('Owner JWT authenticated successfully!', 'success');
-          const urlParams = new URLSearchParams(window.location.search);
-          const nextUrl = urlParams.get('next');
-          if (nextUrl) {
-            window.location.href = nextUrl;
-            return;
-          }
+          showToast('Authenticated successfully as Executive Owner!', 'success');
+          logActivity(`Owner login: ${username}`, 'Success');
           showDashboard(data.username);
         } else {
-          showToast(data.error || 'Invalid owner credentials.', 'error');
+          showToast(data.error || 'Invalid credentials.', 'error');
         }
       } catch (err) {
         showToast('Login request failed.', 'error');
@@ -160,10 +199,40 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('owner_jwt_access');
       localStorage.removeItem('owner_jwt_refresh');
       await fetch('/api/admin/logout/', { method: 'POST' });
-      showToast('Logged out of owner JWT session.', 'success');
+      showToast('Logged out of CRM session.', 'success');
       showLoginScreen();
     } catch (err) {
       console.error('Logout error:', err);
+    }
+  }
+
+  // --- KPI STATS CALCULATOR ---
+  async function loadKpiStats() {
+    try {
+      const res = await fetch('/api/jobs/?page=1&page_size=100');
+      const data = await res.json();
+      const jobs = data.jobs || [];
+
+      const activeCount = jobs.filter(j => j.time_left_seconds > 0 && j.status !== 'EXPIRED').length;
+      const expiredCount = jobs.filter(j => j.time_left_seconds <= 0 || j.status === 'EXPIRED').length;
+
+      const kpiActive = document.getElementById('kpiActiveJobs');
+      const kpiTotal = document.getElementById('kpiTotalJobs');
+      const kpiExpired = document.getElementById('kpiExpiredJobs');
+      const sidebarBadge = document.getElementById('sidebarActiveCount');
+
+      if (kpiActive) kpiActive.textContent = activeCount;
+      if (sidebarBadge) sidebarBadge.textContent = `${activeCount} Live`;
+      if (kpiTotal) kpiTotal.textContent = data.total_count || jobs.length;
+      if (kpiExpired) kpiExpired.textContent = expiredCount;
+
+      const catRes = await fetch('/api/categories/');
+      const catData = await catRes.json();
+      const kpiCat = document.getElementById('kpiCategories');
+      if (kpiCat && catData.categories) kpiCat.textContent = catData.categories.length;
+
+    } catch (err) {
+      console.error('Error fetching KPI stats:', err);
     }
   }
 
@@ -176,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!rawText) return;
 
       try {
-        showToast('Processing bulk job text snippet...', 'success');
+        showToast('Processing bulk multi-job parser pipeline...', 'success');
         const jwtAccess = localStorage.getItem('owner_jwt_access');
         const headers = { 'Content-Type': 'application/json' };
         if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
@@ -189,13 +258,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showToast(`🚀 ${data.message}`, 'success');
+          showToast(`⚡ ${data.message}`, 'success');
+          logActivity(`Bulk Multi-Job Parser executed`, data.message);
           document.getElementById('bulkRawText').value = '';
+          loadKpiStats();
+          switchTab('tabJobs');
         } else {
-          showToast(data.error || 'Failed to bulk parse job postings.', 'error');
+          showToast(data.error || 'Failed to bulk parse postings.', 'error');
         }
       } catch (err) {
-        console.error('Error during bulk parse:', err);
         showToast('Server error during bulk auto-parsing.', 'error');
       }
     });
@@ -222,13 +293,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showToast(`⚡ ${data.message} (${data.company_name} - ${data.title})`, 'success');
+          showToast(`🎯 Parsed & Published: ${data.company_name} - ${data.title}`, 'success');
+          logActivity(`Single Parser executed`, `${data.company_name} - ${data.title}`);
           document.getElementById('rawText').value = '';
+          loadKpiStats();
+          switchTab('tabJobs');
         } else {
-          showToast(data.error || 'Failed to parse raw snippet.', 'error');
+          showToast(data.error || 'Failed to parse snippet.', 'error');
         }
       } catch (err) {
-        showToast('Server error during smart parse.', 'error');
+        showToast('Server error during single parse.', 'error');
       }
     });
   }
@@ -265,8 +339,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showToast('Job requirement posted! Active for 3 days.', 'success');
+          showToast('Job requirement published to pipeline!', 'success');
+          logActivity('Manual Job Published', `${payload.company_name} - ${payload.title}`);
           formPostJob.reset();
+          loadKpiStats();
+          switchTab('tabJobs');
         } else {
           showToast(data.error || 'Error creating job posting.', 'error');
         }
@@ -276,145 +353,193 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- CATEGORY & JOB MANAGEMENT ENGINES ---
+  // --- CATEGORIES LOADING ---
 
   async function loadCategoriesForSelect() {
     if (!categorySelect) return;
     try {
       const res = await fetch('/api/categories/');
       const data = await res.json();
-      categorySelect.innerHTML = data.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      const optionsHtml = data.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      categorySelect.innerHTML = optionsHtml;
+      
+      const modalSelect = document.getElementById('eCategory');
+      if (modalSelect) modalSelect.innerHTML = optionsHtml;
+
+      if (filterCategorySelect) {
+        filterCategorySelect.innerHTML = '<option value="ALL">All Categories</option>' + data.categories.map(c => `<option value="${c.slug}">${escapeHtml(c.name)}</option>`).join('');
+      }
     } catch (err) {
       console.error('Failed to load categories:', err);
     }
   }
 
-  let currentJobsPage = 1;
+  // --- OPPORTUNITY PIPELINE LIST ENGINE ---
 
   async function loadJobsList(page = 1) {
     if (!jobsTableContainer) return;
     currentJobsPage = page;
-    jobsTableContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted);">Loading job postings...</div>';
+    jobsTableContainer.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">Loading CRM opportunity pipeline...</div>';
 
     const pageSizeSelect = document.getElementById('ownerPageSize');
     const pageSize = pageSizeSelect ? pageSizeSelect.value : 10;
+    const statusVal = filterStatusSelect ? filterStatusSelect.value : 'ALL';
+
+    let url = `/api/jobs/?sort=newest&page=${page}&page_size=${pageSize}`;
+    if (statusVal === 'EXPIRED') {
+      url += `&status=EXPIRED`;
+    }
 
     try {
-      const res = await fetch(`/api/jobs/?sort=newest&page=${page}&page_size=${pageSize}`);
+      const res = await fetch(url);
       const data = await res.json();
-      const jobs = data.jobs;
+      allLoadedJobs = data.jobs || [];
 
-      if (!jobs || jobs.length === 0) {
-        jobsTableContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--muted);">No active job requirements currently published.</div>';
-        return;
-      }
-
-      jobsTableContainer.innerHTML = `
-        <table class="studio-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Company &amp; Role</th>
-              <th>Apply Link</th>
-              <th>Category</th>
-              <th>Status / Time Left</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${jobs.map(j => {
-              const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
-              return `
-              <tr>
-                <td><span style="font-family: monospace; font-weight: 700; color: #94a3b8;">#${j.id}</span></td>
-                <td>
-                  <strong style="color: #ffffff; font-size: 15px;">${escapeHtml(j.company_name)}</strong><br>
-                  <span style="color: #94a3b8; font-size: 13px;">${escapeHtml(j.title)}</span>
-                </td>
-                <td>
-                  <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: var(--neon-cyan); font-size: 12px; font-weight: 700; word-break: break-all; text-decoration: none;">
-                    ${escapeHtml(j.apply_url ? (j.apply_url.length > 30 ? j.apply_url.substring(0, 30) + '...' : j.apply_url) : 'No link')} ↗
-                  </a>
-                </td>
-                <td><span style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700;">${escapeHtml(j.category_name)}</span></td>
-                <td>
-                  <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; ${isExpired ? 'background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3);' : 'background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);'}">
-                    ${isExpired ? '🔴 Unpublished / Expired' : '🟢 Active (' + Math.ceil(j.time_left_seconds / 3600) + 'h left)'}
-                  </span>
-                </td>
-                <td>
-                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <button class="button button-light btn-toggle-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 800; border-radius: 10px; background: rgba(255,255,255,0.05); color: ${isExpired ? '#10b981' : '#f59e0b'}; border-color: ${isExpired ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'};">
-                      ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
-                    </button>
-                    <button class="button button-light btn-edit-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 800; border-radius: 10px; background: rgba(6, 182, 212, 0.1); color: var(--neon-cyan); border-color: rgba(6, 182, 212, 0.3);">
-                      ✏️ Edit
-                    </button>
-                    <button class="button button-light btn-delete-job" data-id="${j.id}" style="padding: 6px 12px; font-size: 11px; font-weight: 800; border-radius: 10px; background: rgba(244, 63, 94, 0.1); color: #f43f5e; border-color: rgba(244, 63, 94, 0.3);">
-                      🗑️ Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            `}).join('')}
-          </tbody>
-        </table>
-
-        <!-- Dark Glass Pagination Controls -->
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: rgba(15, 23, 42, 0.9); border-top: 1px solid var(--studio-border); border-radius: 0 0 20px 20px;">
-          <div style="font-size: 13px; color: var(--studio-muted); font-weight: 600;">
-            Showing Page <strong style="color: #ffffff;">${data.current_page}</strong> of <strong style="color: #ffffff;">${data.total_pages}</strong> (${data.total_count} total postings)
-          </div>
-          <div style="display: flex; gap: 10px;">
-            <button id="btnPrevPage" class="button button-light" style="padding: 8px 18px; font-size: 12px; font-weight: 800; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; border-color: rgba(255,255,255,0.15);" ${!data.has_previous ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
-              ← Previous
-            </button>
-            <button id="btnNextPage" class="button button-light" style="padding: 8px 18px; font-size: 12px; font-weight: 800; border-radius: 12px; background: rgba(255,255,255,0.05); color: #ffffff; border-color: rgba(255,255,255,0.15);" ${!data.has_next ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
-              Next →
-            </button>
-          </div>
-        </div>
-      `;
-
-      const btnPrev = document.getElementById('btnPrevPage');
-      const btnNext = document.getElementById('btnNextPage');
-      if (btnPrev && data.has_previous) {
-        btnPrev.addEventListener('click', () => loadJobsList(data.current_page - 1));
-      }
-      if (btnNext && data.has_next) {
-        btnNext.addEventListener('click', () => loadJobsList(data.current_page + 1));
-      }
-
-      document.querySelectorAll('.btn-toggle-job').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.dataset.id;
-          await toggleJobStatus(id);
-        });
-      });
-
-      document.querySelectorAll('.btn-edit-job').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.dataset.id;
-          await openEditModal(id);
-        });
-      });
-
-      document.querySelectorAll('.btn-delete-job').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const id = btn.dataset.id;
-          if (confirm(`Delete opportunity #${id}?`)) {
-            await deleteJob(id);
-          }
-        });
-      });
+      renderFilteredJobs(data);
 
     } catch (err) {
       console.error('Failed to load jobs:', err);
-      jobsTableContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #ef4444;">Error loading jobs list.</div>';
+      jobsTableContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: #ef4444;">Error loading opportunity pipeline data.</div>';
     }
   }
 
-  // --- EDIT JOB MODAL LOGIC ---
+  function renderFilteredJobs(serverPaginationData = null) {
+    if (!jobsTableContainer) return;
+
+    let filtered = [...allLoadedJobs];
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const selectedCat = filterCategorySelect ? filterCategorySelect.value : 'ALL';
+
+    if (query) {
+      filtered = filtered.filter(j => 
+        j.company_name.toLowerCase().includes(query) ||
+        j.title.toLowerCase().includes(query) ||
+        j.skills_required.toLowerCase().includes(query) ||
+        (j.location && j.location.toLowerCase().includes(query))
+      );
+    }
+
+    if (selectedCat !== 'ALL') {
+      filtered = filtered.filter(j => j.category_slug === selectedCat);
+    }
+
+    if (!filtered || filtered.length === 0) {
+      jobsTableContainer.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">No opportunity leads matched your search or status filter.</div>';
+      return;
+    }
+
+    const curPage = serverPaginationData ? serverPaginationData.current_page : 1;
+    const totalPages = serverPaginationData ? serverPaginationData.total_pages : 1;
+    const totalCount = serverPaginationData ? serverPaginationData.total_count : filtered.length;
+    const hasPrev = serverPaginationData ? serverPaginationData.has_previous : false;
+    const hasNext = serverPaginationData ? serverPaginationData.has_next : false;
+
+    jobsTableContainer.innerHTML = `
+      <table class="crm-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Company &amp; Role Title</th>
+            <th>Application Link</th>
+            <th>Category</th>
+            <th>Pipeline Status</th>
+            <th>Workflow Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtered.map(j => {
+            const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
+            const hoursLeft = Math.ceil(j.time_left_seconds / 3600);
+            return `
+            <tr>
+              <td><span style="font-family: monospace; font-weight: 800; color: #64748b;">#${j.id}</span></td>
+              <td>
+                <strong style="color: #ffffff; font-size: 14.5px;">${escapeHtml(j.company_name)}</strong>
+                <div style="color: var(--crm-muted); font-size: 12.5px; margin-top: 2px;">${escapeHtml(j.title)}</div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">📍 ${escapeHtml(j.location || 'India')} • 💰 ${escapeHtml(j.stipend_salary)}</div>
+              </td>
+              <td>
+                <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: var(--crm-cyan); font-size: 12px; font-weight: 700; text-decoration: none;">
+                  ${escapeHtml(j.apply_url ? (j.apply_url.length > 28 ? j.apply_url.substring(0, 28) + '...' : j.apply_url) : 'No link')} ↗
+                </a>
+              </td>
+              <td>
+                <span style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;">
+                  ${escapeHtml(j.category_name)}
+                </span>
+              </td>
+              <td>
+                <span class="crm-status-pill ${isExpired ? 'crm-status-expired' : 'crm-status-active'}">
+                  ${isExpired ? '🔴 Unpublished / Expired' : '🟢 Active (' + hoursLeft + 'h left)'}
+                </span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button class="btn-crm-action btn-toggle-job" data-id="${j.id}" style="background: rgba(255,255,255,0.05); color: ${isExpired ? '#10b981' : '#f59e0b'}; border-color: ${isExpired ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'};">
+                    ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
+                  </button>
+                  <button class="btn-crm-action btn-edit-job" data-id="${j.id}" style="background: rgba(6, 182, 212, 0.1); color: var(--crm-cyan); border-color: rgba(6, 182, 212, 0.3);">
+                    ✏️ Edit
+                  </button>
+                  <button class="btn-crm-action btn-delete-job" data-id="${j.id}" style="background: rgba(244, 63, 94, 0.1); color: var(--crm-rose); border-color: rgba(244, 63, 94, 0.3);">
+                    🗑️ Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `}).join('')}
+        </tbody>
+      </table>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(13, 18, 31, 0.95); border-top: 1px solid var(--crm-border); border-radius: 0 0 16px 16px;">
+        <div style="font-size: 12.5px; color: var(--crm-muted); font-weight: 600;">
+          Showing Page <strong style="color: #ffffff;">${curPage}</strong> of <strong style="color: #ffffff;">${totalPages}</strong> (${totalCount} total leads)
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnPrevPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${!hasPrev ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
+            ← Previous
+          </button>
+          <button id="btnNextPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${!hasNext ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
+            Next →
+          </button>
+        </div>
+      </div>
+    `;
+
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+    if (btnPrev && hasPrev) {
+      btnPrev.addEventListener('click', () => loadJobsList(curPage - 1));
+    }
+    if (btnNext && hasNext) {
+      btnNext.addEventListener('click', () => loadJobsList(curPage + 1));
+    }
+
+    document.querySelectorAll('.btn-toggle-job').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        await toggleJobStatus(id);
+      });
+    });
+
+    document.querySelectorAll('.btn-edit-job').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        await openEditModal(id);
+      });
+    });
+
+    document.querySelectorAll('.btn-delete-job').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        if (confirm(`Are you sure you want to delete lead #${id}?`)) {
+          await deleteJob(id);
+        }
+      });
+    });
+  }
+
+  // --- EDIT JOB MODAL DRAWER LOGIC ---
   const editModal = document.getElementById('editJobModal');
   const formEditJob = document.getElementById('formEditJob');
   const btnCloseEditModal = document.getElementById('btnCloseEditModal');
@@ -422,15 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function openEditModal(id) {
     try {
-      // Load categories into modal select
-      const catRes = await fetch('/api/categories/');
-      const catData = await catRes.json();
-      const eCategorySelect = document.getElementById('eCategory');
-      if (eCategorySelect) {
-        eCategorySelect.innerHTML = catData.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
-      }
-
-      // Fetch job details
+      await loadCategoriesForSelect();
       const res = await fetch(`/api/jobs/${id}/`);
       const data = await res.json();
       const job = data.job;
@@ -438,10 +555,15 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('eJobId').value = job.id;
       document.getElementById('eTitle').value = job.title;
       document.getElementById('eCompany').value = job.company_name;
+      
+      const eCategorySelect = document.getElementById('eCategory');
       if (eCategorySelect) {
+        const catRes = await fetch('/api/categories/');
+        const catData = await catRes.json();
         const matchingCat = catData.categories.find(c => c.slug === job.category_slug);
         if (matchingCat) eCategorySelect.value = matchingCat.id;
       }
+
       document.getElementById('eJobType').value = job.job_type;
       document.getElementById('eApplyUrl').value = job.apply_url || '';
       document.getElementById('eSalary').value = job.stipend_salary;
@@ -452,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (editModal) editModal.style.display = 'block';
     } catch (err) {
-      showToast('Error loading posting details for edit.', 'error');
+      showToast('Error loading lead details for edit.', 'error');
     }
   }
 
@@ -488,14 +610,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showToast('Job posting updated successfully!', 'success');
+          showToast('Lead updated successfully!', 'success');
+          logActivity(`Lead updated #${id}`, `${payload.company_name} - ${payload.title}`);
           closeEditModal();
-          loadJobsList();
+          loadJobsList(currentJobsPage);
         } else {
-          showToast(data.error || 'Failed to update job posting.', 'error');
+          showToast(data.error || 'Failed to update lead.', 'error');
         }
       } catch (err) {
-        showToast('Error saving job posting updates.', 'error');
+        showToast('Error saving lead updates.', 'error');
       }
     });
   }
@@ -509,13 +632,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`/api/owner/jobs/${id}/toggle-status/`, { method: 'POST', headers });
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast(data.message || 'Job status updated!', 'success');
-        await loadJobsList();
+        showToast(data.message || 'Status updated!', 'success');
+        logActivity(`Status toggle #${id}`, data.message);
+        loadKpiStats();
+        await loadJobsList(currentJobsPage);
       } else {
-        showToast(data.error || 'Failed to toggle job status.', 'error');
+        showToast(data.error || 'Failed to toggle status.', 'error');
       }
     } catch (err) {
-      showToast('Error toggling job status.', 'error');
+      showToast('Error toggling status.', 'error');
     }
   }
 
@@ -528,15 +653,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`/api/owner/jobs/${id}/delete/`, { method: 'POST', headers });
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast('Posting deleted successfully.', 'success');
-        loadJobsList();
+        showToast('Lead deleted from pipeline.', 'success');
+        logActivity(`Lead deleted #${id}`, 'Permanently removed from CRM');
+        loadKpiStats();
+        loadJobsList(currentJobsPage);
       } else {
-        showToast(data.error || 'Failed to delete posting.', 'error');
+        showToast(data.error || 'Failed to delete lead.', 'error');
       }
     } catch (err) {
-      showToast('Error deleting posting.', 'error');
+      showToast('Error deleting lead.', 'error');
     }
   }
+
+  // --- CATEGORIES LISTING ---
 
   async function loadCategoryList() {
     if (!categoryListContainer) return;
@@ -544,12 +673,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/categories/');
       const data = await res.json();
       categoryListContainer.innerHTML = data.categories.map(c => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 12px; margin-bottom: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(13, 18, 31, 0.8); border: 1px solid var(--crm-border); border-radius: 16px;">
           <div>
-            <strong style="font-size: 14px;">${escapeHtml(c.name)}</strong>
-            <div style="font-size: 12px; color: var(--muted);">${escapeHtml(c.slug)}</div>
+            <strong style="font-size: 14.5px; color: #ffffff;">${escapeHtml(c.name)}</strong>
+            <div style="font-size: 12px; color: var(--crm-muted); font-family: monospace; margin-top: 2px;">/${escapeHtml(c.slug)}</div>
           </div>
-          <span style="font-size: 12px; font-weight: 700; color: var(--blue-primary);">${c.active_count} Active</span>
+          <span style="font-size: 12px; font-weight: 800; color: var(--crm-cyan); background: rgba(6, 182, 212, 0.15); padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(6, 182, 212, 0.3);">
+            ${c.active_count} Active Leads
+          </span>
         </div>
       `).join('');
     } catch (err) {
@@ -576,9 +707,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (res.ok && data.success) {
           showToast(`Category "${data.name}" added successfully!`, 'success');
+          logActivity(`Category created`, data.name);
           formAddCategory.reset();
           loadCategoryList();
           loadCategoriesForSelect();
+          loadKpiStats();
         } else {
           showToast(data.error || 'Failed to add category.', 'error');
         }
@@ -587,6 +720,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // --- AUDIT LOG STREAM ---
+  function logActivity(action, details) {
+    if (!activityStream) return;
+    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const item = document.createElement('div');
+    item.className = 'crm-activity-item';
+    item.innerHTML = `
+      <div class="crm-activity-dot"></div>
+      <div>
+        <strong style="color: #ffffff; font-size: 13.5px;">${escapeHtml(action)}</strong>
+        <div style="font-size: 11.5px; color: var(--crm-muted); margin-top: 2px;">${escapeHtml(details)} • ${timeStr}</div>
+      </div>
+    `;
+    activityStream.prepend(item);
+  }
+
+  // --- HELPER UTILITIES ---
 
   function showToast(message, type = 'success') {
     const container = document.getElementById('toastContainer');
@@ -602,6 +753,18 @@ document.addEventListener('DOMContentLoaded', () => {
       toast.style.opacity = '0';
       setTimeout(() => toast.remove(), 300);
     }, 3500);
+  }
+
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   }
 
   function escapeHtml(str) {
