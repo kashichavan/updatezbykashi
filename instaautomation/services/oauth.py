@@ -45,6 +45,7 @@ class InstagramOAuthService:
             state = f"{state}:{account_id}"
             
         scopes = [
+            'email',
             'public_profile'
         ]
         
