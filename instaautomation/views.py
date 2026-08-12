@@ -19,13 +19,32 @@ from .services.instagram_api import InstagramAPI
 
 def admin_required(view_func):
     """
-    Decorator that restricts access strictly to logged-in admin / staff users.
-    Redirects unauthenticated or non-staff users to /owner/ (admin portal).
+    Decorator that restricts access to authenticated admin / staff users.
+    Checks Django Session & Authorization Bearer JWT Token.
+    Redirects unauthenticated users to /owner/ (admin portal).
     """
-    return user_passes_test(
-        lambda user: user.is_authenticated and user.is_staff,
-        login_url='/owner/'
-    )(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.is_staff:
+            return view_func(request, *args, **kwargs)
+
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            try:
+                from rest_framework_simplejwt.tokens import AccessToken
+                from django.contrib.auth.models import User
+                access = AccessToken(token)
+                user_id = access.get('user_id')
+                user = User.objects.filter(id=user_id, is_staff=True).first()
+                if user:
+                    request.user = user
+                    return view_func(request, *args, **kwargs)
+            except Exception:
+                pass
+
+        return redirect(f"/owner/?next={request.path}")
+
+    return wrapper
 
 def get_active_account(request):
     """

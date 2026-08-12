@@ -184,6 +184,14 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           showToast('Authenticated successfully as Executive Owner!', 'success');
           logActivity(`Owner login: ${username}`, 'Success');
+          
+          const urlParams = new URLSearchParams(window.location.search);
+          const nextUrl = urlParams.get('next');
+          if (nextUrl) {
+            window.location.href = nextUrl;
+            return;
+          }
+          
           showDashboard(data.username);
         } else {
           showToast(data.error || 'Invalid credentials.', 'error');
