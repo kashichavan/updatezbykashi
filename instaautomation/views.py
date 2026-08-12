@@ -63,42 +63,63 @@ def dashboard_view(request):
     Main Instagram Automation Dashboard
     URL: /instagram/
     """
-    account = get_active_account(request)
-    all_accounts = InstagramAccount.objects.all()
+    try:
+        account = get_active_account(request)
+        all_accounts = InstagramAccount.objects.all()
 
-    if not account and not all_accounts.exists():
+        if not account and not all_accounts.exists():
+            return render(request, 'instaautomation/connect.html', {
+                'no_account': True
+            })
+
+        automations = CommentAutomation.objects.filter(instagram_account=account) if account else []
+        
+        # Calculate stats safely
+        comments_processed = 0
+        dms_sent = 0
+        automations_triggered = 0
+
+        if account:
+            try:
+                comments_processed = AutomationExecution.objects.filter(
+                    automation__instagram_account=account,
+                    event_type=AutomationExecution.EventType.COMMENT,
+                    status=AutomationExecution.Status.SUCCESS
+                ).count()
+            except Exception:
+                pass
+
+            try:
+                dms_sent = InstagramMessage.objects.filter(
+                    conversation__instagram_account=account,
+                    direction=InstagramMessage.Direction.OUTGOING
+                ).count()
+            except Exception:
+                pass
+
+            try:
+                automations_triggered = AutomationExecution.objects.filter(
+                    automation__instagram_account=account,
+                    status=AutomationExecution.Status.SUCCESS
+                ).count()
+            except Exception:
+                pass
+
+        context = {
+            'account': account,
+            'all_accounts': all_accounts,
+            'automations': automations,
+            'comments_processed': comments_processed,
+            'dms_sent': dms_sent,
+            'automations_triggered': automations_triggered,
+        }
+        return render(request, 'instaautomation/dashboard.html', context)
+    except Exception as e:
+        logger.error(f"Error in dashboard_view: {e}")
         return render(request, 'instaautomation/connect.html', {
-            'no_account': True
+            'no_account': True,
+            'error_message': str(e)
         })
-
-    automations = CommentAutomation.objects.filter(instagram_account=account) if account else []
-    
-    # Calculate stats
-    comments_processed = AutomationExecution.objects.filter(
-        automation__instagram_account=account,
-        event_type=AutomationExecution.EventType.COMMENT,
-        status=AutomationExecution.Status.SUCCESS
-    ).count() if account else 0
-
-    dms_sent = InstagramMessage.objects.filter(
-        conversation__instagram_account=account,
-        direction=InstagramMessage.Direction.OUTGOING
-    ).count() if account else 0
-
-    automations_triggered = AutomationExecution.objects.filter(
-        automation__instagram_account=account,
-        status=AutomationExecution.Status.SUCCESS
-    ).count() if account else 0
-
-    context = {
-        'account': account,
-        'all_accounts': all_accounts,
-        'automations': automations,
-        'comments_processed': comments_processed,
-        'dms_sent': dms_sent,
-        'automations_triggered': automations_triggered,
-    }
-    return render(request, 'instaautomation/dashboard.html', context)
 
 @admin_required
 def connect_view(request):
