@@ -36,14 +36,35 @@
                style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
       </div>
 
+      <!-- Target Reel Scope (Superprofile Style) -->
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Apply Rule To *
+        </label>
+        <select name="target_scope" id="targetScopeSelect" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink); font-weight: 700;">
+          <option value="ALL_REELS" {% if automation.target_scope == 'ALL_REELS' or not automation %}selected{% endif %}>🎬 All Reels &amp; Posts</option>
+          <option value="SPECIFIC_REEL" {% if automation.target_scope == 'SPECIFIC_REEL' %}selected{% endif %}>🎯 Specific Reel / Post Only</option>
+        </select>
+      </div>
+
+      <!-- Specific Reel URL / ID (Hidden by default unless selected) -->
+      <div id="specificReelBox" style="margin-bottom: 20px; {% if automation.target_scope != 'SPECIFIC_REEL' %}display: none;{% endif %}">
+        <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
+          Specific Reel URL or Media ID *
+        </label>
+        <input type="text" name="specific_reel_id" value="{{ automation.specific_reel_id|default:'' }}" placeholder="https://www.instagram.com/reel/C123456789/ or Media ID"
+               style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
+        <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">Paste the Reel link or Media ID so the automation triggers only for comments under this specific Reel.</p>
+      </div>
+
       <!-- Trigger Keywords -->
       <div style="margin-bottom: 20px;">
         <label style="display: block; font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 6px; text-transform: uppercase;">
           Trigger Keywords (Comma Separated) *
         </label>
-        <input type="text" name="keywords" value="{{ automation.keywords|default:'' }}" placeholder="e.g. python, python guide, learn python" required
+        <input type="text" name="keywords" value="{{ automation.keywords|default:'' }}" placeholder="e.g. python, guide, link" required
                style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-size: 14px; background: var(--surface); color: var(--ink);">
-        <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">When an Instagram user comments any of these keywords, the automation will trigger.</p>
+        <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">When a user comments any of these keywords under your Reel, the automation will trigger.</p>
       </div>
 
       <!-- Public Comment Reply -->
@@ -92,6 +113,15 @@
         <p style="font-size: 12px; color: var(--muted); margin: 4px 0 0;">Available variables: <code>{{username}}</code>, <code>{{resource_url}}</code></p>
       </div>
 
+      <!-- Follower Verification Gate (Superprofile Style) -->
+      <div style="margin-bottom: 20px; padding: 16px; background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+          <input type="checkbox" id="require_follow" name="require_follow" {% if automation %}{% if automation.require_follow %}checked{% endif %}{% else %}checked{% endif %} style="width: 18px; height: 18px;">
+          <label for="require_follow" style="font-weight: 800; font-size: 14px; color: var(--ink);">🔒 Require User to Follow Account First (Follower Gate)</label>
+        </div>
+        <p style="font-size: 12px; color: var(--muted); margin: 0 0 0 28px;">If enabled, users must follow @{{ account.username }} before receiving the final link!</p>
+      </div>
+
       <!-- Is Active Switch -->
       <div style="margin-bottom: 28px; display: flex; align-items: center; gap: 10px;">
         <input type="checkbox" id="is_active" name="is_active" {% if automation %}{% if automation.is_active %}checked{% endif %}{% else %}checked{% endif %} style="width: 18px; height: 18px;">
@@ -110,4 +140,20 @@
 
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var select = document.getElementById('targetScopeSelect');
+    var reelBox = document.getElementById('specificReelBox');
+    if (select && reelBox) {
+      select.addEventListener('change', function() {
+        if (this.value === 'SPECIFIC_REEL') {
+          reelBox.style.display = 'block';
+        } else {
+          reelBox.style.display = 'none';
+        }
+      });
+    }
+  });
+</script>
 {% endblock %}

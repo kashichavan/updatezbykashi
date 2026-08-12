@@ -48,8 +48,16 @@ class AutomationEngine:
             is_active=True
         )
 
+        media_id = event_data.get('media', {}).get('id') or event_data.get('media_id')
+
         matched_automation = None
         for auto in automations:
+            # Check target scope (Specific Reel vs All Reels)
+            if auto.target_scope == CommentAutomation.TargetScope.SPECIFIC_REEL and auto.specific_reel_id:
+                clean_target_id = auto.specific_reel_id.strip()
+                if media_id and clean_target_id not in media_id and media_id not in clean_target_id:
+                    continue
+
             keywords = auto.get_keywords_list()
             comment_lower = comment_text.lower()
             if any(kw in comment_lower for kw in keywords):
@@ -57,7 +65,7 @@ class AutomationEngine:
                 break
 
         if not matched_automation:
-            return {'status': 'SKIPPED', 'reason': 'No keyword match'}
+            return {'status': 'SKIPPED', 'reason': 'No keyword or Reel target match'}
 
         api = InstagramAPI(account)
 
@@ -68,8 +76,8 @@ class AutomationEngine:
             except Exception as e:
                 logger.error(f"Failed to post public comment reply: {e}")
 
-        # 2. Send DM / Private Reply
-        dm_text = matched_automation.dm_message.replace('{{username}}', participant_username or 'there')
+        # 2. Send DM / Private Reply with Follower Check Notice
+        dm_text = matched_automation.dm_message.replace('{{username}}', participant_username or 'there').replace('{{account_username}}', account.username)
 
         try:
             res = api.send_private_reply(comment_id, dm_text)

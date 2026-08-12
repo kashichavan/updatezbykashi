@@ -270,9 +270,12 @@ def automation_create_view(request):
 
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
+        target_scope = request.POST.get('target_scope', 'ALL_REELS').strip()
+        specific_reel_id = request.POST.get('specific_reel_id', '').strip()
         keywords = request.POST.get('keywords', '').strip()
         comment_reply = request.POST.get('comment_reply', '').strip()
         dm_message = request.POST.get('dm_message', '').strip()
+        require_follow = request.POST.get('require_follow') == 'on'
         confirmation_keyword = request.POST.get('confirmation_keyword', 'DONE').strip()
         final_message = request.POST.get('final_message', '').strip()
         resource_url = request.POST.get('resource_url', '').strip()
@@ -285,9 +288,12 @@ def automation_create_view(request):
         automation = CommentAutomation.objects.create(
             instagram_account=account,
             name=name,
+            target_scope=target_scope,
+            specific_reel_id=specific_reel_id,
             keywords=keywords,
             comment_reply=comment_reply,
             dm_message=dm_message,
+            require_follow=require_follow,
             confirmation_keyword=confirmation_keyword,
             final_message=final_message,
             resource_url=resource_url,
@@ -309,9 +315,12 @@ def automation_edit_view(request, pk):
 
     if request.method == 'POST':
         automation.name = request.POST.get('name', '').strip()
+        automation.target_scope = request.POST.get('target_scope', 'ALL_REELS').strip()
+        automation.specific_reel_id = request.POST.get('specific_reel_id', '').strip()
         automation.keywords = request.POST.get('keywords', '').strip()
         automation.comment_reply = request.POST.get('comment_reply', '').strip()
         automation.dm_message = request.POST.get('dm_message', '').strip()
+        automation.require_follow = request.POST.get('require_follow') == 'on'
         automation.confirmation_keyword = request.POST.get('confirmation_keyword', 'DONE').strip()
         automation.final_message = request.POST.get('final_message', '').strip()
         automation.resource_url = request.POST.get('resource_url', '').strip()

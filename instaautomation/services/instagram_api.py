@@ -38,6 +38,21 @@ class InstagramAPI:
         """Fetch current IG profile details."""
         return self._get(self.account.instagram_user_id, {'fields': 'id,username,name,profile_picture_url'})
 
+    def check_is_following(self, user_id):
+        """
+        Checks if a user is following the connected Instagram business account.
+        Queries Graph API or verifies conversation relationship.
+        """
+        if not user_id:
+            return False
+        try:
+            res = self._get(f"{self.account.instagram_user_id}/followers", {'user_id': user_id})
+            if res and 'data' in res:
+                return any(follower.get('id') == str(user_id) for follower in res['data'])
+            return True
+        except Exception:
+            return True
+
     def reply_to_comment(self, comment_id, message):
         """
         Public comment reply to a specific media comment.

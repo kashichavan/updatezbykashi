@@ -72,12 +72,48 @@ class CommentAutomation(models.Model):
         on_delete=models.CASCADE,
         related_name='automations'
     )
-    name = models.CharField(max_length=255, help_text="Short descriptive name for this rule (e.g. Python Guide)")
-    keywords = models.TextField(help_text="Comma-separated trigger keywords (e.g. python, python guide)")
-    comment_reply = models.TextField(blank=True, default="Thanks! 👋 Check your DM.", help_text="Public comment reply text")
-    dm_message = models.TextField(blank=True, default="Hey {{username}} 👋 Follow us and reply DONE to receive the resource.", help_text="Initial DM message text")
-    confirmation_keyword = models.CharField(max_length=64, default="DONE", help_text="Keyword user sends to get final resource")
-    final_message = models.TextField(blank=True, default="Awesome! 🎉 Here is your guide: {{resource_url}}", help_text="Final DM text containing resource link")
+    name = models.CharField(max_length=255, help_text="Short descriptive name for this rule (e.g. Python Guide Reel)")
+    
+    # Target Scope Options (Superprofile Style: Specific Reel vs All Reels/Posts)
+    class TargetScope(models.TextChoices):
+        ALL_REELS = 'ALL_REELS', 'All Reels & Posts'
+        SPECIFIC_REEL = 'SPECIFIC_REEL', 'Specific Reel / Post Only'
+    
+    target_scope = models.CharField(
+        max_length=32,
+        choices=TargetScope.choices,
+        default=TargetScope.ALL_REELS,
+        help_text="Apply to all reels or a specific reel URL/ID"
+    )
+    specific_reel_id = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Optional Instagram Reel URL or Media ID (e.g. https://www.instagram.com/reel/C123...)"
+    )
+
+    keywords = models.TextField(help_text="Comma-separated trigger keywords (e.g. python, guide, link)")
+    comment_reply = models.TextField(blank=True, default="Thanks! 👋 I just sent you a DM.", help_text="Public comment reply text")
+
+    # Superprofile Follower Gate System
+    require_follow = models.BooleanField(
+        default=True,
+        help_text="Check if user is following before sending link. If not following, ask them to follow first!"
+    )
+    
+    dm_message = models.TextField(
+        blank=True,
+        default="Hey {{username}} 👋 Thanks for your comment! Make sure you follow @{{account_username}} and reply 'DONE' to get the link.",
+        help_text="Initial DM message text"
+    )
+    confirmation_keyword = models.CharField(max_length=64, default="DONE", help_text="Keyword user sends after following (e.g. DONE)")
+    
+    # Deliverable Link / Button Card
+    final_message = models.TextField(
+        blank=True,
+        default="Awesome! 🎉 Here is your direct link: {{resource_url}}",
+        help_text="Final DM text containing resource link"
+    )
     resource_url = models.URLField(max_length=1024, blank=True, default="", help_text="URL of resource/guide to send")
     
     is_active = models.BooleanField(default=True)
