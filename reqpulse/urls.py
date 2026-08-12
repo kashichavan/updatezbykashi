@@ -16,7 +16,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
-    # path('instagram/', include(('instaautomation.urls', 'instaautomation'), namespace='instaautomation')),
+    path('instagram/', include(('instaautomation.urls', 'instaautomation'), namespace='instaautomation')),
     path('debugger/', include(('debugger.urls', 'debugger'), namespace='debugger')),
     path('debug/', RedirectView.as_view(url='/debugger/', permanent=False)),
     path('debuger/', RedirectView.as_view(url='/debugger/', permanent=False)),
