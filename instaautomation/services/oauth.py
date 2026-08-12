@@ -45,10 +45,6 @@ class InstagramOAuthService:
             state = f"{state}:{account_id}"
             
         scopes = [
-            'instagram_basic',
-            'instagram_manage_comments',
-            'pages_show_list',
-            'pages_read_engagement',
             'public_profile'
         ]
         
