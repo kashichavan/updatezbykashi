@@ -291,15 +291,7 @@ def automation_list_view(request):
     List all Comment & DM Automations
     URL: /instagram/automations/
     """
-    account = get_active_account(request)
-    if not account:
-        return redirect('instaautomation:connect')
-
-    automations = CommentAutomation.objects.filter(instagram_account=account)
-    return render(request, 'instaautomation/automation_list.html', {
-        'account': account,
-        'automations': automations
-    })
+    return redirect('instaautomation:dashboard')
 
 @admin_required
 def automation_create_view(request):
