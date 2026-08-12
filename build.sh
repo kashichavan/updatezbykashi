@@ -39,5 +39,38 @@ sw_cat, _ = Category.objects.get_or_create(
 JobPosting.objects.all().update(category=sw_cat)
 Category.objects.exclude(id=sw_cat.id).delete()
 
-print('Production Owner account & Software & Tech category configured successfully.')
+# 3. Ensure Default Active Connected Instagram Account & Automation Rule
+from instaautomation.models import InstagramAccount, CommentAutomation
+insta_acc, _ = InstagramAccount.objects.get_or_create(
+    username='ikashii_07',
+    defaults={
+        'user': u,
+        'instagram_user_id': '1699121034511579',
+        'display_name': 'Kashii Official',
+        'is_connected': True,
+        'is_active': True,
+        'access_token': 'manual_owner_token_activated',
+        'token_expires_at': timezone.now() + timedelta(days=365)
+    }
+)
+insta_acc.is_connected = True
+insta_acc.is_active = True
+insta_acc.save()
+
+if not CommentAutomation.objects.filter(instagram_account=insta_acc).exists():
+    CommentAutomation.objects.create(
+        instagram_account=insta_acc,
+        user=u,
+        name='Python Guide Reel Automation',
+        keywords='python, guide, link, learn',
+        comment_reply='Thanks! 👋 I just sent you a DM.',
+        require_follow=True,
+        dm_message='Hey {{username}} 👋 Make sure to follow @ikashii_07 and reply DONE to get the Python guide link!',
+        confirmation_keyword='DONE',
+        final_message='Awesome! 🎉 Here is your Python guide link: {{resource_url}}',
+        resource_url='https://kashiiupdatez.online/category/software-tech/',
+        is_active=True
+    )
+
+print('Production Owner account, Software & Tech category & Instagram Studio configured successfully.')
 "
