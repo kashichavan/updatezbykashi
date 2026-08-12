@@ -16,16 +16,18 @@ def instagram_webhook(request):
     POST: Processes real-time comment and message events from Meta Graph API
     """
     if request.method == 'GET':
-        verify_token = getattr(settings, 'META_VERIFY_TOKEN', '') or 'kashii_insta_verify_token_2026'
+        verify_token = str(getattr(settings, 'META_VERIFY_TOKEN', '') or '8722183087')
         hub_mode = request.GET.get('hub.mode')
         hub_token = request.GET.get('hub.verify_token')
         hub_challenge = request.GET.get('hub.challenge')
 
-        if hub_mode == 'subscribe' and hub_token == verify_token:
-            logger.info("Meta Webhook successfully verified!")
+        accepted_tokens = {verify_token, '8722183087', 'kashii_insta_verify_token_2026'}
+
+        if hub_mode == 'subscribe' and hub_token in accepted_tokens:
+            logger.info(f"Meta Webhook successfully verified with token: {hub_token}")
             return HttpResponse(hub_challenge, content_type='text/plain', status=200)
         else:
-            logger.warning("Meta Webhook verification failed due to token mismatch.")
+            logger.warning(f"Meta Webhook verification failed. Received token: {hub_token}, Expected one of: {accepted_tokens}")
             return HttpResponse("Verification failed", status=403)
 
     elif request.method == 'POST':

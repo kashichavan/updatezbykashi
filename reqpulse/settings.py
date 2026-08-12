@@ -204,8 +204,8 @@ if os.environ.get("CSRF_TRUSTED_ORIGINS"):
     CSRF_TRUSTED_ORIGINS.extend(custom_origins)
 
 # Meta / Instagram Graph API Configuration
-META_APP_ID = os.environ.get('META_APP_ID', '1062757692535729')
-META_APP_SECRET = os.environ.get('META_APP_SECRET', '')
+META_APP_ID = os.environ.get('META_APP_ID', '1699121034511579')
+META_APP_SECRET = os.environ.get('META_APP_SECRET', '57af518561fb5207289f0b55d241259f')
 INSTAGRAM_REDIRECT_URI = os.environ.get('INSTAGRAM_REDIRECT_URI', 'https://kashiiupdatez.online/instagram/oauth/callback/')
-META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN', 'kashii_insta_verify_token_2026')
+META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN', '8722183087')
 
