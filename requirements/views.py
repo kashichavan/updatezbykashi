@@ -396,6 +396,10 @@ def api_owner_categories(request):
     if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
+    if request.method == 'GET':
+        categories = list(Category.objects.annotate(job_count=Count('job_postings')).values('id', 'name', 'slug', 'icon', 'description', 'job_count'))
+        return JsonResponse({'categories': categories})
+
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
