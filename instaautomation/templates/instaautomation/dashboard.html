@@ -184,15 +184,21 @@
           ⚙️ Account Settings
         </a>
 
-        {% if not account.is_token_valid %}
-          <a href="{% url 'instaautomation:reconnect_pk' account.id %}" style="padding: 10px 16px; background: linear-gradient(135deg, #e1306c 0%, #c13584 100%); color: #fff; border-radius: 12px; font-weight: 700; font-size: 12.5px; text-decoration: none;">
-            🔄 Reconnect Instagram
+        {% if account %}
+          {% if not account.is_token_valid %}
+            <a href="{% url 'instaautomation:reconnect_pk' account.id %}" style="padding: 10px 16px; background: linear-gradient(135deg, #e1306c 0%, #c13584 100%); color: #fff; border-radius: 12px; font-weight: 700; font-size: 12.5px; text-decoration: none;">
+              🔄 Reconnect Instagram
+            </a>
+          {% endif %}
+
+          <a href="{% url 'instaautomation:disconnect_pk' account.id %}" onclick="return confirm('Disconnect @{{ account.username }}?')" style="padding: 10px 16px; background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 12px; font-weight: 700; font-size: 12.5px; text-decoration: none;">
+            Disconnect
+          </a>
+        {% else %}
+          <a href="{% url 'instaautomation:connect' %}" style="padding: 10px 16px; background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%); color: #fff; border-radius: 12px; font-weight: 700; font-size: 12.5px; text-decoration: none;">
+            + Connect Instagram Account
           </a>
         {% endif %}
-
-        <a href="{% url 'instaautomation:disconnect_pk' account.id %}" onclick="return confirm('Disconnect @{{ account.username }}?')" style="padding: 10px 16px; background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 12px; font-weight: 700; font-size: 12.5px; text-decoration: none;">
-          Disconnect
-        </a>
       </div>
 
     </div>
