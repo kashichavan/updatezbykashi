@@ -547,16 +547,49 @@
   }
 
   @media (max-width: 768px) {
-    .crm-app-container { padding: 0 10px; margin-top: 12px; }
-    .crm-sidebar-panel { padding: 18px 14px; border-radius: 20px; }
-    .crm-sidebar-nav { flex-direction: row; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+    .crm-app-container { padding: 0 12px; margin-top: 12px; margin-bottom: 90px; }
+    .crm-layout { grid-template-columns: 1fr; gap: 16px; }
+    .crm-sidebar-panel { padding: 14px; border-radius: 20px; }
+    .crm-nav-group-title { display: none; }
+    
+    /* Horizontal Swipable Touch Navigation Bar on Mobile */
+    .crm-sidebar-nav {
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px;
+      gap: 8px;
+    }
     .crm-sidebar-nav::-webkit-scrollbar { display: none; }
-    .crm-sidebar-item { white-space: nowrap; flex: 0 0 auto; padding: 10px 14px; font-size: 12px; }
-    .crm-top-header { padding: 18px; border-radius: 20px; }
-    .crm-workspace-panel { padding: 20px 16px; border-radius: 20px; }
+    .crm-sidebar-item {
+      white-space: nowrap;
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      padding: 10px 16px;
+      font-size: 13px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .crm-sidebar-item.active {
+      background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
+      color: #ffffff;
+      border-color: #06b6d4;
+    }
+
+    .crm-top-header { padding: 16px; border-radius: 20px; flex-direction: column; align-items: flex-start; }
+    .crm-header-info h1 { font-size: 22px; }
+    .crm-metrics-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .crm-metric-card { padding: 16px; border-radius: 18px; }
+    .crm-metric-value { font-size: 24px; }
+    
+    .crm-workspace-panel { padding: 16px; border-radius: 20px; }
     .crm-form-grid-2 { grid-template-columns: 1fr; }
     
-    /* Mobile Touch-Optimized Data Cards */
+    /* Mobile Touch Cards Layout */
     .crm-table-container { border: none; background: transparent; }
     .crm-table th { display: none; }
     .crm-table, .crm-table tbody, .crm-table tr, .crm-table td {
@@ -567,9 +600,9 @@
       background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(13, 18, 31, 0.95) 100%);
       border: 1px solid var(--crm-border);
       border-radius: 20px;
-      margin-bottom: 16px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      margin-bottom: 14px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
     .crm-table td {
       padding: 6px 0;
@@ -578,6 +611,7 @@
     .crm-toolbar {
       flex-direction: column;
       align-items: stretch;
+      gap: 12px;
     }
     .crm-search-box {
       width: 100%;
@@ -588,7 +622,8 @@
     }
     .crm-select {
       flex: 1 1 auto;
-      font-size: 12px;
+      font-size: 13px;
+      height: 44px;
     }
   }
 </style>
@@ -657,9 +692,6 @@
 
           <div class="crm-nav-group-title" style="margin-top: 16px;">Management & Automations</div>
           <nav class="crm-sidebar-nav">
-            <a href="/instagram/" class="crm-sidebar-item" style="text-decoration: none;">
-              <span class="crm-sidebar-icon">🤖</span> Instagram Automation ↗
-            </a>
             <button class="crm-sidebar-item owner-nav-item" data-tab="tabCategory">
               <span class="crm-sidebar-icon">🏷️</span> Categories
             </button>
