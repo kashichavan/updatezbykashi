@@ -11,6 +11,8 @@ python manage.py shell -c "
 from django.contrib.auth.models import User
 from requirements.models import Category, JobPosting
 from django.utils.text import slugify
+from django.utils import timezone
+from datetime import timedelta
 import os
 
 # 1. Ensure Owner Account
