@@ -47,7 +47,6 @@ class InstagramOAuthService:
         scopes = [
             'instagram_basic',
             'instagram_manage_comments',
-            'instagram_manage_messages',
             'pages_show_list',
             'pages_read_engagement',
             'public_profile'
