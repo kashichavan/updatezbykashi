@@ -55,6 +55,25 @@ DEFAULT_YOUTUBE_VIDEOS = [
     }
 ]
 
+def is_authenticated_owner(request):
+    if request.user.is_authenticated and request.user.is_staff:
+        return True, request.user
+
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer '):
+        token = auth_header.split(' ')[1]
+        try:
+            from rest_framework_simplejwt.tokens import AccessToken
+            access = AccessToken(token)
+            user_id = access.get('user_id')
+            user = User.objects.filter(id=user_id, is_staff=True).first()
+            if user:
+                return True, user
+        except Exception:
+            pass
+
+    return False, None
+
 def get_cached_youtube_videos():
     cached = cache.get('youtube_videos_feed')
     if cached:
@@ -148,7 +167,8 @@ def api_youtube_videos(request):
 @csrf_exempt
 def api_owner_bulk_parse_and_post(request):
     """Bulk Auto-Parser for posting multiple job announcements at once (STRICTLY Software & Tech category)."""
-    if not (request.user.is_authenticated and request.user.is_staff):
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method == 'POST':
@@ -248,8 +268,8 @@ def api_owner_bulk_parse_and_post(request):
                     allow_direct_apply=False,
                     description=description,
                     eligibility=eligibility,
-                    posted_by=request.user.username,
-                    poster_email=request.user.email or "admin@kashiiupdatez.com",
+                    posted_by=owner_user.username if owner_user else "Owner",
+                    poster_email=(owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"),
                     deadline=deadline,
                 )
 
@@ -269,7 +289,8 @@ def api_owner_bulk_parse_and_post(request):
 @csrf_exempt
 def api_owner_parse_and_post(request):
     """Single Job Auto-Parser for posting a raw text snippet (STRICTLY Software & Tech category)."""
-    if not (request.user.is_authenticated and request.user.is_staff):
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method == 'POST':
@@ -333,8 +354,8 @@ def api_owner_parse_and_post(request):
                 allow_direct_apply=False,
                 description=description,
                 eligibility=eligibility,
-                posted_by=request.user.username,
-                poster_email=request.user.email or "admin@kashiiupdatez.com",
+                posted_by=owner_user.username if owner_user else "Owner",
+                poster_email=(owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"),
                 deadline=deadline,
             )
 
@@ -371,7 +392,8 @@ def api_categories(request):
 
 @csrf_exempt
 def api_owner_categories(request):
-    if not (request.user.is_authenticated and request.user.is_staff):
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method == 'POST':
@@ -389,7 +411,8 @@ def api_owner_categories(request):
 
 @csrf_exempt
 def api_owner_job_delete(request, pk):
-    if not (request.user.is_authenticated and request.user.is_staff):
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method in ['POST', 'DELETE']:
@@ -400,7 +423,8 @@ def api_owner_job_delete(request, pk):
 
 @csrf_exempt
 def api_owner_job_toggle_status(request, pk):
-    if not (request.user.is_authenticated and request.user.is_staff):
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method in ['POST', 'PUT']:
@@ -421,7 +445,8 @@ def api_owner_job_toggle_status(request, pk):
 
 @csrf_exempt
 def api_owner_job_update(request, pk):
-    if not (request.user.is_authenticated and request.user.is_staff):
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method in ['POST', 'PUT']:
@@ -660,7 +685,8 @@ def api_jobs(request):
         return JsonResponse(response_data)
 
     elif request.method == 'POST':
-        if not (request.user.is_authenticated and request.user.is_staff):
+        is_auth, owner_user = is_authenticated_owner(request)
+        if not is_auth:
             return JsonResponse({'error': 'Unauthorized. Only Kashii Updatez Owner can post opportunities.'}, status=401)
 
         try:
@@ -683,8 +709,8 @@ def api_jobs(request):
                 allow_direct_apply=False,
                 description=data['description'].strip(),
                 eligibility=data.get('eligibility', 'Open to all students').strip(),
-                posted_by=request.user.username,
-                poster_email=request.user.email or "admin@kashiiupdatez.com",
+                posted_by=owner_user.username if owner_user else "Owner",
+                poster_email=(owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"),
                 deadline=deadline,
             )
 
