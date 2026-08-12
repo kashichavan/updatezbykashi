@@ -47,7 +47,10 @@ class InstagramOAuthService:
         scopes = [
             'instagram_basic',
             'instagram_manage_comments',
-            'instagram_manage_messages'
+            'instagram_manage_messages',
+            'pages_show_list',
+            'pages_read_engagement',
+            'public_profile'
         ]
         
         params = {
@@ -57,7 +60,7 @@ class InstagramOAuthService:
             'scope': ','.join(scopes),
             'state': state
         }
-        return f"https://api.instagram.com/oauth/authorize?{urllib.parse.urlencode(params)}", state
+        return f"https://www.facebook.com/v19.0/dialog/oauth?{urllib.parse.urlencode(params)}", state
 
     def exchange_code(self, code):
         app_id, app_secret, redirect_uri = self.get_app_credentials()
