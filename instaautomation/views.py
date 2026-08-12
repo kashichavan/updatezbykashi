@@ -1,4 +1,5 @@
 import json
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -6,6 +7,8 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.db.models import Count
+
+logger = logging.getLogger(__name__)
 
 from .models import (
     InstagramAccount,
