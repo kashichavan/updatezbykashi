@@ -13,11 +13,11 @@
         <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
         <h1 id="typewriterText">Daily Student Jobs & <em>Internship Requirements</em></h1>
         <p class="lead">
-          Verified student requirements, campus drives, & internships. All postings remain active for exactly 3 days to guarantee 100% fresh opportunities.
+          Verified student requirements, campus drives, & internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
         </p>
 
         <div class="vp-trust-pills">
-          <span class="vp-pill" style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="3-Day"> Auto 3-Day Fresh Rule</span>
+          <span class="vp-pill" style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="7-Day"> Auto 7-Day Fresh Rule</span>
           <span class="vp-pill"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software & Tech</span>
           <span class="vp-pill"><img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Links"> Official Direct Links</span>
         </div>
@@ -43,7 +43,7 @@
             <span class="code-kw">def</span> <span class="code-fn">get_fresh_opportunities</span>():
           </div>
           <div class="code-line" style="padding-left: 14px;">
-            <span class="code-cm"># Filter 100% active 3-day requirements</span>
+            <span class="code-cm"># Filter 100% active 7-day requirements</span>
           </div>
           <div class="code-line" style="padding-left: 14px;">
             <span class="code-kw">return</span> kashii_updatez.<span class="code-fn">filter</span>(category=<span class="code-str">"Software & Tech"</span>)

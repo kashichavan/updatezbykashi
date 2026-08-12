@@ -55,13 +55,13 @@ class JobPosting(models.Model):
     applications_count = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
     
-    # 3-Day Auto Expiration Policy
+    # 7-Day Auto Expiration Policy
     created_at = models.DateTimeField(auto_now_add=True)
     posted_date = models.DateField(
         default=timezone.now,
         help_text="Date this requirement was posted (editable). Defaults to today."
     )
-    deadline = models.DateTimeField(help_text="Automatically set to 3 days after posting")
+    deadline = models.DateTimeField(help_text="Automatically set to 7 days after posting")
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
