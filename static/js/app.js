@@ -3,11 +3,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
   const isCategoryPage = window.location.pathname.startsWith('/category/');
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const isTodayOnly = urlParams.get('today') === 'true' || urlParams.get('today') === '1';
+
   const state = {
     searchQuery: '',
     category: 'software-tech',
     jobType: 'all',
     sort: 'newest',
+    isTodayOnly: isTodayOnly,
     page: 1,
     pageSize: isHomePage ? 3 : 6, // Show top 3 newest on homepage, 6 on category detail page
     totalPages: 1,
@@ -166,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         q: state.searchQuery,
         category: 'software-tech',
         job_type: state.jobType,
+        today: state.isTodayOnly ? 'true' : '',
         sort: state.sort,
         page: state.page,
         page_size: state.pageSize,
@@ -419,6 +424,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupHomePageListeners() {
+    const btnFilterToday = document.getElementById('btnFilterToday');
+    if (btnFilterToday) {
+      btnFilterToday.addEventListener('click', () => {
+        state.isTodayOnly = !state.isTodayOnly;
+        state.page = 1;
+        
+        document.querySelectorAll('.vp-tabs .vp-tab').forEach(t => t.classList.remove('active'));
+        if (state.isTodayOnly) {
+          btnFilterToday.classList.add('active');
+        } else {
+          const techTab = document.querySelector('.vp-tab[data-category="software-tech"]');
+          if (techTab) techTab.classList.add('active');
+        }
+
+        loadJobs();
+      });
+    }
+
     if (searchInput) {
       let searchTimeout;
       searchInput.addEventListener('input', (e) => {

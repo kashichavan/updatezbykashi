@@ -125,8 +125,8 @@
   <!-- Clean Category & Search Filter Bar -->
   <section id="catalogSection" class="vp-filter-bar">
     <div class="vp-tabs">
-      <!-- Only 'Software & Tech' category is currently active in DB -->
-      <button class="vp-tab active" data-category="software-tech"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software &amp; Tech</button>
+      <button class="vp-tab {% if request.GET.today %}active{% endif %}" id="btnFilterToday" data-today="true" style="background: rgba(220, 38, 38, 0.08); color: #dc2626; border-color: rgba(220, 38, 38, 0.3); font-weight: 800;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="Today"> 🔥 Today's Requirements</button>
+      <button class="vp-tab {% if not request.GET.today %}active{% endif %}" data-category="software-tech"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software &amp; Tech</button>
     </div>
 
     <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">

@@ -15,7 +15,10 @@
     </div>
 
     <nav class="nav-links">
-      <a href="/" class="{% if request.path == '/' %}active{% endif %}">
+      <a href="/?today=true" class="{% if request.GET.today %}active{% endif %}" style="background: rgba(220, 38, 38, 0.08); color: #dc2626; border: 1px solid rgba(220, 38, 38, 0.2); font-weight: 800; border-radius: 20px; padding: 6px 14px;">
+        🔥 Today's Requirements
+      </a>
+      <a href="/" class="{% if request.path == '/' and not request.GET.today %}active{% endif %}">
         <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed" width="18" height="18" decoding="async">
         Student Feed
       </a>
@@ -49,8 +52,14 @@
       </div>
 
       <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--subtle-border);">
-        <div class="drawer-section-title">Visual Tools &amp; Connect</div>
-        <a href="/debugger/" class="drawer-link {% if '/debugger' in request.path %}active{% endif %}">
+        <div class="drawer-section-title">Quick Filters &amp; Connect</div>
+        <a href="/?today=true" class="drawer-link" style="color: #dc2626; font-weight: 800; background: #fef2f2; border: 1px solid #fecaca;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            🔥 Today's Requirements Only
+          </span>
+          <span class="d-tag" style="background:#dc2626; color:#ffffff;">HOT</span>
+        </a>
+        <a href="/debugger/" class="drawer-link {% if '/debugger' in request.path %}active{% endif %}" style="margin-top: 6px;">
           <span style="display: flex; align-items: center; gap: 8px;">
             <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger" width="18" height="18" decoding="async">
             Visual Code Debugger

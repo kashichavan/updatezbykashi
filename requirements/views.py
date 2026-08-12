@@ -553,17 +553,22 @@ def api_jobs(request):
         query = request.GET.get('q', '').strip()
         category_slug = request.GET.get('category', '').strip()
         job_type = request.GET.get('job_type', '').strip()
+        filter_today = request.GET.get('today', '').strip()
         sort = request.GET.get('sort', 'newest')
         page = request.GET.get('page', '1')
         page_size = request.GET.get('page_size', '6')
 
-        cache_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{sort}_{page}_{page_size}"
+        cache_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{filter_today}_{sort}_{page}_{page_size}"
         cached_response = cache.get(cache_key)
         if cached_response:
             return JsonResponse(cached_response)
 
         # STRICT NEWEST-FIRST SORTING (-created_at)
         qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
+
+        if filter_today == 'true' or filter_today == '1':
+            today_date = timezone.now().date()
+            qs = qs.filter(posted_date=today_date)
 
         if query:
             qs = qs.filter(
