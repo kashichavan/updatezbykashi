@@ -159,7 +159,7 @@ def api_owner_bulk_parse_and_post(request):
             if not raw_text:
                 return JsonResponse({'error': 'Raw text snippet cannot be empty.'}, status=400)
 
-            blocks = [b.strip() for b in re.split(r'\n+(?=[1-9]\d*[\.\)\*])', raw_text) if b.strip()]
+            blocks = [b.strip() for b in re.split(r'\n{2,}|\n+(?=Apply Link:)|\n+(?=[1-9]\d*[\.\)\*])', raw_text) if b.strip()]
             
             if not blocks:
                 blocks = [raw_text]
@@ -192,7 +192,7 @@ def api_owner_bulk_parse_and_post(request):
                         company = hiring_m.group(1).strip()
 
                 if not company:
-                    comp_m = re.search(r'(?:Company(?:\s+Name)?):\s*(.+)', block, re.IGNORECASE)
+                    comp_m = re.search(r'(?:Company(?:\s+Name)?):\s*([^\r\n]+)', block, re.IGNORECASE)
                     if comp_m:
                         company = comp_m.group(1).strip()
 
@@ -204,16 +204,16 @@ def api_owner_bulk_parse_and_post(request):
                     title = mh_m.group(2).strip()
 
                 if not title:
-                    title_m = re.search(r'(?:Role|Position|Title):\s*(.+)', block, re.IGNORECASE)
+                    title_m = re.search(r'(?:Role|Position|Title):\s*([^\r\n]+)', block, re.IGNORECASE)
                     if title_m:
                         title = title_m.group(1).strip()
 
                 if not title:
                     title = "Software & Technology Opportunity"
 
-                qual_m = re.search(r'(?:Qualification|Eligibility|Degree):\s*(.+)', block, re.IGNORECASE)
-                batch_m = re.search(r'(?:Batch|Graduation Year):\s*(.+)', block, re.IGNORECASE)
-                exp_m = re.search(r'(?:Experience):\s*(.+)', block, re.IGNORECASE)
+                qual_m = re.search(r'(?:Qualification|Eligibility|Degree):\s*([^\r\n]+)', block, re.IGNORECASE)
+                batch_m = re.search(r'(?:Batch|Graduation Year):\s*([^\r\n]+)', block, re.IGNORECASE)
+                exp_m = re.search(r'(?:Experience):\s*([^\r\n]+)', block, re.IGNORECASE)
 
                 elig_parts = []
                 if qual_m: elig_parts.append(qual_m.group(1).strip())
@@ -221,13 +221,13 @@ def api_owner_bulk_parse_and_post(request):
                 if exp_m: elig_parts.append(f"Exp: {exp_m.group(1).strip()}")
                 eligibility = " • ".join(elig_parts) if elig_parts else "Open to all freshers & graduating batches."
 
-                skills_m = re.search(r'(?:Skills|Tech Stack):\s*(.+)', block, re.IGNORECASE)
+                skills_m = re.search(r'(?:Skills|Tech Stack):\s*([^\r\n]+)', block, re.IGNORECASE)
                 skills_required = skills_m.group(1).strip() if skills_m else "Software Engineering, Problem Solving, Communication"
 
-                loc_m = re.search(r'(?:Location\(s\)?|Location):\s*(.+)', block, re.IGNORECASE)
+                loc_m = re.search(r'(?:Location\(s\)?|Location):\s*([^\r\n]+)', block, re.IGNORECASE)
                 location = loc_m.group(1).strip() if loc_m else "Remote / Hybrid"
 
-                sal_m = re.search(r'(?:Salary|Stipend|Pay):\s*(.+)', block, re.IGNORECASE)
+                sal_m = re.search(r'(?:Salary|Stipend|Pay):\s*([^\r\n]+)', block, re.IGNORECASE)
                 stipend_salary = sal_m.group(1).strip() if sal_m else "Competitive Salary (Freshers)"
 
                 lower_title = title.lower() + " " + skills_required.lower()
