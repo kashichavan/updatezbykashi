@@ -33,8 +33,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
     'ROTATE_REFRESH_TOKENS': True,
 }
 
@@ -156,7 +156,8 @@ SECURE_REFERRER_POLICY = "same-origin"
 
 # Session Security
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_AGE = 86400  # 24 hours
+SESSION_COOKIE_AGE = 2592000  # 30 Days persistent login session
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 CSRF_COOKIE_HTTPONLY = True
 
 if not DEBUG:

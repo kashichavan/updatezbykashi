@@ -516,6 +516,8 @@ def api_admin_login(request):
             user = authenticate(request, username=actual_username, password=password)
             if user is not None and user.is_staff:
                 login(request, user)
+                request.session.set_expiry(2592000)  # 30 Days persistent session cookie
+                request.session.modified = True
 
                 # Generate SimpleJWT Tokens for Owner
                 from rest_framework_simplejwt.tokens import RefreshToken
