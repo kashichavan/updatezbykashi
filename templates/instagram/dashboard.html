@@ -335,29 +335,29 @@
       <div class="stat-card">
         <div class="stat-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--insta-cyan);">⚙️</div>
         <div>
-          <div class="stat-val">{{ total_rules }}</div>
-          <div class="stat-label">Active Rules</div>
+          <div class="stat-val">{{ total_automations }}</div>
+          <div class="stat-label">Total Automations</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background: rgba(225, 48, 108, 0.15); color: var(--insta-pink);">🔥</div>
         <div>
-          <div class="stat-val">{{ total_triggers }}</div>
-          <div class="stat-label">Total DM Triggers</div>
+          <div class="stat-val">{{ active_automations }}</div>
+          <div class="stat-label">Active Campaigns</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--insta-emerald);">✅</div>
         <div>
-          <div class="stat-val">{{ success_logs }}</div>
-          <div class="stat-label">Successful Deliveries</div>
+          <div class="stat-val">{{ successful_dms }}</div>
+          <div class="stat-label">Successful DMs</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--insta-amber);">💬</div>
         <div>
-          <div class="stat-val">{{ total_logs }}</div>
-          <div class="stat-label">Webhooks Processed</div>
+          <div class="stat-val">{{ total_comments }}</div>
+          <div class="stat-label">Comments Processed</div>
         </div>
       </div>
     </div>
@@ -374,40 +374,25 @@
     <!-- TAB 1: AUTOMATION RULES -->
     <div id="tab-rules" class="tab-content active">
       <div id="rulesListContainer">
-        {% if rules %}
-          {% for r in rules %}
+        {% if automations %}
+          {% for a in automations %}
             <div class="rule-card">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <div>
-                  <span class="rule-badge {% if r.target_scope == 'ALL_REELS' %}badge-all{% else %}badge-specific{% endif %}">
-                    {{ r.get_target_scope_display }}
+                  <span class="rule-badge badge-all">
+                    {{ a.get_trigger_type_display }}
                   </span>
-                  <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin: 8px 0 4px;">{{ r.name }}</h3>
+                  <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin: 8px 0 4px;">
+                    <a href="/instagram/automations/{{ a.uuid }}/" style="color: #fff; text-decoration: none;">{{ a.name }}</a>
+                  </h3>
                   <div style="font-size: 13px; color: var(--insta-muted);">
-                    Trigger Keyword: <strong style="color: var(--insta-cyan);">'{{ r.trigger_keyword }}'</strong>
+                    Created on: {{ a.created_at|date:"M d, Y" }}
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <button onclick="toggleRuleStatus({{ r.id }})" class="button button-light" style="padding: 6px 12px; font-size: 12px; font-weight: 700;">
-                    {% if r.is_active %}🟢 Active{% else %}🔴 Paused{% endif %}
-                  </button>
-                  <button onclick="deleteRule({{ r.id }})" class="button" style="background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 6px 12px; font-size: 12px;">
-                    🗑️
-                  </button>
-                </div>
-              </div>
-
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; background: rgba(15, 23, 42, 0.5); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
-                <div>
-                  <div style="font-size: 11px; font-weight: 700; color: var(--insta-muted); text-transform: uppercase;">Public Comment Reply</div>
-                  <div style="font-size: 13px; color: #fff; margin-top: 4px;">{{ r.comment_reply_text }}</div>
-                </div>
-                <div>
-                  <div style="font-size: 11px; font-weight: 700; color: var(--insta-muted); text-transform: uppercase;">Private DM &amp; Link</div>
-                  <div style="font-size: 13px; color: #fff; margin-top: 4px;">{{ r.private_dm_text }}</div>
-                  {% if r.resource_url %}
-                    <a href="{{ r.resource_url }}" target="_blank" style="font-size: 12px; color: var(--insta-cyan); display: inline-block; margin-top: 4px;">🔗 {{ r.resource_url }}</a>
-                  {% endif %}
+                  <a href="/instagram/automations/{{ a.uuid }}/" class="button button-light" style="padding: 6px 12px; font-size: 12px; font-weight: 700;">
+                    View Details ↗
+                  </a>
                 </div>
               </div>
             </div>
