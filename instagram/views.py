@@ -62,7 +62,7 @@ def webhook_endpoint(request):
 
 def dashboard_view(request):
     """Main SuperProfile-inspired Dashboard View."""
-    is_owner_auth = is_authenticated_owner(request)
+    is_owner_auth, _ = is_authenticated_owner(request)
 
     automations = Automation.objects.all().order_by('-created_at')
     accounts = InstagramAccount.objects.filter(is_active=True)
@@ -91,14 +91,14 @@ def dashboard_view(request):
 
 def automation_list_view(request):
     """List of all automations."""
-    is_owner_auth = is_authenticated_owner(request)
+    is_owner_auth, _ = is_authenticated_owner(request)
     automations = Automation.objects.all().order_by('-created_at')
     return render(request, 'instagram/automation_list.html', {'is_owner_authenticated': is_owner_auth, 'automations': automations})
 
 
 def automation_create_view(request):
     """Visual Automation Builder (Create)."""
-    is_owner_auth = is_authenticated_owner(request)
+    is_owner_auth, _ = is_authenticated_owner(request)
 
     if request.method == 'POST':
         name = request.POST.get('name', 'New Reel Automation')
@@ -159,7 +159,7 @@ def automation_create_view(request):
 
 def automation_detail_view(request, uuid):
     """Automation Detail Page showing workflow step diagram & activity."""
-    is_owner_auth = is_authenticated_owner(request)
+    is_owner_auth, _ = is_authenticated_owner(request)
     automation = get_object_or_404(Automation, uuid=uuid)
     executions = AutomationExecution.objects.filter(automation=automation).order_by('-executed_at')[:30]
 
