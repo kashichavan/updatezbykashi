@@ -26,7 +26,7 @@ class JobPosting(models.Model):
 
     STATUS_CHOICES = [
         ('ACTIVE', 'Active (Accepting Applications)'),
-        ('EXPIRED', 'Deactivated / Expired (3-Day Auto-Closed)'),
+        ('EXPIRED', 'Deactivated / Expired (7-Day Auto-Closed)'),
         ('CLOSED', 'Manually Closed'),
     ]
 

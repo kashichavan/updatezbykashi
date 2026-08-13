@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
       jobsGrid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: #ffffff; border-radius: 16px; border: 1px solid var(--subtle-border);">
           <h3 style="font-family: var(--font-serif); font-size: 20px; margin-bottom: 6px;">No active opportunities</h3>
-          <p style="color: var(--muted); font-size: 14px;">Postings older than 3 days automatically deactivate.</p>
+          <p style="color: var(--muted); font-size: 14px;">Postings older than 7 days automatically deactivate.</p>
         </div>`;
       return;
     }
