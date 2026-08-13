@@ -51,6 +51,57 @@
 {% block content %}
 <div class="wrap">
   <div class="insta-container">
+
+    {% if not is_owner_authenticated %}
+    <div style="max-width: 440px; margin: 60px auto; background: var(--insta-card); border: 1px solid rgba(6, 182, 212, 0.4); border-radius: 28px; padding: 40px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+      <div style="width: 54px; height: 54px; border-radius: 18px; background: linear-gradient(45deg, #f09433, #dc2743, #cc2366); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px; color: #fff;">🔒</div>
+      <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px;">Instagram Studio Login</h2>
+      <p style="font-size: 13px; color: var(--insta-muted); margin-bottom: 24px;">Enter your Owner Passcode to access Instagram Reels &amp; DM Automation Studio.</p>
+
+      <form id="instaAuthLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label">Owner Passcode</label>
+          <input type="password" id="instaAuthPasscode" class="form-input" placeholder="Enter owner passcode" required style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--insta-border); background: rgba(15,23,42,0.8); color: #fff;">
+        </div>
+        <button type="submit" class="button button-accent" style="width: 100%; justify-content: center; border-radius: 14px; font-weight: 800; padding: 14px; margin-top: 16px;">
+          Unlock Automation Studio 🔓
+        </button>
+      </form>
+      <div id="instaAuthError" style="margin-top: 14px; font-size: 13px; font-weight: 700; color: #f43f5e; display: none;"></div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginForm = document.getElementById('instaAuthLoginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const passcode = document.getElementById('instaAuthPasscode').value;
+          const errDiv = document.getElementById('instaAuthError');
+          errDiv.style.display = 'none';
+
+          try {
+            const res = await fetch('/api/admin/login/', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({passcode})
+            });
+            const data = await res.json();
+            if (data.success) {
+              window.location.reload();
+            } else {
+              errDiv.textContent = data.message || 'Invalid passcode';
+              errDiv.style.display = 'block';
+            }
+          } catch (err) {
+            errDiv.textContent = 'Connection error during login.';
+            errDiv.style.display = 'block';
+          }
+        });
+      }
+    });
+    </script>
+    {% else %}
+
     <div class="insta-header">
       <div>
         <h1 style="font-size: 24px; font-weight: 800; color: #fff; margin: 0;">⚡ Instagram Automations</h1>
@@ -92,6 +143,7 @@
         </div>
       {% endfor %}
     </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

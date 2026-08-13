@@ -91,12 +91,15 @@ def dashboard_view(request):
 
 def automation_list_view(request):
     """List of all automations."""
+    is_owner_auth = is_authenticated_owner(request)
     automations = Automation.objects.all().order_by('-created_at')
-    return render(request, 'instagram/automation_list.html', {'automations': automations})
+    return render(request, 'instagram/automation_list.html', {'is_owner_authenticated': is_owner_auth, 'automations': automations})
 
 
 def automation_create_view(request):
     """Visual Automation Builder (Create)."""
+    is_owner_auth = is_authenticated_owner(request)
+
     if request.method == 'POST':
         name = request.POST.get('name', 'New Reel Automation')
         reel_id = request.POST.get('reel_id', '').strip()
@@ -151,11 +154,12 @@ def automation_create_view(request):
 
         return redirect(f"/instagram/automations/{auto.uuid}/")
 
-    return render(request, 'instagram/automation_create.html')
+    return render(request, 'instagram/automation_create.html', {'is_owner_authenticated': is_owner_auth})
 
 
 def automation_detail_view(request, uuid):
     """Automation Detail Page showing workflow step diagram & activity."""
+    is_owner_auth = is_authenticated_owner(request)
     automation = get_object_or_404(Automation, uuid=uuid)
     executions = AutomationExecution.objects.filter(automation=automation).order_by('-executed_at')[:30]
 
@@ -163,6 +167,7 @@ def automation_detail_view(request, uuid):
     successful_actions = executions.filter(status='SUCCESS').count()
 
     context = {
+        'is_owner_authenticated': is_owner_auth,
         'automation': automation,
         'triggers': automation.triggers.filter(is_active=True),
         'actions': automation.actions.filter(is_active=True).order_by('order'),
