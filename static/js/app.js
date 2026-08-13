@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const isTodayOnly = urlParams.get('today') === 'true' || urlParams.get('today') === '1';
+  const isYesterdayOnly = urlParams.get('yesterday') === 'true' || urlParams.get('yesterday') === '1';
   const isPreviousOnly = urlParams.get('previous') === 'true' || urlParams.get('previous') === '1';
 
   const state = {
@@ -13,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     jobType: 'all',
     sort: 'newest',
     isTodayOnly: isTodayOnly,
+    isYesterdayOnly: isYesterdayOnly,
     isPreviousOnly: isPreviousOnly,
     page: 1,
     pageSize: isHomePage ? 3 : 6, // Show top 3 newest on homepage, 6 on category detail page
@@ -173,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
         category: 'software-tech',
         job_type: state.jobType,
         today: state.isTodayOnly ? 'true' : '',
+        yesterday: state.isYesterdayOnly ? 'true' : '',
         previous: state.isPreviousOnly ? 'true' : '',
         sort: state.sort,
         page: state.page,

@@ -593,12 +593,13 @@ def api_jobs(request):
         category_slug = request.GET.get('category', '').strip()
         job_type = request.GET.get('job_type', '').strip()
         filter_today = request.GET.get('today', '').strip()
+        filter_yesterday = request.GET.get('yesterday', '').strip()
         filter_previous = request.GET.get('previous', '').strip()
         sort = request.GET.get('sort', 'newest')
         page = request.GET.get('page', '1')
         page_size = request.GET.get('page_size', '6')
 
-        cache_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{filter_today}_{filter_previous}_{sort}_{page}_{page_size}"
+        cache_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
         cached_response = cache.get(cache_key)
         if cached_response:
             return JsonResponse(cached_response)
@@ -606,7 +607,17 @@ def api_jobs(request):
         # STRICT NEWEST-FIRST SORTING (-created_at)
         qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
 
-        if filter_today == 'true' or filter_today == '1':
+        if filter_yesterday == 'true' or filter_yesterday == '1':
+            today_date = timezone.now().date()
+            yesterday_date = today_date - timedelta(days=1)
+            yesterday_qs = qs.filter(posted_date=yesterday_date)
+            if yesterday_qs.exists():
+                qs = yesterday_qs
+            else:
+                # Fallback to last 4 days if exact yesterday has no postings
+                four_days_ago = today_date - timedelta(days=4)
+                qs = qs.filter(posted_date__gte=four_days_ago)
+        elif filter_today == 'true' or filter_today == '1':
             today_date = timezone.now().date()
             today_qs = qs.filter(posted_date=today_date)
             if today_qs.exists():
@@ -615,6 +626,10 @@ def api_jobs(request):
                 # Fallback to recent postings from the last 4 days if today has no postings
                 four_days_ago = today_date - timedelta(days=4)
                 qs = qs.filter(posted_date__gte=four_days_ago)
+        elif filter_previous == 'true' or filter_previous == '1':
+            today_date = timezone.now().date()
+            four_days_ago = today_date - timedelta(days=4)
+            qs = qs.filter(posted_date__gte=four_days_ago)
 
         if query:
             qs = qs.filter(
