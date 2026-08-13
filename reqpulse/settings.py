@@ -23,7 +23,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'requirements',
     'debugger',
-    'instagram',
 ]
 
 REST_FRAMEWORK = {
