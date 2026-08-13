@@ -21,6 +21,18 @@
 
   <!-- Monetization Ad Network Script Tag -->
   <script async src="{% static 'js/monetization.js' %}"></script>
+  <script>
+    (function() {
+      var directLinkUrl = "https://fluffy-machine.com/b.3CVD0uPZ3-pmvubCmmVdJxZlDQ0G3PM/zSEX0UOdTeEm3/LgTUc/zVMJT_Q/5-M/jVEq";
+      var hasTriggered = false;
+      document.addEventListener('click', function(e) {
+        if (!hasTriggered) {
+          hasTriggered = true;
+          window.open(directLinkUrl, '_blank');
+        }
+      }, { once: true });
+    })();
+  </script>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
