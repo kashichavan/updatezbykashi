@@ -428,35 +428,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setupHomePageListeners() {
     const btnFilterToday = document.getElementById('btnFilterToday');
-    const btnFilterPrevious = document.getElementById('btnFilterPrevious');
 
     if (btnFilterToday) {
       btnFilterToday.addEventListener('click', () => {
         state.isTodayOnly = !state.isTodayOnly;
-        state.isPreviousOnly = false;
         state.page = 1;
         
         document.querySelectorAll('.vp-tabs .vp-tab').forEach(t => t.classList.remove('active'));
         if (state.isTodayOnly) {
           btnFilterToday.classList.add('active');
-        } else {
-          const techTab = document.querySelector('.vp-tab[data-category="software-tech"]');
-          if (techTab) techTab.classList.add('active');
-        }
-
-        loadJobs();
-      });
-    }
-
-    if (btnFilterPrevious) {
-      btnFilterPrevious.addEventListener('click', () => {
-        state.isPreviousOnly = !state.isPreviousOnly;
-        state.isTodayOnly = false;
-        state.page = 1;
-
-        document.querySelectorAll('.vp-tabs .vp-tab').forEach(t => t.classList.remove('active'));
-        if (state.isPreviousOnly) {
-          btnFilterPrevious.classList.add('active');
         } else {
           const techTab = document.querySelector('.vp-tab[data-category="software-tech"]');
           if (techTab) techTab.classList.add('active');
