@@ -96,6 +96,10 @@ def api_ping(request):
         'timestamp': timezone.now().isoformat()
     })
 
+def ads_txt_verification_view(request):
+    """Direct plain-text verification view for ad networks."""
+    return HttpResponse("8f373caaa0ca1b604bcf", content_type="text/plain")
+
 def index_view(request):
     sync_expired_jobs()
     videos = get_cached_youtube_videos()
