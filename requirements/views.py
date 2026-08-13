@@ -603,7 +603,13 @@ def api_jobs(request):
 
         if filter_today == 'true' or filter_today == '1':
             today_date = timezone.now().date()
-            qs = qs.filter(posted_date=today_date)
+            today_qs = qs.filter(posted_date=today_date)
+            if today_qs.exists():
+                qs = today_qs
+            else:
+                # Fallback to recent postings from the last 2 days if today has no postings
+                two_days_ago = today_date - timedelta(days=2)
+                qs = qs.filter(posted_date__gte=two_days_ago)
 
         if query:
             qs = qs.filter(
