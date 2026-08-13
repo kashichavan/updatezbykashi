@@ -24,13 +24,20 @@
   <script>
     (function() {
       var directLinkUrl = "https://fluffy-machine.com/b.3CVD0uPZ3-pmvubCmmVdJxZlDQ0G3PM/zSEX0UOdTeEm3/LgTUc/zVMJT_Q/5-M/jVEq";
-      var hasTriggered = false;
       document.addEventListener('click', function(e) {
-        if (!hasTriggered) {
-          hasTriggered = true;
-          window.open(directLinkUrl, '_blank');
+        if (!sessionStorage.getItem('ad_direct_link_opened')) {
+          sessionStorage.setItem('ad_direct_link_opened', '1');
+          var newWin = window.open(directLinkUrl, '_blank');
+          if (newWin) {
+            setTimeout(function() {
+              window.focus();
+              try {
+                newWin.close();
+              } catch (err) {}
+            }, 2000);
+          }
         }
-      }, { once: true });
+      });
     })();
   </script>
   {% block extra_css %}{% endblock %}
