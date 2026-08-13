@@ -56,7 +56,7 @@ DEFAULT_YOUTUBE_VIDEOS = [
 ]
 
 def is_authenticated_owner(request):
-    if request.user.is_authenticated and request.user.is_staff:
+    if hasattr(request, 'user') and request.user and request.user.is_authenticated and request.user.is_staff:
         return True, request.user
 
     auth_header = request.headers.get('Authorization', '')
