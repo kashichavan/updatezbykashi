@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 
     path('debugger/', include(('debugger.urls', 'debugger'), namespace='debugger')),
+    path('instagram/', include(('instagram.urls', 'instagram'), namespace='instagram')),
     path('debug/', RedirectView.as_view(url='/debugger/', permanent=False)),
     path('debuger/', RedirectView.as_view(url='/debugger/', permanent=False)),
     path('DEBUGER/', RedirectView.as_view(url='/debugger/', permanent=False)),

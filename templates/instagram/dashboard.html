@@ -1,0 +1,776 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instagram Reels DM Automation & Story Card Studio | Kashii Updatez{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --insta-bg: #090d16;
+    --insta-card: rgba(17, 24, 39, 0.85);
+    --insta-border: rgba(255, 255, 255, 0.1);
+    --insta-cyan: #06b6d4;
+    --insta-pink: #e1306c;
+    --insta-purple: #833ab4;
+    --insta-amber: #f59e0b;
+    --insta-emerald: #10b981;
+    --insta-text: #f8fafc;
+    --insta-muted: #94a3b8;
+  }
+
+  .insta-container {
+    max-width: 1400px;
+    margin: 24px auto 80px;
+    padding: 0 16px;
+  }
+
+  /* Header Section */
+  .insta-header {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(17, 24, 39, 0.95));
+    border: 1px solid var(--insta-border);
+    border-radius: 24px;
+    padding: 24px 30px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+
+  .insta-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .insta-logo-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 24px;
+    box-shadow: 0 8px 20px rgba(225, 48, 108, 0.3);
+  }
+
+  .insta-title h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .insta-title p {
+    font-size: 13px;
+    color: var(--insta-muted);
+    margin: 4px 0 0;
+  }
+
+  /* Metrics Stats Cards Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--insta-card);
+    border: 1px solid var(--insta-border);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    backdrop-filter: blur(12px);
+  }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .stat-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--insta-muted);
+    font-weight: 600;
+  }
+
+  /* Horizontal Swipeable Mobile Tabs */
+  .insta-tabs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 8px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--insta-border);
+  }
+
+  .insta-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--insta-border);
+    color: var(--insta-muted);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tab-btn.active {
+    background: linear-gradient(135deg, var(--insta-pink), var(--insta-purple));
+    color: #ffffff;
+    border-color: transparent;
+    box-shadow: 0 6px 18px rgba(225, 48, 108, 0.3);
+  }
+
+  /* Section Containers */
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Mobile Card Stack for Rules & Logs */
+  .rule-card {
+    background: var(--insta-card);
+    border: 1px solid var(--insta-border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(12px);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .rule-card:hover {
+    border-color: rgba(6, 182, 212, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .rule-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .badge-all { background: rgba(6, 182, 212, 0.15); color: var(--insta-cyan); border: 1px solid rgba(6, 182, 212, 0.3); }
+  .badge-specific { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+
+  /* Form Elements */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--insta-muted);
+    margin-bottom: 6px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--insta-border);
+    border-radius: 14px;
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--insta-cyan);
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+  }
+
+  /* HTML5 Story Card Studio Canvas */
+  .story-studio-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .story-studio-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .story-canvas-preview {
+    width: 320px;
+    height: 568px; /* 9:16 Ratio */
+    background: linear-gradient(135deg, #0f172a, #1e1b4b);
+    border-radius: 24px;
+    border: 2px solid var(--insta-border);
+    padding: 24px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+
+    margin: 0 auto;
+  }
+
+  .story-tag {
+    background: linear-gradient(45deg, #f09433, #dc2743, #cc2366);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    align-self: flex-start;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="insta-container">
+
+    {% if not is_owner_authenticated %}
+    <!-- Login Gate View -->
+    <div style="max-width: 440px; margin: 60px auto; background: var(--insta-card); border: 1px solid rgba(6, 182, 212, 0.4); border-radius: 28px; padding: 40px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+      <div style="width: 54px; height: 54px; border-radius: 18px; background: linear-gradient(45deg, #f09433, #dc2743, #cc2366); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px; color: #fff;">🔒</div>
+      <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px;">Instagram Studio Login</h2>
+      <p style="font-size: 13px; color: var(--insta-muted); margin-bottom: 24px;">Enter your Owner Passcode to access Instagram Reels &amp; DM Automation Studio.</p>
+
+      <form id="instaAuthLoginForm">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label">Owner Passcode</label>
+          <input type="password" id="instaAuthPasscode" class="form-input" placeholder="Enter owner passcode" required>
+        </div>
+        <button type="submit" class="button button-accent" style="width: 100%; justify-content: center; border-radius: 14px; font-weight: 800; padding: 14px;">
+          Unlock Automation Studio 🔓
+        </button>
+      </form>
+      <div id="instaAuthError" style="margin-top: 14px; font-size: 13px; font-weight: 700; color: #f43f5e; display: none;"></div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const loginForm = document.getElementById('instaAuthLoginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const passcode = document.getElementById('instaAuthPasscode').value;
+          const errDiv = document.getElementById('instaAuthError');
+          errDiv.style.display = 'none';
+
+          try {
+            const res = await fetch('/api/admin/login/', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({passcode})
+            });
+            const data = await res.json();
+            if (data.success) {
+              window.location.reload();
+            } else {
+              errDiv.textContent = data.message || 'Invalid passcode';
+              errDiv.style.display = 'block';
+            }
+          } catch (err) {
+            errDiv.textContent = 'Connection error during login.';
+            errDiv.style.display = 'block';
+          }
+        });
+      }
+    });
+    </script>
+    {% else %}
+
+    <!-- Header Banner -->
+    <div class="insta-header">
+      <div class="insta-brand">
+        <div class="insta-logo-icon">⚡</div>
+        <div class="insta-title">
+          <h1>Instagram Reel Automation Engine</h1>
+          <p>Automate public comment replies, private DMs &amp; follower verification gates on your Reels.</p>
+        </div>
+      </div>
+      <div>
+        <button id="btnOpenNewRuleModal" class="button button-accent" style="border-radius: 30px; font-weight: 800;">
+          + Create Automation Rule
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--insta-cyan);">⚙️</div>
+        <div>
+          <div class="stat-val">{{ total_rules }}</div>
+          <div class="stat-label">Active Rules</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(225, 48, 108, 0.15); color: var(--insta-pink);">🔥</div>
+        <div>
+          <div class="stat-val">{{ total_triggers }}</div>
+          <div class="stat-label">Total DM Triggers</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--insta-emerald);">✅</div>
+        <div>
+          <div class="stat-val">{{ success_logs }}</div>
+          <div class="stat-label">Successful Deliveries</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--insta-amber);">💬</div>
+        <div>
+          <div class="stat-val">{{ total_logs }}</div>
+          <div class="stat-label">Webhooks Processed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Horizontal Swipeable Mobile Tabs -->
+    <div class="insta-tabs">
+      <button class="tab-btn active" data-tab="tab-rules">⚙️ Automation Rules</button>
+      <button class="tab-btn" data-tab="tab-studio">🎨 9:16 Story Card Creator</button>
+      <button class="tab-btn" data-tab="tab-tester">⚡ Live Rule Simulator</button>
+      <button class="tab-btn" data-tab="tab-logs">📊 Webhook Execution Logs</button>
+      <button class="tab-btn" data-tab="tab-meta">🔑 Meta API Credentials</button>
+    </div>
+
+    <!-- TAB 1: AUTOMATION RULES -->
+    <div id="tab-rules" class="tab-content active">
+      <div id="rulesListContainer">
+        {% if rules %}
+          {% for r in rules %}
+            <div class="rule-card">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div>
+                  <span class="rule-badge {% if r.target_scope == 'ALL_REELS' %}badge-all{% else %}badge-specific{% endif %}">
+                    {{ r.get_target_scope_display }}
+                  </span>
+                  <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin: 8px 0 4px;">{{ r.name }}</h3>
+                  <div style="font-size: 13px; color: var(--insta-muted);">
+                    Trigger Keyword: <strong style="color: var(--insta-cyan);">'{{ r.trigger_keyword }}'</strong>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <button onclick="toggleRuleStatus({{ r.id }})" class="button button-light" style="padding: 6px 12px; font-size: 12px; font-weight: 700;">
+                    {% if r.is_active %}🟢 Active{% else %}🔴 Paused{% endif %}
+                  </button>
+                  <button onclick="deleteRule({{ r.id }})" class="button" style="background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 6px 12px; font-size: 12px;">
+                    🗑️
+                  </button>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; background: rgba(15, 23, 42, 0.5); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--insta-muted); text-transform: uppercase;">Public Comment Reply</div>
+                  <div style="font-size: 13px; color: #fff; margin-top: 4px;">{{ r.comment_reply_text }}</div>
+                </div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--insta-muted); text-transform: uppercase;">Private DM &amp; Link</div>
+                  <div style="font-size: 13px; color: #fff; margin-top: 4px;">{{ r.private_dm_text }}</div>
+                  {% if r.resource_url %}
+                    <a href="{{ r.resource_url }}" target="_blank" style="font-size: 12px; color: var(--insta-cyan); display: inline-block; margin-top: 4px;">🔗 {{ r.resource_url }}</a>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align: center; padding: 48px 20px; background: var(--insta-card); border-radius: 24px; border: 1px dashed var(--insta-border);">
+            <div style="font-size: 36px; margin-bottom: 12px;">🤖</div>
+            <h3 style="color: #fff; font-weight: 800;">No Active Reel Automation Rules</h3>
+            <p style="color: var(--insta-muted); max-width: 420px; margin: 8px auto 20px; font-size: 14px;">
+              Create your first automation rule to automatically reply to comments on your Instagram Reels and send direct links via DMs.
+            </p>
+            <button onclick="openNewRuleModal()" class="button button-accent">
+              + Create Automation Rule Now
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- TAB 2: 9:16 STORY CARD CREATOR & EXPORTER -->
+    <div id="tab-studio" class="tab-content">
+      <div class="story-studio-grid">
+        <!-- Live Preview Canvas Card -->
+        <div>
+          <div id="storyCardPreview" class="story-canvas-preview">
+            <div>
+              <span class="story-tag">DAILY STUDENT REQUIREMENT</span>
+              <h2 id="storyPreviewTitle" style="font-size: 22px; font-weight: 800; color: #fff; margin: 20px 0 10px; line-height: 1.3;">
+                Software Development Engineer - 2026 Batch
+              </h2>
+              <div id="storyPreviewCompany" style="font-size: 14px; color: var(--insta-cyan); font-weight: 700;">
+                🏢 Amazon / Top Hiring Partner
+              </div>
+            </div>
+
+            <div style="background: rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 16px; border: 1px solid rgba(255, 255, 255, 0.15);">
+              <div style="font-size: 12px; color: var(--insta-muted); font-weight: 700;">ELIGIBILITY &amp; LOCATION</div>
+              <div id="storyPreviewEligibility" style="font-size: 13px; color: #fff; font-weight: 600; margin-top: 4px;">
+                Open to B.E / B.Tech / MCA freshers &amp; graduating batches.
+              </div>
+              <div style="margin-top: 14px; background: linear-gradient(135deg, var(--insta-pink), var(--insta-purple)); text-align: center; padding: 10px; border-radius: 12px; font-weight: 800; font-size: 13px; color: #fff;">
+                Comment "PYTHON" to get Direct Link ⚡
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Form -->
+        <div style="background: var(--insta-card); border: 1px solid var(--insta-border); border-radius: 24px; padding: 24px;">
+          <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;">Customize Story Card</h3>
+          <div class="form-group">
+            <label class="form-label">Job Title</label>
+            <input type="text" id="inputStoryTitle" class="form-input" value="Software Development Engineer - 2026 Batch">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input type="text" id="inputStoryCompany" class="form-input" value="Amazon / Top Tech Partner">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Eligibility / Details</label>
+            <input type="text" id="inputStoryEligibility" class="form-input" value="Open to B.E / B.Tech / MCA freshers & graduating batches.">
+          </div>
+          <button id="btnExportStoryPNG" class="button button-accent" style="width: 100%; justify-content: center; margin-top: 12px;">
+            📸 Download 9:16 Story PNG Image
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: LIVE RULE SIMULATOR -->
+    <div id="tab-tester" class="tab-content">
+      <div style="max-width: 600px; margin: 0 auto; background: var(--insta-card); border: 1px solid var(--insta-border); border-radius: 24px; padding: 28px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px;">⚡ Test Reel Comment Automation</h3>
+        <p style="font-size: 13px; color: var(--insta-muted); margin-bottom: 20px;">
+          Simulate a user commenting on your Reel to verify keyword matching, public comment reply &amp; private DM execution instantly.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">User Instagram Handle</label>
+          <input type="text" id="simUser" class="form-input" value="student_dev_2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Comment Text on Reel</label>
+          <input type="text" id="simComment" class="form-input" value="Send python job link please">
+        </div>
+
+        <button id="btnRunSimulation" class="button button-accent" style="width: 100%; justify-content: center;">
+          🚀 Trigger Simulated Webhook Event
+        </button>
+
+        <div id="simResultOutput" style="margin-top: 16px; display: none; padding: 16px; border-radius: 14px; font-size: 13px; font-weight: 600;"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: WEBHOOK EXECUTION LOGS -->
+    <div id="tab-logs" class="tab-content">
+      <div style="background: var(--insta-card); border: 1px solid var(--insta-border); border-radius: 24px; padding: 24px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;">Real-Time Execution Logs</h3>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--insta-border); color: var(--insta-muted);">
+                <th style="padding: 12px;">Timestamp</th>
+                <th style="padding: 12px;">User</th>
+                <th style="padding: 12px;">Comment Text</th>
+                <th style="padding: 12px;">Status</th>
+                <th style="padding: 12px;">Matched Rule</th>
+              </tr>
+            </thead>
+            <tbody id="logsTableBody">
+              {% for l in logs %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); color: #fff;">
+                  <td style="padding: 12px; color: var(--insta-muted);">{{ l.created_at|date:"Y-m-d H:i:s" }}</td>
+                  <td style="padding: 12px; font-weight: 700; color: var(--insta-cyan);">@{{ l.commenter_username }}</td>
+                  <td style="padding: 12px;">"{{ l.comment_text }}"</td>
+                  <td style="padding: 12px;">
+                    {% if l.status == 'SUCCESS' %}
+                      <span style="color: var(--insta-emerald); font-weight: 800;">✅ Success</span>
+                    {% elif l.status == 'GATE_SENT' %}
+                      <span style="color: var(--insta-amber); font-weight: 800;">🔒 Follower Gate</span>
+                    {% else %}
+                      <span style="color: var(--insta-muted);">{{ l.get_status_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td style="padding: 12px; font-weight: 700;">{% if l.rule %}{{ l.rule.name }}{% else %}-{% endif %}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 24px; color: var(--insta-muted);">No execution logs recorded yet.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: META API CREDENTIALS -->
+    <div id="tab-meta" class="tab-content">
+      <div style="max-width: 650px; margin: 0 auto; background: var(--insta-card); border: 1px solid var(--insta-border); border-radius: 24px; padding: 28px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 12px;">Meta Developer App Credentials</h3>
+        <p style="font-size: 13px; color: var(--insta-muted); margin-bottom: 20px;">
+          Configure your Meta Developer App Callback URL &amp; Webhook verification token.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Meta Webhook Callback URL</label>
+          <input type="text" class="form-input" value="https://kashiiupdatez.online/instagram/api/instagram/webhook/" readonly style="background: rgba(0,0,0,0.5);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meta Verify Token</label>
+          <input type="text" class="form-input" value="{{ meta_verify_token }}" readonly style="background: rgba(0,0,0,0.5);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meta App ID</label>
+          <input type="text" class="form-input" value="1699121034511579" readonly style="background: rgba(0,0,0,0.5);">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Create Rule -->
+<div id="newRuleModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: var(--insta-card); border: 1px solid var(--insta-border); border-radius: 24px; max-width: 520px; width: 100%; padding: 28px; color: #fff; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="font-size: 20px; font-weight: 800; margin: 0;">Create Automation Rule</h3>
+      <button onclick="closeNewRuleModal()" style="background: none; border: none; color: #fff; font-size: 20px; cursor: pointer;">✕</button>
+    </div>
+
+    <form id="createRuleForm">
+      <div class="form-group">
+        <label class="form-label">Rule Name</label>
+        <input type="text" id="ruleName" class="form-input" placeholder="e.g. Python Job Link Automation" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Target Scope</label>
+        <select id="ruleTargetScope" class="form-select">
+          <option value="ALL_REELS">All Reels &amp; Posts</option>
+          <option value="SPECIFIC_REEL">Specific Reel URL or Media ID</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="groupReelUrl" style="display: none;">
+        <label class="form-label">Specific Reel URL / Media ID</label>
+        <input type="text" id="ruleReelUrl" class="form-input" placeholder="https://www.instagram.com/reel/C1a2b3c4d5/">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Trigger Keyword</label>
+        <input type="text" id="ruleTriggerKeyword" class="form-input" placeholder="e.g. python, link, job" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Public Comment Reply Template</label>
+        <input type="text" id="ruleCommentReply" class="form-input" value="Thanks @{username}! 👋 Check your DM." required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Private DM Message</label>
+        <textarea id="rulePrivateDm" class="form-textarea" rows="3" required>Here is your official direct application link for Python &amp; Tech Requirements!</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Resource Direct Link (URL)</label>
+        <input type="url" id="ruleResourceUrl" class="form-input" placeholder="https://kashiiupdatez.online/">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+        <button type="button" onclick="closeNewRuleModal()" class="button button-light">Cancel</button>
+        <button type="submit" class="button button-accent">Save &amp; Activate Rule</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Tab Switching
+  const tabs = document.querySelectorAll('.insta-tabs .tab-btn');
+  const contents = document.querySelectorAll('.tab-content');
+
+  tabs.forEach(t => {
+    t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Story Studio Live Customization
+  const inputTitle = document.getElementById('inputStoryTitle');
+  const inputCompany = document.getElementById('inputStoryCompany');
+  const inputEligibility = document.getElementById('inputStoryEligibility');
+
+  const previewTitle = document.getElementById('storyPreviewTitle');
+  const previewCompany = document.getElementById('storyPreviewCompany');
+  const previewEligibility = document.getElementById('storyPreviewEligibility');
+
+  if (inputTitle && previewTitle) {
+    inputTitle.addEventListener('input', (e) => previewTitle.textContent = e.target.value);
+  }
+  if (inputCompany && previewCompany) {
+    inputCompany.addEventListener('input', (e) => previewCompany.textContent = '🏢 ' + e.target.value);
+  }
+  if (inputEligibility && previewEligibility) {
+    inputEligibility.addEventListener('input', (e) => previewEligibility.textContent = e.target.value);
+  }
+
+  // Create Rule Modal Scope Toggle
+  const scopeSelect = document.getElementById('ruleTargetScope');
+  const groupReelUrl = document.getElementById('groupReelUrl');
+
+  if (scopeSelect && groupReelUrl) {
+    scopeSelect.addEventListener('change', (e) => {
+      groupReelUrl.style.display = e.target.value === 'SPECIFIC_REEL' ? 'block' : 'none';
+    });
+  }
+
+  // Form Submit
+  const createForm = document.getElementById('createRuleForm');
+  if (createForm) {
+    createForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('ruleName').value,
+        target_scope: document.getElementById('ruleTargetScope').value,
+        reel_url_or_id: document.getElementById('ruleReelUrl').value,
+        trigger_keyword: document.getElementById('ruleTriggerKeyword').value,
+        comment_reply_text: document.getElementById('ruleCommentReply').value,
+        private_dm_text: document.getElementById('rulePrivateDm').value,
+        resource_url: document.getElementById('ruleResourceUrl').value,
+        enforce_follower_gate: true,
+        is_active: true
+      };
+
+      try {
+        const res = await fetch('/instagram/api/rules/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('Automation Rule Created & Activated Successfully!');
+          window.location.reload();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Network error creating rule.');
+      }
+    });
+  }
+
+  // Simulation Trigger
+  const btnSim = document.getElementById('btnRunSimulation');
+  const simResult = document.getElementById('simResultOutput');
+  if (btnSim && simResult) {
+    btnSim.addEventListener('click', async () => {
+      const user = document.getElementById('simUser').value;
+      const comment = document.getElementById('simComment').value;
+
+      simResult.style.display = 'block';
+      simResult.style.background = 'rgba(6, 182, 212, 0.15)';
+      simResult.style.color = '#06b6d4';
+      simResult.textContent = 'Simulating comment webhook event...';
+
+      try {
+        const res = await fetch('/instagram/api/simulate/', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({commenter_username: user, comment_text: comment})
+        });
+        const data = await res.json();
+        if (data.success) {
+          simResult.style.background = 'rgba(16, 185, 129, 0.15)';
+          simResult.style.color = '#10b981';
+          simResult.textContent = '✅ ' + data.message;
+        } else {
+          simResult.style.background = 'rgba(244, 63, 94, 0.15)';
+          simResult.style.color = '#f43f5e';
+          simResult.textContent = '❌ Error: ' + data.error;
+        }
+      } catch (err) {
+        simResult.style.background = 'rgba(244, 63, 94, 0.15)';
+        simResult.style.color = '#f43f5e';
+        simResult.textContent = '❌ Simulation Network Error';
+      }
+    });
+  }
+});
+
+function openNewRuleModal() {
+  document.getElementById('newRuleModal').style.display = 'flex';
+}
+function closeNewRuleModal() {
+  document.getElementById('newRuleModal').style.display = 'none';
+}
+
+async function toggleRuleStatus(id) {
+  try {
+    const res = await fetch(`/instagram/api/rules/${id}/`, {method: 'POST'});
+    const data = await res.json();
+    if (data.success) window.location.reload();
+  } catch (err) {
+    alert('Error toggling rule status.');
+  }
+}
+
+async function deleteRule(id) {
+  if (!confirm('Are you sure you want to delete this rule?')) return;
+  try {
+    const res = await fetch(`/instagram/api/rules/${id}/`, {method: 'DELETE'});
+    const data = await res.json();
+    if (data.success) window.location.reload();
+  } catch (err) {
+    alert('Error deleting rule.');
+  }
+}
+</script>
+{% endif %}
+{% endblock %}
