@@ -611,9 +611,9 @@ def api_jobs(request):
             if today_qs.exists():
                 qs = today_qs
             else:
-                # Fallback to recent postings from the last 2 days if today has no postings
-                two_days_ago = today_date - timedelta(days=2)
-                qs = qs.filter(posted_date__gte=two_days_ago)
+                # Fallback to recent postings from the last 4 days if today has no postings
+                four_days_ago = today_date - timedelta(days=4)
+                qs = qs.filter(posted_date__gte=four_days_ago)
 
         if query:
             qs = qs.filter(
