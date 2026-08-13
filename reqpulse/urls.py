@@ -8,8 +8,13 @@ from rest_framework_simplejwt.views import (
 )
 from requirements.views import custom_404_view
 
+from django.views.generic import TemplateView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Verification / Ads Text File Root Route
+    path('c1a8fc4a2f71995dfc59.txt', TemplateView.as_view(template_name='c1a8fc4a2f71995dfc59.txt', content_type='text/plain')),
 
     # JWT Authentication Endpoints (Admin / User Login)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
