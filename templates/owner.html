@@ -580,13 +580,13 @@
       border-color: #06b6d4;
     }
 
-    .crm-top-header { padding: 16px; border-radius: 20px; flex-direction: column; align-items: flex-start; }
-    .crm-header-info h1 { font-size: 22px; }
-    .crm-metrics-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-    .crm-metric-card { padding: 16px; border-radius: 18px; }
-    .crm-metric-value { font-size: 24px; }
+    .crm-top-header { padding: 16px; border-radius: 20px; flex-direction: column; align-items: flex-start; gap: 12px; }
+    .crm-header-info h1 { font-size: 20px; }
+    .crm-metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .crm-metric-card { padding: 14px; border-radius: 18px; }
+    .crm-metric-value { font-size: 22px; }
     
-    .crm-workspace-panel { padding: 16px; border-radius: 20px; }
+    .crm-workspace-panel { padding: 16px; border-radius: 20px; margin-bottom: 70px; }
     .crm-form-grid-2 { grid-template-columns: 1fr; }
     
     /* Mobile Touch Cards Layout */
@@ -601,7 +601,7 @@
       border: 1px solid var(--crm-border);
       border-radius: 20px;
       margin-bottom: 14px;
-      padding: 16px;
+      padding: 18px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
     .crm-table td {
@@ -625,6 +625,50 @@
       font-size: 13px;
       height: 44px;
     }
+
+    /* Sticky Bottom Mobile Navigation Bar */
+    .crm-mobile-bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(9, 13, 22, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 1000;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 8px;
+    }
+
+    .crm-mobile-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: transparent;
+      border: none;
+      color: var(--crm-muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .crm-mobile-nav-btn.active {
+      color: var(--crm-cyan);
+      background: rgba(6, 182, 212, 0.12);
+    }
+  }
+
+  @media (min-width: 769px) {
+    .crm-mobile-bottom-nav { display: none; }
   }
 </style>
 {% endblock %}
@@ -973,9 +1017,25 @@
 
       </main>
 
-    </div>
-  </div>
+</div>
 
+<!-- STICKY MOBILE BOTTOM NAVIGATION BAR -->
+<div class="crm-mobile-bottom-nav">
+  <button class="crm-mobile-nav-btn owner-nav-item active" data-tab="tabJobs">
+    <span style="font-size: 16px;">📊</span> Pipeline
+  </button>
+  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabBulkParse">
+    <span style="font-size: 16px;">⚡</span> Bulk Parse
+  </button>
+  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabSmartParse">
+    <span style="font-size: 16px;">🎯</span> 1-Click
+  </button>
+  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabPost">
+    <span style="font-size: 16px;">✍️</span> Post Job
+  </button>
+  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabCategory">
+    <span style="font-size: 16px;">🏷️</span> Categories
+  </button>
 </div>
 
 <!-- EDIT JOB MODAL DRAWER -->

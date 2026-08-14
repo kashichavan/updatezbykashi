@@ -85,8 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.owner-nav-item').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
 
-    const activeTabBtn = document.querySelector(`.owner-nav-item[data-tab="${targetId}"]`);
-    if (activeTabBtn) activeTabBtn.classList.add('active');
+    document.querySelectorAll(`.owner-nav-item[data-tab="${targetId}"]`).forEach(btn => btn.classList.add('active'));
 
     const targetEl = document.getElementById(targetId);
     if (targetEl) targetEl.style.display = 'block';
