@@ -728,9 +728,14 @@
             <p id="crmWorkspaceSubheading">Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.</p>
           </div>
 
-          <div class="crm-user-profile">
-            <span style="font-size: 12px; font-weight: 700; color: var(--crm-muted);">System Status:</span>
-            <span class="crm-status-pill crm-status-active">🟢 ALL SYSTEMS ONLINE</span>
+          <div class="crm-user-profile" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <button onclick="document.querySelector('[data-tab=\'tabPost\']').click()" class="btn-crm-primary" style="height: 40px; padding: 0 16px; font-size: 12.5px; border-radius: 20px;">
+              + Publish Single Job
+            </button>
+            <button onclick="document.querySelector('[data-tab=\'tabBulkParse\']').click()" class="btn-crm-primary btn-crm-emerald" style="height: 40px; padding: 0 16px; font-size: 12.5px; border-radius: 20px;">
+              ⚡ Bulk Multi-Job Parser
+            </button>
+            <span class="crm-status-pill crm-status-active">🟢 ONLINE</span>
           </div>
         </header>
 
@@ -778,13 +783,13 @@
         <!-- TAB 1: OPPORTUNITY PIPELINE & DATA GRID -->
         <div id="tabJobs" class="crm-workspace-panel tab-content">
           
-          <div class="crm-toolbar">
-            <div class="crm-search-box">
+          <div class="crm-toolbar" style="display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;">
+            <div class="crm-search-box" style="flex: 1 1 260px;">
               <span class="crm-search-icon">🔍</span>
               <input type="text" id="crmSearchJobs" class="crm-search-input" placeholder="Search by company, title, or skills...">
             </div>
 
-            <div class="crm-filter-group">
+            <div class="crm-filter-group" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
               <select id="crmCategoryFilter" class="crm-select">
                 <option value="ALL">All Categories</option>
               </select>
@@ -800,6 +805,13 @@
                 <option value="25">25 per page</option>
                 <option value="50">50 per page</option>
               </select>
+
+              <button onclick="document.querySelector('[data-tab=\'tabPost\']').click()" class="btn-crm-primary" style="height: 40px; padding: 0 16px; font-size: 12px; border-radius: 12px;">
+                + Add Single Job
+              </button>
+              <button onclick="document.querySelector('[data-tab=\'tabBulkParse\']').click()" class="btn-crm-primary btn-crm-emerald" style="height: 40px; padding: 0 16px; font-size: 12px; border-radius: 12px;">
+                ⚡ Add Multi Jobs
+              </button>
             </div>
           </div>
 
