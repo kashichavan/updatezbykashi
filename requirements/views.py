@@ -3,6 +3,7 @@ import json
 import re
 import urllib.request
 import ssl
+import hashlib
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
@@ -599,7 +600,8 @@ def api_jobs(request):
         page = request.GET.get('page', '1')
         page_size = request.GET.get('page_size', '6')
 
-        cache_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
+        raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
+        cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
         cached_response = cache.get(cache_key)
         if cached_response:
             return JsonResponse(cached_response)
