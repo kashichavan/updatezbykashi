@@ -478,7 +478,12 @@ class JavaExecutionTracer:
             if var_name.startswith('__') or var_name == 'this':
                 continue
             val_str = _display(data.get('_value'))
-            sub = re.sub(r'\b' + re.escape(var_name) + r'\b', val_str, sub)
+            try:
+                # Escape backslashes in replacement string to prevent regex invalid escape errors
+                clean_val = str(val_str).replace('\\', '\\\\')
+                sub = re.sub(r'\b' + re.escape(var_name) + r'\b', clean_val, sub)
+            except Exception:
+                pass
 
         # Evaluate array index accesses like [5, 2, 9, 1, 7][1] to direct element value (e.g. 2)
         def _eval_arr_access(match):
@@ -494,7 +499,10 @@ class JavaExecutionTracer:
                 pass
             return match.group(0)
 
-        sub = re.sub(r'(\[[^\]]+\])\[(\d+)\]', _eval_arr_access, sub)
+        try:
+            sub = re.sub(r'(\[[^\]]+\])\[(\d+)\]', _eval_arr_access, sub)
+        except Exception:
+            pass
         return sub.strip()
 
     def _explain(self, event, line_text, scope, changed, fn_name=None, ret_val=None):
