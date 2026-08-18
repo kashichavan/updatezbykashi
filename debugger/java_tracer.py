@@ -150,10 +150,14 @@ def _display(val):
     return str(val)
 
 
-# ─────────────────────────────── The interpreter ─────────────────────────────
+class MaxExecutionStepsExceeded(Exception):
+    """Raised when execution step limit is exceeded (e.g. infinite loop)."""
+    pass
+
 
 class JavaExecutionTracer:
     JAVA_PRIMITIVES = {'int', 'double', 'float', 'long', 'short', 'byte', 'char', 'boolean'}
+    MAX_STEPS = 1000
 
     def __init__(self, code_str, breakpoints=None, stdin_input=""):
         self.code_str = code_str
@@ -243,6 +247,16 @@ class JavaExecutionTracer:
 
         try:
             self._exec_block(main_method.body, dict(scope), call_stack, self.main_class)
+        except MaxExecutionStepsExceeded as limit_err:
+            msg = str(limit_err)
+            self.stdout_lines.append(f"⚠️ {msg}")
+            self.steps.append({
+                'step_index': len(self.steps), 'line_number': 0, 'line_text': '',
+                'event_type': 'step_limit_exceeded', 'is_breakpoint': False,
+                'stack_frames': [str(f) for f in call_stack], 'variables': {},
+                'stdout': "\n".join(self.stdout_lines),
+                'ai_explanation': f"⚠️ {msg} — loop execution stopped safely.",
+            })
         except JavaException as jexc:
             full = jexc.full_name()
             msg = f"Exception in thread \"main\" {full}" + (f": {jexc.message}" if jexc.message else "")
@@ -430,6 +444,8 @@ class JavaExecutionTracer:
 
     def _emit(self, lineno, line_text, event, call_stack, scope, changed_names,
               fn_name=None, ret_val=None, explanation=None):
+        if len(self.steps) >= self.MAX_STEPS:
+            raise MaxExecutionStepsExceeded(f"Execution step limit exceeded ({self.MAX_STEPS} steps)")
         for k in scope:
             scope[k]['is_changed'] = k in changed_names
         if explanation is None:
