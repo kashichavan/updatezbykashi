@@ -977,8 +977,10 @@ class JavaExecutionTracer:
             return NULL
         if v == 'null':
             return NULL
-        if v in ('true', 'false'):
-            return v == 'true'
+        if v in ('true', 'false') or v is True or v is False:
+            return v == 'true' if isinstance(v, str) else bool(v)
+        if isinstance(v, (int, float)):
+            return v
         if isinstance(v, str):
             if v.startswith('"') and v.endswith('"'):
                 return self._unescape(v[1:-1])
@@ -987,13 +989,14 @@ class JavaExecutionTracer:
                 return inner if inner else '\u0000'
             vv = v.replace('_', '')
             try:
-                if vv.lower().endswith(('l',)):
+                vv_lower = vv.lower()
+                if vv_lower.endswith(('l',)):
                     return int(vv[:-1], 0)
-                if vv.lower().endswith(('f', 'd')):
+                if vv_lower.endswith(('f', 'd')):
                     return float(vv[:-1])
-                if '.' in vv or ('e' in vv.lower() and not vv.lower().startswith('0x')):
+                if '.' in vv or ('e' in vv_lower and not vv_lower.startswith('0x')):
                     return float(vv)
-                return int(vv, 0) if vv.lower().startswith('0x') or vv.startswith('0b') else int(vv)
+                return int(vv, 0) if vv_lower.startswith('0x') or vv.startswith('0b') else int(vv)
             except ValueError:
                 return v
         return v
