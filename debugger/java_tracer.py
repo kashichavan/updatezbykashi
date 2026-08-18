@@ -441,7 +441,7 @@ class JavaExecutionTracer:
             'event_type': event,
             'return_value': _display(ret_val) if ret_val is not None else None,
             'is_breakpoint': lineno in self.breakpoints,
-            'stack_frames': list(call_stack),
+            'stack_frames': [str(f) for f in call_stack],
             'variables': self._render_scope(scope),
             'stdout': "\n".join(self.stdout_lines),
             'ai_explanation': explanation,
