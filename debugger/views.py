@@ -271,6 +271,7 @@ def api_session_history(request):
 
 from .learn_curriculum import CURRICULUM
 
+@never_cache
 def learn_topic_view(request, lang='python', topic_slug=None):
     """Interactive W3Schools/GeeksforGeeks style Academy with Real-World Analogies & Embedded Debugger."""
     lang = (lang or 'python').lower()
