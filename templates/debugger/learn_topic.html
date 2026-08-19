@@ -297,12 +297,55 @@
     padding: 14px;
     box-sizing: border-box;
     resize: vertical;
+  /* Embedded Interactive Debugger Sandbox (IDE Theme Matched) */
+  .interactive-debugger-widget {
+    background: #0d1117;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 36px 0;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.15);
+  }
+  .debugger-top-bar {
+    background: #161b22;
+    padding: 12px 20px;
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .debugger-code-area {
+    padding: 16px;
+    position: relative;
+    background: #090d13;
+  }
+  .code-editor-textarea {
+    width: 100%;
+    height: 190px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    color: #58a6ff;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 14px;
+    box-sizing: border-box;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .code-editor-textarea:focus {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
   }
   .debugger-controls {
-    background: #111b30;
+    background: #161b22;
     padding: 12px 20px;
-    border-top: 1px solid #1e293b;
-    border-bottom: 1px solid #1e293b;
+    border-top: 1px solid #30363d;
+    border-bottom: 1px solid #30363d;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -310,7 +353,7 @@
     gap: 12px;
   }
   .dbg-btn {
-    padding: 8px 16px;
+    padding: 8px 14px;
     border-radius: 8px;
     font-size: 12px;
     font-weight: 700;
@@ -320,26 +363,30 @@
     align-items: center;
     gap: 6px;
     transition: all 0.15s;
+    user-select: none;
   }
   .dbg-btn-run {
-    background: #2563eb;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(37,99,235,0.4);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.4);
   }
   .dbg-btn-run:hover {
-    background: #1d4ed8;
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
   }
   .dbg-btn-step {
-    background: #1e293b;
-    color: #cbd5e1;
-    border-color: #334155;
+    background: #21262d;
+    color: #c9d1d9;
+    border-color: #30363d;
   }
   .dbg-btn-step:hover:not(:disabled) {
-    background: #334155;
+    background: #30363d;
     color: #ffffff;
+    border-color: #8b949e;
   }
   .dbg-btn:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: not-allowed;
   }
 
@@ -347,10 +394,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1px;
-    background: #1e293b;
+    background: #30363d;
   }
   .debugger-panel {
-    background: #0d1527;
+    background: #0d1117;
     padding: 16px;
     min-height: 140px;
   }
@@ -359,7 +406,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    color: #94a3b8;
+    color: #8b949e;
     margin-bottom: 10px;
     display: flex;
     align-items: center;
@@ -375,35 +422,49 @@
   }
   .var-table th {
     text-align: left;
-    color: #64748b;
+    color: #8b949e;
     font-size: 11px;
-    padding: 4px 8px;
-    border-bottom: 1px solid #1e293b;
+    padding: 6px 10px;
+    border-bottom: 1px solid #30363d;
   }
   .var-table td {
-    padding: 6px 8px;
-    border-bottom: 1px solid #131d33;
-    color: #e2e8f0;
+    padding: 7px 10px;
+    border-bottom: 1px solid #161b22;
+    color: #c9d1d9;
   }
+  .var-type-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: monospace;
+  }
+  .var-type-number { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+  .var-type-string { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .var-type-boolean { background: rgba(192, 132, 252, 0.15); color: #c084fc; }
+  .var-type-object { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
   .var-changed {
     color: #4ade80 !important;
     font-weight: 700;
-    background: rgba(74,222,128,0.08);
+    background: rgba(74,222,128,0.12) !important;
   }
 
   /* Terminal Output */
   .terminal-box {
-    background: #070c18;
-    border-radius: 8px;
-    padding: 12px;
+    background: #040810;
+    border-radius: 10px;
+    padding: 14px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
-    color: #38bdf8;
+    color: #79c0ff;
     min-height: 90px;
     max-height: 150px;
     overflow-y: auto;
     white-space: pre-wrap;
-    line-height: 1.5;
+    line-height: 1.55;
+    border: 1px solid #21262d;
   }
 
   @media (max-width: 960px) {
@@ -1202,10 +1263,16 @@ function loadSnippetIntoDebugger(codeStr) {
         for (const k of varKeys) {
           const v = vars[k];
           const isChanged = v.is_changed;
+          const vType = (v.type || 'object').toLowerCase();
+          let badgeClass = 'var-type-object';
+          if (vType.includes('int') || vType.includes('float') || vType.includes('number') || vType.includes('double')) badgeClass = 'var-type-number';
+          else if (vType.includes('str') || vType.includes('char')) badgeClass = 'var-type-string';
+          else if (vType.includes('bool')) badgeClass = 'var-type-boolean';
+
           html += `<tr class="${isChanged ? 'var-changed' : ''}">
-            <td style="color:#38bdf8;font-weight:700;">${k}</td>
-            <td style="color:#a78bfa;">${v.type || 'Object'}</td>
-            <td>${escapeHtml(v.raw !== undefined ? v.raw : String(v.value))}</td>
+            <td style="color:#58a6ff;font-weight:700;">${escapeHtml(k)}</td>
+            <td><span class="var-type-badge ${badgeClass}">${escapeHtml(v.type || 'Object')}</span></td>
+            <td style="font-family:monospace;color:#f0f6fc;">${escapeHtml(v.raw !== undefined ? v.raw : String(v.value))}</td>
           </tr>`;
         }
         varsTbody.innerHTML = html;
