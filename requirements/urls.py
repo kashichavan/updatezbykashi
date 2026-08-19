@@ -1,11 +1,17 @@
 from django.urls import path
 from . import views
+from debugger.views import learn_topic_view
 
 urlpatterns = [
     path('', views.index_view, name='index'),
     path('about/', views.about_view, name='about'),
     path('youtube/', views.youtube_view, name='youtube'),
     
+    # Interactive Developer Academy (Python, Java, JavaScript with Analogies & Live Debugger)
+    path('learn/', learn_topic_view, name='learn_root'),
+    path('learn/<slug:lang>/', learn_topic_view, name='learn_lang'),
+    path('learn/<slug:lang>/<slug:topic_slug>/', learn_topic_view, name='learn_topic_detail'),
+
     # Guides & Educational Articles Hub (AdSense High Value Content)
     path('guides/', views.guides_list_view, name='guides_list'),
     path('guides/<slug:slug>/', views.guide_detail_view, name='guide_detail'),
