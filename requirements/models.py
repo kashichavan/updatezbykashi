@@ -141,6 +141,8 @@ class GuideArticle(models.Model):
     author_avatar = models.CharField(max_length=250, default="/static/images/kashii-author.jpg")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PUBLISHED')
     tags = models.CharField(max_length=250, default="Python, Career, Freshers")
+    pdf_download_url = models.URLField(max_length=500, blank=True, default="", help_text="Google Drive download/view link for PDF study notes.")
+    pdf_file_name = models.CharField(max_length=150, blank=True, default="", help_text="e.g. ADVANCED PYTHON BY KASHINATH.pdf")
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

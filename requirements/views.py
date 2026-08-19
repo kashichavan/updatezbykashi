@@ -149,13 +149,13 @@ def contact_view(request):
     return render(request, 'content/contact.html', {'success_message': success_message})
 
 def ensure_guides_seeded():
-    """Guarantees production has all 7 high-value technical articles populated."""
-    if GuideArticle.objects.filter(status='PUBLISHED').count() >= 7:
+    """Guarantees production has all 13 high-value technical articles populated with PDF attachments."""
+    if GuideArticle.objects.filter(status='PUBLISHED').count() >= 13:
         return
     try:
         from .seed_prod import guides_seeds
         for g in guides_seeds:
-            GuideArticle.objects.get_or_create(slug=g['slug'], defaults=g)
+            GuideArticle.objects.update_or_create(slug=g['slug'], defaults=g)
     except Exception:
         pass
 
