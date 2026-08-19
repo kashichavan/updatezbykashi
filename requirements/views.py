@@ -101,6 +101,12 @@ def ads_txt_verification_view(request):
     """Direct plain-text verification view for ad networks."""
     return HttpResponse("8f373caaa0ca1b604bcf", content_type="text/plain")
 
+def ads_txt_view(request):
+    """Standard Google AdSense Authorized Digital Sellers (ads.txt) file."""
+    content = "google.com, pub-2115508498538506, DIRECT, f08c47fec0942fa0\n"
+    return HttpResponse(content, content_type="text/plain")
+
+
 def index_view(request):
     sync_expired_jobs()
     videos = get_cached_youtube_videos()

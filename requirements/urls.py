@@ -23,6 +23,7 @@ urlpatterns = [
     # Search Engine & Crawler Discovery Endpoints
     path('sitemap.xml', views.sitemap_xml_view, name='sitemap_xml'),
     path('robots.txt', views.robots_txt_view, name='robots_txt'),
+    path('ads.txt', views.ads_txt_view, name='ads_txt'),
 
     path('category/<slug:slug>/', views.category_detail_view, name='category_detail'),
     path('category/<slug:category_slug>/job/<uuid:uuid>/', views.job_detail_view, name='category_job_detail'),

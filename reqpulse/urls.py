@@ -6,13 +6,15 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from requirements.views import custom_404_view, ads_txt_verification_view
+from requirements.views import custom_404_view, ads_txt_verification_view, ads_txt_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # Verification / Ads Text File Root Route
+    # Verification / Ads Text File Root Routes
+    path('ads.txt', ads_txt_view, name='ads_txt'),
     path('c1a8fc4a2f71995dfc59.txt', ads_txt_verification_view, name='ads_verification_file'),
+
 
     # JWT Authentication Endpoints (Admin / User Login)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
