@@ -6,7 +6,7 @@ import ssl
 import hashlib
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -15,7 +15,7 @@ from datetime import timedelta
 from django.utils.text import slugify
 from django.db.models import Q, Count
 from django.core.cache import cache
-from .models import Category, JobPosting
+from .models import Category, JobPosting, GuideArticle, ContactInquiry
 
 DEFAULT_YOUTUBE_VIDEOS = [
     {
@@ -104,10 +104,133 @@ def ads_txt_verification_view(request):
 def index_view(request):
     sync_expired_jobs()
     videos = get_cached_youtube_videos()
-    return render(request, 'content/home.html', {'youtube_videos': videos})
+    initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:6]
+    recent_guides = GuideArticle.objects.filter(status='PUBLISHED').order_by('-created_at')[:3]
+    return render(request, 'content/home.html', {
+        'youtube_videos': videos,
+        'initial_jobs': initial_jobs,
+        'recent_guides': recent_guides,
+    })
 
 def about_view(request):
     return render(request, 'content/about.html')
+
+def privacy_policy_view(request):
+    return render(request, 'content/privacy_policy.html')
+
+def terms_view(request):
+    return render(request, 'content/terms.html')
+
+def disclaimer_view(request):
+    return render(request, 'content/disclaimer.html')
+
+def contact_view(request):
+    success_message = None
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        subject = request.POST.get('subject', 'General Inquiry').strip()
+        message = request.POST.get('message', '').strip()
+        if name and email and message:
+            ContactInquiry.objects.create(
+                name=name,
+                email=email,
+                subject=subject,
+                message=message
+            )
+            success_message = "Thank you for reaching out! Your message has been received. We will respond within 24 hours."
+
+    return render(request, 'content/contact.html', {'success_message': success_message})
+
+def guides_list_view(request):
+    topic = request.GET.get('topic', '').strip()
+    qs = GuideArticle.objects.filter(status='PUBLISHED')
+    if topic:
+        qs = qs.filter(topic=topic)
+    return render(request, 'content/guides_list.html', {
+        'guides': qs,
+        'active_topic': topic,
+    })
+
+def guide_detail_view(request, slug):
+    guide = get_object_or_404(GuideArticle, slug=slug, status='PUBLISHED')
+    GuideArticle.objects.filter(pk=guide.pk).update(views_count=guide.views_count + 1)
+    guide.views_count += 1
+    related_guides = GuideArticle.objects.filter(status='PUBLISHED').exclude(pk=guide.pk).order_by('-created_at')[:3]
+    return render(request, 'content/guide_detail.html', {
+        'guide': guide,
+        'related_guides': related_guides,
+    })
+
+def sitemap_xml_view(request):
+    """Dynamic XML Sitemap for Search Engines & Google AdSense Crawlers."""
+    host = request.build_absolute_uri('/')[:-1]
+    now_str = timezone.now().strftime('%Y-%m-%d')
+    
+    # Static pages
+    static_urls = [
+        ('', 'daily', '1.0'),
+        ('/guides/', 'daily', '0.9'),
+        ('/about/', 'weekly', '0.8'),
+        ('/youtube/', 'weekly', '0.8'),
+        ('/debugger/', 'weekly', '0.8'),
+        ('/privacy-policy/', 'monthly', '0.5'),
+        ('/terms/', 'monthly', '0.5'),
+        ('/disclaimer/', 'monthly', '0.5'),
+        ('/contact/', 'monthly', '0.6'),
+    ]
+
+    xml_lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ]
+
+    for path, changefreq, priority in static_urls:
+        xml_lines.append(f'  <url>')
+        xml_lines.append(f'    <loc>{host}{path}</loc>')
+        xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
+        xml_lines.append(f'    <changefreq>{changefreq}</changefreq>')
+        xml_lines.append(f'    <priority>{priority}</priority>')
+        xml_lines.append(f'  </url>')
+
+    # Guide articles
+    for guide in GuideArticle.objects.filter(status='PUBLISHED'):
+        g_mod = guide.updated_at.strftime('%Y-%m-%d')
+        xml_lines.append(f'  <url>')
+        xml_lines.append(f'    <loc>{host}/guides/{guide.slug}/</loc>')
+        xml_lines.append(f'    <lastmod>{g_mod}</lastmod>')
+        xml_lines.append(f'    <changefreq>weekly</changefreq>')
+        xml_lines.append(f'    <priority>0.85</priority>')
+        xml_lines.append(f'  </url>')
+
+    # Active Categories
+    for cat in Category.objects.all():
+        xml_lines.append(f'  <url>')
+        xml_lines.append(f'    <loc>{host}/category/{cat.slug}/</loc>')
+        xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
+        xml_lines.append(f'    <changefreq>daily</changefreq>')
+        xml_lines.append(f'    <priority>0.8</priority>')
+        xml_lines.append(f'  </url>')
+
+    # Active Jobs
+    for job in JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()):
+        j_mod = job.updated_at.strftime('%Y-%m-%d')
+        xml_lines.append(f'  <url>')
+        xml_lines.append(f'    <loc>{host}/category/{job.category.slug}/job/{job.uuid}/</loc>')
+        xml_lines.append(f'    <lastmod>{j_mod}</lastmod>')
+        xml_lines.append(f'    <changefreq>daily</changefreq>')
+        xml_lines.append(f'    <priority>0.75</priority>')
+        xml_lines.append(f'  </url>')
+
+    xml_lines.append('</urlset>')
+    return HttpResponse('\n'.join(xml_lines), content_type='application/xml')
+
+def robots_txt_view(request):
+    """Robots.txt directing crawlers to sitemap.xml."""
+    host = request.build_absolute_uri('/')[:-1]
+    content = f"User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/admin/\nDisallow: /owner/\n\nSitemap: {host}/sitemap.xml\n"
+    return HttpResponse(content, content_type='text/plain')
+
 
 def youtube_view(request):
     videos = get_cached_youtube_videos()

@@ -163,7 +163,39 @@
     </div>
 
     <div id="jobsGrid" class="vp-catalog-grid">
-      <!-- Rendered via JS -->
+      {% for job in initial_jobs %}
+      <article class="vp-job-card" data-id="{{ job.id }}">
+        <div class="vp-job-card-inner">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <span class="company-badge">{{ job.company_name }}</span>
+            <span class="type-badge">{{ job.get_job_type_display }}</span>
+          </div>
+          <h3 class="vp-job-title">
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/" style="color: inherit; text-decoration: none;">
+              {{ job.title }}
+            </a>
+          </h3>
+          <div style="font-size: 13px; color: var(--muted); margin-bottom: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <span>💰 {{ job.stipend_salary }}</span>
+            <span>📍 {{ job.location }}</span>
+            <span>⏱️ {{ job.get_posted_date_display }}</span>
+          </div>
+          <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 14px;">
+            {{ job.description|truncatewords:20 }}
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--subtle-border); padding-top: 12px;">
+            <span style="font-size: 12px; color: var(--muted);">Auto-Expires in 7 Days</span>
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/" class="button button-dark" style="padding: 6px 12px; font-size: 12px;">
+              View Details ↗
+            </a>
+          </div>
+        </div>
+      </article>
+      {% empty %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #fff; border-radius: 16px; border: 1px solid var(--subtle-border);">
+        <p style="color: var(--muted); margin: 0;">Loading fresh software &amp; tech requirements...</p>
+      </div>
+      {% endfor %}
     </div>
 
     <!-- Clean Pagination Bar -->
@@ -171,6 +203,55 @@
       <!-- Dynamically populated via JS -->
     </div>
   </main>
+
+  <!-- Featured Career & Python Guides Section (AdSense High Value Content Hub) -->
+  {% if recent_guides %}
+  <section style="margin-top: 56px; border-top: 1px solid var(--subtle-border); padding-top: 40px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <div>
+        <span style="font-size: 11px; font-weight: 800; color: var(--blue-primary); font-family: monospace; letter-spacing: 0.6px; text-transform: uppercase;">
+          EDUCATIONAL RESOURCES
+        </span>
+        <h2 style="font: 700 24px var(--font-serif); margin: 4px 0 0; color: var(--ink);">
+          Featured Career Guides &amp; Python Masterclasses
+        </h2>
+      </div>
+      <a href="/guides/" style="font-size: 14px; font-weight: 800; color: var(--blue-primary); text-decoration: none;">
+        View All Guides (7) &rarr;
+      </a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+      {% for guide in recent_guides %}
+      <article style="background: #ffffff; border-radius: 16px; border: 1px solid var(--subtle-border); padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--card-shadow);">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 11px; font-weight: 800; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 4px; font-family: monospace;">
+              {{ guide.get_topic_display }}
+            </span>
+            <span style="font-size: 12px; color: var(--muted);">⏱️ {{ guide.read_time }}</span>
+          </div>
+          <h3 style="font: 700 17px var(--font-serif); color: var(--ink); margin: 0 0 8px; line-height: 1.35;">
+            <a href="/guides/{{ guide.slug }}/" style="color: inherit; text-decoration: none;">
+              {{ guide.title }}
+            </a>
+          </h3>
+          <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin: 0 0 14px;">
+            {{ guide.summary|truncatewords:22 }}
+          </p>
+        </div>
+        <div style="border-top: 1px solid var(--subtle-border); padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">✍️ {{ guide.author_name }}</span>
+          <a href="/guides/{{ guide.slug }}/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
+            Read Article &rarr;
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
 
 </div>
 

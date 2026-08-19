@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}📚 Python &amp; Tech Career Guides — Kashii Updatez{% endblock %}
+{% block meta_description %}Comprehensive programming guides, Python tutorials, Django architecture blueprints, and off-campus placement strategies for software engineering freshers.{% endblock %}
+
+{% block content %}
+<div class="wrap" style="margin-top: 40px; margin-bottom: 80px; padding: 0 16px;">
+  
+  <!-- Header Banner -->
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); border-radius: 28px; padding: 44px 36px; color: #fff; margin-bottom: 36px; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(15,23,42,0.3);">
+    <div style="position: absolute; top: -60px; right: -60px; width: 240px; height: 240px; background: radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%); pointer-events: none;"></div>
+    
+    <span style="display: inline-block; padding: 4px 12px; background: rgba(59,130,246,0.3); color: #93c5fd; font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 12px; border: 1px solid rgba(147,197,253,0.3);">
+      ENGINEERING &amp; CAREER HUB
+    </span>
+    <h1 style="font: 800 38px var(--font-serif); margin: 0 0 10px; color: #fff; letter-spacing: -0.5px;">
+      Python &amp; Tech Career Guides
+    </h1>
+    <p style="font-size: 16px; color: #94a3b8; margin: 0; max-width: 680px; line-height: 1.6;">
+      Deep-dive tutorials, interview cheat sheets, framework breakdowns, and step-by-step career playbooks authored by Kashinath (Kashii).
+    </p>
+  </div>
+
+  <!-- Topics Filter / Badge Row -->
+  <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;">
+    <a href="/guides/" style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; text-decoration: none; background: {% if not active_topic %}var(--blue-primary){% else %}#ffffff{% endif %}; color: {% if not active_topic %}#ffffff{% else %}#475569{% endif %}; border: 1px solid var(--subtle-border); box-shadow: var(--card-shadow);">
+      All Guides ({{ guides|length }})
+    </a>
+    <a href="/guides/?topic=INTERVIEW" style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; text-decoration: none; background: {% if active_topic == 'INTERVIEW' %}var(--blue-primary){% else %}#ffffff{% endif %}; color: {% if active_topic == 'INTERVIEW' %}#ffffff{% else %}#475569{% endif %}; border: 1px solid var(--subtle-border);">
+      🎯 Interview Prep
+    </a>
+    <a href="/guides/?topic=PYTHON" style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; text-decoration: none; background: {% if active_topic == 'PYTHON' %}var(--blue-primary){% else %}#ffffff{% endif %}; color: {% if active_topic == 'PYTHON' %}#ffffff{% else %}#475569{% endif %}; border: 1px solid var(--subtle-border);">
+      🐍 Python Core
+    </a>
+    <a href="/guides/?topic=DJANGO" style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; text-decoration: none; background: {% if active_topic == 'DJANGO' %}var(--blue-primary){% else %}#ffffff{% endif %}; color: {% if active_topic == 'DJANGO' %}#ffffff{% else %}#475569{% endif %}; border: 1px solid var(--subtle-border);">
+      ⚡ Django &amp; APIs
+    </a>
+    <a href="/guides/?topic=CAREER" style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; text-decoration: none; background: {% if active_topic == 'CAREER' %}var(--blue-primary){% else %}#ffffff{% endif %}; color: {% if active_topic == 'CAREER' %}#ffffff{% else %}#475569{% endif %}; border: 1px solid var(--subtle-border);">
+      🚀 Roadmaps
+    </a>
+    <a href="/guides/?topic=DSA" style="padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; text-decoration: none; background: {% if active_topic == 'DSA' %}var(--blue-primary){% else %}#ffffff{% endif %}; color: {% if active_topic == 'DSA' %}#ffffff{% else %}#475569{% endif %}; border: 1px solid var(--subtle-border);">
+      📊 DSA
+    </a>
+  </div>
+
+  <!-- Guides Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;">
+    {% for guide in guides %}
+    <article style="background: #ffffff; border-radius: 18px; border: 1px solid var(--subtle-border); padding: 26px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--card-shadow); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 12px 30px rgba(0,0,0,0.08)';" onmouseout="this.style.transform=''; this.style.boxShadow='var(--card-shadow)';">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <span style="display: inline-block; padding: 4px 10px; background: #f1f5f9; color: #334155; font-size: 11px; font-weight: 800; border-radius: 6px; font-family: monospace;">
+            {{ guide.get_topic_display }}
+          </span>
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">
+            ⏱️ {{ guide.read_time }}
+          </span>
+        </div>
+
+        <h2 style="font: 700 20px var(--font-serif); color: var(--ink); margin: 0 0 10px; line-height: 1.35;">
+          <a href="/guides/{{ guide.slug }}/" style="color: inherit; text-decoration: none;">
+            {{ guide.title }}
+          </a>
+        </h2>
+
+        <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0 0 18px;">
+          {{ guide.summary }}
+        </p>
+      </div>
+
+      <div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px;">
+          {% for tag in guide.get_tags_list %}
+          <span style="background: #f8fafc; color: #475569; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+            #{{ tag }}
+          </span>
+          {% endfor %}
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--subtle-border); padding-top: 14px;">
+          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">
+            ✍️ {{ guide.author_name }}
+          </span>
+          <a href="/guides/{{ guide.slug }}/" style="font-size: 13px; font-weight: 800; color: var(--blue-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+            Read Guide <span>&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </article>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #ffffff; border-radius: 18px; border: 1px solid var(--subtle-border);">
+      <p style="color: var(--muted); font-size: 16px; margin: 0;">No guides found under this topic.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

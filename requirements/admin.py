@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, JobPosting, StudentApplication
+from .models import Category, JobPosting, StudentApplication, GuideArticle, ContactInquiry
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -21,3 +21,19 @@ class StudentApplicationAdmin(admin.ModelAdmin):
     list_filter = ('status', 'graduation_year')
     search_fields = ('student_name', 'student_email', 'job__title')
     ordering = ('-applied_at',)
+
+@admin.register(GuideArticle)
+class GuideArticleAdmin(admin.ModelAdmin):
+    list_display = ('title', 'topic', 'read_time', 'author_name', 'status', 'views_count', 'created_at')
+    list_filter = ('topic', 'status', 'created_at')
+    search_fields = ('title', 'summary', 'content', 'tags')
+    prepopulated_fields = {'slug': ('title',)}
+    ordering = ('-created_at',)
+
+@admin.register(ContactInquiry)
+class ContactInquiryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'subject', 'created_at', 'is_resolved')
+    list_filter = ('is_resolved', 'created_at')
+    search_fields = ('name', 'email', 'subject', 'message')
+    ordering = ('-created_at',)
+

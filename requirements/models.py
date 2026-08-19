@@ -115,3 +115,60 @@ class StudentApplication(models.Model):
 
     def __str__(self):
         return f"Application by {self.student_name} for {self.job.title}"
+
+class GuideArticle(models.Model):
+    TOPIC_CHOICES = [
+        ('PYTHON', 'Python Programming'),
+        ('DJANGO', 'Django & Web Development'),
+        ('CAREER', 'Student Career & Roadmaps'),
+        ('DSA', 'Data Structures & Algorithms'),
+        ('INTERVIEW', 'Interview Preparation'),
+        ('DEBUGGER', 'Debugging & Code Analysis'),
+    ]
+
+    STATUS_CHOICES = [
+        ('PUBLISHED', 'Published'),
+        ('DRAFT', 'Draft'),
+    ]
+
+    title = models.CharField(max_length=250)
+    slug = models.SlugField(max_length=250, unique=True)
+    topic = models.CharField(max_length=30, choices=TOPIC_CHOICES, default='PYTHON')
+    summary = models.TextField(help_text="Concise 2-3 sentence overview for SEO meta descriptions.")
+    content = models.TextField(help_text="Full rich long-form tutorial/article body.")
+    read_time = models.CharField(max_length=30, default="8 min read")
+    author_name = models.CharField(max_length=100, default="Kashinath (Kashii)")
+    author_avatar = models.CharField(max_length=250, default="/static/images/kashii-author.jpg")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PUBLISHED')
+    tags = models.CharField(max_length=250, default="Python, Career, Freshers")
+    views_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Guide & Tutorial"
+        verbose_name_plural = "Guides & Tutorials"
+
+    def __str__(self):
+        return self.title
+
+    def get_tags_list(self):
+        return [t.strip() for t in self.tags.split(',') if t.strip()]
+
+class ContactInquiry(models.Model):
+    name = models.CharField(max_length=120)
+    email = models.EmailField()
+    subject = models.CharField(max_length=200, default="General Inquiry")
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_resolved = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Contact Inquiry"
+        verbose_name_plural = "Contact Inquiries"
+
+    def __str__(self):
+        return f"Message from {self.name} ({self.email})"
+

@@ -5,6 +5,25 @@ urlpatterns = [
     path('', views.index_view, name='index'),
     path('about/', views.about_view, name='about'),
     path('youtube/', views.youtube_view, name='youtube'),
+    
+    # Guides & Educational Articles Hub (AdSense High Value Content)
+    path('guides/', views.guides_list_view, name='guides_list'),
+    path('guides/<slug:slug>/', views.guide_detail_view, name='guide_detail'),
+    path('tutorials/', views.guides_list_view, name='tutorials_list'),
+
+    # Mandatory Legal & Compliance Pages (AdSense Policy Requirements)
+    path('privacy-policy/', views.privacy_policy_view, name='privacy_policy'),
+    path('privacy/', views.privacy_policy_view, name='privacy_policy_alias'),
+    path('terms/', views.terms_view, name='terms'),
+    path('terms-and-conditions/', views.terms_view, name='terms_alias'),
+    path('disclaimer/', views.disclaimer_view, name='disclaimer'),
+    path('contact/', views.contact_view, name='contact'),
+    path('contact-us/', views.contact_view, name='contact_alias'),
+
+    # Search Engine & Crawler Discovery Endpoints
+    path('sitemap.xml', views.sitemap_xml_view, name='sitemap_xml'),
+    path('robots.txt', views.robots_txt_view, name='robots_txt'),
+
     path('category/<slug:slug>/', views.category_detail_view, name='category_detail'),
     path('category/<slug:category_slug>/job/<uuid:uuid>/', views.job_detail_view, name='category_job_detail'),
     path('job/<uuid:uuid>/', views.job_detail_view, name='job_detail'),

@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ guide.title }} — Kashii Updatez{% endblock %}
+{% block meta_description %}{{ guide.summary }}{% endblock %}
+
+{% block extra_css %}
+<!-- Schema.org JSON-LD structured data for Googlebot -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "{{ guide.title }}",
+  "description": "{{ guide.summary }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ guide.author_name }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Kashii Updatez",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://kashiiupdatez.online/static/images/icon-apply.png"
+    }
+  },
+  "datePublished": "{{ guide.created_at|date:'Y-m-d' }}",
+  "dateModified": "{{ guide.updated_at|date:'Y-m-d' }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.build_absolute_uri }}"
+  }
+}
+</script>
+<style>
+  .guide-article-body {
+    color: #334155;
+    font-size: 16px;
+    line-height: 1.85;
+  }
+  .guide-article-body h2 {
+    font: 700 26px var(--font-serif);
+    color: var(--ink);
+    margin: 36px 0 16px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 8px;
+  }
+  .guide-article-body h3 {
+    font: 700 20px var(--font-sans);
+    color: var(--ink);
+    margin: 28px 0 12px;
+  }
+  .guide-article-body h4 {
+    font: 700 17px var(--font-sans);
+    color: #1e293b;
+    margin: 20px 0 8px;
+  }
+  .guide-article-body p {
+    margin-bottom: 18px;
+  }
+  .guide-article-body ul, .guide-article-body ol {
+    margin-bottom: 20px;
+    padding-left: 24px;
+  }
+  .guide-article-body li {
+    margin-bottom: 8px;
+  }
+  .guide-article-body pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 20px 0;
+    border: 1px solid #334155;
+  }
+  .guide-article-body code {
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .guide-article-body pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+  .guide-article-body hr {
+    border: 0;
+    border-top: 1px solid var(--subtle-border);
+    margin: 36px 0;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap" style="max-width: 880px; margin: 40px auto 80px; padding: 0 16px;">
+  
+  <!-- Breadcrumb -->
+  <div style="font-size: 13px; color: var(--muted); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <a href="/" style="color: var(--blue-primary); text-decoration: none; font-weight: 600;">Home</a>
+    <span>/</span>
+    <a href="/guides/" style="color: var(--blue-primary); text-decoration: none; font-weight: 600;">Guides</a>
+    <span>/</span>
+    <span style="color: var(--ink);">{{ guide.title|truncatechars:40 }}</span>
+  </div>
+
+  <!-- Article Card -->
+  <article style="background: #ffffff; border-radius: 24px; border: 1px solid var(--subtle-border); padding: 48px 40px; box-shadow: var(--card-shadow);">
+    
+    <!-- Article Header -->
+    <header style="margin-bottom: 32px; border-bottom: 1px solid var(--subtle-border); padding-bottom: 28px;">
+      
+      <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 14px;">
+        <span style="display: inline-block; padding: 4px 12px; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 800; border-radius: 6px; font-family: monospace;">
+          {{ guide.get_topic_display }}
+        </span>
+        <span style="font-size: 13px; color: var(--muted); font-weight: 600;">
+          ⏱️ {{ guide.read_time }}
+        </span>
+        <span style="font-size: 13px; color: var(--muted); font-weight: 600;">
+          👁️ {{ guide.views_count }} Views
+        </span>
+      </div>
+
+      <h1 style="font: 800 36px var(--font-serif); color: var(--ink); margin: 0 0 16px; line-height: 1.25; letter-spacing: -0.5px;">
+        {{ guide.title }}
+      </h1>
+
+      <p style="font-size: 17px; color: #475569; line-height: 1.6; margin: 0 0 24px;">
+        {{ guide.summary }}
+      </p>
+
+      <!-- Author Attribution Card -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: #f8fafc; border-radius: 14px; padding: 14px 20px; border: 1px solid var(--subtle-border);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <img src="{% static 'images/kashii-author.jpg' %}" alt="{{ guide.author_name }}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--blue-primary);">
+          <div>
+            <div style="font-weight: 800; font-size: 14px; color: var(--ink);">{{ guide.author_name }}</div>
+            <div style="font-size: 12px; color: var(--muted);">Founder &amp; Tech Educator &middot; @pythonkashi</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 6px; background: #dc2626; color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none;">
+            <img src="{% static 'images/icon-youtube.png' %}" width="14" height="14" alt="YouTube"> YouTube
+          </a>
+          <a href="https://ig.me/m/ikashii_07" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 6px; background: #db2777; color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none;">
+            <img src="{% static 'images/icon-chat.png' %}" width="14" height="14" alt="Chat" style="filter: brightness(0) invert(1);"> Instagram DM
+          </a>
+        </div>
+      </div>
+
+    </header>
+
+    <!-- Body Content -->
+    <div class="guide-article-body">
+      {{ guide.content|safe }}
+    </div>
+
+    <!-- Tags Row -->
+    <div style="margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--subtle-border); display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+      <span style="font-size: 13px; font-weight: 700; color: var(--ink);">Tags:</span>
+      {% for tag in guide.get_tags_list %}
+      <span style="background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
+        #{{ tag }}
+      </span>
+      {% endfor %}
+    </div>
+
+  </article>
+
+  <!-- Related Guides Row -->
+  {% if related_guides %}
+  <div style="margin-top: 50px;">
+    <h3 style="font: 700 22px var(--font-serif); color: var(--ink); margin-bottom: 20px;">
+      More Technical &amp; Career Guides
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;">
+      {% for rel in related_guides %}
+      <a href="/guides/{{ rel.slug }}/" style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 16px; padding: 20px; text-decoration: none; display: block; box-shadow: var(--card-shadow); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        <span style="font-size: 11px; font-weight: 800; color: var(--blue-primary); font-family: monospace; display: block; margin-bottom: 6px;">{{ rel.get_topic_display }}</span>
+        <h4 style="font: 700 15px var(--font-sans); color: var(--ink); margin: 0 0 6px; line-height: 1.4;">{{ rel.title }}</h4>
+        <span style="font-size: 12px; color: var(--muted);">⏱️ {{ rel.read_time }}</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

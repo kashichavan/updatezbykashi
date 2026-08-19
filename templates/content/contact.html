@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us — Kashii Updatez & Python Kashi{% endblock %}
+{% block meta_description %}Get in touch with Kashinath (Kashii) for recruitment inquiries, technical mentorship, YouTube collaboration, or website support.{% endblock %}
+
+{% block content %}
+<div class="wrap" style="max-width: 1040px; margin: 40px auto 80px; padding: 0 16px;">
+  
+  <!-- Breadcrumb -->
+  <div style="font-size: 13px; color: var(--muted); margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+    <a href="/" style="color: var(--blue-primary); text-decoration: none; font-weight: 600;">Home</a>
+    <span>/</span>
+    <span style="color: var(--ink);">Contact Us</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;" class="contact-grid">
+    
+    <!-- Left Column: Direct Info -->
+    <div>
+      <span style="display: inline-block; padding: 4px 12px; background: #eff6ff; color: #2563eb; font-size: 12px; font-weight: 800; border-radius: 6px; font-family: monospace; margin-bottom: 12px;">
+        GET IN TOUCH
+      </span>
+      <h1 style="font: 800 36px var(--font-serif); color: var(--ink); margin: 0 0 14px; letter-spacing: -0.5px;">
+        Let's Connect &amp; Collaborate
+      </h1>
+      <p style="color: #475569; font-size: 15px; line-height: 1.7; margin-bottom: 28px;">
+        Have a question about a job requirement, technical coding tutorial, or looking to collaborate? We'd love to hear from you. Reach out through any of our channels below.
+      </p>
+
+      <!-- Channel Cards -->
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Email Card -->
+        <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 16px; padding: 20px; display: flex; gap: 16px; align-items: center; box-shadow: var(--card-shadow);">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;">
+            ✉️
+          </div>
+          <div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Official Email</div>
+            <a href="mailto:kashiiupdatez@gmail.com" style="color: var(--blue-primary); font-weight: 700; font-size: 15px; text-decoration: none;">kashiiupdatez@gmail.com</a>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Typical response within 24 hours</div>
+          </div>
+        </div>
+
+        <!-- Instagram Direct Message -->
+        <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 16px; padding: 20px; display: flex; gap: 16px; align-items: center; box-shadow: var(--card-shadow);">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #fdf2f8; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <img src="{% static 'images/icon-chat.png' %}" width="24" height="24" alt="Instagram">
+          </div>
+          <div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Instagram DM</div>
+            <a href="https://ig.me/m/ikashii_07" target="_blank" rel="noopener" style="color: #db2777; font-weight: 700; font-size: 15px; text-decoration: none;">@ikashii_07</a>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Fastest response for student doubts &amp; queries</div>
+          </div>
+        </div>
+
+        <!-- YouTube Channel -->
+        <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 16px; padding: 20px; display: flex; gap: 16px; align-items: center; box-shadow: var(--card-shadow);">
+          <div style="width: 48px; height: 48px; border-radius: 12px; background: #fef2f2; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <img src="{% static 'images/icon-youtube.png' %}" width="24" height="24" alt="YouTube">
+          </div>
+          <div>
+            <div style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase;">YouTube Channel</div>
+            <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700; font-size: 15px; text-decoration: none;">@pythonkashi</a>
+            <div style="font-size: 12px; color: #64748b; margin-top: 2px;">Python &amp; Django tutorials, career streams</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Right Column: Contact Form -->
+    <div style="background: #ffffff; border-radius: 20px; border: 1px solid var(--subtle-border); padding: 36px; box-shadow: var(--card-shadow);">
+      
+      <h2 style="font: 700 22px var(--font-serif); color: var(--ink); margin: 0 0 8px;">
+        Send Us a Message
+      </h2>
+      <p style="color: var(--muted); font-size: 14px; margin: 0 0 24px;">
+        Fill in the details below and we will get back to you promptly.
+      </p>
+
+      {% if success_message %}
+      <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; font-size: 14px; font-weight: 600;">
+        ✅ {{ success_message }}
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/contact/" style="display: flex; flex-direction: column; gap: 18px;">
+        {% csrf_token %}
+        
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Your Name *</label>
+          <input type="text" name="name" required placeholder="e.g. Rahul Sharma" style="width: 100%; padding: 12px 14px; border: 1px solid var(--subtle-border); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Email Address *</label>
+          <input type="email" name="email" required placeholder="e.g. rahul@example.com" style="width: 100%; padding: 12px 14px; border: 1px solid var(--subtle-border); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; box-sizing: border-box;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Subject *</label>
+          <select name="subject" style="width: 100%; padding: 12px 14px; border: 1px solid var(--subtle-border); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; background: #fff; box-sizing: border-box;">
+            <option value="Job Listing Inquiry">Job Listing Inquiry</option>
+            <option value="Python Tutorial Question">Python Tutorial Question</option>
+            <option value="Bug Report / Code Debugger">Bug Report / Code Debugger</option>
+            <option value="Collaboration / Advertising">Collaboration / Advertising</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">Message *</label>
+          <textarea name="message" required rows="4" placeholder="Type your inquiry or feedback..." style="width: 100%; padding: 12px 14px; border: 1px solid var(--subtle-border); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; resize: vertical; box-sizing: border-box;"></textarea>
+        </div>
+
+        <button type="submit" style="background: var(--blue-primary); color: #ffffff; border: none; border-radius: 10px; padding: 14px; font-size: 15px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+          Send Message 🚀
+        </button>
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  @media (max-width: 768px) {
+    .contact-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+{% endblock %}
