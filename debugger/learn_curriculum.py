@@ -134,6 +134,76 @@ print(f"Tag Frequency Count: {frequency}")
 '''
             },
             {
+                'slug': 'python-list-dict-comprehensions',
+                'title': 'List & Dictionary Comprehensions: Expressive Data Pipelines',
+                'category': 'Data Structures',
+                'read_time': '7 min read',
+                'analogy': {
+                    'title': 'The Automated Fruit Sorting & Peeling Machine',
+                    'text': 'A regular 4-line for-loop is manually inspecting oranges, peeling only the fresh ones, and placing them in a bowl one by one. A List Comprehension is an automated industrial sorting conveyor belt: it filters out bruised fruit and peels the rest in one fluid, high-speed pass.'
+                },
+                'use_case': {
+                    'company': 'Pandas & Data Science ETL Pipelines',
+                    'text': 'Data engineers use comprehensions to clean million-row sensor datasets, normalize casing, and strip whitespace 30% faster than standard Python append loops because comprehensions execute in C-level loop bytecode.'
+                },
+                'concept_explanation': '''
+<h3>Syntax & Efficiency</h3>
+<p>Format: <code>[expression for item in iterable if condition]</code></p>
+<p>Dictionary format: <code>{key_expr: val_expr for item in iterable if condition}</code></p>
+''',
+                'starter_code': '''# List & Dictionary Comprehensions in Action
+salaries_raw = [45000, 78000, 120000, 62000, 150000, 32000]
+
+# 1. Filter high earners and apply 10% annual bonus
+high_earner_bonuses = [int(s * 1.10) for s in salaries_raw if s >= 60000]
+print(f"Adjusted High Earner Salaries: {high_earner_bonuses}")
+
+# 2. Dictionary Comprehension: Mapping employee names to salary tiers
+employees = [("Alice", 95000), ("Bob", 45000), ("Charlie", 125000), ("Diana", 55000)]
+salary_tier_map = {
+    name: "Senior/Lead" if sal >= 90000 else "Associate/Junior"
+    for name, sal in employees
+}
+print(f"Employee Tier Mapping: {salary_tier_map}")
+'''
+            },
+            {
+                'slug': 'python-functions-scope',
+                'title': 'Functions, Variable Scope (*args, **kwargs) & Lambdas',
+                'category': 'Functions',
+                'read_time': '8 min read',
+                'analogy': {
+                    'title': 'The Microwave with Preset Cooking Programs',
+                    'text': 'A Function is a microwave appliance. You pass raw ingredients inside (arguments), press start, the microwave executes internal steps, and beeps when the cooked dish is ready (return value). *args is an expandable baking tray that accepts any number of cookies, while **kwargs is a labeled spice rack where you specify spicy=True, salt_level=3.'
+                },
+                'use_case': {
+                    'company': 'Django Middleware & Celery Task Queues',
+                    'text': 'Asynchronous task queues like Celery use `*args, **kwargs` to serialize arbitrary function calls into JSON payloads sent across Redis and RabbitMQ worker clusters.'
+                },
+                'concept_explanation': '''
+<h3>Scope Resolution: The LEGB Rule</h3>
+<p>Python searches for variables in 4 nested tiers: <strong>L</strong>ocal &rarr; <strong>E</strong>nclosing &rarr; <strong>G</strong>lobal &rarr; <strong>B</strong>uilt-in.</p>
+''',
+                'starter_code': '''# Flexible Function with *args and **kwargs
+def calculate_order_invoice(customer_name: str, *item_prices, **discounts):
+    subtotal = sum(item_prices)
+    coupon_discount = discounts.get("coupon_percent", 0.0) / 100.0
+    vip_flat = discounts.get("vip_flat_off", 0.0)
+    
+    total_discount = (subtotal * coupon_discount) + vip_flat
+    final_total = max(0.0, subtotal - total_discount)
+    
+    print(f"--- Invoice for {customer_name} ---")
+    print(f"Items Count: {len(item_prices)} | Subtotal: ${subtotal:.2f}")
+    print(f"Discounts Applied: -${total_discount:.2f}")
+    print(f"Final Total Due: ${final_total:.2f}")
+    return final_total
+
+# Testing function call
+calculate_order_invoice("Jordan Blake", 120.0, 45.5, 30.0, 15.0, coupon_percent=10, vip_flat_off=15.0)
+'''
+            },
+            {
                 'slug': 'python-oop-classes-objects',
                 'title': 'Object-Oriented Programming (OOP): Classes, Inheritance & Encapsulation',
                 'category': 'Architecture',
@@ -184,6 +254,57 @@ acct = BankAccount("Sarah Conner", 500.0)
 print(acct.deposit(250.0))
 print(acct.withdraw(100.0))
 print(acct.get_statement())
+'''
+            },
+            {
+                'slug': 'python-exception-handling-resilience',
+                'title': 'Exception Handling & System Resilience: try, except, finally & Custom Errors',
+                'category': 'Architecture',
+                'read_time': '8 min read',
+                'analogy': {
+                    'title': 'The Electrical Circuit Breaker & Vehicle Airbag',
+                    'text': 'When an electrical wire shorts out in your kitchen, the circuit breaker trips instantly: it shuts down power safely instead of allowing the house to burn down. Exception handling in Python prevents one bad user input or dead database socket from crashing your entire web server.'
+                },
+                'use_case': {
+                    'company': 'Uber & PayPal Payment Gateways',
+                    'text': 'Handling transient network timeouts, expired credit card tokens, and 3D-Secure bank declines gracefully without losing customer ride states.'
+                },
+                'concept_explanation': '''
+<h3>Exception Hierarchy & Best Practices</h3>
+<p>Always catch specific exceptions (e.g. <code>KeyError</code>, <code>ValueError</code>) instead of a bare <code>except:</code> to avoid hiding syntax errors.</p>
+''',
+                'starter_code': '''# Resilient Payment Processing with Custom Exceptions
+
+class InsufficientBalanceError(Exception):
+    """Raised when account balance is lower than charge amount."""
+    pass
+
+class PaymentGatewayError(Exception):
+    """Raised when third-party gateway API fails."""
+    pass
+
+def process_wallet_payment(user_id: int, balance: float, charge_amount: float):
+    print(f"Initiating payment for User {user_id}...")
+    try:
+        if charge_amount <= 0:
+            raise ValueError("Charge amount must be positive.")
+        if charge_amount > balance:
+            raise InsufficientBalanceError(f"Balance ${balance:.2f} insufficient for ${charge_amount:.2f}")
+        
+        remaining = balance - charge_amount
+        print(f"✅ Payment Approved! New Balance: ${remaining:.2f}")
+        return remaining
+
+    except InsufficientBalanceError as ibe:
+        print(f"⚠️ Transaction Blocked: {ibe}")
+    except ValueError as ve:
+        print(f"❌ Validation Error: {ve}")
+    finally:
+        print("🔒 Transaction audit log committed.")
+
+# Test Scenarios
+process_wallet_payment(101, 200.0, 50.0)
+process_wallet_payment(102, 30.0, 150.0)
 '''
             },
             {
@@ -345,6 +466,57 @@ public class Main {
 '''
             },
             {
+                'slug': 'java-interfaces-abstract-classes',
+                'title': 'Interfaces & Abstract Classes: Defining Architectural Contracts',
+                'category': 'Architecture',
+                'read_time': '8 min read',
+                'analogy': {
+                    'title': 'The Electrical 3-Pin Wall Socket Standard',
+                    'text': 'An Interface is a standardized 3-pin wall socket. The socket does not care whether you plug in a Samsung laptop, a Dyson vacuum, or an Apple charger—as long as the plug satisfies the exact pin dimensions and voltage interface contract, electricity flows perfectly.'
+                },
+                'use_case': {
+                    'company': 'Spring Boot & Microservice Repositories',
+                    'text': 'Spring Data JPA uses interfaces (`public interface UserRepository extends JpaRepository<User, Long>`) to automatically generate database queries at runtime.'
+                },
+                'concept_explanation': '''
+<h3>Interface vs Abstract Class</h3>
+<ul>
+  <li><strong>Interface:</strong> Pure contract (multiple implementation allowed). Can include <code>default</code> methods in Java 8+.</li>
+  <li><strong>Abstract Class:</strong> Partial implementation with shared state (single inheritance only).</li>
+</ul>
+''',
+                'starter_code': '''// Payment Gateway Interface Contract
+interface PaymentProcessor {
+    boolean processPayment(double amount);
+    String getProviderName();
+}
+
+class StripeProcessor implements PaymentProcessor {
+    public boolean processPayment(double amount) {
+        System.out.println("💳 [Stripe Engine] Charged $" + amount + " via Card Token");
+        return true;
+    }
+    public String getProviderName() { return "Stripe API v3"; }
+}
+
+class CryptoProcessor implements PaymentProcessor {
+    public boolean processPayment(double amount) {
+        System.out.println("⛓️ [Web3 Node] Settled $" + amount + " via Stablecoin");
+        return true;
+    }
+    public String getProviderName() { return "Ethereum L2"; }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        PaymentProcessor processor = new StripeProcessor();
+        System.out.println("Active Gateway: " + processor.getProviderName());
+        processor.processPayment(149.99);
+    }
+}
+'''
+            },
+            {
                 'slug': 'java-collections-arraylist-hashmap',
                 'title': 'Java Collections Framework: ArrayList, HashMap & HashSet',
                 'category': 'Data Structures',
@@ -385,6 +557,51 @@ public class Main {
         for (Map.Entry<String, Integer> entry : salaryMap.entrySet()) {
             System.out.println("Employee: " + entry.getKey() + " -> $" + entry.getValue());
         }
+    }
+}
+'''
+            },
+            {
+                'slug': 'java-multithreading-concurrency',
+                'title': 'Java Multi-Threading & Concurrency: Threads, Synchronization & Atomic State',
+                'category': 'Concurrency',
+                'read_time': '10 min read',
+                'analogy': {
+                    'title': 'The High-Speed Restaurant Kitchen',
+                    'text': 'In a busy restaurant, if only one chef cooked every single meal from starter to dessert sequentially, customers would wait 4 hours. Multi-threading is having 4 chefs (worker threads) working simultaneously at different stove stations sharing one central spice rack (synchronized shared memory).'
+                },
+                'use_case': {
+                    'company': 'Apache Kafka & Distributed Message Brokers',
+                    'text': 'Kafka partition consumers and Tomcat server connection pools process thousands of concurrent client requests via background ThreadPoolExecutor instances.'
+                },
+                'concept_explanation': '''
+<h3>Concurrency Concepts</h3>
+<ul>
+  <li><code>Thread</code> vs <code>Runnable</code></li>
+  <li><code>synchronized</code> blocks & <code>volatile</code> memory visibility</li>
+  <li><code>AtomicInteger</code> lock-free concurrency</li>
+</ul>
+''',
+                'starter_code': '''// Multi-Threading & Runnable Task Simulation
+public class Main {
+    public static void main(String[] args) {
+        Runnable task1 = () -> {
+            for (int i = 1; i <= 3; i++) {
+                System.out.println("🧵 [Thread 1] Ingestion Batch " + i);
+            }
+        };
+
+        Runnable task2 = () -> {
+            for (int i = 1; i <= 3; i++) {
+                System.out.println("⚡ [Thread 2] Analytics Compute " + i);
+            }
+        };
+
+        Thread t1 = new Thread(task1);
+        Thread t2 = new Thread(task2);
+
+        t1.start();
+        t2.start();
     }
 }
 '''
@@ -475,6 +692,55 @@ console.log("Available Items:", priceTags);
 // 3. Reduce: Calculate Cart Total
 const totalCost = available.reduce((acc, curr) => acc + curr.price, 0);
 console.log("Cart Subtotal: $" + totalCost);
+'''
+            },
+            {
+                'slug': 'javascript-destructuring-spread-rest',
+                'title': 'Destructuring, Spread & Rest Operators (...): Clean Object Manipulation',
+                'category': 'Data Structures',
+                'read_time': '7 min read',
+                'analogy': {
+                    'title': 'Unpacking the Multi-Compartment Suitcase',
+                    'text': 'Destructuring is opening a packed travel suitcase and reaching directly for just the sunglasses and passport without unpacking and scattering all your clothes. The Spread operator (...) is photocopying all pages of a binder and inserting 2 new extra pages into a fresh new binder without altering the original.'
+                },
+                'use_case': {
+                    'company': 'Redux, React & GraphQL Clients',
+                    'text': 'Managing immutable application state: updating a single user property while preserving the rest of the 50-field state object (`return { ...state, avatarUrl: newUrl }`).'
+                },
+                'concept_explanation': '''
+<h3>Spread vs Rest</h3>
+<p><strong>Spread:</strong> Expands an array or object into individual elements.</p>
+<p><strong>Rest:</strong> Gathers multiple remaining arguments into a single array.</p>
+''',
+                'starter_code': '''// Destructuring & Spread Operators in Action
+const rawApiResponse = {
+  status: "success",
+  data: {
+    userId: 883,
+    profile: { firstName: "Sam", lastName: "Altman", tier: "Enterprise" },
+    permissions: ["READ", "WRITE", "DEPLOY"]
+  },
+  timestamp: 1718000000
+};
+
+// 1. Nested Destructuring with Renaming
+const { data: { profile: { firstName, tier }, permissions } } = rawApiResponse;
+console.log(`User: ${firstName} (Tier: ${tier})`);
+
+// 2. Immutable Object Update using Spread (...)
+const updatedProfile = {
+  ...rawApiResponse.data.profile,
+  tier: "Super Admin (Pro)",
+  lastLogin: "2026-08-19"
+};
+console.log("Updated Profile Object:", updatedProfile);
+
+// 3. Rest Operator in Functions
+function summarizeMetrics(primaryScore, ...subScores) {
+  const avg = subScores.reduce((a, b) => a + b, 0) / subScores.length;
+  console.log(`Primary: ${primaryScore} | Sub-Scores Avg: ${avg.toFixed(2)}`);
+}
+summarizeMetrics(98, 85, 92, 78, 88);
 '''
             },
             {
