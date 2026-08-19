@@ -463,17 +463,45 @@
     max-height: 150px;
     overflow-y: auto;
     white-space: pre-wrap;
-    line-height: 1.55;
-    border: 1px solid #21262d;
+  /* Global Overflow Safety for Mobile */
+  pre, .code-pre, table, .comparison-table, .var-table {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Floating Mobile Jump to Debugger Button */
+  .mobile-dbg-jump-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 10px 25px rgba(37,99,235,0.5), 0 0 15px rgba(56,189,248,0.4);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .mobile-dbg-jump-btn:active {
+    transform: scale(0.95);
   }
 
   @media (max-width: 960px) {
     .learn-container {
       grid-template-columns: 1fr;
+      padding: 0 12px 60px;
     }
     .learn-sidebar {
       position: static;
       max-height: none;
+      margin-bottom: 20px;
     }
     .debugger-panels-grid {
       grid-template-columns: 1fr;
@@ -482,13 +510,67 @@
       grid-template-columns: 1fr;
     }
     .learn-content-card {
-      padding: 24px 18px;
+      padding: 20px 14px;
+      border-radius: 16px;
+    }
+    .mobile-dbg-jump-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .debugger-controls {
+      padding: 10px 12px;
+      gap: 10px;
+    }
+    .debugger-controls > div:first-child {
+      width: 100%;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px !important;
+    }
+    .dbg-btn-run {
+      grid-column: span 5;
+      justify-content: center;
+      padding: 10px;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .dbg-btn-step {
+      padding: 8px 2px;
+      font-size: 11px;
+      justify-content: center;
+    }
+    .debugger-controls > div:last-child {
+      width: 100%;
+      max-width: 100% !important;
+      margin-top: 4px;
+    }
+    .code-editor-textarea {
+      font-size: 12px;
+      height: 160px;
+      padding: 10px;
+    }
+    #codeTraceView {
+      font-size: 12px;
+      max-height: 180px;
+    }
+    .interactive-debugger-widget {
+      margin: 24px -6px;
+      border-radius: 14px;
     }
   }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Floating Mobile Quick Jump Button -->
+<a href="#interactiveDebuggerSection" class="mobile-dbg-jump-btn">
+  ⚡ Live Debugger
+</a>
+
 <div class="wrap" style="max-width: 1400px; padding: 16px 16px 0;">
   
   <!-- Breadcrumb -->
@@ -517,29 +599,36 @@
 
 <div class="learn-container">
   
-  <!-- Left Topic Sidebar (W3Schools / GeeksforGeeks style) -->
+  <!-- Left Topic Sidebar (Collapsible on Mobile) -->
   <aside class="learn-sidebar">
-    <div class="sidebar-header">
-      <span>{{ lang_data.icon }}</span>
-      <span>{{ lang_data.short_title }} Syllabus</span>
-    </div>
-    
-    <ul class="topic-list">
-      {% for topic in topics %}
-      <li>
-        <a href="/learn/{{ active_lang }}/{{ topic.slug }}/" class="topic-link {% if topic.slug == current_topic.slug %}active{% endif %}">
-          <span>{{ topic.title }}</span>
-          <span style="font-size: 11px; opacity: 0.6;">{{ topic.read_time }}</span>
-        </a>
-      </li>
-      {% endfor %}
-    </ul>
+    <details class="sidebar-details-wrapper" open style="border: none; padding: 0;">
+      <summary style="cursor: pointer; list-style: none; user-select: none;" class="sidebar-header">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span>{{ lang_data.icon }}</span>
+            <span>{{ lang_data.short_title }} Syllabus ({{ topics|length }})</span>
+          </div>
+          <span style="font-size: 11px; opacity: 0.7;">▾</span>
+        </div>
+      </summary>
+      
+      <ul class="topic-list" style="margin-top: 10px;">
+        {% for topic in topics %}
+        <li>
+          <a href="/learn/{{ active_lang }}/{{ topic.slug }}/" class="topic-link {% if topic.slug == current_topic.slug %}active{% endif %}">
+            <span>{{ topic.title }}</span>
+            <span style="font-size: 11px; opacity: 0.6;">{{ topic.read_time }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
 
-    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--subtle-border); text-align: center;">
-      <a href="/debugger/" style="font-size: 12px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
-        🖥️ Open Fullscreen IDE Debugger &rarr;
-      </a>
-    </div>
+      <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--subtle-border); text-align: center;">
+        <a href="/debugger/" style="font-size: 12px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
+          🖥️ Open Fullscreen IDE Debugger &rarr;
+        </a>
+      </div>
+    </details>
   </aside>
 
   <!-- Right Main Learning Content Reader -->
