@@ -142,7 +142,19 @@ def contact_view(request):
 
     return render(request, 'content/contact.html', {'success_message': success_message})
 
+def ensure_guides_seeded():
+    """Guarantees production has all 7 high-value technical articles populated."""
+    if GuideArticle.objects.filter(status='PUBLISHED').count() >= 7:
+        return
+    try:
+        from .seed_prod import guides_seeds
+        for g in guides_seeds:
+            GuideArticle.objects.get_or_create(slug=g['slug'], defaults=g)
+    except Exception:
+        pass
+
 def guides_list_view(request):
+    ensure_guides_seeded()
     topic = request.GET.get('topic', '').strip()
     qs = GuideArticle.objects.filter(status='PUBLISHED')
     if topic:
@@ -153,6 +165,7 @@ def guides_list_view(request):
     })
 
 def guide_detail_view(request, slug):
+    ensure_guides_seeded()
     guide = get_object_or_404(GuideArticle, slug=slug, status='PUBLISHED')
     GuideArticle.objects.filter(pk=guide.pk).update(views_count=guide.views_count + 1)
     guide.views_count += 1
@@ -161,6 +174,7 @@ def guide_detail_view(request, slug):
         'guide': guide,
         'related_guides': related_guides,
     })
+
 
 def sitemap_xml_view(request):
     """Dynamic XML Sitemap for Search Engines & Google AdSense Crawlers."""
