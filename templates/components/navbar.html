@@ -35,6 +35,12 @@
         <span class="nav-label-long">Guides &amp; Prep</span>
         <span class="nav-label-short">Guides</span>
       </a>
+
+      <a href="/learn/" class="{% if '/learn' in request.path %}active{% endif %}">
+        <span>⚡</span>
+        <span class="nav-label-long">Learn Python/Java/JS</span>
+        <span class="nav-label-short">Learn</span>
+      </a>
       
       <a href="/debugger/" class="{% if '/debugger' in request.path %}active{% endif %}">
         <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger" width="16" height="16" decoding="async">
@@ -98,6 +104,14 @@
             Career &amp; Python Guides
           </span>
           <span class="d-tag" style="background:#eff6ff; color:#2563eb;">NEW</span>
+        </a>
+
+        <a href="/learn/" class="drawer-link {% if '/learn' in request.path %}active{% endif %}">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">⚡</span>
+            Learn Python, Java &amp; JS
+          </span>
+          <span class="d-tag" style="background:#fef3c7; color:#b45309;">ACADEMY</span>
         </a>
 
         <a href="/debugger/" class="drawer-link {% if '/debugger' in request.path %}active{% endif %}">

@@ -267,3 +267,47 @@ def api_session_history(request):
     """Returns recent debugging session history."""
     history = SessionHistoryManager.get_recent_sessions()
     return JsonResponse({'status': 'success', 'history': history})
+
+
+from .learn_curriculum import CURRICULUM
+
+def learn_topic_view(request, lang='python', topic_slug=None):
+    """Interactive W3Schools/GeeksforGeeks style Academy with Real-World Analogies & Embedded Debugger."""
+    lang = (lang or 'python').lower()
+    if lang not in CURRICULUM:
+        lang = 'python'
+
+    lang_data = CURRICULUM[lang]
+    topics = lang_data['topics']
+
+    current_topic = None
+    topic_index = 0
+    if topic_slug:
+        for idx, t in enumerate(topics):
+            if t['slug'] == topic_slug:
+                current_topic = t
+                topic_index = idx
+                break
+
+    if not current_topic and topics:
+        current_topic = topics[0]
+        topic_index = 0
+
+    prev_topic = topics[topic_index - 1] if topic_index > 0 else None
+    next_topic = topics[topic_index + 1] if topic_index < len(topics) - 1 else None
+
+    context = {
+        'active_lang': lang,
+        'lang_data': lang_data,
+        'curriculum': CURRICULUM,
+        'all_languages': [
+            {'key': k, 'title': v['short_title'], 'icon': v['icon'], 'badge': v['badge'], 'color': v['color']}
+            for k, v in CURRICULUM.items()
+        ],
+        'topics': topics,
+        'current_topic': current_topic,
+        'prev_topic': prev_topic,
+        'next_topic': next_topic,
+    }
+    return render(request, 'debugger/learn_topic.html', context)
+

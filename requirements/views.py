@@ -220,8 +220,29 @@ def sitemap_xml_view(request):
         xml_lines.append(f'    <loc>{host}/guides/{guide.slug}/</loc>')
         xml_lines.append(f'    <lastmod>{g_mod}</lastmod>')
         xml_lines.append(f'    <changefreq>weekly</changefreq>')
-        xml_lines.append(f'    <priority>0.85</priority>')
+        xml_lines.append(f'    <priority>0.8</priority>')
         xml_lines.append(f'  </url>')
+
+    # Interactive Learning Academy Topics
+    try:
+        from debugger.learn_curriculum import CURRICULUM
+        for lang_key, l_data in CURRICULUM.items():
+            xml_lines.append(f'  <url>')
+            xml_lines.append(f'    <loc>{host}/learn/{lang_key}/</loc>')
+            xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
+            xml_lines.append(f'    <changefreq>weekly</changefreq>')
+            xml_lines.append(f'    <priority>0.85</priority>')
+            xml_lines.append(f'  </url>')
+            for top in l_data.get('topics', []):
+                xml_lines.append(f'  <url>')
+                xml_lines.append(f'    <loc>{host}/learn/{lang_key}/{top["slug"]}/</loc>')
+                xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
+                xml_lines.append(f'    <changefreq>weekly</changefreq>')
+                xml_lines.append(f'    <priority>0.8</priority>')
+                xml_lines.append(f'  </url>')
+    except Exception:
+        pass
+
 
     # Active Categories
     for cat in Category.objects.all():
