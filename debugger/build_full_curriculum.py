@@ -638,6 +638,40 @@ public class Main {
                     'notes': 'Uses PEP 484 type annotations for static analysis with mypy and robust defensive guards.'
                 }
             ],
+            'video_tutorials': [
+                {
+                    'title': f'{clean_title} - Python Masterclass by @pythonkashi',
+                    'channel': 'Python Kashi',
+                    'youtube_id': 'rfscVS0vtbw',
+                    'duration': '14 mins',
+                    'level': 'Beginner Friendly',
+                    'description': f'Step-by-step visual walkthrough and hands-on coding tutorial on {clean_title}.'
+                },
+                {
+                    'title': 'Python for Beginners Full Course',
+                    'channel': 'freeCodeCamp.org',
+                    'youtube_id': 'eWRfhZUzrAc',
+                    'duration': '4 hrs',
+                    'level': 'Comprehensive',
+                    'description': 'Full curriculum covering syntax, data types, control flow, and real-world projects.'
+                },
+                {
+                    'title': 'Python in 100 Seconds',
+                    'channel': 'Fireship',
+                    'youtube_id': 'x7X9w_GIm1s',
+                    'duration': '100 secs',
+                    'level': 'Fast Recap',
+                    'description': 'Quick architectural overview of Python runtime, dynamic typing, and ecosystem.'
+                },
+                {
+                    'title': 'Python Programming Tutorial',
+                    'channel': 'Programming with Mosh',
+                    'youtube_id': 'kqtD5dpn9C8',
+                    'duration': '1 hr',
+                    'level': 'Crash Course',
+                    'description': 'Essential fundamentals and best practices for modern Python development.'
+                }
+            ],
             'starter_code': code,
             'common_mistakes': [
                 {
@@ -806,6 +840,40 @@ public class Main {
                     'notes': 'Strict type declarations enforced at compile time.'
                 }
             ],
+            'video_tutorials': [
+                {
+                    'title': f'{clean_title} - Java 17 Enterprise Masterclass',
+                    'channel': 'Python Kashi',
+                    'youtube_id': 'eIrMbAQSU34',
+                    'duration': '18 mins',
+                    'level': 'Beginner Friendly',
+                    'description': f'Learn {clean_title} in Java 17 with memory architecture and clean OOP patterns.'
+                },
+                {
+                    'title': 'Java Programming Full Course for Beginners',
+                    'channel': 'freeCodeCamp.org',
+                    'youtube_id': 'A74TOX803D0',
+                    'duration': '9 hrs',
+                    'level': 'Comprehensive',
+                    'description': 'Complete Java enterprise masterclass covering JVM internals, OOP, and data structures.'
+                },
+                {
+                    'title': 'Java Tutorial for Beginners',
+                    'channel': 'Telusko',
+                    'youtube_id': 'BGTx91t8q50',
+                    'duration': '2 hrs',
+                    'level': 'Deep Dive',
+                    'description': 'Clear, concept-driven explanations of Java syntax, JVM stack/heap, and classes.'
+                },
+                {
+                    'title': 'Java Full Course',
+                    'channel': 'Bro Code',
+                    'youtube_id': 'xk4_1vDrzzo',
+                    'duration': '4 hrs',
+                    'level': 'Crash Course',
+                    'description': 'Hands-on beginner to advanced Java coding walkthrough with real exercises.'
+                }
+            ],
             'starter_code': code,
             'common_mistakes': [
                 {
@@ -951,6 +1019,40 @@ public class Main {
                     'code': code,
                     'output': 'Refer to live debugger output.',
                     'notes': 'Follows clean modern JavaScript conventions.'
+                }
+            ],
+            'video_tutorials': [
+                {
+                    'title': f'{clean_title} - Modern JavaScript (ES6+)',
+                    'channel': 'Python Kashi',
+                    'youtube_id': 'jS4aFq5-91M',
+                    'duration': '16 mins',
+                    'level': 'Beginner Friendly',
+                    'description': f'Interactive coding guide to {clean_title} in Modern JavaScript ES6+.'
+                },
+                {
+                    'title': 'JavaScript Full Course for Beginners',
+                    'channel': 'freeCodeCamp.org',
+                    'youtube_id': 'PkZNo7MFNFg',
+                    'duration': '3 hrs',
+                    'level': 'Comprehensive',
+                    'description': 'Master modern JavaScript ES6+, arrow functions, closures, and async pipelines.'
+                },
+                {
+                    'title': 'JavaScript Full Playlist for Beginners',
+                    'channel': 'Chai aur Code',
+                    'youtube_id': 'sscX432bMZo',
+                    'duration': '45 mins',
+                    'level': 'In-Depth',
+                    'description': 'Hindi + English concept breakdown of execution contexts and JS engine internals.'
+                },
+                {
+                    'title': 'JavaScript in 100 Seconds',
+                    'channel': 'Fireship',
+                    'youtube_id': 'DHjqpvDnNGE',
+                    'duration': '100 secs',
+                    'level': 'Fast Recap',
+                    'description': 'High-speed explanation of the V8 engine, event loop, and web ecosystem.'
                 }
             ],
             'starter_code': code,

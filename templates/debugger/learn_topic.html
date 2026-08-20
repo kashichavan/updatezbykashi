@@ -261,6 +261,114 @@
     font-size: 14px; color: #334155; line-height: 1.7;
   }
 
+  /* Video Masterclasses & YouTube Hub Styles */
+  .video-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .video-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .video-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+  }
+  .video-embed-wrap {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+    background: #090f1d;
+  }
+  .video-embed-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+  }
+  .video-card-body {
+    padding: 16px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .video-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .channel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: monospace;
+  }
+  .channel-pythonkashi { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+  .channel-freecodecamp { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+  .channel-fireship { background: #fff7ed; color: #ea580c; border: 1px solid #fdba74; }
+  .channel-brocode { background: #f0f9ff; color: #0284c7; border: 1px solid #7dd3fc; }
+  .channel-chaiaurcode { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
+  .channel-telusko { background: #faf5ff; color: #7e22ce; border: 1px solid #d8b4fe; }
+  .channel-mosh { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+  
+  .video-duration-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .video-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 6px;
+    line-height: 1.4;
+  }
+  .video-card-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0 0 12px;
+    flex: 1;
+  }
+  .video-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+  }
+  .video-yt-link {
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .video-yt-link:hover {
+    text-decoration: underline;
+  }
+
   /* Code Blocks & Cards */
   .code-display-card {
     background: #0d1117;
@@ -876,6 +984,7 @@
         <li><a href="#section-example">First Example</a></li>
         <li><a href="#section-internals">Under the Hood</a></li>
         <li><a href="#section-examples">Progressive Examples</a></li>
+        <li><a href="#section-videos">🎬 Video Masterclasses</a></li>
         <li><a href="#interactiveDebuggerSection">Live Debugger</a></li>
         <li><a href="#section-mistakes">Common Mistakes</a></li>
         <li><a href="#section-comparison">Comparison</a></li>
@@ -1048,7 +1157,50 @@
     </section>
     {% endif %}
 
-    <!-- 10. Interactive Embedded Code Debugger & Live Visual Execution -->
+    <!-- 10. Video Masterclasses & Curated YouTube Tutorials -->
+    {% if current_topic.video_tutorials %}
+    <section id="section-videos" class="lesson-section">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+        <div>
+          <h2 class="lesson-section-title" style="margin: 0 0 4px; border-bottom: none; padding-bottom: 0;">🎬 Video Masterclasses &amp; YouTube Tutorials</h2>
+          <p style="font-size: 14px; color: var(--muted); margin: 0;">
+            Watch step-by-step visual lessons from <strong>@pythonkashi</strong>, <strong>freeCodeCamp</strong>, <strong>Fireship</strong>, and top educators.
+          </p>
+        </div>
+        <a href="https://www.youtube.com/@pythonkashi?sub_confirmation=1" target="_blank" rel="noopener" class="channel-badge channel-pythonkashi" style="padding: 7px 14px; font-size: 12px; text-decoration: none; box-shadow: 0 2px 8px rgba(220,38,38,0.15);">
+          🔥 Subscribe @pythonkashi
+        </a>
+      </div>
+
+      <div class="video-hub-grid">
+        {% for vid in current_topic.video_tutorials %}
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube-nocookie.com/embed/{{ vid.youtube_id }}" title="{{ vid.title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <div class="video-card-header">
+              <span class="channel-badge {% if 'pythonkashi' in vid.channel|lower %}channel-pythonkashi{% elif 'freecodecamp' in vid.channel|lower %}channel-freecodecamp{% elif 'fireship' in vid.channel|lower %}channel-fireship{% elif 'bro code' in vid.channel|lower %}channel-brocode{% elif 'chai' in vid.channel|lower %}channel-chaiaurcode{% elif 'telusko' in vid.channel|lower %}channel-telusko{% else %}channel-mosh{% endif %}">
+                {% if 'pythonkashi' in vid.channel|lower %}🔥 {% elif 'fireship' in vid.channel|lower %}⚡ {% else %}▶ {% endif %}{{ vid.channel }}
+              </span>
+              <span class="video-duration-badge">⏱ {{ vid.duration }}</span>
+            </div>
+            <h3 class="video-card-title">{{ vid.title }}</h3>
+            <p class="video-card-desc">{{ vid.description }}</p>
+            <div class="video-card-footer">
+              <span style="font-size: 11px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px;">{{ vid.level }}</span>
+              <a href="https://www.youtube.com/watch?v={{ vid.youtube_id }}" target="_blank" rel="noopener" class="video-yt-link">
+                Watch on YouTube ↗
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 11. Interactive Embedded Code Debugger & Live Visual Execution -->
     <section id="interactiveDebuggerSection" class="interactive-debugger-widget">
       <!-- macOS Style Header Bar -->
       <div class="debugger-top-bar">
