@@ -4,6 +4,96 @@ import re
 import threading
 
 DATASETS = {
+    'scott_tiger': {
+        'id': 'scott_tiger',
+        'name': '👑 Classic Scott/Tiger (EMP & DEPT)',
+        'description': 'The world-famous Oracle standard Scott/Tiger schema with EMP, DEPT, and SALGRADE tables (King, Scott, Ford, Blake, Smith).',
+        'default_query': '''-- 👑 The Classic Scott/Tiger Query: Employees, Managers, Departments & Salary Grades
+SELECT
+    e.empno AS Emp_ID,
+    e.ename AS Employee,
+    e.job AS Job,
+    COALESCE(m.ename, 'TOP BOSS') AS Manager,
+    d.dname AS Department,
+    d.loc AS Location,
+    e.sal AS Salary,
+    COALESCE(e.comm, 0) AS Commission,
+    s.grade AS Sal_Grade
+FROM emp e
+LEFT JOIN emp m ON e.mgr = m.empno
+INNER JOIN dept d ON e.deptno = d.deptno
+INNER JOIN salgrade s ON e.sal BETWEEN s.losal AND s.hisal
+ORDER BY e.sal DESC;''',
+        'schema_sql': '''
+CREATE TABLE dept (
+    deptno INTEGER PRIMARY KEY,
+    dname TEXT NOT NULL,
+    loc TEXT NOT NULL
+);
+
+CREATE TABLE emp (
+    empno INTEGER PRIMARY KEY,
+    ename TEXT NOT NULL,
+    job TEXT NOT NULL,
+    mgr INTEGER,
+    hiredate DATE NOT NULL,
+    sal DECIMAL(7,2) NOT NULL,
+    comm DECIMAL(7,2),
+    deptno INTEGER NOT NULL,
+    FOREIGN KEY (deptno) REFERENCES dept(deptno),
+    FOREIGN KEY (mgr) REFERENCES emp(empno)
+);
+
+CREATE TABLE salgrade (
+    grade INTEGER PRIMARY KEY,
+    losal DECIMAL(7,2) NOT NULL,
+    hisal DECIMAL(7,2) NOT NULL
+);
+
+CREATE TABLE bonus (
+    ename TEXT NOT NULL,
+    job TEXT NOT NULL,
+    sal DECIMAL(7,2) NOT NULL,
+    comm DECIMAL(7,2)
+);
+
+-- Seed Data: Classic 4 Departments
+INSERT INTO dept VALUES
+(10, 'ACCOUNTING', 'NEW YORK'),
+(20, 'RESEARCH', 'DALLAS'),
+(30, 'SALES', 'CHICAGO'),
+(40, 'OPERATIONS', 'BOSTON');
+
+-- Seed Data: Classic 14 Employees (King, Scott, Ford, Blake, etc.)
+INSERT INTO emp VALUES
+(7839, 'KING', 'PRESIDENT', NULL, '1981-11-17', 5000.00, NULL, 10),
+(7698, 'BLAKE', 'MANAGER', 7839, '1981-05-01', 2850.00, NULL, 30),
+(7782, 'CLARK', 'MANAGER', 7839, '1981-06-09', 2450.00, NULL, 10),
+(7566, 'JONES', 'MANAGER', 7839, '1981-04-02', 2975.00, NULL, 20),
+(7788, 'SCOTT', 'ANALYST', 7566, '1982-12-09', 3000.00, NULL, 20),
+(7902, 'FORD', 'ANALYST', 7566, '1981-12-03', 3000.00, NULL, 20),
+(7369, 'SMITH', 'CLERK', 7902, '1980-12-17', 800.00, NULL, 20),
+(7499, 'ALLEN', 'SALESMAN', 7698, '1981-02-20', 1600.00, 300.00, 30),
+(7521, 'WARD', 'SALESMAN', 7698, '1981-02-22', 1250.00, 500.00, 30),
+(7654, 'MARTIN', 'SALESMAN', 7698, '1981-09-28', 1250.00, 1400.00, 30),
+(7844, 'TURNER', 'SALESMAN', 7698, '1981-09-08', 1500.00, 0.00, 30),
+(7876, 'ADAMS', 'CLERK', 7788, '1983-01-12', 1100.00, NULL, 20),
+(7900, 'JAMES', 'CLERK', 7698, '1981-12-03', 950.00, NULL, 30),
+(7934, 'MILLER', 'CLERK', 7782, '1982-01-23', 1300.00, NULL, 10);
+
+-- Salary Grades
+INSERT INTO salgrade VALUES
+(1, 700.00, 1200.00),
+(2, 1201.00, 1400.00),
+(3, 1401.00, 2000.00),
+(4, 2001.00, 3000.00),
+(5, 3001.00, 9999.00);
+
+INSERT INTO bonus VALUES
+('ALLEN', 'SALESMAN', 1600.00, 300.00),
+('WARD', 'SALESMAN', 1250.00, 500.00);
+'''
+    },
     'faang': {
         'id': 'faang',
         'name': '🏢 FAANG Tech Corp',
@@ -254,6 +344,181 @@ INSERT INTO reviews VALUES
 (4, 104, 2, 5, 'Seamless ANC integration with iPhone.', '2025-01-25');
 '''
     },
+    'ott_streaming': {
+        'id': 'ott_streaming',
+        'name': '🎬 Netflix & OTT Streaming',
+        'description': 'Media analytics: subscribers, movies/shows catalog, streaming watch history, subscriptions, and genre categorization.',
+        'default_query': '''-- 🎬 Top 3 Most Watched Titles per Genre with Average User Completion Rate
+WITH ShowWatchStats AS (
+    SELECT
+        g.genre_name,
+        m.title,
+        m.release_year,
+        COUNT(w.watch_id) AS total_views,
+        ROUND(AVG(w.watch_duration_minutes * 100.0 / m.runtime_minutes), 1) AS avg_completion_pct,
+        DENSE_RANK() OVER (PARTITION BY g.genre_name ORDER BY COUNT(w.watch_id) DESC) AS rank_in_genre
+    FROM movies_shows m
+    INNER JOIN genres g ON m.genre_id = g.genre_id
+    LEFT JOIN watch_history w ON m.show_id = w.show_id
+    GROUP BY g.genre_name, m.title, m.release_year, m.runtime_minutes
+)
+SELECT genre_name, title, release_year, total_views, avg_completion_pct
+FROM ShowWatchStats
+WHERE rank_in_genre <= 3
+ORDER BY genre_name, total_views DESC;''',
+        'schema_sql': '''
+CREATE TABLE genres (
+    genre_id INTEGER PRIMARY KEY,
+    genre_name TEXT NOT NULL
+);
+
+CREATE TABLE movies_shows (
+    show_id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL,
+    genre_id INTEGER NOT NULL,
+    content_type TEXT NOT NULL, -- Movie, Series
+    runtime_minutes INTEGER NOT NULL,
+    release_year INTEGER NOT NULL,
+    imdb_rating DECIMAL(3,1),
+    FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
+);
+
+CREATE TABLE subscribers (
+    subscriber_id INTEGER PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    plan_tier TEXT NOT NULL, -- Standard, Premium 4K
+    country TEXT NOT NULL,
+    joined_date DATE NOT NULL
+);
+
+CREATE TABLE watch_history (
+    watch_id INTEGER PRIMARY KEY,
+    subscriber_id INTEGER NOT NULL,
+    show_id INTEGER NOT NULL,
+    watch_duration_minutes INTEGER NOT NULL,
+    watched_at TIMESTAMP NOT NULL,
+    device_type TEXT NOT NULL,
+    FOREIGN KEY (subscriber_id) REFERENCES subscribers(subscriber_id),
+    FOREIGN KEY (show_id) REFERENCES movies_shows(show_id)
+);
+
+INSERT INTO genres VALUES
+(1, 'Sci-Fi & Cyberpunk'),
+(2, 'Tech & Thriller'),
+(3, 'Action & Anime'),
+(4, 'Comedy & Drama');
+
+INSERT INTO movies_shows VALUES
+(101, 'Interstellar', 1, 'Movie', 169, 2014, 8.7),
+(102, 'Blade Runner 2049', 1, 'Movie', 164, 2017, 8.0),
+(103, 'Mr. Robot', 2, 'Series', 45, 2015, 8.5),
+(104, 'Silicon Valley', 4, 'Series', 30, 2014, 8.5),
+(105, 'Attack on Titan', 3, 'Series', 24, 2013, 9.1),
+(106, 'The Matrix Resurrections', 1, 'Movie', 148, 2021, 5.7),
+(107, 'Severance', 2, 'Series', 55, 2022, 8.7);
+
+INSERT INTO subscribers VALUES
+(1, 'alex_coder', 'Premium 4K', 'USA', '2023-01-10'),
+(2, 'priya_dev', 'Standard', 'India', '2023-05-15'),
+(3, 'lucas_sre', 'Premium 4K', 'Germany', '2024-02-01'),
+(4, 'sarah_arch', 'Premium 4K', 'USA', '2023-11-20'),
+(5, 'kenji_design', 'Standard', 'Japan', '2024-06-12');
+
+INSERT INTO watch_history VALUES
+(1, 1, 101, 169, '2025-02-10 20:15:00', 'Apple TV 4K'),
+(2, 1, 103, 45, '2025-02-12 21:00:00', 'MacBook Pro'),
+(3, 2, 105, 24, '2025-02-14 18:30:00', 'Smart TV'),
+(4, 2, 104, 30, '2025-02-15 19:15:00', 'iPad Pro'),
+(5, 3, 107, 55, '2025-02-18 22:00:00', 'Smart TV'),
+(6, 4, 101, 169, '2025-02-20 20:00:00', 'LG OLED TV'),
+(7, 4, 103, 45, '2025-02-22 21:30:00', 'MacBook Pro'),
+(8, 5, 105, 24, '2025-02-25 17:45:00', 'iPhone 15 Pro');
+'''
+    },
+    'ai_compute': {
+        'id': 'ai_compute',
+        'name': '🧠 AI & GPU Compute Infrastructure',
+        'description': 'GPU cluster orchestration: AI foundation models, NVIDIA H100/A100 clusters, distributed training runs, and benchmark evaluations.',
+        'default_query': '''-- ⚡ GPU Utilization & Model Training Efficiency Ranking
+SELECT
+    m.model_name,
+    m.parameters_billions || 'B' AS model_size,
+    c.cluster_name,
+    c.gpu_type,
+    t.gpu_count,
+    t.training_hours,
+    t.cost_usd,
+    ROUND(t.cost_usd / NULLIF(t.training_hours, 0), 2) AS hourly_burn_rate,
+    b.benchmark_name,
+    b.score AS benchmark_accuracy
+FROM training_runs t
+INNER JOIN models m ON t.model_id = m.model_id
+INNER JOIN gpu_clusters c ON t.cluster_id = c.cluster_id
+LEFT JOIN benchmarks b ON m.model_id = b.model_id
+ORDER BY t.cost_usd DESC;''',
+        'schema_sql': '''
+CREATE TABLE models (
+    model_id INTEGER PRIMARY KEY,
+    model_name TEXT NOT NULL,
+    architecture TEXT NOT NULL,
+    parameters_billions DECIMAL(5,1) NOT NULL,
+    release_date DATE NOT NULL
+);
+
+CREATE TABLE gpu_clusters (
+    cluster_id INTEGER PRIMARY KEY,
+    cluster_name TEXT NOT NULL,
+    gpu_type TEXT NOT NULL, -- H100 80GB, A100 80GB, L40S
+    total_gpus INTEGER NOT NULL,
+    cloud_provider TEXT NOT NULL -- AWS, Lambda, GCP, CoreWeave
+);
+
+CREATE TABLE training_runs (
+    run_id INTEGER PRIMARY KEY,
+    model_id INTEGER NOT NULL,
+    cluster_id INTEGER NOT NULL,
+    gpu_count INTEGER NOT NULL,
+    training_hours DECIMAL(6,1) NOT NULL,
+    cost_usd DECIMAL(12,2) NOT NULL,
+    status TEXT NOT NULL, -- Succeeded, Failed, In Progress
+    FOREIGN KEY (model_id) REFERENCES models(model_id),
+    FOREIGN KEY (cluster_id) REFERENCES gpu_clusters(cluster_id)
+);
+
+CREATE TABLE benchmarks (
+    benchmark_id INTEGER PRIMARY KEY,
+    model_id INTEGER NOT NULL,
+    benchmark_name TEXT NOT NULL, -- MMLU, HumanEval, GSM8K
+    score DECIMAL(5,2) NOT NULL,
+    FOREIGN KEY (model_id) REFERENCES models(model_id)
+);
+
+INSERT INTO models VALUES
+(1, 'DeepSeek-V3', 'Mixture-of-Experts (MoE)', 671.0, '2024-12-26'),
+(2, 'Llama-3.3-70B', 'Dense Transformer', 70.0, '2024-12-06'),
+(3, 'Qwen-2.5-Coder', 'Code LLM', 32.0, '2024-11-15'),
+(4, 'Mistral-Large-2', 'Dense Transformer', 123.0, '2024-07-24');
+
+INSERT INTO gpu_clusters VALUES
+(101, 'HyperScale Cluster Alpha', 'NVIDIA H100 80GB SXM5', 2048, 'CoreWeave'),
+(102, 'Lambda Cloud Cluster Bravo', 'NVIDIA H100 80GB', 512, 'Lambda Labs'),
+(103, 'AWS US-East-1 p5.48xlarge', 'NVIDIA H100 SXM5', 256, 'AWS'),
+(104, 'GCP A3 High-Mega Cluster', 'NVIDIA H100 80GB', 1024, 'Google Cloud');
+
+INSERT INTO training_runs VALUES
+(1, 1, 101, 2048, 672.0, 5800000.00, 'Succeeded'),
+(2, 2, 102, 512, 340.0, 850000.00, 'Succeeded'),
+(3, 3, 103, 256, 180.0, 320000.00, 'Succeeded'),
+(4, 4, 104, 1024, 450.0, 1950000.00, 'Succeeded');
+
+INSERT INTO benchmarks VALUES
+(1, 1, 'MMLU Pro', 75.9),
+(2, 1, 'HumanEval Code', 82.6),
+(3, 2, 'MMLU Pro', 68.4),
+(4, 2, 'HumanEval Code', 72.8),
+(5, 3, 'HumanEval Code', 86.2);
+'''
+    },
     'fintech': {
         'id': 'fintech',
         'name': '💳 FinTech & Banking',
@@ -345,93 +610,6 @@ INSERT INTO loans VALUES
 (502, 104, 60000.00, 7.25, 'Approved', '2024-09-15'),
 (503, 106, 15000.00, 8.90, 'Pending', '2025-02-10');
 '''
-    },
-    'social': {
-        'id': 'social',
-        'name': '🌐 Social Network',
-        'description': 'Graph & engagement analytics: users, social posts, likes, followers/following graph, and comments.',
-        'default_query': '''-- 🏆 Find Most Influential Users (Followers count + Post Engagement)
-SELECT
-    u.user_id,
-    u.username,
-    u.followers_count,
-    COUNT(DISTINCT p.post_id) AS total_posts,
-    COALESCE(SUM(p.likes_count), 0) AS total_post_likes,
-    ROUND(
-        COALESCE(SUM(p.likes_count), 0) * 1.0 / NULLIF(COUNT(DISTINCT p.post_id), 0), 1
-    ) AS avg_likes_per_post
-FROM users u
-LEFT JOIN posts p ON u.user_id = p.user_id
-GROUP BY u.user_id, u.username, u.followers_count
-ORDER BY total_post_likes DESC, u.followers_count DESC;''',
-        'schema_sql': '''
-CREATE TABLE users (
-    user_id INTEGER PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    full_name TEXT NOT NULL,
-    bio TEXT,
-    followers_count INTEGER DEFAULT 0,
-    following_count INTEGER DEFAULT 0,
-    created_at DATE NOT NULL
-);
-
-CREATE TABLE follows (
-    follower_id INTEGER,
-    following_id INTEGER,
-    followed_at TIMESTAMP NOT NULL,
-    PRIMARY KEY (follower_id, following_id),
-    FOREIGN KEY (follower_id) REFERENCES users(user_id),
-    FOREIGN KEY (following_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE posts (
-    post_id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    caption TEXT NOT NULL,
-    likes_count INTEGER DEFAULT 0,
-    comments_count INTEGER DEFAULT 0,
-    created_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE comments (
-    comment_id INTEGER PRIMARY KEY,
-    post_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    FOREIGN KEY (post_id) REFERENCES posts(post_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
-);
-
-INSERT INTO users VALUES
-(1, 'kashinath', 'Kashinath Chavan', 'Tech Educator & Python Developer 🚀', 28500, 310, '2023-01-01'),
-(2, 'techlead_sam', 'Samantha Lee', 'Staff Engineer @ CloudScale', 14200, 450, '2023-03-15'),
-(3, 'ai_researcher', 'Dr. Aris Thorne', 'LLMs & Cognitive AI Research', 51000, 180, '2022-11-20'),
-(4, 'dev_fresher', 'Rahul Verma', 'Learning Django & SQL', 850, 620, '2024-06-01'),
-(5, 'design_guru', 'Elena Rossi', 'Visual Systems & Figma', 9800, 240, '2023-08-10');
-
-INSERT INTO follows VALUES
-(4, 1, '2024-06-02 10:00:00'),
-(4, 2, '2024-06-02 10:05:00'),
-(4, 3, '2024-06-05 14:30:00'),
-(2, 1, '2023-04-10 18:20:00'),
-(1, 2, '2023-04-11 09:15:00'),
-(5, 1, '2023-09-01 12:00:00'),
-(2, 3, '2023-05-12 11:45:00');
-
-INSERT INTO posts VALUES
-(101, 1, 'Mastering SQL Window Functions: ROW_NUMBER vs RANK vs DENSE_RANK explained!', 4200, 185, '2025-02-15 10:30:00'),
-(102, 1, 'Why B-Tree Indexing is the Backbone of High-Throughput Databases ⚡', 3800, 142, '2025-02-28 14:15:00'),
-(103, 3, 'New Benchmark: Evaluating LLM Reasoning on Complex Graph Traversals 🧠', 9500, 420, '2025-03-01 16:45:00'),
-(104, 2, 'Top 5 Distributed System Gotchas Every Backend Lead Must Prevent', 2100, 95, '2025-03-02 09:00:00'),
-(105, 5, 'Modern Glassmorphic Dark UI Design Patterns for 2026', 1650, 78, '2025-03-03 13:20:00');
-
-INSERT INTO comments VALUES
-(1, 101, 4, 'This explanation of DENSE_RANK finally made it click for me!', '2025-02-15 11:00:00'),
-(2, 101, 2, 'Great breakdown, Kashinath! Clear and concise.', '2025-02-15 12:30:00'),
-(3, 103, 1, 'Exciting results, Dr. Thorne. Looking forward to the paper!', '2025-03-01 17:15:00');
-'''
     }
 }
 
@@ -439,9 +617,9 @@ INSERT INTO comments VALUES
 _db_cache = {}
 _db_lock = threading.Lock()
 
-def get_sandboxed_connection(dataset_id='faang'):
+def get_sandboxed_connection(dataset_id='scott_tiger'):
     if dataset_id not in DATASETS:
-        dataset_id = 'faang'
+        dataset_id = 'scott_tiger'
     
     # Initialize fresh in-memory SQLite connection
     conn = sqlite3.connect(':memory:', check_same_thread=False)
@@ -456,7 +634,7 @@ def get_sandboxed_connection(dataset_id='faang'):
     
     return conn
 
-def execute_sql_sandbox(sql_text, dataset_id='faang', max_rows=500):
+def execute_sql_sandbox(sql_text, dataset_id='scott_tiger', max_rows=500):
     start_time = time.perf_counter()
     
     if not sql_text or not sql_text.strip():

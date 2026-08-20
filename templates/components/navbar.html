@@ -50,18 +50,13 @@
 
       <a href="/sql/" class="{% if '/sql' in request.path %}active{% endif %}">
         <span>💾</span>
-        <span class="nav-label-long">SQL Studio</span>
+        <span class="nav-label-long">SQL Debugger</span>
         <span class="nav-label-short">SQL</span>
       </a>
       
       <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
         <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About" width="16" height="16" decoding="async">
         <span>About</span>
-      </a>
-      
-      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="nav-pill-yt">
-        <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube" width="16" height="16" decoding="async">
-        <span>YouTube</span>
       </a>
     </nav>
 
@@ -131,9 +126,9 @@
         <a href="/sql/" class="drawer-link {% if '/sql' in request.path %}active{% endif %}">
           <span style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 16px;">💾</span>
-            SQL Execution Sandbox
+            SQL Debugger IDE
           </span>
-          <span class="d-tag" style="background:#e0f2fe; color:#0369a1;">STUDIO</span>
+          <span class="d-tag" style="background:#e0f2fe; color:#0369a1;">SQL</span>
         </a>
 
         <a href="/about/" class="drawer-link {% if request.path == '/about/' %}active{% endif %}">

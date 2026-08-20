@@ -1,11 +1,60 @@
 SQL_CHALLENGES = [
     {
+        'id': 'scott-tiger-emp-mgr',
+        'title': '1. Scott/Tiger: Employees & Their Direct Managers',
+        'difficulty': 'Easy',
+        'dataset_id': 'scott_tiger',
+        'category': 'Self Joins & NULL Handling',
+        'description': '''Using the classic Scott/Tiger <code>emp</code> table, list every employee's name (<code>ENAME</code>), their job title (<code>JOB</code>), and their direct manager's name (<code>MGR_NAME</code>). If an employee has no manager (e.g. <code>KING</code>), display <code>'TOP BOSS'</code>.''',
+        'starter_sql': '''-- Self Join on emp to get employee and manager names
+SELECT
+    e.ename AS employee_name,
+    e.job,
+    COALESCE(m.ename, 'TOP BOSS') AS manager_name
+FROM emp e
+LEFT JOIN emp m ON e.mgr = m.empno
+ORDER BY e.ename;''',
+        'solution_sql': '''SELECT
+    e.ename AS employee_name,
+    e.job,
+    COALESCE(m.ename, 'TOP BOSS') AS manager_name
+FROM emp e
+LEFT JOIN emp m ON e.mgr = m.empno
+ORDER BY e.ename;'''
+    },
+    {
+        'id': 'scott-tiger-salgrade',
+        'title': '2. Scott/Tiger: Department Salary Grades Breakdown',
+        'difficulty': 'Medium',
+        'dataset_id': 'scott_tiger',
+        'category': 'Multi-Table Joins & Non-Equi Joins',
+        'description': '''Find all employees, their department name, their salary, and their salary grade from <code>salgrade</code> where salary is between <code>losal</code> and <code>hisal</code>. Order by salary descending.''',
+        'starter_sql': '''SELECT
+    e.ename,
+    d.dname AS department,
+    e.sal AS salary,
+    s.grade AS salary_grade
+FROM emp e
+JOIN dept d ON e.deptno = d.deptno
+JOIN salgrade s ON e.sal BETWEEN s.losal AND s.hisal
+ORDER BY e.sal DESC;''',
+        'solution_sql': '''SELECT
+    e.ename,
+    d.dname AS department,
+    e.sal AS salary,
+    s.grade AS salary_grade
+FROM emp e
+JOIN dept d ON e.deptno = d.deptno
+JOIN salgrade s ON e.sal BETWEEN s.losal AND s.hisal
+ORDER BY e.sal DESC;'''
+    },
+    {
         'id': 'nth-highest-salary',
-        'title': '1. Second Highest Salary (LeetCode #176)',
+        'title': '3. Second Highest Salary (LeetCode #176)',
         'difficulty': 'Easy',
         'dataset_id': 'faang',
         'category': 'Window Functions & Aggregation',
-        'description': '''Write an SQL query to find the <strong>second highest salary</strong> from the <code>employees</code> table. If there is no second highest salary, the query should return <code>NULL</code> or an empty row.''',
+        'description': '''Write an SQL query to find the <strong>second highest salary</strong> from the <code>employees</code> table.''',
         'starter_sql': '''-- Write a query to find the 2nd highest salary in the company
 SELECT DISTINCT salary AS SecondHighestSalary
 FROM employees
@@ -18,13 +67,12 @@ LIMIT 1 OFFSET 1;'''
     },
     {
         'id': 'department-top-3-salaries',
-        'title': '2. Department Top 3 Salaries (LeetCode #185)',
+        'title': '4. Department Top 3 Salaries (LeetCode #185)',
         'difficulty': 'Hard',
         'dataset_id': 'faang',
         'category': 'DENSE_RANK & Partitioning',
-        'description': '''A company's executives are interested in seeing who earns the most money in each of the company's departments. A high earner in a department is an employee who has a salary in the <strong>top three unique salaries</strong> for that department.<br/><br/>Write a solution to find the employees who are high earners in each of the departments.''',
-        'starter_sql': '''-- Find the top 3 unique salaries in each department using DENSE_RANK()
-WITH RankedSalaries AS (
+        'description': '''Find the top 3 unique salaries in each department using <code>DENSE_RANK()</code>.''',
+        'starter_sql': '''WITH RankedSalaries AS (
     SELECT
         d.department_name AS Department,
         e.first_name || ' ' || e.last_name AS Employee,
@@ -52,180 +100,74 @@ WHERE rnk <= 3
 ORDER BY Department, Salary DESC;'''
     },
     {
-        'id': 'employees-earning-more-than-managers',
-        'title': '3. Employees Earning More Than Their Managers (LeetCode #181)',
-        'difficulty': 'Easy',
-        'dataset_id': 'faang',
-        'category': 'Self Joins',
-        'description': '''Write a solution to find the employees who earn more than their managers. Return the employee's full name and their salary alongside their manager's name and salary.''',
-        'starter_sql': '''-- Perform a SELF JOIN on employees where employee salary > manager salary
-SELECT
-    e.first_name || ' ' || e.last_name AS Employee,
-    e.salary AS EmployeeSalary,
-    m.first_name || ' ' || m.last_name AS Manager,
-    m.salary AS ManagerSalary
-FROM employees e
-JOIN employees m ON e.manager_id = m.employee_id
-WHERE e.salary > m.salary;''',
-        'solution_sql': '''SELECT
-    e.first_name || ' ' || e.last_name AS Employee,
-    e.salary AS EmployeeSalary,
-    m.first_name || ' ' || m.last_name AS Manager,
-    m.salary AS ManagerSalary
-FROM employees e
-JOIN employees m ON e.manager_id = m.employee_id
-WHERE e.salary > m.salary;'''
-    },
-    {
-        'id': 'customers-who-never-order',
-        'title': '4. Customers Who Never Order (LeetCode #183)',
-        'difficulty': 'Easy',
-        'dataset_id': 'ecommerce',
-        'category': 'Anti-Joins & NOT EXISTS',
-        'description': '''Write an SQL query to report all customers who never placed any orders. Return customer ID, full name, email, and country.''',
-        'starter_sql': '''-- Find customers who have no corresponding records in the orders table
-SELECT c.customer_id, c.full_name, c.email, c.country
-FROM customers c
-LEFT JOIN orders o ON c.customer_id = o.customer_id
-WHERE o.order_id IS NULL;''',
-        'solution_sql': '''SELECT c.customer_id, c.full_name, c.email, c.country
-FROM customers c
-LEFT JOIN orders o ON c.customer_id = o.customer_id
-WHERE o.order_id IS NULL;'''
-    },
-    {
-        'id': 'mom-revenue-growth',
-        'title': '5. Month-over-Month (MoM) Revenue Growth Rate',
+        'id': 'ott-top-shows',
+        'title': '5. Netflix OTT: Top 3 Most Streamed Titles per Genre',
         'difficulty': 'Medium',
-        'dataset_id': 'ecommerce',
-        'category': 'Window LAG & Time-Series',
-        'description': '''Calculate the total delivered revenue for each month and the percentage growth rate compared to the previous month.''',
-        'starter_sql': '''WITH MonthlyRev AS (
+        'dataset_id': 'ott_streaming',
+        'category': 'OTT Media Analytics & Partitioning',
+        'description': '''Find the top streaming titles in each genre by total view count from <code>watch_history</code>.''',
+        'starter_sql': '''WITH GenreViews AS (
     SELECT
-        strftime('%Y-%m', order_date) AS order_month,
-        SUM(total_amount) AS revenue
-    FROM orders
-    WHERE status = 'Delivered'
-    GROUP BY strftime('%Y-%m', order_date)
+        g.genre_name,
+        m.title,
+        COUNT(w.watch_id) AS total_views,
+        DENSE_RANK() OVER (PARTITION BY g.genre_name ORDER BY COUNT(w.watch_id) DESC) AS rnk
+    FROM movies_shows m
+    JOIN genres g ON m.genre_id = g.genre_id
+    LEFT JOIN watch_history w ON m.show_id = w.show_id
+    GROUP BY g.genre_name, m.title
 )
-SELECT
-    order_month,
-    revenue,
-    LAG(revenue, 1) OVER (ORDER BY order_month) AS prev_revenue,
-    ROUND(
-        (revenue - LAG(revenue, 1) OVER (ORDER BY order_month)) * 100.0 /
-        NULLIF(LAG(revenue, 1) OVER (ORDER BY order_month), 0), 2
-    ) AS mom_growth_pct
-FROM MonthlyRev;''',
-        'solution_sql': '''WITH MonthlyRev AS (
+SELECT genre_name, title, total_views
+FROM GenreViews
+WHERE rnk <= 3
+ORDER BY genre_name, total_views DESC;''',
+        'solution_sql': '''WITH GenreViews AS (
     SELECT
-        strftime('%Y-%m', order_date) AS order_month,
-        SUM(total_amount) AS revenue
-    FROM orders
-    WHERE status = 'Delivered'
-    GROUP BY strftime('%Y-%m', order_date)
+        g.genre_name,
+        m.title,
+        COUNT(w.watch_id) AS total_views,
+        DENSE_RANK() OVER (PARTITION BY g.genre_name ORDER BY COUNT(w.watch_id) DESC) AS rnk
+    FROM movies_shows m
+    JOIN genres g ON m.genre_id = g.genre_id
+    LEFT JOIN watch_history w ON m.show_id = w.show_id
+    GROUP BY g.genre_name, m.title
 )
-SELECT
-    order_month,
-    revenue,
-    LAG(revenue, 1) OVER (ORDER BY order_month) AS prev_revenue,
-    ROUND(
-        (revenue - LAG(revenue, 1) OVER (ORDER BY order_month)) * 100.0 /
-        NULLIF(LAG(revenue, 1) OVER (ORDER BY order_month), 0), 2
-    ) AS mom_growth_pct
-FROM MonthlyRev;'''
+SELECT genre_name, title, total_views
+FROM GenreViews
+WHERE rnk <= 3
+ORDER BY genre_name, total_views DESC;'''
     },
     {
-        'id': 'cumulative-customer-spend',
-        'title': '6. Cumulative Running Total per Customer',
-        'difficulty': 'Medium',
-        'dataset_id': 'ecommerce',
-        'category': 'Running Sum Windows',
-        'description': '''Write a query to calculate the cumulative running total spent by each customer ordered chronologically by <code>order_date</code>.''',
+        'id': 'ai-gpu-burn-rate',
+        'title': '6. AI Compute: Expensive Training Runs Exceeding $500k',
+        'difficulty': 'Easy',
+        'dataset_id': 'ai_compute',
+        'category': 'GPU Infrastructure & Cost Analysis',
+        'description': '''Find all AI model training runs that cost &ge; $500,000. Show model name, GPU cluster, GPU count, and total cost in USD.''',
         'starter_sql': '''SELECT
-    order_id,
-    customer_id,
-    order_date,
-    total_amount,
-    SUM(total_amount) OVER (
-        PARTITION BY customer_id
-        ORDER BY order_date, order_id
-        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-    ) AS running_customer_total
-FROM orders
-ORDER BY customer_id, order_date;''',
+    m.model_name,
+    c.cluster_name,
+    c.gpu_type,
+    t.gpu_count,
+    t.training_hours,
+    t.cost_usd
+FROM training_runs t
+JOIN models m ON t.model_id = m.model_id
+JOIN gpu_clusters c ON t.cluster_id = c.cluster_id
+WHERE t.cost_usd >= 500000.00
+ORDER BY t.cost_usd DESC;''',
         'solution_sql': '''SELECT
-    order_id,
-    customer_id,
-    order_date,
-    total_amount,
-    SUM(total_amount) OVER (
-        PARTITION BY customer_id
-        ORDER BY order_date, order_id
-        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-    ) AS running_customer_total
-FROM orders
-ORDER BY customer_id, order_date;'''
-    },
-    {
-        'id': 'fraudulent-high-volume-transactions',
-        'title': '7. FinTech Suspicious Transaction Spike Detector',
-        'difficulty': 'Hard',
-        'dataset_id': 'fintech',
-        'category': 'Financial Fraud Analytics',
-        'description': '''Find all accounts that performed transactions of amount &ge; $3,000.00. Show account holder name, account type, transaction amount, and merchant name.''',
-        'starter_sql': '''SELECT
-    a.customer_name,
-    a.account_type,
-    t.transaction_id,
-    t.transaction_type,
-    t.amount,
-    t.merchant,
-    t.transaction_time
-FROM transactions t
-JOIN accounts a ON t.account_id = a.account_id
-WHERE t.amount >= 3000.00
-ORDER BY t.amount DESC;''',
-        'solution_sql': '''SELECT
-    a.customer_name,
-    a.account_type,
-    t.transaction_id,
-    t.transaction_type,
-    t.amount,
-    t.merchant,
-    t.transaction_time
-FROM transactions t
-JOIN accounts a ON t.account_id = a.account_id
-WHERE t.amount >= 3000.00
-ORDER BY t.amount DESC;'''
-    },
-    {
-        'id': 'social-most-influential-creators',
-        'title': '8. Social Network Influence & Engagement Score',
-        'difficulty': 'Medium',
-        'dataset_id': 'social',
-        'category': 'Aggregation & NULL Handling',
-        'description': '''Calculate the total likes, total posts, and engagement ratio for all creators in the social network, ordered by total likes descending.''',
-        'starter_sql': '''SELECT
-    u.username,
-    u.followers_count,
-    COUNT(p.post_id) AS total_posts,
-    COALESCE(SUM(p.likes_count), 0) AS total_likes,
-    COALESCE(SUM(p.comments_count), 0) AS total_comments
-FROM users u
-LEFT JOIN posts p ON u.user_id = p.user_id
-GROUP BY u.user_id, u.username, u.followers_count
-ORDER BY total_likes DESC;''',
-        'solution_sql': '''SELECT
-    u.username,
-    u.followers_count,
-    COUNT(p.post_id) AS total_posts,
-    COALESCE(SUM(p.likes_count), 0) AS total_likes,
-    COALESCE(SUM(p.comments_count), 0) AS total_comments
-FROM users u
-LEFT JOIN posts p ON u.user_id = p.user_id
-GROUP BY u.user_id, u.username, u.followers_count
-ORDER BY total_likes DESC;'''
+    m.model_name,
+    c.cluster_name,
+    c.gpu_type,
+    t.gpu_count,
+    t.training_hours,
+    t.cost_usd
+FROM training_runs t
+JOIN models m ON t.model_id = m.model_id
+JOIN gpu_clusters c ON t.cluster_id = c.cluster_id
+WHERE t.cost_usd >= 500000.00
+ORDER BY t.cost_usd DESC;'''
     }
 ]
 
