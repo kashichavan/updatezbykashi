@@ -137,6 +137,32 @@
     padding-bottom: 10px;
   }
 
+  /* Notion-style Table of Contents */
+  .lesson-toc {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 0 0 28px;
+  }
+  .lesson-toc-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    margin-bottom: 10px;
+  }
+  .lesson-toc ol {
+    margin: 0; padding-left: 20px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+  }
+  .lesson-toc li { font-size: 13px; color: #475569; line-height: 1.6; }
+  .lesson-toc a { color: #2563eb; text-decoration: none; font-weight: 600; }
+  .lesson-toc a:hover { text-decoration: underline; }
+
   /* Callout Boxes */
   .callout-box {
     border-radius: 16px;
@@ -160,23 +186,98 @@
     color: #1e293b;
   }
 
+  /* Notion-style Tip / Warning / Info / Danger callouts */
+  .notion-callout {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px 20px; border-radius: 12px; margin: 16px 0;
+    font-size: 14px; line-height: 1.65;
+  }
+  .notion-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .notion-callout-content { flex: 1; }
+  .notion-callout strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .callout-tip { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+  .callout-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+  .callout-info { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+  .callout-danger { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
+  /* Step-by-step numbered boxes (like Notion's numbered steps) */
+  .steps-list { list-style: none; padding: 0; margin: 16px 0; counter-reset: steps; }
+  .steps-list li {
+    counter-increment: steps;
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 14px 18px; margin-bottom: 8px;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+    font-size: 14px; line-height: 1.6;
+  }
+  .steps-list li::before {
+    content: counter(steps);
+    min-width: 28px; height: 28px;
+    background: #2563eb; color: white;
+    border-radius: 50%; font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* Key term highlight chips */
+  .term-chip {
+    display: inline-block;
+    background: #eff6ff; color: #1d4ed8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 6px;
+    border: 1px solid #bfdbfe;
+  }
+
+  /* Notion-style divider */
+  .notion-divider {
+    height: 1px; background: linear-gradient(to right, #e2e8f0, transparent);
+    margin: 32px 0; border: none;
+  }
+
+  /* Interview Q&A blocks */
+  .interview-block {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .interview-q {
+    background: #f8fafc; padding: 14px 18px;
+    font-weight: 700; font-size: 14px; color: #1e293b;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .interview-tier-badge {
+    font-size: 10px; font-weight: 800; padding: 3px 8px;
+    border-radius: 999px; flex-shrink: 0; margin-top: 2px;
+    font-family: monospace; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tier-beginner { background: #dcfce7; color: #15803d; }
+  .tier-mid { background: #dbeafe; color: #1d4ed8; }
+  .tier-senior { background: #fef3c7; color: #b45309; }
+  .tier-expert { background: #fce7f3; color: #be185d; }
+  .interview-a {
+    padding: 14px 18px; background: #ffffff;
+    font-size: 14px; color: #334155; line-height: 1.7;
+  }
+
   /* Code Blocks & Cards */
   .code-display-card {
-    background: #0d1527;
-    border: 1px solid #1e293b;
+    background: #0d1117;
+    border: 1px solid #30363d;
     border-radius: 14px;
     overflow: hidden;
     margin: 18px 0;
   }
   .code-header-bar {
-    background: #131d33;
+    background: #161b22;
     padding: 8px 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
     color: #94a3b8;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid #30363d;
   }
   .code-pre {
     margin: 0;
@@ -184,12 +285,12 @@
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
     font-size: 13px;
     line-height: 1.55;
-    color: #38bdf8;
+    color: #58a6ff;
     overflow-x: auto;
   }
   .output-box {
     background: #070c18;
-    border-top: 1px solid #1e293b;
+    border-top: 1px solid #30363d;
     padding: 12px 16px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
@@ -216,6 +317,7 @@
     border: 1px solid #e2e8f0;
     vertical-align: top;
   }
+  .lesson-table tr:nth-child(even) { background: #fafafa; }
 
   /* Mistake Cards */
   .mistake-card {
@@ -259,6 +361,19 @@
     outline: none;
     user-select: none;
     font-size: 14px;
+  }
+
+  /* Quick Revision Chips */
+  .revision-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0;
+  }
+  .revision-chip {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px; font-weight: 600; color: #1e3a8a;
+    display: flex; gap: 8px; align-items: flex-start;
   }
 
   /* Embedded Interactive Debugger Sandbox (IDE Theme Matched) */
@@ -729,7 +844,7 @@
     <!-- Topic Title Header -->
     <header style="margin-bottom: 28px; border-bottom: 1px solid var(--subtle-border); padding-bottom: 20px;">
       <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
-        <span style="background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-family: monospace;">
+        <span style="background: linear-gradient(135deg,#eff6ff,#dbeafe); color: #2563eb; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-family: monospace; border: 1px solid #bfdbfe;">
           {{ current_topic.category }}
         </span>
         <span style="font-size: 12px; color: var(--muted); font-weight: 600;">
@@ -740,22 +855,48 @@
         </span>
       </div>
 
-      <h1 style="font: 800 32px var(--font-serif); color: var(--ink); margin: 0 0 10px; line-height: 1.3;">
+      <h1 style="font: 800 32px var(--font-serif); color: var(--ink); margin: 0 0 14px; line-height: 1.3;">
         {{ current_topic.title }}
       </h1>
-      
+
       {% if current_topic.takeaway %}
-      <p style="font-size: 16px; color: #475569; line-height: 1.6; margin: 0; font-weight: 500;">
-        💡 <strong>Key Takeaway:</strong> {{ current_topic.takeaway }}
-      </p>
+      <div class="notion-callout callout-info" style="margin: 0;">
+        <span class="notion-callout-icon">💡</span>
+        <div class="notion-callout-content">
+          <strong>Key Takeaway</strong>
+          {{ current_topic.takeaway }}
+        </div>
+      </div>
       {% endif %}
     </header>
 
+    <!-- Table of Contents -->
+    <div class="lesson-toc">
+      <div class="lesson-toc-title">📋 On This Page</div>
+      <ol>
+        <li><a href="#section-intro">Introduction</a></li>
+        <li><a href="#section-analogy">Real-World Analogy</a></li>
+        <li><a href="#section-mental-model">Mental Model</a></li>
+        <li><a href="#section-why">Why Does This Exist?</a></li>
+        <li><a href="#section-usecase">Industry Use Case</a></li>
+        <li><a href="#section-syntax">Syntax Breakdown</a></li>
+        <li><a href="#section-example">First Example</a></li>
+        <li><a href="#section-internals">Under the Hood</a></li>
+        <li><a href="#section-examples">Progressive Examples</a></li>
+        <li><a href="#interactiveDebuggerSection">Live Debugger</a></li>
+        <li><a href="#section-mistakes">Common Mistakes</a></li>
+        <li><a href="#section-comparison">Comparison</a></li>
+        <li><a href="#section-interview">Interview Questions</a></li>
+        <li><a href="#section-revision">Quick Revision</a></li>
+        <li><a href="#section-challenge">Final Challenge</a></li>
+      </ol>
+    </div>
+
     <!-- 1. Topic Introduction -->
     {% if current_topic.introduction %}
-    <section class="lesson-section">
-      <h2 class="lesson-section-title">1. Introduction</h2>
-      <div style="font-size: 16px; line-height: 1.7;">
+    <section id="section-intro" class="lesson-section">
+      <h2 class="lesson-section-title">1. 📖 Introduction</h2>
+      <div style="font-size: 15px; line-height: 1.8; color: #334155;">
         {{ current_topic.introduction|safe }}
       </div>
     </section>
@@ -763,21 +904,27 @@
 
     <!-- 2. Real-World Analogy -->
     {% if current_topic.analogy %}
-    <section class="lesson-section">
+    <section id="section-analogy" class="lesson-section">
       <h2 class="lesson-section-title">2. 🧠 Real-World Analogy</h2>
       <div class="callout-box analogy-box">
-        <div style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-          💡 {{ current_topic.analogy.title }}
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; opacity: 0.75;">
+          🎯 Analogy
         </div>
-        <p style="margin: 0 0 12px; font-size: 15px;">
+        <div style="font-size: 17px; font-weight: 700; margin-bottom: 10px;">
+          {{ current_topic.analogy.title }}
+        </div>
+        <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.75;">
           {{ current_topic.analogy.text }}
         </p>
         {% if current_topic.analogy.mapping %}
-        <div style="margin-top: 14px; border-top: 1px dashed rgba(113,63,18,0.3); padding-top: 10px;">
-          <strong style="font-size: 13px;">Analogy to Programming Mapping:</strong>
+        <div style="margin-top: 14px; border-top: 1px dashed rgba(113,63,18,0.3); padding-top: 14px;">
+          <strong style="font-size: 13px; display: block; margin-bottom: 8px;">🔗 Real World → Programming Mapping</strong>
           <table class="lesson-table" style="background: rgba(255,255,255,0.7); margin-top: 8px;">
             <thead>
-              <tr style="background: rgba(254,240,138,0.5);"><th>Real World Element</th><th>Programming Concept</th></tr>
+              <tr style="background: rgba(254,240,138,0.6);">
+                <th>🌍 Real World Element</th>
+                <th>💻 Programming Concept</th>
+              </tr>
             </thead>
             <tbody>
               {% for map_item in current_topic.analogy.mapping %}
@@ -796,9 +943,9 @@
 
     <!-- 3. Mental Model -->
     {% if current_topic.mental_model %}
-    <section class="lesson-section">
-      <h2 class="lesson-section-title">3. 🧠 Mental Model &amp; Visual Flow</h2>
-      <div class="callout-box model-box">
+    <section id="section-mental-model" class="lesson-section">
+      <h2 class="lesson-section-title">3. 🗺️ Mental Model &amp; Visual Flow</h2>
+      <div class="callout-box model-box" style="font-family: 'JetBrains Mono', monospace;">
         {{ current_topic.mental_model|safe }}
       </div>
     </section>
@@ -806,9 +953,9 @@
 
     <!-- 4. Why Does This Exist? -->
     {% if current_topic.why_exists %}
-    <section class="lesson-section">
+    <section id="section-why" class="lesson-section">
       <h2 class="lesson-section-title">4. ❓ Why Does This Exist?</h2>
-      <div style="font-size: 15px; line-height: 1.7;">
+      <div style="font-size: 15px; line-height: 1.8; color: #334155;">
         {{ current_topic.why_exists|safe }}
       </div>
     </section>
@@ -816,13 +963,14 @@
 
     <!-- 5. Real-World Industry Usage -->
     {% if current_topic.use_case %}
-    <section class="lesson-section">
+    <section id="section-usecase" class="lesson-section">
       <h2 class="lesson-section-title">5. 🏢 Real-World Industry Usage</h2>
       <div class="callout-box usecase-box">
-        <div style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-          🏢 Production Scenario: {{ current_topic.use_case.company }}
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; opacity: 0.75;">
+          🏭 Production Scenario
         </div>
-        <p style="margin: 0; font-size: 15px;">
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">{{ current_topic.use_case.company }}</div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.75;">
           {{ current_topic.use_case.text }}
         </p>
       </div>
@@ -1215,28 +1363,43 @@
 
     <!-- 19. Interview Questions -->
     {% if current_topic.interview_questions %}
-    <section class="lesson-section">
+    <section id="section-interview" class="lesson-section">
       <h2 class="lesson-section-title">19. 🎯 Technical Interview Questions</h2>
+      <div class="notion-callout callout-info" style="margin-bottom: 20px;">
+        <span class="notion-callout-icon">💼</span>
+        <div class="notion-callout-content">
+          <strong>Interview Preparation</strong>
+          These are real questions asked in technical interviews at companies like Google, Meta, Amazon, and Microsoft. Study the detailed answers, not just the surface-level response.
+        </div>
+      </div>
       {% for iq in current_topic.interview_questions %}
-      <details class="interactive-details" style="margin: 10px 0;">
-        <summary style="font-size: 15px;">{{ forloop.counter }}. [{{ iq.tier }}] {{ iq.question }}</summary>
-        <div style="margin-top: 10px; font-size: 14px; color: #334155; line-height: 1.6; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+      <div class="interview-block">
+        <div class="interview-q">
+          <span class="interview-tier-badge {% if iq.tier == 'Beginner' %}tier-beginner{% elif iq.tier == 'Mid' %}tier-mid{% elif iq.tier == 'Senior' %}tier-senior{% else %}tier-expert{% endif %}">
+            {{ iq.tier }}
+          </span>
+          <span>{{ forloop.counter }}. {{ iq.question }}</span>
+        </div>
+        <div class="interview-a">
           {{ iq.answer|safe }}
         </div>
-      </details>
+      </div>
       {% endfor %}
     </section>
     {% endif %}
 
     <!-- 20. Quick Revision -->
     {% if current_topic.quick_revision %}
-    <section class="lesson-section">
-      <h2 class="lesson-section-title">20. ⚡ Quick Revision</h2>
-      <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px;">
+    <section id="section-revision" class="lesson-section">
+      <h2 class="lesson-section-title">20. ⚡ Quick Revision Cheatsheet</h2>
+      <div class="revision-grid">
         {% for pt in current_topic.quick_revision %}
-        <li>{{ pt }}</li>
+        <div class="revision-chip">
+          <span style="color: #2563eb; font-weight: 800; flex-shrink:0;">✓</span>
+          <span>{{ pt }}</span>
+        </div>
         {% endfor %}
-      </ul>
+      </div>
     </section>
     {% endif %}
 
