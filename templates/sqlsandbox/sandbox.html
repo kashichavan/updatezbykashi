@@ -1192,16 +1192,35 @@
       return;
     }
 
+    let statusBadgeClass = 'row-badge-kept';
+    let statusText = '✨ CANDIDATE';
+    if (step.clause === 'JOIN') { statusBadgeClass = 'row-badge-joined'; statusText = '🔗 JOINED'; }
+    else if (step.clause === 'WHERE') { statusBadgeClass = 'row-badge-kept'; statusText = '✅ QUALIFIED'; }
+    else if (step.clause === 'SELECT') { statusBadgeClass = 'row-badge-projected'; statusText = '📐 PROJECTED'; }
+    else if (step.clause === 'ORDER BY') { statusBadgeClass = 'row-badge-sorted'; statusText = '📊 SORTED'; }
+
     let html = `
-      <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #131d31; padding: 8px 12px; border-radius: 8px; border: 1px solid #1e293b;">
-        <span style="font-size: 12px; color: #cbd5e1; font-weight: 700;">
-          📦 Virtual Memory Table State: <strong style="color: ${step.badge_color || '#38bdf8'}">${step.phase_name}</strong>
-        </span>
-        <span style="font-size: 11px; color: #94a3b8;">
-          ${step.status_note || ''}
-        </span>
+      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: #131d31; padding: 10px 14px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 14px;">📦</span>
+          <span style="font-size: 13px; color: #cbd5e1; font-weight: 700;">
+            Live Virtual Table State: <strong style="color: ${step.badge_color || '#38bdf8'}">${step.phase_name}</strong>
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 11px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-family: monospace;">
+            ${step.row_count} Rows &bull; ${step.columns.length} Cols
+          </span>
+          <span style="font-size: 12px; color: #94a3b8;">
+            ${step.status_note || ''}
+          </span>
+        </div>
       </div>
-      <table class="sql-data-table"><thead><tr>
+      <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #1e293b; background: #0f172a;">
+        <table class="sql-data-table">
+          <thead>
+            <tr>
+              <th style="width: 110px; background: #0b1324; color: #94a3b8; font-size: 11px; text-transform: uppercase;">STATUS</th>
     `;
 
     step.columns.forEach(col => {
@@ -1210,10 +1229,15 @@
     html += `</tr></thead><tbody>`;
 
     if (step.rows.length === 0) {
-      html += `<tr><td colspan="${step.columns.length}" style="text-align: center; color: #64748b; padding: 24px;">0 rows in buffer at this stage.</td></tr>`;
+      html += `<tr><td colspan="${step.columns.length + 1}" style="text-align: center; color: #64748b; padding: 28px;">0 rows in buffer at this stage.</td></tr>`;
     } else {
-      step.rows.forEach(row => {
-        html += `<tr>`;
+      step.rows.forEach((row, rIdx) => {
+        let rowCustomBadge = statusText;
+        if (step.clause === 'ORDER BY') {
+          rowCustomBadge = `📊 #${rIdx + 1}`;
+        }
+        html += `<tr style="transition: background 0.2s;">`;
+        html += `<td><span class="${statusBadgeClass}" style="padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; font-family: monospace;">${rowCustomBadge}</span></td>`;
         row.forEach(val => {
           if (val === null || val === undefined) {
             html += `<td class="null-cell">NULL</td>`;
@@ -1225,7 +1249,7 @@
       });
     }
 
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
     container.innerHTML = html;
   }
 

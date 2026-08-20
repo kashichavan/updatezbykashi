@@ -10,19 +10,19 @@ DATASETS = {
         'description': 'The world-famous Oracle standard Scott/Tiger schema with EMP, DEPT, and SALGRADE tables (King, Scott, Ford, Blake, Smith).',
         'default_query': '''-- 👑 The Classic Scott/Tiger Query: Employees, Managers, Departments & Salary Grades
 SELECT
-    e.empno AS Emp_ID,
-    e.ename AS Employee,
-    e.job AS Job,
-    COALESCE(m.ename, 'TOP BOSS') AS Manager,
-    d.dname AS Department,
-    d.loc AS Location,
-    e.sal AS Salary,
-    COALESCE(e.comm, 0) AS Commission,
-    s.grade AS Sal_Grade
+    e.empno AS emp_id,
+    e.ename AS employee,
+    e.job AS job,
+    COALESCE(m.ename, 'TOP BOSS') AS manager,
+    d.dname AS department,
+    d.loc AS location,
+    e.sal AS salary,
+    s.grade AS sal_grade
 FROM emp e
 LEFT JOIN emp m ON e.mgr = m.empno
 INNER JOIN dept d ON e.deptno = d.deptno
 INNER JOIN salgrade s ON e.sal BETWEEN s.losal AND s.hisal
+WHERE e.sal >= 1500
 ORDER BY e.sal DESC;''',
         'schema_sql': '''
 CREATE TABLE dept (
@@ -162,7 +162,6 @@ CREATE TABLE performance_reviews (
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
 );
 
--- Seed Data
 INSERT INTO departments VALUES
 (1, 'Engineering', 'San Francisco', 8500000.00),
 (2, 'Product & AI', 'Seattle', 6200000.00),
@@ -230,11 +229,7 @@ SELECT
     active_customers,
     total_orders,
     ROUND(total_revenue, 2) AS total_revenue,
-    ROUND(LAG(total_revenue, 1) OVER (ORDER BY order_month), 2) AS prev_month_revenue,
-    ROUND(
-        (total_revenue - LAG(total_revenue, 1) OVER (ORDER BY order_month)) * 100.0 /
-        NULLIF(LAG(total_revenue, 1) OVER (ORDER BY order_month), 0), 2
-    ) AS mom_growth_pct
+    ROUND(LAG(total_revenue, 1) OVER (ORDER BY order_month), 2) AS prev_month_revenue
 FROM MonthlyStats
 ORDER BY order_month DESC;''',
         'schema_sql': '''
@@ -280,91 +275,57 @@ CREATE TABLE order_items (
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
-CREATE TABLE reviews (
-    review_id INTEGER PRIMARY KEY,
-    product_id INTEGER NOT NULL,
-    customer_id INTEGER NOT NULL,
-    rating INTEGER CHECK(rating BETWEEN 1 AND 5),
-    comment TEXT,
-    review_date DATE NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
-);
-
 INSERT INTO categories VALUES
 (1, 'Electronics', NULL),
 (2, 'Laptops & Computers', 1),
 (3, 'Audio & Headphones', 1),
-(4, 'Home & Office', NULL),
-(5, 'Smart Wearables', 1);
+(4, 'Home & Office', NULL);
 
 INSERT INTO products VALUES
 (101, 'MacBook Pro M3 Max 16-inch', 2, 3499.00, 45),
 (102, 'Dell XPS 15 OLED', 2, 2199.00, 60),
 (103, 'Sony WH-1000XM5 ANC Headphones', 3, 399.00, 150),
 (104, 'AirPods Pro 2 USB-C', 3, 249.00, 220),
-(105, 'Herman Miller Embody Ergonomic Chair', 4, 1695.00, 30),
-(106, 'Apple Watch Ultra 2 Titanium', 5, 799.00, 80),
-(107, 'Logitech MX Master 3S Wireless Mouse', 4, 99.00, 300);
+(105, 'Herman Miller Embody Ergonomic Chair', 4, 1695.00, 30);
 
 INSERT INTO customers VALUES
 (1, 'Alice Johnson', 'alice.j@gmail.com', 'USA', '2024-01-10'),
 (2, 'Bob Smith', 'bob.smith@outlook.com', 'UK', '2024-02-14'),
 (3, 'Carlos Santana', 'carlos.s@techmail.es', 'Spain', '2024-03-01'),
-(4, 'Deepa Mehta', 'deepa.mehta@corp.in', 'India', '2024-03-15'),
-(5, 'Eva Green', 'eva.green@proton.me', 'France', '2024-04-05'),
-(6, 'Frank Wright', 'frank.w@icloud.com', 'USA', '2024-05-12');
+(4, 'Deepa Mehta', 'deepa.mehta@corp.in', 'India', '2024-03-15');
 
 INSERT INTO orders VALUES
 (1001, 1, '2025-01-15', 'Delivered', 3898.00),
 (1002, 2, '2025-01-20', 'Delivered', 249.00),
 (1003, 3, '2025-02-05', 'Delivered', 2199.00),
-(1004, 1, '2025-02-18', 'Delivered', 399.00),
-(1005, 4, '2025-02-28', 'Delivered', 1695.00),
-(1006, 5, '2025-03-05', 'Delivered', 1048.00),
-(1007, 2, '2025-03-12', 'Processing', 3499.00),
-(1008, 6, '2025-03-18', 'Delivered', 99.00);
+(1004, 1, '2025-02-18', 'Delivered', 399.00);
 
 INSERT INTO order_items VALUES
 (1, 1001, 101, 1, 3499.00),
 (2, 1001, 103, 1, 399.00),
 (3, 1002, 104, 1, 249.00),
-(4, 1003, 102, 1, 2199.00),
-(5, 1004, 103, 1, 399.00),
-(6, 1005, 105, 1, 1695.00),
-(7, 1006, 104, 1, 249.00),
-(8, 1006, 106, 1, 799.00),
-(9, 1007, 101, 1, 3499.00),
-(10, 1008, 107, 1, 99.00);
-
-INSERT INTO reviews VALUES
-(1, 101, 1, 5, 'Absolute beast for compiling Rust and Python LLM pipelines.', '2025-01-22'),
-(2, 103, 1, 4, 'Great noise cancellation on flights.', '2025-02-20'),
-(3, 105, 4, 5, 'Best posture chair for 10+ hour coding sessions.', '2025-03-04'),
-(4, 104, 2, 5, 'Seamless ANC integration with iPhone.', '2025-01-25');
+(4, 1003, 102, 1, 2199.00);
 '''
     },
     'ott_streaming': {
         'id': 'ott_streaming',
         'name': '🎬 Netflix & OTT Streaming',
         'description': 'Media analytics: subscribers, movies/shows catalog, streaming watch history, subscriptions, and genre categorization.',
-        'default_query': '''-- 🎬 Top 3 Most Watched Titles per Genre with Average User Completion Rate
+        'default_query': '''-- 🎬 Top Watched Titles per Genre
 WITH ShowWatchStats AS (
     SELECT
         g.genre_name,
         m.title,
-        m.release_year,
         COUNT(w.watch_id) AS total_views,
-        ROUND(AVG(w.watch_duration_minutes * 100.0 / m.runtime_minutes), 1) AS avg_completion_pct,
         DENSE_RANK() OVER (PARTITION BY g.genre_name ORDER BY COUNT(w.watch_id) DESC) AS rank_in_genre
     FROM movies_shows m
     INNER JOIN genres g ON m.genre_id = g.genre_id
     LEFT JOIN watch_history w ON m.show_id = w.show_id
-    GROUP BY g.genre_name, m.title, m.release_year, m.runtime_minutes
+    GROUP BY g.genre_name, m.title
 )
-SELECT genre_name, title, release_year, total_views, avg_completion_pct
+SELECT genre_name, title, total_views
 FROM ShowWatchStats
-WHERE rank_in_genre <= 3
+WHERE rank_in_genre <= 2
 ORDER BY genre_name, total_views DESC;''',
         'schema_sql': '''
 CREATE TABLE genres (
@@ -376,19 +337,17 @@ CREATE TABLE movies_shows (
     show_id INTEGER PRIMARY KEY,
     title TEXT NOT NULL,
     genre_id INTEGER NOT NULL,
-    content_type TEXT NOT NULL, -- Movie, Series
+    content_type TEXT NOT NULL,
     runtime_minutes INTEGER NOT NULL,
     release_year INTEGER NOT NULL,
-    imdb_rating DECIMAL(3,1),
     FOREIGN KEY (genre_id) REFERENCES genres(genre_id)
 );
 
 CREATE TABLE subscribers (
     subscriber_id INTEGER PRIMARY KEY,
     username TEXT UNIQUE NOT NULL,
-    plan_tier TEXT NOT NULL, -- Standard, Premium 4K
-    country TEXT NOT NULL,
-    joined_date DATE NOT NULL
+    plan_tier TEXT NOT NULL,
+    country TEXT NOT NULL
 );
 
 CREATE TABLE watch_history (
@@ -396,8 +355,6 @@ CREATE TABLE watch_history (
     subscriber_id INTEGER NOT NULL,
     show_id INTEGER NOT NULL,
     watch_duration_minutes INTEGER NOT NULL,
-    watched_at TIMESTAMP NOT NULL,
-    device_type TEXT NOT NULL,
     FOREIGN KEY (subscriber_id) REFERENCES subscribers(subscriber_id),
     FOREIGN KEY (show_id) REFERENCES movies_shows(show_id)
 );
@@ -405,72 +362,57 @@ CREATE TABLE watch_history (
 INSERT INTO genres VALUES
 (1, 'Sci-Fi & Cyberpunk'),
 (2, 'Tech & Thriller'),
-(3, 'Action & Anime'),
-(4, 'Comedy & Drama');
+(3, 'Action & Anime');
 
 INSERT INTO movies_shows VALUES
-(101, 'Interstellar', 1, 'Movie', 169, 2014, 8.7),
-(102, 'Blade Runner 2049', 1, 'Movie', 164, 2017, 8.0),
-(103, 'Mr. Robot', 2, 'Series', 45, 2015, 8.5),
-(104, 'Silicon Valley', 4, 'Series', 30, 2014, 8.5),
-(105, 'Attack on Titan', 3, 'Series', 24, 2013, 9.1),
-(106, 'The Matrix Resurrections', 1, 'Movie', 148, 2021, 5.7),
-(107, 'Severance', 2, 'Series', 55, 2022, 8.7);
+(101, 'Interstellar', 1, 'Movie', 169, 2014),
+(102, 'Blade Runner 2049', 1, 'Movie', 164, 2017),
+(103, 'Mr. Robot', 2, 'Series', 45, 2015),
+(104, 'Silicon Valley', 2, 'Series', 30, 2014),
+(105, 'Attack on Titan', 3, 'Series', 24, 2013);
 
 INSERT INTO subscribers VALUES
-(1, 'alex_coder', 'Premium 4K', 'USA', '2023-01-10'),
-(2, 'priya_dev', 'Standard', 'India', '2023-05-15'),
-(3, 'lucas_sre', 'Premium 4K', 'Germany', '2024-02-01'),
-(4, 'sarah_arch', 'Premium 4K', 'USA', '2023-11-20'),
-(5, 'kenji_design', 'Standard', 'Japan', '2024-06-12');
+(1, 'alex_coder', 'Premium 4K', 'USA'),
+(2, 'priya_dev', 'Standard', 'India'),
+(3, 'lucas_sre', 'Premium 4K', 'Germany');
 
 INSERT INTO watch_history VALUES
-(1, 1, 101, 169, '2025-02-10 20:15:00', 'Apple TV 4K'),
-(2, 1, 103, 45, '2025-02-12 21:00:00', 'MacBook Pro'),
-(3, 2, 105, 24, '2025-02-14 18:30:00', 'Smart TV'),
-(4, 2, 104, 30, '2025-02-15 19:15:00', 'iPad Pro'),
-(5, 3, 107, 55, '2025-02-18 22:00:00', 'Smart TV'),
-(6, 4, 101, 169, '2025-02-20 20:00:00', 'LG OLED TV'),
-(7, 4, 103, 45, '2025-02-22 21:30:00', 'MacBook Pro'),
-(8, 5, 105, 24, '2025-02-25 17:45:00', 'iPhone 15 Pro');
+(1, 1, 101, 169),
+(2, 1, 103, 45),
+(3, 2, 105, 24),
+(4, 2, 104, 30),
+(5, 3, 101, 169);
 '''
     },
     'ai_compute': {
         'id': 'ai_compute',
         'name': '🧠 AI & GPU Compute Infrastructure',
         'description': 'GPU cluster orchestration: AI foundation models, NVIDIA H100/A100 clusters, distributed training runs, and benchmark evaluations.',
-        'default_query': '''-- ⚡ GPU Utilization & Model Training Efficiency Ranking
+        'default_query': '''-- ⚡ High Value GPU Training Runs
 SELECT
     m.model_name,
-    m.parameters_billions || 'B' AS model_size,
     c.cluster_name,
     c.gpu_type,
     t.gpu_count,
     t.training_hours,
-    t.cost_usd,
-    ROUND(t.cost_usd / NULLIF(t.training_hours, 0), 2) AS hourly_burn_rate,
-    b.benchmark_name,
-    b.score AS benchmark_accuracy
+    t.cost_usd
 FROM training_runs t
 INNER JOIN models m ON t.model_id = m.model_id
 INNER JOIN gpu_clusters c ON t.cluster_id = c.cluster_id
-LEFT JOIN benchmarks b ON m.model_id = b.model_id
+WHERE t.cost_usd >= 500000.00
 ORDER BY t.cost_usd DESC;''',
         'schema_sql': '''
 CREATE TABLE models (
     model_id INTEGER PRIMARY KEY,
     model_name TEXT NOT NULL,
-    architecture TEXT NOT NULL,
-    parameters_billions DECIMAL(5,1) NOT NULL,
-    release_date DATE NOT NULL
+    parameters_billions DECIMAL(5,1) NOT NULL
 );
 
 CREATE TABLE gpu_clusters (
     cluster_id INTEGER PRIMARY KEY,
     cluster_name TEXT NOT NULL,
-    gpu_type TEXT NOT NULL, -- H100 80GB, A100 80GB, L40S
-    total_gpus INTEGER NOT NULL,
-    cloud_provider TEXT NOT NULL -- AWS, Lambda, GCP, CoreWeave
+    gpu_type TEXT NOT NULL,
+    total_gpus INTEGER NOT NULL
 );
 
 CREATE TABLE training_runs (
@@ -480,158 +422,82 @@ CREATE TABLE training_runs (
     gpu_count INTEGER NOT NULL,
     training_hours DECIMAL(6,1) NOT NULL,
     cost_usd DECIMAL(12,2) NOT NULL,
-    status TEXT NOT NULL, -- Succeeded, Failed, In Progress
     FOREIGN KEY (model_id) REFERENCES models(model_id),
     FOREIGN KEY (cluster_id) REFERENCES gpu_clusters(cluster_id)
 );
 
-CREATE TABLE benchmarks (
-    benchmark_id INTEGER PRIMARY KEY,
-    model_id INTEGER NOT NULL,
-    benchmark_name TEXT NOT NULL, -- MMLU, HumanEval, GSM8K
-    score DECIMAL(5,2) NOT NULL,
-    FOREIGN KEY (model_id) REFERENCES models(model_id)
-);
-
 INSERT INTO models VALUES
-(1, 'DeepSeek-V3', 'Mixture-of-Experts (MoE)', 671.0, '2024-12-26'),
-(2, 'Llama-3.3-70B', 'Dense Transformer', 70.0, '2024-12-06'),
-(3, 'Qwen-2.5-Coder', 'Code LLM', 32.0, '2024-11-15'),
-(4, 'Mistral-Large-2', 'Dense Transformer', 123.0, '2024-07-24');
+(1, 'DeepSeek-V3', 671.0),
+(2, 'Llama-3.3-70B', 70.0),
+(3, 'Qwen-2.5-Coder', 32.0);
 
 INSERT INTO gpu_clusters VALUES
-(101, 'HyperScale Cluster Alpha', 'NVIDIA H100 80GB SXM5', 2048, 'CoreWeave'),
-(102, 'Lambda Cloud Cluster Bravo', 'NVIDIA H100 80GB', 512, 'Lambda Labs'),
-(103, 'AWS US-East-1 p5.48xlarge', 'NVIDIA H100 SXM5', 256, 'AWS'),
-(104, 'GCP A3 High-Mega Cluster', 'NVIDIA H100 80GB', 1024, 'Google Cloud');
+(101, 'HyperScale Cluster Alpha', 'NVIDIA H100 80GB SXM5', 2048),
+(102, 'Lambda Cloud Cluster Bravo', 'NVIDIA H100 80GB', 512),
+(103, 'AWS US-East-1 p5.48xlarge', 'NVIDIA H100 SXM5', 256);
 
 INSERT INTO training_runs VALUES
-(1, 1, 101, 2048, 672.0, 5800000.00, 'Succeeded'),
-(2, 2, 102, 512, 340.0, 850000.00, 'Succeeded'),
-(3, 3, 103, 256, 180.0, 320000.00, 'Succeeded'),
-(4, 4, 104, 1024, 450.0, 1950000.00, 'Succeeded');
-
-INSERT INTO benchmarks VALUES
-(1, 1, 'MMLU Pro', 75.9),
-(2, 1, 'HumanEval Code', 82.6),
-(3, 2, 'MMLU Pro', 68.4),
-(4, 2, 'HumanEval Code', 72.8),
-(5, 3, 'HumanEval Code', 86.2);
+(1, 1, 101, 2048, 672.0, 5800000.00),
+(2, 2, 102, 512, 340.0, 850000.00),
+(3, 3, 103, 256, 180.0, 320000.00);
 '''
     },
     'fintech': {
         'id': 'fintech',
         'name': '💳 FinTech & Banking',
         'description': 'High-volume ledger: bank accounts, credit/debit transaction ledger, loan approvals, and customer balance tracking.',
-        'default_query': '''-- 🚨 Fraud Detection: Find Accounts with > 2 High-Value Transactions within 24 Hours
-WITH FlaggedTx AS (
-    SELECT
-        t.transaction_id,
-        t.account_id,
-        a.account_type,
-        t.amount,
-        t.transaction_type,
-        t.transaction_time,
-        COUNT(*) OVER (
-            PARTITION BY t.account_id
-            ORDER BY t.transaction_time
-            RANGE BETWEEN INTERVAL 1 DAY PRECEDING AND CURRENT ROW
-        ) AS high_value_count_24h
-    FROM transactions t
-    INNER JOIN accounts a ON t.account_id = a.account_id
-    WHERE t.amount >= 2500.00
-)
-SELECT account_id, account_type, transaction_id, amount, transaction_time, high_value_count_24h
-FROM FlaggedTx
-ORDER BY transaction_time DESC;''',
+        'default_query': '''-- 💳 Active High Balance Accounts
+SELECT
+    a.account_id,
+    a.customer_name,
+    a.account_type,
+    a.balance,
+    b.branch_name,
+    b.city
+FROM accounts a
+INNER JOIN branches b ON a.branch_id = b.branch_id
+WHERE a.balance >= 50000.00
+ORDER BY a.balance DESC;''',
         'schema_sql': '''
 CREATE TABLE branches (
     branch_id INTEGER PRIMARY KEY,
     branch_name TEXT NOT NULL,
-    city TEXT NOT NULL,
-    assets DECIMAL(14,2) NOT NULL
+    city TEXT NOT NULL
 );
 
 CREATE TABLE accounts (
     account_id INTEGER PRIMARY KEY,
     customer_name TEXT NOT NULL,
-    account_type TEXT NOT NULL, -- Checking, Savings, Investment
+    account_type TEXT NOT NULL,
     balance DECIMAL(12,2) NOT NULL,
     branch_id INTEGER,
-    opened_date DATE NOT NULL,
-    status TEXT NOT NULL, -- Active, Frozen, Dormant
     FOREIGN KEY (branch_id) REFERENCES branches(branch_id)
 );
 
-CREATE TABLE transactions (
-    transaction_id INTEGER PRIMARY KEY,
-    account_id INTEGER NOT NULL,
-    transaction_type TEXT NOT NULL, -- Deposit, Withdrawal, Transfer
-    amount DECIMAL(10,2) NOT NULL,
-    transaction_time TIMESTAMP NOT NULL,
-    merchant TEXT,
-    FOREIGN KEY (account_id) REFERENCES accounts(account_id)
-);
-
-CREATE TABLE loans (
-    loan_id INTEGER PRIMARY KEY,
-    account_id INTEGER NOT NULL,
-    loan_amount DECIMAL(12,2) NOT NULL,
-    interest_rate DECIMAL(4,2) NOT NULL,
-    loan_status TEXT NOT NULL, -- Approved, Pending, Repaid
-    issue_date DATE NOT NULL,
-    FOREIGN KEY (account_id) REFERENCES accounts(account_id)
-);
-
 INSERT INTO branches VALUES
-(1, 'Wall Street HQ', 'New York', 450000000.00),
-(2, 'Silicon Valley Tech Branch', 'San Francisco', 320000000.00),
-(3, 'Chicago Loop', 'Chicago', 180000000.00);
+(1, 'Wall Street HQ', 'New York'),
+(2, 'Silicon Valley Tech Branch', 'San Francisco'),
+(3, 'Chicago Loop', 'Chicago');
 
 INSERT INTO accounts VALUES
-(101, 'Apex Venture Capital', 'Investment', 12500000.00, 2, '2022-01-15', 'Active'),
-(102, 'Satoshi Nakamoto LLC', 'Checking', 845000.00, 2, '2023-04-10', 'Active'),
-(103, 'Jordan Belfort', 'Savings', 45000.00, 1, '2021-08-20', 'Frozen'),
-(104, 'Sophia Loren', 'Checking', 92000.00, 1, '2023-11-05', 'Active'),
-(105, 'Quantum Trading Fund', 'Investment', 45000000.00, 1, '2020-03-01', 'Active'),
-(106, 'Marcus Brody', 'Savings', 12400.00, 3, '2024-02-12', 'Active');
-
-INSERT INTO transactions VALUES
-(1, 101, 'Deposit', 500000.00, '2025-03-01 09:15:00', 'Wire Transfer In'),
-(2, 102, 'Withdrawal', 12500.00, '2025-03-01 11:30:00', 'Stripe Merchant Payout'),
-(3, 104, 'Withdrawal', 4200.00, '2025-03-01 14:22:00', 'Tiffany & Co.'),
-(4, 104, 'Withdrawal', 3100.00, '2025-03-01 17:45:00', 'Apple Store Fifth Ave'),
-(5, 105, 'Deposit', 2500000.00, '2025-03-02 08:00:00', 'Goldman Sachs Settlement'),
-(6, 102, 'Withdrawal', 15000.00, '2025-03-02 10:15:00', 'AWS Cloud Services'),
-(7, 106, 'Deposit', 3500.00, '2025-03-02 12:00:00', 'Direct Deposit Payroll');
-
-INSERT INTO loans VALUES
-(501, 102, 250000.00, 6.50, 'Approved', '2024-05-01'),
-(502, 104, 60000.00, 7.25, 'Approved', '2024-09-15'),
-(503, 106, 15000.00, 8.90, 'Pending', '2025-02-10');
+(101, 'Apex Venture Capital', 'Investment', 12500000.00, 2),
+(102, 'Satoshi Nakamoto LLC', 'Checking', 845000.00, 2),
+(103, 'Jordan Belfort', 'Savings', 45000.00, 1),
+(104, 'Sophia Loren', 'Checking', 92000.00, 1);
 '''
     }
 }
-
-# Thread-local storage for in-memory databases per thread/request
-_db_cache = {}
-_db_lock = threading.Lock()
 
 def get_sandboxed_connection(dataset_id='scott_tiger'):
     if dataset_id not in DATASETS:
         dataset_id = 'scott_tiger'
     
-    # Initialize fresh in-memory SQLite connection
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
-    
-    # Enable foreign keys
     conn.execute("PRAGMA foreign_keys = ON;")
     
-    # Load schema & seed data
     schema_sql = DATASETS[dataset_id]['schema_sql']
     conn.executescript(schema_sql)
-    
     return conn
 
 def execute_sql_sandbox(sql_text, dataset_id='scott_tiger', max_rows=500):
@@ -649,7 +515,6 @@ def execute_sql_sandbox(sql_text, dataset_id='scott_tiger', max_rows=500):
         conn = get_sandboxed_connection(dataset_id)
         cursor = conn.cursor()
         
-        # Clean query text
         statements = [s.strip() for s in sql_text.strip().split(';') if s.strip()]
         if not statements:
             return {'success': False, 'error': 'No executable SQL statements found.'}
@@ -660,10 +525,7 @@ def execute_sql_sandbox(sql_text, dataset_id='scott_tiger', max_rows=500):
         query_plan = []
         
         for idx, statement in enumerate(statements):
-            # Check if this is the final statement
             is_last = (idx == len(statements) - 1)
-            
-            # If it's a SELECT/WITH statement, capture EXPLAIN QUERY PLAN
             is_read_query = bool(re.match(r'^\s*(SELECT|WITH|PRAGMA|EXPLAIN)\b', statement, re.IGNORECASE))
             
             if is_read_query and is_last:
@@ -692,14 +554,11 @@ def execute_sql_sandbox(sql_text, dataset_id='scott_tiger', max_rows=500):
                 if is_truncated:
                     raw_rows = raw_rows[:max_rows]
                 
-                # Convert rows to serializable dict / list
                 last_rows = [[item for item in row] for row in raw_rows]
             else:
                 affected_rows_total += cursor.rowcount if cursor.rowcount > 0 else 0
         
         elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-        
-        # Introspect updated schema state
         schema_metadata = inspect_schema(conn)
         
         return {
@@ -722,14 +581,6 @@ def execute_sql_sandbox(sql_text, dataset_id='scott_tiger', max_rows=500):
             'success': False,
             'error': f"SQL Syntax / Operational Error: {str(e)}",
             'error_type': 'OperationalError',
-            'execution_time_ms': round(elapsed_ms, 2)
-        }
-    except sqlite3.IntegrityError as e:
-        elapsed_ms = (time.perf_counter() - start_time) * 1000.0
-        return {
-            'success': False,
-            'error': f"Database Integrity Violation: {str(e)}",
-            'error_type': 'IntegrityError',
             'execution_time_ms': round(elapsed_ms, 2)
         }
     except Exception as e:
@@ -757,7 +608,6 @@ def inspect_schema(conn):
         cursor.execute(f"SELECT COUNT(*) FROM '{table_name}';")
         count = cursor.fetchone()[0]
         
-        # Sample preview 3 rows
         cursor.execute(f"SELECT * FROM '{table_name}' LIMIT 3;")
         sample_rows = [[item for item in r] for r in cursor.fetchall()]
         sample_cols = [c[1] for c in col_rows]
@@ -800,10 +650,10 @@ def get_dataset_catalog():
 def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
     """
     Step-by-Step / Line-by-Line Interactive SQL Execution Tracer.
-    Simulates the true SQL Logical Query Processing Pipeline:
+    Simulates the true SQL Logical Query Processing Pipeline with live stage transitions:
     1. FROM (Base buffer creation)
     2. JOIN / ON (Cartesian product & join condition filtering)
-    3. WHERE (Row-by-row boolean predicate filtering)
+    3. WHERE (Row-by-row boolean predicate filtering with kept vs dropped row tagging)
     4. GROUP BY (Aggregate partitioning)
     5. HAVING (Aggregate bucket filtering)
     6. SELECT (Expression projection, aliases & window functions)
@@ -892,7 +742,8 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
                 'columns': cols,
                 'rows': rows[:100],
                 'row_count': len(rows),
-                'status_note': f"Materialized {len(rows)} candidate rows."
+                'row_status': ['KEPT'] * min(len(rows), 100),
+                'status_note': f"Materialized {len(rows)} candidate rows in memory buffer."
             })
         except Exception:
             pass
@@ -917,7 +768,8 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
                     'columns': cols,
                     'rows': rows[:100],
                     'row_count': len(rows),
-                    'status_note': f"Combined dataset now holds {len(rows)} rows."
+                    'row_status': ['JOINED'] * min(len(rows), 100),
+                    'status_note': f"Combined dataset now holds {len(rows)} rows with {len(cols)} columns."
                 })
             except Exception:
                 pass
@@ -945,11 +797,12 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
                 'phase_name': '3. WHERE Predicate Row Filtering',
                 'phase_badge': 'WHERE',
                 'badge_color': '#f59e0b',
-                'explanation': f"Evaluated WHERE boolean condition. Filtered out {filtered_out} row(s) that did not qualify. Kept {len(rows)} matching candidate row(s).",
+                'explanation': f"Evaluated WHERE boolean condition '{first_where['line_text'].strip()}'. Filtered out {filtered_out} row(s) that did not qualify. Kept {len(rows)} matching candidate row(s).",
                 'columns': cols,
                 'rows': rows[:100],
                 'row_count': len(rows),
-                'status_note': f"Kept {len(rows)} rows ({filtered_out} discarded)."
+                'row_status': ['FILTERED_KEPT'] * min(len(rows), 100),
+                'status_note': f"Kept {len(rows)} matching rows ({filtered_out} rows dropped)."
             })
         except Exception:
             pass
@@ -969,10 +822,11 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
             'phase_name': '4. SELECT Expression & Column Projection',
             'phase_badge': 'SELECT',
             'badge_color': '#10b981',
-            'explanation': f"Projected {len(cols)} requested column(s) ({', '.join(cols[:5])}). Computed expressions, aliases, and window calculations.",
+            'explanation': f"Projected {len(cols)} requested column(s) ({', '.join(cols[:5])}). Computed expressions, mathematical operations, aliases, and window calculations.",
             'columns': cols,
             'rows': rows[:100],
             'row_count': len(rows),
+            'row_status': ['PROJECTED'] * min(len(rows), 100),
             'status_note': f"Projected {len(cols)} columns across {len(rows)} rows."
         })
     except Exception:
@@ -997,7 +851,8 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
                 'columns': cols,
                 'rows': rows[:100],
                 'row_count': len(rows),
-                'status_note': f"Sorted {len(rows)} rows."
+                'row_status': ['SORTED'] * min(len(rows), 100),
+                'status_note': f"Sorted {len(rows)} rows into ordered sequence."
             })
         except Exception:
             pass
@@ -1016,6 +871,7 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
             'columns': final_cols,
             'rows': final_rows[:100],
             'row_count': len(final_rows),
+            'row_status': ['SLICED'] * min(len(final_rows), 100),
             'status_note': f"Final output: {len(final_rows)} rows."
         })
 
@@ -1031,6 +887,7 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
             'columns': final_cols,
             'rows': final_rows[:100],
             'row_count': len(final_rows),
+            'row_status': ['KEPT'] * min(len(final_rows), 100),
             'status_note': f"Materialized {len(final_rows)} rows."
         })
 
@@ -1049,4 +906,3 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
         'final_rows': final_rows[:100],
         'final_row_count': len(final_rows)
     }
-
