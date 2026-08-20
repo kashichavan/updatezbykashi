@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from debugger.views import learn_topic_view
 
@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.index_view, name='index'),
     path('about/', views.about_view, name='about'),
     path('youtube/', views.youtube_view, name='youtube'),
+    path('sql/', include(('sqlsandbox.urls', 'sqlsandbox'), namespace='sqlsandbox_direct')),
     
     # Interactive Developer Academy (Python, Java, JavaScript with Analogies & Live Debugger)
     path('learn/', learn_topic_view, name='learn_root'),
