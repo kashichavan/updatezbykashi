@@ -420,6 +420,65 @@
     grid-template-columns: 1fr !important;
   }
 
+  /* ── STUDIO THEMES ── */
+  body.theme-dracula {
+    --sql-bg: #1e1f29;
+    --sql-card: #282a36;
+    --sql-card-border: rgba(189, 147, 249, 0.25);
+    --sql-accent: #bd93f9;
+    --sql-accent-glow: rgba(189, 147, 249, 0.3);
+  }
+  body.theme-dracula .sql-data-table th { background: #343746; color: #ff79c6; }
+  body.theme-dracula .sql-compact-topbar { background: linear-gradient(135deg, #1e1f29 0%, #282a36 100%); border-color: rgba(189, 147, 249, 0.3); }
+
+  body.theme-monokai {
+    --sql-bg: #1e1f1c;
+    --sql-card: #272822;
+    --sql-card-border: rgba(230, 219, 116, 0.25);
+    --sql-accent: #a6e22e;
+    --sql-accent-glow: rgba(166, 226, 46, 0.3);
+  }
+  body.theme-monokai .sql-data-table th { background: #3e3d32; color: #e6db74; }
+  body.theme-monokai .sql-compact-topbar { background: linear-gradient(135deg, #1e1f1c 0%, #272822 100%); border-color: rgba(230, 219, 116, 0.3); }
+
+  body.theme-onedark {
+    --sql-bg: #181a1f;
+    --sql-card: #21252b;
+    --sql-card-border: rgba(97, 175, 239, 0.25);
+    --sql-accent: #61afef;
+    --sql-accent-glow: rgba(97, 175, 239, 0.3);
+  }
+  body.theme-onedark .sql-data-table th { background: #2c313a; color: #61afef; }
+  body.theme-onedark .sql-compact-topbar { background: linear-gradient(135deg, #181a1f 0%, #21252b 100%); border-color: rgba(97, 175, 239, 0.3); }
+
+  body.theme-matrix {
+    --sql-bg: #050a06;
+    --sql-card: #0c1810;
+    --sql-card-border: rgba(16, 185, 129, 0.3);
+    --sql-accent: #10b981;
+    --sql-accent-glow: rgba(16, 185, 129, 0.3);
+  }
+  body.theme-matrix .sql-data-table th { background: #122418; color: #34d399; }
+  body.theme-matrix .sql-compact-topbar { background: linear-gradient(135deg, #050a06 0%, #0c1810 100%); border-color: rgba(16, 185, 129, 0.3); }
+
+  body.theme-github_light {
+    --sql-bg: #f6f8fa;
+    --sql-card: #ffffff;
+    --sql-card-border: #d0d7de;
+    --sql-text: #1f2328;
+    --sql-muted: #57606a;
+    --sql-accent: #0969da;
+    --sql-accent-glow: rgba(9, 105, 218, 0.2);
+  }
+  body.theme-github_light .sql-compact-topbar { background: #ffffff; border-color: #d0d7de; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  body.theme-github_light .sql-brand-title h1 { color: #1f2328; }
+  body.theme-github_light .sql-data-table th { background: #f6f8fa; color: #0969da; border-color: #d0d7de; }
+  body.theme-github_light .sql-data-table td { color: #1f2328; border-color: #d0d7de; }
+  body.theme-github_light .sql-data-table tr:nth-child(even) { background: #f8fafc; }
+  body.theme-github_light .results-header-tabs,
+  body.theme-github_light .editor-toolbar,
+  body.theme-github_light .sidebar-tabs { background: #f6f8fa; border-color: #d0d7de; }
+
   .btn-maximize-toggle {
     background: #17233d;
     color: #38bdf8;
@@ -698,6 +757,16 @@
         <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
         {% endfor %}
       </select>
+
+      <!-- Theme Switcher -->
+      <select id="themeSelector" class="dataset-select-compact" style="background: #17233d; color: #fbbf24; border-color: #334155; margin-left: 4px;" onchange="changeTheme(this.value)" title="Choose Editor & Studio Theme">
+        <option value="cyberpunk" selected>🎨 Cyberpunk Dark</option>
+        <option value="dracula">🧛 Dracula Vampire</option>
+        <option value="monokai">🦊 Monokai Pro</option>
+        <option value="onedark">🌃 One Dark Pro</option>
+        <option value="matrix">🌲 Matrix Emerald</option>
+        <option value="github_light">☀️ GitHub Light</option>
+      </select>
     </div>
 
     <!-- Playback Controls -->
@@ -943,8 +1012,8 @@
   // Configure Monaco AMD Loader
   require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
 
-  require(['vs/editor/editor.main'], function() {
-    monaco.editor.defineTheme('sqlDarkStudio', {
+    // 1. Cyberpunk Dark (Default)
+    monaco.editor.defineTheme('cyberpunk', {
       base: 'vs-dark',
       inherit: true,
       rules: [
@@ -964,12 +1033,118 @@
       }
     });
 
+    // 2. Dracula Vampire
+    monaco.editor.defineTheme('dracula', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'keyword', foreground: 'ff79c6', fontStyle: 'bold' },
+        { token: 'string', foreground: 'f1fa8c' },
+        { token: 'number', foreground: 'bd93f9' },
+        { token: 'comment', foreground: '6272a4', fontStyle: 'italic' },
+        { token: 'operator.sql', foreground: '8be9fd' }
+      ],
+      colors: {
+        'editor.background': '#282a36',
+        'editor.lineHighlightBackground': '#44475a50',
+        'editorCursor.foreground': '#ff79c6',
+        'editorLineNumber.foreground': '#6272a4',
+        'editorLineNumber.activeForeground': '#f8f8f2',
+        'editor.selectionBackground': '#44475a'
+      }
+    });
+
+    // 3. Monokai Pro
+    monaco.editor.defineTheme('monokai', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'keyword', foreground: 'f92672', fontStyle: 'bold' },
+        { token: 'string', foreground: 'e6db74' },
+        { token: 'number', foreground: 'ae81ff' },
+        { token: 'comment', foreground: '75715e', fontStyle: 'italic' },
+        { token: 'operator.sql', foreground: '66d9ef' }
+      ],
+      colors: {
+        'editor.background': '#272822',
+        'editor.lineHighlightBackground': '#3e3d32',
+        'editorCursor.foreground': '#f8f8f0',
+        'editorLineNumber.foreground': '#88846f',
+        'editorLineNumber.activeForeground': '#f8f8f2',
+        'editor.selectionBackground': '#49483e'
+      }
+    });
+
+    // 4. One Dark Pro
+    monaco.editor.defineTheme('onedark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'keyword', foreground: 'c678dd', fontStyle: 'bold' },
+        { token: 'string', foreground: '98c379' },
+        { token: 'number', foreground: 'd19a66' },
+        { token: 'comment', foreground: '5c6370', fontStyle: 'italic' },
+        { token: 'operator.sql', foreground: '61afef' }
+      ],
+      colors: {
+        'editor.background': '#21252b',
+        'editor.lineHighlightBackground': '#2c313a',
+        'editorCursor.foreground': '#528bff',
+        'editorLineNumber.foreground': '#4b5263',
+        'editorLineNumber.activeForeground': '#abb2bf',
+        'editor.selectionBackground': '#3e4451'
+      }
+    });
+
+    // 5. Matrix Emerald
+    monaco.editor.defineTheme('matrix', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'keyword', foreground: '10b981', fontStyle: 'bold' },
+        { token: 'string', foreground: '6ee7b7' },
+        { token: 'number', foreground: '34d399' },
+        { token: 'comment', foreground: '065f46', fontStyle: 'italic' },
+        { token: 'operator.sql', foreground: 'a7f3d0' }
+      ],
+      colors: {
+        'editor.background': '#0c1810',
+        'editor.lineHighlightBackground': '#13281b',
+        'editorCursor.foreground': '#10b981',
+        'editorLineNumber.foreground': '#065f46',
+        'editorLineNumber.activeForeground': '#34d399',
+        'editor.selectionBackground': '#064e3b88'
+      }
+    });
+
+    // 6. GitHub Light
+    monaco.editor.defineTheme('github_light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: 'keyword', foreground: 'cf222e', fontStyle: 'bold' },
+        { token: 'string', foreground: '0a3069' },
+        { token: 'number', foreground: '0550ae' },
+        { token: 'comment', foreground: '6e7781', fontStyle: 'italic' },
+        { token: 'operator.sql', foreground: '0969da' }
+      ],
+      colors: {
+        'editor.background': '#ffffff',
+        'editor.lineHighlightBackground': '#f6f8fa',
+        'editorCursor.foreground': '#0969da',
+        'editorLineNumber.foreground': '#8c959f',
+        'editorLineNumber.activeForeground': '#24292f',
+        'editor.selectionBackground': '#b6e3ff44'
+      }
+    });
+
     const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp LIMIT 10;";
+    const savedTheme = localStorage.getItem('kashii_sql_theme') || 'cyberpunk';
 
     editor = monaco.editor.create(document.getElementById('monacoSqlContainer'), {
       value: initialSql,
       language: 'sql',
-      theme: 'sqlDarkStudio',
+      theme: savedTheme,
       fontSize: 13,
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
       lineNumbers: 'on',
@@ -980,6 +1155,11 @@
       automaticLayout: true,
       minimap: { enabled: false }
     });
+
+    // Apply saved theme to UI on load
+    if (savedTheme !== 'cyberpunk') {
+      changeTheme(savedTheme);
+    }
 
     // ── CRITICAL: CLEAR HAND/LINE HIGHLIGHT WHEN USER TYPES ──
     editor.onDidChangeModelContent(function() {
@@ -1752,6 +1932,24 @@
     } else {
       prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
     }
+  }
+
+  // ── THEME SWITCHER ENGINE ──
+  function changeTheme(themeName) {
+    const themes = ['cyberpunk', 'dracula', 'monokai', 'onedark', 'matrix', 'github_light'];
+    themes.forEach(t => document.body.classList.remove(`theme-${t}`));
+
+    if (themeName !== 'cyberpunk') {
+      document.body.classList.add(`theme-${themeName}`);
+    }
+
+    if (window.monaco && monaco.editor) {
+      monaco.editor.setTheme(themeName);
+    }
+
+    localStorage.setItem('kashii_sql_theme', themeName);
+    const sel = document.getElementById('themeSelector');
+    if (sel) sel.value = themeName;
   }
 
   // Check on load
