@@ -411,6 +411,15 @@
     border-color: rgba(56, 189, 248, 0.4);
   }
 
+  /* Sidebar Collapsed Mode: Completely removes left tables bar and expands editor & results to 100% width */
+  body.sidebar-collapsed .sql-sidebar-card {
+    display: none !important;
+  }
+
+  body.sidebar-collapsed .sql-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+
   .btn-maximize-toggle {
     background: #17233d;
     color: #38bdf8;
@@ -708,6 +717,11 @@
       <span id="stepBadge" style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace;">
         Step 0 / 0
       </span>
+
+      <!-- Remove/Toggle Left Tables Sidebar Button -->
+      <button id="btnToggleSidebar" class="dbg-btn-compact" style="background: #17233d; border-color: #334155; color: #38bdf8; margin-left: 6px;" onclick="toggleSidebar()" title="Hide / Show Left Tables Bar (Expand Debugger to Full Width)">
+        <span id="sidebarToggleIcon">◀</span> <span id="sidebarToggleText">Hide Tables</span>
+      </button>
     </div>
   </div>
 
@@ -1667,6 +1681,36 @@
         btn.style.color = '#38bdf8';
         btn.style.borderColor = '#233554';
       }
+    }
+  }
+
+  // ── TOGGLE / REMOVE LEFT TABLES SIDEBAR (EXPAND DEBUGGER TO FULL WIDTH) ──
+  function toggleSidebar() {
+    const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+    const icon = document.getElementById('sidebarToggleIcon');
+    const text = document.getElementById('sidebarToggleText');
+    const btn = document.getElementById('btnToggleSidebar');
+
+    if (isCollapsed) {
+      if (icon) icon.innerText = '▶';
+      if (text) text.innerText = 'Show Tables';
+      if (btn) {
+        btn.style.background = '#0284c7';
+        btn.style.color = '#ffffff';
+        btn.style.borderColor = '#38bdf8';
+      }
+    } else {
+      if (icon) icon.innerText = '◀';
+      if (text) text.innerText = 'Hide Tables';
+      if (btn) {
+        btn.style.background = '#17233d';
+        btn.style.color = '#38bdf8';
+        btn.style.borderColor = '#334155';
+      }
+    }
+
+    if (editor) {
+      setTimeout(() => { editor.layout(); }, 120);
     }
   }
 
