@@ -473,6 +473,230 @@ executor.shutdown();
         'pdf_download_url': PYTHON_DRIVE_FOLDER,
         'pdf_file_name': 'Python Expert Colaboratory Guide.pdf',
         'content': '''<h2>Why Step-by-Step Visual Tracing Matters</h2><p>Step through execution frames, watch memory heaps mutate in real-time, and visualize recursion trees.</p>'''
+    },
+    {
+        'title': 'Git & GitHub Complete Learning Path: Zero to Production Masterclass (2026)',
+        'slug': 'git-github-complete-learning-path',
+        'topic': 'CAREER',
+        'read_time': '14 min read',
+        'summary': 'A complete, step-by-step masterclass on Git version control and GitHub collaboration: working tree vs staging area, branching workflows, merge vs rebase, conflict resolution, cherry-pick, stashing, pull requests, and CI/CD pipelines.',
+        'tags': 'Git, GitHub, Version Control, Open Source, DevOps, CI/CD, Notion Guide',
+        'pdf_download_url': 'https://app.notion.com/p/Git-GitHub-Complete-Learning-Path-2d8e0960b8f88031b77ef78eadb1afbe?source=copy_link',
+        'pdf_file_name': 'Official Notion Learning Path & Masterclass Workspace (Click to Open)',
+        'content': '''<h2>1. Introduction: Why Git & GitHub Rule Modern Software Engineering</h2>
+<p>In modern software engineering, writing code is only half the battle. Teams distributed across time zones build, test, and deploy complex systems consisting of hundreds of microservices. <strong>Git</strong> is the decentralized version control system created by Linus Torvalds in 2005 to manage the Linux kernel codebase, and <strong>GitHub</strong> is the global collaboration platform built on top of Git.</p>
+<p>Whether you are a college student building your first portfolio or a staff engineer managing enterprise Kubernetes deployments, mastering Git's internal architecture, branching workflows, and conflict resolution is non-negotiable.</p>
+
+<div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border: 1px solid rgba(56,189,248,0.3); border-radius: 14px; padding: 18px 22px; margin: 24px 0; color: #e2e8f0;">
+  <div style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace; letter-spacing: 0.5px; margin-bottom: 6px;">📌 OFFICIAL NOTION WORKSPACE</div>
+  <p style="margin: 0 0 10px; font-size: 14px; color: #cbd5e1;">Access the interactive Notion checklist, command cheatsheets, and animated mental models on the official workspace:</p>
+  <a href="https://app.notion.com/p/Git-GitHub-Complete-Learning-Path-2d8e0960b8f88031b77ef78eadb1afbe?source=copy_link" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 8px; background: #2563eb; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none;">
+    📓 Open Official Notion Learning Path ↗
+  </a>
+</div>
+
+<hr/>
+
+<h2>2. Git's Internal Mental Model: The 3 Local Zones</h2>
+<p>Git does not track files as diffs or delta patches like older centralized systems (SVN or CVS). Instead, Git thinks of its data more like a series of <strong>snapshots</strong> of a miniature filesystem.</p>
+
+<pre><code class="language-bash">┌──────────────────────┐      git add       ┌──────────────────────┐     git commit     ┌──────────────────────┐
+│   Working Directory  │ ─────────────────> │  Staging Area (Index)│ ─────────────────> │ Local Git Repository │
+│  (Untracked/Modified)│                    │  (Ready for Snapshot)│                    │     (.git / HEAD)    │
+└──────────────────────┘ <───────────────── └──────────────────────┘ <───────────────── └──────────────────────┘
+                              git restore                           git reset / revert</code></pre>
+
+<ul>
+  <li><strong>Working Directory:</strong> The actual sandbox directory on your computer where you create, edit, and delete source files.</li>
+  <li><strong>Staging Area (Index):</strong> A binary index file located inside <code>.git/index</code> that pre-formats and organizes the precise changes destined for the next commit snapshot.</li>
+  <li><strong>Local Repository (.git folder):</strong> The permanent object store (Blobs, Trees, Commits, Annotated Tags) where Git permanently saves SHA-1 hashed immutable snapshots.</li>
+</ul>
+
+<hr/>
+
+<h2>3. Initial Configuration & First-Time Setup</h2>
+<p>Before making any commits, configure your global developer identity and preferred default branch:</p>
+
+<pre><code class="language-bash"># 1. Set your global commit author name & email
+git config --global user.name "Kashinath Chavan"
+git config --global user.email "kashichavan7777@gmail.com"
+
+# 2. Set default branch to main (standard across modern GitHub)
+git config --global init.defaultBranch main
+
+# 3. Configure auto-correct and sensible line-ending handling
+git config --global core.autocrlf input
+git config --global help.autocorrect 20
+
+# 4. Verify your active configurations
+git config --list --show-origin</code></pre>
+
+<hr/>
+
+<h2>4. Daily Core Workflow Commands</h2>
+<p>The core daily cycle of a software developer involves checking status, staging modified chunks, and creating meaningful atomic commit snapshots:</p>
+
+<pre><code class="language-bash"># Initialize a new local repository
+git init
+
+# Check the state of working directory and staging area
+git status
+
+# Stage specific files or all modified files
+git add app.py requirements.txt
+git add .
+
+# Record a snapshot with a clean conventional commit message
+git commit -m "feat(auth): implement JWT token verification middleware"
+
+# Inspect detailed line-by-line diffs
+git diff              # Unstaged changes vs Staging area
+git diff --staged     # Staged changes vs Last commit (HEAD)
+
+# View concise chronological commit history
+git log --oneline --graph --decorate --all</code></pre>
+
+<hr/>
+
+<h2>5. Branching & Team Git Flow Strategies</h2>
+<p>In Git, a branch is simply a lightweight, movable 41-byte pointer to a commit hash. Creating a branch is virtually instantaneous and costs zero disk overhead.</p>
+
+<pre><code class="language-bash"># List all local and remote branches
+git branch -a
+
+# Create and switch to a new feature branch
+git switch -c feature/payment-gateway-stripe
+# (Legacy alternative: git checkout -b feature/payment-gateway-stripe)
+
+# Switch back to the main branch
+git switch main
+
+# Rename a branch
+git branch -m old-name new-name
+
+# Delete a merged feature branch
+git branch -d feature/payment-gateway-stripe</code></pre>
+
+<hr/>
+
+<h2>6. Merge vs. Rebase: The Architectural Debate</h2>
+<p>When integrating feature branch code back into the main branch, developers choose between two strategies:</p>
+
+<table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+  <thead>
+    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Feature</th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;"><code>git merge</code></th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;"><code>git rebase</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><strong>History Style</strong></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Preserves true historical timeline with explicit 2-parent merge commits</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Creates a perfectly linear, clean single-line commit history</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><strong>Commit Hashes</strong></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Preserves original commit SHAs</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Re-writes new commit hashes by replaying commits onto target HEAD</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><strong>Golden Rule</strong></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Safe for shared public branches (main, develop)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><strong>NEVER</strong> rebase a shared/public branch already pushed to remotes!</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code class="language-bash"># Standard Merge (from main)
+git switch main
+git merge feature/payment-gateway-stripe
+
+# Interactive Rebase (squashing messy commits before submitting PR)
+git rebase -i HEAD~3</code></pre>
+
+<hr/>
+
+<h2>7. Resolving Merge Conflicts Step-by-Step</h2>
+<p>Conflicts occur when two developers alter the exact same line of code in different branches. Git halts the merge and injects conflict markers into the source file:</p>
+
+<pre><code class="language-python">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD (Current branch: main)
+PAYMENT_GATEWAY = "STRIPE_ENTERPRISE_V2"
+=======
+PAYMENT_GATEWAY = "PAYPAL_PRO_SANDBOX"
+>>>>>>> feature/payment-gateway-paypal (Incoming branch)</code></pre>
+
+<p><strong>To resolve:</strong></p>
+<ol>
+  <li>Open the file, delete the conflict markers (<code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, <code>=======</code>, <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code>), and keep the desired production code.</li>
+  <li>Stage the resolved file: <code>git add payment_settings.py</code></li>
+  <li>Complete the commit: <code>git commit -m "fix(merge): resolve payment gateway conflict between Stripe and PayPal"</code></li>
+</ol>
+
+<hr/>
+
+<h2>8. Undoing Changes & Safety Nets</h2>
+
+<pre><code class="language-bash"># 1. Discard uncommitted changes in a specific file
+git restore filename.py
+
+# 2. Unstage a file without losing local edits
+git restore --staged filename.py
+
+# 3. Temporarily stash uncommitted work to switch branches quickly
+git stash save "WIP: half-finished login refactor"
+git stash list
+git stash pop
+
+# 4. Safely undo a pushed commit by creating a new inverse commit
+git revert &lt;commit-hash&gt;
+
+# 5. Reset HEAD (Soft = keep in staging, Hard = permanently discard)
+git reset --soft HEAD~1   # Undo commit, keep changes staged
+git reset --hard HEAD~1   # ⚠️ Danger: completely destroy last commit and working files
+
+# 6. The Ultimate Git Safety Net: REFLOG
+# Recovers "lost" or deleted commits and branches!
+git reflog
+git checkout -b recovered-branch HEAD@{3}</code></pre>
+
+<hr/>
+
+<h2>9. Remote Collaboration on GitHub</h2>
+
+<pre><code class="language-bash"># Link a local repository to GitHub
+git remote add origin https://github.com/kashichavan/updatezbykashi.git
+
+# Push local main branch and set upstream tracking
+git push -u origin main
+
+# Fetch changes from remote without merging
+git fetch origin
+
+# Fetch and immediately merge remote changes into current branch
+git pull origin main
+
+# Clean up stale local references to remote deleted branches
+git fetch --prune</code></pre>
+
+<hr/>
+
+<h2>10. Professional Pull Request (PR) & Open Source Etiquette</h2>
+<ul>
+  <li><strong>Keep PRs Small & Focused:</strong> A PR with 150 lines of code across 3 files is reviewed in 10 minutes. A PR with 2,500 lines across 80 files is delayed for weeks.</li>
+  <li><strong>Write Descriptive PR Descriptions:</strong> Mention <em>Why</em> this change is made, <em>What</em> approaches were tested, and link the related issue ticket.</li>
+  <li><strong>Run Linting & Unit Tests Locally:</strong> Ensure <code>python manage.py test</code> passes and code formatting adheres to PEP 8 / Prettier before opening the PR.</li>
+  <li><strong>Squash Work-in-Progress Commits:</strong> Turn 15 messy "fix typo", "test again" commits into 1 clean logical commit before merge.</li>
+</ul>
+
+<div style="text-align: center; margin-top: 36px; padding: 24px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
+  <h3 style="margin-top: 0;">Ready for the Full Interactive Learning Path?</h3>
+  <p style="color: #64748b; font-size: 14px;">Explore the full Notion workspace with copy-paste workflows, interactive flashcards, and advanced Git architecture diagrams.</p>
+  <a href="https://app.notion.com/p/Git-GitHub-Complete-Learning-Path-2d8e0960b8f88031b77ef78eadb1afbe?source=copy_link" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 8px; background: #0f172a; color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 12px rgba(15,23,42,0.25);">
+    🚀 Open Git &amp; GitHub Complete Learning Path on Notion ↗
+  </a>
+</div>'''
     }
 ]
 

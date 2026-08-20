@@ -158,15 +158,17 @@
 
     </header>
 
-    <!-- Downloadable PDF Study Material Banner -->
+    <!-- Downloadable PDF Study Material or Notion Learning Path Banner -->
     {% if guide.pdf_download_url %}
     <div style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); border-radius: 16px; padding: 22px 26px; color: #ffffff; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; box-shadow: 0 8px 24px rgba(15,23,42,0.2);">
       <div>
-        <div style="font-size: 11px; font-weight: 800; color: #93c5fd; font-family: monospace; letter-spacing: 0.5px;">📄 OFFICIAL STUDY MATERIAL &amp; HANDBOOK</div>
-        <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-top: 4px;">{{ guide.pdf_file_name|default:"Download Full PDF Guide" }}</div>
+        <div style="font-size: 11px; font-weight: 800; color: #93c5fd; font-family: monospace; letter-spacing: 0.5px;">
+          {% if 'notion.' in guide.pdf_download_url %}📓 OFFICIAL NOTION WORKSPACE &amp; LEARNING PATH{% else %}📄 OFFICIAL STUDY MATERIAL &amp; HANDBOOK{% endif %}
+        </div>
+        <div style="font-size: 16px; font-weight: 700; color: #ffffff; margin-top: 4px;">{{ guide.pdf_file_name|default:"Download Study Guide" }}</div>
       </div>
       <a href="{{ guide.pdf_download_url }}" target="_blank" rel="noopener" style="background: #2563eb; color: #ffffff; padding: 11px 22px; border-radius: 10px; font-size: 14px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(37,99,235,0.4); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-        📥 Open / Download PDF ↗
+        {% if 'notion.' in guide.pdf_download_url %}📓 Open Notion Learning Path ↗{% else %}📥 Open / Download PDF ↗{% endif %}
       </a>
     </div>
     {% endif %}
@@ -176,13 +178,17 @@
       {{ guide.content|safe }}
     </div>
 
-    <!-- Bottom Download CTA -->
+    <!-- Bottom Resource CTA -->
     {% if guide.pdf_download_url %}
     <div style="margin-top: 36px; background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: 16px; padding: 24px; text-align: center;">
-      <h3 style="font: 700 18px var(--font-sans); color: var(--ink); margin: 0 0 8px;">Want to study this offline?</h3>
-      <p style="font-size: 14px; color: var(--muted); margin: 0 0 16px;">Download the official PDF notes to practice coding problems and interview questions anytime.</p>
+      <h3 style="font: 700 18px var(--font-sans); color: var(--ink); margin: 0 0 8px;">
+        {% if 'notion.' in guide.pdf_download_url %}Interactive Notion Learning Path{% else %}Want to study this offline?{% endif %}
+      </h3>
+      <p style="font-size: 14px; color: var(--muted); margin: 0 0 16px;">
+        {% if 'notion.' in guide.pdf_download_url %}Access the complete interactive Notion checklist, command cheatsheets, and architecture diagrams.{% else %}Download the official PDF notes to practice coding problems and interview questions anytime.{% endif %}
+      </p>
       <a href="{{ guide.pdf_download_url }}" target="_blank" rel="noopener" style="background: var(--blue-primary); color: #ffffff; padding: 11px 24px; border-radius: 10px; font-size: 14px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-        📥 Download {{ guide.pdf_file_name|default:"PDF Notes" }} ↗
+        {% if 'notion.' in guide.pdf_download_url %}🚀 Open Notion Learning Path ↗{% else %}📥 Download {{ guide.pdf_file_name|default:"PDF Notes" }} ↗{% endif %}
       </a>
     </div>
     {% endif %}

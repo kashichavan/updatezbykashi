@@ -55,9 +55,15 @@
               {{ guide.get_topic_display }}
             </span>
             {% if guide.pdf_download_url %}
-            <span style="display: inline-block; padding: 2px 8px; background: #eff6ff; color: #2563eb; font-size: 10px; font-weight: 800; border-radius: 4px; border: 1px solid #bfdbfe;">
-              📥 PDF Available
-            </span>
+              {% if 'notion.' in guide.pdf_download_url %}
+              <span style="display: inline-block; padding: 2px 8px; background: #fdf2f8; color: #db2777; font-size: 10px; font-weight: 800; border-radius: 4px; border: 1px solid #fbcfe8;">
+                📓 Notion Path
+              </span>
+              {% else %}
+              <span style="display: inline-block; padding: 2px 8px; background: #eff6ff; color: #2563eb; font-size: 10px; font-weight: 800; border-radius: 4px; border: 1px solid #bfdbfe;">
+                📥 PDF Available
+              </span>
+              {% endif %}
             {% endif %}
           </div>
           <span style="font-size: 12px; color: var(--muted); font-weight: 600;">
