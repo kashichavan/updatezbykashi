@@ -647,6 +647,23 @@ def get_dataset_catalog():
         })
     return catalog
 
+def mask_subqueries(sql):
+    """Replaces contents inside parentheses with spaces so top-level regex matches only outer clauses."""
+    chars = list(sql)
+    depth = 0
+    for i, c in enumerate(chars):
+        if c == '(':
+            depth += 1
+            if depth > 0:
+                chars[i] = ' '
+        elif c == ')':
+            if depth > 0:
+                chars[i] = ' '
+            depth = max(0, depth - 1)
+        elif depth > 0:
+            chars[i] = ' '
+    return ''.join(chars)
+
 def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
     """
     Step-by-Step / Line-by-Line Interactive SQL Execution Tracer.
@@ -708,44 +725,46 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
             'clause': current_clause or 'SELECT'
         })
     
-    # Robust clause extraction using lookahead boundaries
+    # Robust outer clause extraction using masked subqueries
+    masked_sql = mask_subqueries(clean_sql)
+
     base_table_match = re.search(
         r'\bFROM\s+(.*?)(?=\b(?:LEFT|RIGHT|INNER|CROSS|FULL|OUTER|\s+)?JOIN\b|\bWHERE\b|\bGROUP\s+BY\b|\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
-        clean_sql, re.IGNORECASE | re.DOTALL
+        masked_sql, re.IGNORECASE | re.DOTALL
     )
-    base_table = base_table_match.group(1).strip() if base_table_match else 'emp'
+    base_table = clean_sql[base_table_match.span(1)[0]:base_table_match.span(1)[1]].strip() if base_table_match else 'emp'
     
     full_from_joins_match = re.search(
         r'\bFROM\s+(.*?)(?=\bWHERE\b|\bGROUP\s+BY\b|\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
-        clean_sql, re.IGNORECASE | re.DOTALL
+        masked_sql, re.IGNORECASE | re.DOTALL
     )
-    full_from_joins = full_from_joins_match.group(1).strip() if full_from_joins_match else base_table
+    full_from_joins = clean_sql[full_from_joins_match.span(1)[0]:full_from_joins_match.span(1)[1]].strip() if full_from_joins_match else base_table
     
     where_match = re.search(
         r'\bWHERE\s+(.*?)(?=\bGROUP\s+BY\b|\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
-        clean_sql, re.IGNORECASE | re.DOTALL
+        masked_sql, re.IGNORECASE | re.DOTALL
     )
-    where_clause = where_match.group(1).strip() if where_match else None
+    where_clause = clean_sql[where_match.span(1)[0]:where_match.span(1)[1]].strip() if where_match else None
     
     group_match = re.search(
         r'\bGROUP\s+BY\s+(.*?)(?=\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
-        clean_sql, re.IGNORECASE | re.DOTALL
+        masked_sql, re.IGNORECASE | re.DOTALL
     )
-    group_clause = group_match.group(1).strip() if group_match else None
+    group_clause = clean_sql[group_match.span(1)[0]:group_match.span(1)[1]].strip() if group_match else None
     
     having_match = re.search(
         r'\bHAVING\s+(.*?)(?=\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
-        clean_sql, re.IGNORECASE | re.DOTALL
+        masked_sql, re.IGNORECASE | re.DOTALL
     )
-    having_clause = having_match.group(1).strip() if having_match else None
+    having_clause = clean_sql[having_match.span(1)[0]:having_match.span(1)[1]].strip() if having_match else None
     
     order_match = re.search(
         r'\bORDER\s+BY\s+(.*?)(?=\bLIMIT\b|$)',
-        clean_sql, re.IGNORECASE | re.DOTALL
+        masked_sql, re.IGNORECASE | re.DOTALL
     )
-    order_clause = order_match.group(1).strip() if order_match else None
+    order_clause = clean_sql[order_match.span(1)[0]:order_match.span(1)[1]].strip() if order_match else None
     
-    limit_match = re.search(r'\bLIMIT\s+.*$', clean_sql, re.IGNORECASE | re.DOTALL)
+    limit_match = re.search(r'\bLIMIT\s+.*$', masked_sql, re.IGNORECASE | re.DOTALL)
     
     from_lines = [e for e in line_entries if e['clause'] == 'FROM']
     join_lines = [e for e in line_entries if e['clause'] == 'JOIN']
