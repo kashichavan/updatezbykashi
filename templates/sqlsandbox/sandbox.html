@@ -5,13 +5,13 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block extra_css %}
-<!-- Monaco Editor CDN & High-Density Dark Workspace Styles -->
+<!-- Monaco Editor CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.min.css">
 <style>
   :root {
-    --sql-bg: #090d16;
-    --sql-card: #0f172a;
-    --sql-card-border: rgba(56, 189, 248, 0.18);
+    --sql-bg: #070b14;
+    --sql-card: #0d1527;
+    --sql-card-border: rgba(56, 189, 248, 0.16);
     --sql-accent: #38bdf8;
     --sql-accent-glow: rgba(56, 189, 248, 0.25);
     --sql-green: #10b981;
@@ -25,178 +25,146 @@
   body {
     background-color: var(--sql-bg);
     color: var(--sql-text);
+    overflow-x: hidden;
   }
 
   .sql-studio-wrapper {
-    max-width: 1600px;
-    margin: 16px auto 60px;
-    padding: 0 16px;
+    max-width: 100%;
+    margin: 8px 12px 30px;
+    padding: 0;
   }
 
-  /* Header Banner */
-  .sql-header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  /* Compact Top Header & Control Strip */
+  .sql-compact-topbar {
+    background: linear-gradient(135deg, #0b1324 0%, #111d35 100%);
     border: 1px solid var(--sql-card-border);
-    border-radius: 18px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
+    border-radius: 12px;
+    padding: 8px 14px;
+    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   }
 
-  .sql-title-group h1 {
-    font-size: 22px;
+  .sql-brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sql-brand-title h1 {
+    font-size: 16px;
     font-weight: 800;
-    margin: 0 0 6px;
+    margin: 0;
     color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    letter-spacing: -0.2px;
   }
 
-  .sql-badge-pill {
-    font-size: 11px;
-    font-weight: 800;
-    font-family: monospace;
-    padding: 3px 8px;
-    border-radius: 6px;
-    background: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-    border: 1px solid rgba(56, 189, 248, 0.3);
-  }
-
-  .dataset-selector-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(15, 23, 42, 0.8);
-    padding: 6px 12px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .dataset-select {
+  .dataset-select-compact {
     background: #1e293b;
-    color: #ffffff;
+    color: #38bdf8;
     border: 1px solid #334155;
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 13px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     outline: none;
   }
 
-  /* Playback Toolbar */
-  .sql-playback-bar {
-    background: #090d16;
-    border: 1px solid var(--sql-card-border);
-    border-radius: 14px;
-    padding: 10px 16px;
-    margin-bottom: 14px;
+  /* Compact Playback Controls */
+  .sql-playback-group {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 6px;
     flex-wrap: wrap;
-    gap: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
 
-  .btn-dbg-start {
+  .btn-dbg-start-compact {
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: #ffffff;
     border: 1px solid #38bdf8;
-    padding: 8px 16px;
-    border-radius: 8px;
+    padding: 6px 12px;
+    border-radius: 6px;
     font-weight: 800;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    gap: 5px;
     transition: all 0.15s;
   }
-
-  .btn-dbg-start:hover {
+  .btn-dbg-start-compact:hover {
     filter: brightness(1.1);
-    transform: translateY(-1px);
   }
 
-  .dbg-step-btn {
-    background: #1e293b;
+  .dbg-btn-compact {
+    background: #17233d;
     color: #cbd5e1;
-    border: 1px solid #334155;
-    padding: 7px 12px;
-    border-radius: 8px;
-    font-size: 12px;
+    border: 1px solid #233554;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     transition: all 0.15s;
   }
-
-  .dbg-step-btn:hover:not(:disabled) {
-    background: #334155;
+  .dbg-btn-compact:hover:not(:disabled) {
+    background: #233554;
     color: #ffffff;
-    border-color: #475569;
   }
-
-  .dbg-step-btn:disabled {
-    opacity: 0.45;
+  .dbg-btn-compact:disabled {
+    opacity: 0.4;
     cursor: not-allowed;
   }
 
-  /* AI Step Story Banner */
-  .sql-step-banner {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-left: 4px solid #38bdf8;
-    border-radius: 12px;
-    padding: 12px 18px;
-    margin-bottom: 16px;
-    font-size: 13px;
-    line-height: 1.6;
+  /* Compact Step Banner */
+  .sql-step-banner-compact {
+    background: rgba(13, 21, 39, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-left: 3px solid #38bdf8;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.4;
     color: #e2e8f0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    gap: 8px;
   }
 
   /* Logical Pipeline Stage Pills */
-  .pipeline-strip {
+  .pipeline-strip-compact {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
-    padding: 4px 0;
+    margin-bottom: 8px;
   }
 
   .pipeline-pill {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 800;
     font-family: monospace;
-    padding: 4px 10px;
-    border-radius: 6px;
-    background: #131d31;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #111d35;
     color: #64748b;
     border: 1px solid #1e293b;
     transition: all 0.2s;
   }
 
   .pipeline-pill.active {
-    background: rgba(56, 189, 248, 0.18);
+    background: rgba(56, 189, 248, 0.2);
     color: #38bdf8;
     border-color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
   }
 
   .pipeline-pill.passed {
@@ -205,12 +173,11 @@
     border-color: rgba(16, 185, 129, 0.3);
   }
 
-  /* Main 2-Column Grid Layout */
+  /* High Density Grid Layout (Maximize screen space) */
   .sql-workspace-grid {
     display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 16px;
-    min-height: 750px;
+    grid-template-columns: 260px 1fr;
+    gap: 10px;
   }
 
   @media (max-width: 1024px) {
@@ -223,29 +190,30 @@
   .sql-sidebar-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
-    border-radius: 16px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    height: 780px;
+    height: calc(100vh - 170px);
+    min-height: 520px;
   }
 
   .sidebar-tabs {
     display: flex;
     border-bottom: 1px solid #1e293b;
-    background: #090d16;
+    background: #080e1a;
   }
 
   .sidebar-tab-btn {
     flex: 1;
-    padding: 12px 8px;
+    padding: 8px 4px;
     font-size: 11px;
     font-weight: 700;
     color: var(--sql-muted);
     background: transparent;
     border: none;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
     text-align: center;
     border-bottom: 2px solid transparent;
   }
@@ -259,46 +227,46 @@
   .sidebar-content-pane {
     flex: 1;
     overflow-y: auto;
-    padding: 14px;
+    padding: 8px;
   }
 
   /* Schema Table Tree */
   .schema-table-item {
-    background: #131d31;
+    background: #111d35;
     border: 1px solid #1e293b;
-    border-radius: 10px;
-    margin-bottom: 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
     overflow: hidden;
   }
 
   .schema-table-header {
-    padding: 10px 12px;
+    padding: 6px 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     user-select: none;
-    background: #17233d;
+    background: #152442;
     transition: background 0.15s;
   }
 
   .schema-table-header:hover {
-    background: #1e2e4f;
+    background: #1b2d52;
   }
 
   .table-title {
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     color: #ffffff;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
   }
 
   .schema-columns-list {
-    padding: 6px 10px;
+    padding: 4px 8px;
     display: none;
-    background: #0d1527;
+    background: #09101f;
   }
 
   .schema-columns-list.open {
@@ -309,24 +277,24 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 6px;
-    font-size: 11px;
+    padding: 3px 4px;
+    font-size: 10px;
     font-family: monospace;
     color: #cbd5e1;
-    border-radius: 4px;
+    border-radius: 3px;
     cursor: pointer;
   }
 
   .schema-col-row:hover {
-    background: rgba(56, 189, 248, 0.1);
+    background: rgba(56, 189, 248, 0.12);
     color: #38bdf8;
   }
 
   .col-type-tag {
     font-size: 9px;
     color: #94a3b8;
-    background: #1e293b;
-    padding: 1px 5px;
+    background: #17233d;
+    padding: 1px 4px;
     border-radius: 3px;
   }
 
@@ -334,65 +302,64 @@
     color: #eab308;
     font-weight: 800;
     font-size: 9px;
-    margin-right: 4px;
+    margin-right: 3px;
   }
 
   /* Challenge Item */
   .challenge-item-card {
-    background: #131d31;
+    background: #111d35;
     border: 1px solid #1e293b;
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
   }
 
   .challenge-item-card:hover {
     border-color: #38bdf8;
-    transform: translateY(-2px);
-    background: #17233d;
+    background: #152442;
   }
 
-  .diff-badge-Easy { background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
-  .diff-badge-Medium { background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
-  .diff-badge-Hard { background: rgba(239, 68, 68, 0.2); color: #f87171; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+  .diff-badge-Easy { background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
+  .diff-badge-Medium { background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
+  .diff-badge-Hard { background: rgba(239, 68, 68, 0.2); color: #f87171; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
 
-  /* Right Panel: Editor + Results */
+  /* Right Main Panel: Monaco Editor & Live Results Grid */
   .sql-main-panel {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px;
   }
 
   .editor-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
   }
 
   .editor-toolbar {
-    background: #090d16;
-    padding: 10px 16px;
+    background: #080e1a;
+    padding: 6px 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 6px;
     border-bottom: 1px solid #1e293b;
   }
 
   #monacoSqlContainer {
-    height: 310px;
+    height: 240px;
     width: 100%;
   }
 
-  /* Monaco Line Execution Styles */
+  /* Monaco Line Execution Highlight (Shown ONLY when executing/stepping) */
   .sql-debug-active-line {
-    background: rgba(56, 189, 248, 0.16) !important;
+    background: rgba(56, 189, 248, 0.18) !important;
     border-left: 3px solid #38bdf8 !important;
   }
 
@@ -406,7 +373,7 @@
     content: "👉";
     font-size: 13px;
     display: block;
-    animation: pulseArrow 1s infinite alternate;
+    animation: pulseArrow 0.8s infinite alternate;
   }
 
   @keyframes pulseArrow {
@@ -414,20 +381,21 @@
     100% { transform: translateX(3px); }
   }
 
-  /* Results Card */
+  /* Results Card (Expanded for maximum clarity) */
   .results-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 380px;
+    height: calc(100vh - 460px);
+    min-height: 280px;
   }
 
   .results-header-tabs {
-    background: #090d16;
-    padding: 0 16px;
+    background: #080e1a;
+    padding: 0 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -436,12 +404,12 @@
 
   .tab-group {
     display: flex;
-    gap: 4px;
+    gap: 2px;
   }
 
   .res-tab-btn {
-    padding: 12px 14px;
-    font-size: 12px;
+    padding: 8px 12px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--sql-muted);
     background: transparent;
@@ -456,33 +424,33 @@
   }
 
   .meta-stats {
-    font-size: 12px;
+    font-size: 11px;
     color: #94a3b8;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
   }
 
   .results-body {
-    padding: 16px;
-    overflow-x: auto;
-    max-height: 420px;
+    padding: 10px;
+    overflow: auto;
+    flex: 1;
   }
 
   /* Data Table */
   .sql-data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 12px;
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
   }
 
   .sql-data-table th {
-    background: #1e293b;
+    background: #152442;
     color: #38bdf8;
-    padding: 9px 12px;
+    padding: 7px 10px;
     text-align: left;
-    border: 1px solid #334155;
+    border: 1px solid #233554;
     font-weight: 700;
     position: sticky;
     top: 0;
@@ -490,7 +458,7 @@
   }
 
   .sql-data-table td {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #1e293b;
     color: #e2e8f0;
   }
@@ -500,13 +468,30 @@
   }
 
   .sql-data-table tr:hover {
-    background: rgba(56, 189, 248, 0.05);
+    background: rgba(56, 189, 248, 0.06);
   }
 
   .null-cell {
     color: #64748b;
     font-style: italic;
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  .row-badge-kept {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+  }
+  .row-badge-joined {
+    background: rgba(168, 85, 247, 0.18);
+    color: #c084fc;
+  }
+  .row-badge-projected {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+  }
+  .row-badge-sorted {
+    background: rgba(236, 72, 153, 0.18);
+    color: #f472b6;
   }
 
   /* Error Banner */
@@ -514,23 +499,22 @@
     background: rgba(239, 68, 68, 0.15);
     border: 1px solid rgba(239, 68, 68, 0.4);
     color: #fca5a5;
-    padding: 16px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 8px;
     font-family: monospace;
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.5;
   }
 
-  /* Execution Plan Tree */
   .plan-tree-box {
-    background: #090d16;
+    background: #080e1a;
     border: 1px solid #1e293b;
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 8px;
+    padding: 12px;
     font-family: monospace;
-    font-size: 13px;
+    font-size: 12px;
     color: #cbd5e1;
-    line-height: 1.8;
+    line-height: 1.6;
   }
 </style>
 {% endblock %}
@@ -538,66 +522,49 @@
 {% block content %}
 <div class="sql-studio-wrapper">
   
-  <!-- Header Banner -->
-  <div class="sql-header">
-    <div class="sql-title-group">
-      <h1>
-        <span>⚡ SQL Visual Debugger &amp; Interactive Studio</span>
-        <span class="sql-badge-pill">LINE-BY-LINE TRACER</span>
-      </h1>
-      <p style="margin: 0; font-size: 14px; color: var(--sql-muted);">
-        Step through SQL clauses line-by-line (FROM &rarr; JOIN &rarr; WHERE &rarr; GROUP BY &rarr; SELECT &rarr; ORDER BY) with live memory state inspector.
-      </p>
-    </div>
-
-    <!-- Active Dataset Selector -->
-    <div class="dataset-selector-wrap">
-      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;">ACTIVE DATABASE:</span>
-      <select id="datasetSelector" class="dataset-select" onchange="changeActiveDataset(this.value)">
+  <!-- Compact Unified Header & Controls Strip -->
+  <div class="sql-compact-topbar">
+    <div class="sql-brand-title">
+      <h1>⚡ SQL Debugger Studio</h1>
+      <select id="datasetSelector" class="dataset-select-compact" onchange="changeActiveDataset(this.value)">
         {% for d in datasets %}
         <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
         {% endfor %}
       </select>
     </div>
-  </div>
 
-  <!-- Playback Controls Bar -->
-  <div class="sql-playback-bar">
-    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-      <button id="btnStartDebug" class="btn-dbg-start" onclick="startSqlDebugger()">
+    <!-- Playback Controls -->
+    <div class="sql-playback-group">
+      <button id="btnStartDebug" class="btn-dbg-start-compact" onclick="startSqlDebugger()">
         <span>🚀</span> Start SQL Debugger
       </button>
-      <button id="btnStepFirst" class="dbg-step-btn" onclick="goToStep(0)" disabled>⏮ First</button>
-      <button id="btnStepPrev" class="dbg-step-btn" onclick="prevStep()" disabled>◀ Back</button>
-      <button id="btnStepNext" class="dbg-step-btn" onclick="nextStep()" disabled>Step Next ▶</button>
-      <button id="btnStepLast" class="dbg-step-btn" onclick="lastStep()" disabled>Last ⏭</button>
-      <button id="btnAutoPlay" class="dbg-step-btn" onclick="toggleAutoPlay()" disabled>▶ Auto Play</button>
-    </div>
-
-    <!-- Timeline Slider & Step Badge -->
-    <div style="display: flex; align-items: center; gap: 10px; flex: 1; max-width: 380px;">
-      <span style="font-size: 11px; font-weight: 800; color: #94a3b8; white-space: nowrap;">Timeline:</span>
+      <button id="btnStepFirst" class="dbg-btn-compact" onclick="goToStep(0)" disabled>⏮ First</button>
+      <button id="btnStepPrev" class="dbg-btn-compact" onclick="prevStep()" disabled>◀ Back</button>
+      <button id="btnStepNext" class="dbg-btn-compact" onclick="nextStep()" disabled>Step Next ▶</button>
+      <button id="btnStepLast" class="dbg-btn-compact" onclick="lastStep()" disabled>Last ⏭</button>
+      <button id="btnAutoPlay" class="dbg-btn-compact" onclick="toggleAutoPlay()" disabled>▶ Auto Play</button>
+      
+      <!-- Slider & Step Tag -->
       <input type="range" id="timelineSlider" min="0" max="0" value="0"
-             style="flex: 1; cursor: pointer;" oninput="goToStep(parseInt(this.value))" disabled>
-      <span id="stepBadge"
-            style="font-size: 12px; font-weight: 800; color: #38bdf8; font-family: monospace; white-space: nowrap;">
+             style="width: 90px; cursor: pointer;" oninput="goToStep(parseInt(this.value))" disabled>
+      <span id="stepBadge" style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace;">
         Step 0 / 0
       </span>
     </div>
   </div>
 
-  <!-- AI Step Story Banner -->
-  <div id="sqlStepStoryBanner" class="sql-step-banner">
+  <!-- Compact AI Step Story Banner -->
+  <div id="sqlStepStoryBanner" class="sql-step-banner-compact">
     <span id="sqlStepStoryText">
-      💡 <strong>Line-by-Line SQL Debugger:</strong> Click <strong>"🚀 Start SQL Debugger"</strong> to trace your query through each logical execution phase.
+      💡 <strong>SQL Debugger:</strong> Click <strong>"🚀 Start SQL Debugger"</strong> to trace your query through each logical execution phase.
     </span>
-    <span id="currentPhaseBadge" style="font-size: 11px; font-weight: 800; font-family: monospace; background: rgba(56,189,248,0.2); color: #38bdf8; padding: 3px 8px; border-radius: 6px;">
+    <span id="currentPhaseBadge" style="font-size: 10px; font-weight: 800; font-family: monospace; background: rgba(56,189,248,0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">
       READY
     </span>
   </div>
 
-  <!-- Logical Pipeline Visual Progress Strip -->
-  <div class="pipeline-strip" id="pipelinePillsWrap">
+  <!-- Compact Pipeline Strip -->
+  <div class="pipeline-strip-compact" id="pipelinePillsWrap">
     <span class="pipeline-pill" id="pill_FROM">1. FROM</span>
     <span class="pipeline-pill" id="pill_JOIN">2. JOIN</span>
     <span class="pipeline-pill" id="pill_WHERE">3. WHERE</span>
@@ -608,71 +575,69 @@
     <span class="pipeline-pill" id="pill_LIMIT">8. LIMIT</span>
   </div>
 
-  <!-- Workspace 2-Column Grid -->
+  <!-- High Density Grid Layout -->
   <div class="sql-workspace-grid">
     
-    <!-- Left Panel: Schema Explorer & Challenges -->
+    <!-- Left Sidebar: Schema & Challenges -->
     <div class="sql-sidebar-card">
       <div class="sidebar-tabs">
-        <button id="btnTabSchema" class="sidebar-tab-btn active" onclick="switchSidebarTab('schema')">🗂️ Tables &amp; Schema</button>
-        <button id="btnTabChallenges" class="sidebar-tab-btn" onclick="switchSidebarTab('challenges')">🏆 Challenges ({{ challenges|length }})</button>
+        <button id="btnTabSchema" class="sidebar-tab-btn active" onclick="switchSidebarTab('schema')">🗂️ Tables</button>
+        <button id="btnTabChallenges" class="sidebar-tab-btn" onclick="switchSidebarTab('challenges')">🏆 Practice ({{ challenges|length }})</button>
         <button id="btnTabHistory" class="sidebar-tab-btn" onclick="switchSidebarTab('history')">📜 History</button>
       </div>
 
       <!-- Tab 1: Tables & Schema Explorer -->
       <div id="paneSchema" class="sidebar-content-pane">
         <div id="schemaContainer">
-          <p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">Loading database schema...</p>
+          <p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">Loading schema...</p>
         </div>
       </div>
 
-      <!-- Tab 2: Interview Practice Challenges -->
+      <!-- Tab 2: Challenges -->
       <div id="paneChallenges" class="sidebar-content-pane" style="display: none;">
-        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Select a challenge to load problem statement &amp; starter query:</div>
         {% for c in challenges %}
         <div class="challenge-item-card" onclick="loadChallenge('{{ c.id }}')">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span class="diff-badge-{{ c.difficulty }}">{{ c.difficulty }}</span>
-            <span style="font-size: 11px; color: #94a3b8;">{{ c.category }}</span>
+            <span style="font-size: 10px; color: #94a3b8;">{{ c.category }}</span>
           </div>
-          <div style="font-weight: 700; font-size: 13px; color: #ffffff; margin-bottom: 4px;">{{ c.title }}</div>
+          <div style="font-weight: 700; font-size: 11px; color: #ffffff;">{{ c.title }}</div>
         </div>
         {% endfor %}
       </div>
 
-      <!-- Tab 3: Query History -->
+      <!-- Tab 3: History -->
       <div id="paneHistory" class="sidebar-content-pane" style="display: none;">
         <div id="historyContainer">
-          <p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">No query history yet. Run a query to record it here!</p>
+          <p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">No query history yet.</p>
         </div>
       </div>
-
     </div>
 
-    <!-- Right Main Panel: Monaco Editor & Live Results Grid -->
+    <!-- Right Main Panel: Editor & Live Results Grid -->
     <div class="sql-main-panel">
       
       <!-- Editor Card -->
       <div class="editor-card">
         <div class="editor-toolbar">
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <button id="btnRunQuery" class="dbg-step-btn" style="background: #0284c7; color: #ffffff; border-color: #38bdf8;" onclick="runSqlQuery()">
-              <span>▶</span> Run Full Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button id="btnRunQuery" class="dbg-btn-compact" style="background: #0284c7; color: #ffffff; border-color: #38bdf8;" onclick="runSqlQuery()">
+              <span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>
             </button>
-            <button id="btnVerifyChallenge" class="dbg-step-btn" style="display: none; background: #065f46; border-color: #10b981; color: #6ee7b7;" onclick="verifyChallengeSubmission()">
-              🧪 Test Challenge Solution
+            <button id="btnVerifyChallenge" class="dbg-btn-compact" style="display: none; background: #065f46; border-color: #10b981; color: #6ee7b7;" onclick="verifyChallengeSubmission()">
+              🧪 Test Challenge
             </button>
-            <button class="dbg-step-btn" onclick="formatSqlQuery()">
-              🧹 Format SQL
+            <button class="dbg-btn-compact" onclick="formatSqlQuery()">
+              🧹 Format
             </button>
           </div>
 
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="dbg-step-btn" onclick="resetActiveDatabase()" title="Reset current database to factory state">
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="dbg-btn-compact" onclick="resetActiveDatabase()" title="Reset current database to factory state">
               🔄 Reset DB
             </button>
-            <button class="dbg-step-btn" onclick="exportResultsCsv()" title="Download current query results as CSV">
-              📥 Export CSV
+            <button class="dbg-btn-compact" onclick="exportResultsCsv()" title="Download CSV">
+              📥 CSV
             </button>
           </div>
         </div>
@@ -685,11 +650,11 @@
       <div class="results-card">
         <div class="results-header-tabs">
           <div class="tab-group">
-            <button id="btnResTabStep" class="res-tab-btn active" onclick="switchResultTab('step')">🔍 Step Virtual Table</button>
-            <button id="btnResTabOutput" class="res-tab-btn" onclick="switchResultTab('output')">📊 Final Result Table</button>
+            <button id="btnResTabStep" class="res-tab-btn active" onclick="switchResultTab('step')">🔍 Live Step Table</button>
+            <button id="btnResTabOutput" class="res-tab-btn" onclick="switchResultTab('output')">📊 Full Output</button>
             <button id="btnResTabPlan" class="res-tab-btn" onclick="switchResultTab('plan')">⚡ Query Plan (EXPLAIN)</button>
-            <button id="btnResTabVerify" class="res-tab-btn" style="display: none;" onclick="switchResultTab('verify')">🧪 Challenge Verification</button>
-            <button id="btnResTabCheatsheet" class="res-tab-btn" onclick="switchResultTab('cheatsheet')">📖 SQL Cheatsheet</button>
+            <button id="btnResTabVerify" class="res-tab-btn" style="display: none;" onclick="switchResultTab('verify')">🧪 Challenge</button>
+            <button id="btnResTabCheatsheet" class="res-tab-btn" onclick="switchResultTab('cheatsheet')">📖 Cheatsheet</button>
           </div>
 
           <div class="meta-stats">
@@ -702,7 +667,7 @@
         <!-- Result Tab 1: Live Step Virtual Table Output -->
         <div id="paneResStep" class="results-body">
           <div id="stepResultsOutput">
-            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
               Click <strong>🚀 Start SQL Debugger</strong> above to inspect intermediate virtual tables at each line of execution.
             </p>
           </div>
@@ -711,7 +676,7 @@
         <!-- Result Tab 2: Full Query Output Data Grid -->
         <div id="paneResOutput" class="results-body" style="display: none;">
           <div id="queryResultsOutput">
-            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
               Press <strong>▶ Run Full Query</strong> to execute without stepping.
             </p>
           </div>
@@ -720,7 +685,7 @@
         <!-- Result Tab 3: Query Plan Visualizer -->
         <div id="paneResPlan" class="results-body" style="display: none;">
           <div id="queryPlanOutput">
-            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
               Run a <code>SELECT</code> query to inspect the internal B-Tree index traversal and execution plan.
             </p>
           </div>
@@ -729,47 +694,34 @@
         <!-- Result Tab 4: Challenge Verification -->
         <div id="paneResVerify" class="results-body" style="display: none;">
           <div id="challengeVerifyOutput">
-            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
-              Select a challenge from the left panel and click <strong>Test Challenge Solution</strong> to verify.
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
+              Select a challenge and click <strong>Test Challenge</strong> to verify.
             </p>
           </div>
         </div>
 
-        <!-- Result Tab 5: SQL Reference Cheatsheet -->
+        <!-- Result Tab 5: Cheatsheet -->
         <div id="paneResCheatsheet" class="results-body" style="display: none;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
-            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
-              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Window Ranking Functions</h4>
-              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
-                ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC)<br/>
-                DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary DESC)<br/>
-                RANK() OVER (PARTITION BY dept ORDER BY salary DESC)
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+            <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
+              <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">Window Ranking Functions</h4>
+              <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
+                ROW_NUMBER() OVER (PARTITION BY d ORDER BY sal DESC)<br/>
+                DENSE_RANK() OVER (PARTITION BY d ORDER BY sal DESC)
               </code>
             </div>
-            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
-              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Time Series &amp; Offsets</h4>
-              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
+            <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
+              <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">Time Series &amp; Offsets</h4>
+              <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
                 LAG(val, 1) OVER (ORDER BY date_col)<br/>
-                LEAD(val, 1) OVER (ORDER BY date_col)<br/>
-                FIRST_VALUE(val) OVER (PARTITION BY cat ORDER BY date_col)
+                LEAD(val, 1) OVER (ORDER BY date_col)
               </code>
             </div>
-            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
-              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Common Table Expressions (CTE)</h4>
-              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
-                WITH RegionalSales AS (<br/>
-                &nbsp;&nbsp;SELECT region, SUM(amount) AS total<br/>
-                &nbsp;&nbsp;FROM orders GROUP BY region<br/>
-                )<br/>
-                SELECT * FROM RegionalSales WHERE total &gt; 10000;
-              </code>
-            </div>
-            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
-              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">NULL Handling &amp; Coalesce</h4>
-              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
-                COALESCE(comm, 0) -- Replaces NULL with 0<br/>
-                NULLIF(a, b) -- Returns NULL if a == b<br/>
-                CASE WHEN mgr IS NULL THEN 'CEO' ELSE 'Staff' END
+            <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
+              <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">NULL Handling &amp; Coalesce</h4>
+              <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
+                COALESCE(comm, 0)<br/>
+                NULLIF(a, b)
               </code>
             </div>
           </div>
@@ -796,6 +748,7 @@
   let currentStepIdx = 0;
   let autoPlayTimer = null;
   let activeDecorations = [];
+  let isExecutingOrStepping = false;
 
   const DATASET_QUERIES = {
     {% for d in datasets %}
@@ -831,8 +784,8 @@
         { token: 'operator.sql', foreground: 'f472b6' }
       ],
       colors: {
-        'editor.background': '#0f172a',
-        'editor.lineHighlightBackground': '#1e293b50',
+        'editor.background': '#0d1527',
+        'editor.lineHighlightBackground': '#1e293b40',
         'editorCursor.foreground': '#38bdf8',
         'editorLineNumber.foreground': '#475569',
         'editorLineNumber.activeForeground': '#38bdf8',
@@ -846,7 +799,7 @@
       value: initialSql,
       language: 'sql',
       theme: 'sqlDarkStudio',
-      fontSize: 14,
+      fontSize: 13,
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
       lineNumbers: 'on',
       glyphMargin: true,
@@ -857,15 +810,26 @@
       minimap: { enabled: false }
     });
 
+    // ── CRITICAL: CLEAR HAND/LINE HIGHLIGHT WHEN USER TYPES ──
+    editor.onDidChangeModelContent(function() {
+      if (!isExecutingOrStepping) {
+        clearExecutionHighlight();
+      }
+    });
+
     // Keybinding: Ctrl+Enter / Cmd+Enter to Run SQL
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
       runSqlQuery();
     });
 
-    // Fetch initial schema and start debugger trace
     fetchSchema(activeDatasetId);
-    startSqlDebugger();
   });
+
+  function clearExecutionHighlight() {
+    if (editor && activeDecorations.length > 0) {
+      activeDecorations = editor.deltaDecorations(activeDecorations, []);
+    }
+  }
 
   // Switch Sidebar Tabs
   function switchSidebarTab(tabName) {
@@ -937,8 +901,8 @@
             <span class="table-title">
               <span style="color: #38bdf8;">🗃️</span> ${tblName}
             </span>
-            <span style="font-size: 11px; background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #94a3b8;">
-              ${tblInfo.row_count} rows
+            <span style="font-size: 10px; background: #17233d; padding: 1px 5px; border-radius: 3px; color: #94a3b8;">
+              ${tblInfo.row_count}
             </span>
           </div>
           <div id="cols_${tblName}" class="schema-columns-list">
@@ -979,12 +943,12 @@
     activeChallengeId = null;
     document.getElementById('btnVerifyChallenge').style.display = 'none';
     document.getElementById('btnResTabVerify').style.display = 'none';
+    clearExecutionHighlight();
     
     if (DATASET_QUERIES[newDatasetId] && editor) {
       editor.setValue(DATASET_QUERIES[newDatasetId]);
     }
     fetchSchema(newDatasetId);
-    startSqlDebugger();
   }
 
   // Load Challenge
@@ -994,6 +958,7 @@
 
     activeChallengeId = challengeId;
     activeDatasetId = challenge.dataset_id;
+    clearExecutionHighlight();
 
     const sel = document.getElementById('datasetSelector');
     if (sel) sel.value = activeDatasetId;
@@ -1006,7 +971,6 @@
     document.getElementById('btnResTabVerify').style.display = 'block';
 
     fetchSchema(activeDatasetId);
-    startSqlDebugger();
   }
 
   // ── SQL LINE-BY-LINE DEBUGGER TRACER ──
@@ -1018,6 +982,7 @@
     btn.disabled = true;
 
     stopAutoPlay();
+    isExecutingOrStepping = true;
 
     fetch('/sql/api/trace/', {
       method: 'POST',
@@ -1052,11 +1017,13 @@
         renderError(data.error || "Could not generate trace steps for this query.");
         switchResultTab('step');
       }
+      isExecutingOrStepping = false;
     })
     .catch(err => {
       btn.innerHTML = '<span>🚀</span> Start SQL Debugger';
       btn.disabled = false;
       renderError("Failed to communicate with SQL Debugger tracer endpoint.");
+      isExecutingOrStepping = false;
     });
   }
 
@@ -1083,7 +1050,7 @@
     // Update Logical Pipeline Pills
     updatePipelinePills(step.clause);
 
-    // Update Monaco Active Line Decoration
+    // ── SHOW HAND 👉 AND LINE HIGHLIGHT ONLY WHEN EXECUTING/STEPPING ──
     if (editor && step.line_number) {
       activeDecorations = editor.deltaDecorations(activeDecorations, [
         {
@@ -1098,7 +1065,7 @@
       editor.revealLineInCenter(step.line_number);
     }
 
-    // Render Intermediate Step Table
+    // Render Intermediate Step Table Live
     renderStepTable(step);
 
     // Update Stats
@@ -1151,7 +1118,7 @@
       } else {
         stopAutoPlay();
       }
-    }, 1200);
+    }, 1100);
   }
 
   function stopAutoPlay() {
@@ -1162,7 +1129,7 @@
     const btn = document.getElementById('btnAutoPlay');
     if (btn) {
       btn.innerHTML = '▶ Auto Play';
-      btn.style.background = '#1e293b';
+      btn.style.background = '#17233d';
       btn.style.color = '#cbd5e1';
     }
   }
@@ -1188,7 +1155,7 @@
   function renderStepTable(step) {
     const container = document.getElementById('stepResultsOutput');
     if (!step.columns || step.columns.length === 0) {
-      container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">No table columns in virtual buffer at this step.</div>`;
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:#94a3b8;">No table columns in buffer.</div>`;
       return;
     }
 
@@ -1200,27 +1167,27 @@
     else if (step.clause === 'ORDER BY') { statusBadgeClass = 'row-badge-sorted'; statusText = '📊 SORTED'; }
 
     let html = `
-      <div style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; background: #131d31; padding: 10px 14px; border-radius: 10px; border: 1px solid #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 14px;">📦</span>
-          <span style="font-size: 13px; color: #cbd5e1; font-weight: 700;">
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #111d35; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 12px;">📦</span>
+          <span style="font-size: 11px; color: #cbd5e1; font-weight: 700;">
             Live Virtual Table State: <strong style="color: ${step.badge_color || '#38bdf8'}">${step.phase_name}</strong>
           </span>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 11px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-family: monospace;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 10px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700; font-family: monospace;">
             ${step.row_count} Rows &bull; ${step.columns.length} Cols
           </span>
-          <span style="font-size: 12px; color: #94a3b8;">
+          <span style="font-size: 11px; color: #94a3b8;">
             ${step.status_note || ''}
           </span>
         </div>
       </div>
-      <div style="overflow-x: auto; border-radius: 8px; border: 1px solid #1e293b; background: #0f172a;">
+      <div style="overflow-x: auto; border-radius: 6px; border: 1px solid #1e293b; background: #09101f;">
         <table class="sql-data-table">
           <thead>
             <tr>
-              <th style="width: 110px; background: #0b1324; color: #94a3b8; font-size: 11px; text-transform: uppercase;">STATUS</th>
+              <th style="width: 100px; background: #080e1a; color: #94a3b8; font-size: 10px; text-transform: uppercase;">STATUS</th>
     `;
 
     step.columns.forEach(col => {
@@ -1229,15 +1196,15 @@
     html += `</tr></thead><tbody>`;
 
     if (step.rows.length === 0) {
-      html += `<tr><td colspan="${step.columns.length + 1}" style="text-align: center; color: #64748b; padding: 28px;">0 rows in buffer at this stage.</td></tr>`;
+      html += `<tr><td colspan="${step.columns.length + 1}" style="text-align: center; color: #64748b; padding: 20px;">0 rows in buffer at this stage.</td></tr>`;
     } else {
       step.rows.forEach((row, rIdx) => {
         let rowCustomBadge = statusText;
         if (step.clause === 'ORDER BY') {
           rowCustomBadge = `📊 #${rIdx + 1}`;
         }
-        html += `<tr style="transition: background 0.2s;">`;
-        html += `<td><span class="${statusBadgeClass}" style="padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; font-family: monospace;">${rowCustomBadge}</span></td>`;
+        html += `<tr>`;
+        html += `<td><span class="${statusBadgeClass}" style="padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 800; font-family: monospace;">${rowCustomBadge}</span></td>`;
         row.forEach(val => {
           if (val === null || val === undefined) {
             html += `<td class="null-cell">NULL</td>`;
@@ -1253,13 +1220,15 @@
     container.innerHTML = html;
   }
 
-  // Execute Full SQL Query (Non-debug mode)
+  // Execute Full SQL Query
   function runSqlQuery() {
     if (!editor) return;
     const sql = editor.getValue();
     const btn = document.getElementById('btnRunQuery');
     btn.innerHTML = '<span>⏳</span> Running...';
     btn.disabled = true;
+
+    clearExecutionHighlight();
 
     fetch('/sql/api/execute/', {
       method: 'POST',
@@ -1268,7 +1237,7 @@
     })
     .then(res => res.json())
     .then(data => {
-      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
+      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>';
       btn.disabled = false;
 
       document.getElementById('statExecTime').innerText = `${data.execution_time_ms || 0} ms`;
@@ -1288,7 +1257,7 @@
       }
     })
     .catch(err => {
-      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
+      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>';
       btn.disabled = false;
       renderError("Network / Server connection error. Please try again.");
     });
@@ -1298,18 +1267,18 @@
   function renderResultsTable(columns, rows) {
     const container = document.getElementById('queryResultsOutput');
     if (!columns || columns.length === 0) {
-      container.innerHTML = `<div style="text-align: center; padding: 40px; color: #10b981;">✅ Statement executed successfully. 0 output rows returned.</div>`;
+      container.innerHTML = `<div style="text-align: center; padding: 24px; color: #10b981; font-size: 12px;">✅ Statement executed successfully. 0 output rows returned.</div>`;
       return;
     }
 
-    let html = `<table class="sql-data-table"><thead><tr>`;
+    let html = `<div style="overflow-x: auto; border-radius: 6px; border: 1px solid #1e293b; background: #09101f;"><table class="sql-data-table"><thead><tr>`;
     columns.forEach(col => {
       html += `<th>${col}</th>`;
     });
     html += `</tr></thead><tbody>`;
 
     if (rows.length === 0) {
-      html += `<tr><td colspan="${columns.length}" style="text-align: center; color: #64748b; padding: 24px;">Query returned 0 rows.</td></tr>`;
+      html += `<tr><td colspan="${columns.length}" style="text-align: center; color: #64748b; padding: 20px;">Query returned 0 rows.</td></tr>`;
     } else {
       rows.forEach(row => {
         html += `<tr>`;
@@ -1324,7 +1293,7 @@
       });
     }
 
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
     container.innerHTML = html;
   }
 
@@ -1345,7 +1314,7 @@
   function renderQueryPlan(plan) {
     const container = document.getElementById('queryPlanOutput');
     if (!plan || plan.length === 0) {
-      container.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">No execution plan available for this query.</p>`;
+      container.innerHTML = `<p style="color: #64748b; text-align: center; padding: 16px; font-size: 12px;">No execution plan available for this query.</p>`;
       return;
     }
 
@@ -1364,6 +1333,8 @@
     const btn = document.getElementById('btnVerifyChallenge');
     btn.innerHTML = '⏳ Testing...';
 
+    clearExecutionHighlight();
+
     fetch('/sql/api/verify/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1371,12 +1342,12 @@
     })
     .then(res => res.json())
     .then(data => {
-      btn.innerHTML = '🧪 Test Challenge Solution';
+      btn.innerHTML = '🧪 Test Challenge';
       renderChallengeVerification(data);
       switchResultTab('verify');
     })
     .catch(err => {
-      btn.innerHTML = '🧪 Test Challenge Solution';
+      btn.innerHTML = '🧪 Test Challenge';
       console.error(err);
     });
   }
@@ -1385,17 +1356,17 @@
     const container = document.getElementById('challengeVerifyOutput');
     if (data.passed) {
       container.innerHTML = `
-        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 12px; padding: 24px; text-align: center;">
-          <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
-          <h3 style="color: #34d399; margin: 0 0 6px;">Accepted! Challenge Solved Successfully!</h3>
-          <p style="color: #cbd5e1; font-size: 14px; margin: 0;">Your SQL query matched all expected rows and column structures in <strong>${data.execution_time_ms} ms</strong>.</p>
+        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; padding: 18px; text-align: center;">
+          <div style="font-size: 28px; margin-bottom: 6px;">🎉</div>
+          <h3 style="color: #34d399; margin: 0 0 4px; font-size: 14px;">Accepted! Challenge Solved Successfully!</h3>
+          <p style="color: #cbd5e1; font-size: 12px; margin: 0;">Your SQL query matched all expected rows and column structures in <strong>${data.execution_time_ms} ms</strong>.</p>
         </div>
       `;
     } else {
       container.innerHTML = `
-        <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
-          <h3 style="color: #f87171; margin: 0 0 6px;">❌ Wrong Answer / Output Mismatch</h3>
-          <p style="color: #fca5a5; font-size: 13px; margin: 0 0 10px;">${data.error || 'Your query output differed from the canonical expected output.'}</p>
+        <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; padding: 16px;">
+          <h3 style="color: #f87171; margin: 0 0 4px; font-size: 13px;">❌ Wrong Answer / Output Mismatch</h3>
+          <p style="color: #fca5a5; font-size: 12px; margin: 0;">${data.error || 'Your query output differed from the canonical expected output.'}</p>
         </div>
       `;
     }
@@ -1415,7 +1386,7 @@
 
   // Reset Database
   function resetActiveDatabase() {
-    if (!confirm(`Are you sure you want to reset the '${activeDatasetId}' database to its factory default state?`)) return;
+    if (!confirm(`Reset '${activeDatasetId}' database to factory state?`)) return;
 
     fetch('/sql/api/reset/', {
       method: 'POST',
@@ -1426,7 +1397,7 @@
     .then(data => {
       if (data.schema) renderSchema(data.schema);
       if (editor && data.default_query) editor.setValue(data.default_query);
-      startSqlDebugger();
+      clearExecutionHighlight();
       alert(data.message);
     });
   }
@@ -1465,18 +1436,18 @@
     try {
       const history = JSON.parse(localStorage.getItem('kashii_sql_history') || '[]');
       if (history.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">No query history yet.</p>`;
+        container.innerHTML = `<p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">No query history yet.</p>`;
         return;
       }
       let html = '';
       history.forEach(item => {
         html += `
           <div class="challenge-item-card" onclick="loadHistoryItem(\`${escapeHtml(item.sql)}\`, '${item.dataset_id}')">
-            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 4px;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-bottom: 3px;">
               <span>🗄️ ${item.dataset_id}</span>
               <span>${item.timestamp}</span>
             </div>
-            <pre style="margin: 0; font-family: monospace; font-size: 11px; color: #cbd5e1; white-space: pre-wrap; overflow: hidden; max-height: 40px;">${escapeHtml(item.sql)}</pre>
+            <pre style="margin: 0; font-family: monospace; font-size: 10px; color: #cbd5e1; white-space: pre-wrap; overflow: hidden; max-height: 36px;">${escapeHtml(item.sql)}</pre>
           </div>
         `;
       });
