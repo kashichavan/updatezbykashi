@@ -34,7 +34,7 @@
     padding: 0;
   }
 
-  /* ── COMPACT TOPBAR ── */
+  /* ── COMPACT TOPBAR (PERFECT FLEX ALIGNMENT) ── */
   .sql-compact-topbar {
     background: linear-gradient(135deg, #0b1324 0%, #111d35 100%);
     border: 1px solid var(--sql-card-border);
@@ -45,7 +45,7 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   }
 
@@ -61,6 +61,9 @@
     margin: 0;
     color: #ffffff;
     letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   .dataset-select-compact {
@@ -74,6 +77,7 @@
     cursor: pointer;
     outline: none;
     transition: all 0.15s;
+    height: 28px;
   }
   .dataset-select-compact:hover {
     border-color: #38bdf8;
@@ -91,7 +95,8 @@
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: #ffffff;
     border: 1px solid #38bdf8;
-    padding: 5px 12px;
+    padding: 0 12px;
+    height: 28px;
     border-radius: 6px;
     font-weight: 800;
     font-size: 11px;
@@ -109,19 +114,21 @@
     background: #17233d;
     color: #cbd5e1;
     border: 1px solid #233554;
-    padding: 5px 9px;
+    padding: 0 9px;
+    height: 28px;
     border-radius: 6px;
     font-size: 11px;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     transition: all 0.15s;
   }
   .dbg-btn-compact:hover:not(:disabled) {
     background: #233554;
     color: #ffffff;
+    border-color: #38bdf8;
   }
   .dbg-btn-compact:disabled {
     opacity: 0.4;
@@ -181,7 +188,7 @@
   /* ── WORKSPACE 2-COLUMN GRID ── */
   .sql-workspace-grid {
     display: grid;
-    grid-template-columns: 260px 1fr;
+    grid-template-columns: 280px 1fr;
     gap: 12px;
     align-items: start;
   }
@@ -209,7 +216,7 @@
     grid-template-columns: 1fr !important;
   }
   body.table-maximized-mode .results-card {
-    min-height: 540px !important;
+    min-height: 560px !important;
     box-shadow: 0 0 35px rgba(56, 189, 248, 0.2);
   }
 
@@ -232,8 +239,8 @@
 
   .sidebar-tab-btn {
     flex: 1;
-    padding: 8px 4px;
-    font-size: 11px;
+    padding: 8px 3px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--sql-muted);
     background: transparent;
@@ -331,7 +338,7 @@
     margin-right: 3px;
   }
 
-  /* Challenge Item */
+  /* Challenge / Preset Query Item */
   .challenge-item-card {
     background: #111d35;
     border: 1px solid #1e293b;
@@ -373,13 +380,29 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     border-bottom: 1px solid #1e293b;
   }
 
   #monacoSqlContainer {
     height: 230px;
     width: 100%;
+    position: relative;
+  }
+
+  /* Fallback editable textarea */
+  .sql-fallback-editor {
+    width: 100%;
+    height: 100%;
+    background: #0d1527;
+    color: #f1f5f9;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    padding: 10px;
+    border: none;
+    outline: none;
+    resize: none;
+    box-sizing: border-box;
   }
 
   /* Monaco Active Line Highlight */
@@ -633,7 +656,7 @@
       </select>
     </div>
 
-    <!-- Playback Controls -->
+    <!-- Playback Controls (Aligned inline with equal heights) -->
     <div class="sql-playback-group">
       <button id="btnStartDebug" class="btn-dbg-start-compact" onclick="startSqlDebugger()">
         <span>🚀</span> Start SQL Debugger
@@ -642,12 +665,12 @@
       <button id="btnStepPrev" class="dbg-btn-compact" onclick="prevStep()" disabled>◀ Back</button>
       <button id="btnStepNext" class="dbg-btn-compact" onclick="nextStep()" disabled>Step Next ▶</button>
       <button id="btnStepLast" class="dbg-btn-compact" onclick="lastStep()" disabled>Last ⏭</button>
-      <button id="btnAutoPlay" class="dbg-btn-compact" onclick="toggleAutoPlay()" disabled>▶ Auto Play</button>
+      <button id="btnAutoPlay" class="dbg-btn-compact" onclick="toggleAutoPlay()" disabled>▶ Auto</button>
       
       <!-- Slider & Step Tag -->
       <input type="range" id="timelineSlider" min="0" max="0" value="0"
-             style="width: 90px; cursor: pointer;" oninput="goToStep(parseInt(this.value))" disabled>
-      <span id="stepBadge" style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace;">
+             style="width: 85px; cursor: pointer; height: 18px;" oninput="goToStep(parseInt(this.value))" disabled>
+      <span id="stepBadge" style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace; min-width: 65px; text-align: center;">
         Step 0 / 0
       </span>
 
@@ -661,7 +684,7 @@
   <!-- Compact AI Step Story Banner -->
   <div id="sqlStepStoryBanner" class="sql-step-banner-compact">
     <span id="sqlStepStoryText">
-      💡 <strong>SQL Debugger:</strong> Click <strong>"🚀 Start SQL Debugger"</strong> to trace your query through each logical execution phase.
+      💡 <strong>SQL Debugger:</strong> Tracing query execution...
     </span>
     <span id="currentPhaseBadge" style="font-size: 10px; font-weight: 800; font-family: monospace; background: rgba(56,189,248,0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">
       READY
@@ -673,7 +696,6 @@
     <span class="pipeline-pill active">1. FROM</span>
     <span class="pipeline-pill">2. WHERE</span>
     <span class="pipeline-pill">3. SELECT</span>
-    <span class="pipeline-pill">4. ORDER BY</span>
   </div>
 
   <!-- High Density Grid Layout -->
@@ -755,8 +777,10 @@
           </div>
         </div>
 
-        <!-- Monaco SQL Editor Mount Point -->
-        <div id="monacoSqlContainer"></div>
+        <!-- Monaco SQL Editor Mount Point with Instant Preloaded Fallback -->
+        <div id="monacoSqlContainer">
+          <textarea id="sqlFallbackTextarea" class="sql-fallback-editor" spellcheck="false">{{ default_dataset.default_query }}</textarea>
+        </div>
       </div>
 
       <!-- Live Results & Execution Insights Card -->
@@ -784,7 +808,7 @@
         <div id="paneResStep" class="results-body">
           <div id="stepResultsOutput">
             <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
-              Click <strong>🚀 Start SQL Debugger</strong> above to inspect intermediate virtual tables at each line of execution.
+              Loading execution trace...
             </p>
           </div>
         </div>
@@ -885,184 +909,31 @@
     {% endfor %}
   };
 
-  // Configure Monaco AMD Loader
-  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
-
-  require(['vs/editor/editor.main'], function() {
-    // 1. Cyberpunk Dark (Default)
-    monaco.editor.defineTheme('cyberpunk', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' },
-        { token: 'string', foreground: '34d399' },
-        { token: 'number', foreground: 'fbbf24' },
-        { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: 'f472b6' }
-      ],
-      colors: {
-        'editor.background': '#0d1527',
-        'editor.lineHighlightBackground': '#1e293b40',
-        'editorCursor.foreground': '#38bdf8',
-        'editorLineNumber.foreground': '#475569',
-        'editorLineNumber.activeForeground': '#38bdf8',
-        'editor.selectionBackground': '#38bdf833'
-      }
-    });
-
-    // 2. Dracula Vampire
-    monaco.editor.defineTheme('dracula', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'ff79c6', fontStyle: 'bold' },
-        { token: 'string', foreground: 'f1fa8c' },
-        { token: 'number', foreground: 'bd93f9' },
-        { token: 'comment', foreground: '6272a4', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '8be9fd' }
-      ],
-      colors: {
-        'editor.background': '#282a36',
-        'editor.lineHighlightBackground': '#44475a50',
-        'editorCursor.foreground': '#ff79c6',
-        'editorLineNumber.foreground': '#6272a4',
-        'editorLineNumber.activeForeground': '#f8f8f2',
-        'editor.selectionBackground': '#44475a'
-      }
-    });
-
-    // 3. Monokai Pro
-    monaco.editor.defineTheme('monokai', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'f92672', fontStyle: 'bold' },
-        { token: 'string', foreground: 'e6db74' },
-        { token: 'number', foreground: 'ae81ff' },
-        { token: 'comment', foreground: '75715e', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '66d9ef' }
-      ],
-      colors: {
-        'editor.background': '#272822',
-        'editor.lineHighlightBackground': '#3e3d32',
-        'editorCursor.foreground': '#f8f8f0',
-        'editorLineNumber.foreground': '#88846f',
-        'editorLineNumber.activeForeground': '#f8f8f2',
-        'editor.selectionBackground': '#49483e'
-      }
-    });
-
-    // 4. One Dark Pro
-    monaco.editor.defineTheme('onedark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'c678dd', fontStyle: 'bold' },
-        { token: 'string', foreground: '98c379' },
-        { token: 'number', foreground: 'd19a66' },
-        { token: 'comment', foreground: '5c6370', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '61afef' }
-      ],
-      colors: {
-        'editor.background': '#21252b',
-        'editor.lineHighlightBackground': '#2c313a',
-        'editorCursor.foreground': '#528bff',
-        'editorLineNumber.foreground': '#4b5263',
-        'editorLineNumber.activeForeground': '#abb2bf',
-        'editor.selectionBackground': '#3e4451'
-      }
-    });
-
-    // 5. Matrix Emerald
-    monaco.editor.defineTheme('matrix', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: '10b981', fontStyle: 'bold' },
-        { token: 'string', foreground: '6ee7b7' },
-        { token: 'number', foreground: '34d399' },
-        { token: 'comment', foreground: '065f46', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: 'a7f3d0' }
-      ],
-      colors: {
-        'editor.background': '#0c1810',
-        'editor.lineHighlightBackground': '#13281b',
-        'editorCursor.foreground': '#10b981',
-        'editorLineNumber.foreground': '#065f46',
-        'editorLineNumber.activeForeground': '#34d399',
-        'editor.selectionBackground': '#064e3b88'
-      }
-    });
-
-    // 6. GitHub Light
-    monaco.editor.defineTheme('github_light', {
-      base: 'vs',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'cf222e', fontStyle: 'bold' },
-        { token: 'string', foreground: '0a3069' },
-        { token: 'number', foreground: '0550ae' },
-        { token: 'comment', foreground: '6e7781', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '0969da' }
-      ],
-      colors: {
-        'editor.background': '#ffffff',
-        'editor.lineHighlightBackground': '#f6f8fa',
-        'editorCursor.foreground': '#0969da',
-        'editorLineNumber.foreground': '#8c959f',
-        'editorLineNumber.activeForeground': '#24292f',
-        'editor.selectionBackground': '#b6e3ff44'
-      }
-    });
-
-    const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp LIMIT 10;";
-    const savedTheme = localStorage.getItem('kashii_sql_theme') || 'cyberpunk';
-
-    editor = monaco.editor.create(document.getElementById('monacoSqlContainer'), {
-      value: initialSql,
-      language: 'sql',
-      theme: savedTheme,
-      fontSize: 13,
-      fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
-      lineNumbers: 'on',
-      glyphMargin: true,
-      roundedSelection: true,
-      scrollBeyondLastLine: false,
-      readOnly: false,
-      automaticLayout: true,
-      minimap: { enabled: false }
-    });
-
-    // Apply saved theme to UI on load
-    if (savedTheme !== 'cyberpunk') {
-      changeTheme(savedTheme);
+  // Helper functions to get/set editor SQL with instant fallback support
+  function getEditorSql() {
+    if (editor) {
+      return editor.getValue();
     }
+    const fallback = document.getElementById('sqlFallbackTextarea');
+    return fallback ? fallback.value : (DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp;");
+  }
 
-    // ── CRITICAL: CLEAR HAND/LINE HIGHLIGHT WHEN USER TYPES ──
-    editor.onDidChangeModelContent(function() {
-      if (!isExecutingOrStepping) {
-        clearExecutionHighlight();
-      }
-    });
-
-    // Keybinding: Ctrl+Enter / Cmd+Enter to Run SQL
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
-      runSqlQuery();
-    });
-
-    // Automatically fetch schema and run initial query trace on load
-    fetchSchema(activeDatasetId);
-    setTimeout(function() {
-      startSqlDebugger();
-    }, 150);
-  });
+  function setEditorSql(sql) {
+    if (editor) {
+      editor.setValue(sql);
+    }
+    const fallback = document.getElementById('sqlFallbackTextarea');
+    if (fallback) {
+      fallback.value = sql;
+    }
+  }
 
   // Preset Examples per Dataset
   const DATASET_PRESET_QUERIES = {
     "scott_tiger": [
       {
         id: "emp_dept_join",
-        title: "👑 3-Table Multi-JOIN",
+        title: "👑 3-Table Multi-JOIN (emp + dept + salgrade)",
         category: "Joins & Relations",
         sql: `-- 👑 Employees, Departments & Salary Bands\nSELECT\n    e.empno,\n    e.ename AS employee,\n    e.job,\n    d.dname AS department,\n    d.loc AS location,\n    e.sal AS salary,\n    s.grade AS sal_grade\nFROM emp e\nINNER JOIN dept d ON e.deptno = d.deptno\nINNER JOIN salgrade s ON e.sal BETWEEN s.losal AND s.hisal\nWHERE e.sal >= 1500\nORDER BY e.sal DESC;`
       },
@@ -1121,12 +992,6 @@
         title: "⭐ Top Performance Ratings (>= 4.8)",
         category: "Analytics",
         sql: `-- ⭐ High Rating Performance Reviews & Bonuses\nSELECT\n    e.first_name || ' ' || e.last_name AS employee,\n    r.rating,\n    r.bonus_amount\nFROM performance_reviews r\nJOIN employees e ON r.employee_id = e.employee_id\nWHERE r.rating >= 4.8\nORDER BY r.rating DESC;`
-      },
-      {
-        id: "faang_spend",
-        title: "💰 Department Compensation Spend",
-        category: "Aggregation",
-        sql: `-- 💰 Total and Average Compensation per Department\nSELECT\n    d.department_name,\n    COUNT(e.employee_id) AS headcount,\n    ROUND(AVG(e.salary), 2) AS avg_salary,\n    SUM(e.salary) AS total_payroll\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nORDER BY total_payroll DESC;`
       }
     ],
     "ecommerce": [
@@ -1141,12 +1006,6 @@
         title: "📦 Inventory Asset Valuation",
         category: "Products",
         sql: `-- 📦 Highest Value Inventory in Stock\nSELECT\n    product_name,\n    price,\n    stock_quantity,\n    ROUND(price * stock_quantity, 2) AS total_inventory_value\nFROM products\nORDER BY total_inventory_value DESC;`
-      },
-      {
-        id: "ecom_monthly",
-        title: "📈 Monthly Sales Trends",
-        category: "Time Series",
-        sql: `-- 📈 Monthly Sales Revenue & Orders\nSELECT\n    strftime('%Y-%m', order_date) AS order_month,\n    COUNT(order_id) AS total_orders,\n    SUM(total_amount) AS monthly_revenue\nFROM orders\nGROUP BY strftime('%Y-%m', order_date)\nORDER BY order_month DESC;`
       }
     ],
     "ott_streaming": [
@@ -1187,10 +1046,10 @@
           <div class="challenge-item-card" onclick="loadPresetQueryByIndex(${idx})" title="Click to load & trace this query">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span style="font-size: 9px; font-weight: 800; background: rgba(56,189,248,0.18); color: #38bdf8; padding: 1px 5px; border-radius: 3px;">${item.category}</span>
-              <span style="font-size: 10px; color: #94a3b8;">▶ Run</span>
+              <span style="font-size: 10px; color: #94a3b8;">▶ Load</span>
             </div>
             <div style="font-weight: 700; font-size: 11px; color: #ffffff; margin-bottom: 4px;">${item.title}</div>
-            <pre style="margin: 0; font-family: monospace; font-size: 9px; color: #94a3b8; white-space: pre-wrap; overflow: hidden; max-height: 28px;">${escapeHtml(item.sql.split('\\n')[0])}</pre>
+            <pre style="margin: 0; font-family: monospace; font-size: 9px; color: #94a3b8; white-space: pre-wrap; overflow: hidden; max-height: 28px;">${escapeHtml(item.sql.split('\n')[0])}</pre>
           </div>
         `;
       });
@@ -1213,9 +1072,7 @@
     const item = list[idx];
     if (!item) return;
 
-    if (editor) {
-      editor.setValue(item.sql);
-    }
+    setEditorSql(item.sql);
     clearExecutionHighlight();
     startSqlDebugger();
   }
@@ -1227,10 +1084,186 @@
     if (sel) sel.value = "";
   }
 
-  // Also trigger initial schema and preset queries fetch on DOM ready
+  // Configure Monaco AMD Loader
+  if (window.require) {
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+
+    require(['vs/editor/editor.main'], function() {
+      // 1. Cyberpunk Dark (Default)
+      monaco.editor.defineTheme('cyberpunk', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' },
+          { token: 'string', foreground: '34d399' },
+          { token: 'number', foreground: 'fbbf24' },
+          { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
+          { token: 'operator.sql', foreground: 'f472b6' }
+        ],
+        colors: {
+          'editor.background': '#0d1527',
+          'editor.lineHighlightBackground': '#1e293b40',
+          'editorCursor.foreground': '#38bdf8',
+          'editorLineNumber.foreground': '#475569',
+          'editorLineNumber.activeForeground': '#38bdf8',
+          'editor.selectionBackground': '#38bdf833'
+        }
+      });
+
+      // 2. Dracula Vampire
+      monaco.editor.defineTheme('dracula', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'ff79c6', fontStyle: 'bold' },
+          { token: 'string', foreground: 'f1fa8c' },
+          { token: 'number', foreground: 'bd93f9' },
+          { token: 'comment', foreground: '6272a4', fontStyle: 'italic' },
+          { token: 'operator.sql', foreground: '8be9fd' }
+        ],
+        colors: {
+          'editor.background': '#282a36',
+          'editor.lineHighlightBackground': '#44475a50',
+          'editorCursor.foreground': '#ff79c6',
+          'editorLineNumber.foreground': '#6272a4',
+          'editorLineNumber.activeForeground': '#f8f8f2',
+          'editor.selectionBackground': '#44475a'
+        }
+      });
+
+      // 3. Monokai Pro
+      monaco.editor.defineTheme('monokai', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'f92672', fontStyle: 'bold' },
+          { token: 'string', foreground: 'e6db74' },
+          { token: 'number', foreground: 'ae81ff' },
+          { token: 'comment', foreground: '75715e', fontStyle: 'italic' },
+          { token: 'operator.sql', foreground: '66d9ef' }
+        ],
+        colors: {
+          'editor.background': '#272822',
+          'editor.lineHighlightBackground': '#3e3d32',
+          'editorCursor.foreground': '#f8f8f0',
+          'editorLineNumber.foreground': '#88846f',
+          'editorLineNumber.activeForeground': '#f8f8f2',
+          'editor.selectionBackground': '#49483e'
+        }
+      });
+
+      // 4. One Dark Pro
+      monaco.editor.defineTheme('onedark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'c678dd', fontStyle: 'bold' },
+          { token: 'string', foreground: '98c379' },
+          { token: 'number', foreground: 'd19a66' },
+          { token: 'comment', foreground: '5c6370', fontStyle: 'italic' },
+          { token: 'operator.sql', foreground: '61afef' }
+        ],
+        colors: {
+          'editor.background': '#21252b',
+          'editor.lineHighlightBackground': '#2c313a',
+          'editorCursor.foreground': '#528bff',
+          'editorLineNumber.foreground': '#4b5263',
+          'editorLineNumber.activeForeground': '#abb2bf',
+          'editor.selectionBackground': '#3e4451'
+        }
+      });
+
+      // 5. Matrix Emerald
+      monaco.editor.defineTheme('matrix', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: '10b981', fontStyle: 'bold' },
+          { token: 'string', foreground: '6ee7b7' },
+          { token: 'number', foreground: '34d399' },
+          { token: 'comment', foreground: '065f46', fontStyle: 'italic' },
+          { token: 'operator.sql', foreground: 'a7f3d0' }
+        ],
+        colors: {
+          'editor.background': '#0c1810',
+          'editor.lineHighlightBackground': '#13281b',
+          'editorCursor.foreground': '#10b981',
+          'editorLineNumber.foreground': '#065f46',
+          'editorLineNumber.activeForeground': '#34d399',
+          'editor.selectionBackground': '#064e3b88'
+        }
+      });
+
+      // 6. GitHub Light
+      monaco.editor.defineTheme('github_light', {
+        base: 'vs',
+        inherit: true,
+        rules: [
+          { token: 'keyword', foreground: 'cf222e', fontStyle: 'bold' },
+          { token: 'string', foreground: '0a3069' },
+          { token: 'number', foreground: '0550ae' },
+          { token: 'comment', foreground: '6e7781', fontStyle: 'italic' },
+          { token: 'operator.sql', foreground: '0969da' }
+        ],
+        colors: {
+          'editor.background': '#ffffff',
+          'editor.lineHighlightBackground': '#f6f8fa',
+          'editorCursor.foreground': '#0969da',
+          'editorLineNumber.foreground': '#8c959f',
+          'editorLineNumber.activeForeground': '#24292f',
+          'editor.selectionBackground': '#b6e3ff44'
+        }
+      });
+
+      const container = document.getElementById('monacoSqlContainer');
+      const fallbackTextarea = document.getElementById('sqlFallbackTextarea');
+      const initialSql = (fallbackTextarea ? fallbackTextarea.value : null) || DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp LIMIT 10;";
+      const savedTheme = localStorage.getItem('kashii_sql_theme') || 'cyberpunk';
+
+      // Clear container for Monaco
+      container.innerHTML = '';
+
+      editor = monaco.editor.create(container, {
+        value: initialSql,
+        language: 'sql',
+        theme: savedTheme,
+        fontSize: 13,
+        fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+        lineNumbers: 'on',
+        glyphMargin: true,
+        roundedSelection: true,
+        scrollBeyondLastLine: false,
+        readOnly: false,
+        automaticLayout: true,
+        minimap: { enabled: false }
+      });
+
+      // Apply saved theme to UI on load
+      if (savedTheme !== 'cyberpunk') {
+        changeTheme(savedTheme);
+      }
+
+      // ── CRITICAL: CLEAR HAND/LINE HIGHLIGHT WHEN USER TYPES ──
+      editor.onDidChangeModelContent(function() {
+        if (!isExecutingOrStepping) {
+          clearExecutionHighlight();
+        }
+      });
+
+      // Keybinding: Ctrl+Enter / Cmd+Enter to Run SQL
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+        runSqlQuery();
+      });
+    });
+  }
+
+  // DOMContentLoaded: Run queries immediately so user sees data without delay
   document.addEventListener('DOMContentLoaded', function() {
     fetchSchema(activeDatasetId);
     renderPresetQueries(activeDatasetId);
+    setTimeout(function() {
+      startSqlDebugger();
+    }, 100);
   });
 
   function clearExecutionHighlight() {
@@ -1350,6 +1383,11 @@
         text: colName
       }]);
       editor.focus();
+    } else {
+      const fallback = document.getElementById('sqlFallbackTextarea');
+      if (fallback) {
+        fallback.value += ' ' + colName;
+      }
     }
   }
 
@@ -1361,14 +1399,14 @@
     document.getElementById('btnResTabVerify').style.display = 'none';
     clearExecutionHighlight();
     
-    if (DATASET_QUERIES[newDatasetId] && editor) {
-      editor.setValue(DATASET_QUERIES[newDatasetId]);
+    if (DATASET_QUERIES[newDatasetId]) {
+      setEditorSql(DATASET_QUERIES[newDatasetId]);
     }
     fetchSchema(newDatasetId);
     renderPresetQueries(newDatasetId);
     setTimeout(function() {
       startSqlDebugger();
-    }, 150);
+    }, 100);
   }
 
   // Load Challenge
@@ -1383,20 +1421,18 @@
     const sel = document.getElementById('datasetSelector');
     if (sel) sel.value = activeDatasetId;
 
-    if (editor) {
-      editor.setValue(challenge.starter_sql);
-    }
+    setEditorSql(challenge.starter_sql);
 
     document.getElementById('btnVerifyChallenge').style.display = 'inline-flex';
     document.getElementById('btnResTabVerify').style.display = 'block';
 
     fetchSchema(activeDatasetId);
+    renderPresetQueries(activeDatasetId);
   }
 
   // ── SQL LINE-BY-LINE DEBUGGER TRACER ──
   function startSqlDebugger() {
-    if (!editor) return;
-    const sql = editor.getValue();
+    const sql = getEditorSql();
     const btn = document.getElementById('btnStartDebug');
     btn.innerHTML = '<span>⏳</span> Tracing...';
     btn.disabled = true;
@@ -1527,14 +1563,6 @@
     }
   }
 
-  function firstStep() {
-    goToStep(0);
-  }
-
-  function lastStep() {
-    goToStep(debugSteps.length - 1);
-  }
-
   function toggleAutoPlay() {
     if (autoPlayTimer) {
       stopAutoPlay();
@@ -1569,7 +1597,7 @@
     }
     const btn = document.getElementById('btnAutoPlay');
     if (btn) {
-      btn.innerHTML = '▶ Auto Play';
+      btn.innerHTML = '▶ Auto';
       btn.style.background = '#17233d';
       btn.style.color = '#cbd5e1';
     }
@@ -1660,8 +1688,7 @@
 
   // Execute Full SQL Query
   function runSqlQuery() {
-    if (!editor) return;
-    const sql = editor.getValue();
+    const sql = getEditorSql();
     const btn = document.getElementById('btnRunQuery');
     btn.innerHTML = '<span>⏳</span> Running...';
     btn.disabled = true;
@@ -1766,8 +1793,8 @@
 
   // Verify Challenge Submission
   function verifyChallengeSubmission() {
-    if (!activeChallengeId || !editor) return;
-    const sql = editor.getValue();
+    if (!activeChallengeId) return;
+    const sql = getEditorSql();
     const btn = document.getElementById('btnVerifyChallenge');
     btn.innerHTML = '⏳ Testing...';
 
@@ -1812,14 +1839,13 @@
 
   // Format SQL Query
   function formatSqlQuery() {
-    if (!editor) return;
-    let sql = editor.getValue();
+    let sql = getEditorSql();
     const keywords = ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'HAVING', 'ORDER BY', 'LIMIT', 'OFFSET', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'ON', 'WITH', 'AS', 'UNION ALL', 'UNION', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE'];
     keywords.forEach(kw => {
       const regex = new RegExp(`\\b${kw}\\b`, 'gi');
       sql = sql.replace(regex, kw);
     });
-    editor.setValue(sql);
+    setEditorSql(sql);
   }
 
   // Reset Database
@@ -1834,7 +1860,7 @@
     .then(res => res.json())
     .then(data => {
       if (data.schema) renderSchema(data.schema);
-      if (editor && data.default_query) editor.setValue(data.default_query);
+      if (data.default_query) setEditorSql(data.default_query);
       clearExecutionHighlight();
       alert(data.message);
     });
@@ -1894,7 +1920,7 @@
   }
 
   function loadHistoryItem(sql, datasetId) {
-    if (editor) editor.setValue(sql);
+    setEditorSql(sql);
     if (datasetId !== activeDatasetId) {
       const sel = document.getElementById('datasetSelector');
       if (sel) sel.value = datasetId;
