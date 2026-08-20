@@ -13,15 +13,8 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from datetime import timedelta
 from django.utils.text import slugify
-from django.db.models import Q, Count
+from django.core.cache import cache
 from .models import Category, JobPosting, GuideArticle, ContactInquiry
-from sqlsandbox.views import (
-    sql_sandbox_view,
-    sql_execute_api,
-    sql_schema_api,
-    sql_reset_api,
-    sql_challenge_verify_api
-)
 
 DEFAULT_YOUTUBE_VIDEOS = [
     {

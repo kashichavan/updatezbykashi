@@ -1,26 +1,11 @@
-from django.urls import path, include
+from django.urls import path
 from . import views
 from debugger.views import learn_topic_view
-from sqlsandbox.views import (
-    sql_sandbox_view,
-    sql_execute_api,
-    sql_schema_api,
-    sql_reset_api,
-    sql_challenge_verify_api
-)
 
 urlpatterns = [
     path('', views.index_view, name='index'),
     path('about/', views.about_view, name='about'),
     path('youtube/', views.youtube_view, name='youtube'),
-    
-    # SQL Sandbox & Studio Direct Routes
-    path('sql/', sql_sandbox_view, name='sql_sandbox_root'),
-    path('sql-sandbox/', sql_sandbox_view, name='sql_sandbox_alias'),
-    path('sql/api/execute/', sql_execute_api, name='sql_api_execute_direct'),
-    path('sql/api/schema/', sql_schema_api, name='sql_api_schema_direct'),
-    path('sql/api/reset/', sql_reset_api, name='sql_api_reset_direct'),
-    path('sql/api/verify/', sql_challenge_verify_api, name='sql_api_verify_direct'),
     
     # Interactive Developer Academy (Python, Java, JavaScript with Analogies & Live Debugger)
     path('learn/', learn_topic_view, name='learn_root'),

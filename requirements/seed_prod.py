@@ -145,7 +145,7 @@ print("First 3 items:", [next(pipeline), next(pipeline), next(pipeline)])
 <hr/>
 
 <h3>1. Prime Number Checking with Optimized Square-Root Bound</h3>
-<p>Checking divisibility up to $\sqrt{N}$ reduces time complexity from $O(N)$ to $O(\sqrt{N})$.</p>
+<p>Checking divisibility up to &radic;N reduces time complexity from O(N) to O(&radic;N).</p>
 
 <pre><code class="language-python">import math
 
@@ -334,7 +334,7 @@ executor.shutdown();
 <ol>
   <li><strong>Hash Calculation:</strong> Computes <code>hash(key)</code> and determines bucket index via <code>(n - 1) & hash</code>.</li>
   <li><strong>Collision Resolution:</strong> Handled using a singly linked list.</li>
-  <li><strong>Treeification (Java 8):</strong> When bucket elements exceed <code>TREEIFY_THRESHOLD = 8</code> and total map capacity $\ge 64$, the bucket linked list converts into a <strong>Red-Black Balanced Binary Search Tree</strong>, improving lookup from $O(N)$ to $O(\log N)$.</li>
+  <li><strong>Treeification (Java 8):</strong> When bucket elements exceed <code>TREEIFY_THRESHOLD = 8</code> and total map capacity &ge; 64, the bucket linked list converts into a <strong>Red-Black Balanced Binary Search Tree</strong>, improving lookup from O(N) to O(log N).</li>
 </ol>
 
 <hr/>
@@ -934,7 +934,7 @@ SELECT * FROM OrgHierarchy ORDER BY org_level, employee_id;</code></pre>
 
 <h3>1. B-Tree Index Architecture</h3>
 <ul>
-  <li><strong>Root & Branch Nodes:</strong> Store key pointers to navigate large datasets in $O(\log N)$ time.</li>
+  <li><strong>Root &amp; Branch Nodes:</strong> Store key pointers to navigate large datasets in O(log N) time.</li>
   <li><strong>Leaf Nodes:</strong> Linked double-ended lists containing physical tuple IDs (Heap pointers) or clustered row data.</li>
   <li><strong>Range Scans:</strong> B-Trees excel at <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>BETWEEN</code>, and <code>ORDER BY</code>.</li>
 </ul>
