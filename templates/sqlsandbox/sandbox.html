@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}⚡ SQL Debugger &amp; Interactive Database Studio — Kashii Updatez{% endblock %}
+{% block title %}⚡ SQL Visual Debugger & Interactive Studio — Kashii Updatez{% endblock %}
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block extra_css %}
@@ -11,11 +11,13 @@
   :root {
     --sql-bg: #090d16;
     --sql-card: #0f172a;
-    --sql-card-border: rgba(56, 189, 248, 0.15);
+    --sql-card-border: rgba(56, 189, 248, 0.18);
     --sql-accent: #38bdf8;
     --sql-accent-glow: rgba(56, 189, 248, 0.25);
     --sql-green: #10b981;
     --sql-purple: #a855f7;
+    --sql-amber: #f59e0b;
+    --sql-pink: #ec4899;
     --sql-text: #f1f5f9;
     --sql-muted: #94a3b8;
   }
@@ -27,7 +29,7 @@
 
   .sql-studio-wrapper {
     max-width: 1600px;
-    margin: 20px auto 60px;
+    margin: 16px auto 60px;
     padding: 0 16px;
   }
 
@@ -35,9 +37,9 @@
   .sql-header {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     border: 1px solid var(--sql-card-border);
-    border-radius: 20px;
-    padding: 24px 28px;
-    margin-bottom: 20px;
+    border-radius: 18px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -47,7 +49,7 @@
   }
 
   .sql-title-group h1 {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 800;
     margin: 0 0 6px;
     color: #ffffff;
@@ -89,11 +91,125 @@
     outline: none;
   }
 
+  /* Playback Toolbar */
+  .sql-playback-bar {
+    background: #090d16;
+    border: 1px solid var(--sql-card-border);
+    border-radius: 14px;
+    padding: 10px 16px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-dbg-start {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+    transition: all 0.15s;
+  }
+
+  .btn-dbg-start:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .dbg-step-btn {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+
+  .dbg-step-btn:hover:not(:disabled) {
+    background: #334155;
+    color: #ffffff;
+    border-color: #475569;
+  }
+
+  .dbg-step-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* AI Step Story Banner */
+  .sql-step-banner {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-left: 4px solid #38bdf8;
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Logical Pipeline Stage Pills */
+  .pipeline-strip {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding: 4px 0;
+  }
+
+  .pipeline-pill {
+    font-size: 11px;
+    font-weight: 800;
+    font-family: monospace;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #131d31;
+    color: #64748b;
+    border: 1px solid #1e293b;
+    transition: all 0.2s;
+  }
+
+  .pipeline-pill.active {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  }
+
+  .pipeline-pill.passed {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
   /* Main 2-Column Grid Layout */
   .sql-workspace-grid {
     display: grid;
-    grid-template-columns: 340px 1fr;
-    gap: 18px;
+    grid-template-columns: 320px 1fr;
+    gap: 16px;
     min-height: 750px;
   }
 
@@ -103,7 +219,7 @@
     }
   }
 
-  /* Left Sidebar: Schema & Challenges */
+  /* Left Sidebar */
   .sql-sidebar-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
@@ -111,7 +227,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    height: 750px;
+    height: 780px;
   }
 
   .sidebar-tabs {
@@ -122,8 +238,8 @@
 
   .sidebar-tab-btn {
     flex: 1;
-    padding: 12px 10px;
-    font-size: 12px;
+    padding: 12px 8px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--sql-muted);
     background: transparent;
@@ -156,7 +272,7 @@
   }
 
   .schema-table-header {
-    padding: 10px 14px;
+    padding: 10px 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -172,15 +288,15 @@
 
   .table-title {
     font-weight: 700;
-    font-size: 13px;
+    font-size: 12px;
     color: #ffffff;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
   }
 
   .schema-columns-list {
-    padding: 8px 12px;
+    padding: 6px 10px;
     display: none;
     background: #0d1527;
   }
@@ -193,8 +309,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 6px;
-    font-size: 12px;
+    padding: 4px 6px;
+    font-size: 11px;
     font-family: monospace;
     color: #cbd5e1;
     border-radius: 4px;
@@ -207,17 +323,17 @@
   }
 
   .col-type-tag {
-    font-size: 10px;
+    font-size: 9px;
     color: #94a3b8;
     background: #1e293b;
-    padding: 2px 6px;
-    border-radius: 4px;
+    padding: 1px 5px;
+    border-radius: 3px;
   }
 
   .pk-badge {
     color: #eab308;
     font-weight: 800;
-    font-size: 10px;
+    font-size: 9px;
     margin-right: 4px;
   }
 
@@ -236,11 +352,6 @@
     border-color: #38bdf8;
     transform: translateY(-2px);
     background: #17233d;
-  }
-
-  .challenge-item-card.active {
-    border-color: #38bdf8;
-    background: rgba(56, 189, 248, 0.1);
   }
 
   .diff-badge-Easy { background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
@@ -274,50 +385,33 @@
     border-bottom: 1px solid #1e293b;
   }
 
-  .btn-sql-run {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: #ffffff;
-    border: 1px solid #38bdf8;
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-weight: 800;
-    font-size: 13px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
-    transition: all 0.15s;
-  }
-
-  .btn-sql-run:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-  }
-
-  .btn-sql-action {
-    background: #1e293b;
-    color: #cbd5e1;
-    border: 1px solid #334155;
-    padding: 7px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.15s;
-  }
-
-  .btn-sql-action:hover {
-    background: #334155;
-    color: #ffffff;
-  }
-
   #monacoSqlContainer {
-    height: 320px;
+    height: 310px;
     width: 100%;
+  }
+
+  /* Monaco Line Execution Styles */
+  .sql-debug-active-line {
+    background: rgba(56, 189, 248, 0.16) !important;
+    border-left: 3px solid #38bdf8 !important;
+  }
+
+  .sql-debug-glyph {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sql-debug-glyph::after {
+    content: "👉";
+    font-size: 13px;
+    display: block;
+    animation: pulseArrow 1s infinite alternate;
+  }
+
+  @keyframes pulseArrow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(3px); }
   }
 
   /* Results Card */
@@ -328,7 +422,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 360px;
+    min-height: 380px;
   }
 
   .results-header-tabs {
@@ -346,8 +440,8 @@
   }
 
   .res-tab-btn {
-    padding: 12px 16px;
-    font-size: 13px;
+    padding: 12px 14px;
+    font-size: 12px;
     font-weight: 700;
     color: var(--sql-muted);
     background: transparent;
@@ -372,7 +466,7 @@
   .results-body {
     padding: 16px;
     overflow-x: auto;
-    max-height: 400px;
+    max-height: 420px;
   }
 
   /* Data Table */
@@ -386,7 +480,7 @@
   .sql-data-table th {
     background: #1e293b;
     color: #38bdf8;
-    padding: 10px 14px;
+    padding: 9px 12px;
     text-align: left;
     border: 1px solid #334155;
     font-weight: 700;
@@ -396,7 +490,7 @@
   }
 
   .sql-data-table td {
-    padding: 8px 14px;
+    padding: 8px 12px;
     border: 1px solid #1e293b;
     color: #e2e8f0;
   }
@@ -448,23 +542,70 @@
   <div class="sql-header">
     <div class="sql-title-group">
       <h1>
-        <span>⚡ SQL Debugger &amp; Execution Studio</span>
-        <span class="sql-badge-pill">ISOLATED VIRTUAL DB</span>
+        <span>⚡ SQL Visual Debugger &amp; Interactive Studio</span>
+        <span class="sql-badge-pill">LINE-BY-LINE TRACER</span>
       </h1>
       <p style="margin: 0; font-size: 14px; color: var(--sql-muted);">
-        Debug and execute multi-statement SQL, inspect <code>EXPLAIN QUERY PLAN</code> execution trees, and solve live FAANG interview challenges.
+        Step through SQL clauses line-by-line (FROM &rarr; JOIN &rarr; WHERE &rarr; GROUP BY &rarr; SELECT &rarr; ORDER BY) with live memory state inspector.
       </p>
     </div>
 
     <!-- Active Dataset Selector -->
     <div class="dataset-selector-wrap">
-      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;">ACTIVE DATASET:</span>
+      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;">ACTIVE DATABASE:</span>
       <select id="datasetSelector" class="dataset-select" onchange="changeActiveDataset(this.value)">
         {% for d in datasets %}
         <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
         {% endfor %}
       </select>
     </div>
+  </div>
+
+  <!-- Playback Controls Bar -->
+  <div class="sql-playback-bar">
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <button id="btnStartDebug" class="btn-dbg-start" onclick="startSqlDebugger()">
+        <span>🚀</span> Start SQL Debugger
+      </button>
+      <button id="btnStepFirst" class="dbg-step-btn" onclick="goToStep(0)" disabled>⏮ First</button>
+      <button id="btnStepPrev" class="dbg-step-btn" onclick="prevStep()" disabled>◀ Back</button>
+      <button id="btnStepNext" class="dbg-step-btn" onclick="nextStep()" disabled>Step Next ▶</button>
+      <button id="btnStepLast" class="dbg-step-btn" onclick="lastStep()" disabled>Last ⏭</button>
+      <button id="btnAutoPlay" class="dbg-step-btn" onclick="toggleAutoPlay()" disabled>▶ Auto Play</button>
+    </div>
+
+    <!-- Timeline Slider & Step Badge -->
+    <div style="display: flex; align-items: center; gap: 10px; flex: 1; max-width: 380px;">
+      <span style="font-size: 11px; font-weight: 800; color: #94a3b8; white-space: nowrap;">Timeline:</span>
+      <input type="range" id="timelineSlider" min="0" max="0" value="0"
+             style="flex: 1; cursor: pointer;" oninput="goToStep(parseInt(this.value))" disabled>
+      <span id="stepBadge"
+            style="font-size: 12px; font-weight: 800; color: #38bdf8; font-family: monospace; white-space: nowrap;">
+        Step 0 / 0
+      </span>
+    </div>
+  </div>
+
+  <!-- AI Step Story Banner -->
+  <div id="sqlStepStoryBanner" class="sql-step-banner">
+    <span id="sqlStepStoryText">
+      💡 <strong>Line-by-Line SQL Debugger:</strong> Click <strong>"🚀 Start SQL Debugger"</strong> to trace your query through each logical execution phase.
+    </span>
+    <span id="currentPhaseBadge" style="font-size: 11px; font-weight: 800; font-family: monospace; background: rgba(56,189,248,0.2); color: #38bdf8; padding: 3px 8px; border-radius: 6px;">
+      READY
+    </span>
+  </div>
+
+  <!-- Logical Pipeline Visual Progress Strip -->
+  <div class="pipeline-strip" id="pipelinePillsWrap">
+    <span class="pipeline-pill" id="pill_FROM">1. FROM</span>
+    <span class="pipeline-pill" id="pill_JOIN">2. JOIN</span>
+    <span class="pipeline-pill" id="pill_WHERE">3. WHERE</span>
+    <span class="pipeline-pill" id="pill_GROUP BY">4. GROUP BY</span>
+    <span class="pipeline-pill" id="pill_HAVING">5. HAVING</span>
+    <span class="pipeline-pill" id="pill_SELECT">6. SELECT</span>
+    <span class="pipeline-pill" id="pill_ORDER BY">7. ORDER BY</span>
+    <span class="pipeline-pill" id="pill_LIMIT">8. LIMIT</span>
   </div>
 
   <!-- Workspace 2-Column Grid -->
@@ -515,22 +656,22 @@
       <div class="editor-card">
         <div class="editor-toolbar">
           <div style="display: flex; gap: 8px; align-items: center;">
-            <button id="btnRunQuery" class="btn-sql-run" onclick="runSqlQuery()">
-              <span>▶</span> Run Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>
+            <button id="btnRunQuery" class="dbg-step-btn" style="background: #0284c7; color: #ffffff; border-color: #38bdf8;" onclick="runSqlQuery()">
+              <span>▶</span> Run Full Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>
             </button>
-            <button id="btnVerifyChallenge" class="btn-sql-action" style="display: none; background: #065f46; border-color: #10b981; color: #6ee7b7;" onclick="verifyChallengeSubmission()">
+            <button id="btnVerifyChallenge" class="dbg-step-btn" style="display: none; background: #065f46; border-color: #10b981; color: #6ee7b7;" onclick="verifyChallengeSubmission()">
               🧪 Test Challenge Solution
             </button>
-            <button class="btn-sql-action" onclick="formatSqlQuery()">
+            <button class="dbg-step-btn" onclick="formatSqlQuery()">
               🧹 Format SQL
             </button>
           </div>
 
           <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="btn-sql-action" onclick="resetActiveDatabase()" title="Reset current database to factory state">
+            <button class="dbg-step-btn" onclick="resetActiveDatabase()" title="Reset current database to factory state">
               🔄 Reset DB
             </button>
-            <button class="btn-sql-action" onclick="exportResultsCsv()" title="Download current query results as CSV">
+            <button class="dbg-step-btn" onclick="exportResultsCsv()" title="Download current query results as CSV">
               📥 Export CSV
             </button>
           </div>
@@ -544,7 +685,8 @@
       <div class="results-card">
         <div class="results-header-tabs">
           <div class="tab-group">
-            <button id="btnResTabOutput" class="res-tab-btn active" onclick="switchResultTab('output')">📊 Query Output</button>
+            <button id="btnResTabStep" class="res-tab-btn active" onclick="switchResultTab('step')">🔍 Step Virtual Table</button>
+            <button id="btnResTabOutput" class="res-tab-btn" onclick="switchResultTab('output')">📊 Final Result Table</button>
             <button id="btnResTabPlan" class="res-tab-btn" onclick="switchResultTab('plan')">⚡ Query Plan (EXPLAIN)</button>
             <button id="btnResTabVerify" class="res-tab-btn" style="display: none;" onclick="switchResultTab('verify')">🧪 Challenge Verification</button>
             <button id="btnResTabCheatsheet" class="res-tab-btn" onclick="switchResultTab('cheatsheet')">📖 SQL Cheatsheet</button>
@@ -557,16 +699,25 @@
           </div>
         </div>
 
-        <!-- Result Tab 1: Output Data Grid -->
-        <div id="paneResOutput" class="results-body">
-          <div id="queryResultsOutput">
+        <!-- Result Tab 1: Live Step Virtual Table Output -->
+        <div id="paneResStep" class="results-body">
+          <div id="stepResultsOutput">
             <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
-              Press <strong>▶ Run Query</strong> or <kbd style="background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #38bdf8;">Ctrl + Enter</kbd> to execute your SQL statement.
+              Click <strong>🚀 Start SQL Debugger</strong> above to inspect intermediate virtual tables at each line of execution.
             </p>
           </div>
         </div>
 
-        <!-- Result Tab 2: Query Plan Visualizer -->
+        <!-- Result Tab 2: Full Query Output Data Grid -->
+        <div id="paneResOutput" class="results-body" style="display: none;">
+          <div id="queryResultsOutput">
+            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
+              Press <strong>▶ Run Full Query</strong> to execute without stepping.
+            </p>
+          </div>
+        </div>
+
+        <!-- Result Tab 3: Query Plan Visualizer -->
         <div id="paneResPlan" class="results-body" style="display: none;">
           <div id="queryPlanOutput">
             <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
@@ -575,7 +726,7 @@
           </div>
         </div>
 
-        <!-- Result Tab 3: Challenge Verification -->
+        <!-- Result Tab 4: Challenge Verification -->
         <div id="paneResVerify" class="results-body" style="display: none;">
           <div id="challengeVerifyOutput">
             <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
@@ -584,7 +735,7 @@
           </div>
         </div>
 
-        <!-- Result Tab 4: SQL Reference Cheatsheet -->
+        <!-- Result Tab 5: SQL Reference Cheatsheet -->
         <div id="paneResCheatsheet" class="results-body" style="display: none;">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
             <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
@@ -604,13 +755,21 @@
               </code>
             </div>
             <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
-              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Common Table Expression (CTE)</h4>
+              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Common Table Expressions (CTE)</h4>
               <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
-                WITH cte_name AS (<br/>
-                &nbsp;&nbsp;SELECT col1, SUM(col2) AS total<br/>
-                &nbsp;&nbsp;FROM tbl GROUP BY col1<br/>
+                WITH RegionalSales AS (<br/>
+                &nbsp;&nbsp;SELECT region, SUM(amount) AS total<br/>
+                &nbsp;&nbsp;FROM orders GROUP BY region<br/>
                 )<br/>
-                SELECT * FROM cte_name WHERE total &gt; 1000;
+                SELECT * FROM RegionalSales WHERE total &gt; 10000;
+              </code>
+            </div>
+            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
+              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">NULL Handling &amp; Coalesce</h4>
+              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
+                COALESCE(comm, 0) -- Replaces NULL with 0<br/>
+                NULLIF(a, b) -- Returns NULL if a == b<br/>
+                CASE WHEN mgr IS NULL THEN 'CEO' ELSE 'Staff' END
               </code>
             </div>
           </div>
@@ -623,19 +782,21 @@
   </div>
 
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<!-- Monaco Editor Loader -->
+<!-- Monaco Script & Client Logic -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
-
 <script>
   let editor = null;
-  let activeDatasetId = "{{ default_dataset.id|default:'faang' }}";
+  let activeDatasetId = "{{ default_dataset.id|default:'scott_tiger' }}";
   let activeChallengeId = null;
   let currentResults = { columns: [], rows: [] };
   
-  // Preloaded Dataset Initial Queries
+  // Debugger state
+  let debugSteps = [];
+  let currentStepIdx = 0;
+  let autoPlayTimer = null;
+  let activeDecorations = [];
+
   const DATASET_QUERIES = {
     {% for d in datasets %}
     "{{ d.id }}": `{{ d.default_query|escapejs }}`,
@@ -646,7 +807,8 @@
     {% for c in challenges %}
     "{{ c.id }}": {
       id: "{{ c.id }}",
-      title: "{{ c.title|escapejs }}",
+      title: `{{ c.title|escapejs }}`,
+      difficulty: "{{ c.difficulty }}",
       dataset_id: "{{ c.dataset_id }}",
       starter_sql: `{{ c.starter_sql|escapejs }}`,
       description: `{{ c.description|escapejs }}`
@@ -678,7 +840,7 @@
       }
     });
 
-    const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM employees LIMIT 10;";
+    const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp LIMIT 10;";
 
     editor = monaco.editor.create(document.getElementById('monacoSqlContainer'), {
       value: initialSql,
@@ -687,6 +849,7 @@
       fontSize: 14,
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
       lineNumbers: 'on',
+      glyphMargin: true,
       roundedSelection: true,
       scrollBeyondLastLine: false,
       readOnly: false,
@@ -699,9 +862,9 @@
       runSqlQuery();
     });
 
-    // Fetch initial schema and run starter query
+    // Fetch initial schema and start debugger trace
     fetchSchema(activeDatasetId);
-    runSqlQuery();
+    startSqlDebugger();
   });
 
   // Switch Sidebar Tabs
@@ -727,12 +890,16 @@
   // Switch Results Tabs
   function switchResultTab(tabName) {
     document.querySelectorAll('.res-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('paneResStep').style.display = 'none';
     document.getElementById('paneResOutput').style.display = 'none';
     document.getElementById('paneResPlan').style.display = 'none';
     document.getElementById('paneResVerify').style.display = 'none';
     document.getElementById('paneResCheatsheet').style.display = 'none';
 
-    if (tabName === 'output') {
+    if (tabName === 'step') {
+      document.getElementById('btnResTabStep').classList.add('active');
+      document.getElementById('paneResStep').style.display = 'block';
+    } else if (tabName === 'output') {
       document.getElementById('btnResTabOutput').classList.add('active');
       document.getElementById('paneResOutput').style.display = 'block';
     } else if (tabName === 'plan') {
@@ -817,7 +984,7 @@
       editor.setValue(DATASET_QUERIES[newDatasetId]);
     }
     fetchSchema(newDatasetId);
-    runSqlQuery();
+    startSqlDebugger();
   }
 
   // Load Challenge
@@ -828,24 +995,241 @@
     activeChallengeId = challengeId;
     activeDatasetId = challenge.dataset_id;
 
-    // Update dataset selector UI
     const sel = document.getElementById('datasetSelector');
     if (sel) sel.value = activeDatasetId;
 
-    // Set editor text
     if (editor) {
       editor.setValue(challenge.starter_sql);
     }
 
-    // Show verification button & tab
     document.getElementById('btnVerifyChallenge').style.display = 'inline-flex';
     document.getElementById('btnResTabVerify').style.display = 'block';
 
     fetchSchema(activeDatasetId);
-    runSqlQuery();
+    startSqlDebugger();
   }
 
-  // Execute SQL Query
+  // ── SQL LINE-BY-LINE DEBUGGER TRACER ──
+  function startSqlDebugger() {
+    if (!editor) return;
+    const sql = editor.getValue();
+    const btn = document.getElementById('btnStartDebug');
+    btn.innerHTML = '<span>⏳</span> Tracing...';
+    btn.disabled = true;
+
+    stopAutoPlay();
+
+    fetch('/sql/api/trace/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sql: sql, dataset_id: activeDatasetId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.innerHTML = '<span>🚀</span> Start SQL Debugger';
+      btn.disabled = false;
+
+      if (data.success && data.steps && data.steps.length > 0) {
+        debugSteps = data.steps;
+        currentStepIdx = 0;
+        
+        // Setup slider
+        const slider = document.getElementById('timelineSlider');
+        slider.max = debugSteps.length - 1;
+        slider.value = 0;
+        slider.disabled = false;
+
+        // Enable buttons
+        document.getElementById('btnStepFirst').disabled = false;
+        document.getElementById('btnStepPrev').disabled = false;
+        document.getElementById('btnStepNext').disabled = false;
+        document.getElementById('btnStepLast').disabled = false;
+        document.getElementById('btnAutoPlay').disabled = false;
+
+        goToStep(0);
+        switchResultTab('step');
+      } else {
+        renderError(data.error || "Could not generate trace steps for this query.");
+        switchResultTab('step');
+      }
+    })
+    .catch(err => {
+      btn.innerHTML = '<span>🚀</span> Start SQL Debugger';
+      btn.disabled = false;
+      renderError("Failed to communicate with SQL Debugger tracer endpoint.");
+    });
+  }
+
+  function goToStep(stepIdx) {
+    if (!debugSteps || debugSteps.length === 0) return;
+    if (stepIdx < 0) stepIdx = 0;
+    if (stepIdx >= debugSteps.length) stepIdx = debugSteps.length - 1;
+
+    currentStepIdx = stepIdx;
+    const step = debugSteps[stepIdx];
+
+    // Update Slider & Badge
+    document.getElementById('timelineSlider').value = stepIdx;
+    document.getElementById('stepBadge').innerText = `Step ${stepIdx + 1} / ${debugSteps.length}`;
+
+    // Update Banner
+    document.getElementById('sqlStepStoryText').innerHTML = `
+      💡 <strong>Step ${stepIdx + 1}/${debugSteps.length} [Line ${step.line_number} - ${step.clause}]:</strong> ${step.explanation}
+    `;
+    const phaseBadge = document.getElementById('currentPhaseBadge');
+    phaseBadge.innerText = step.phase_badge;
+    phaseBadge.style.color = step.badge_color || '#38bdf8';
+
+    // Update Logical Pipeline Pills
+    updatePipelinePills(step.clause);
+
+    // Update Monaco Active Line Decoration
+    if (editor && step.line_number) {
+      activeDecorations = editor.deltaDecorations(activeDecorations, [
+        {
+          range: new monaco.Range(step.line_number, 1, step.line_number, 1),
+          options: {
+            isWholeLine: true,
+            className: 'sql-debug-active-line',
+            glyphMarginClassName: 'sql-debug-glyph'
+          }
+        }
+      ]);
+      editor.revealLineInCenter(step.line_number);
+    }
+
+    // Render Intermediate Step Table
+    renderStepTable(step);
+
+    // Update Stats
+    document.getElementById('statRowCount').innerText = `${step.row_count} rows in buffer`;
+  }
+
+  function nextStep() {
+    if (currentStepIdx < debugSteps.length - 1) {
+      goToStep(currentStepIdx + 1);
+    } else {
+      stopAutoPlay();
+    }
+  }
+
+  function prevStep() {
+    if (currentStepIdx > 0) {
+      goToStep(currentStepIdx - 1);
+    }
+  }
+
+  function firstStep() {
+    goToStep(0);
+  }
+
+  function lastStep() {
+    goToStep(debugSteps.length - 1);
+  }
+
+  function toggleAutoPlay() {
+    if (autoPlayTimer) {
+      stopAutoPlay();
+    } else {
+      startAutoPlay();
+    }
+  }
+
+  function startAutoPlay() {
+    const btn = document.getElementById('btnAutoPlay');
+    btn.innerHTML = '⏸ Pause';
+    btn.style.background = '#0284c7';
+    btn.style.color = '#ffffff';
+
+    if (currentStepIdx >= debugSteps.length - 1) {
+      goToStep(0);
+    }
+
+    autoPlayTimer = setInterval(() => {
+      if (currentStepIdx < debugSteps.length - 1) {
+        nextStep();
+      } else {
+        stopAutoPlay();
+      }
+    }, 1200);
+  }
+
+  function stopAutoPlay() {
+    if (autoPlayTimer) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+    }
+    const btn = document.getElementById('btnAutoPlay');
+    if (btn) {
+      btn.innerHTML = '▶ Auto Play';
+      btn.style.background = '#1e293b';
+      btn.style.color = '#cbd5e1';
+    }
+  }
+
+  function updatePipelinePills(activeClause) {
+    const clauses = ['FROM', 'JOIN', 'WHERE', 'GROUP BY', 'HAVING', 'SELECT', 'ORDER BY', 'LIMIT'];
+    let reached = false;
+
+    clauses.forEach(c => {
+      const pill = document.getElementById(`pill_${c}`);
+      if (!pill) return;
+      pill.classList.remove('active', 'passed');
+
+      if (c === activeClause) {
+        pill.classList.add('active');
+        reached = true;
+      } else if (!reached) {
+        pill.classList.add('passed');
+      }
+    });
+  }
+
+  function renderStepTable(step) {
+    const container = document.getElementById('stepResultsOutput');
+    if (!step.columns || step.columns.length === 0) {
+      container.innerHTML = `<div style="text-align:center; padding:30px; color:#94a3b8;">No table columns in virtual buffer at this step.</div>`;
+      return;
+    }
+
+    let html = `
+      <div style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; background: #131d31; padding: 8px 12px; border-radius: 8px; border: 1px solid #1e293b;">
+        <span style="font-size: 12px; color: #cbd5e1; font-weight: 700;">
+          📦 Virtual Memory Table State: <strong style="color: ${step.badge_color || '#38bdf8'}">${step.phase_name}</strong>
+        </span>
+        <span style="font-size: 11px; color: #94a3b8;">
+          ${step.status_note || ''}
+        </span>
+      </div>
+      <table class="sql-data-table"><thead><tr>
+    `;
+
+    step.columns.forEach(col => {
+      html += `<th>${col}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    if (step.rows.length === 0) {
+      html += `<tr><td colspan="${step.columns.length}" style="text-align: center; color: #64748b; padding: 24px;">0 rows in buffer at this stage.</td></tr>`;
+    } else {
+      step.rows.forEach(row => {
+        html += `<tr>`;
+        row.forEach(val => {
+          if (val === null || val === undefined) {
+            html += `<td class="null-cell">NULL</td>`;
+          } else {
+            html += `<td>${val}</td>`;
+          }
+        });
+        html += `</tr>`;
+      });
+    }
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+
+  // Execute Full SQL Query (Non-debug mode)
   function runSqlQuery() {
     if (!editor) return;
     const sql = editor.getValue();
@@ -860,7 +1244,7 @@
     })
     .then(res => res.json())
     .then(data => {
-      btn.innerHTML = '<span>▶</span> Run Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
+      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
       btn.disabled = false;
 
       document.getElementById('statExecTime').innerText = `${data.execution_time_ms || 0} ms`;
@@ -880,7 +1264,7 @@
       }
     })
     .catch(err => {
-      btn.innerHTML = '<span>▶</span> Run Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
+      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
       btn.disabled = false;
       renderError("Network / Server connection error. Please try again.");
     });
@@ -922,13 +1306,15 @@
 
   // Render Error
   function renderError(errMsg) {
-    const container = document.getElementById('queryResultsOutput');
+    const container = document.getElementById('stepResultsOutput');
     container.innerHTML = `
       <div class="sql-error-alert">
         <strong>❌ SQL Execution Error:</strong><br/>
         ${errMsg}
       </div>
     `;
+    const out = document.getElementById('queryResultsOutput');
+    if (out) out.innerHTML = container.innerHTML;
   }
 
   // Render Query Plan
@@ -1016,7 +1402,7 @@
     .then(data => {
       if (data.schema) renderSchema(data.schema);
       if (editor && data.default_query) editor.setValue(data.default_query);
-      runSqlQuery();
+      startSqlDebugger();
       alert(data.message);
     });
   }

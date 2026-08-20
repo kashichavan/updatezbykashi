@@ -6,6 +6,7 @@ from django.views.decorators.http import require_http_methods
 from .engine import (
     DATASETS,
     execute_sql_sandbox,
+    trace_sql_execution,
     get_dataset_catalog,
     get_sandboxed_connection,
     inspect_schema
@@ -14,7 +15,7 @@ from .challenges import get_challenges_list, get_challenge_by_id
 
 def sql_sandbox_view(request):
     """
-    Main interactive SQL Execution Sandbox & Database Studio view.
+    Main interactive SQL Visual Debugger & Database Studio view.
     """
     dataset_catalog = get_dataset_catalog()
     challenges = get_challenges_list()
@@ -23,10 +24,28 @@ def sql_sandbox_view(request):
         'datasets': dataset_catalog,
         'challenges': challenges,
         'default_dataset': dataset_catalog[0] if dataset_catalog else None,
-        'page_title': '⚡ SQL Execution Sandbox & Interactive Database Studio',
-        'meta_description': 'Run real-time SQL queries against enterprise datasets (FAANG, E-Commerce, FinTech, Social). Inspect query execution plans (EXPLAIN), analyze B-Tree indexing, and solve LeetCode SQL challenges live in your browser.'
+        'page_title': '⚡ SQL Visual Debugger & Interactive Database Studio',
+        'meta_description': 'Line-by-line interactive SQL Debugger. Step through query clauses (FROM, JOIN, WHERE, GROUP BY, SELECT, ORDER BY) with visual execution pipeline, active row memory inspector, and Scott/Tiger schema.'
     }
     return render(request, 'sqlsandbox/sandbox.html', context)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def sql_trace_api(request):
+    """
+    Step-by-Step / Line-by-Line SQL Execution Tracer API.
+    Returns AST clause breakdown with intermediate virtual table states for each step.
+    """
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        data = request.POST
+        
+    sql = data.get('sql', '').strip()
+    dataset_id = data.get('dataset_id', 'scott_tiger')
+    
+    result = trace_sql_execution(sql, dataset_id=dataset_id)
+    return JsonResponse(result)
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -40,7 +59,7 @@ def sql_execute_api(request):
         data = request.POST
         
     sql = data.get('sql', '').strip()
-    dataset_id = data.get('dataset_id', 'faang')
+    dataset_id = data.get('dataset_id', 'scott_tiger')
     max_rows = int(data.get('max_rows', 500))
     
     result = execute_sql_sandbox(sql, dataset_id=dataset_id, max_rows=max_rows)

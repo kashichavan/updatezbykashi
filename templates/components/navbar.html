@@ -49,7 +49,7 @@
       </a>
 
       <a href="/sql/" class="{% if '/sql' in request.path %}active{% endif %}">
-        <span>💾</span>
+        <img src="{% static 'images/icon-company.png' %}" class="nav-icon" alt="SQL Debugger" width="16" height="16" decoding="async">
         <span class="nav-label-long">SQL Debugger</span>
         <span class="nav-label-short">SQL</span>
       </a>
@@ -109,7 +109,7 @@
 
         <a href="/learn/" class="drawer-link {% if '/learn' in request.path %}active{% endif %}">
           <span style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 16px;">⚡</span>
+            <img src="{% static 'images/icon-type.png' %}" class="nav-icon" alt="Learn" width="18" height="18" decoding="async">
             Learn Python, Java &amp; JS
           </span>
           <span class="d-tag" style="background:#fef3c7; color:#b45309;">ACADEMY</span>
@@ -125,7 +125,7 @@
 
         <a href="/sql/" class="drawer-link {% if '/sql' in request.path %}active{% endif %}">
           <span style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 16px;">💾</span>
+            <img src="{% static 'images/icon-company.png' %}" class="nav-icon" alt="SQL Debugger" width="18" height="18" decoding="async">
             SQL Debugger IDE
           </span>
           <span class="d-tag" style="background:#e0f2fe; color:#0369a1;">SQL</span>
