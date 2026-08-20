@@ -30,6 +30,9 @@ urlpatterns = [
     path('debug/', RedirectView.as_view(url='/debugger/', permanent=False)),
     path('debuger/', RedirectView.as_view(url='/debugger/', permanent=False)),
     path('DEBUGER/', RedirectView.as_view(url='/debugger/', permanent=False)),
+    path('sql/', include(('sqlsandbox.urls', 'sqlsandbox'), namespace='sqlsandbox')),
+    path('sql-sandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
+    path('sqlsandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
     path('', include('requirements.urls')),
 ]
 

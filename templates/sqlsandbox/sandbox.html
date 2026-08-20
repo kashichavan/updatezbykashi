@@ -1,0 +1,1090 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}⚡ SQL Execution Sandbox & Interactive Database Studio — Kashii Updatez{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_css %}
+<!-- Monaco Editor CDN & High-Density Dark Workspace Styles -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.min.css">
+<style>
+  :root {
+    --sql-bg: #090d16;
+    --sql-card: #0f172a;
+    --sql-card-border: rgba(56, 189, 248, 0.15);
+    --sql-accent: #38bdf8;
+    --sql-accent-glow: rgba(56, 189, 248, 0.25);
+    --sql-green: #10b981;
+    --sql-purple: #a855f7;
+    --sql-text: #f1f5f9;
+    --sql-muted: #94a3b8;
+  }
+
+  body {
+    background-color: var(--sql-bg);
+    color: var(--sql-text);
+  }
+
+  .sql-studio-wrapper {
+    max-width: 1600px;
+    margin: 20px auto 60px;
+    padding: 0 16px;
+  }
+
+  /* Header Banner */
+  .sql-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+  }
+
+  .sql-title-group h1 {
+    font-size: 24px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sql-badge-pill {
+    font-size: 11px;
+    font-weight: 800;
+    font-family: monospace;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+  }
+
+  .dataset-selector-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    padding: 6px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .dataset-select {
+    background: #1e293b;
+    color: #ffffff;
+    border: 1px solid #334155;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+  }
+
+  /* Main 2-Column Grid Layout */
+  .sql-workspace-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 18px;
+    min-height: 750px;
+  }
+
+  @media (max-width: 1024px) {
+    .sql-workspace-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Left Sidebar: Schema & Challenges */
+  .sql-sidebar-card {
+    background: var(--sql-card);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 750px;
+  }
+
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid #1e293b;
+    background: #090d16;
+  }
+
+  .sidebar-tab-btn {
+    flex: 1;
+    padding: 12px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sql-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    border-bottom: 2px solid transparent;
+  }
+
+  .sidebar-tab-btn.active {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+    border-bottom-color: #38bdf8;
+  }
+
+  .sidebar-content-pane {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+  }
+
+  /* Schema Table Tree */
+  .schema-table-item {
+    background: #131d31;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .schema-table-header {
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    background: #17233d;
+    transition: background 0.15s;
+  }
+
+  .schema-table-header:hover {
+    background: #1e2e4f;
+  }
+
+  .table-title {
+    font-weight: 700;
+    font-size: 13px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .schema-columns-list {
+    padding: 8px 12px;
+    display: none;
+    background: #0d1527;
+  }
+
+  .schema-columns-list.open {
+    display: block;
+  }
+
+  .schema-col-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 6px;
+    font-size: 12px;
+    font-family: monospace;
+    color: #cbd5e1;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .schema-col-row:hover {
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8;
+  }
+
+  .col-type-tag {
+    font-size: 10px;
+    color: #94a3b8;
+    background: #1e293b;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .pk-badge {
+    color: #eab308;
+    font-weight: 800;
+    font-size: 10px;
+    margin-right: 4px;
+  }
+
+  /* Challenge Item */
+  .challenge-item-card {
+    background: #131d31;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .challenge-item-card:hover {
+    border-color: #38bdf8;
+    transform: translateY(-2px);
+    background: #17233d;
+  }
+
+  .challenge-item-card.active {
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+  }
+
+  .diff-badge-Easy { background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+  .diff-badge-Medium { background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+  .diff-badge-Hard { background: rgba(239, 68, 68, 0.2); color: #f87171; font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+
+  /* Right Panel: Editor + Results */
+  .sql-main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .editor-card {
+    background: var(--sql-card);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .editor-toolbar {
+    background: #090d16;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .btn-sql-run {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+    transition: all 0.15s;
+  }
+
+  .btn-sql-run:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+  }
+
+  .btn-sql-action {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+  }
+
+  .btn-sql-action:hover {
+    background: #334155;
+    color: #ffffff;
+  }
+
+  #monacoSqlContainer {
+    height: 320px;
+    width: 100%;
+  }
+
+  /* Results Card */
+  .results-card {
+    background: var(--sql-card);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 360px;
+  }
+
+  .results-header-tabs {
+    background: #090d16;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .tab-group {
+    display: flex;
+    gap: 4px;
+  }
+
+  .res-tab-btn {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--sql-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+
+  .res-tab-btn.active {
+    color: #38bdf8;
+    border-bottom-color: #38bdf8;
+  }
+
+  .meta-stats {
+    font-size: 12px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .results-body {
+    padding: 16px;
+    overflow-x: auto;
+    max-height: 400px;
+  }
+
+  /* Data Table */
+  .sql-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  .sql-data-table th {
+    background: #1e293b;
+    color: #38bdf8;
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid #334155;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .sql-data-table td {
+    padding: 8px 14px;
+    border: 1px solid #1e293b;
+    color: #e2e8f0;
+  }
+
+  .sql-data-table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .sql-data-table tr:hover {
+    background: rgba(56, 189, 248, 0.05);
+  }
+
+  .null-cell {
+    color: #64748b;
+    font-style: italic;
+    font-size: 11px;
+  }
+
+  /* Error Banner */
+  .sql-error-alert {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 16px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Execution Plan Tree */
+  .plan-tree-box {
+    background: #090d16;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #cbd5e1;
+    line-height: 1.8;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sql-studio-wrapper">
+  
+  <!-- Header Banner -->
+  <div class="sql-header">
+    <div class="sql-title-group">
+      <h1>
+        <span>⚡ SQL Execution Sandbox &amp; Database Studio</span>
+        <span class="sql-badge-pill">ISOLATED VIRTUAL DB</span>
+      </h1>
+      <p style="margin: 0; font-size: 14px; color: var(--sql-muted);">
+        Run arbitrary multi-statement SQL, inspect <code>EXPLAIN QUERY PLAN</code> execution trees, and solve live FAANG interview challenges.
+      </p>
+    </div>
+
+    <!-- Active Dataset Selector -->
+    <div class="dataset-selector-wrap">
+      <span style="font-size: 12px; font-weight: 700; color: #94a3b8;">ACTIVE DATASET:</span>
+      <select id="datasetSelector" class="dataset-select" onchange="changeActiveDataset(this.value)">
+        {% for d in datasets %}
+        <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <!-- Workspace 2-Column Grid -->
+  <div class="sql-workspace-grid">
+    
+    <!-- Left Panel: Schema Explorer & Challenges -->
+    <div class="sql-sidebar-card">
+      <div class="sidebar-tabs">
+        <button id="btnTabSchema" class="sidebar-tab-btn active" onclick="switchSidebarTab('schema')">🗂️ Tables &amp; Schema</button>
+        <button id="btnTabChallenges" class="sidebar-tab-btn" onclick="switchSidebarTab('challenges')">🏆 Challenges ({{ challenges|length }})</button>
+        <button id="btnTabHistory" class="sidebar-tab-btn" onclick="switchSidebarTab('history')">📜 History</button>
+      </div>
+
+      <!-- Tab 1: Tables & Schema Explorer -->
+      <div id="paneSchema" class="sidebar-content-pane">
+        <div id="schemaContainer">
+          <p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">Loading database schema...</p>
+        </div>
+      </div>
+
+      <!-- Tab 2: Interview Practice Challenges -->
+      <div id="paneChallenges" class="sidebar-content-pane" style="display: none;">
+        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 12px;">Select a challenge to load problem statement &amp; starter query:</div>
+        {% for c in challenges %}
+        <div class="challenge-item-card" onclick="loadChallenge('{{ c.id }}')">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span class="diff-badge-{{ c.difficulty }}">{{ c.difficulty }}</span>
+            <span style="font-size: 11px; color: #94a3b8;">{{ c.category }}</span>
+          </div>
+          <div style="font-weight: 700; font-size: 13px; color: #ffffff; margin-bottom: 4px;">{{ c.title }}</div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Tab 3: Query History -->
+      <div id="paneHistory" class="sidebar-content-pane" style="display: none;">
+        <div id="historyContainer">
+          <p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">No query history yet. Run a query to record it here!</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Main Panel: Monaco Editor & Live Results Grid -->
+    <div class="sql-main-panel">
+      
+      <!-- Editor Card -->
+      <div class="editor-card">
+        <div class="editor-toolbar">
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="btnRunQuery" class="btn-sql-run" onclick="runSqlQuery()">
+              <span>▶</span> Run Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>
+            </button>
+            <button id="btnVerifyChallenge" class="btn-sql-action" style="display: none; background: #065f46; border-color: #10b981; color: #6ee7b7;" onclick="verifyChallengeSubmission()">
+              🧪 Test Challenge Solution
+            </button>
+            <button class="btn-sql-action" onclick="formatSqlQuery()">
+              🧹 Format SQL
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-sql-action" onclick="resetActiveDatabase()" title="Reset current database to factory state">
+              🔄 Reset DB
+            </button>
+            <button class="btn-sql-action" onclick="exportResultsCsv()" title="Download current query results as CSV">
+              📥 Export CSV
+            </button>
+          </div>
+        </div>
+
+        <!-- Monaco SQL Editor Mount Point -->
+        <div id="monacoSqlContainer"></div>
+      </div>
+
+      <!-- Live Results & Execution Insights Card -->
+      <div class="results-card">
+        <div class="results-header-tabs">
+          <div class="tab-group">
+            <button id="btnResTabOutput" class="res-tab-btn active" onclick="switchResultTab('output')">📊 Query Output</button>
+            <button id="btnResTabPlan" class="res-tab-btn" onclick="switchResultTab('plan')">⚡ Query Plan (EXPLAIN)</button>
+            <button id="btnResTabVerify" class="res-tab-btn" style="display: none;" onclick="switchResultTab('verify')">🧪 Challenge Verification</button>
+            <button id="btnResTabCheatsheet" class="res-tab-btn" onclick="switchResultTab('cheatsheet')">📖 SQL Cheatsheet</button>
+          </div>
+
+          <div class="meta-stats">
+            <span id="statRowCount">0 rows</span>
+            <span>&bull;</span>
+            <span id="statExecTime">0.00 ms</span>
+          </div>
+        </div>
+
+        <!-- Result Tab 1: Output Data Grid -->
+        <div id="paneResOutput" class="results-body">
+          <div id="queryResultsOutput">
+            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
+              Press <strong>▶ Run Query</strong> or <kbd style="background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #38bdf8;">Ctrl + Enter</kbd> to execute your SQL statement.
+            </p>
+          </div>
+        </div>
+
+        <!-- Result Tab 2: Query Plan Visualizer -->
+        <div id="paneResPlan" class="results-body" style="display: none;">
+          <div id="queryPlanOutput">
+            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
+              Run a <code>SELECT</code> query to inspect the internal B-Tree index traversal and execution plan.
+            </p>
+          </div>
+        </div>
+
+        <!-- Result Tab 3: Challenge Verification -->
+        <div id="paneResVerify" class="results-body" style="display: none;">
+          <div id="challengeVerifyOutput">
+            <p style="color: #64748b; font-size: 14px; text-align: center; padding: 40px;">
+              Select a challenge from the left panel and click <strong>Test Challenge Solution</strong> to verify.
+            </p>
+          </div>
+        </div>
+
+        <!-- Result Tab 4: SQL Reference Cheatsheet -->
+        <div id="paneResCheatsheet" class="results-body" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
+              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Window Ranking Functions</h4>
+              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
+                ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC)<br/>
+                DENSE_RANK() OVER (PARTITION BY dept ORDER BY salary DESC)<br/>
+                RANK() OVER (PARTITION BY dept ORDER BY salary DESC)
+              </code>
+            </div>
+            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
+              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Time Series &amp; Offsets</h4>
+              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
+                LAG(val, 1) OVER (ORDER BY date_col)<br/>
+                LEAD(val, 1) OVER (ORDER BY date_col)<br/>
+                FIRST_VALUE(val) OVER (PARTITION BY cat ORDER BY date_col)
+              </code>
+            </div>
+            <div style="background: #131d31; border: 1px solid #1e293b; border-radius: 10px; padding: 14px;">
+              <h4 style="margin: 0 0 8px; color: #38bdf8; font-size: 13px;">Common Table Expression (CTE)</h4>
+              <code style="font-size: 12px; color: #cbd5e1; display: block; line-height: 1.6;">
+                WITH cte_name AS (<br/>
+                &nbsp;&nbsp;SELECT col1, SUM(col2) AS total<br/>
+                &nbsp;&nbsp;FROM tbl GROUP BY col1<br/>
+                )<br/>
+                SELECT * FROM cte_name WHERE total &gt; 1000;
+              </code>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Monaco Editor Loader -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+
+<script>
+  let editor = null;
+  let activeDatasetId = "{{ default_dataset.id|default:'faang' }}";
+  let activeChallengeId = null;
+  let currentResults = { columns: [], rows: [] };
+  
+  // Preloaded Dataset Initial Queries
+  const DATASET_QUERIES = {
+    {% for d in datasets %}
+    "{{ d.id }}": `{{ d.default_query|escapejs }}`,
+    {% endfor %}
+  };
+
+  const CHALLENGES_MAP = {
+    {% for c in challenges %}
+    "{{ c.id }}": {
+      id: "{{ c.id }}",
+      title: "{{ c.title|escapejs }}",
+      dataset_id: "{{ c.dataset_id }}",
+      starter_sql: `{{ c.starter_sql|escapejs }}`,
+      description: `{{ c.description|escapejs }}`
+    },
+    {% endfor %}
+  };
+
+  // Configure Monaco AMD Loader
+  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+
+  require(['vs/editor/editor.main'], function() {
+    monaco.editor.defineTheme('sqlDarkStudio', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' },
+        { token: 'string', foreground: '34d399' },
+        { token: 'number', foreground: 'fbbf24' },
+        { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
+        { token: 'operator.sql', foreground: 'f472b6' }
+      ],
+      colors: {
+        'editor.background': '#0f172a',
+        'editor.lineHighlightBackground': '#1e293b50',
+        'editorCursor.foreground': '#38bdf8',
+        'editorLineNumber.foreground': '#475569',
+        'editorLineNumber.activeForeground': '#38bdf8',
+        'editor.selectionBackground': '#38bdf833'
+      }
+    });
+
+    const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM employees LIMIT 10;";
+
+    editor = monaco.editor.create(document.getElementById('monacoSqlContainer'), {
+      value: initialSql,
+      language: 'sql',
+      theme: 'sqlDarkStudio',
+      fontSize: 14,
+      fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+      lineNumbers: 'on',
+      roundedSelection: true,
+      scrollBeyondLastLine: false,
+      readOnly: false,
+      automaticLayout: true,
+      minimap: { enabled: false }
+    });
+
+    // Keybinding: Ctrl+Enter / Cmd+Enter to Run SQL
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+      runSqlQuery();
+    });
+
+    // Fetch initial schema and run starter query
+    fetchSchema(activeDatasetId);
+    runSqlQuery();
+  });
+
+  // Switch Sidebar Tabs
+  function switchSidebarTab(tabName) {
+    document.querySelectorAll('.sidebar-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('paneSchema').style.display = 'none';
+    document.getElementById('paneChallenges').style.display = 'none';
+    document.getElementById('paneHistory').style.display = 'none';
+
+    if (tabName === 'schema') {
+      document.getElementById('btnTabSchema').classList.add('active');
+      document.getElementById('paneSchema').style.display = 'block';
+    } else if (tabName === 'challenges') {
+      document.getElementById('btnTabChallenges').classList.add('active');
+      document.getElementById('paneChallenges').style.display = 'block';
+    } else if (tabName === 'history') {
+      document.getElementById('btnTabHistory').classList.add('active');
+      document.getElementById('paneHistory').style.display = 'block';
+      renderHistory();
+    }
+  }
+
+  // Switch Results Tabs
+  function switchResultTab(tabName) {
+    document.querySelectorAll('.res-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('paneResOutput').style.display = 'none';
+    document.getElementById('paneResPlan').style.display = 'none';
+    document.getElementById('paneResVerify').style.display = 'none';
+    document.getElementById('paneResCheatsheet').style.display = 'none';
+
+    if (tabName === 'output') {
+      document.getElementById('btnResTabOutput').classList.add('active');
+      document.getElementById('paneResOutput').style.display = 'block';
+    } else if (tabName === 'plan') {
+      document.getElementById('btnResTabPlan').classList.add('active');
+      document.getElementById('paneResPlan').style.display = 'block';
+    } else if (tabName === 'verify') {
+      document.getElementById('btnResTabVerify').classList.add('active');
+      document.getElementById('paneResVerify').style.display = 'block';
+    } else if (tabName === 'cheatsheet') {
+      document.getElementById('btnResTabCheatsheet').classList.add('active');
+      document.getElementById('paneResCheatsheet').style.display = 'block';
+    }
+  }
+
+  // Fetch and Render Database Schema
+  function fetchSchema(datasetId) {
+    fetch(`/sql/api/schema/?dataset_id=${encodeURIComponent(datasetId)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.schema) {
+          renderSchema(data.schema);
+        }
+      })
+      .catch(err => console.error("Schema fetch error:", err));
+  }
+
+  function renderSchema(schema) {
+    const container = document.getElementById('schemaContainer');
+    let html = '';
+
+    for (const [tblName, tblInfo] of Object.entries(schema)) {
+      html += `
+        <div class="schema-table-item">
+          <div class="schema-table-header" onclick="toggleTableColumns('${tblName}')">
+            <span class="table-title">
+              <span style="color: #38bdf8;">🗃️</span> ${tblName}
+            </span>
+            <span style="font-size: 11px; background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #94a3b8;">
+              ${tblInfo.row_count} rows
+            </span>
+          </div>
+          <div id="cols_${tblName}" class="schema-columns-list">
+            ${tblInfo.columns.map(c => `
+              <div class="schema-col-row" onclick="insertColumnToEditor('${c.name}')" title="Click to insert '${c.name}' into editor">
+                <span>${c.is_pk ? '<span class="pk-badge">PK</span>' : ''}${c.name}</span>
+                <span class="col-type-tag">${c.type}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  }
+
+  function toggleTableColumns(tblName) {
+    const el = document.getElementById(`cols_${tblName}`);
+    if (el) {
+      el.classList.toggle('open');
+    }
+  }
+
+  function insertColumnToEditor(colName) {
+    if (editor) {
+      const position = editor.getPosition();
+      editor.executeEdits('', [{
+        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+        text: colName
+      }]);
+      editor.focus();
+    }
+  }
+
+  // Change Active Dataset
+  function changeActiveDataset(newDatasetId) {
+    activeDatasetId = newDatasetId;
+    activeChallengeId = null;
+    document.getElementById('btnVerifyChallenge').style.display = 'none';
+    document.getElementById('btnResTabVerify').style.display = 'none';
+    
+    if (DATASET_QUERIES[newDatasetId] && editor) {
+      editor.setValue(DATASET_QUERIES[newDatasetId]);
+    }
+    fetchSchema(newDatasetId);
+    runSqlQuery();
+  }
+
+  // Load Challenge
+  function loadChallenge(challengeId) {
+    const challenge = CHALLENGES_MAP[challengeId];
+    if (!challenge) return;
+
+    activeChallengeId = challengeId;
+    activeDatasetId = challenge.dataset_id;
+
+    // Update dataset selector UI
+    const sel = document.getElementById('datasetSelector');
+    if (sel) sel.value = activeDatasetId;
+
+    // Set editor text
+    if (editor) {
+      editor.setValue(challenge.starter_sql);
+    }
+
+    // Show verification button & tab
+    document.getElementById('btnVerifyChallenge').style.display = 'inline-flex';
+    document.getElementById('btnResTabVerify').style.display = 'block';
+
+    fetchSchema(activeDatasetId);
+    runSqlQuery();
+  }
+
+  // Execute SQL Query
+  function runSqlQuery() {
+    if (!editor) return;
+    const sql = editor.getValue();
+    const btn = document.getElementById('btnRunQuery');
+    btn.innerHTML = '<span>⏳</span> Running...';
+    btn.disabled = true;
+
+    fetch('/sql/api/execute/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sql: sql, dataset_id: activeDatasetId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.innerHTML = '<span>▶</span> Run Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
+      btn.disabled = false;
+
+      document.getElementById('statExecTime').innerText = `${data.execution_time_ms || 0} ms`;
+
+      if (data.success) {
+        currentResults = { columns: data.columns, rows: data.rows };
+        document.getElementById('statRowCount').innerText = `${data.row_count || 0} rows`;
+        renderResultsTable(data.columns, data.rows);
+        renderQueryPlan(data.query_plan);
+        if (data.schema) renderSchema(data.schema);
+        saveQueryToHistory(sql, activeDatasetId);
+        switchResultTab('output');
+      } else {
+        document.getElementById('statRowCount').innerText = '0 rows';
+        renderError(data.error);
+        switchResultTab('output');
+      }
+    })
+    .catch(err => {
+      btn.innerHTML = '<span>▶</span> Run Query <kbd style="font-size: 10px; background: rgba(0,0,0,0.3); padding: 2px 5px; border-radius: 4px;">Ctrl+Enter</kbd>';
+      btn.disabled = false;
+      renderError("Network / Server connection error. Please try again.");
+    });
+  }
+
+  // Render Table Output
+  function renderResultsTable(columns, rows) {
+    const container = document.getElementById('queryResultsOutput');
+    if (!columns || columns.length === 0) {
+      container.innerHTML = `<div style="text-align: center; padding: 40px; color: #10b981;">✅ Statement executed successfully. 0 output rows returned.</div>`;
+      return;
+    }
+
+    let html = `<table class="sql-data-table"><thead><tr>`;
+    columns.forEach(col => {
+      html += `<th>${col}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    if (rows.length === 0) {
+      html += `<tr><td colspan="${columns.length}" style="text-align: center; color: #64748b; padding: 24px;">Query returned 0 rows.</td></tr>`;
+    } else {
+      rows.forEach(row => {
+        html += `<tr>`;
+        row.forEach(val => {
+          if (val === null || val === undefined) {
+            html += `<td class="null-cell">NULL</td>`;
+          } else {
+            html += `<td>${val}</td>`;
+          }
+        });
+        html += `</tr>`;
+      });
+    }
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+
+  // Render Error
+  function renderError(errMsg) {
+    const container = document.getElementById('queryResultsOutput');
+    container.innerHTML = `
+      <div class="sql-error-alert">
+        <strong>❌ SQL Execution Error:</strong><br/>
+        ${errMsg}
+      </div>
+    `;
+  }
+
+  // Render Query Plan
+  function renderQueryPlan(plan) {
+    const container = document.getElementById('queryPlanOutput');
+    if (!plan || plan.length === 0) {
+      container.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">No execution plan available for this query.</p>`;
+      return;
+    }
+
+    let html = `<div class="plan-tree-box"><strong>EXPLAIN QUERY PLAN Execution Tree:</strong><br/><br/>`;
+    plan.forEach(step => {
+      html += `&bull; [Node ${step.id}] ${step.detail}<br/>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+
+  // Verify Challenge Submission
+  function verifyChallengeSubmission() {
+    if (!activeChallengeId || !editor) return;
+    const sql = editor.getValue();
+    const btn = document.getElementById('btnVerifyChallenge');
+    btn.innerHTML = '⏳ Testing...';
+
+    fetch('/sql/api/verify/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challenge_id: activeChallengeId, sql: sql })
+    })
+    .then(res => res.json())
+    .then(data => {
+      btn.innerHTML = '🧪 Test Challenge Solution';
+      renderChallengeVerification(data);
+      switchResultTab('verify');
+    })
+    .catch(err => {
+      btn.innerHTML = '🧪 Test Challenge Solution';
+      console.error(err);
+    });
+  }
+
+  function renderChallengeVerification(data) {
+    const container = document.getElementById('challengeVerifyOutput');
+    if (data.passed) {
+      container.innerHTML = `
+        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 12px; padding: 24px; text-align: center;">
+          <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+          <h3 style="color: #34d399; margin: 0 0 6px;">Accepted! Challenge Solved Successfully!</h3>
+          <p style="color: #cbd5e1; font-size: 14px; margin: 0;">Your SQL query matched all expected rows and column structures in <strong>${data.execution_time_ms} ms</strong>.</p>
+        </div>
+      `;
+    } else {
+      container.innerHTML = `
+        <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+          <h3 style="color: #f87171; margin: 0 0 6px;">❌ Wrong Answer / Output Mismatch</h3>
+          <p style="color: #fca5a5; font-size: 13px; margin: 0 0 10px;">${data.error || 'Your query output differed from the canonical expected output.'}</p>
+        </div>
+      `;
+    }
+  }
+
+  // Format SQL Query
+  function formatSqlQuery() {
+    if (!editor) return;
+    let sql = editor.getValue();
+    const keywords = ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'HAVING', 'ORDER BY', 'LIMIT', 'OFFSET', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'ON', 'WITH', 'AS', 'UNION ALL', 'UNION', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE'];
+    keywords.forEach(kw => {
+      const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+      sql = sql.replace(regex, kw);
+    });
+    editor.setValue(sql);
+  }
+
+  // Reset Database
+  function resetActiveDatabase() {
+    if (!confirm(`Are you sure you want to reset the '${activeDatasetId}' database to its factory default state?`)) return;
+
+    fetch('/sql/api/reset/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataset_id: activeDatasetId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.schema) renderSchema(data.schema);
+      if (editor && data.default_query) editor.setValue(data.default_query);
+      runSqlQuery();
+      alert(data.message);
+    });
+  }
+
+  // Export Results as CSV
+  function exportResultsCsv() {
+    if (!currentResults.columns || currentResults.columns.length === 0) {
+      alert("No query results available to export.");
+      return;
+    }
+    let csv = currentResults.columns.join(',') + '\n';
+    currentResults.rows.forEach(row => {
+      csv += row.map(v => `"${v !== null ? String(v).replace(/"/g, '""') : ''}"`).join(',') + '\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `sql_results_${activeDatasetId}_${Date.now()}.csv`;
+    link.click();
+  }
+
+  // History Management in localStorage
+  function saveQueryToHistory(sql, datasetId) {
+    try {
+      let history = JSON.parse(localStorage.getItem('kashii_sql_history') || '[]');
+      history = history.filter(h => h.sql !== sql);
+      history.unshift({ sql: sql, dataset_id: datasetId, timestamp: new Date().toLocaleTimeString() });
+      if (history.length > 20) history = history.slice(0, 20);
+      localStorage.setItem('kashii_sql_history', JSON.stringify(history));
+    } catch(e) {}
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('historyContainer');
+    try {
+      const history = JSON.parse(localStorage.getItem('kashii_sql_history') || '[]');
+      if (history.length === 0) {
+        container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">No query history yet.</p>`;
+        return;
+      }
+      let html = '';
+      history.forEach(item => {
+        html += `
+          <div class="challenge-item-card" onclick="loadHistoryItem(\`${escapeHtml(item.sql)}\`, '${item.dataset_id}')">
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-bottom: 4px;">
+              <span>🗄️ ${item.dataset_id}</span>
+              <span>${item.timestamp}</span>
+            </div>
+            <pre style="margin: 0; font-family: monospace; font-size: 11px; color: #cbd5e1; white-space: pre-wrap; overflow: hidden; max-height: 40px;">${escapeHtml(item.sql)}</pre>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    } catch(e) {}
+  }
+
+  function loadHistoryItem(sql, datasetId) {
+    if (editor) editor.setValue(sql);
+    if (datasetId !== activeDatasetId) {
+      const sel = document.getElementById('datasetSelector');
+      if (sel) sel.value = datasetId;
+      changeActiveDataset(datasetId);
+    }
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+</script>
+{% endblock %}
