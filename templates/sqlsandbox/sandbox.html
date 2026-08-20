@@ -563,16 +563,12 @@
     </span>
   </div>
 
-  <!-- Compact Pipeline Strip -->
+  <!-- Compact Dynamic Pipeline Strip (Populated strictly based on query clauses) -->
   <div class="pipeline-strip-compact" id="pipelinePillsWrap">
-    <span class="pipeline-pill" id="pill_FROM">1. FROM</span>
-    <span class="pipeline-pill" id="pill_JOIN">2. JOIN</span>
-    <span class="pipeline-pill" id="pill_WHERE">3. WHERE</span>
-    <span class="pipeline-pill" id="pill_GROUP BY">4. GROUP BY</span>
-    <span class="pipeline-pill" id="pill_HAVING">5. HAVING</span>
-    <span class="pipeline-pill" id="pill_SELECT">6. SELECT</span>
-    <span class="pipeline-pill" id="pill_ORDER BY">7. ORDER BY</span>
-    <span class="pipeline-pill" id="pill_LIMIT">8. LIMIT</span>
+    <span class="pipeline-pill active">1. FROM</span>
+    <span class="pipeline-pill">2. WHERE</span>
+    <span class="pipeline-pill">3. SELECT</span>
+    <span class="pipeline-pill">4. ORDER BY</span>
   </div>
 
   <!-- High Density Grid Layout -->
@@ -998,6 +994,9 @@
         debugSteps = data.steps;
         currentStepIdx = 0;
         
+        // Rebuild dynamic pipeline pills strictly based on query clauses present
+        rebuildPipelinePills(debugSteps);
+
         // Setup slider
         const slider = document.getElementById('timelineSlider');
         slider.max = debugSteps.length - 1;
@@ -1027,6 +1026,24 @@
     });
   }
 
+  function rebuildPipelinePills(steps) {
+    const wrap = document.getElementById('pipelinePillsWrap');
+    if (!wrap) return;
+
+    if (!steps || steps.length === 0) {
+      wrap.innerHTML = '<span class="pipeline-pill" style="opacity:0.5;">No clauses detected</span>';
+      return;
+    }
+
+    let html = '';
+    steps.forEach((s, idx) => {
+      html += `<span class="pipeline-pill" id="pill_step_${idx}" onclick="goToStep(${idx})" style="cursor: pointer;" title="Jump to Step ${idx + 1}: ${s.phase_name}">
+        ${idx + 1}. ${s.clause}
+      </span>`;
+    });
+    wrap.innerHTML = html;
+  }
+
   function goToStep(stepIdx) {
     if (!debugSteps || debugSteps.length === 0) return;
     if (stepIdx < 0) stepIdx = 0;
@@ -1047,8 +1064,8 @@
     phaseBadge.innerText = step.phase_badge;
     phaseBadge.style.color = step.badge_color || '#38bdf8';
 
-    // Update Logical Pipeline Pills
-    updatePipelinePills(step.clause);
+    // Update Dynamic Pipeline Pills based on active step index
+    updatePipelinePills(stepIdx);
 
     // ── SHOW HAND 👉 AND LINE HIGHLIGHT ONLY WHEN EXECUTING/STEPPING ──
     if (editor && step.line_number) {
@@ -1134,19 +1151,16 @@
     }
   }
 
-  function updatePipelinePills(activeClause) {
-    const clauses = ['FROM', 'JOIN', 'WHERE', 'GROUP BY', 'HAVING', 'SELECT', 'ORDER BY', 'LIMIT'];
-    let reached = false;
-
-    clauses.forEach(c => {
-      const pill = document.getElementById(`pill_${c}`);
+  function updatePipelinePills(activeStepIdx) {
+    if (!debugSteps) return;
+    debugSteps.forEach((s, idx) => {
+      const pill = document.getElementById(`pill_step_${idx}`);
       if (!pill) return;
       pill.classList.remove('active', 'passed');
 
-      if (c === activeClause) {
+      if (idx === activeStepIdx) {
         pill.classList.add('active');
-        reached = true;
-      } else if (!reached) {
+      } else if (idx < activeStepIdx) {
         pill.classList.add('passed');
       }
     });
