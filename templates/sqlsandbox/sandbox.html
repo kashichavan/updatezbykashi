@@ -683,6 +683,7 @@
     <div class="sql-sidebar-card">
       <div class="sidebar-tabs">
         <button id="btnTabSchema" class="sidebar-tab-btn active" onclick="switchSidebarTab('schema')">🗂️ Tables</button>
+        <button id="btnTabQueries" class="sidebar-tab-btn" onclick="switchSidebarTab('queries')">💡 Queries</button>
         <button id="btnTabChallenges" class="sidebar-tab-btn" onclick="switchSidebarTab('challenges')">🏆 Practice ({{ challenges|length }})</button>
         <button id="btnTabHistory" class="sidebar-tab-btn" onclick="switchSidebarTab('history')">📜 History</button>
       </div>
@@ -694,7 +695,12 @@
         </div>
       </div>
 
-      <!-- Tab 2: Challenges -->
+      <!-- Tab 2: Example Queries Gallery -->
+      <div id="paneQueries" class="sidebar-content-pane" style="display: none;">
+        <div id="presetQueriesContainer"></div>
+      </div>
+
+      <!-- Tab 3: Challenges -->
       <div id="paneChallenges" class="sidebar-content-pane" style="display: none;">
         {% for c in challenges %}
         <div class="challenge-item-card" onclick="loadChallenge('{{ c.id }}')">
@@ -707,7 +713,7 @@
         {% endfor %}
       </div>
 
-      <!-- Tab 3: History -->
+      <!-- Tab 4: History -->
       <div id="paneHistory" class="sidebar-content-pane" style="display: none;">
         <div id="historyContainer">
           <p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">No query history yet.</p>
@@ -721,13 +727,19 @@
       <!-- Editor Card -->
       <div class="editor-card">
         <div class="editor-toolbar">
-          <div style="display: flex; gap: 6px; align-items: center;">
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
             <button id="btnRunQuery" class="dbg-btn-compact" style="background: #0284c7; color: #ffffff; border-color: #38bdf8;" onclick="runSqlQuery()">
               <span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>
             </button>
             <button id="btnVerifyChallenge" class="dbg-btn-compact" style="display: none; background: #065f46; border-color: #10b981; color: #6ee7b7;" onclick="verifyChallengeSubmission()">
               🧪 Test Challenge
             </button>
+            
+            <!-- Quick Example Query Selector -->
+            <select id="exampleQuerySelector" class="dataset-select-compact" style="background: #111d35; color: #38bdf8; font-weight: 700; border-color: #233554;" onchange="loadPresetQuery(this.value)">
+              <option value="" disabled selected>💡 Example Queries...</option>
+            </select>
+
             <button class="dbg-btn-compact" onclick="formatSqlQuery()">
               🧹 Format
             </button>
@@ -1045,9 +1057,180 @@
     }, 150);
   });
 
-  // Also trigger initial schema fetch on DOM ready
+  // Preset Examples per Dataset
+  const DATASET_PRESET_QUERIES = {
+    "scott_tiger": [
+      {
+        id: "emp_dept_join",
+        title: "👑 3-Table Multi-JOIN",
+        category: "Joins & Relations",
+        sql: `-- 👑 Employees, Departments & Salary Bands\nSELECT\n    e.empno,\n    e.ename AS employee,\n    e.job,\n    d.dname AS department,\n    d.loc AS location,\n    e.sal AS salary,\n    s.grade AS sal_grade\nFROM emp e\nINNER JOIN dept d ON e.deptno = d.deptno\nINNER JOIN salgrade s ON e.sal BETWEEN s.losal AND s.hisal\nWHERE e.sal >= 1500\nORDER BY e.sal DESC;`
+      },
+      {
+        id: "where_filter",
+        title: "🔍 WHERE Filter & Pattern Matching",
+        category: "Filtering",
+        sql: `-- 🔍 Filter Managers and Analysts earning >= 2000\nSELECT\n    ename,\n    job,\n    sal,\n    deptno\nFROM emp\nWHERE job IN ('MANAGER', 'ANALYST')\n  AND sal >= 2000\nORDER BY sal DESC;`
+      },
+      {
+        id: "group_by_having",
+        title: "📊 Department Payroll & Averages",
+        category: "Aggregation",
+        sql: `-- 📊 Department Aggregate with HAVING filter\nSELECT\n    deptno,\n    COUNT(*) AS total_employees,\n    ROUND(AVG(sal), 2) AS avg_salary,\n    SUM(sal) AS total_payroll\nFROM emp\nGROUP BY deptno\nHAVING AVG(sal) >= 2000\nORDER BY total_payroll DESC;`
+      },
+      {
+        id: "self_join",
+        title: "👑 Self-JOIN Manager Hierarchy",
+        category: "Advanced Joins",
+        sql: `-- 👑 Match Every Employee to their Manager\nSELECT\n    e.ename AS employee,\n    e.job AS employee_role,\n    COALESCE(m.ename, '👑 TOP PRESIDENT') AS manager_name\nFROM emp e\nLEFT JOIN emp m ON e.mgr = m.empno\nORDER BY e.sal DESC;`
+      },
+      {
+        id: "window_rank",
+        title: "🔀 Window Ranking (DENSE_RANK)",
+        category: "Window Functions",
+        sql: `-- 🔀 Rank Employees by Salary within each Department\nSELECT\n    ename,\n    deptno,\n    sal,\n    DENSE_RANK() OVER (PARTITION BY deptno ORDER BY sal DESC) AS dept_salary_rank\nFROM emp;`
+      },
+      {
+        id: "cte_query",
+        title: "🧩 High Earners CTE (WITH Clause)",
+        category: "CTEs",
+        sql: `-- 🧩 Common Table Expression for Top Earners\nWITH HighEarners AS (\n    SELECT ename, job, sal, deptno\n    FROM emp\n    WHERE sal >= 2000\n)\nSELECT *\nFROM HighEarners\nORDER BY sal DESC;`
+      },
+      {
+        id: "subquery",
+        title: "🎯 Subquery: Above Average Earners",
+        category: "Subqueries",
+        sql: `-- 🎯 Employees Earning Above Company Average\nSELECT\n    ename,\n    job,\n    sal\nFROM emp\nWHERE sal > (SELECT AVG(sal) FROM emp)\nORDER BY sal DESC;`
+      },
+      {
+        id: "limit_offset",
+        title: "✂️ Top 5 Earners (LIMIT & ORDER)",
+        category: "Slicing",
+        sql: `-- ✂️ Top 5 Highest Paid Staff\nSELECT\n    ename,\n    job,\n    sal\nFROM emp\nORDER BY sal DESC\nLIMIT 5;`
+      }
+    ],
+    "faang": [
+      {
+        id: "faang_proj",
+        title: "🏢 Multi-Table Project Staffing",
+        category: "Joins",
+        sql: `-- 🏢 Projects, Engineers & Roles\nSELECT\n    p.project_name,\n    e.first_name || ' ' || e.last_name AS engineer,\n    ep.role,\n    ep.hours_allocated\nFROM employee_projects ep\nJOIN employees e ON ep.employee_id = e.employee_id\nJOIN projects p ON ep.project_id = p.project_id\nORDER BY p.project_name ASC;`
+      },
+      {
+        id: "faang_perf",
+        title: "⭐ Top Performance Ratings (>= 4.8)",
+        category: "Analytics",
+        sql: `-- ⭐ High Rating Performance Reviews & Bonuses\nSELECT\n    e.first_name || ' ' || e.last_name AS employee,\n    r.rating,\n    r.bonus_amount\nFROM performance_reviews r\nJOIN employees e ON r.employee_id = e.employee_id\nWHERE r.rating >= 4.8\nORDER BY r.rating DESC;`
+      },
+      {
+        id: "faang_spend",
+        title: "💰 Department Compensation Spend",
+        category: "Aggregation",
+        sql: `-- 💰 Total and Average Compensation per Department\nSELECT\n    d.department_name,\n    COUNT(e.employee_id) AS headcount,\n    ROUND(AVG(e.salary), 2) AS avg_salary,\n    SUM(e.salary) AS total_payroll\nFROM employees e\nJOIN departments d ON e.department_id = d.department_id\nGROUP BY d.department_name\nORDER BY total_payroll DESC;`
+      }
+    ],
+    "ecommerce": [
+      {
+        id: "ecom_orders",
+        title: "🛒 Delivered Orders with Customers",
+        category: "Orders",
+        sql: `-- 🛒 High Value Delivered Orders\nSELECT\n    o.order_id,\n    c.full_name,\n    c.country,\n    o.total_amount\nFROM orders o\nJOIN customers c ON o.customer_id = c.customer_id\nWHERE o.status = 'Delivered'\nORDER BY o.total_amount DESC;`
+      },
+      {
+        id: "ecom_inventory",
+        title: "📦 Inventory Asset Valuation",
+        category: "Products",
+        sql: `-- 📦 Highest Value Inventory in Stock\nSELECT\n    product_name,\n    price,\n    stock_quantity,\n    ROUND(price * stock_quantity, 2) AS total_inventory_value\nFROM products\nORDER BY total_inventory_value DESC;`
+      },
+      {
+        id: "ecom_monthly",
+        title: "📈 Monthly Sales Trends",
+        category: "Time Series",
+        sql: `-- 📈 Monthly Sales Revenue & Orders\nSELECT\n    strftime('%Y-%m', order_date) AS order_month,\n    COUNT(order_id) AS total_orders,\n    SUM(total_amount) AS monthly_revenue\nFROM orders\nGROUP BY strftime('%Y-%m', order_date)\nORDER BY order_month DESC;`
+      }
+    ],
+    "ott_streaming": [
+      {
+        id: "ott_views",
+        title: "🎬 Top Viewed Shows & Genres",
+        category: "Streaming",
+        sql: `-- 🎬 Most Watched Content Breakdown\nSELECT\n    m.title,\n    g.genre_name,\n    m.content_type,\n    COUNT(w.watch_id) AS total_views\nFROM movies_shows m\nJOIN genres g ON m.genre_id = g.genre_id\nLEFT JOIN watch_history w ON m.show_id = w.show_id\nGROUP BY m.title\nORDER BY total_views DESC;`
+      }
+    ],
+    "ai_compute": [
+      {
+        id: "ai_runs",
+        title: "🧠 H100 GPU Cluster Training Runs",
+        category: "Compute",
+        sql: `-- 🧠 Million Dollar AI Training Runs\nSELECT\n    m.model_name,\n    c.cluster_name,\n    t.gpu_count,\n    t.training_hours,\n    t.cost_usd\nFROM training_runs t\nJOIN models m ON t.model_id = m.model_id\nJOIN gpu_clusters c ON t.cluster_id = c.cluster_id\nWHERE t.cost_usd >= 500000.00\nORDER BY t.cost_usd DESC;`
+      }
+    ],
+    "fintech": [
+      {
+        id: "fintech_accounts",
+        title: "💳 High Net-Worth Accounts",
+        category: "Banking",
+        sql: `-- 💳 High Balance Accounts across Branches\nSELECT\n    a.customer_name,\n    a.account_type,\n    a.balance,\n    b.branch_name,\n    b.city\nFROM accounts a\nJOIN branches b ON a.branch_id = b.branch_id\nWHERE a.balance >= 50000.00\nORDER BY a.balance DESC;`
+      }
+    ]
+  };
+
+  function renderPresetQueries(datasetId) {
+    const list = DATASET_PRESET_QUERIES[datasetId] || DATASET_PRESET_QUERIES["scott_tiger"] || [];
+    
+    // 1. Render Left Sidebar Queries tab
+    const container = document.getElementById('presetQueriesContainer');
+    if (container) {
+      let html = '';
+      list.forEach((item, idx) => {
+        html += `
+          <div class="challenge-item-card" onclick="loadPresetQueryByIndex(${idx})" title="Click to load & trace this query">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 9px; font-weight: 800; background: rgba(56,189,248,0.18); color: #38bdf8; padding: 1px 5px; border-radius: 3px;">${item.category}</span>
+              <span style="font-size: 10px; color: #94a3b8;">▶ Run</span>
+            </div>
+            <div style="font-weight: 700; font-size: 11px; color: #ffffff; margin-bottom: 4px;">${item.title}</div>
+            <pre style="margin: 0; font-family: monospace; font-size: 9px; color: #94a3b8; white-space: pre-wrap; overflow: hidden; max-height: 28px;">${escapeHtml(item.sql.split('\\n')[0])}</pre>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // 2. Render Toolbar Quick Selector
+    const selector = document.getElementById('exampleQuerySelector');
+    if (selector) {
+      let options = `<option value="" disabled selected>💡 Example Queries (${list.length})...</option>`;
+      list.forEach((item, idx) => {
+        options += `<option value="${idx}">${item.title}</option>`;
+      });
+      selector.innerHTML = options;
+    }
+  }
+
+  function loadPresetQueryByIndex(idx) {
+    const list = DATASET_PRESET_QUERIES[activeDatasetId] || DATASET_PRESET_QUERIES["scott_tiger"] || [];
+    const item = list[idx];
+    if (!item) return;
+
+    if (editor) {
+      editor.setValue(item.sql);
+    }
+    clearExecutionHighlight();
+    startSqlDebugger();
+  }
+
+  function loadPresetQuery(val) {
+    if (val === "" || val === null || val === undefined) return;
+    loadPresetQueryByIndex(parseInt(val));
+    const sel = document.getElementById('exampleQuerySelector');
+    if (sel) sel.value = "";
+  }
+
+  // Also trigger initial schema and preset queries fetch on DOM ready
   document.addEventListener('DOMContentLoaded', function() {
     fetchSchema(activeDatasetId);
+    renderPresetQueries(activeDatasetId);
   });
 
   function clearExecutionHighlight() {
@@ -1060,12 +1243,16 @@
   function switchSidebarTab(tabName) {
     document.querySelectorAll('.sidebar-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('paneSchema').style.display = 'none';
+    document.getElementById('paneQueries').style.display = 'none';
     document.getElementById('paneChallenges').style.display = 'none';
     document.getElementById('paneHistory').style.display = 'none';
 
     if (tabName === 'schema') {
       document.getElementById('btnTabSchema').classList.add('active');
       document.getElementById('paneSchema').style.display = 'block';
+    } else if (tabName === 'queries') {
+      document.getElementById('btnTabQueries').classList.add('active');
+      document.getElementById('paneQueries').style.display = 'block';
     } else if (tabName === 'challenges') {
       document.getElementById('btnTabChallenges').classList.add('active');
       document.getElementById('paneChallenges').style.display = 'block';
@@ -1178,6 +1365,10 @@
       editor.setValue(DATASET_QUERIES[newDatasetId]);
     }
     fetchSchema(newDatasetId);
+    renderPresetQueries(newDatasetId);
+    setTimeout(function() {
+      startSqlDebugger();
+    }, 150);
   }
 
   // Load Challenge
