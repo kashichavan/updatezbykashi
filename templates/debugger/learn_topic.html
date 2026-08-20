@@ -640,15 +640,6 @@
       font-size: 12px;
       max-height: 180px;
     }
-    .interactive-debugger-widget {
-      margin: 24px -6px;
-      border-radius: 14px;
-    }
-  }
-</style>
-{% endblock %}
-
-<style>
   /* ── Desktop Recommended Mobile Blocker Overlay ── */
   .mobile-blocker-overlay {
     display: none;
@@ -726,7 +717,9 @@
     transform: scale(0.98);
   }
 </style>
+{% endblock %}
 
+{% block content %}
 <script>
   function goBackToHome(evt) {
     if (evt) {
@@ -746,6 +739,7 @@
   }
 </script>
 
+<!-- Desktop Recommended Mobile Blocker Overlay Modal -->
 <div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)">
   <div class="mobile-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
     <button class="mobile-blocker-x" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)" title="Go back to home">✕</button>
@@ -772,7 +766,6 @@
   </div>
 </div>
 
-{% block content %}
 <!-- Floating Mobile Quick Jump Button -->
 <a href="#interactiveDebuggerSection" class="mobile-dbg-jump-btn">
   ⚡ Live Debugger
