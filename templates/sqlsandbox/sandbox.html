@@ -391,6 +391,45 @@
     flex-direction: column;
     height: calc(100vh - 460px);
     min-height: 280px;
+    transition: all 0.25s ease-in-out;
+  }
+
+  /* Maximize Table Fullscreen Mode: Collapses sidebar and editor */
+  body.table-maximized-mode .sql-sidebar-card,
+  body.table-maximized-mode .editor-card {
+    display: none !important;
+  }
+
+  body.table-maximized-mode .sql-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.table-maximized-mode .results-card {
+    height: calc(100vh - 190px) !important;
+    min-height: 520px;
+    box-shadow: 0 0 35px rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+
+  .btn-maximize-toggle {
+    background: #17233d;
+    color: #38bdf8;
+    border: 1px solid #233554;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+    margin-left: 6px;
+  }
+  .btn-maximize-toggle:hover {
+    background: #233554;
+    color: #ffffff;
+    border-color: #38bdf8;
   }
 
   .results-header-tabs {
@@ -657,6 +696,9 @@
             <span id="statRowCount">0 rows</span>
             <span>&bull;</span>
             <span id="statExecTime">0.00 ms</span>
+            <button id="btnMaximizeTable" class="btn-maximize-toggle" onclick="toggleMaximizeTable()" title="Maximize / Fullscreen Result Table View (Collapse Editor & Sidebar)">
+              <span id="maxTableIcon">⛶</span> <span id="maxTableText">Maximize Table</span>
+            </button>
           </div>
         </div>
 
@@ -1481,5 +1523,38 @@
   function escapeHtml(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
+
+  // ── MAXIMIZE / FULLSCREEN RESULT TABLE MODE ──
+  function toggleMaximizeTable() {
+    const isMax = document.body.classList.toggle('table-maximized-mode');
+    const icon = document.getElementById('maxTableIcon');
+    const text = document.getElementById('maxTableText');
+    const btn = document.getElementById('btnMaximizeTable');
+
+    if (isMax) {
+      if (icon) icon.innerText = '🗗';
+      if (text) text.innerText = 'Restore View';
+      if (btn) {
+        btn.style.background = '#0284c7';
+        btn.style.color = '#ffffff';
+        btn.style.borderColor = '#38bdf8';
+      }
+    } else {
+      if (icon) icon.innerText = '⛶';
+      if (text) text.innerText = 'Maximize Table';
+      if (btn) {
+        btn.style.background = '#17233d';
+        btn.style.color = '#38bdf8';
+        btn.style.borderColor = '#233554';
+      }
+    }
+  }
+
+  // Allow ESC key to exit maximized table mode
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.body.classList.contains('table-maximized-mode')) {
+      toggleMaximizeTable();
+    }
+  });
 </script>
 {% endblock %}
