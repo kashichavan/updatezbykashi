@@ -652,14 +652,13 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
     Step-by-Step / Line-by-Line Interactive SQL Execution Tracer.
     Simulates the true SQL Logical Query Processing Pipeline with live stage transitions:
     1. FROM (Base buffer creation)
-    2. JOIN / ON (Cartesian product & join condition filtering)
-    3. WHERE (Row-by-row boolean predicate filtering with kept vs dropped row tagging)
+    2. JOIN / ON (Multi-table composite record resolution)
+    3. WHERE (Row-by-row boolean predicate filtering)
     4. GROUP BY (Aggregate partitioning)
     5. HAVING (Aggregate bucket filtering)
     6. SELECT (Expression projection, aliases & window functions)
-    7. DISTINCT (Row tuple deduplication)
-    8. ORDER BY (Output buffer sorting)
-    9. LIMIT / OFFSET (Result set window slicing)
+    7. ORDER BY (Output buffer sorting)
+    8. LIMIT / OFFSET (Result set window slicing)
     """
     if not sql_text or not sql_text.strip():
         return {'success': False, 'error': 'Query is empty. Please enter an SQL query to debug.'}
@@ -709,7 +708,44 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
             'clause': current_clause or 'SELECT'
         })
     
-    steps = []
+    # Robust clause extraction using lookahead boundaries
+    base_table_match = re.search(
+        r'\bFROM\s+(.*?)(?=\b(?:LEFT|RIGHT|INNER|CROSS|FULL|OUTER|\s+)?JOIN\b|\bWHERE\b|\bGROUP\s+BY\b|\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
+        clean_sql, re.IGNORECASE | re.DOTALL
+    )
+    base_table = base_table_match.group(1).strip() if base_table_match else 'emp'
+    
+    full_from_joins_match = re.search(
+        r'\bFROM\s+(.*?)(?=\bWHERE\b|\bGROUP\s+BY\b|\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
+        clean_sql, re.IGNORECASE | re.DOTALL
+    )
+    full_from_joins = full_from_joins_match.group(1).strip() if full_from_joins_match else base_table
+    
+    where_match = re.search(
+        r'\bWHERE\s+(.*?)(?=\bGROUP\s+BY\b|\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
+        clean_sql, re.IGNORECASE | re.DOTALL
+    )
+    where_clause = where_match.group(1).strip() if where_match else None
+    
+    group_match = re.search(
+        r'\bGROUP\s+BY\s+(.*?)(?=\bHAVING\b|\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
+        clean_sql, re.IGNORECASE | re.DOTALL
+    )
+    group_clause = group_match.group(1).strip() if group_match else None
+    
+    having_match = re.search(
+        r'\bHAVING\s+(.*?)(?=\bWINDOW\b|\bORDER\s+BY\b|\bLIMIT\b|$)',
+        clean_sql, re.IGNORECASE | re.DOTALL
+    )
+    having_clause = having_match.group(1).strip() if having_match else None
+    
+    order_match = re.search(
+        r'\bORDER\s+BY\s+(.*?)(?=\bLIMIT\b|$)',
+        clean_sql, re.IGNORECASE | re.DOTALL
+    )
+    order_clause = order_match.group(1).strip() if order_match else None
+    
+    limit_match = re.search(r'\bLIMIT\s+.*$', clean_sql, re.IGNORECASE | re.DOTALL)
     
     from_lines = [e for e in line_entries if e['clause'] == 'FROM']
     join_lines = [e for e in line_entries if e['clause'] == 'JOIN']
@@ -720,25 +756,23 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
     order_lines = [e for e in line_entries if e['clause'] == 'ORDER BY']
     limit_lines = [e for e in line_entries if e['clause'] == 'LIMIT']
     
-    from_match = re.search(r'\bFROM\s+([a-zA-Z0-9_]+(?:\s+(?:AS\s+)?[a-zA-Z0-9_]+)?)', clean_sql, re.IGNORECASE)
-    from_clause_sql = from_match.group(0) if from_match else 'FROM emp'
+    first_from_line = from_lines[0] if from_lines else (line_entries[0] if line_entries else {'line_number': 1, 'line_text': 'FROM'})
+    steps = []
     
-    # 1. Step FROM
-    if from_lines:
-        first_from_line = from_lines[0]
-        step_from_sql = f"SELECT * {from_clause_sql}"
+    # 1. Step FROM (Base Buffer Scan)
+    if base_table_match or from_lines:
         try:
-            cur.execute(step_from_sql)
+            cur.execute(f"SELECT * FROM {base_table}")
             cols = [d[0] for d in cur.description]
             rows = [[item for item in r] for r in cur.fetchall()]
             steps.append({
                 'line_number': first_from_line['line_number'],
                 'line_text': first_from_line['line_text'],
                 'clause': 'FROM',
-                'phase_name': '1. FROM Clause (Virtual Table Buffer)',
+                'phase_name': f"1. FROM Clause (Scan {base_table})",
                 'phase_badge': 'FROM',
                 'badge_color': '#38bdf8',
-                'explanation': f"Loaded base table into virtual memory buffer. Scanned {len(rows)} raw rows.",
+                'explanation': f"Loaded base table ({base_table}) into virtual memory buffer. Scanned {len(rows)} raw rows.",
                 'columns': cols,
                 'rows': rows[:100],
                 'row_count': len(rows),
@@ -749,43 +783,34 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
             pass
 
     # 2. Step JOIN
-    if join_lines:
-        for jl in join_lines:
-            join_str = jl['line_text'].strip()
-            step_join_sql = f"SELECT * {from_clause_sql} {join_str}"
-            try:
-                cur.execute(step_join_sql)
-                cols = [d[0] for d in cur.description]
-                rows = [[item for item in r] for r in cur.fetchall()]
-                steps.append({
-                    'line_number': jl['line_number'],
-                    'line_text': jl['line_text'],
-                    'clause': 'JOIN',
-                    'phase_name': '2. JOIN & ON Predicate Resolution',
-                    'phase_badge': 'JOIN',
-                    'badge_color': '#a855f7',
-                    'explanation': f"Evaluated join condition '{join_str}'. Matched {len(rows)} composite records in virtual buffer.",
-                    'columns': cols,
-                    'rows': rows[:100],
-                    'row_count': len(rows),
-                    'row_status': ['JOINED'] * min(len(rows), 100),
-                    'status_note': f"Combined dataset now holds {len(rows)} rows with {len(cols)} columns."
-                })
-            except Exception:
-                pass
+    if join_lines or (full_from_joins != base_table):
+        jl = join_lines[0] if join_lines else first_from_line
+        try:
+            cur.execute(f"SELECT * FROM {full_from_joins}")
+            cols = [d[0] for d in cur.description]
+            rows = [[item for item in r] for r in cur.fetchall()]
+            steps.append({
+                'line_number': jl['line_number'],
+                'line_text': jl['line_text'],
+                'clause': 'JOIN',
+                'phase_name': '2. JOIN & ON Predicate Resolution',
+                'phase_badge': 'JOIN',
+                'badge_color': '#a855f7',
+                'explanation': f"Evaluated multi-table join. Matched {len(rows)} composite records in virtual buffer.",
+                'columns': cols,
+                'rows': rows[:100],
+                'row_count': len(rows),
+                'row_status': ['JOINED'] * min(len(rows), 100),
+                'status_note': f"Combined dataset now holds {len(rows)} rows with {len(cols)} columns."
+            })
+        except Exception:
+            pass
 
     # 3. Step WHERE
-    if where_lines:
-        first_where = where_lines[0]
-        where_match = re.search(r'\bWHERE\s+(.*?)(?:\bGROUP\s+BY|\bORDER\s+BY|\bLIMIT|$)', clean_sql, re.IGNORECASE | re.DOTALL)
-        where_clause = where_match.group(1).strip() if where_match else ''
-        
-        joins_match = re.findall(r'((?:LEFT\s+|RIGHT\s+|INNER\s+|CROSS\s+)?JOIN\s+.*?ON\s+.*?)(?=\bWHERE\b|\bGROUP\b|\bORDER\b|\bLIMIT\b|$)', clean_sql, re.IGNORECASE | re.DOTALL)
-        joins_part = (' ' + ' '.join(joins_match)) if joins_match else ''
-            
-        step_where_sql = f"SELECT * {from_clause_sql} {joins_part} WHERE {where_clause}"
+    if where_clause is not None or where_lines:
+        first_where = where_lines[0] if where_lines else first_from_line
         try:
-            cur.execute(step_where_sql)
+            cur.execute(f"SELECT * FROM {full_from_joins} WHERE {where_clause}")
             cols = [d[0] for d in cur.description]
             rows = [[item for item in r] for r in cur.fetchall()]
             prev_count = steps[-1]['row_count'] if steps else len(rows)
@@ -797,7 +822,7 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
                 'phase_name': '3. WHERE Predicate Row Filtering',
                 'phase_badge': 'WHERE',
                 'badge_color': '#f59e0b',
-                'explanation': f"Evaluated WHERE boolean condition '{first_where['line_text'].strip()}'. Filtered out {filtered_out} row(s) that did not qualify. Kept {len(rows)} matching candidate row(s).",
+                'explanation': f"Evaluated WHERE boolean condition '{where_clause}'. Filtered out {filtered_out} row(s) that did not qualify. Kept {len(rows)} matching candidate row(s).",
                 'columns': cols,
                 'rows': rows[:100],
                 'row_count': len(rows),
@@ -807,7 +832,32 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
         except Exception:
             pass
 
-    # 4. Step SELECT (Projections)
+    # 4. Step GROUP BY
+    if group_clause is not None or group_lines:
+        gl = group_lines[0] if group_lines else first_from_line
+        where_part = f"WHERE {where_clause}" if where_clause else ''
+        try:
+            cur.execute(f"SELECT {group_clause}, COUNT(*) AS group_count FROM {full_from_joins} {where_part} GROUP BY {group_clause}")
+            cols = [d[0] for d in cur.description]
+            rows = [[item for item in r] for r in cur.fetchall()]
+            steps.append({
+                'line_number': gl['line_number'],
+                'line_text': gl['line_text'],
+                'clause': 'GROUP BY',
+                'phase_name': '4. GROUP BY Row Aggregation',
+                'phase_badge': 'GROUP BY',
+                'badge_color': '#e879f9',
+                'explanation': f"Aggregated candidate rows into {len(rows)} grouped bucket(s) based on '{group_clause}'.",
+                'columns': cols,
+                'rows': rows[:100],
+                'row_count': len(rows),
+                'row_status': ['AGGREGATED'] * min(len(rows), 100),
+                'status_note': f"Formed {len(rows)} distinct aggregate group(s)."
+            })
+        except Exception:
+            pass
+
+    # 5. Step SELECT (Projections)
     first_sel = select_lines[0] if select_lines else line_entries[0]
     no_order_sql = re.sub(r'\bORDER\s+BY\s+.*$', '', clean_sql, flags=re.IGNORECASE | re.DOTALL)
     no_order_sql = re.sub(r'\bLIMIT\s+.*$', '', no_order_sql, flags=re.IGNORECASE | re.DOTALL)
@@ -819,10 +869,10 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
             'line_number': first_sel['line_number'],
             'line_text': first_sel['line_text'],
             'clause': 'SELECT',
-            'phase_name': '4. SELECT Expression & Column Projection',
+            'phase_name': '5. SELECT Expression & Column Projection',
             'phase_badge': 'SELECT',
             'badge_color': '#10b981',
-            'explanation': f"Projected {len(cols)} requested column(s) ({', '.join(cols[:5])}). Computed expressions, mathematical operations, aliases, and window calculations.",
+            'explanation': f"Projected {len(cols)} requested column(s) ({', '.join(cols[:5])}). Computed expressions, aliases, and calculations.",
             'columns': cols,
             'rows': rows[:100],
             'row_count': len(rows),
@@ -832,9 +882,9 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
     except Exception:
         pass
 
-    # 5. Step ORDER BY
-    if order_lines:
-        first_order = order_lines[0]
+    # 6. Step ORDER BY
+    if order_clause is not None or order_lines:
+        first_order = order_lines[0] if order_lines else first_from_line
         no_limit_sql = re.sub(r'\bLIMIT\s+.*$', '', clean_sql, flags=re.IGNORECASE | re.DOTALL)
         try:
             cur.execute(no_limit_sql)
@@ -844,10 +894,10 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
                 'line_number': first_order['line_number'],
                 'line_text': first_order['line_text'],
                 'clause': 'ORDER BY',
-                'phase_name': '5. ORDER BY Output Buffer Sorting',
+                'phase_name': '6. ORDER BY Output Buffer Sorting',
                 'phase_badge': 'ORDER BY',
                 'badge_color': '#ec4899',
-                'explanation': f"Sorted output buffer according to '{first_order['line_text'].strip()}'.",
+                'explanation': f"Sorted output buffer according to '{order_clause}'.",
                 'columns': cols,
                 'rows': rows[:100],
                 'row_count': len(rows),
@@ -857,17 +907,17 @@ def trace_sql_execution(sql_text, dataset_id='scott_tiger'):
         except Exception:
             pass
 
-    # 6. Step LIMIT
-    if limit_lines:
-        first_limit = limit_lines[0]
+    # 7. Step LIMIT
+    if limit_match or limit_lines:
+        first_limit = limit_lines[0] if limit_lines else first_from_line
         steps.append({
             'line_number': first_limit['line_number'],
             'line_text': first_limit['line_text'],
             'clause': 'LIMIT',
-            'phase_name': '6. LIMIT / OFFSET Result Window Slicing',
+            'phase_name': '7. LIMIT / OFFSET Result Window Slicing',
             'phase_badge': 'LIMIT',
             'badge_color': '#06b6d4',
-            'explanation': f"Applied '{first_limit['line_text'].strip()}' to slice top {len(final_rows)} rows for final response.",
+            'explanation': f"Applied LIMIT to slice top {len(final_rows)} rows for final response.",
             'columns': final_cols,
             'rows': final_rows[:100],
             'row_count': len(final_rows),
