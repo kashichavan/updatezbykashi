@@ -1038,6 +1038,15 @@
       runSqlQuery();
     });
 
+    // Automatically fetch schema and run initial query trace on load
+    fetchSchema(activeDatasetId);
+    setTimeout(function() {
+      startSqlDebugger();
+    }, 150);
+  });
+
+  // Also trigger initial schema fetch on DOM ready
+  document.addEventListener('DOMContentLoaded', function() {
     fetchSchema(activeDatasetId);
   });
 
@@ -1108,9 +1117,13 @@
 
   function renderSchema(schema) {
     const container = document.getElementById('schemaContainer');
+    if (!container) return;
     let html = '';
+    let isFirst = true;
 
     for (const [tblName, tblInfo] of Object.entries(schema)) {
+      const openClass = isFirst ? 'open' : '';
+      isFirst = false;
       html += `
         <div class="schema-table-item">
           <div class="schema-table-header" onclick="toggleTableColumns('${tblName}')">
@@ -1118,10 +1131,10 @@
               <span style="color: #38bdf8;">🗃️</span> ${tblName}
             </span>
             <span style="font-size: 10px; background: #17233d; padding: 1px 5px; border-radius: 3px; color: #94a3b8;">
-              ${tblInfo.row_count}
+              ${tblInfo.row_count} rows
             </span>
           </div>
-          <div id="cols_${tblName}" class="schema-columns-list">
+          <div id="cols_${tblName}" class="schema-columns-list ${openClass}">
             ${tblInfo.columns.map(c => `
               <div class="schema-col-row" onclick="insertColumnToEditor('${c.name}')" title="Click to insert '${c.name}' into editor">
                 <span>${c.is_pk ? '<span class="pk-badge">PK</span>' : ''}${c.name}</span>

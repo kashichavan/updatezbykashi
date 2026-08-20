@@ -70,9 +70,9 @@ def sql_schema_api(request):
     """
     Return updated database schema and row counts.
     """
-    dataset_id = request.GET.get('dataset_id', 'faang')
+    dataset_id = request.GET.get('dataset_id', 'scott_tiger')
     if dataset_id not in DATASETS:
-        dataset_id = 'faang'
+        dataset_id = 'scott_tiger'
         
     conn = get_sandboxed_connection(dataset_id)
     schema = inspect_schema(conn)
@@ -96,9 +96,9 @@ def sql_reset_api(request):
     except Exception:
         data = request.POST
         
-    dataset_id = data.get('dataset_id', 'faang')
+    dataset_id = data.get('dataset_id', 'scott_tiger')
     if dataset_id not in DATASETS:
-        dataset_id = 'faang'
+        dataset_id = 'scott_tiger'
         
     conn = get_sandboxed_connection(dataset_id)
     schema = inspect_schema(conn)
