@@ -533,6 +533,130 @@
 </style>
 {% endblock %}
 
+<style>
+  /* ── Desktop Recommended Mobile Blocker Overlay ── */
+  .mobile-blocker-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 999999;
+    background: rgba(4, 9, 20, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @media (max-width: 900px) {
+    .mobile-blocker-overlay {
+      display: flex !important;
+    }
+  }
+
+  .mobile-blocker-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 24px;
+    padding: 30px 24px 26px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.2);
+    box-sizing: border-box;
+  }
+
+  .mobile-blocker-x {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-blocker-x:active {
+    background: rgba(239, 68, 68, 0.4);
+    transform: scale(0.95);
+  }
+
+  .mobile-blocker-btn {
+    background: linear-gradient(135deg, #2563eb, #0284c7);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-blocker-btn:active {
+    transform: scale(0.98);
+  }
+</style>
+
+<script>
+  function goBackToHome(evt) {
+    if (evt) {
+      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
+    }
+    window.location.href = '/';
+  }
+
+  function forceCloseMobileBlocker(evt) {
+    if (evt) {
+      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
+    }
+    var overlay = document.getElementById('mobileBlockerOverlay');
+    if (overlay) {
+      overlay.style.setProperty('display', 'none', 'important');
+    }
+  }
+</script>
+
+<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)">
+  <div class="mobile-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+    <button class="mobile-blocker-x" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)" title="Go back to home">✕</button>
+    <div style="font-size:46px; margin-bottom:12px;">🖥️</div>
+    <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 8px;">Desktop / Laptop Recommended</h2>
+    <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 16px;">
+      The <strong style="color:#38bdf8;">DevAcademy &amp; Visual Code Debugger</strong> are high-density learning environments optimized for larger screens.
+    </p>
+
+    <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🌐 Chrome</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🦊 Firefox</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🧭 Safari</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🔷 Edge</div>
+    </div>
+
+    <div style="color:#94a3b8; font-size:11px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:10px 12px; line-height:1.5;">
+      📋 Open <strong style="color:#38bdf8;">kashiiupdatez.online/learn/</strong> on your PC or Laptop for the full visual trace experience.
+    </div>
+
+    <button class="mobile-blocker-btn" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)">
+      Continue on Mobile Anyway →
+    </button>
+  </div>
+</div>
+
 {% block content %}
 <!-- Floating Mobile Quick Jump Button -->
 <a href="#interactiveDebuggerSection" class="mobile-dbg-jump-btn">
