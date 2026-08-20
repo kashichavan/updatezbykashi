@@ -572,126 +572,495 @@ public class Main {
 """)
     ]
 
-    # Convert Python raw to structured dicts
-    py_topics = []
-    for t in py_topics_raw:
-        py_topics.append({
-            'slug': t[0],
-            'title': t[1],
-            'category': t[2],
-            'read_time': t[3],
-            'takeaway': t[4],
-            'seo_description': f"Comprehensive interactive guide to {t[1]} with real-world analogies, production examples, and live debugger.",
-            'introduction': f"<h3>What is {t[1]}?</h3><p>{t[4]}</p><p>Python 3 provides clean, expressive, and high-performance primitives for building modern software.</p>",
-            'analogy': {'title': t[5], 'text': t[6], 'mapping': [{'real': m[0], 'prog': m[1]} for m in t[7]]},
-            'mental_model': "<pre class='code-pre' style='background:#090f1d; color:#38bdf8;'><code>Source Code -> Parser -> AST -> Bytecode -> CPython VM Execution</code></pre>",
-            'why_exists': "<p>Simplifies complex software architecture and optimizes memory management automatically.</p>",
-            'use_case': {'company': t[8], 'text': t[9]},
-            'syntax_guide': f"<div class='code-display-card'><pre class='code-pre'><code>{t[10]}</code></pre></div>",
-            'first_example': {'title': f"Python {t[1]} Example", 'code': t[10], 'output': 'Refer to live debugger output.', 'explanation': '<p>Executed line-by-line via Python AST tracer.</p>'},
-            'how_it_works': '<p>CPython compiles source code into bytecode executed by the virtual machine.</p>',
+    # ─── COMPREHENSIVE NOTION-STYLE CONTENT BUILDER ─────────────────────────
+    def build_rich_python_topic(slug, title, cat, read_time, takeaway, analogy_title, analogy_text, mapping, comp, comp_desc, code):
+        clean_title = title.split('. ', 1)[-1] if '. ' in title else title
+        return {
+            'slug': slug,
+            'title': title,
+            'category': cat,
+            'read_time': read_time,
+            'takeaway': takeaway,
+            'seo_description': f"Complete Notion-style interactive guide to {clean_title} in Python 3 with real-world analogies, memory models, and live debugger.",
+            'introduction': f"""<p><strong>{clean_title}</strong> is a foundational pillar of Python's programming model. In modern software engineering, mastering this concept is essential for writing scalable, maintainable, and high-performance applications.</p>
+<p>Python's execution engine treats everything as dynamic heap-allocated objects bound to local and global namespaces. This approach eliminates rigid boilerplate while providing powerful abstractions that speed up development velocity across cloud backends, data engineering, and automation.</p>
+<p>In this interactive masterclass, we explore the conceptual mental models, memory lifecycles, common production pitfalls, and real-world architectures used by companies like {comp}.</p>""",
+            'analogy': {
+                'title': analogy_title,
+                'text': analogy_text,
+                'mapping': [{'real': m[0], 'prog': m[1]} for m in mapping]
+            },
+            'mental_model': f"""<pre class='code-pre' style='background:#090f1d; color:#38bdf8;'><code>[ High-Level Code: {clean_title} ]
+        |
+        v
+[ CPython Lexer & Parser ] ───> [ Abstract Syntax Tree (AST) ]
+                                            |
+                                            v
+[ Bytecode Compiler ] ────────> [ Code Object (__code__) ]
+                                            |
+                                            v
+[ Python Virtual Machine (PVM) ] ─> [ Heap Memory & Scope Evaluation ]</code></pre>""",
+            'why_exists': f"""<p>Without <strong>{clean_title}</strong>, developers would have to rely on complex, error-prone manual memory allocations and verbose low-level boilerplate. Python introduced this mechanism to provide clear, human-readable syntax that minimizes cognitive overhead while ensuring robust runtime guarantees.</p>
+<p>By abstracting underlying hardware complexity into high-level constructs, Python empowers engineers to focus on business logic, rapid experimentation, and clean modular design.</p>""",
+            'use_case': {'company': comp, 'text': comp_desc},
+            'syntax_guide': f"<div class='code-display-card'><div class='code-header-bar'><span>Python 3 Idiomatic Syntax</span></div><pre class='code-pre'><code>{code}</code></pre></div>",
+            'first_example': {
+                'title': f'{clean_title} Core Implementation',
+                'code': code,
+                'output': 'Refer to live debugger execution trace.',
+                'explanation': f'<p>This snippet demonstrates the standard Pythonic pattern for <strong>{clean_title}</strong>. Step through the execution in the interactive debugger below to inspect variable allocations in real-time.</p>'
+            },
+            'how_it_works': f"""<p>When CPython executes code involving <strong>{clean_title}</strong>, it compiles the source text into a series of stack-based bytecode instructions (inspectable via the <code>dis</code> module). Each operation evaluates variables in the current execution frame's <code>f_locals</code> dictionary.</p>
+<p>CPython manages object lifecycles using reference counting (<code>ob_refcnt</code>) combined with an incremental generational garbage collector. When an object's reference counter drops to zero, its memory block is immediately returned to the internal small-object memory allocator (PyMalloc) arena.</p>""",
             'progressive_examples': [
-                {'tier': 'Level 1: Core Pattern', 'title': 'Basic Implementation', 'description': 'Standard idiomatic Python pattern.', 'code': t[10], 'output': 'Refer to live debugger output.', 'notes': 'Clean Python 3 syntax.'}
+                {
+                    'tier': 'Level 1: Core Pattern',
+                    'title': 'Basic Implementation',
+                    'description': f'Essential syntax and fundamental operations for {clean_title}.',
+                    'code': code,
+                    'output': 'Refer to live debugger output.',
+                    'notes': 'Follows standard PEP 8 naming conventions and idiomatic structure.'
+                },
+                {
+                    'tier': 'Level 2: Intermediate Pipeline',
+                    'title': 'Modular Data Flow',
+                    'description': 'Combining this concept with functional data transformation pipelines.',
+                    'code': f"# Level 2: Modular Implementation\ndef process_data(input_val):\n    # Transform and validate\n    return f'Processed: {{input_val}}'\n\nresult = process_data('ActiveSession')\nprint(result)",
+                    'output': 'Processed: ActiveSession',
+                    'notes': 'Ensures separation of concerns and reusable logic across modules.'
+                },
+                {
+                    'tier': 'Level 3: Production Pattern',
+                    'title': 'Enterprise Architecture',
+                    'description': 'Production-grade error handling, type annotations, and defensive validation.',
+                    'code': f"# Level 3: Production Pattern with Type Hints\nfrom typing import Any, Optional\n\ndef execute_task(param: Any) -> Optional[str]:\n    if not param:\n        return None\n    return str(param).strip().upper()\n\nprint('Status:', execute_task('production_ready'))",
+                    'output': 'Status: PRODUCTION_READY',
+                    'notes': 'Uses PEP 484 type annotations for static analysis with mypy and robust defensive guards.'
+                }
             ],
-            'starter_code': t[10],
+            'starter_code': code,
             'common_mistakes': [
-                {'title': 'Syntax or Type Mismatch', 'bad': '# Invalid syntax or missing parameter', 'why_bad': 'Raises runtime exceptions.', 'good': '# Clean, type-safe implementation', 'why_good': 'Ensures predictable execution.'}
+                {
+                    'title': 'Implicit Type Coercion / Shadowing',
+                    'bad': '# Attempting incompatible operations\nval = "100" + 20  # TypeError',
+                    'why_bad': 'Python is strongly typed and will never silently convert strings to integers in arithmetic operations.',
+                    'good': '# Explicit type casting or f-string\nval = int("100") + 20  # Correct: 120',
+                    'why_good': 'Explicit conversion prevents runtime crashes and makes developer intent clear.'
+                },
+                {
+                    'title': 'Unintended Reference Sharing',
+                    'bad': '# Shared mutable reference\na = [1, 2, 3]\nb = a\nb.append(4)  # Mutates `a` unintentionally',
+                    'why_bad': 'Assignment copies the pointer reference, not the underlying heap data payload.',
+                    'good': '# Explicit shallow or deep copy\na = [1, 2, 3]\nb = a.copy()\nb.append(4)  # Leaves `a` untouched',
+                    'why_good': 'Copying creates an independent instance in memory, preserving data isolation.'
+                },
+                {
+                    'title': 'Uncaught Edge-Case Exceptions',
+                    'bad': '# Assuming input is always well-formed\nresult = 100 / divisor  # ZeroDivisionError if divisor == 0',
+                    'why_bad': 'Unchecked calculations cause unhandled exceptions that crash production workers.',
+                    'good': '# Defensive validation\nresult = (100 / divisor) if divisor != 0 else 0',
+                    'why_good': 'Defensive coding guarantees smooth execution even under unexpected edge-case inputs.'
+                }
             ],
             'rules': [
-                {'rule': 'PEP 8 Standards', 'detail': 'Follow standard naming and formatting guidelines.'},
-                {'rule': 'Memory Optimization', 'detail': 'Choose appropriate data structures for optimal time and space complexity.'}
+                {'rule': 'Explicit is Better Than Implicit', 'detail': 'Follow PEP 20 Zen of Python principles; avoid obscure side effects.'},
+                {'rule': 'Preserve Namespace Integrity', 'detail': 'Never shadow built-in functions (e.g., list, dict, str, id, type) with variable names.'},
+                {'rule': 'Enforce Immutability Where Appropriate', 'detail': 'Use tuples and frozensets for fixed constant lookups to optimize memory efficiency.'},
+                {'rule': 'Write Self-Documenting Code', 'detail': 'Use descriptive snake_case identifiers and meaningful type hints.'}
             ],
             'comparison': {
-                'title': f'{t[1]} Architecture',
+                'title': f'{clean_title} in Python vs Other Paradigms',
                 'item_a': 'Python 3',
-                'item_b': 'Alternative Languages',
+                'item_b': 'Compiled Languages (C / Java)',
                 'rows': [
-                    {'feature': 'Syntax', 'val_a': 'Clean and concise', 'val_b': 'Verbose boilerplate'},
-                    {'feature': 'Memory Management', 'val_a': 'Automatic reference-counting GC', 'val_b': 'Manual stack/heap management'}
+                    {'feature': 'Type Binding', 'val_a': 'Dynamic (resolved at runtime)', 'val_b': 'Static (verified at compile-time)'},
+                    {'feature': 'Memory Management', 'val_a': 'Automatic Reference Counting + GC', 'val_b': 'Manual stack/heap or JVM Garbage Collection'},
+                    {'feature': 'Syntax Overhead', 'val_a': 'Clean, concise, indentation-scoped', 'val_b': 'Verbose, requires curly braces & semicolons'},
+                    {'feature': 'Execution Mechanism', 'val_a': 'Bytecode interpreted via PVM', 'val_b': 'Native CPU instructions or JIT-compiled JVM'}
                 ]
             },
-            'performance': '<p>Executes in optimal time and memory complexity.</p>',
-            'mini_project': {'title': f'Mini Project: {t[1]}', 'problem': 'Build a practical module demonstrating the concept.', 'requirements': ['Clean code.', 'Handle edge cases.'], 'solution_code': t[10], 'solution_explanation': 'Provides a modular, maintainable solution.'},
+            'performance': f"<p>In CPython, operations involving <strong>{clean_title}</strong> execute in optimal amortized time complexity. To maximize throughput in high-load data pipelines, prefer built-in C-accelerated primitives and generator expressions over nested loops.</p>",
+            'mini_project': {
+                'title': f'Mini Project: {clean_title} Processor',
+                'problem': f'Build a modular verification component applying {clean_title} to process and validate user transaction data.',
+                'requirements': ['Validate input data types.', 'Format output cleanly.', 'Handle empty or invalid inputs gracefully.'],
+                'solution_code': code,
+                'solution_explanation': 'Provides a modular, production-ready blueprint that satisfies all acceptance criteria.'
+            },
             'practice_exercises': [
-                {'level': 'Level 1: Beginner', 'title': 'Practice Task', 'prompt': 'Run and verify the code in the debugger.', 'hint': 'Review the starter code.', 'solution': t[10]}
+                {
+                    'level': 'Level 1: Beginner',
+                    'title': f'Hands-on with {clean_title}',
+                    'prompt': 'Run the code in the live debugger. Step through line-by-line to observe how variables are allocated in memory.',
+                    'hint': 'Click "Start Debugging" then press "Next ▶".',
+                    'solution': code
+                }
             ],
             'predict_quizzes': [
-                {'code': t[10], 'options': ['A) Expected Output', 'B) SyntaxError', 'C) None', 'D) TypeError'], 'answer': 'A) Expected Output', 'explanation': 'Executes as demonstrated.'}
+                {
+                    'code': code,
+                    'options': ['A) Executes successfully', 'B) Raises TypeError', 'C) Raises SyntaxError', 'D) Infinite Loop'],
+                    'answer': 'A) Executes successfully',
+                    'explanation': 'The code is valid Python 3 and executes with clean output as traced in the visual debugger.'
+                }
             ],
             'debug_challenges': [
-                {'context': 'Identify and fix the issue.', 'broken_code': 'val = 1 / 1', 'bug_reason': 'None', 'fixed_code': t[10]}
+                {
+                    'context': f'Identify and fix the bug in this {clean_title} snippet.',
+                    'broken_code': '# Broken implementation\nvalue = "42"\nresult = value + 8',
+                    'bug_reason': 'TypeError: Cannot concatenate string with integer without explicit conversion.',
+                    'fixed_code': '# Fixed implementation\nvalue = "42"\nresult = int(value) + 8\nprint("Result:", result)'
+                }
             ],
             'interview_questions': [
-                {'tier': 'Beginner', 'question': f'Explain {t[1]}.', 'answer': f'{t[4]}'}
+                {
+                    'tier': 'Beginner',
+                    'question': f'What is the core purpose of {clean_title} in Python?',
+                    'answer': f'{takeaway} It provides high-level abstractions that balance developer velocity with robust runtime safety.'
+                },
+                {
+                    'tier': 'Mid',
+                    'question': 'How does Python manage memory allocation for this construct?',
+                    'answer': 'CPython allocates PyObject headers on the private heap, tracking object references via ob_refcnt. When refcount hits zero, memory is freed immediately.'
+                },
+                {
+                    'tier': 'Senior',
+                    'question': 'What are the performance implications of dynamic typing in high-scale systems?',
+                    'answer': 'Dynamic typing introduces small dictionary lookup overheads per attribute access. In high-scale systems, this is mitigated using __slots__, PyPy JIT compilation, or Cython C-extensions.'
+                },
+                {
+                    'tier': 'Expert',
+                    'question': "How does Python's Global Interpreter Lock (GIL) interact with execution threads?",
+                    'answer': "The GIL ensures thread safety by allowing only one native thread to execute Python bytecode at a time. For CPU-bound concurrency, multiprocessing or async event loops are preferred."
+                }
             ],
-            'quick_revision': [f'✓ {t[4]}', f'✓ Analogy: {t[5]}', '✓ Verified with live AST execution tracer.'],
-            'final_challenge': {'title': f'Capstone Challenge: {t[1]}', 'prompt': 'Write a comprehensive script applying this concept.', 'requirements': ['Validate input.', 'Print output.'], 'starter_template': t[10]}
-        })
+            'quick_revision': [
+                f'✓ {takeaway}',
+                f'✓ Real-world analogy: {analogy_title}',
+                '✓ Strongly typed: incompatible runtime type operations raise explicit exceptions.',
+                '✓ Variable assignment creates a reference pointer, not a duplicated data copy.',
+                '✓ Memory is automatically reclaimed via reference counting and cyclic garbage collection.',
+                '✓ Verified with real-time AST line-by-line visual execution tracer.'
+            ],
+            'final_challenge': {
+                'title': f'Capstone Challenge: Master {clean_title}',
+                'prompt': f'Write a complete Python 3 module that implements {clean_title} to solve a real-world data processing scenario.',
+                'requirements': ['Follow PEP 8 naming standards.', 'Include defensive input validation.', 'Test in the interactive debugger.'],
+                'starter_template': code
+            }
+        }
 
-    # Convert Java raw to structured dicts
-    java_topics = []
-    for t in java_topics_raw:
-        java_topics.append({
-            'slug': t[0],
-            'title': t[1],
-            'category': t[2],
-            'read_time': t[3],
-            'takeaway': t[4],
-            'seo_description': f"Complete Java 17 enterprise lesson for {t[1]} with JVM memory tracing and real-world architectures.",
-            'introduction': f"<h3>What is {t[1]}?</h3><p>{t[4]}</p><p>Java 17 provides enterprise-grade type safety, performance, and JVM architecture.</p>",
-            'analogy': {'title': t[5], 'text': t[6], 'mapping': [{'real': m[0], 'prog': m[1]} for m in t[7]]},
-            'mental_model': "<pre class='code-pre' style='background:#090f1d; color:#38bdf8;'><code>Source Code (.java) -> javac -> Bytecode (.class) -> JVM ClassLoader -> JIT Execution</code></pre>",
-            'why_exists': "<p>Enterprise platforms require strict compile-time verification, cross-platform JVM portability, and predictable memory safety.</p>",
-            'use_case': {'company': 'Goldman Sachs & Apache Kafka', 'text': 'High-throughput enterprise microservices and financial transaction settlement engines.'},
-            'syntax_guide': f"<div class='code-display-card'><pre class='code-pre'><code>{t[8]}</code></pre></div>",
-            'first_example': {'title': f"Java {t[1]} Example", 'code': t[8], 'output': 'Refer to live debugger output.', 'explanation': '<p>Compiled and executed on the JVM.</p>'},
-            'how_it_works': '<p>Java bytecode is compiled by the JIT (Just-In-Time) compiler into native machine instructions for direct CPU execution.</p>',
+    # ─── BUILD PYTHON 3 CURRICULUM ──────────────────────────────────────────
+    py_topics = [build_rich_python_topic(*t) for t in py_topics_raw]
+
+    # ─── COMPREHENSIVE NOTION-STYLE JAVA BUILDER ────────────────────────────
+    def build_rich_java_topic(slug, title, cat, read_time, takeaway, analogy_title, analogy_text, mapping, code):
+        clean_title = title.split('. ', 1)[-1] if '. ' in title else title
+        return {
+            'slug': slug,
+            'title': title,
+            'category': cat,
+            'read_time': read_time,
+            'takeaway': takeaway,
+            'seo_description': f"Complete Java 17 enterprise masterclass on {clean_title} with JVM memory tracing and architectural patterns.",
+            'introduction': f"""<p><strong>{clean_title}</strong> is a core concept in Java 17 enterprise development. Java's design emphasizes compile-time type safety, object-oriented encapsulation, and predictable JVM execution across distributed cloud systems.</p>
+<p>In Java, source code (<code>.java</code>) is compiled by <code>javac</code> into platform-independent bytecode (<code>.class</code>), which is executed by the Java Virtual Machine (JVM). The JVM's HotSpot execution engine dynamically compiles frequently executed bytecode into native machine instructions via the C1/C2 Just-In-Time (JIT) compilers.</p>
+<p>This masterclass covers the architectural mental models, stack vs heap memory lifecycles, and production-tested patterns used by enterprise giants like Goldman Sachs, Netflix, and Apache Kafka.</p>""",
+            'analogy': {
+                'title': analogy_title,
+                'text': analogy_text,
+                'mapping': [{'real': m[0], 'prog': m[1]} for m in mapping]
+            },
+            'mental_model': f"""<pre class='code-pre' style='background:#090f1d; color:#38bdf8;'><code>[ Java Source: {clean_title}.java ]
+        |
+        v
+[ javac Compiler ] ───> [ Bytecode (.class) ]
+                                |
+                                v
+[ JVM ClassLoader ] ──> [ JVM Memory: Stack (Frames) & Heap (Objects) ]
+                                |
+                                v
+[ HotSpot JIT C1/C2 ] ─> [ Native CPU Machine Code ]</code></pre>""",
+            'why_exists': f"""<p>Enterprise applications handling financial transactions and high-throughput microservices require strict compile-time verification to prevent runtime failures. Java's static typing and structured memory model eliminate entire classes of memory safety vulnerabilities.</p>
+<p>By enforcing clear interfaces and structured object lifecycles, Java provides rock-solid reliability across massive distributed codebases.</p>""",
+            'use_case': {
+                'company': 'Goldman Sachs & Apache Kafka',
+                'text': f'Deploying high-throughput transaction settlement engines and event streams that demand deterministic JVM performance for {clean_title}.'
+            },
+            'syntax_guide': f"<div class='code-display-card'><div class='code-header-bar'><span>Java 17 Class Implementation</span></div><pre class='code-pre'><code>{code}</code></pre></div>",
+            'first_example': {
+                'title': f'Java {clean_title} Example',
+                'code': code,
+                'output': 'Refer to live debugger execution trace.',
+                'explanation': f'<p>This class demonstrates the enterprise implementation of <strong>{clean_title}</strong> on the Java 17 JVM.</p>'
+            },
+            'how_it_works': f"""<p>When the JVM executes <strong>{clean_title}</strong>, method invocations push stack frames onto the thread's call stack. Primitive types (<code>int</code>, <code>double</code>, <code>boolean</code>) and object reference pointers are stored directly in local stack variable slots.</p>
+<p>Object instances and arrays reside on the shared JVM Heap. Garbage collectors (like G1GC or ZGC) continuously track object reachability via GC Roots and reclaim unreferenced memory without pausing the application.</p>""",
             'progressive_examples': [
-                {'tier': 'Level 1: Core Pattern', 'title': 'Basic Implementation', 'description': 'Standard idiomatic Java pattern.', 'code': t[8], 'output': 'Refer to live debugger output.', 'notes': 'Strict typing enforced.'}
+                {
+                    'tier': 'Level 1: Core Pattern',
+                    'title': 'Basic Implementation',
+                    'description': f'Standard idiomatic Java 17 syntax for {clean_title}.',
+                    'code': code,
+                    'output': 'Refer to live debugger output.',
+                    'notes': 'Strict type declarations enforced at compile time.'
+                }
             ],
-            'starter_code': t[8],
+            'starter_code': code,
             'common_mistakes': [
-                {'title': 'Type Mismatch or Null Pointer', 'bad': 'String s = null; s.length();', 'why_bad': 'Throws NullPointerException.', 'good': 'if (s != null) { s.length(); }', 'why_good': 'Guards against null.'}
+                {
+                    'title': 'NullPointerException on Uninitialized Reference',
+                    'bad': 'String text = null;\nint len = text.length();  // Throws NullPointerException',
+                    'why_bad': 'Dereferencing a null reference pointer causes immediate runtime exceptions on the JVM.',
+                    'good': 'String text = null;\nint len = (text != null) ? text.length() : 0;',
+                    'why_good': 'Explicit null-checking or using Optional<T> guards against unexpected null pointer crashes.'
+                }
             ],
             'rules': [
-                {'rule': 'Strict Typing', 'detail': 'Every variable must declare its type at compile time.'},
-                {'rule': 'Class Naming', 'detail': 'File name must match public class name.'}
+                {'rule': 'Type Safety First', 'detail': 'Every variable and method signature must explicitly declare its type at compile time.'},
+                {'rule': 'Match File and Class Names', 'detail': 'A public class must reside in a .java source file matching the exact class identifier.'}
             ],
             'comparison': {
-                'title': f'{t[1]} in Java',
+                'title': f'{clean_title} in Java 17 vs Dynamic Languages',
                 'item_a': 'Java 17 (JVM)',
-                'item_b': 'Dynamic Languages',
+                'item_b': 'Dynamic Languages (Python / JS)',
                 'rows': [
-                    {'feature': 'Type System', 'val_a': 'Static, checked at compile time', 'val_b': 'Dynamic, checked at runtime'},
-                    {'feature': 'Execution', 'val_a': 'Bytecode on JVM with JIT compiler', 'val_b': 'Interpreted AST / JIT'}
+                    {'feature': 'Type Verification', 'val_a': 'Static compile-time checking (javac)', 'val_b': 'Dynamic runtime type checking'},
+                    {'feature': 'Performance', 'val_a': 'Near-native speed via HotSpot JIT (C2 compiler)', 'val_b': 'Interpreted bytecode or runtime JIT'},
+                    {'feature': 'Memory Model', 'val_a': 'Explicit Stack frames + Managed Heap GC', 'val_b': 'Heap-allocated dynamic PyObjects / V8 hidden classes'}
                 ]
             },
-            'performance': '<p>Java executes at near-native C++ speeds thanks to JVM HotSpot C2 JIT optimization.</p>',
-            'mini_project': {'title': f'Mini Project: {t[1]}', 'problem': 'Implement an enterprise module verifying business transactions.', 'requirements': ['Clean OOP design.', 'Exception handling.'], 'solution_code': t[8], 'solution_explanation': 'Modular and scalable.'},
+            'performance': "<p>Java 17 executes at near-native C++ performance levels thanks to HotSpot's tiered compilation and sophisticated escape analysis that automatically allocates non-escaping objects onto the fast stack.</p>",
+            'mini_project': {
+                'title': f'Mini Project: Enterprise {clean_title}',
+                'problem': f'Implement a high-reliability service component utilizing {clean_title}.',
+                'requirements': ['Strict OOP encapsulation.', 'Compile without warnings on Java 17.'],
+                'solution_code': code,
+                'solution_explanation': 'Provides a modular enterprise-grade class.'
+            },
             'practice_exercises': [
-                {'level': 'Level 1: Beginner', 'title': 'Practice Task', 'prompt': 'Compile and run the code example in the debugger.', 'hint': 'Review the main method structure.', 'solution': t[8]}
+                {
+                    'level': 'Level 1: Beginner',
+                    'title': f'Compile & Trace {clean_title}',
+                    'prompt': 'Run the Java code in the visual debugger and observe stack frame and variable allocations.',
+                    'hint': 'Click "Start Debugging" and step through the lines.',
+                    'solution': code
+                }
             ],
             'predict_quizzes': [
-                {'code': t[8], 'options': ['A) Expected Output', 'B) NullPointerException', 'C) Compilation Error', 'D) None'], 'answer': 'A) Expected Output', 'explanation': 'Valid Java 17 code.'}
+                {
+                    'code': code,
+                    'options': ['A) Compiles and runs with clean output', 'B) Throws NullPointerException', 'C) Compilation Error', 'D) StackOverflowError'],
+                    'answer': 'A) Compiles and runs with clean output',
+                    'explanation': 'The code is valid Java 17 and compiles successfully on the JVM.'
+                }
             ],
             'debug_challenges': [
-                {'context': 'Fix this Java class.', 'broken_code': 'public class Main { void main() {} }', 'bug_reason': 'Missing static and String[] args in main.', 'fixed_code': t[8]}
+                {
+                    'context': f'Fix the compilation error in this {clean_title} class.',
+                    'broken_code': 'public class Main {\n    void main() {\n        System.out.println("Hello");\n    }\n}',
+                    'bug_reason': 'Main method must be declared `public static void main(String[] args)`.',
+                    'fixed_code': 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello");\n    }\n}'
+                }
             ],
             'interview_questions': [
-                {'tier': 'Beginner', 'question': f'Explain {t[1]} in Java 17.', 'answer': f'{t[4]}'}
+                {
+                    'tier': 'Beginner',
+                    'question': f'What is {clean_title} in Java 17?',
+                    'answer': f"{takeaway} It leverages Java's strong type system and JVM architecture for enterprise reliability."
+                },
+                {
+                    'tier': 'Senior',
+                    'question': 'How does the JVM HotSpot engine optimize execution at runtime?',
+                    'answer': "HotSpot profiles bytecode execution frequencies. Frequently executed 'hot' code paths are JIT-compiled by the C2 compiler directly into optimized native machine assembly."
+                }
             ],
-            'quick_revision': [f'✓ {t[4]}', f'✓ Analogy: {t[5]}', '✓ Enforce strict type safety and null checks.'],
-            'final_challenge': {'title': f'Final Challenge: {t[1]}', 'prompt': 'Build a full enterprise class demonstrating this concept.', 'requirements': ['Write clean Java 17 code.'], 'starter_template': t[8]}
-        })
+            'quick_revision': [
+                f'✓ {takeaway}',
+                f'✓ Real-world analogy: {analogy_title}',
+                '✓ Compile-time type checking prevents runtime type mismatch errors.',
+                '✓ Primitives live on the thread stack; objects reside on the shared JVM heap.',
+                '✓ Verified on live Java 17 bytecode execution tracer.'
+            ],
+            'final_challenge': {
+                'title': f'Capstone Challenge: {clean_title}',
+                'prompt': f'Write an enterprise-grade Java 17 class demonstrating {clean_title} in a production microservice.',
+                'requirements': ['Follow Oracle Java naming standards.', 'Test with the live debugger.'],
+                'starter_template': code
+            }
+        }
 
-    # Write files
+    # ─── BUILD JAVA 17 CURRICULUM ───────────────────────────────────────────
+    java_topics = [build_rich_java_topic(*t) for t in java_topics_raw]
+
+    # ─── COMPREHENSIVE NOTION-STYLE JAVASCRIPT BUILDER ──────────────────────
+    from debugger.curriculum_js import JS_TOPICS as existing_js_topics
+
+    def build_rich_js_topic(slug, title, cat, read_time, takeaway, code):
+        clean_title = title.split('. ', 1)[-1] if '. ' in title else title
+        return {
+            'slug': slug,
+            'title': title,
+            'category': cat,
+            'read_time': read_time,
+            'takeaway': takeaway,
+            'seo_description': f"Modern JavaScript ES6+ interactive masterclass on {clean_title} with V8 runtime internals, event loop mechanics, and live execution debugger.",
+            'introduction': f"""<p><strong>{clean_title}</strong> is a vital building block of Modern JavaScript (ES6+) and the web ecosystem. Designed to power interactive user interfaces and high-concurrency Node.js server backends, JavaScript combines asynchronous non-blocking I/O with dynamic prototype-based object modeling.</p>
+<p>When running in modern engines like Google Chrome's V8 or Node.js, JavaScript source code is parsed into an Abstract Syntax Tree (AST), compiled to bytecode by the <em>Ignition</em> interpreter, and JIT-optimized into blazing-fast machine code by the <em>TurboFan</em> compiler.</p>
+<p>In this masterclass, we explore how <strong>{clean_title}</strong> operates inside the execution context, call stack, and microtask queues to deliver high-performance reactive applications.</p>""",
+            'analogy': {
+                'title': f'The Fast-Food Drive-Through Order Pipeline ({clean_title})',
+                'text': f'Think of {clean_title} as an asynchronous restaurant kitchen order tracker: tasks are logged into a queue, processed non-blockingly, and results are delivered to the pickup window without making other customers wait.',
+                'mapping': [
+                    {'real': 'Drive-through intercom order', 'prog': 'Event / Method Trigger'},
+                    {'real': 'Kitchen chef workstation', 'prog': 'Call Stack Execution Frame'},
+                    {'real': 'Order pickup counter bell', 'prog': 'Callback / Resolved Promise Output'},
+                    {'real': 'Order ticket number receipt', 'prog': 'Reference Handle / Object Pointer'}
+                ]
+            },
+            'mental_model': f"""<pre class='code-pre' style='background:#090f1d; color:#38bdf8;'><code>[ JavaScript Source: {clean_title} ]
+        |
+        v
+[ V8 Parser & AST ] ───> [ Ignition Bytecode Interpreter ]
+                                    |
+                                    v
+[ Event Loop & Call Stack ] ───> [ Web APIs / Microtask Queue ]
+                                    |
+                                    v
+[ TurboFan JIT Compiler ] ────> [ Optimized Machine Code ]</code></pre>""",
+            'why_exists': f"""<p>Early web development suffered from unorganized global namespaces, confusing type coercions, and callback hell. Modern ES6+ introduced <strong>{clean_title}</strong> to establish clean block scoping, modular encapsulation, and predictable asynchronous data flow.</p>
+<p>By leveraging standardized syntax, developers can build reactive frontends (React, Vue, Svelte) and scalable cloud microservices (Node.js, Bun) with confidence and clarity.</p>""",
+            'use_case': {
+                'company': 'Netflix, Airbnb & React.js',
+                'text': f'Handling real-time UI state transitions, responsive user input streams, and microservice API communications with {clean_title}.'
+            },
+            'syntax_guide': f"<div class='code-display-card'><div class='code-header-bar'><span>Modern JavaScript (ES6+) Syntax</span></div><pre class='code-pre'><code>{code}</code></pre></div>",
+            'first_example': {
+                'title': f'JavaScript {clean_title} Example',
+                'code': code,
+                'output': 'Refer to live debugger execution trace.',
+                'explanation': f'<p>This snippet demonstrates modern ES6+ idiomatic syntax for <strong>{clean_title}</strong>. Step through the execution in the interactive debugger below to inspect variable changes line-by-line.</p>'
+            },
+            'how_it_works': f"""<p>When the V8 engine executes <strong>{clean_title}</strong>, it creates an Execution Context containing a Lexical Environment record and Variable Environment. Identifiers declared with <code>const</code> and <code>let</code> reside in the Temporal Dead Zone (TDZ) until evaluation, preventing accidental undefined usage.</p>
+<p>Object properties are managed using dynamic Hidden Classes (Shapes) and Inline Caches (IC) to achieve near C++ property lookup speeds directly on the heap.</p>""",
+            'progressive_examples': [
+                {
+                    'tier': 'Level 1: Core Pattern',
+                    'title': 'Basic Implementation',
+                    'description': f'Essential ES6+ syntax for {clean_title}.',
+                    'code': code,
+                    'output': 'Refer to live debugger output.',
+                    'notes': 'Follows clean modern JavaScript conventions.'
+                }
+            ],
+            'starter_code': code,
+            'common_mistakes': [
+                {
+                    'title': 'Accidental Type Coercion / Global Leak',
+                    'bad': '// Missing const/let declaration\ncount = 10;  // Pollutes global window scope',
+                    'why_bad': 'Undeclared variables attach to the global object, creating memory leaks and state corruption.',
+                    'good': '// Explicit block declaration\nconst count = 10;  // Strictly block-scoped',
+                    'why_good': 'Block scoping isolates variables within their enclosing curly braces.'
+                }
+            ],
+            'rules': [
+                {'rule': 'Prefer const by default', 'detail': 'Use const for all identifier declarations; switch to let only when reassignment is required.'},
+                {'rule': 'Strict Equality (===)', 'detail': 'Always use === to compare values and types without implicit type coercion.'}
+            ],
+            'comparison': {
+                'title': f'{clean_title} in Modern JS vs Legacy JS',
+                'item_a': 'Modern ES6+',
+                'item_b': 'Legacy ES5 (var)',
+                'rows': [
+                    {'feature': 'Scoping Rule', 'val_a': 'Block scope { }', 'val_b': 'Function / Global scope'},
+                    {'feature': 'Temporal Dead Zone', 'val_a': 'Active (Throws ReferenceError before initialization)', 'val_b': 'None (Hoisted as undefined)'},
+                    {'feature': 'Asynchronous Handling', 'val_a': 'Native Promises & Async/Await', 'val_b': 'Nested Callback functions'}
+                ]
+            },
+            'performance': '<p>V8 TurboFan optimizes monomorphic call sites and object property accesses into constant-time assembly lookups. Keep object structures consistent to avoid de-optimizations.</p>',
+            'mini_project': {
+                'title': f'Mini Project: {clean_title} Handler',
+                'problem': f'Build an asynchronous data pipeline utilizing {clean_title} to update application state.',
+                'requirements': ['Clean ES6+ standard.', 'Defensive null/undefined checks.'],
+                'solution_code': code,
+                'solution_explanation': 'Event-driven, non-blocking, and clean.'
+            },
+            'practice_exercises': [
+                {
+                    'level': 'Level 1: Beginner',
+                    'title': f'Practice with {clean_title}',
+                    'prompt': 'Run the JavaScript snippet in the live debugger and trace variable states step-by-step.',
+                    'hint': 'Click "Start Debugging" and follow the 👉 line pointer.',
+                    'solution': code
+                }
+            ],
+            'predict_quizzes': [
+                {
+                    'code': code,
+                    'options': ['A) Executes with clean console output', 'B) ReferenceError', 'C) undefined', 'D) TypeError'],
+                    'answer': 'A) Executes with clean console output',
+                    'explanation': 'The code is valid modern ES6+ JavaScript and executes smoothly.'
+                }
+            ],
+            'debug_challenges': [
+                {
+                    'context': f'Fix the bug in this {clean_title} snippet.',
+                    'broken_code': 'const total = 100;\ntotal = total + 50;\nconsole.log(total);',
+                    'bug_reason': 'TypeError: Assignment to constant variable.',
+                    'fixed_code': 'let total = 100;\ntotal = total + 50;\nconsole.log(total);'
+                }
+            ],
+            'interview_questions': [
+                {
+                    'tier': 'Beginner',
+                    'question': f'What is {clean_title} in Modern JavaScript?',
+                    'answer': f'{takeaway} It enables clean, expressive, and high-performance frontend and backend development.'
+                },
+                {
+                    'tier': 'Senior',
+                    'question': "How does JavaScript's Event Loop handle microtasks vs macrotasks?",
+                    'answer': "The Event Loop continuously executes synchronous call stack frames first. When empty, it drains the entire Microtask queue (Promise callbacks, queueMicrotask) before picking the next single Macrotask (setTimeout, setInterval, I/O)."
+                }
+            ],
+            'quick_revision': [
+                f'✓ {takeaway}',
+                f'✓ Real-world model: {clean_title}',
+                '✓ Always use strict equality (===) over loose equality (==).',
+                '✓ Prefer const by default; use let only for mutating accumulators.',
+                '✓ Non-blocking single-threaded execution driven by the V8 event loop.',
+                '✓ Verified on live V8 AST interactive line execution tracer.'
+            ],
+            'final_challenge': {
+                'title': f'Capstone Challenge: {clean_title}',
+                'prompt': f'Write a modern JavaScript module implementing {clean_title} for a production web application.',
+                'requirements': ['Follow modern ES6+ best practices.', 'Test with the live debugger.'],
+                'starter_template': code
+            }
+        }
+
+    # ─── BUILD JAVASCRIPT ES6+ CURRICULUM ───────────────────────────────────
+    js_topics = [
+        build_rich_js_topic(
+            t['slug'], t['title'], t.get('category', 'Fundamentals'),
+            t.get('read_time', '8 min read'), t.get('takeaway', 'Modern ES6+ JavaScript primitive.'),
+            t.get('starter_code', '// Modern JS\nconsole.log("Hello World");')
+        )
+        for t in existing_js_topics
+    ]
+
+    # ─── WRITE PYTHON, JAVA & JS CURRICULUM FILES ───────────────────────────
     with open('/Users/kashinath/Desktop/updatezbykashi/debugger/curriculum_python.py', 'w') as f:
-        f.write(f'"""Python 3 Masterclass Curriculum"""\nPYTHON_TOPICS = {repr(py_topics)}\n')
+        f.write(f'# -*- coding: utf-8 -*-\n\"\"\"Python 3 Masterclass Curriculum\"\"\"\nPYTHON_TOPICS = {repr(py_topics)}\n')
 
     with open('/Users/kashinath/Desktop/updatezbykashi/debugger/curriculum_java.py', 'w') as f:
-        f.write(f'"""Java 17 Masterclass Curriculum"""\nJAVA_TOPICS = {repr(java_topics)}\n')
+        f.write(f'# -*- coding: utf-8 -*-\n\"\"\"Java 17 Masterclass Curriculum\"\"\"\nJAVA_TOPICS = {repr(java_topics)}\n')
 
-    print("Both Python 3 and Java 17 curriculums updated with complete distinct lessons!")
+    with open('/Users/kashinath/Desktop/updatezbykashi/debugger/curriculum_js.py', 'w') as f:
+        f.write(f'# -*- coding: utf-8 -*-\n\"\"\"JavaScript ES6+ Masterclass Curriculum\"\"\"\nJS_TOPICS = {repr(js_topics)}\n')
+
+    print(f"Successfully generated all 45 topics (15 Python, 15 Java, 15 JavaScript) with deep Notion-style content!")
+
 
 if __name__ == '__main__':
     generate_curriculums()
+
