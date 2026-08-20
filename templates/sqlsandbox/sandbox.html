@@ -555,10 +555,129 @@
     color: #cbd5e1;
     line-height: 1.6;
   }
+
+  /* ── Mobile Advisory / Blocker Modal ── */
+  .mobile-blocker-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(7, 11, 20, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .mobile-blocker-card {
+    background: linear-gradient(145deg, #0f172a 0%, #17233d 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 16px;
+    padding: 24px 20px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.2);
+  }
+
+  .mobile-blocker-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: inline-block;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+  }
+
+  .btn-blocker-continue {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .btn-blocker-continue:hover {
+    filter: brightness(1.1);
+  }
+
+  .btn-blocker-copy {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .btn-blocker-copy:hover {
+    background: #28374d;
+    color: #ffffff;
+  }
+
+  @media (max-width: 768px) {
+    .sql-compact-topbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .sql-brand-title {
+      justify-content: space-between;
+    }
+    .sql-playback-group {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 4px;
+    }
+    .sql-sidebar-card {
+      height: 220px;
+      min-height: 180px;
+    }
+    #monacoSqlContainer {
+      height: 200px;
+    }
+    .results-card {
+      height: auto;
+      min-height: 320px;
+    }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<!-- Mobile Experience Advisory / Blocker Modal -->
+<div id="mobileBlockerModal" class="mobile-blocker-overlay" style="display: none;">
+  <div class="mobile-blocker-card">
+    <div class="mobile-blocker-icon">💻</div>
+    <h3 style="margin: 0 0 8px; color: #ffffff; font-size: 17px; font-weight: 800;">
+      Desktop Screen Recommended
+    </h3>
+    <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; margin: 0 0 14px;">
+      The <strong>SQL Visual Debugger &amp; Studio</strong> is engineered for multi-column relational data grids, Monaco code editor, and AST execution tracing that are best viewed on a desktop or laptop display.
+    </p>
+    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; font-size: 11px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; text-align: left;">
+      <span>💡</span>
+      <span>You can still continue on mobile with touch-scrollable tables and step execution.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button class="btn-blocker-continue" onclick="dismissMobileBlocker()">
+        ⚡ Continue on Mobile Anyway
+      </button>
+      <button class="btn-blocker-copy" onclick="copyStudioLink()">
+        📋 Copy Link for Desktop
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="sql-studio-wrapper">
   
   <!-- Compact Unified Header & Controls Strip -->
@@ -861,6 +980,7 @@
     });
 
     fetchSchema(activeDatasetId);
+    checkMobileAdvisory();
   });
 
   function clearExecutionHighlight() {
@@ -1556,5 +1676,41 @@
       toggleMaximizeTable();
     }
   });
+
+  // ── MOBILE ADVISORY & BLOCKER LOGIC ──
+  function checkMobileAdvisory() {
+    if (window.innerWidth <= 768) {
+      const isDismissed = sessionStorage.getItem('dismiss_sql_mobile_blocker');
+      if (!isDismissed) {
+        const modal = document.getElementById('mobileBlockerModal');
+        if (modal) modal.style.display = 'flex';
+      }
+    }
+  }
+
+  function dismissMobileBlocker() {
+    sessionStorage.setItem('dismiss_sql_mobile_blocker', 'true');
+    const modal = document.getElementById('mobileBlockerModal');
+    if (modal) {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.2s';
+      setTimeout(() => { modal.style.display = 'none'; }, 200);
+    }
+  }
+
+  function copyStudioLink() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("✅ Link copied! Open this URL on your Desktop browser.");
+      }).catch(() => {
+        prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
+      });
+    } else {
+      prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
+    }
+  }
+
+  // Check on load
+  window.addEventListener('DOMContentLoaded', checkMobileAdvisory);
 </script>
 {% endblock %}
