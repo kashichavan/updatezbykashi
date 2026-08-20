@@ -697,6 +697,407 @@ git fetch --prune</code></pre>
     🚀 Open Git &amp; GitHub Complete Learning Path on Notion ↗
   </a>
 </div>'''
+    },
+    {
+        'title': 'Mastering SQL for Technical Interviews: Complete Zero-to-Advanced Interview Preparation Handbook (2026)',
+        'slug': 'sql-interview-preparation-complete-handbook',
+        'topic': 'INTERVIEW',
+        'read_time': '20 min read',
+        'summary': 'The definitive SQL technical interview masterclass: query execution order, advanced window functions, recursive CTEs, indexing internals (B-Tree/Hash), ACID isolation levels, query optimization with EXPLAIN ANALYZE, and top 15 solved FAANG interview problems.',
+        'tags': 'SQL, Database, PostgreSQL, MySQL, Window Functions, CTEs, Indexing, Interview Prep, FAANG',
+        'pdf_download_url': '',
+        'pdf_file_name': '',
+        'content': '''<h2>1. Introduction & Logical SQL Query Execution Order</h2>
+<p>In technical interviews for Data Engineering, Backend Development, and Full-Stack Engineering, SQL is one of the most rigorously tested skills. Many developers write SQL intuitively based on syntax, but fail interview questions because they do not understand how the database engine executes queries under the hood.</p>
+
+<p>While you write SQL starting with <code>SELECT</code>, the SQL engine evaluates clauses in a strict mathematical order:</p>
+
+<pre><code class="language-sql">┌─────────────────────────────────────────────────────────────────────────────┐
+│                       LOGICAL SQL EXECUTION ORDER                            │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ 1. FROM        ──> Identify source tables and virtual table buffers         │
+│ 2. ON          ──> Evaluate join conditions for each candidate row pair     │
+│ 3. JOIN        ──> Materialize Joined Table (INNER, LEFT, RIGHT, FULL)      │
+│ 4. WHERE       ──> Filter individual rows BEFORE grouping                   │
+│ 5. GROUP BY    ──> Collapse rows into distinct group partitions             │
+│ 6. HAVING      ──> Filter aggregated group metrics (AFTER grouping)         │
+│ 7. SELECT      ──> Compute output expressions, subqueries, column aliases   │
+│ 8. DISTINCT    ──> Deduplicate resulting rows                               │
+│ 9. ORDER BY    ──> Sort final records (can use SELECT aliases)              │
+│ 10. LIMIT/OFF  ──> Slice row offset window for client response              │
+└─────────────────────────────────────────────────────────────────────────────┘</code></pre>
+
+<div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 14px 18px; margin: 18px 0; border-radius: 0 8px 8px 0;">
+  <strong style="color: #1e3a5f;">💡 Critical Interview Gotcha:</strong> Why can't you use a <code>SELECT</code> alias inside a <code>WHERE</code> clause? Because <code>WHERE</code> (Step 4) runs <em>before</em> <code>SELECT</code> (Step 7) computes the alias! However, you <em>can</em> use aliases in <code>ORDER BY</code> (Step 9) because sorting occurs after column projection.
+</div>
+
+<hr/>
+
+<h2>2. SQL Joins Masterclass: Mechanics & Anti-Patterns</h2>
+<p>Relational algebra combines datasets based on predicate matching. Understanding the nuances between join types is essential for both performance and data correctness.</p>
+
+<table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+  <thead>
+    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Join Type</th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Description</th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Unmatched Left Rows</th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Unmatched Right Rows</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>INNER JOIN</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Intersection of both tables matching ON predicate</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Discarded</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Discarded</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>LEFT JOIN</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">All left rows + matched right rows (NULL if no match)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Preserved with NULLs</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Discarded</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>RIGHT JOIN</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">All right rows + matched left rows (NULL if no match)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Discarded</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Preserved with NULLs</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>FULL OUTER JOIN</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Union of left and right datasets with NULL padding</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Preserved with NULLs</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Preserved with NULLs</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>CROSS JOIN</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Cartesian product ($N \\times M$ rows, no ON condition)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Multiplied</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Multiplied</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>SELF JOIN</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Table joined to itself using aliases (hierarchies/pairs)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Depends on Join Type</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;">Depends on Join Type</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>The Anti-Join Pattern: Finding Missing Records</h3>
+<pre><code class="language-sql">-- Pattern 1: LEFT JOIN with IS NULL (Highly efficient with indexes)
+SELECT c.customer_id, c.customer_name
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_id IS NULL;
+
+-- Pattern 2: NOT EXISTS (Best optimizer performance with subquery)
+SELECT c.customer_id, c.customer_name
+FROM customers c
+WHERE NOT EXISTS (
+    SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id
+);
+
+-- ⚠️ WARNING: 'NOT IN' FAILS SILENTLY IF SUBQUERY CONTAINS NULL VALUES!
+-- If any o.customer_id is NULL, 'NOT IN' evaluates to UNKNOWN and returns 0 rows!</code></pre>
+
+<hr/>
+
+<h2>3. Window Functions: The #1 Most Tested SQL Interview Topic</h2>
+<p>Unlike <code>GROUP BY</code> which collapses multiple rows into a single aggregated summary row, <strong>Window Functions</strong> compute values across a sliding partition of rows while preserving each individual row's identity.</p>
+
+<h3>1. Ranking Functions: ROW_NUMBER vs RANK vs DENSE_RANK</h3>
+<pre><code class="language-sql">SELECT
+    employee_id,
+    department_id,
+    salary,
+    ROW_NUMBER() OVER (PARTITION BY department_id ORDER BY salary DESC) AS row_num,
+    RANK()       OVER (PARTITION BY department_id ORDER BY salary DESC) AS rnk,
+    DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC) AS dense_rnk
+FROM employees;</code></pre>
+
+<table style="width:100%; border-collapse: collapse; margin: 16px 0;">
+  <thead>
+    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+      <th style="padding: 8px; border: 1px solid #e2e8f0;">Salary</th>
+      <th style="padding: 8px; border: 1px solid #e2e8f0;"><code>ROW_NUMBER()</code></th>
+      <th style="padding: 8px; border: 1px solid #e2e8f0;"><code>RANK()</code></th>
+      <th style="padding: 8px; border: 1px solid #e2e8f0;"><code>DENSE_RANK()</code></th>
+      <th style="padding: 8px; border: 1px solid #e2e8f0;">Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">$120,000</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">1</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">1</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">1</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">Highest salary</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">$100,000 (Tie)</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">2</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">2</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">2</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">First tied employee</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">$100,000 (Tie)</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">3</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">2</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">2</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">Second tied employee</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">$90,000</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">4</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;"><strong>4</strong> (skips 3)</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;"><strong>3</strong> (no gaps)</td>
+      <td style="padding: 8px; border: 1px solid #e2e8f0;">Notice RANK skips numbers after ties!</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>2. Value & Offset Functions: LEAD, LAG, FIRST_VALUE</h3>
+<pre><code class="language-sql">-- Month-Over-Month (MoM) Revenue Growth Calculation
+WITH monthly_revenue AS (
+    SELECT
+        DATE_TRUNC('month', order_date) AS order_month,
+        SUM(order_total) AS total_revenue
+    FROM orders
+    GROUP BY 1
+)
+SELECT
+    order_month,
+    total_revenue,
+    LAG(total_revenue, 1) OVER (ORDER BY order_month) AS previous_month_revenue,
+    ROUND(
+        (total_revenue - LAG(total_revenue, 1) OVER (ORDER BY order_month))::numeric
+        / NULLIF(LAG(total_revenue, 1) OVER (ORDER BY order_month), 0) * 100.0, 2
+    ) AS mom_growth_pct
+FROM monthly_revenue;</code></pre>
+
+<h3>3. Running Totals & Moving Averages</h3>
+<pre><code class="language-sql">-- Cumulative Running Total per Customer
+SELECT
+    customer_id,
+    order_date,
+    amount,
+    SUM(amount) OVER (
+        PARTITION BY customer_id
+        ORDER BY order_date
+        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+    ) AS cumulative_spend,
+    AVG(amount) OVER (
+        PARTITION BY customer_id
+        ORDER BY order_date
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS rolling_3_order_avg
+FROM customer_orders;</code></pre>
+
+<hr/>
+
+<h2>4. Common Table Expressions (CTEs) & Recursive SQL</h2>
+<p>CTEs (<code>WITH ... AS</code>) improve query readability and modularity. <strong>Recursive CTEs</strong> solve graph and hierarchical tree problems (such as corporate reporting structures or bill of materials).</p>
+
+<pre><code class="language-sql">-- Organizational Hierarchy: Find all subordinates under Manager (CEO ID = 1)
+WITH RECURSIVE OrgHierarchy AS (
+    -- 1. Anchor Member (Base Case: CEO)
+    SELECT
+        employee_id,
+        first_name,
+        manager_id,
+        1 AS org_level,
+        first_name::text AS path
+    FROM employees
+    WHERE employee_id = 1
+
+    UNION ALL
+
+    -- 2. Recursive Member (Join back to CTE)
+    SELECT
+        e.employee_id,
+        e.first_name,
+        e.manager_id,
+        h.org_level + 1,
+        h.path || ' -> ' || e.first_name
+    FROM employees e
+    INNER JOIN OrgHierarchy h ON e.manager_id = h.employee_id
+)
+SELECT * FROM OrgHierarchy ORDER BY org_level, employee_id;</code></pre>
+
+<hr/>
+
+<h2>5. Database Indexing & Query Optimization Internals</h2>
+<p>Senior database interviews test your understanding of hardware I/O, B-Tree indexes, and why queries run slowly in production.</p>
+
+<h3>1. B-Tree Index Architecture</h3>
+<ul>
+  <li><strong>Root & Branch Nodes:</strong> Store key pointers to navigate large datasets in $O(\log N)$ time.</li>
+  <li><strong>Leaf Nodes:</strong> Linked double-ended lists containing physical tuple IDs (Heap pointers) or clustered row data.</li>
+  <li><strong>Range Scans:</strong> B-Trees excel at <code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>BETWEEN</code>, and <code>ORDER BY</code>.</li>
+</ul>
+
+<h3>2. The Leftmost Prefix Rule on Composite Indexes</h3>
+<p>If you create a composite index on <code>CREATE INDEX idx_user_status_date ON users(country_code, status, created_at);</code></p>
+<ul>
+  <li><code>WHERE country_code = 'US' AND status = 'ACTIVE'</code> &rarr; <strong>Uses Index (Full Speed)</strong></li>
+  <li><code>WHERE country_code = 'US'</code> &rarr; <strong>Uses Index (Leading column)</strong></li>
+  <li><code>WHERE status = 'ACTIVE'</code> &rarr; <strong>Full Table Scan! (Leftmost column missing)</strong></li>
+</ul>
+
+<h3>3. SARGability (Search Argument Able)</h3>
+<p>Wrapping indexed columns in functions disables index lookup and forces full table scans:</p>
+<pre><code class="language-sql">-- ❌ BAD: Non-SARGable (Forces Full Table Scan on 50 Million rows)
+SELECT * FROM orders WHERE YEAR(order_date) = 2026;
+
+-- ✅ GOOD: SARGable (Utilizes B-Tree Range Scan Index)
+SELECT * FROM orders WHERE order_date >= '2026-01-01' AND order_date < '2027-01-01';
+
+-- ❌ BAD: Expression on Column
+SELECT * FROM products WHERE price * 1.18 > 1000;
+
+-- ✅ GOOD: Expression moved to Constant literal
+SELECT * FROM products WHERE price > (1000 / 1.18);</code></pre>
+
+<hr/>
+
+<h2>6. ACID Transactions, Concurrency & Isolation Levels</h2>
+
+<table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+  <thead>
+    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; text-align: left;">
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Isolation Level</th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Dirty Read</th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Non-Repeatable Read</th>
+      <th style="padding: 10px; border: 1px solid #e2e8f0;">Phantom Read</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>READ UNCOMMITTED</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #dc2626;">Yes (Permitted)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #dc2626;">Yes</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #dc2626;">Yes</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>READ COMMITTED</code> (Default in Postgres)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #16a34a;">No (Prevented)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #dc2626;">Yes</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #dc2626;">Yes</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>REPEATABLE READ</code> (Default in MySQL InnoDB)</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #16a34a;">No</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #16a34a;">No</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #16a34a;">No (via MVCC)</td>
+    </tr>
+    <tr>
+      <td style="padding: 10px; border: 1px solid #e2e8f0;"><code>SERIALIZABLE</code></td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #16a34a;">No</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #16a34a;">No</td>
+      <td style="padding: 10px; border: 1px solid #e2e8f0; color: #16a34a;">No</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr/>
+
+<h2>7. Top 10 High-Frequency SQL Coding Interview Problems</h2>
+
+<h3>Problem 1: Find the Nth Highest Salary</h3>
+<pre><code class="language-sql">-- Solution 1: Using DENSE_RANK (Handles duplicate ties gracefully)
+WITH RankedSalaries AS (
+    SELECT
+        salary,
+        DENSE_RANK() OVER (ORDER BY salary DESC) AS rnk
+    FROM employees
+)
+SELECT DISTINCT salary
+FROM RankedSalaries
+WHERE rnk = 2; -- Change '2' to Nth
+
+-- Solution 2: Using LIMIT / OFFSET (Simple single value)
+SELECT DISTINCT salary
+FROM employees
+ORDER BY salary DESC
+LIMIT 1 OFFSET 1; -- For 2nd highest, OFFSET = N - 1</code></pre>
+
+<h3>Problem 2: Department Top 3 Salaries (LeetCode #185)</h3>
+<pre><code class="language-sql">WITH RankedDeptSalaries AS (
+    SELECT
+        d.name AS Department,
+        e.name AS Employee,
+        e.salary AS Salary,
+        DENSE_RANK() OVER (PARTITION BY e.department_id ORDER BY e.salary DESC) AS rnk
+    FROM employees e
+    INNER JOIN departments d ON e.department_id = d.id
+)
+SELECT Department, Employee, Salary
+FROM RankedDeptSalaries
+WHERE rnk <= 3;</code></pre>
+
+<h3>Problem 3: Find Consecutive Active Logins (3 or More Days)</h3>
+<pre><code class="language-sql">WITH DateGrouped AS (
+    SELECT
+        user_id,
+        login_date,
+        login_date - (ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY login_date))::int AS grp
+    FROM user_logins
+    GROUP BY user_id, login_date -- deduplicate same day logins
+)
+SELECT
+    user_id,
+    MIN(login_date) AS streak_start,
+    MAX(login_date) AS streak_end,
+    COUNT(*) AS consecutive_days
+FROM DateGrouped
+GROUP BY user_id, grp
+HAVING COUNT(*) >= 3;</code></pre>
+
+<h3>Problem 4: Delete Duplicate Rows While Keeping the Smallest ID</h3>
+<pre><code class="language-sql">-- Solution 1: Using DELETE with Self-Join
+DELETE FROM customers
+WHERE id IN (
+    SELECT c1.id
+    FROM customers c1
+    INNER JOIN customers c2 ON c1.email = c2.email AND c1.id > c2.id
+);
+
+-- Solution 2: Using CTE with ROW_NUMBER (PostgreSQL / SQL Server)
+WITH Duplicates AS (
+    SELECT id, ROW_NUMBER() OVER (PARTITION BY email ORDER BY id) AS rn
+    FROM customers
+)
+DELETE FROM customers
+WHERE id IN (SELECT id FROM Duplicates WHERE rn > 1);</code></pre>
+
+<h3>Problem 5: Employees Earning More Than Their Immediate Managers</h3>
+<pre><code class="language-sql">SELECT
+    e.name AS Employee,
+    e.salary AS EmployeeSalary,
+    m.name AS Manager,
+    m.salary AS ManagerSalary
+FROM employees e
+INNER JOIN employees m ON e.manager_id = m.id
+WHERE e.salary > m.salary;</code></pre>
+
+<hr/>
+
+<h2>8. Complete SQL Interview Rapid Recall Cheatsheet</h2>
+<ul>
+  <li>✓ <strong>Execution Order:</strong> FROM &rarr; ON &rarr; JOIN &rarr; WHERE &rarr; GROUP BY &rarr; HAVING &rarr; SELECT &rarr; DISTINCT &rarr; ORDER BY &rarr; LIMIT.</li>
+  <li>✓ <strong>WHERE vs HAVING:</strong> WHERE filters raw records before grouping; HAVING filters aggregated calculations ($SUM, COUNT, AVG$).</li>
+  <li>✓ <strong>COUNT(*) vs COUNT(col):</strong> <code>COUNT(*)</code> counts all rows including NULLs; <code>COUNT(col)</code> counts only non-NULL rows.</li>
+  <li>✓ <strong>NULL Comparisons:</strong> Always use <code>IS NULL</code> or <code>IS NOT NULL</code>; <code>col = NULL</code> evaluates to UNKNOWN and never returns true.</li>
+  <li>✓ <strong>UNION vs UNION ALL:</strong> <code>UNION</code> performs an expensive distinct sorting sort to remove duplicates; <code>UNION ALL</code> appends rows immediately in $O(1)$ time.</li>
+  <li>✓ <strong>DENSE_RANK vs RANK:</strong> <code>DENSE_RANK</code> leaves no numerical gaps after ties ($1, 2, 2, 3$); <code>RANK</code> skips numbers ($1, 2, 2, 4$).</li>
+  <li>✓ <strong>COALESCE:</strong> <code>COALESCE(val1, val2, default)</code> returns the first non-NULL expression from left to right.</li>
+  <li>✓ <strong>NULLIF:</strong> <code>NULLIF(val, 0)</code> converts 0 to NULL to prevent division by zero runtime crashes (<code>division by zero</code> error).</li>
+  <li>✓ <strong>TRUNCATE vs DELETE vs DROP:</strong> <code>DELETE</code> is DML (row by row, logged, rollbackable); <code>TRUNCATE</code> is DDL (deallocates pages, instant, resets auto-increment); <code>DROP</code> destroys table structure completely.</li>
+  <li>✓ <strong>B-Tree vs Hash Index:</strong> B-Tree handles range queries ($>, <, BETWEEN$); Hash index only supports exact equality ($=$) lookups.</li>
+</ul>'''
     }
 ]
 
@@ -705,3 +1106,4 @@ for g in guides_seeds:
     print(f"[Seeded Guide] {obj.title}")
 
 print(f"\nProduction seeding completed successfully. Total Guides in DB: {GuideArticle.objects.count()}")
+
