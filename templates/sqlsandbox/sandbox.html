@@ -11,7 +11,7 @@
   :root {
     --sql-bg: #070b14;
     --sql-card: #0d1527;
-    --sql-card-border: rgba(56, 189, 248, 0.16);
+    --sql-card-border: rgba(56, 189, 248, 0.18);
     --sql-accent: #38bdf8;
     --sql-accent-glow: rgba(56, 189, 248, 0.25);
     --sql-green: #10b981;
@@ -30,17 +30,17 @@
 
   .sql-studio-wrapper {
     max-width: 100%;
-    margin: 8px 12px 30px;
+    margin: 10px 16px 40px;
     padding: 0;
   }
 
-  /* Compact Top Header & Control Strip */
+  /* ── COMPACT TOPBAR ── */
   .sql-compact-topbar {
     background: linear-gradient(135deg, #0b1324 0%, #111d35 100%);
     border: 1px solid var(--sql-card-border);
     border-radius: 12px;
     padding: 8px 14px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -53,9 +53,10 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
   }
   .sql-brand-title h1 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
     margin: 0;
     color: #ffffff;
@@ -63,15 +64,19 @@
   }
 
   .dataset-select-compact {
-    background: #1e293b;
+    background: #17233d;
     color: #38bdf8;
-    border: 1px solid #334155;
-    padding: 5px 10px;
+    border: 1px solid #233554;
+    padding: 5px 9px;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
     outline: none;
+    transition: all 0.15s;
+  }
+  .dataset-select-compact:hover {
+    border-color: #38bdf8;
   }
 
   /* Compact Playback Controls */
@@ -86,10 +91,10 @@
     background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: #ffffff;
     border: 1px solid #38bdf8;
-    padding: 6px 12px;
+    padding: 5px 12px;
     border-radius: 6px;
     font-weight: 800;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -97,14 +102,14 @@
     transition: all 0.15s;
   }
   .btn-dbg-start-compact:hover {
-    filter: brightness(1.1);
+    filter: brightness(1.15);
   }
 
   .dbg-btn-compact {
     background: #17233d;
     color: #cbd5e1;
     border: 1px solid #233554;
-    padding: 5px 10px;
+    padding: 5px 9px;
     border-radius: 6px;
     font-size: 11px;
     font-weight: 700;
@@ -123,7 +128,7 @@
     cursor: not-allowed;
   }
 
-  /* Compact Step Banner */
+  /* ── STEP STORY BANNER ── */
   .sql-step-banner-compact {
     background: rgba(13, 21, 39, 0.85);
     border: 1px solid rgba(56, 189, 248, 0.25);
@@ -140,19 +145,19 @@
     gap: 8px;
   }
 
-  /* Logical Pipeline Stage Pills */
+  /* ── DYNAMIC PIPELINE STRIP ── */
   .pipeline-strip-compact {
     display: flex;
-    gap: 4px;
+    gap: 5px;
     flex-wrap: wrap;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   .pipeline-pill {
     font-size: 10px;
     font-weight: 800;
     font-family: monospace;
-    padding: 2px 7px;
+    padding: 3px 8px;
     border-radius: 4px;
     background: #111d35;
     color: #64748b;
@@ -173,11 +178,12 @@
     border-color: rgba(16, 185, 129, 0.3);
   }
 
-  /* High Density Grid Layout (Maximize screen space) */
+  /* ── WORKSPACE 2-COLUMN GRID ── */
   .sql-workspace-grid {
     display: grid;
     grid-template-columns: 260px 1fr;
-    gap: 10px;
+    gap: 12px;
+    align-items: start;
   }
 
   @media (max-width: 1024px) {
@@ -186,7 +192,28 @@
     }
   }
 
-  /* Left Sidebar */
+  /* Sidebar Collapsed Mode */
+  body.sidebar-collapsed .sql-sidebar-card {
+    display: none !important;
+  }
+  body.sidebar-collapsed .sql-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Maximize Table Fullscreen Mode */
+  body.table-maximized-mode .sql-sidebar-card,
+  body.table-maximized-mode .editor-card {
+    display: none !important;
+  }
+  body.table-maximized-mode .sql-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+  body.table-maximized-mode .results-card {
+    min-height: 540px !important;
+    box-shadow: 0 0 35px rgba(56, 189, 248, 0.2);
+  }
+
+  /* ── LEFT SIDEBAR CARD ── */
   .sql-sidebar-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
@@ -194,8 +221,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    height: calc(100vh - 170px);
-    min-height: 520px;
+    height: 600px;
   }
 
   .sidebar-tabs {
@@ -315,7 +341,6 @@
     cursor: pointer;
     transition: all 0.15s;
   }
-
   .challenge-item-card:hover {
     border-color: #38bdf8;
     background: #152442;
@@ -325,11 +350,11 @@
   .diff-badge-Medium { background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
   .diff-badge-Hard { background: rgba(239, 68, 68, 0.2); color: #f87171; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
 
-  /* Right Main Panel: Monaco Editor & Live Results Grid */
+  /* ── RIGHT MAIN PANEL ── */
   .sql-main-panel {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .editor-card {
@@ -353,11 +378,11 @@
   }
 
   #monacoSqlContainer {
-    height: 240px;
+    height: 230px;
     width: 100%;
   }
 
-  /* Monaco Line Execution Highlight (Shown ONLY when executing/stepping) */
+  /* Monaco Active Line Highlight */
   .sql-debug-active-line {
     background: rgba(56, 189, 248, 0.18) !important;
     border-left: 3px solid #38bdf8 !important;
@@ -381,7 +406,7 @@
     100% { transform: translateX(3px); }
   }
 
-  /* Results Card (Expanded for maximum clarity) */
+  /* ── RESULTS CARD ── */
   .results-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
@@ -389,115 +414,8 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 460px);
-    min-height: 280px;
-    transition: all 0.25s ease-in-out;
-  }
-
-  /* Maximize Table Fullscreen Mode: Collapses sidebar and editor */
-  body.table-maximized-mode .sql-sidebar-card,
-  body.table-maximized-mode .editor-card {
-    display: none !important;
-  }
-
-  body.table-maximized-mode .sql-workspace-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  body.table-maximized-mode .results-card {
-    height: calc(100vh - 190px) !important;
-    min-height: 520px;
-    box-shadow: 0 0 35px rgba(56, 189, 248, 0.15);
-    border-color: rgba(56, 189, 248, 0.4);
-  }
-
-  /* Sidebar Collapsed Mode: Completely removes left tables bar and expands editor & results to 100% width */
-  body.sidebar-collapsed .sql-sidebar-card {
-    display: none !important;
-  }
-
-  body.sidebar-collapsed .sql-workspace-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* ── STUDIO THEMES ── */
-  body.theme-dracula {
-    --sql-bg: #1e1f29;
-    --sql-card: #282a36;
-    --sql-card-border: rgba(189, 147, 249, 0.25);
-    --sql-accent: #bd93f9;
-    --sql-accent-glow: rgba(189, 147, 249, 0.3);
-  }
-  body.theme-dracula .sql-data-table th { background: #343746; color: #ff79c6; }
-  body.theme-dracula .sql-compact-topbar { background: linear-gradient(135deg, #1e1f29 0%, #282a36 100%); border-color: rgba(189, 147, 249, 0.3); }
-
-  body.theme-monokai {
-    --sql-bg: #1e1f1c;
-    --sql-card: #272822;
-    --sql-card-border: rgba(230, 219, 116, 0.25);
-    --sql-accent: #a6e22e;
-    --sql-accent-glow: rgba(166, 226, 46, 0.3);
-  }
-  body.theme-monokai .sql-data-table th { background: #3e3d32; color: #e6db74; }
-  body.theme-monokai .sql-compact-topbar { background: linear-gradient(135deg, #1e1f1c 0%, #272822 100%); border-color: rgba(230, 219, 116, 0.3); }
-
-  body.theme-onedark {
-    --sql-bg: #181a1f;
-    --sql-card: #21252b;
-    --sql-card-border: rgba(97, 175, 239, 0.25);
-    --sql-accent: #61afef;
-    --sql-accent-glow: rgba(97, 175, 239, 0.3);
-  }
-  body.theme-onedark .sql-data-table th { background: #2c313a; color: #61afef; }
-  body.theme-onedark .sql-compact-topbar { background: linear-gradient(135deg, #181a1f 0%, #21252b 100%); border-color: rgba(97, 175, 239, 0.3); }
-
-  body.theme-matrix {
-    --sql-bg: #050a06;
-    --sql-card: #0c1810;
-    --sql-card-border: rgba(16, 185, 129, 0.3);
-    --sql-accent: #10b981;
-    --sql-accent-glow: rgba(16, 185, 129, 0.3);
-  }
-  body.theme-matrix .sql-data-table th { background: #122418; color: #34d399; }
-  body.theme-matrix .sql-compact-topbar { background: linear-gradient(135deg, #050a06 0%, #0c1810 100%); border-color: rgba(16, 185, 129, 0.3); }
-
-  body.theme-github_light {
-    --sql-bg: #f6f8fa;
-    --sql-card: #ffffff;
-    --sql-card-border: #d0d7de;
-    --sql-text: #1f2328;
-    --sql-muted: #57606a;
-    --sql-accent: #0969da;
-    --sql-accent-glow: rgba(9, 105, 218, 0.2);
-  }
-  body.theme-github_light .sql-compact-topbar { background: #ffffff; border-color: #d0d7de; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  body.theme-github_light .sql-brand-title h1 { color: #1f2328; }
-  body.theme-github_light .sql-data-table th { background: #f6f8fa; color: #0969da; border-color: #d0d7de; }
-  body.theme-github_light .sql-data-table td { color: #1f2328; border-color: #d0d7de; }
-  body.theme-github_light .sql-data-table tr:nth-child(even) { background: #f8fafc; }
-  body.theme-github_light .results-header-tabs,
-  body.theme-github_light .editor-toolbar,
-  body.theme-github_light .sidebar-tabs { background: #f6f8fa; border-color: #d0d7de; }
-
-  .btn-maximize-toggle {
-    background: #17233d;
-    color: #38bdf8;
-    border: 1px solid #233554;
-    padding: 3px 9px;
-    border-radius: 5px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: all 0.15s;
-    margin-left: 6px;
-  }
-  .btn-maximize-toggle:hover {
-    background: #233554;
-    color: #ffffff;
-    border-color: #38bdf8;
+    min-height: 350px;
+    transition: all 0.2s ease-in-out;
   }
 
   .results-header-tabs {
@@ -538,9 +456,30 @@
     gap: 8px;
   }
 
+  .btn-maximize-toggle {
+    background: #17233d;
+    color: #38bdf8;
+    border: 1px solid #233554;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+  }
+  .btn-maximize-toggle:hover {
+    background: #233554;
+    color: #ffffff;
+    border-color: #38bdf8;
+  }
+
   .results-body {
     padding: 10px;
-    overflow: auto;
+    overflow-y: auto;
+    max-height: 480px;
     flex: 1;
   }
 
@@ -584,22 +523,10 @@
     font-size: 10px;
   }
 
-  .row-badge-kept {
-    background: rgba(16, 185, 129, 0.18);
-    color: #34d399;
-  }
-  .row-badge-joined {
-    background: rgba(168, 85, 247, 0.18);
-    color: #c084fc;
-  }
-  .row-badge-projected {
-    background: rgba(56, 189, 248, 0.18);
-    color: #38bdf8;
-  }
-  .row-badge-sorted {
-    background: rgba(236, 72, 153, 0.18);
-    color: #f472b6;
-  }
+  .row-badge-kept { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+  .row-badge-joined { background: rgba(168, 85, 247, 0.18); color: #c084fc; }
+  .row-badge-projected { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
+  .row-badge-sorted { background: rgba(236, 72, 153, 0.18); color: #f472b6; }
 
   /* Error Banner */
   .sql-error-alert {
@@ -624,142 +551,79 @@
     line-height: 1.6;
   }
 
-  /* ── Mobile Advisory / Blocker Modal ── */
-  .mobile-blocker-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(7, 11, 20, 0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
+  /* ── STUDIO THEMES ── */
+  body.theme-dracula {
+    --sql-bg: #1e1f29;
+    --sql-card: #282a36;
+    --sql-card-border: rgba(189, 147, 249, 0.25);
+    --sql-accent: #bd93f9;
   }
+  body.theme-dracula .sql-data-table th { background: #343746; color: #ff79c6; }
+  body.theme-dracula .sql-compact-topbar { background: linear-gradient(135deg, #1e1f29 0%, #282a36 100%); border-color: rgba(189, 147, 249, 0.3); }
 
-  .mobile-blocker-card {
-    background: linear-gradient(145deg, #0f172a 0%, #17233d 100%);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 16px;
-    padding: 24px 20px;
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.2);
+  body.theme-monokai {
+    --sql-bg: #1e1f1c;
+    --sql-card: #272822;
+    --sql-card-border: rgba(230, 219, 116, 0.25);
+    --sql-accent: #a6e22e;
   }
+  body.theme-monokai .sql-data-table th { background: #3e3d32; color: #e6db74; }
+  body.theme-monokai .sql-compact-topbar { background: linear-gradient(135deg, #1e1f1c 0%, #272822 100%); border-color: rgba(230, 219, 116, 0.3); }
 
-  .mobile-blocker-icon {
-    font-size: 40px;
-    margin-bottom: 12px;
-    display: inline-block;
-    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+  body.theme-onedark {
+    --sql-bg: #181a1f;
+    --sql-card: #21252b;
+    --sql-card-border: rgba(97, 175, 239, 0.25);
+    --sql-accent: #61afef;
   }
+  body.theme-onedark .sql-data-table th { background: #2c313a; color: #61afef; }
+  body.theme-onedark .sql-compact-topbar { background: linear-gradient(135deg, #181a1f 0%, #21252b 100%); border-color: rgba(97, 175, 239, 0.3); }
 
-  .btn-blocker-continue {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: #ffffff;
-    border: 1px solid #38bdf8;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.15s;
-    width: 100%;
+  body.theme-matrix {
+    --sql-bg: #050a06;
+    --sql-card: #0c1810;
+    --sql-card-border: rgba(16, 185, 129, 0.3);
+    --sql-accent: #10b981;
   }
-  .btn-blocker-continue:hover {
-    filter: brightness(1.1);
-  }
+  body.theme-matrix .sql-data-table th { background: #122418; color: #34d399; }
+  body.theme-matrix .sql-compact-topbar { background: linear-gradient(135deg, #050a06 0%, #0c1810 100%); border-color: rgba(16, 185, 129, 0.3); }
 
-  .btn-blocker-copy {
-    background: #1e293b;
-    color: #cbd5e1;
-    border: 1px solid #334155;
-    padding: 9px 16px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    width: 100%;
+  body.theme-github_light {
+    --sql-bg: #f6f8fa;
+    --sql-card: #ffffff;
+    --sql-card-border: #d0d7de;
+    --sql-text: #1f2328;
+    --sql-muted: #57606a;
+    --sql-accent: #0969da;
   }
-  .btn-blocker-copy:hover {
-    background: #28374d;
-    color: #ffffff;
-  }
-
-  @media (max-width: 768px) {
-    .sql-compact-topbar {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    .sql-brand-title {
-      justify-content: space-between;
-    }
-    .sql-playback-group {
-      overflow-x: auto;
-      white-space: nowrap;
-      padding-bottom: 4px;
-    }
-    .sql-sidebar-card {
-      height: 220px;
-      min-height: 180px;
-    }
-    #monacoSqlContainer {
-      height: 200px;
-    }
-    .results-card {
-      height: auto;
-      min-height: 320px;
-    }
-  }
+  body.theme-github_light .sql-compact-topbar { background: #ffffff; border-color: #d0d7de; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  body.theme-github_light .sql-brand-title h1 { color: #1f2328; }
+  body.theme-github_light .sql-data-table th { background: #f6f8fa; color: #0969da; border-color: #d0d7de; }
+  body.theme-github_light .sql-data-table td { color: #1f2328; border-color: #d0d7de; }
+  body.theme-github_light .sql-data-table tr:nth-child(even) { background: #f8fafc; }
+  body.theme-github_light .results-header-tabs,
+  body.theme-github_light .editor-toolbar,
+  body.theme-github_light .sidebar-tabs { background: #f6f8fa; border-color: #d0d7de; }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Mobile Experience Advisory / Blocker Modal -->
-<div id="mobileBlockerModal" class="mobile-blocker-overlay" style="display: none;">
-  <div class="mobile-blocker-card">
-    <div class="mobile-blocker-icon">💻</div>
-    <h3 style="margin: 0 0 8px; color: #ffffff; font-size: 17px; font-weight: 800;">
-      Desktop Screen Recommended
-    </h3>
-    <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; margin: 0 0 14px;">
-      The <strong>SQL Visual Debugger &amp; Studio</strong> is engineered for multi-column relational data grids, Monaco code editor, and AST execution tracing that are best viewed on a desktop or laptop display.
-    </p>
-    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; font-size: 11px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; text-align: left;">
-      <span>💡</span>
-      <span>You can still continue on mobile with touch-scrollable tables and step execution.</span>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <button class="btn-blocker-continue" onclick="dismissMobileBlocker()">
-        ⚡ Continue on Mobile Anyway
-      </button>
-      <button class="btn-blocker-copy" onclick="copyStudioLink()">
-        📋 Copy Link for Desktop
-      </button>
-    </div>
-  </div>
-</div>
-
 <div class="sql-studio-wrapper">
   
   <!-- Compact Unified Header & Controls Strip -->
   <div class="sql-compact-topbar">
     <div class="sql-brand-title">
       <h1>⚡ SQL Debugger Studio</h1>
-      <select id="datasetSelector" class="dataset-select-compact" onchange="changeActiveDataset(this.value)">
+      
+      <!-- Database Selector -->
+      <select id="datasetSelector" class="dataset-select-compact" onchange="changeActiveDataset(this.value)" title="Choose Active Database Schema">
         {% for d in datasets %}
         <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
         {% endfor %}
       </select>
 
       <!-- Theme Switcher -->
-      <select id="themeSelector" class="dataset-select-compact" style="background: #17233d; color: #fbbf24; border-color: #334155; margin-left: 4px;" onchange="changeTheme(this.value)" title="Choose Editor & Studio Theme">
+      <select id="themeSelector" class="dataset-select-compact" style="color: #fbbf24;" onchange="changeTheme(this.value)" title="Choose Theme">
         <option value="cyberpunk" selected>🎨 Cyberpunk Dark</option>
         <option value="dracula">🧛 Dracula Vampire</option>
         <option value="monokai">🦊 Monokai Pro</option>
@@ -787,8 +651,8 @@
         Step 0 / 0
       </span>
 
-      <!-- Remove/Toggle Left Tables Sidebar Button -->
-      <button id="btnToggleSidebar" class="dbg-btn-compact" style="background: #17233d; border-color: #334155; color: #38bdf8; margin-left: 6px;" onclick="toggleSidebar()" title="Hide / Show Left Tables Bar (Expand Debugger to Full Width)">
+      <!-- Toggle Left Tables Sidebar Button -->
+      <button id="btnToggleSidebar" class="dbg-btn-compact" style="color: #38bdf8; margin-left: 4px;" onclick="toggleSidebar()" title="Toggle Tables / Schema Sidebar (Full Width)">
         <span id="sidebarToggleIcon">◀</span> <span id="sidebarToggleText">Hide Tables</span>
       </button>
     </div>
@@ -804,7 +668,7 @@
     </span>
   </div>
 
-  <!-- Compact Dynamic Pipeline Strip (Populated strictly based on query clauses) -->
+  <!-- Dynamic Pipeline Strip (Populated strictly based on query clauses) -->
   <div class="pipeline-strip-compact" id="pipelinePillsWrap">
     <span class="pipeline-pill active">1. FROM</span>
     <span class="pipeline-pill">2. WHERE</span>
@@ -898,7 +762,7 @@
             <span id="statRowCount">0 rows</span>
             <span>&bull;</span>
             <span id="statExecTime">0.00 ms</span>
-            <button id="btnMaximizeTable" class="btn-maximize-toggle" onclick="toggleMaximizeTable()" title="Maximize / Fullscreen Result Table View (Collapse Editor & Sidebar)">
+            <button id="btnMaximizeTable" class="btn-maximize-toggle" onclick="toggleMaximizeTable()" title="Maximize Result Table View (Collapse Editor & Sidebar)">
               <span id="maxTableIcon">⛶</span> <span id="maxTableText">Maximize Table</span>
             </button>
           </div>
@@ -946,8 +810,8 @@
             <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
               <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">Window Ranking Functions</h4>
               <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
-                ROW_NUMBER() OVER (PARTITION BY d ORDER BY sal DESC)<br/>
-                DENSE_RANK() OVER (PARTITION BY d ORDER BY sal DESC)
+                ROW_NUMBER() OVER (PARTITION BY dept ORDER BY sal DESC)<br/>
+                DENSE_RANK() OVER (PARTITION BY dept ORDER BY sal DESC)
               </code>
             </div>
             <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
@@ -1012,6 +876,7 @@
   // Configure Monaco AMD Loader
   require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
 
+  require(['vs/editor/editor.main'], function() {
     // 1. Cyberpunk Dark (Default)
     monaco.editor.defineTheme('cyberpunk', {
       base: 'vs-dark',
@@ -1174,7 +1039,6 @@
     });
 
     fetchSchema(activeDatasetId);
-    checkMobileAdvisory();
   });
 
   function clearExecutionHighlight() {
@@ -1885,7 +1749,7 @@
       if (btn) {
         btn.style.background = '#17233d';
         btn.style.color = '#38bdf8';
-        btn.style.borderColor = '#334155';
+        btn.style.borderColor = '#233554';
       }
     }
 
@@ -1900,39 +1764,6 @@
       toggleMaximizeTable();
     }
   });
-
-  // ── MOBILE ADVISORY & BLOCKER LOGIC ──
-  function checkMobileAdvisory() {
-    if (window.innerWidth <= 768) {
-      const isDismissed = sessionStorage.getItem('dismiss_sql_mobile_blocker');
-      if (!isDismissed) {
-        const modal = document.getElementById('mobileBlockerModal');
-        if (modal) modal.style.display = 'flex';
-      }
-    }
-  }
-
-  function dismissMobileBlocker() {
-    sessionStorage.setItem('dismiss_sql_mobile_blocker', 'true');
-    const modal = document.getElementById('mobileBlockerModal');
-    if (modal) {
-      modal.style.opacity = '0';
-      modal.style.transition = 'opacity 0.2s';
-      setTimeout(() => { modal.style.display = 'none'; }, 200);
-    }
-  }
-
-  function copyStudioLink() {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        alert("✅ Link copied! Open this URL on your Desktop browser.");
-      }).catch(() => {
-        prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
-      });
-    } else {
-      prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
-    }
-  }
 
   // ── THEME SWITCHER ENGINE ──
   function changeTheme(themeName) {
@@ -1951,8 +1782,5 @@
     const sel = document.getElementById('themeSelector');
     if (sel) sel.value = themeName;
   }
-
-  // Check on load
-  window.addEventListener('DOMContentLoaded', checkMobileAdvisory);
 </script>
 {% endblock %}
