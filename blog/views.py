@@ -162,3 +162,13 @@ def blog_create_view(request):
     }
     return render(request, 'blog/create.html', context)
 
+
+def api_blog_like_view(request, slug):
+    """AJAX endpoint for Medium-style claps/likes."""
+    if request.method == 'POST':
+        post = get_object_or_404(BlogPost, slug=slug, is_published=True)
+        BlogPost.objects.filter(pk=post.pk).update(likes_count=post.likes_count + 1)
+        post.refresh_from_db()
+        return JsonResponse({'success': True, 'likes_count': post.likes_count})
+    return JsonResponse({'error': 'POST required'}, status=405)
+

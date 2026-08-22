@@ -5,7 +5,7 @@ import urllib.request
 import ssl
 import hashlib
 from django.conf import settings
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
@@ -110,11 +110,12 @@ def index_view(request):
     sync_expired_jobs()
     videos = get_cached_youtube_videos()
     initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:6]
-    recent_guides = GuideArticle.objects.filter(status='PUBLISHED').order_by('-created_at')[:3]
+    from blog.models import BlogPost
+    recent_posts = BlogPost.objects.filter(is_published=True).select_related('category').order_by('-published_at')[:3]
     return render(request, 'content/home.html', {
         'youtube_videos': videos,
         'initial_jobs': initial_jobs,
-        'recent_guides': recent_guides,
+        'recent_posts': recent_posts,
     })
 
 def about_view(request):
@@ -159,26 +160,15 @@ def ensure_guides_seeded():
         pass
 
 def guides_list_view(request):
-    ensure_guides_seeded()
-    topic = request.GET.get('topic', '').strip()
-    qs = GuideArticle.objects.filter(status='PUBLISHED')
+    """Seamlessly redirects legacy /guides/ traffic to the new Tech Blog."""
+    topic = request.GET.get('topic')
     if topic:
-        qs = qs.filter(topic=topic)
-    return render(request, 'content/guides_list.html', {
-        'guides': qs,
-        'active_topic': topic,
-    })
+        return redirect(f'/blog/?search={topic}', permanent=False)
+    return redirect('/blog/', permanent=False)
 
 def guide_detail_view(request, slug):
-    ensure_guides_seeded()
-    guide = get_object_or_404(GuideArticle, slug=slug, status='PUBLISHED')
-    GuideArticle.objects.filter(pk=guide.pk).update(views_count=guide.views_count + 1)
-    guide.views_count += 1
-    related_guides = GuideArticle.objects.filter(status='PUBLISHED').exclude(pk=guide.pk).order_by('-created_at')[:3]
-    return render(request, 'content/guide_detail.html', {
-        'guide': guide,
-        'related_guides': related_guides,
-    })
+    """Seamlessly redirects legacy /guides/<slug>/ traffic to the new Tech Blog."""
+    return redirect(f'/blog/{slug}/', permanent=False)
 
 
 def sitemap_xml_view(request):

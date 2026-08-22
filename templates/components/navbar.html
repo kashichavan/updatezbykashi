@@ -29,11 +29,11 @@
         <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed" width="16" height="16" decoding="async">
         <span>Feed</span>
       </a>
-      
-      <a href="/guides/" class="{% if '/guides' in request.path %}active{% endif %}">
-        <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="Guides" width="16" height="16" decoding="async">
-        <span class="nav-label-long">Guides &amp; Prep</span>
-        <span class="nav-label-short">Guides</span>
+
+      <a href="/blog/" class="{% if '/blog' in request.path %}active{% endif %}">
+        <span>📰</span>
+        <span class="nav-label-long">Tech Blog</span>
+        <span class="nav-label-short">Blog</span>
       </a>
 
       <a href="/learn/" class="{% if '/learn' in request.path %}active{% endif %}">
@@ -52,12 +52,6 @@
         <img src="{% static 'images/icon-company.png' %}" class="nav-icon" alt="SQL Debugger" width="16" height="16" decoding="async">
         <span class="nav-label-long">SQL Debugger</span>
         <span class="nav-label-short">SQL</span>
-      </a>
-
-      <a href="/blog/" class="{% if '/blog' in request.path %}active{% endif %}">
-        <span>📰</span>
-        <span class="nav-label-long">Tech Blog</span>
-        <span class="nav-label-short">Blog</span>
       </a>
       
       <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
@@ -105,10 +99,10 @@
           <span class="d-tag">ALL</span>
         </a>
 
-        <a href="/guides/" class="drawer-link {% if '/guides' in request.path %}active{% endif %}">
+        <a href="/blog/" class="drawer-link {% if '/blog' in request.path %}active{% endif %}">
           <span style="display: flex; align-items: center; gap: 8px;">
-            <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="Guides" width="18" height="18" decoding="async">
-            Career &amp; Python Guides
+            <span>📰</span>
+            Tech &amp; Coding Blog
           </span>
           <span class="d-tag" style="background:#eff6ff; color:#2563eb;">NEW</span>
         </a>
