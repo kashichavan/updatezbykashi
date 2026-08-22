@@ -26,7 +26,6 @@
     background-color: var(--sql-bg);
     color: var(--sql-text);
     overflow-x: hidden;
-    transition: background-color 0.2s;
   }
 
   .sql-studio-wrapper {
@@ -156,43 +155,31 @@
     gap: 8px;
   }
 
-  /* Dynamic Interactive Pipeline Stage Strip */
+  /* Logical Pipeline Stage Pills */
   .pipeline-strip-compact {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     flex-wrap: wrap;
     margin-bottom: 8px;
-    align-items: center;
   }
 
   .pipeline-pill {
     font-size: 10px;
     font-weight: 800;
     font-family: monospace;
-    padding: 3px 9px;
+    padding: 2px 7px;
     border-radius: 4px;
     background: #111d35;
     color: #64748b;
     border: 1px solid #1e293b;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .pipeline-pill:hover {
-    border-color: #38bdf8;
-    color: #cbd5e1;
-    transform: translateY(-1px);
+    transition: all 0.2s;
   }
 
   .pipeline-pill.active {
     background: rgba(56, 189, 248, 0.2);
     color: #38bdf8;
     border-color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-    transform: scale(1.02);
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
   }
 
   .pipeline-pill.passed {
@@ -201,41 +188,7 @@
     border-color: rgba(16, 185, 129, 0.3);
   }
 
-  /* Quick Query Templates Chips Bar */
-  .query-chips-bar {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding: 4px 0 8px;
-    scrollbar-width: none;
-  }
-  .query-chips-bar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .query-chip {
-    background: #111d35;
-    border: 1px solid #1e293b;
-    color: #94a3b8;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .query-chip:hover {
-    background: #17233d;
-    color: #38bdf8;
-    border-color: #38bdf8;
-    transform: translateY(-1px);
-  }
-
-  /* High Density Grid Layout */
+  /* High Density Grid Layout (Maximize screen space for data & code) */
   .sql-workspace-grid {
     display: grid;
     grid-template-columns: 220px 1fr;
@@ -248,7 +201,7 @@
     }
   }
 
-  /* Left Sidebar */
+  /* Left Sidebar (Compact & Collapsible) */
   .sql-sidebar-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
@@ -260,7 +213,7 @@
     min-height: 520px;
   }
 
-  /* Sidebar Collapsed Mode */
+  /* Sidebar Collapsed Mode: Expands editor & results across 100% screen width */
   body.sidebar-collapsed .sql-sidebar-card {
     display: none !important;
   }
@@ -276,8 +229,8 @@
 
   .sidebar-tab-btn {
     flex: 1;
-    padding: 8px 3px;
-    font-size: 10px;
+    padding: 8px 4px;
+    font-size: 11px;
     font-weight: 700;
     color: var(--sql-muted);
     background: transparent;
@@ -385,6 +338,7 @@
     cursor: pointer;
     transition: all 0.15s;
   }
+
   .challenge-item-card:hover {
     border-color: #38bdf8;
     background: #152442;
@@ -394,14 +348,14 @@
   .diff-badge-Medium { background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
   .diff-badge-Hard { background: rgba(239, 68, 68, 0.2); color: #f87171; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
 
-  /* Right Main Panel */
+  /* Right Main Panel: Monaco Editor & Live Results Grid */
   .sql-main-panel {
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
 
-  /* Editor Card */
+  /* Editor Card (Compact 175px height so table gets maximum vertical room) */
   .editor-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
@@ -423,11 +377,11 @@
   }
 
   #monacoSqlContainer {
-    height: 180px;
+    height: 175px;
     width: 100%;
   }
 
-  /* Monaco Line Execution Highlight */
+  /* Monaco Line Execution Highlight (Shown ONLY when executing/stepping) */
   .sql-debug-active-line {
     background: rgba(56, 189, 248, 0.18) !important;
     border-left: 3px solid #38bdf8 !important;
@@ -451,7 +405,7 @@
     100% { transform: translateX(3px); }
   }
 
-  /* Results Card */
+  /* Results Card (Expanded to fit all 14 rows comfortably with zero vertical scroll) */
   .results-card {
     background: var(--sql-card);
     border: 1px solid var(--sql-card-border);
@@ -464,10 +418,9 @@
     transition: all 0.25s ease-in-out;
   }
 
-  /* Maximize Table Fullscreen Mode */
+  /* Maximize Table Fullscreen Mode: Collapses sidebar and editor */
   body.table-maximized-mode .sql-sidebar-card,
-  body.table-maximized-mode .editor-card,
-  body.table-maximized-mode .query-chips-bar {
+  body.table-maximized-mode .editor-card {
     display: none !important;
   }
 
@@ -510,8 +463,6 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid #1e293b;
-    flex-wrap: wrap;
-    gap: 6px;
   }
 
   .tab-group {
@@ -541,23 +492,6 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .table-search-input {
-    background: #111d35;
-    border: 1px solid #233554;
-    color: #cbd5e1;
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    outline: none;
-    width: 110px;
-    transition: all 0.15s;
-  }
-  .table-search-input:focus {
-    border-color: #38bdf8;
-    width: 140px;
   }
 
   .results-body {
@@ -566,7 +500,7 @@
     flex: 1;
   }
 
-  /* Data Table */
+  /* Data Table (Compact, Crisp, High-Density for 22-column JOIN datasets) */
   .sql-data-table {
     width: 100%;
     border-collapse: collapse;
@@ -585,12 +519,6 @@
     top: 0;
     z-index: 10;
     white-space: nowrap;
-    user-select: none;
-    cursor: pointer;
-  }
-  .sql-data-table th:hover {
-    background: #1b2d52;
-    color: #ffffff;
   }
 
   .sql-data-table td {
@@ -598,12 +526,6 @@
     border: 1px solid #1e293b;
     color: #e2e8f0;
     white-space: nowrap;
-    cursor: pointer;
-    transition: background 0.1s;
-  }
-
-  .sql-data-table td:hover {
-    background: rgba(56, 189, 248, 0.15) !important;
   }
 
   .sql-data-table tr:nth-child(even) {
@@ -620,12 +542,24 @@
     font-size: 10px;
   }
 
-  .row-badge-kept { background: rgba(16, 185, 129, 0.18); color: #34d399; }
-  .row-badge-joined { background: rgba(168, 85, 247, 0.18); color: #c084fc; }
-  .row-badge-projected { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
-  .row-badge-sorted { background: rgba(236, 72, 153, 0.18); color: #f472b6; }
+  .row-badge-kept {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+  }
+  .row-badge-joined {
+    background: rgba(168, 85, 247, 0.18);
+    color: #c084fc;
+  }
+  .row-badge-projected {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+  }
+  .row-badge-sorted {
+    background: rgba(236, 72, 153, 0.18);
+    color: #f472b6;
+  }
 
-  /* Error Alert */
+  /* Error Banner */
   .sql-error-alert {
     background: rgba(239, 68, 68, 0.15);
     border: 1px solid rgba(239, 68, 68, 0.4);
@@ -648,88 +582,127 @@
     line-height: 1.6;
   }
 
-  /* Floating Toast Notification */
-  .sql-toast {
+  /* ── Mobile Advisory / Blocker Modal ── */
+  .mobile-blocker-overlay {
     position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: #0284c7;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(7, 11, 20, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .mobile-blocker-card {
+    background: linear-gradient(145deg, #0f172a 0%, #17233d 100%);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 16px;
+    padding: 24px 20px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(56, 189, 248, 0.2);
+  }
+
+  .mobile-blocker-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: inline-block;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+  }
+
+  .btn-blocker-continue {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     color: #ffffff;
-    font-size: 11px;
+    border: 1px solid #38bdf8;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .btn-blocker-continue:hover {
+    filter: brightness(1.1);
+  }
+
+  .btn-blocker-copy {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 12px;
     font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    z-index: 9999;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    pointer-events: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
   }
-  .sql-toast.show {
-    opacity: 1;
-    transform: translateY(0);
+  .btn-blocker-copy:hover {
+    background: #28374d;
+    color: #ffffff;
   }
 
-  /* Themes */
-  body.theme-dracula {
-    --sql-bg: #1e1f29;
-    --sql-card: #282a36;
-    --sql-card-border: rgba(189, 147, 249, 0.25);
-    --sql-accent: #bd93f9;
+  @media (max-width: 768px) {
+    .sql-compact-topbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .sql-brand-title {
+      justify-content: space-between;
+    }
+    .sql-playback-group {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 4px;
+    }
+    .sql-sidebar-card {
+      height: 220px;
+      min-height: 180px;
+    }
+    #monacoSqlContainer {
+      height: 200px;
+    }
+    .results-card {
+      height: auto;
+      min-height: 320px;
+    }
   }
-  body.theme-dracula .sql-data-table th { background: #343746; color: #ff79c6; }
-  body.theme-dracula .sql-compact-topbar { background: linear-gradient(135deg, #1e1f29 0%, #282a36 100%); border-color: rgba(189, 147, 249, 0.3); }
-
-  body.theme-monokai {
-    --sql-bg: #1e1f1c;
-    --sql-card: #272822;
-    --sql-card-border: rgba(230, 219, 116, 0.25);
-    --sql-accent: #a6e22e;
-  }
-  body.theme-monokai .sql-data-table th { background: #3e3d32; color: #e6db74; }
-  body.theme-monokai .sql-compact-topbar { background: linear-gradient(135deg, #1e1f1c 0%, #272822 100%); border-color: rgba(230, 219, 116, 0.3); }
-
-  body.theme-onedark {
-    --sql-bg: #181a1f;
-    --sql-card: #21252b;
-    --sql-card-border: rgba(97, 175, 239, 0.25);
-    --sql-accent: #61afef;
-  }
-  body.theme-onedark .sql-data-table th { background: #2c313a; color: #61afef; }
-  body.theme-onedark .sql-compact-topbar { background: linear-gradient(135deg, #181a1f 0%, #21252b 100%); border-color: rgba(97, 175, 239, 0.3); }
-
-  body.theme-matrix {
-    --sql-bg: #050a06;
-    --sql-card: #0c1810;
-    --sql-card-border: rgba(16, 185, 129, 0.3);
-    --sql-accent: #10b981;
-  }
-  body.theme-matrix .sql-data-table th { background: #122418; color: #34d399; }
-  body.theme-matrix .sql-compact-topbar { background: linear-gradient(135deg, #050a06 0%, #0c1810 100%); border-color: rgba(16, 185, 129, 0.3); }
-
-  body.theme-github_light {
-    --sql-bg: #f6f8fa;
-    --sql-card: #ffffff;
-    --sql-card-border: #d0d7de;
-    --sql-text: #1f2328;
-    --sql-muted: #57606a;
-    --sql-accent: #0969da;
-  }
-  body.theme-github_light .sql-compact-topbar { background: #ffffff; border-color: #d0d7de; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  body.theme-github_light .sql-brand-title h1 { color: #1f2328; }
-  body.theme-github_light .sql-data-table th { background: #f6f8fa; color: #0969da; border-color: #d0d7de; }
-  body.theme-github_light .sql-data-table td { color: #1f2328; border-color: #d0d7de; }
-  body.theme-github_light .sql-data-table tr:nth-child(even) { background: #f8fafc; }
-  body.theme-github_light .results-header-tabs,
-  body.theme-github_light .editor-toolbar,
-  body.theme-github_light .sidebar-tabs { background: #f6f8fa; border-color: #d0d7de; }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Floating Toast Notification -->
-<div id="sqlToast" class="sql-toast">✅ Value Copied!</div>
+<!-- Mobile Experience Advisory / Blocker Modal -->
+<div id="mobileBlockerModal" class="mobile-blocker-overlay" style="display: none;">
+  <div class="mobile-blocker-card">
+    <div class="mobile-blocker-icon">💻</div>
+    <h3 style="margin: 0 0 8px; color: #ffffff; font-size: 17px; font-weight: 800;">
+      Desktop Screen Recommended
+    </h3>
+    <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; margin: 0 0 14px;">
+      The <strong>SQL Visual Debugger &amp; Studio</strong> is engineered for multi-column relational data grids, Monaco code editor, and AST execution tracing that are best viewed on a desktop or laptop display.
+    </p>
+    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; font-size: 11px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; text-align: left;">
+      <span>💡</span>
+      <span>You can still continue on mobile with touch-scrollable tables and step execution.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button class="btn-blocker-continue" onclick="dismissMobileBlocker()">
+        ⚡ Continue on Mobile Anyway
+      </button>
+      <button class="btn-blocker-copy" onclick="copyStudioLink()">
+        📋 Copy Link for Desktop
+      </button>
+    </div>
+  </div>
+</div>
 
 <div class="sql-studio-wrapper">
   
@@ -737,22 +710,10 @@
   <div class="sql-compact-topbar">
     <div class="sql-brand-title">
       <h1>⚡ SQL Debugger Studio</h1>
-      
-      <!-- Database Schema Selector -->
-      <select id="datasetSelector" class="dataset-select-compact" onchange="changeActiveDataset(this.value)" title="Choose Active Database Schema">
+      <select id="datasetSelector" class="dataset-select-compact" onchange="changeActiveDataset(this.value)">
         {% for d in datasets %}
         <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
         {% endfor %}
-      </select>
-
-      <!-- Theme Switcher -->
-      <select id="themeSelector" class="dataset-select-compact" style="color: #fbbf24;" onchange="changeTheme(this.value)" title="Choose Studio Theme">
-        <option value="cyberpunk" selected>🎨 Cyberpunk Dark</option>
-        <option value="dracula">🧛 Dracula Vampire</option>
-        <option value="monokai">🦊 Monokai Pro</option>
-        <option value="onedark">🌃 One Dark Pro</option>
-        <option value="matrix">🌲 Matrix Emerald</option>
-        <option value="github_light">☀️ GitHub Light</option>
       </select>
     </div>
 
@@ -770,7 +731,7 @@
       <!-- Slider & Step Tag -->
       <input type="range" id="timelineSlider" min="0" max="0" value="0"
              style="width: 85px; cursor: pointer;" oninput="goToStep(parseInt(this.value))" disabled>
-      <span id="stepBadge" style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace; min-width: 65px; text-align: center;">
+      <span id="stepBadge" style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace;">
         Step 0 / 0
       </span>
 
@@ -781,22 +742,10 @@
     </div>
   </div>
 
-  <!-- Dynamic Query Chips Bar (Quick Presets) -->
-  <div class="query-chips-bar" id="quickQueryChips">
-    <span class="query-chip" onclick="loadQuickChip('emp_dept_join')">👑 3-Table Multi-JOIN</span>
-    <span class="query-chip" onclick="loadQuickChip('where_filter')">🔍 Filter Sal &gt; 2000</span>
-    <span class="query-chip" onclick="loadQuickChip('group_by_having')">📊 Department Payroll &amp; Avg</span>
-    <span class="query-chip" onclick="loadQuickChip('self_join')">👑 Manager Hierarchy (Self-JOIN)</span>
-    <span class="query-chip" onclick="loadQuickChip('window_rank')">🔀 Window DENSE_RANK</span>
-    <span class="query-chip" onclick="loadQuickChip('cte_query')">🧩 High Earners CTE</span>
-    <span class="query-chip" onclick="loadQuickChip('subquery')">🎯 Subquery: Above Average</span>
-    <span class="query-chip" onclick="loadQuickChip('limit_offset')">✂️ Top 5 Earners</span>
-  </div>
-
   <!-- Compact AI Step Story Banner -->
   <div id="sqlStepStoryBanner" class="sql-step-banner-compact">
     <span id="sqlStepStoryText">
-      💡 <strong>SQL Debugger:</strong> Tracing query execution...
+      💡 <strong>SQL Debugger:</strong> Click <strong>"🚀 Start SQL Debugger"</strong> to trace your query through each logical execution phase.
     </span>
     <span id="currentPhaseBadge" style="font-size: 10px; font-weight: 800; font-family: monospace; background: rgba(56,189,248,0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">
       READY
@@ -818,7 +767,6 @@
     <div class="sql-sidebar-card">
       <div class="sidebar-tabs">
         <button id="btnTabSchema" class="sidebar-tab-btn active" onclick="switchSidebarTab('schema')">🗂️ Tables</button>
-        <button id="btnTabQueries" class="sidebar-tab-btn" onclick="switchSidebarTab('queries')">💡 Queries</button>
         <button id="btnTabChallenges" class="sidebar-tab-btn" onclick="switchSidebarTab('challenges')">🏆 Practice ({{ challenges|length }})</button>
         <button id="btnTabHistory" class="sidebar-tab-btn" onclick="switchSidebarTab('history')">📜 History</button>
       </div>
@@ -830,12 +778,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: Example Queries Gallery -->
-      <div id="paneQueries" class="sidebar-content-pane" style="display: none;">
-        <div id="presetQueriesContainer"></div>
-      </div>
-
-      <!-- Tab 3: Challenges -->
+      <!-- Tab 2: Challenges -->
       <div id="paneChallenges" class="sidebar-content-pane" style="display: none;">
         {% for c in challenges %}
         <div class="challenge-item-card" onclick="loadChallenge('{{ c.id }}')">
@@ -848,7 +791,7 @@
         {% endfor %}
       </div>
 
-      <!-- Tab 4: History -->
+      <!-- Tab 3: History -->
       <div id="paneHistory" class="sidebar-content-pane" style="display: none;">
         <div id="historyContainer">
           <p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">No query history yet.</p>
@@ -862,7 +805,7 @@
       <!-- Editor Card -->
       <div class="editor-card">
         <div class="editor-toolbar">
-          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <div style="display: flex; gap: 6px; align-items: center;">
             <button id="btnRunQuery" class="dbg-btn-compact" style="background: #0284c7; color: #ffffff; border-color: #38bdf8;" onclick="runSqlQuery()">
               <span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>
             </button>
@@ -871,11 +814,6 @@
             </button>
             <button class="dbg-btn-compact" onclick="formatSqlQuery()">
               🧹 Format
-            </button>
-            
-            <!-- Live Trace Mode Toggle -->
-            <button id="btnLiveTraceToggle" class="dbg-btn-compact" style="color: #34d399;" onclick="toggleLiveTrace()" title="Automatically trace query when you edit code">
-              ⚡ Live Trace: ON
             </button>
           </div>
 
@@ -905,8 +843,6 @@
           </div>
 
           <div class="meta-stats">
-            <!-- Dynamic Real-Time In-Table Search Input -->
-            <input type="text" id="tableQuickSearch" class="table-search-input" placeholder="🔍 Search rows..." oninput="filterActiveTable(this.value)">
             <span id="statRowCount">0 rows</span>
             <span>&bull;</span>
             <span id="statExecTime">0.00 ms</span>
@@ -920,7 +856,7 @@
         <div id="paneResStep" class="results-body">
           <div id="stepResultsOutput">
             <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
-              Loading execution trace...
+              Click <strong>🚀 Start SQL Debugger</strong> above to inspect intermediate virtual tables at each line of execution.
             </p>
           </div>
         </div>
@@ -958,8 +894,8 @@
             <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
               <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">Window Ranking Functions</h4>
               <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
-                ROW_NUMBER() OVER (PARTITION BY dept ORDER BY sal DESC)<br/>
-                DENSE_RANK() OVER (PARTITION BY dept ORDER BY sal DESC)
+                ROW_NUMBER() OVER (PARTITION BY d ORDER BY sal DESC)<br/>
+                DENSE_RANK() OVER (PARTITION BY d ORDER BY sal DESC)
               </code>
             </div>
             <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
@@ -1001,10 +937,6 @@
   let autoPlayTimer = null;
   let activeDecorations = [];
   let isExecutingOrStepping = false;
-  let isLiveTraceEnabled = true;
-  let liveTraceDebounceTimer = null;
-  let currentSortCol = null;
-  let currentSortAsc = true;
 
   const DATASET_QUERIES = {
     {% for d in datasets %}
@@ -1025,118 +957,11 @@
     {% endfor %}
   };
 
-  // Preset Examples per Dataset
-  const DATASET_PRESET_QUERIES = {
-    "scott_tiger": [
-      {
-        id: "emp_dept_join",
-        title: "👑 3-Table Multi-JOIN",
-        category: "Joins & Relations",
-        sql: `-- 👑 Employees, Departments & Salary Bands\nSELECT\n    e.empno,\n    e.ename AS employee,\n    e.job,\n    d.dname AS department,\n    d.loc AS location,\n    e.sal AS salary,\n    s.grade AS sal_grade\nFROM emp e\nINNER JOIN dept d ON e.deptno = d.deptno\nINNER JOIN salgrade s ON e.sal BETWEEN s.losal AND s.hisal\nWHERE e.sal >= 1500\nORDER BY e.sal DESC;`
-      },
-      {
-        id: "where_filter",
-        title: "🔍 Filter Sal >= 2000",
-        category: "Filtering",
-        sql: `-- 🔍 Filter Managers and Analysts earning >= 2000\nSELECT\n    ename,\n    job,\n    sal,\n    deptno\nFROM emp\nWHERE job IN ('MANAGER', 'ANALYST')\n  AND sal >= 2000\nORDER BY sal DESC;`
-      },
-      {
-        id: "group_by_having",
-        title: "📊 Department Payroll & Averages",
-        category: "Aggregation",
-        sql: `-- 📊 Department Aggregate with HAVING filter\nSELECT\n    deptno,\n    COUNT(*) AS total_employees,\n    ROUND(AVG(sal), 2) AS avg_salary,\n    SUM(sal) AS total_payroll\nFROM emp\nGROUP BY deptno\nHAVING AVG(sal) >= 2000\nORDER BY total_payroll DESC;`
-      },
-      {
-        id: "self_join",
-        title: "👑 Manager Hierarchy (Self-JOIN)",
-        category: "Advanced Joins",
-        sql: `-- 👑 Match Every Employee to their Manager\nSELECT\n    e.ename AS employee,\n    e.job AS employee_role,\n    COALESCE(m.ename, '👑 TOP PRESIDENT') AS manager_name\nFROM emp e\nLEFT JOIN emp m ON e.mgr = m.empno\nORDER BY e.sal DESC;`
-      },
-      {
-        id: "window_rank",
-        title: "🔀 Window Ranking (DENSE_RANK)",
-        category: "Window Functions",
-        sql: `-- 🔀 Rank Employees by Salary within each Department\nSELECT\n    ename,\n    deptno,\n    sal,\n    DENSE_RANK() OVER (PARTITION BY deptno ORDER BY sal DESC) AS dept_salary_rank\nFROM emp;`
-      },
-      {
-        id: "cte_query",
-        title: "🧩 High Earners CTE",
-        category: "CTEs",
-        sql: `-- 🧩 Common Table Expression for Top Earners\nWITH HighEarners AS (\n    SELECT ename, job, sal, deptno\n    FROM emp\n    WHERE sal >= 2000\n)\nSELECT *\nFROM HighEarners\nORDER BY sal DESC;`
-      },
-      {
-        id: "subquery",
-        title: "🎯 Subquery: Above Average",
-        category: "Subqueries",
-        sql: `-- 🎯 Employees Earning Above Company Average\nSELECT\n    ename,\n    job,\n    sal\nFROM emp\nWHERE sal > (SELECT AVG(sal) FROM emp)\nORDER BY sal DESC;`
-      },
-      {
-        id: "limit_offset",
-        title: "✂️ Top 5 Earners",
-        category: "Slicing",
-        sql: `-- ✂️ Top 5 Highest Paid Staff\nSELECT\n    ename,\n    job,\n    sal\nFROM emp\nORDER BY sal DESC\nLIMIT 5;`
-      }
-    ],
-    "faang": [
-      {
-        id: "faang_proj",
-        title: "🏢 Multi-Table Project Staffing",
-        category: "Joins",
-        sql: `-- 🏢 Projects, Engineers & Roles\nSELECT\n    p.project_name,\n    e.first_name || ' ' || e.last_name AS engineer,\n    ep.role,\n    ep.hours_allocated\nFROM employee_projects ep\nJOIN employees e ON ep.employee_id = e.employee_id\nJOIN projects p ON ep.project_id = p.project_id\nORDER BY p.project_name ASC;`
-      },
-      {
-        id: "faang_perf",
-        title: "⭐ Top Performance Ratings (>= 4.8)",
-        category: "Analytics",
-        sql: `-- ⭐ High Rating Performance Reviews & Bonuses\nSELECT\n    e.first_name || ' ' || e.last_name AS employee,\n    r.rating,\n    r.bonus_amount\nFROM performance_reviews r\nJOIN employees e ON r.employee_id = e.employee_id\nWHERE r.rating >= 4.8\nORDER BY r.rating DESC;`
-      }
-    ],
-    "ecommerce": [
-      {
-        id: "ecom_orders",
-        title: "🛒 Delivered Orders with Customers",
-        category: "Orders",
-        sql: `-- 🛒 High Value Delivered Orders\nSELECT\n    o.order_id,\n    c.full_name,\n    c.country,\n    o.total_amount\nFROM orders o\nJOIN customers c ON o.customer_id = c.customer_id\nWHERE o.status = 'Delivered'\nORDER BY o.total_amount DESC;`
-      },
-      {
-        id: "ecom_inventory",
-        title: "📦 Inventory Asset Valuation",
-        category: "Products",
-        sql: `-- 📦 Highest Value Inventory in Stock\nSELECT\n    product_name,\n    price,\n    stock_quantity,\n    ROUND(price * stock_quantity, 2) AS total_inventory_value\nFROM products\nORDER BY total_inventory_value DESC;`
-      }
-    ],
-    "ott_streaming": [
-      {
-        id: "ott_views",
-        title: "🎬 Top Viewed Shows & Genres",
-        category: "Streaming",
-        sql: `-- 🎬 Most Watched Content Breakdown\nSELECT\n    m.title,\n    g.genre_name,\n    m.content_type,\n    COUNT(w.watch_id) AS total_views\nFROM movies_shows m\nJOIN genres g ON m.genre_id = g.genre_id\nLEFT JOIN watch_history w ON m.show_id = w.show_id\nGROUP BY m.title\nORDER BY total_views DESC;`
-      }
-    ],
-    "ai_compute": [
-      {
-        id: "ai_runs",
-        title: "🧠 H100 GPU Cluster Training Runs",
-        category: "Compute",
-        sql: `-- 🧠 Million Dollar AI Training Runs\nSELECT\n    m.model_name,\n    c.cluster_name,\n    t.gpu_count,\n    t.training_hours,\n    t.cost_usd\nFROM training_runs t\nJOIN models m ON t.model_id = m.model_id\nJOIN gpu_clusters c ON t.cluster_id = c.cluster_id\nWHERE t.cost_usd >= 500000.00\nORDER BY t.cost_usd DESC;`
-      }
-    ],
-    "fintech": [
-      {
-        id: "fintech_accounts",
-        title: "💳 High Net-Worth Accounts",
-        category: "Banking",
-        sql: `-- 💳 High Balance Accounts across Branches\nSELECT\n    a.customer_name,\n    a.account_type,\n    a.balance,\n    b.branch_name,\n    b.city\nFROM accounts a\nJOIN branches b ON a.branch_id = b.branch_id\nWHERE a.balance >= 50000.00\nORDER BY a.balance DESC;`
-      }
-    ]
-  };
-
   // Configure Monaco AMD Loader
   require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
 
   require(['vs/editor/editor.main'], function() {
-    // 1. Cyberpunk Dark (Default)
-    monaco.editor.defineTheme('cyberpunk', {
+    monaco.editor.defineTheme('sqlDarkStudio', {
       base: 'vs-dark',
       inherit: true,
       rules: [
@@ -1156,118 +981,12 @@
       }
     });
 
-    // 2. Dracula Vampire
-    monaco.editor.defineTheme('dracula', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'ff79c6', fontStyle: 'bold' },
-        { token: 'string', foreground: 'f1fa8c' },
-        { token: 'number', foreground: 'bd93f9' },
-        { token: 'comment', foreground: '6272a4', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '8be9fd' }
-      ],
-      colors: {
-        'editor.background': '#282a36',
-        'editor.lineHighlightBackground': '#44475a50',
-        'editorCursor.foreground': '#ff79c6',
-        'editorLineNumber.foreground': '#6272a4',
-        'editorLineNumber.activeForeground': '#f8f8f2',
-        'editor.selectionBackground': '#44475a'
-      }
-    });
-
-    // 3. Monokai Pro
-    monaco.editor.defineTheme('monokai', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'f92672', fontStyle: 'bold' },
-        { token: 'string', foreground: 'e6db74' },
-        { token: 'number', foreground: 'ae81ff' },
-        { token: 'comment', foreground: '75715e', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '66d9ef' }
-      ],
-      colors: {
-        'editor.background': '#272822',
-        'editor.lineHighlightBackground': '#3e3d32',
-        'editorCursor.foreground': '#f8f8f0',
-        'editorLineNumber.foreground': '#88846f',
-        'editorLineNumber.activeForeground': '#f8f8f2',
-        'editor.selectionBackground': '#49483e'
-      }
-    });
-
-    // 4. One Dark Pro
-    monaco.editor.defineTheme('onedark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'c678dd', fontStyle: 'bold' },
-        { token: 'string', foreground: '98c379' },
-        { token: 'number', foreground: 'd19a66' },
-        { token: 'comment', foreground: '5c6370', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '61afef' }
-      ],
-      colors: {
-        'editor.background': '#21252b',
-        'editor.lineHighlightBackground': '#2c313a',
-        'editorCursor.foreground': '#528bff',
-        'editorLineNumber.foreground': '#4b5263',
-        'editorLineNumber.activeForeground': '#abb2bf',
-        'editor.selectionBackground': '#3e4451'
-      }
-    });
-
-    // 5. Matrix Emerald
-    monaco.editor.defineTheme('matrix', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: '10b981', fontStyle: 'bold' },
-        { token: 'string', foreground: '6ee7b7' },
-        { token: 'number', foreground: '34d399' },
-        { token: 'comment', foreground: '065f46', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: 'a7f3d0' }
-      ],
-      colors: {
-        'editor.background': '#0c1810',
-        'editor.lineHighlightBackground': '#13281b',
-        'editorCursor.foreground': '#10b981',
-        'editorLineNumber.foreground': '#065f46',
-        'editorLineNumber.activeForeground': '#34d399',
-        'editor.selectionBackground': '#064e3b88'
-      }
-    });
-
-    // 6. GitHub Light
-    monaco.editor.defineTheme('github_light', {
-      base: 'vs',
-      inherit: true,
-      rules: [
-        { token: 'keyword', foreground: 'cf222e', fontStyle: 'bold' },
-        { token: 'string', foreground: '0a3069' },
-        { token: 'number', foreground: '0550ae' },
-        { token: 'comment', foreground: '6e7781', fontStyle: 'italic' },
-        { token: 'operator.sql', foreground: '0969da' }
-      ],
-      colors: {
-        'editor.background': '#ffffff',
-        'editor.lineHighlightBackground': '#f6f8fa',
-        'editorCursor.foreground': '#0969da',
-        'editorLineNumber.foreground': '#8c959f',
-        'editorLineNumber.activeForeground': '#24292f',
-        'editor.selectionBackground': '#b6e3ff44'
-      }
-    });
-
     const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp LIMIT 10;";
-    const savedTheme = localStorage.getItem('kashii_sql_theme') || 'cyberpunk';
 
     editor = monaco.editor.create(document.getElementById('monacoSqlContainer'), {
       value: initialSql,
       language: 'sql',
-      theme: savedTheme,
+      theme: 'sqlDarkStudio',
       fontSize: 13,
       fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
       lineNumbers: 'on',
@@ -1279,20 +998,10 @@
       minimap: { enabled: false }
     });
 
-    if (savedTheme !== 'cyberpunk') {
-      changeTheme(savedTheme);
-    }
-
-    // ── DYNAMIC REACTIVE TRACING ON USER TYPING ──
+    // ── CRITICAL: CLEAR HAND/LINE HIGHLIGHT WHEN USER TYPES ──
     editor.onDidChangeModelContent(function() {
       if (!isExecutingOrStepping) {
         clearExecutionHighlight();
-        if (isLiveTraceEnabled) {
-          if (liveTraceDebounceTimer) clearTimeout(liveTraceDebounceTimer);
-          liveTraceDebounceTimer = setTimeout(function() {
-            startSqlDebugger(true); // background silent trace
-          }, 450);
-        }
       }
     });
 
@@ -1301,13 +1010,11 @@
       runSqlQuery();
     });
 
-    // Fetch initial schema and execute initial query trace immediately on load
     fetchSchema(activeDatasetId);
-    renderPresetQueries(activeDatasetId);
-    renderQuickChips(activeDatasetId);
+    checkMobileAdvisory();
     setTimeout(function() {
       startSqlDebugger();
-    }, 120);
+    }, 150);
   });
 
   function clearExecutionHighlight() {
@@ -1316,87 +1023,16 @@
     }
   }
 
-  // Toggle Live Trace Mode
-  function toggleLiveTrace() {
-    isLiveTraceEnabled = !isLiveTraceEnabled;
-    const btn = document.getElementById('btnLiveTraceToggle');
-    if (isLiveTraceEnabled) {
-      btn.innerText = '⚡ Live Trace: ON';
-      btn.style.color = '#34d399';
-      startSqlDebugger();
-    } else {
-      btn.innerText = '⚡ Live Trace: OFF';
-      btn.style.color = '#94a3b8';
-    }
-  }
-
-  // Quick Chips Rendering & Loading
-  function renderQuickChips(datasetId) {
-    const wrap = document.getElementById('quickQueryChips');
-    if (!wrap) return;
-    const list = DATASET_PRESET_QUERIES[datasetId] || DATASET_PRESET_QUERIES["scott_tiger"] || [];
-    let html = '';
-    list.forEach((item, idx) => {
-      html += `<span class="query-chip" onclick="loadPresetQueryByIndex(${idx})">${item.title}</span>`;
-    });
-    wrap.innerHTML = html;
-  }
-
-  function loadQuickChip(queryId) {
-    const list = DATASET_PRESET_QUERIES[activeDatasetId] || DATASET_PRESET_QUERIES["scott_tiger"] || [];
-    const item = list.find(q => q.id === queryId) || list[0];
-    if (item && editor) {
-      editor.setValue(item.sql);
-      clearExecutionHighlight();
-      startSqlDebugger();
-    }
-  }
-
-  function loadPresetQueryByIndex(idx) {
-    const list = DATASET_PRESET_QUERIES[activeDatasetId] || DATASET_PRESET_QUERIES["scott_tiger"] || [];
-    const item = list[idx];
-    if (!item || !editor) return;
-
-    editor.setValue(item.sql);
-    clearExecutionHighlight();
-    startSqlDebugger();
-  }
-
-  function renderPresetQueries(datasetId) {
-    const list = DATASET_PRESET_QUERIES[datasetId] || DATASET_PRESET_QUERIES["scott_tiger"] || [];
-    const container = document.getElementById('presetQueriesContainer');
-    if (container) {
-      let html = '';
-      list.forEach((item, idx) => {
-        html += `
-          <div class="challenge-item-card" onclick="loadPresetQueryByIndex(${idx})" title="Click to load & trace this query">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <span style="font-size: 9px; font-weight: 800; background: rgba(56,189,248,0.18); color: #38bdf8; padding: 1px 5px; border-radius: 3px;">${item.category}</span>
-              <span style="font-size: 10px; color: #94a3b8;">▶ Load</span>
-            </div>
-            <div style="font-weight: 700; font-size: 11px; color: #ffffff; margin-bottom: 4px;">${item.title}</div>
-            <pre style="margin: 0; font-family: monospace; font-size: 9px; color: #94a3b8; white-space: pre-wrap; overflow: hidden; max-height: 28px;">${escapeHtml(item.sql.split('\n')[0])}</pre>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    }
-  }
-
   // Switch Sidebar Tabs
   function switchSidebarTab(tabName) {
     document.querySelectorAll('.sidebar-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.getElementById('paneSchema').style.display = 'none';
-    document.getElementById('paneQueries').style.display = 'none';
     document.getElementById('paneChallenges').style.display = 'none';
     document.getElementById('paneHistory').style.display = 'none';
 
     if (tabName === 'schema') {
       document.getElementById('btnTabSchema').classList.add('active');
       document.getElementById('paneSchema').style.display = 'block';
-    } else if (tabName === 'queries') {
-      document.getElementById('btnTabQueries').classList.add('active');
-      document.getElementById('paneQueries').style.display = 'block';
     } else if (tabName === 'challenges') {
       document.getElementById('btnTabChallenges').classList.add('active');
       document.getElementById('paneChallenges').style.display = 'block';
@@ -1509,11 +1145,6 @@
       editor.setValue(DATASET_QUERIES[newDatasetId]);
     }
     fetchSchema(newDatasetId);
-    renderPresetQueries(newDatasetId);
-    renderQuickChips(newDatasetId);
-    setTimeout(function() {
-      startSqlDebugger();
-    }, 120);
   }
 
   // Load Challenge
@@ -1536,19 +1167,15 @@
     document.getElementById('btnResTabVerify').style.display = 'block';
 
     fetchSchema(activeDatasetId);
-    renderPresetQueries(activeDatasetId);
-    renderQuickChips(activeDatasetId);
   }
 
   // ── SQL LINE-BY-LINE DEBUGGER TRACER ──
-  function startSqlDebugger(isBackgroundTrace = false) {
+  function startSqlDebugger() {
     if (!editor) return;
     const sql = editor.getValue();
     const btn = document.getElementById('btnStartDebug');
-    if (!isBackgroundTrace) {
-      btn.innerHTML = '<span>⏳</span> Tracing...';
-      btn.disabled = true;
-    }
+    btn.innerHTML = '<span>⏳</span> Tracing...';
+    btn.disabled = true;
 
     stopAutoPlay();
     isExecutingOrStepping = true;
@@ -1565,9 +1192,7 @@
 
       if (data.success && data.steps && data.steps.length > 0) {
         debugSteps = data.steps;
-        if (currentStepIdx >= debugSteps.length) {
-          currentStepIdx = 0;
-        }
+        currentStepIdx = 0;
         
         // Rebuild dynamic pipeline pills strictly based on query clauses present
         rebuildPipelinePills(debugSteps);
@@ -1575,7 +1200,7 @@
         // Setup slider
         const slider = document.getElementById('timelineSlider');
         slider.max = debugSteps.length - 1;
-        slider.value = currentStepIdx;
+        slider.value = 0;
         slider.disabled = false;
 
         // Enable buttons
@@ -1585,24 +1210,18 @@
         document.getElementById('btnStepLast').disabled = false;
         document.getElementById('btnAutoPlay').disabled = false;
 
-        goToStep(currentStepIdx);
-        if (!isBackgroundTrace) {
-          switchResultTab('step');
-        }
+        goToStep(0);
+        switchResultTab('step');
       } else {
-        if (!isBackgroundTrace) {
-          renderError(data.error || "Could not generate trace steps for this query.");
-          switchResultTab('step');
-        }
+        renderError(data.error || "Could not generate trace steps for this query.");
+        switchResultTab('step');
       }
       isExecutingOrStepping = false;
     })
     .catch(err => {
       btn.innerHTML = '<span>🚀</span> Start SQL Debugger';
       btn.disabled = false;
-      if (!isBackgroundTrace) {
-        renderError("Failed to communicate with SQL Debugger tracer endpoint.");
-      }
+      renderError("Failed to communicate with SQL Debugger tracer endpoint.");
       isExecutingOrStepping = false;
     });
   }
@@ -1618,7 +1237,7 @@
 
     let html = '';
     steps.forEach((s, idx) => {
-      html += `<span class="pipeline-pill" id="pill_step_${idx}" onclick="goToStep(${idx})" title="Jump to Step ${idx + 1}: ${s.phase_name}">
+      html += `<span class="pipeline-pill" id="pill_step_${idx}" onclick="goToStep(${idx})" style="cursor: pointer;" title="Jump to Step ${idx + 1}: ${s.phase_name}">
         ${idx + 1}. ${s.clause}
       </span>`;
     });
@@ -1684,10 +1303,12 @@
     }
   }
 
+  function firstStep() {
+    goToStep(0);
+  }
+
   function lastStep() {
-    if (debugSteps && debugSteps.length > 0) {
-      goToStep(debugSteps.length - 1);
-    }
+    goToStep(debugSteps.length - 1);
   }
 
   function toggleAutoPlay() {
@@ -1760,7 +1381,7 @@
     else if (step.clause === 'ORDER BY') { statusBadgeClass = 'row-badge-sorted'; statusText = '📊 SORTED'; }
 
     let html = `
-      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #111d35; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b; flex-wrap: wrap; gap: 6px;">
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #111d35; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
         <div style="display: flex; align-items: center; gap: 6px;">
           <span style="font-size: 12px;">📦</span>
           <span style="font-size: 11px; color: #cbd5e1; font-weight: 700;">
@@ -1777,14 +1398,14 @@
         </div>
       </div>
       <div style="overflow-x: auto; border-radius: 6px; border: 1px solid #1e293b; background: #09101f;">
-        <table class="sql-data-table" id="activeVirtualDataTable">
+        <table class="sql-data-table">
           <thead>
             <tr>
-              <th style="width: 95px; background: #080e1a; color: #94a3b8; font-size: 10px; text-transform: uppercase;">STATUS</th>
+              <th style="width: 100px; background: #080e1a; color: #94a3b8; font-size: 10px; text-transform: uppercase;">STATUS</th>
     `;
 
-    step.columns.forEach((col, colIdx) => {
-      html += `<th onclick="sortTableByColumn(${colIdx + 1})" title="Click to sort by '${col}'">${col} ↕</th>`;
+    step.columns.forEach(col => {
+      html += `<th>${col}</th>`;
     });
     html += `</tr></thead><tbody>`;
 
@@ -1800,9 +1421,9 @@
         html += `<td><span class="${statusBadgeClass}" style="padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 800; font-family: monospace;">${rowCustomBadge}</span></td>`;
         row.forEach(val => {
           if (val === null || val === undefined) {
-            html += `<td class="null-cell" onclick="copyCellValue('NULL')">NULL</td>`;
+            html += `<td class="null-cell">NULL</td>`;
           } else {
-            html += `<td onclick="copyCellValue('${escapeHtml(String(val))}')" title="Click to copy '${escapeHtml(String(val))}'">${val}</td>`;
+            html += `<td>${val}</td>`;
           }
         });
         html += `</tr>`;
@@ -1811,71 +1432,6 @@
 
     html += `</tbody></table></div>`;
     container.innerHTML = html;
-  }
-
-  // Dynamic Real-time In-Table Filtering
-  function filterActiveTable(query) {
-    const q = query.trim().toLowerCase();
-    const table = document.getElementById('activeVirtualDataTable');
-    if (!table) return;
-    const rows = table.querySelectorAll('tbody tr');
-    rows.forEach(r => {
-      const text = r.innerText.toLowerCase();
-      if (!q || text.includes(q)) {
-        r.style.display = '';
-      } else {
-        r.style.display = 'none';
-      }
-    });
-  }
-
-  // Dynamic Client-side Column Sort
-  function sortTableByColumn(colIdx) {
-    const table = document.getElementById('activeVirtualDataTable');
-    if (!table) return;
-    const tbody = table.querySelector('tbody');
-    const rows = Array.from(tbody.querySelectorAll('tr'));
-    if (rows.length <= 1) return;
-
-    if (currentSortCol === colIdx) {
-      currentSortAsc = !currentSortAsc;
-    } else {
-      currentSortCol = colIdx;
-      currentSortAsc = true;
-    }
-
-    rows.sort((a, b) => {
-      const valA = a.cells[colIdx]?.innerText.trim() || '';
-      const valB = b.cells[colIdx]?.innerText.trim() || '';
-      const numA = parseFloat(valA);
-      const numB = parseFloat(valB);
-
-      if (!isNaN(numA) && !isNaN(numB)) {
-        return currentSortAsc ? numA - numB : numB - numA;
-      }
-      return currentSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-    });
-
-    rows.forEach(r => tbody.appendChild(r));
-    showToast(`Sorted column ${currentSortAsc ? '▲ ASC' : '▼ DESC'}`);
-  }
-
-  // Copy Cell Value with Toast
-  function copyCellValue(val) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(val);
-      showToast(`Copied: "${val}"`);
-    }
-  }
-
-  function showToast(msg) {
-    const toast = document.getElementById('sqlToast');
-    if (!toast) return;
-    toast.innerText = msg;
-    toast.classList.add('show');
-    setTimeout(() => {
-      toast.classList.remove('show');
-    }, 1500);
   }
 
   // Execute Full SQL Query
@@ -1942,9 +1498,9 @@
         html += `<tr>`;
         row.forEach(val => {
           if (val === null || val === undefined) {
-            html += `<td class="null-cell" onclick="copyCellValue('NULL')">NULL</td>`;
+            html += `<td class="null-cell">NULL</td>`;
           } else {
-            html += `<td onclick="copyCellValue('${escapeHtml(String(val))}')" title="Click to copy">${val}</td>`;
+            html += `<td>${val}</td>`;
           }
         });
         html += `</tr>`;
@@ -2054,17 +1610,16 @@
     .then(res => res.json())
     .then(data => {
       if (data.schema) renderSchema(data.schema);
-      if (data.default_query && editor) editor.setValue(data.default_query);
+      if (editor && data.default_query) editor.setValue(data.default_query);
       clearExecutionHighlight();
-      startSqlDebugger();
-      showToast(data.message || "Database reset to factory state.");
+      alert(data.message);
     });
   }
 
   // Export Results as CSV
   function exportResultsCsv() {
     if (!currentResults.columns || currentResults.columns.length === 0) {
-      showToast("No query results available to export.");
+      alert("No query results available to export.");
       return;
     }
     let csv = currentResults.columns.join(',') + '\n';
@@ -2183,29 +1738,47 @@
     }
   }
 
-  // ── THEME SWITCHER ENGINE ──
-  function changeTheme(themeName) {
-    const themes = ['cyberpunk', 'dracula', 'monokai', 'onedark', 'matrix', 'github_light'];
-    themes.forEach(t => document.body.classList.remove(`theme-${t}`));
-
-    if (themeName !== 'cyberpunk') {
-      document.body.classList.add(`theme-${themeName}`);
-    }
-
-    if (window.monaco && monaco.editor) {
-      monaco.editor.setTheme(themeName);
-    }
-
-    localStorage.setItem('kashii_sql_theme', themeName);
-    const sel = document.getElementById('themeSelector');
-    if (sel) sel.value = themeName;
-  }
-
   // Allow ESC key to exit maximized table mode
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && document.body.classList.contains('table-maximized-mode')) {
       toggleMaximizeTable();
     }
   });
+
+  // ── MOBILE ADVISORY & BLOCKER LOGIC ──
+  function checkMobileAdvisory() {
+    if (window.innerWidth <= 768) {
+      const isDismissed = sessionStorage.getItem('dismiss_sql_mobile_blocker');
+      if (!isDismissed) {
+        const modal = document.getElementById('mobileBlockerModal');
+        if (modal) modal.style.display = 'flex';
+      }
+    }
+  }
+
+  function dismissMobileBlocker() {
+    sessionStorage.setItem('dismiss_sql_mobile_blocker', 'true');
+    const modal = document.getElementById('mobileBlockerModal');
+    if (modal) {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.2s';
+      setTimeout(() => { modal.style.display = 'none'; }, 200);
+    }
+  }
+
+  function copyStudioLink() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("✅ Link copied! Open this URL on your Desktop browser.");
+      }).catch(() => {
+        prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
+      });
+    } else {
+      prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
+    }
+  }
+
+  // Check on load
+  window.addEventListener('DOMContentLoaded', checkMobileAdvisory);
 </script>
 {% endblock %}
