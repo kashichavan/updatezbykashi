@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import (
 )
 from requirements.views import custom_404_view, ads_txt_verification_view, ads_txt_view
 from debugger.views import learn_topic_view
+from api.ninja_api import api as ninja_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -33,6 +34,8 @@ urlpatterns = [
     path('sql/', include(('sqlsandbox.urls', 'sqlsandbox'), namespace='sqlsandbox')),
     path('sql-sandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
     path('sqlsandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
+    path('blog/', include(('blog.urls', 'blog'), namespace='blog')),
+    path('api/v1/', ninja_api.urls),
     path('', include('requirements.urls')),
 ]
 

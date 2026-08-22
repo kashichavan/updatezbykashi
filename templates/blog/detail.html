@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ meta_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --blog-bg: #070b14;
+    --blog-card: #0d1527;
+    --blog-card-border: rgba(56, 189, 248, 0.16);
+    --blog-accent: #38bdf8;
+  }
+
+  body {
+    background-color: var(--blog-bg);
+    color: #f1f5f9;
+  }
+
+  /* Reading Progress Bar */
+  .reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #38bdf8, #10b981, #ec4899);
+    width: 0%;
+    z-index: 9999;
+    transition: width 0.1s;
+  }
+
+  .article-container {
+    max-width: 860px;
+    margin: 20px auto 80px;
+    padding: 0 16px;
+  }
+
+  /* Header Section */
+  .article-header {
+    margin-bottom: 28px;
+  }
+
+  .article-category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  .article-title {
+    font-size: clamp(26px, 4.5vw, 40px);
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1.25;
+    margin: 0 0 16px;
+    letter-spacing: -0.5px;
+  }
+
+  .article-meta-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-top: 1px solid #1e293b;
+    border-bottom: 1px solid #1e293b;
+    font-size: 12px;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .article-author-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .article-author-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #38bdf8;
+  }
+
+  .article-cover {
+    width: 100%;
+    max-height: 420px;
+    border-radius: 14px;
+    object-fit: cover;
+    margin: 24px 0;
+    border: 1px solid var(--blog-card-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Rich Content Typography */
+  .article-body {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #cbd5e1;
+  }
+
+  .article-body h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 36px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1e293b;
+    letter-spacing: -0.3px;
+  }
+
+  .article-body h3 {
+    font-size: 19px;
+    font-weight: 700;
+    color: #38bdf8;
+    margin: 26px 0 10px;
+  }
+
+  .article-body p {
+    margin-bottom: 20px;
+  }
+
+  .article-body strong {
+    color: #ffffff;
+  }
+
+  .article-body blockquote {
+    background: #0d1527;
+    border-left: 4px solid #38bdf8;
+    padding: 14px 18px;
+    margin: 24px 0;
+    border-radius: 0 8px 8px 0;
+    color: #e2e8f0;
+    font-style: italic;
+  }
+
+  .article-body pre {
+    background: #080e1a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #f1f5f9;
+    margin: 22px 0;
+  }
+
+  .article-body code {
+    background: #17233d;
+    color: #38bdf8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 13px;
+  }
+  .article-body pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+
+  /* Tags Strip */
+  .article-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 36px 0;
+    padding-top: 20px;
+    border-top: 1px solid #1e293b;
+  }
+
+  .article-tag-chip {
+    background: #111d35;
+    border: 1px solid #1e293b;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .article-tag-chip:hover {
+    color: #38bdf8;
+    border-color: #38bdf8;
+  }
+
+  /* Related Articles */
+  .related-section {
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 1px solid #1e293b;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .related-card {
+    background: var(--blog-card);
+    border: 1px solid var(--blog-card-border);
+    border-radius: 10px;
+    padding: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.15s;
+  }
+  .related-card:hover {
+    border-color: #38bdf8;
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Reading Progress -->
+<div id="readingProgress" class="reading-progress-bar"></div>
+
+<div class="article-container">
+
+  <!-- Back Link -->
+  <div style="margin-bottom: 18px;">
+    <a href="/blog/" style="color: #94a3b8; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+      &larr; Back to all articles
+    </a>
+  </div>
+
+  <!-- Header -->
+  <header class="article-header">
+    <span class="article-category-badge">
+      <span>{{ post.category.icon }}</span> {{ post.category.name|default:'Engineering' }}
+    </span>
+    <h1 class="article-title">{{ post.title }}</h1>
+    
+    <div class="article-meta-bar">
+      <div class="article-author-box">
+        <img src="{{ post.author_avatar_url }}" class="article-author-avatar" alt="{{ post.author_name }}">
+        <div>
+          <div style="font-weight: 800; color: #ffffff;">{{ post.author_name }}</div>
+          <div style="font-size: 10px; color: #94a3b8;">{{ post.author_title }}</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <span>⏱️ {{ post.read_time_minutes }} min read</span>
+        <span>📅 {{ post.published_at|date:"M d, Y" }}</span>
+        <span>👁️ {{ post.views_count }} views</span>
+      </div>
+    </div>
+
+    <!-- Cover Image -->
+    {% if post.cover_image_url %}
+    <img src="{{ post.cover_image_url }}" alt="{{ post.title }}" class="article-cover">
+    {% endif %}
+  </header>
+
+  <!-- Article Body -->
+  <main class="article-body">
+    {{ post.content|safe }}
+  </main>
+
+  <!-- Tags -->
+  {% if post.tags.all %}
+  <div class="article-tags">
+    <span style="font-size: 11px; color: #94a3b8; align-self: center;">Tags:</span>
+    {% for tag in post.tags.all %}
+    <a href="/blog/?tag={{ tag.slug }}" class="article-tag-chip">#{{ tag.name }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Related Posts -->
+  {% if related_posts %}
+  <section class="related-section">
+    <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0 0 12px;">Related Articles in {{ post.category.name }}</h3>
+    <div class="related-grid">
+      {% for r in related_posts %}
+      <a href="/blog/{{ r.slug }}/" class="related-card">
+        <span style="font-size: 10px; color: #38bdf8; font-weight: 800;">⏱️ {{ r.read_time_minutes }} MIN READ</span>
+        <h4 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 6px 0 8px; line-height: 1.4;">{{ r.title }}</h4>
+        <p style="font-size: 11px; color: #94a3b8; margin: 0; line-height: 1.4;">{{ r.excerpt|truncatechars:90 }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+
+<script>
+  // Dynamic Scroll Progress Bar
+  window.addEventListener('scroll', () => {
+    const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = totalHeight > 0 ? (window.scrollY / totalHeight) * 100 : 0;
+    const bar = document.getElementById('readingProgress');
+    if (bar) bar.style.width = progress + '%';
+  });
+</script>
+{% endblock %}

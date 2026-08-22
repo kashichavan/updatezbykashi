@@ -6,5 +6,6 @@ pip install -r requirements.txt
 python manage.py collectstatic --noinput
 python manage.py migrate
 
-# Auto-create production owner account, Software & Tech category, and seed guide articles
+# Auto-create production owner account, Software & Tech category, and seed guide articles & blog
 python requirements/seed_prod.py
+python manage.py seed_blog

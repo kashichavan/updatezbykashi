@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     'requirements',
     'debugger',
     'sqlsandbox',
+    'blog',
 ]
 
 REST_FRAMEWORK = {
