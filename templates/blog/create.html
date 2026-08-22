@@ -1,0 +1,414 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ meta_title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --studio-bg: #070b14;
+    --studio-card: #0d1527;
+    --studio-border: rgba(56, 189, 248, 0.2);
+    --studio-accent: #38bdf8;
+  }
+
+  body {
+    background-color: var(--studio-bg);
+    color: #f1f5f9;
+  }
+
+  .studio-container {
+    max-width: 1280px;
+    margin: 20px auto 80px;
+    padding: 0 16px;
+  }
+
+  .studio-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .studio-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .studio-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .studio-panel {
+    background: var(--studio-card);
+    border: 1px solid var(--studio-border);
+    border-radius: 14px;
+    padding: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  .studio-input-group {
+    margin-bottom: 18px;
+  }
+
+  .studio-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+
+  .studio-input, .studio-textarea, .studio-select {
+    width: 100%;
+    background: #080e1a;
+    border: 1px solid #233554;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #ffffff;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+  }
+
+  .studio-input:focus, .studio-textarea:focus, .studio-select:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+  }
+
+  .studio-textarea {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 380px;
+    resize: vertical;
+  }
+
+  /* Live Preview Box */
+  .preview-card {
+    background: #080e1a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    max-height: 380px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #cbd5e1;
+  }
+
+  .preview-card h1, .preview-card h2, .preview-card h3 {
+    color: #ffffff;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+
+  .preview-card pre {
+    background: #0d1527;
+    border: 1px solid #1e293b;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: monospace;
+    color: #38bdf8;
+    overflow-x: auto;
+  }
+
+  .preview-cover-thumb {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-top: 8px;
+    border: 1px solid #1e293b;
+    background: #080e1a;
+  }
+
+  .publish-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .publish-btn:hover {
+    background: #0284c7;
+    transform: translateY(-1px);
+  }
+
+  /* SERP snippet preview */
+  .serp-card {
+    background: #090f1d;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: Arial, sans-serif;
+  }
+  .serp-url {
+    color: #38bdf8;
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+  .serp-title {
+    color: #93c5fd;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  .serp-desc {
+    color: #94a3b8;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="studio-container">
+
+  <!-- Header -->
+  <div class="studio-header">
+    <div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">⚡</span>
+        <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; margin: 0;">Blog Publishing Studio</h1>
+      </div>
+      <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 0;">
+        Write, preview, and deploy high-converting engineering articles &amp; masterclasses.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <a href="/admin/blog/blogpost/" target="_blank" class="dbg-btn-compact" style="background: #17233d; color: #38bdf8; border: 1px solid #233554; padding: 6px 12px; border-radius: 6px; font-size: 11px; text-decoration: none; font-weight: 700;">
+        ⚙️ Django Admin Table
+      </a>
+      <a href="/blog/" class="dbg-btn-compact" style="background: #0d1527; color: #94a3b8; border: 1px solid #1e293b; padding: 6px 12px; border-radius: 6px; font-size: 11px; text-decoration: none;">
+        &larr; View Blog
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+  <div style="margin-bottom: 20px;">
+    {% for message in messages %}
+    <div style="background: {% if message.tags == 'error' %}rgba(239, 68, 68, 0.2){% else %}rgba(16, 185, 129, 0.2){% endif %}; border: 1px solid {% if message.tags == 'error' %}#ef4444{% else %}#10b981{% endif %}; color: #ffffff; padding: 10px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 8px;">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Editor Form -->
+  <form method="POST" action="/blog/manage/new/">
+    {% csrf_token %}
+
+    <div class="studio-grid">
+
+      <!-- Left Column: Content Editor -->
+      <div class="studio-panel">
+        
+        <div class="studio-input-group">
+          <label class="studio-label">Article Title *</label>
+          <input type="text" id="postTitle" name="title" required placeholder="e.g., Deep Dive into V8 Engine & JIT Compiler" class="studio-input" oninput="updatePreviews()">
+        </div>
+
+        <div class="studio-input-group">
+          <label class="studio-label">URL Slug (Auto-generated if blank)</label>
+          <input type="text" id="postSlug" name="slug" placeholder="e.g., deep-dive-into-v8-engine" class="studio-input">
+        </div>
+
+        <div class="studio-input-group">
+          <label class="studio-label">Summary / Excerpt (150-250 chars) *</label>
+          <textarea id="postExcerpt" name="excerpt" rows="3" required placeholder="Concise breakdown shown on cards and search results..." class="studio-input" style="font-family: inherit; resize: vertical;" oninput="updatePreviews()"></textarea>
+        </div>
+
+        <div class="studio-input-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label class="studio-label" style="margin-bottom: 0;">Article Body (Markdown or HTML) *</label>
+            <span id="readTimeBadge" style="font-size: 11px; color: #38bdf8; font-weight: 700;">⏱️ ~1 min read (0 words)</span>
+          </div>
+          <textarea id="postContent" name="content" required placeholder="## 1. Introduction
+
+Write your technical article here in Markdown or HTML...
+
+```javascript
+let count = 10;
+console.log(count);
+```" class="studio-textarea" oninput="updatePreviews()"></textarea>
+        </div>
+
+        <!-- Live Content Preview Tab -->
+        <div class="studio-input-group">
+          <label class="studio-label">Live Content Preview</label>
+          <div id="liveMarkdownPreview" class="preview-card">
+            <em>Type in the editor above to see live preview...</em>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Metadata, Media, Category, SEO -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <!-- Publish Box -->
+        <div class="studio-panel">
+          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px; display: flex; align-items: center; gap: 6px;">
+            <span>🚀</span> Publication Status
+          </h3>
+
+          <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #ffffff; cursor: pointer;">
+              <input type="checkbox" name="is_published" checked style="accent-color: #10b981;">
+              <span>Publish Live</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #ffffff; cursor: pointer;">
+              <input type="checkbox" name="is_featured" style="accent-color: #f59e0b;">
+              <span>⭐ Featured Hero</span>
+            </label>
+          </div>
+
+          <button type="submit" class="publish-btn">
+            <span>✨</span> Publish Article Now
+          </button>
+        </div>
+
+        <!-- Taxonomy & Category -->
+        <div class="studio-panel">
+          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+            📂 Category &amp; Tags
+          </h3>
+
+          <div class="studio-input-group">
+            <label class="studio-label">Category</label>
+            <select name="category" class="studio-select">
+              <option value="">-- Select Category --</option>
+              {% for cat in categories %}
+              <option value="{{ cat.id }}">{{ cat.icon }} {{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="studio-input-group" style="margin-bottom: 0;">
+            <label class="studio-label">Tags (comma-separated)</label>
+            <input type="text" name="tags" placeholder="javascript, v8, webdev, nodejs" class="studio-input">
+          </div>
+        </div>
+
+        <!-- Cover Image & Media -->
+        <div class="studio-panel">
+          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+            🖼️ Media &amp; Cover Image
+          </h3>
+
+          <div class="studio-input-group">
+            <label class="studio-label">Cover Image URL</label>
+            <input type="url" id="coverImgUrl" name="cover_image_url" placeholder="https://images.unsplash.com/photo-..." class="studio-input" oninput="updateCoverThumb()">
+            <img id="coverThumb" src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600" class="preview-cover-thumb" alt="Cover Preview">
+          </div>
+        </div>
+
+        <!-- Author Information -->
+        <div class="studio-panel">
+          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+            👤 Author Profile
+          </h3>
+
+          <div class="studio-input-group">
+            <label class="studio-label">Author Name</label>
+            <input type="text" name="author_name" value="Kashinath Chavan" class="studio-input">
+          </div>
+
+          <div class="studio-input-group" style="margin-bottom: 0;">
+            <label class="studio-label">Author Title</label>
+            <input type="text" name="author_title" value="Founder &amp; Software Architect" class="studio-input">
+          </div>
+        </div>
+
+        <!-- Google SERP Snippet Preview -->
+        <div class="studio-panel">
+          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+            🔍 Google Search Snippet Preview
+          </h3>
+          <div class="serp-card">
+            <div class="serp-url">https://updatezbykashi.com/blog/<span id="serpSlug">article-slug</span></div>
+            <div id="serpTitle" class="serp-title">Article Title Goes Here</div>
+            <div id="serpDesc" class="serp-desc">Article summary description appears here in Google search snippet.</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </form>
+
+</div>
+
+<script>
+  function updatePreviews() {
+    const title = document.getElementById('postTitle').value || 'Article Title Goes Here';
+    const excerpt = document.getElementById('postExcerpt').value || 'Article summary description appears here in Google search snippet.';
+    const content = document.getElementById('postContent').value || '';
+    
+    // Auto-generate slug
+    const cleanSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const slugInput = document.getElementById('postSlug');
+    if (!slugInput.value || slugInput.dataset.manual !== 'true') {
+      document.getElementById('serpSlug').innerText = cleanSlug || 'article-slug';
+    }
+
+    // Word Count & Read Time
+    const words = content.trim().split(/\s+/).filter(w => w.length > 0).length;
+    const readMins = Math.max(1, Math.ceil(words / 200));
+    document.getElementById('readTimeBadge').innerText = `⏱️ ~${readMins} min read (${words} words)`;
+
+    // SERP
+    document.getElementById('serpTitle').innerText = title;
+    document.getElementById('serpDesc').innerText = excerpt.slice(0, 160);
+
+    // Light Markdown parser for preview
+    let html = content
+      .replace(/^### (.*$)/gim, '<h3 style="color:#38bdf8;">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 style="color:#ffffff;">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 style="color:#ffffff;">$1</h1>')
+      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+      .replace(/\*(.*)\*/gim, '<em>$1</em>')
+      .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
+      .replace(/`([^`]+)`/gim, '<code style="background:#17233d; color:#38bdf8; padding:2px 4px; border-radius:4px;">$1</code>')
+      .replace(/\n/gim, '<br>');
+
+    document.getElementById('liveMarkdownPreview').innerHTML = html || '<em>Type in the editor above to see live preview...</em>';
+  }
+
+  function updateCoverThumb() {
+    const url = document.getElementById('coverImgUrl').value;
+    const thumb = document.getElementById('coverThumb');
+    if (url) {
+      thumb.src = url;
+    }
+  }
+
+  document.getElementById('postSlug').addEventListener('input', function() {
+    this.dataset.manual = 'true';
+    document.getElementById('serpSlug').innerText = this.value;
+  });
+</script>
+{% endblock %}

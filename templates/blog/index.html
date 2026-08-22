@@ -343,15 +343,21 @@
   </div>
 
   <!-- Categories Filter -->
-  <div class="category-strip">
-    <a href="/blog/" class="category-pill {% if not active_category %}active{% endif %}">
-      <span>🌐</span> All Topics ({{ total_posts_count }})
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+    <div class="category-strip" style="margin-bottom: 0;">
+      <a href="/blog/" class="category-pill {% if not active_category %}active{% endif %}">
+        <span>🌐</span> All Topics ({{ total_posts_count }})
+      </a>
+      {% for cat in categories %}
+      <a href="/blog/?category={{ cat.slug }}" class="category-pill {% if active_category.slug == cat.slug %}active{% endif %}">
+        <span>{{ cat.icon }}</span> {{ cat.name }} ({{ cat.posts_count }})
+      </a>
+      {% endfor %}
+    </div>
+
+    <a href="/blog/manage/new/" class="dbg-btn-compact" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: 1px solid #38bdf8; padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);">
+      <span>✍️</span> Write New Article
     </a>
-    {% for cat in categories %}
-    <a href="/blog/?category={{ cat.slug }}" class="category-pill {% if active_category.slug == cat.slug %}active{% endif %}">
-      <span>{{ cat.icon }}</span> {{ cat.name }} ({{ cat.posts_count }})
-    </a>
-    {% endfor %}
   </div>
 
   <!-- Featured Post Hero -->

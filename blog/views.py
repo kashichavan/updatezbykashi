@@ -90,3 +90,75 @@ def blog_detail_view(request, slug):
         'meta_description': post.seo_description or post.excerpt,
     }
     return render(request, 'blog/detail.html', context)
+
+
+from django.contrib.auth.decorators import user_passes_test, login_required
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.http import JsonResponse
+
+def blog_create_view(request):
+    """
+    Renders live Studio Editor to create, preview, and publish technical articles.
+    """
+    if request.method == 'POST':
+        # Check authentication (or superuser / staff)
+        if not request.user.is_authenticated or not request.user.is_staff:
+            messages.error(request, "⚠️ You must be logged in as an Admin / Staff to publish articles.")
+            return redirect(f"/admin/login/?next=/blog/manage/new/")
+
+        title = request.POST.get('title', '').strip()
+        slug = request.POST.get('slug', '').strip()
+        excerpt = request.POST.get('excerpt', '').strip()
+        content = request.POST.get('content', '').strip()
+        category_id = request.POST.get('category')
+        tags_str = request.POST.get('tags', '').strip()
+        cover_image_url = request.POST.get('cover_image_url', '').strip()
+        author_name = request.POST.get('author_name', 'Kashinath Chavan').strip()
+        author_title = request.POST.get('author_title', 'Founder & Software Architect').strip()
+        author_avatar = request.POST.get('author_avatar_url', '').strip()
+        is_published = request.POST.get('is_published') == 'on'
+        is_featured = request.POST.get('is_featured') == 'on'
+
+        if not title or not content:
+            messages.error(request, "Title and Content are required fields.")
+            categories = Category.objects.all()
+            return render(request, 'blog/create.html', {'categories': categories})
+
+        category = Category.objects.filter(pk=category_id).first() if category_id else None
+
+        post = BlogPost(
+            title=title,
+            slug=slug,
+            excerpt=excerpt or title,
+            content=content,
+            category=category,
+            cover_image_url=cover_image_url or "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200",
+            author_name=author_name,
+            author_title=author_title,
+            author_avatar_url=author_avatar or "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+            is_published=is_published,
+            is_featured=is_featured,
+        )
+        post.save()
+
+        # Process Tags
+        if tags_str:
+            tag_names = [t.strip().lstrip('#') for t in tags_str.split(',') if t.strip()]
+            for name in tag_names:
+                tag, _ = Tag.objects.get_or_create(name=name)
+                post.tags.add(tag)
+
+        messages.success(request, f"✨ Article '{post.title}' successfully created!")
+        return redirect('blog:blog_detail', slug=post.slug)
+
+    categories = Category.objects.all()
+    all_tags = Tag.objects.all()
+    context = {
+        'categories': categories,
+        'all_tags': all_tags,
+        'meta_title': "Create New Article — Kashii Blog Studio",
+        'meta_description': "Publish technical articles, V8 deep dives, and tutorials."
+    }
+    return render(request, 'blog/create.html', context)
+

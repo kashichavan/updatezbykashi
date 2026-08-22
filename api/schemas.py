@@ -45,6 +45,22 @@ class BlogPostDetailSchema(BlogPostListSchema):
     updated_at: datetime
     related_posts: List[BlogPostListSchema] = []
 
+class BlogPostCreateSchema(Schema):
+    title: str
+    slug: Optional[str] = None
+    excerpt: str
+    content: str
+    category_id: Optional[int] = None
+    tags: Optional[List[str]] = []
+    cover_image_url: Optional[str] = None
+    author_name: Optional[str] = "Kashinath Chavan"
+    author_title: Optional[str] = "Founder & Software Architect"
+    author_avatar_url: Optional[str] = None
+    is_published: Optional[bool] = True
+    is_featured: Optional[bool] = False
+    seo_title: Optional[str] = None
+    seo_description: Optional[str] = None
+
 class BlogPostsResponse(Schema):
     total: int
     limit: int

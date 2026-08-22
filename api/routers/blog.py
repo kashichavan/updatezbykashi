@@ -122,3 +122,41 @@ def get_featured_posts(request, limit: int = 3):
             .prefetch_related('tags')[:limit]
         )
     return posts
+
+from api.schemas import BlogPostCreateSchema
+
+@router.post("/posts", response=BlogPostDetailSchema, summary="Create a new blog post via API")
+def create_blog_post(request, payload: BlogPostCreateSchema):
+    """
+    Create a new technical blog post programmatically.
+    """
+    cat = None
+    if payload.category_id:
+        cat = Category.objects.filter(pk=payload.category_id).first()
+
+    post = BlogPost(
+        title=payload.title,
+        slug=payload.slug or "",
+        excerpt=payload.excerpt,
+        content=payload.content,
+        category=cat,
+        cover_image_url=payload.cover_image_url,
+        author_name=payload.author_name or "Kashinath Chavan",
+        author_title=payload.author_title or "Founder & Software Architect",
+        author_avatar_url=payload.author_avatar_url,
+        is_published=payload.is_published if payload.is_published is not None else True,
+        is_featured=payload.is_featured if payload.is_featured is not None else False,
+        seo_title=payload.seo_title or "",
+        seo_description=payload.seo_description or "",
+    )
+    post.save()
+
+    if payload.tags:
+        for tag_name in payload.tags:
+            tag_clean = tag_name.strip().lstrip('#')
+            if tag_clean:
+                t, _ = Tag.objects.get_or_create(name=tag_clean)
+                post.tags.add(t)
+
+    post.related_posts = []
+    return post
