@@ -164,33 +164,63 @@
 
     <div id="jobsGrid" class="vp-catalog-grid">
       {% for job in initial_jobs %}
-      <article class="vp-job-card" data-id="{{ job.id }}">
-        <div class="vp-job-card-inner">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-            <span class="company-badge">{{ job.company_name }}</span>
+      <div class="vp-product-card" data-id="{{ job.id }}" data-share-url="/category/{{ job.category.slug }}/job/{{ job.uuid }}/">
+        <div class="vp-card-header">
+          <span class="company-badge">{{ job.company_name }}</span>
+          <div style="display:flex;gap:6px;align-items:center;">
             <span class="type-badge">{{ job.get_job_type_display }}</span>
           </div>
-          <h3 class="vp-job-title">
-            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/" style="color: inherit; text-decoration: none;">
-              {{ job.title }}
-            </a>
-          </h3>
-          <div style="font-size: 13px; color: var(--muted); margin-bottom: 12px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <span>💰 {{ job.stipend_salary }}</span>
-            <span>📍 {{ job.location }}</span>
-            <span>⏱️ {{ job.get_posted_date_display }}</span>
+        </div>
+
+        <div class="vp-card-content">
+          <h3>{{ job.title }}</h3>
+          
+          <div class="vp-salary-row">
+            <span style="display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> {{ job.stipend_salary }}</span>
+            <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> {{ job.location }}</span>
           </div>
-          <p style="font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 14px;">
-            {{ job.description|truncatewords:20 }}
-          </p>
-          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--subtle-border); padding-top: 12px;">
-            <span style="font-size: 12px; color: var(--muted);">Auto-Expires in 7 Days</span>
-            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/" class="button button-dark" style="padding: 6px 12px; font-size: 12px;">
-              View Details ↗
+
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+            <img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">{{ job.get_posted_date_display }}</strong>
+          </div>
+
+          <p>{{ job.description|truncatewords:20 }}</p>
+
+          <div class="skills-wrapper">
+            {% for skill in job.get_skills_list %}
+              <span class="skill-tag">{{ skill }}</span>
+            {% endfor %}
+          </div>
+
+          <div class="vp-price-row">
+            <div class="timer-tag" data-timer="{{ job.id }}" data-seconds="{{ job.get_time_left_seconds }}">
+              ⏱️ <span>Auto-Expires in 7 Days</span>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            {% if job.apply_url %}
+            <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
+               class="external-apply-btn"
+               onclick="event.stopPropagation();"
+               style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);">
+              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="16" height="16" alt="Apply"> Apply Now ↗
             </a>
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+               onclick="event.stopPropagation();"
+               style="padding:11px 14px;background:var(--blue-light);color:var(--blue-primary);font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:1px solid var(--blue-border);display:flex;align-items:center;justify-content:center;">
+              <img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
+            </a>
+            {% else %}
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+               onclick="event.stopPropagation();"
+               style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;">
+              <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
+            </a>
+            {% endif %}
           </div>
         </div>
-      </article>
+      </div>
       {% empty %}
       <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #fff; border-radius: 16px; border: 1px solid var(--subtle-border);">
         <p style="color: var(--muted); margin: 0;">Loading fresh software &amp; tech requirements...</p>

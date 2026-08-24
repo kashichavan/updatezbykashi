@@ -2,6 +2,12 @@ from pathlib import Path
 import os
 from datetime import timedelta
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+except ImportError:
+    pass
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -78,10 +84,12 @@ if os.environ.get("DATABASE_URL"):
         DATABASES = {
             "default": dj_database_url.config(
                 default=os.environ["DATABASE_URL"],
-                conn_max_age=600,
+                conn_max_age=0 if "pooler" in os.environ.get("DATABASE_URL", "") else 600,
                 conn_health_checks=True,
             )
         }
+        if "pooler.supabase.com" in os.environ.get("DATABASE_URL", ""):
+            DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
     except Exception:
         DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
 elif os.environ.get("DB_ENGINE"):

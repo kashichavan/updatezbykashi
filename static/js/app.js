@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isYesterdayOnly: isYesterdayOnly,
     isPreviousOnly: isPreviousOnly,
     page: 1,
-    pageSize: isHomePage ? 3 : 6, // Show top 3 newest on homepage, 6 on category detail page
+    pageSize: 6, // 6 opportunities per page
     totalPages: 1,
     totalCount: 0,
     jobs: [],
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const params = new URLSearchParams({
         q: state.searchQuery,
-        category: 'software-tech',
+        category: state.category || 'software-tech',
         job_type: state.jobType,
         today: state.isTodayOnly ? 'true' : '',
         yesterday: state.isYesterdayOnly ? 'true' : '',
@@ -448,6 +448,21 @@ document.addEventListener('DOMContentLoaded', () => {
         loadJobs();
       });
     }
+
+    document.querySelectorAll('.vp-tabs .vp-tab[data-category]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        state.isTodayOnly = false;
+        state.isYesterdayOnly = false;
+        state.isPreviousOnly = false;
+        state.category = tab.dataset.category || 'software-tech';
+        state.page = 1;
+
+        document.querySelectorAll('.vp-tabs .vp-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        loadJobs();
+      });
+    });
 
     if (searchInput) {
       let searchTimeout;

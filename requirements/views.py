@@ -14,6 +14,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
+from django.db.models import Count, Q
 from .models import Category, JobPosting, GuideArticle, ContactInquiry
 
 DEFAULT_YOUTUBE_VIDEOS = [

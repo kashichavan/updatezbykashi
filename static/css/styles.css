@@ -731,12 +731,19 @@ a {
 
 .vp-hero-copy h1, #typewriterText {
   font-family: 'Consolas', 'Fira Code', 'Monaco', 'Courier New', monospace;
-  font-size: 32px;
-  line-height: 1.2;
+  font-size: 26px;
+  line-height: 1.25;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.5px;
   margin-bottom: 14px;
+  word-break: break-word;
+}
+
+@media (min-width: 480px) {
+  .vp-hero-copy h1, #typewriterText {
+    font-size: 32px;
+  }
 }
 
 @media (min-width: 768px) {
