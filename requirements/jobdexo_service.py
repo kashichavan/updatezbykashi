@@ -165,8 +165,22 @@ def extract_jobdexo_detail(url):
         if not apply_url:
             apply_url = url
 
-    # 10. Check Deadline & Freshness (Skip stale/expired jobs)
+    # 10. Check Posting Date & Freshness (Date-Wise Today/Fresh Postings Only)
     is_expired = False
+    posted_date = timezone.now().date()
+
+    if schema_data.get('datePosted'):
+        try:
+            from datetime import datetime
+            dp_str = schema_data.get('datePosted')[:10]
+            parsed_dp = datetime.strptime(dp_str, '%Y-%m-%d').date()
+            posted_date = parsed_dp
+            # Skip jobs posted more than 3 days ago so only fresh today/recent jobs are added
+            if (timezone.now().date() - parsed_dp).days > 3:
+                is_expired = True
+        except Exception:
+            pass
+
     deadline_m = re.search(r'Deadline:\s*(\d{1,2}\s+[A-Za-z]{3,}\s+\d{4})', page_html, re.IGNORECASE)
     if deadline_m:
         try:
@@ -203,6 +217,7 @@ def extract_jobdexo_detail(url):
         'apply_url': apply_url,
         'job_type': job_type,
         'source_url': url,
+        'posted_date': posted_date,
         'is_expired': is_expired,
     }
 
@@ -318,6 +333,9 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
             if is_job_duplicate_in_db(job_data, seen_in_batch=seen_in_batch):
                 continue
 
+            job_posted_date = job_data.get('posted_date', now.date())
+            job_deadline = timezone.now() + timedelta(days=7)
+
             # Create new non-duplicate job posting
             job = JobPosting.objects.create(
                 title=job_data['title'],
@@ -336,8 +354,8 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
                 selection_process=job_data.get('selection_process', ''),
                 status='ACTIVE',
                 is_featured=True,
-                posted_date=now.date(),
-                deadline=deadline,
+                posted_date=job_posted_date,
+                deadline=job_deadline,
             )
 
             created_jobs.append({
@@ -362,7 +380,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     if created_job_instances:
         now_local = timezone.localtime(timezone.now())
         if not group_name:
-            group_name = now_local.strftime("Jobdexo Tech Drive — %d %b %Y, %I:%M %p")
+            group_name = now_local.strftime("🔥 Top Off-Campus Tech Drives — %d %b %Y")
 
         base_slug = slugify(group_name) or "jobdexo-drive"
         slug = f"{base_slug}-{now_local.strftime('%Y%m%d%H%M')}"
