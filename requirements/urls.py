@@ -69,4 +69,5 @@ urlpatterns = [
     path('api/owner/bulk-parse-and-post/', views.api_owner_bulk_parse_and_post, name='api_owner_bulk_parse_and_post'),
     path('api/owner/jobdexo/import-urls/', views.api_owner_jobdexo_import, name='api_owner_jobdexo_import'),
     path('api/owner/jobdexo/fetch-latest/', views.api_owner_jobdexo_fetch_latest, name='api_owner_jobdexo_fetch_latest'),
+    path('api/owner/analytics/', views.api_owner_analytics, name='api_owner_analytics'),
 ]

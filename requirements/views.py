@@ -1390,3 +1390,140 @@ def custom_404_view(request, exception=None):
     return response
 
 
+@csrf_exempt
+def api_owner_analytics(request):
+    """
+    Real-time Website Traffic & Visitor Analytics API for the Owner Dashboard.
+    Provides complete free-tier analytics without third-party subscriptions.
+    """
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    from django.db.models import Count
+    from .models import SiteVisit
+
+    now = timezone.now()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    seven_days_ago = today_start - timedelta(days=6)
+    thirty_days_ago = today_start - timedelta(days=29)
+
+    # Base queryset excluding bots
+    human_visits = SiteVisit.objects.filter(is_bot=False)
+
+    total_page_views = human_visits.count()
+    total_unique_visitors = human_visits.values('visitor_hash').distinct().count()
+
+    today_visits = human_visits.filter(timestamp__gte=today_start)
+    today_page_views = today_visits.count()
+    today_unique_visitors = today_visits.values('visitor_hash').distinct().count()
+
+    week_visits = human_visits.filter(timestamp__gte=seven_days_ago)
+    week_unique_visitors = week_visits.values('visitor_hash').distinct().count()
+
+    month_visits = human_visits.filter(timestamp__gte=thirty_days_ago)
+    month_unique_visitors = month_visits.values('visitor_hash').distinct().count()
+
+    # Daily traffic trend for last 14 days
+    daily_traffic = []
+    for i in range(13, -1, -1):
+        day_date = (today_start - timedelta(days=i)).date()
+        day_start = timezone.make_aware(timezone.datetime.combine(day_date, timezone.datetime.min.time()))
+        day_end = timezone.make_aware(timezone.datetime.combine(day_date, timezone.datetime.max.time()))
+
+        day_qs = human_visits.filter(timestamp__range=(day_start, day_end))
+        d_views = day_qs.count()
+        d_unique = day_qs.values('visitor_hash').distinct().count()
+        daily_traffic.append({
+            'date': day_date.strftime('%b %d'),
+            'full_date': day_date.strftime('%Y-%m-%d'),
+            'views': d_views,
+            'unique_visitors': d_unique,
+        })
+
+    # Top 10 Pages
+    top_pages_data = human_visits.values('path', 'page_title').annotate(
+        views=Count('id'),
+        unique_visitors=Count('visitor_hash', distinct=True)
+    ).order_by('-views')[:10]
+    top_pages = list(top_pages_data)
+
+    # Traffic Referrers
+    referrer_data = human_visits.values('referrer').annotate(
+        count=Count('id')
+    ).order_by('-count')[:8]
+    referrers = []
+    for r in referrer_data:
+        pct = round((r['count'] / total_page_views * 100), 1) if total_page_views > 0 else 0
+        referrers.append({
+            'source': r['referrer'],
+            'count': r['count'],
+            'percentage': pct
+        })
+
+    # Device Distribution
+    device_data = human_visits.values('device_type').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    devices = {
+        'mobile': 0,
+        'desktop': 0,
+        'tablet': 0,
+        'mobile_pct': 0,
+        'desktop_pct': 0,
+        'tablet_pct': 0,
+    }
+    for d in device_data:
+        key = d['device_type'].lower()
+        if key in devices:
+            devices[key] = d['count']
+    if total_page_views > 0:
+        devices['mobile_pct'] = round((devices['mobile'] / total_page_views * 100), 1)
+        devices['desktop_pct'] = round((devices['desktop'] / total_page_views * 100), 1)
+        devices['tablet_pct'] = round((devices['tablet'] / total_page_views * 100), 1)
+
+    # Browser Breakdown
+    browsers = list(human_visits.values('browser').annotate(count=Count('id')).order_by('-count')[:6])
+
+    # OS Breakdown
+    operating_systems = list(human_visits.values('os').annotate(count=Count('id')).order_by('-count')[:6])
+
+    # Recent 20 Real-Time Visitors
+    recent_visits_qs = human_visits.order_by('-timestamp')[:20]
+    recent_visits = [
+        {
+            'time': timezone.localtime(v.timestamp).strftime('%I:%M:%S %p'),
+            'date': timezone.localtime(v.timestamp).strftime('%b %d'),
+            'path': v.path,
+            'page_title': v.page_title,
+            'device': v.device_type,
+            'browser': v.browser,
+            'os': v.os,
+            'referrer': v.referrer,
+            'ip': v.ip_address_masked,
+        }
+        for v in recent_visits_qs
+    ]
+
+    return JsonResponse({
+        'success': True,
+        'summary': {
+            'total_page_views': total_page_views,
+            'total_unique_visitors': total_unique_visitors,
+            'today_page_views': today_page_views,
+            'today_unique_visitors': today_unique_visitors,
+            'week_unique_visitors': week_unique_visitors,
+            'month_unique_visitors': month_unique_visitors,
+        },
+        'daily_traffic': daily_traffic,
+        'top_pages': top_pages,
+        'referrers': referrers,
+        'devices': devices,
+        'browsers': browsers,
+        'operating_systems': operating_systems,
+        'recent_visits': recent_visits,
+        'timestamp': timezone.now().isoformat(),
+    })
+
+
+

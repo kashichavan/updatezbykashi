@@ -28,12 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabSwitching();
     setupFiltersAndSearch();
     await checkAuthStatus();
+    loadAnalyticsData();
   }
 
   const tabTitles = {
     'tabJobs': { title: 'Opportunity Pipeline CRM', sub: 'Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.' },
     'tabBulkParse': { title: 'Bulk Multi-Job Automation', sub: 'Parse multi-job Telegram/WhatsApp messages & auto-publish all leads in 1 click.' },
     'tabJobdexo': { title: 'Jobdexo Auto-Sync Engine', sub: 'Automatically crawl & import off-campus drives directly from Jobdexo with official apply links.' },
+    'tabAnalytics': { title: 'Website Traffic & Visitor Analytics', sub: 'Real-time student visitor volume, daily trends, referrer sources, and top viewed requirements.' },
     'tabGroups': { title: 'Requirement Groups & Drives', sub: 'Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.' },
     'tabSmartParse': { title: '1-Click Single Parser', sub: 'Extract details from a single job requirement snippet & publish instantly.' },
     'tabPost': { title: 'Publish New Opportunity', sub: 'Manual form to publish structured student job or internship postings.' },
@@ -45,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'tabJobs': '/owner/manage-jobs/',
     'tabBulkParse': '/owner/bulk-parser/',
     'tabJobdexo': '/owner/jobdexo-sync/',
+    'tabAnalytics': '/owner/analytics/',
     'tabGroups': '/owner/groups/',
     'tabSmartParse': '/owner/single-parser/',
     'tabPost': '/owner/post-job/',
@@ -57,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/owner/manage-jobs/': 'tabJobs',
     '/owner/bulk-parser/': 'tabBulkParse',
     '/owner/jobdexo-sync/': 'tabJobdexo',
+    '/owner/analytics/': 'tabAnalytics',
     '/owner/groups/': 'tabGroups',
     '/owner/single-parser/': 'tabSmartParse',
     '/owner/post-job/': 'tabPost',
@@ -108,6 +112,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (targetId === 'tabJobs') loadJobsList(1);
     if (targetId === 'tabCategory') loadCategoryList();
     if (targetId === 'tabGroups') loadGroupsList();
+    if (targetId === 'tabAnalytics') loadAnalyticsData();
+  }
+
+  const btnRefreshAnalytics = document.getElementById('btnRefreshAnalytics');
+  if (btnRefreshAnalytics) {
+    btnRefreshAnalytics.addEventListener('click', () => {
+      btnRefreshAnalytics.textContent = '🔄 Updating...';
+      loadAnalyticsData().finally(() => {
+        setTimeout(() => { btnRefreshAnalytics.textContent = '🔄 Refresh Analytics'; }, 800);
+      });
+    });
   }
 
   function setupFiltersAndSearch() {
@@ -1062,6 +1077,156 @@ document.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('groupBroadcastModal');
       if (modal) modal.style.display = 'none';
     });
+  }
+
+  // --- REAL-TIME WEBSITE TRAFFIC & VISITOR ANALYTICS ---
+  async function loadAnalyticsData() {
+    try {
+      const res = await fetch('/api/owner/analytics/', {
+        headers: { 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      const sum = data.summary || {};
+      const dev = data.devices || {};
+
+      // 1. KPI Cards
+      const elTotalVis = document.getElementById('anaTotalVisitors');
+      const elMonthVis = document.getElementById('anaMonthVisitors');
+      const elTodayVis = document.getElementById('anaTodayVisitors');
+      const elTodayViews = document.getElementById('anaTodayViews');
+      const elTotalViews = document.getElementById('anaTotalViews');
+      const elWeekVis = document.getElementById('anaWeekVisitors');
+      const elDeviceSplit = document.getElementById('anaDeviceSplit');
+      const elTopSource = document.getElementById('anaTopSource');
+
+      if (elTotalVis) elTotalVis.textContent = Number(sum.total_unique_visitors || 0).toLocaleString();
+      if (elMonthVis) elMonthVis.textContent = `${Number(sum.month_unique_visitors || 0).toLocaleString()} this month`;
+      if (elTodayVis) elTodayVis.textContent = Number(sum.today_unique_visitors || 0).toLocaleString();
+      if (elTodayViews) elTodayViews.textContent = `${Number(sum.today_page_views || 0).toLocaleString()} views today`;
+      if (elTotalViews) elTotalViews.textContent = Number(sum.total_page_views || 0).toLocaleString();
+      if (elWeekVis) elWeekVis.textContent = `${Number(sum.week_unique_visitors || 0).toLocaleString()} this week`;
+
+      if (elDeviceSplit) {
+        elDeviceSplit.textContent = `${dev.mobile_pct || 0}% Mobile`;
+      }
+      if (elTopSource && data.referrers && data.referrers.length > 0) {
+        elTopSource.textContent = `Top: ${data.referrers[0].source} (${data.referrers[0].percentage}%)`;
+      }
+
+      // 2. 14-Day Daily Traffic Chart
+      const chartContainer = document.getElementById('anaDailyChartContainer');
+      if (chartContainer && data.daily_traffic) {
+        const maxViews = Math.max(...data.daily_traffic.map(d => d.views), 10);
+        chartContainer.innerHTML = data.daily_traffic.map(d => {
+          const heightPct = Math.max(Math.round((d.views / maxViews) * 100), 8);
+          return `
+            <div style="flex: 1; min-width: 22px; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;" title="${d.full_date}: ${d.views} views, ${d.unique_visitors} unique visitors">
+              <span style="font-size: 9.5px; font-weight: 700; color: #38bdf8;">${d.views > 0 ? d.views : ''}</span>
+              <div style="width: 100%; max-width: 28px; height: ${heightPct}%; background: linear-gradient(180deg, #38bdf8 0%, #2563eb 100%); border-radius: 6px 6px 0 0; transition: height 0.3s ease;"></div>
+              <span style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; margin-top: 4px;">${d.date}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3. Top Visited Pages
+      const topPagesContainer = document.getElementById('anaTopPagesList');
+      if (topPagesContainer) {
+        if (!data.top_pages || data.top_pages.length === 0) {
+          topPagesContainer.innerHTML = '<div style="color: var(--crm-muted); font-size: 13px;">No page views recorded yet.</div>';
+        } else {
+          topPagesContainer.innerHTML = data.top_pages.map((p, idx) => `
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--crm-border); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 13px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <span style="color: var(--crm-cyan); font-weight: 800; margin-right: 4px;">#${idx + 1}</span> ${escapeHtml(p.page_title || p.path)}
+                </div>
+                <div style="font-size: 11px; color: var(--crm-muted); font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(p.path)}
+                </div>
+              </div>
+              <div style="text-align: right; flex-shrink: 0;">
+                <div style="font-size: 13px; font-weight: 800; color: #38bdf8;">${p.views} views</div>
+                <div style="font-size: 10.5px; color: #94a3b8;">${p.unique_visitors} unique</div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 4. Traffic Channels & Referrers
+      const referrersContainer = document.getElementById('anaReferrersList');
+      if (referrersContainer) {
+        if (!data.referrers || data.referrers.length === 0) {
+          referrersContainer.innerHTML = '<div style="color: var(--crm-muted); font-size: 13px;">No referrer data yet.</div>';
+        } else {
+          referrersContainer.innerHTML = data.referrers.map(r => `
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+                <span>${escapeHtml(r.source)}</span>
+                <span style="color: #38bdf8;">${r.count} hits (${r.percentage}%)</span>
+              </div>
+              <div style="height: 6px; width: 100%; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; width: ${r.percentage}%; background: linear-gradient(90deg, #06b6d4, #6366f1); border-radius: 4px;"></div>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 5. Operating Systems & Platforms
+      const platformsContainer = document.getElementById('anaPlatformsList');
+      if (platformsContainer) {
+        const osList = (data.operating_systems || []).map(o => `
+          <span style="background: rgba(255,255,255,0.05); border: 1px solid var(--crm-border); border-radius: 8px; padding: 4px 10px; font-size: 11.5px; color: #cbd5e1;">
+            💻 ${escapeHtml(o.os)}: <strong style="color: #ffffff;">${o.count}</strong>
+          </span>
+        `);
+        const browserList = (data.browsers || []).map(b => `
+          <span style="background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 4px 10px; font-size: 11.5px; color: #38bdf8;">
+            🌐 ${escapeHtml(b.browser)}: <strong style="color: #ffffff;">${b.count}</strong>
+          </span>
+        `);
+        platformsContainer.innerHTML = [...osList, ...browserList].join('') || '<span style="color: var(--crm-muted); font-size: 12px;">No platform data yet</span>';
+      }
+
+      // 6. Recent Real-Time Visitors Table
+      const visitsBody = document.getElementById('anaRecentVisitsBody');
+      if (visitsBody) {
+        if (!data.recent_visits || data.recent_visits.length === 0) {
+          visitsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--crm-muted); padding: 20px;">No recent live visits yet.</td></tr>';
+        } else {
+          visitsBody.innerHTML = data.recent_visits.map(v => `
+            <tr>
+              <td style="white-space: nowrap; font-size: 12px; color: #94a3b8;">
+                <span style="color: var(--crm-cyan); font-weight: 700;">${escapeHtml(v.time)}</span><br>
+                <small>${escapeHtml(v.date)}</small>
+              </td>
+              <td>
+                <div style="font-weight: 700; color: #ffffff; font-size: 13px;">${escapeHtml(v.page_title)}</div>
+                <div style="font-size: 11px; color: var(--crm-muted); font-family: monospace;">${escapeHtml(v.path)}</div>
+              </td>
+              <td>
+                <span class="crm-category-tag" style="background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3);">
+                  ${escapeHtml(v.referrer)}
+                </span>
+              </td>
+              <td style="font-size: 12px; color: #cbd5e1;">
+                ${v.device === 'Mobile' ? '📱 Mobile' : (v.device === 'Tablet' ? '📟 Tablet' : '💻 Desktop')} • ${escapeHtml(v.os)} (${escapeHtml(v.browser)})
+              </td>
+              <td style="font-family: monospace; font-size: 11.5px; color: #64748b;">
+                ${escapeHtml(v.ip)}
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+    } catch (err) {
+      console.error('Error loading website analytics:', err);
+    }
   }
 
   // --- AUDIT LOG STREAM ---

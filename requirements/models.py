@@ -341,3 +341,36 @@ class JobGroup(models.Model):
         return "\n".join(lines)
 
 
+class SiteVisit(models.Model):
+    """
+    Lightweight, high-performance visitor analytics tracking.
+    Enables free-tier owners to monitor total users, unique visitors,
+    page views, referrer traffic (Instagram, Google, Direct, WhatsApp),
+    and device statistics without third-party subscriptions.
+    """
+    visitor_hash = models.CharField(max_length=64, db_index=True, help_text="SHA-256 hash of IP + User-Agent for unique visitor counting")
+    path = models.CharField(max_length=500, db_index=True)
+    page_title = models.CharField(max_length=255, blank=True, default="")
+    referrer = models.CharField(max_length=100, default="Direct", db_index=True)
+    referrer_raw = models.CharField(max_length=500, blank=True, default="")
+    device_type = models.CharField(max_length=20, default="Desktop", db_index=True)
+    browser = models.CharField(max_length=50, default="Other")
+    os = models.CharField(max_length=50, default="Other")
+    user_agent = models.CharField(max_length=500, blank=True, default="")
+    ip_address_masked = models.CharField(max_length=45, blank=True, default="")
+    is_bot = models.BooleanField(default=False, db_index=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp', 'is_bot']),
+            models.Index(fields=['visitor_hash', 'timestamp']),
+            models.Index(fields=['path', 'timestamp']),
+        ]
+
+    def __str__(self):
+        return f"{self.device_type} visit to {self.path} at {self.timestamp}"
+
+
+
