@@ -46,6 +46,11 @@ class JobPosting(models.Model):
 
     description = models.TextField(help_text="Detailed job description and responsibilities")
     eligibility = models.TextField(blank=True, default="Open to all students")
+    selection_process = models.TextField(
+        blank=True,
+        default="",
+        help_text="Step-by-step interview selection rounds e.g. Round 1: Online Aptitude -> Round 2: Technical Interview -> Round 3: HR"
+    )
     
     posted_by = models.CharField(max_length=100, default="Kashii Updatez Admin")
     poster_email = models.EmailField(default="admin@kashiiupdatez.com")
@@ -78,6 +83,15 @@ class JobPosting(models.Model):
 
     def get_skills_list(self):
         return [s.strip() for s in self.skills_required.split(',') if s.strip()]
+
+    def get_selection_rounds_list(self):
+        """Returns a list of structured round steps from the selection_process text."""
+        if not self.selection_process:
+            return []
+        import re
+        raw_rounds = re.split(r'→|->|\n|•|(?=Round\s*\d+:?)', self.selection_process)
+        cleaned = [r.strip(' -:•\t\r\n') for r in raw_rounds if r.strip(' -:•\t\r\n')]
+        return cleaned if cleaned else [self.selection_process.strip()]
 
     def get_posted_date_display(self):
         """Returns human-friendly date: 'Today', 'Yesterday', or 'Aug 3, 2026'"""

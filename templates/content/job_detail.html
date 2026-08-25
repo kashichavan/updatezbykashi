@@ -538,6 +538,27 @@
         </p>
       </div>
 
+      <!-- Selection & Interview Process Rounds -->
+      {% if job.selection_process %}
+      <div style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.08) 100%); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 16px; padding: 18px 20px;">
+        <div class="section-label" style="display:flex; align-items:center; gap:8px; color: #4f46e5; margin-bottom: 14px; font-weight: 800;">
+          🏆 Selection &amp; Interview Process
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          {% for round in job.get_selection_rounds_list %}
+            <div style="display: flex; align-items: flex-start; gap: 12px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 50%; background: #4f46e5; color: #ffffff; font-size: 11.5px; font-weight: 800; flex-shrink: 0; margin-top: 1px;">
+                {{ forloop.counter }}
+              </span>
+              <div style="font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.5;">
+                {{ round }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
       <!-- Description & Responsibilities -->
       <div>
         <div class="section-label" style="display:flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="Description"> Job Description & Key Responsibilities</div>

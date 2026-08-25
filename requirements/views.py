@@ -504,14 +504,10 @@ def api_owner_jobdexo_import(request):
                 return JsonResponse({'error': 'Please provide at least one valid Jobdexo URL.'}, status=400)
 
             group_name = data.get('group_name', '').strip()
-            poster_name = owner_user.username if owner_user else "Owner"
-            poster_email = owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"
 
             result = auto_import_from_jobdexo(
                 urls=urls,
-                group_name=group_name if group_name else None,
-                poster_name=poster_name,
-                poster_email=poster_email
+                group_name=group_name if group_name else None
             )
 
             job_group = result.get('job_group')
@@ -550,15 +546,11 @@ def api_owner_jobdexo_fetch_latest(request):
             data = json.loads(request.body) if request.body else {}
             limit = int(data.get('limit', 5))
             group_name = data.get('group_name', '').strip()
-            poster_name = owner_user.username if owner_user else "Owner"
-            poster_email = owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"
 
             result = auto_import_from_jobdexo(
                 urls=None,
                 limit=limit,
-                group_name=group_name if group_name else None,
-                poster_name=poster_name,
-                poster_email=poster_email
+                group_name=group_name if group_name else None
             )
 
             job_group = result.get('job_group')

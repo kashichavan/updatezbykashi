@@ -21,8 +21,7 @@ class Command(BaseCommand):
         result = auto_import_from_jobdexo(
             urls=urls if urls else None,
             limit=count,
-            group_name=custom_name if custom_name else None,
-            poster_name="Jobdexo Daily Sync Engine"
+            group_name=custom_name if custom_name else None
         )
 
         imported = result['imported_count']

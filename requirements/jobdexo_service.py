@@ -145,6 +145,14 @@ def extract_jobdexo_detail(url):
     else:
         description = f"{company} is hiring for {title}.\nLocation: {location}\nSalary: {salary}\nKey Skills: {skills}"
 
+    # 8b. Selection Process & Interview Rounds
+    selection_process = ""
+    sel_m = re.search(r'<div class="jd-card-title">\s*🏆\s*Selection Process\s*</div>\s*<div class="jd-prose"[^>]*>(.*?)</div>', page_html, re.DOTALL)
+    if sel_m:
+        raw_sel = re.sub(r'<br\s*/?>', '\n', sel_m.group(1))
+        raw_sel = re.sub(r'<[^>]+>', '', raw_sel)
+        selection_process = html.unescape(raw_sel.strip())
+
     # 9. Official Apply URL
     apply_url = ""
     apply_m = re.search(r'href="([^"]+)"[^>]*class="[^"]*jd-apply', page_html)
@@ -168,6 +176,7 @@ def extract_jobdexo_detail(url):
         'location': location,
         'skills': skills,
         'eligibility': eligibility,
+        'selection_process': selection_process,
         'description': description,
         'apply_url': apply_url,
         'job_type': job_type,
@@ -244,7 +253,7 @@ def is_job_duplicate_in_db(job_data, seen_in_batch=None):
     return False
 
 
-def auto_import_from_jobdexo(urls=None, limit=10, group_name=None, poster_name="Jobdexo Auto-Sync Engine", poster_email="admin@kashiiupdatez.com"):
+def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     """
     Main ingestion engine:
     1. Extracts jobs across 5 distinct Jobdexo sections (or provided URLs).
@@ -297,8 +306,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None, poster_name="
                 allow_direct_apply=True,
                 description=job_data['description'],
                 eligibility=job_data['eligibility'],
-                posted_by=poster_name,
-                poster_email=poster_email,
+                selection_process=job_data.get('selection_process', ''),
                 status='ACTIVE',
                 is_featured=True,
                 posted_date=now.date(),
@@ -375,7 +383,7 @@ def _background_5min_sync_loop():
             # Sleep 300 seconds (5 minutes)
             time.sleep(300)
             print("⚡ [Jobdexo Auto-Sync] Running 5-minute automated crawl across all sections...")
-            result = auto_import_from_jobdexo(limit=5, poster_name="5-Min Auto-Sync Engine")
+            result = auto_import_from_jobdexo(limit=5)
             if result['imported_count'] > 0:
                 print(f"✅ [Jobdexo Auto-Sync] Added {result['imported_count']} fresh non-duplicate jobs! Group: {result['group_name']}")
             else:
