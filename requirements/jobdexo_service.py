@@ -9,8 +9,8 @@ import urllib.request
 from datetime import timedelta
 from django.utils import timezone
 from django.utils.text import slugify
-from django.core.cache import cache
 from .models import Category, JobPosting, JobGroup
+from .company_resolver import resolve_company_name
 
 # SSL context for secure scraping
 SSL_CONTEXT = ssl._create_unverified_context()
@@ -215,13 +215,31 @@ def extract_jobdexo_detail(url):
         except Exception:
             pass
 
+    # Extract meta description (contains company introductory sentence on Jobdexo)
+    meta_desc = ""
+    og_m = re.search(r'<meta[^>]+property=["\']og:description["\'][^>]+content=["\']([^"\']+)["\']', page_html, re.IGNORECASE)
+    if not og_m:
+        og_m = re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)["\']', page_html, re.IGNORECASE)
+    if og_m:
+        meta_desc = html.unescape(og_m.group(1).strip())
+
+    full_desc_context = f"{meta_desc}\n{description}" if meta_desc else description
+
     lower_title = f"{title} {description}".lower()
     is_intern = any(k in lower_title for k in ['intern', 'internship', 'apprentice', 'trainee', 'co-op'])
     job_type = 'INTERNSHIP' if is_intern else 'FULL_TIME'
 
+    resolved_company = resolve_company_name(
+        raw_name=company,
+        title=title,
+        description=full_desc_context,
+        apply_url=apply_url,
+        url=url
+    )
+
     return {
         'title': title,
-        'company': company,
+        'company': resolved_company,
         'salary': salary,
         'location': location,
         'skills': skills,

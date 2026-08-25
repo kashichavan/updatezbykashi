@@ -14,9 +14,9 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
-from django.db.models import Count, Q
 from .models import Category, JobPosting, GuideArticle, ContactInquiry, JobGroup
 from .jobdexo_service import auto_import_from_jobdexo
+from .company_resolver import resolve_company_name
 
 DEFAULT_YOUTUBE_VIDEOS = [
     {
@@ -604,10 +604,17 @@ def api_owner_parse_and_post(request):
             apply_url = url_match.group(0).rstrip('.,;') if url_match else ""
 
             company_match = re.search(r'(?:Company|Organization):\s*(.+)', raw_text, re.IGNORECASE)
-            company_name = company_match.group(1).strip() if company_match else "Featured Hiring Partner"
+            raw_comp = company_match.group(1).strip() if company_match else ""
 
             title_match = re.search(r'(?:Role|Title|Position|Job):\s*(.+)', raw_text, re.IGNORECASE)
             title = title_match.group(1).strip() if title_match else "Software & Technology Opportunity"
+
+            company_name = resolve_company_name(
+                raw_name=raw_comp,
+                title=title,
+                description=raw_text,
+                apply_url=apply_url
+            )
 
             qual_match = re.search(r'(?:Qualification|Eligibility|Degree):\s*(.+)', raw_text, re.IGNORECASE)
             exp_match = re.search(r'(?:Experience):\s*(.+)', raw_text, re.IGNORECASE)
