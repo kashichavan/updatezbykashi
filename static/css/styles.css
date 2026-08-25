@@ -40,6 +40,13 @@
   padding: 0;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--paper);
@@ -62,7 +69,9 @@ a {
   width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 @media (min-width: 768px) {
@@ -183,16 +192,21 @@ a {
 @media (max-width: 992px) {
   .chat-kashii-card {
     grid-template-columns: 1fr !important;
+    padding: clamp(20px, 4vw, 32px) !important;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
   }
 }
 
 @media (max-width: 600px) {
   .btn-insta-chat {
     width: 100%;
+    max-width: 100%;
     box-sizing: border-box;
     justify-content: center;
-    padding: 13px 20px;
-    font-size: 14px;
+    padding: 12px 18px;
+    font-size: 13px;
   }
 }
 
@@ -678,33 +692,40 @@ a {
    ========================================================================== */
 
 .vp-hero {
-  margin: 20px 0 32px;
+  margin: 16px 0 28px;
   background: #ffffff;
-  border-radius: 24px;
+  border-radius: 20px;
   border: 1px solid var(--subtle-border);
-  padding: 32px 24px;
+  padding: clamp(18px, 4vw, 36px);
   box-shadow: var(--card-shadow);
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
 }
 
 @media (min-width: 768px) {
   .vp-hero {
-    padding: 44px;
-    margin: 32px 0 40px;
+    padding: 40px;
+    margin: 24px 0 36px;
+    border-radius: 24px;
   }
 }
 
 .vp-hero-inner {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 32px;
+  gap: 24px;
   align-items: center;
+  width: 100%;
+  max-width: 100%;
 }
 
 @media (min-width: 992px) {
   .vp-hero-inner {
     grid-template-columns: 1.2fr 0.9fr;
+    gap: 32px;
   }
 }
 
@@ -722,6 +743,7 @@ a {
   border-radius: 6px;
   margin-bottom: 14px;
   animation: pulseGlow 2.5s infinite ease-in-out;
+  max-width: 100%;
 }
 
 @keyframes pulseGlow {
@@ -731,25 +753,15 @@ a {
 
 .vp-hero-copy h1, #typewriterText {
   font-family: 'Consolas', 'Fira Code', 'Monaco', 'Courier New', monospace;
-  font-size: 26px;
+  font-size: clamp(22px, 5.5vw, 38px);
   line-height: 1.25;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: -0.5px;
   margin-bottom: 14px;
   word-break: break-word;
-}
-
-@media (min-width: 480px) {
-  .vp-hero-copy h1, #typewriterText {
-    font-size: 32px;
-  }
-}
-
-@media (min-width: 768px) {
-  .vp-hero-copy h1, #typewriterText {
-    font-size: 42px;
-  }
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .vp-hero-copy h1 em, #typewriterText em {
@@ -760,16 +772,18 @@ a {
 }
 
 .lead {
-  font-size: 15px;
+  font-size: clamp(13.5px, 2.5vw, 15px);
   color: var(--muted);
   line-height: 1.6;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  max-width: 100%;
 }
 
 .vp-trust-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  max-width: 100%;
 }
 
 .vp-pill {
@@ -778,8 +792,11 @@ a {
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--subtle-border);
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* --- ANIMATED CODING TERMINAL BOX --- */
@@ -792,6 +809,9 @@ a {
   box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.4);
   font-family: var(--font-code);
   animation: floatTerminal 4s ease-in-out infinite;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @keyframes floatTerminal {
@@ -831,17 +851,22 @@ a {
 }
 
 .terminal-body {
-  padding: 18px 16px;
-  font-size: 12px;
-  line-height: 1.8;
+  padding: 14px 12px;
+  font-size: clamp(10px, 2.7vw, 12px);
+  line-height: 1.7;
   color: #e2e8f0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  word-break: break-word;
 }
 
 .code-line {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 4px;
+  flex-wrap: wrap;
+  word-break: break-word;
 }
 
 .code-prompt {
