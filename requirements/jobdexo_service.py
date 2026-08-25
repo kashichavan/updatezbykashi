@@ -9,6 +9,7 @@ import urllib.request
 from datetime import timedelta
 from django.utils import timezone
 from django.utils.text import slugify
+from django.core.cache import cache
 from .models import Category, JobPosting, JobGroup
 from .company_resolver import resolve_company_name
 

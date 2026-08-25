@@ -39,7 +39,7 @@ class JobPosting(models.Model):
     stipend_salary = models.CharField(max_length=100, help_text="e.g. $2,500/mo or $85,000/yr")
     location = models.CharField(max_length=150, default="Remote")
     is_remote = models.BooleanField(default=True)
-    skills_required = models.CharField(max_length=300, help_text="Comma-separated skills e.g. Python, React, SQL")
+    skills_required = models.TextField(default="Problem Solving, Software Engineering", help_text="Comma-separated skills e.g. Python, React, SQL")
     
     apply_url = models.URLField(max_length=500, blank=True, null=True, help_text="Official external application link")
     allow_direct_apply = models.BooleanField(default=True)
