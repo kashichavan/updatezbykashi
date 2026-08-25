@@ -560,12 +560,96 @@
       {% endif %}
 
       <!-- Description & Responsibilities -->
-      <div>
-        <div class="section-label" style="display:flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="Description"> Job Description & Key Responsibilities</div>
+      <div style="margin-bottom: 24px;">
+        <div class="section-label" style="display:flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="Description"> Job Description &amp; Key Responsibilities</div>
         <div class="description-body">
 {{ job.description }}
         </div>
       </div>
+
+      <!-- ── INTERVIEW PREPARATION & QUESTIONS HUB ── -->
+      {% if interview_prep %}
+      <section style="margin-top: 28px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid var(--subtle-border); padding-bottom: 14px;">
+          <div>
+            <span class="code-badge" style="background: rgba(37,99,235,0.1); color: var(--blue-primary); border: 1px solid rgba(37,99,235,0.25); font-size: 11px; padding: 3px 8px;">
+              💡 INTERVIEW PREP HUB
+            </span>
+            <h3 style="font-size: 20px; font-weight: 800; color: var(--ink); margin: 8px 0 2px;">
+              {{ job.company_name }} — {{ interview_prep.domain }} Interview Questions &amp; Preparation
+            </h3>
+            <p style="font-size: 13px; color: var(--muted); margin: 0;">
+              Curated technical questions, coding benchmarks, and round-wise interview strategy.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="/debugger/" class="button" style="font-size: 12px; font-weight: 800; padding: 8px 14px; background: #0f172a; color: #ffffff; border-radius: 8px;">
+              ⚡ Live Code Debugger
+            </a>
+            <a href="/learn/{{ interview_prep.practice_lang }}/" class="button button-light" style="font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px;">
+              📚 Learning Academy
+            </a>
+          </div>
+        </div>
+
+        <!-- 1. Round-wise Preparation Roadmap -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            🗺️ Round-Wise Interview Strategy
+          </h4>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+            {% for r in interview_prep.rounds_roadmap %}
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px;">
+              <div style="font-size: 12px; font-weight: 800; color: #4f46e5; margin-bottom: 4px;">{{ r.round }}</div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 6px;">{{ r.focus }}</div>
+              <div style="font-size: 12px; color: var(--muted); line-height: 1.45;">{{ r.tips }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- 2. Technical Interview Questions with Interactive Expanders -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            💻 Top Technical Interview Questions ({{ interview_prep.domain }})
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for tq in interview_prep.tech_questions %}
+            <details style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; cursor: pointer; transition: all 0.2s ease;">
+              <summary style="font-size: 14px; font-weight: 700; color: var(--ink); outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                <span>❓ {{ tq.q }}</span>
+                <span style="font-size: 11px; color: #6366f1; font-weight: 800; background: rgba(99,102,241,0.1); padding: 2px 8px; border-radius: 6px;">View Answer ▼</span>
+              </summary>
+              <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0; font-size: 13.5px; color: #334155; line-height: 1.6;">
+                <strong>💡 Model Answer:</strong> {{ tq.a }}
+              </div>
+            </details>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- 3. Company Behavioral & Culture Fit Questions -->
+        <div>
+          <h4 style="font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+            🤝 {{ job.company_name }} Behavioral &amp; HR Interview Questions
+          </h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for bq in interview_prep.behavioral_questions %}
+            <div style="background: #fdfaf6; border: 1px solid #fed7aa; border-radius: 12px; padding: 14px;">
+              <div style="font-size: 13.5px; font-weight: 700; color: #9a3412; margin-bottom: 4px;">
+                🎯 {{ bq.q }}
+              </div>
+              <div style="font-size: 12.5px; color: #7c2d12; line-height: 1.5;">
+                <strong>💡 Preparation Tip:</strong> {{ bq.tip }}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </section>
+      {% endif %}
 
     </main>
 

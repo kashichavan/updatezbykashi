@@ -165,6 +165,28 @@ def extract_jobdexo_detail(url):
         if not apply_url:
             apply_url = url
 
+    # 10. Check Deadline & Freshness (Skip stale/expired jobs)
+    is_expired = False
+    deadline_m = re.search(r'Deadline:\s*(\d{1,2}\s+[A-Za-z]{3,}\s+\d{4})', page_html, re.IGNORECASE)
+    if deadline_m:
+        try:
+            from datetime import datetime
+            parsed_dl = datetime.strptime(deadline_m.group(1).strip(), '%d %b %Y')
+            if parsed_dl.date() < timezone.now().date():
+                is_expired = True
+        except Exception:
+            pass
+
+    if schema_data.get('validThrough'):
+        try:
+            vt = schema_data.get('validThrough')[:10]
+            from datetime import datetime
+            parsed_vt = datetime.strptime(vt, '%Y-%m-%d')
+            if parsed_vt.date() < timezone.now().date():
+                is_expired = True
+        except Exception:
+            pass
+
     lower_title = f"{title} {description}".lower()
     is_intern = any(k in lower_title for k in ['intern', 'internship', 'apprentice', 'trainee', 'co-op'])
     job_type = 'INTERNSHIP' if is_intern else 'FULL_TIME'
@@ -181,6 +203,7 @@ def extract_jobdexo_detail(url):
         'apply_url': apply_url,
         'job_type': job_type,
         'source_url': url,
+        'is_expired': is_expired,
     }
 
 
@@ -286,6 +309,10 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
 
         try:
             job_data = extract_jobdexo_detail(url)
+
+            # Skip expired or stale jobs
+            if job_data.get('is_expired'):
+                continue
 
             # Strict Deduplication Check
             if is_job_duplicate_in_db(job_data, seen_in_batch=seen_in_batch):

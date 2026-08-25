@@ -301,6 +301,13 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
     videos = get_cached_youtube_videos()
 
     full_share_url = request.build_absolute_uri(f"/category/{job.category.slug}/job/{job.uuid}/")
+    from .interview_prep import generate_interview_prep
+    interview_prep = generate_interview_prep(
+        title=job.title,
+        company=job.company_name,
+        skills=job.skills_required,
+        eligibility=job.eligibility
+    )
 
     context = {
         'job': job,
@@ -309,6 +316,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
         'related_jobs': related_jobs,
         'youtube_videos': videos,
         'share_url': full_share_url,
+        'interview_prep': interview_prep,
     }
     return render(request, 'content/job_detail.html', context)
 
