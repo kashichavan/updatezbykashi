@@ -706,7 +706,12 @@
                 <span style="font-size: 11px; color: var(--blue-primary); font-weight: 700; flex-shrink: 0;">Answer ▼</span>
               </summary>
               <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--subtle-border); font-size: 13px; color: var(--muted); line-height: 1.6;">
-                <strong style="color: var(--ink);">Model Answer:</strong> {{ tq.a }}
+                <div style="margin-bottom: 8px;"><strong style="color: var(--ink);">Model Answer:</strong> {{ tq.a }}</div>
+                <div style="display: flex; justify-content: flex-end;">
+                  <a href="{{ tq.debugger_url }}" style="font-size: 12px; font-weight: 700; color: var(--blue-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                    ⚡ Practice &amp; Trace in Code Editor →
+                  </a>
+                </div>
               </div>
             </details>
             {% endfor %}

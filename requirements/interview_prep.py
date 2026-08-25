@@ -1,4 +1,5 @@
 import re
+import urllib.parse
 
 
 def generate_interview_prep(title, company, skills, eligibility=""):
@@ -6,13 +7,14 @@ def generate_interview_prep(title, company, skills, eligibility=""):
     Generates comprehensive preparation materials including:
     - Real, verified study resources & interview preparation links (IndiaBIX, GFG, PrepInsta, LeetCode, Code Debugger)
     - Technical questions & solutions
-    - Coding challenges with direct live practice links
+    - Coding challenges with direct live practice links with pre-populated questions
     - Behavioral & HR questions with STAR framework tips
     - Round-by-round strategy roadmap
     """
     lower_title = (title or "").lower()
     lower_skills = (skills or "").lower()
     comp_name = company or "Target Company"
+    enc_comp = urllib.parse.quote(comp_name)
 
     # Determine domain
     is_qa = any(k in lower_title or k in lower_skills for k in ['test', 'qa', 'selenium', 'automation', 'testng', 'quality'])
@@ -117,6 +119,12 @@ def generate_interview_prep(title, company, skills, eligibility=""):
         ]
         practice_lang = "python"
 
+    # Add direct debugger practice URLs to each tech question
+    for tq in tech_questions:
+        q_enc = urllib.parse.quote(tq["q"])
+        a_enc = urllib.parse.quote(tq["a"])
+        tq["debugger_url"] = f"/debugger/?q={q_enc}&company={enc_comp}&lang={practice_lang}&desc={a_enc}"
+
     # 2. Verified Free Study Resources & Interview Redirect Links (Like Jobdexo)
     prep_links = [
         {
@@ -149,31 +157,31 @@ def generate_interview_prep(title, company, skills, eligibility=""):
         }
     ]
 
-    # 3. Previously Asked Coding Practice Challenges (Direct Interactive Practice)
+    # 3. Previously Asked Coding Practice Challenges (Direct Interactive Practice in Debugger)
     coding_challenges = [
         {
             "title": "Two Sum & Two Pointers Array Optimization",
             "difficulty": "Easy / Medium",
             "frequency": "Asked in 85% tech rounds",
-            "url": "/debugger/"
+            "url": f"/debugger/?q=Two%20Sum%20%26%20Two%20Pointers%20Array%20Optimization&company={enc_comp}&lang=python&desc=Given%20an%20array%20of%20integers%20nums%20and%20an%20integer%20target,%20return%20indices%20of%20the%20two%20numbers%20such%20that%20they%20add%20up%20to%20target."
         },
         {
             "title": "Reverse Linked List & Detect Cycle (Floyd's Algorithm)",
             "difficulty": "Medium",
             "frequency": "Frequently asked in core rounds",
-            "url": "/debugger/"
+            "url": f"/debugger/?q=Reverse%20Linked%20List%20%26%20Detect%20Cycle&company={enc_comp}&lang=python&desc=Reverse%20a%20singly%20linked%20list%20in-place%20and%20detect%20if%20any%20cycle%20exists%20using%20Floyd's%20tortoise%20and%20hare%20algorithm."
         },
         {
             "title": "SQL Nth Highest Salary with DENSE_RANK() & Subqueries",
             "difficulty": "Medium",
             "frequency": "Top standard database question",
-            "url": "/debugger/"
+            "url": f"/debugger/?q=SQL%20Nth%20Highest%20Salary%20Analysis&company={enc_comp}&lang=python&desc=Find%20the%20Nth%20highest%20salary%20from%20an%20Employee%20table%20handling%20duplicate%20salaries%20using%20DENSE_RANK()."
         },
         {
             "title": "Valid Parentheses & Stack Implementation",
             "difficulty": "Easy / Medium",
             "frequency": "Standard online assessment problem",
-            "url": "/debugger/"
+            "url": f"/debugger/?q=Valid%20Parentheses%20Stack%20Algorithm&company={enc_comp}&lang=python&desc=Determine%20if%20the%20input%20string%20s%20containing%20brackets%20is%20valid%20using%20a%20LIFO%20stack."
         }
     ]
 

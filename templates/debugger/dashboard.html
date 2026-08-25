@@ -213,6 +213,37 @@
     </div>
   </div>
 
+  <!-- ── 1b. ACTIVE INTERVIEW PROBLEM / QUESTION BANNER ── -->
+  <div id="activeProblemBanner" style="display:none; background:var(--card-bg, #ffffff); border:1px solid var(--border-color, #e2e8f0); border-radius:14px; padding:16px 20px; margin-bottom:12px; position:relative; box-shadow:0 4px 18px rgba(0,0,0,0.04);">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
+      <div style="flex:1; min-width:260px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
+          <span style="font-size:11px; font-weight:800; color:#2563eb; background:rgba(37,99,235,0.1); border:1px solid rgba(37,99,235,0.25); padding:2px 8px; border-radius:6px; text-transform:uppercase; letter-spacing:0.5px;">
+            🎯 <span id="activeProblemCompany">Target Company</span> Interview Challenge
+          </span>
+          <span id="activeProblemDifficulty" style="font-size:11px; font-weight:700; color:#10b981; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); padding:2px 8px; border-radius:6px;">
+            Live Code Debugger
+          </span>
+        </div>
+        <h2 id="activeProblemTitle" style="font-size:16px; font-weight:800; color:var(--text-main, #0f172a); margin:0 0 4px; line-height:1.4;">
+          Interview Question
+        </h2>
+        <p id="activeProblemDesc" style="font-size:12.5px; color:var(--text-muted, #64748b); margin:0; line-height:1.55;">
+          Question instructions and description.
+        </p>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+        <button onclick="startDebugging()" class="btn-start-debug" style="font-size:12px; padding:8px 14px; border-radius:8px;">
+          ▶ Start Debugging
+        </button>
+        <button onclick="document.getElementById('activeProblemBanner').style.display='none'" class="dbg-step-btn" style="font-size:12px; padding:8px 12px; border-radius:8px;" title="Hide problem banner">
+          ✕ Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── 2. PLAYBACK CONTROLS BAR ── -->
   <div id="playbackBarPlaceholder" style="display:none;"></div>
   <div class="playback-bar">

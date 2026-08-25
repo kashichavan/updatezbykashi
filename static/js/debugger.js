@@ -978,11 +978,147 @@ function toggleFullWorkspaceMaximize() {
     if (btn) btn.innerHTML = '⛶ Maximize IDE';
   }
 
-  // Trigger Monaco Editor layout recalculation
   setTimeout(() => {
     if (window.editor && typeof window.editor.layout === 'function') {
       window.editor.layout();
     }
   }, 100);
 }
+
+/* ─────────────────────────────────────────────────────────────────
+   ACTIVE INTERVIEW PROBLEM / QUESTION INITIALIZATION FROM URL
+───────────────────────────────────────────────────────────────── */
+function initProblemFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q') || params.get('problem') || params.get('title');
+  const company = params.get('company') || 'Target Company';
+  const desc = params.get('desc') || params.get('answer') || params.get('tips') || '';
+  const lang = params.get('lang');
+  const codeParam = params.get('code');
+
+  if (q) {
+    const banner = document.getElementById('activeProblemBanner');
+    const titleEl = document.getElementById('activeProblemTitle');
+    const compEl = document.getElementById('activeProblemCompany');
+    const descEl = document.getElementById('activeProblemDesc');
+
+    if (banner && titleEl) {
+      titleEl.textContent = q;
+      if (compEl) compEl.textContent = company;
+      if (descEl) descEl.textContent = desc || `Step through and trace '${q}' in the visual execution sandbox.`;
+      banner.style.display = 'block';
+    }
+
+    if (lang && ['python', 'javascript', 'java'].includes(lang.toLowerCase())) {
+      setTimeout(() => {
+        if (typeof switchLanguage === 'function') {
+          switchLanguage(lang.toLowerCase());
+        }
+      }, 250);
+    }
+
+    // Determine algorithmic starter code
+    let starterCode = '';
+    const qLower = q.toLowerCase();
+
+    if (codeParam) {
+      starterCode = decodeURIComponent(codeParam);
+    } else if (qLower.includes('two sum') || qLower.includes('pointers')) {
+      starterCode = `# Two Sum & Two Pointers Algorithm
+def two_sum(nums, target):
+    seen = {}
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    return []
+
+# Test Case
+numbers = [2, 7, 11, 15]
+target_val = 9
+result = two_sum(numbers, target_val)
+print(f"Two Sum Indices for target {target_val}: {result}")
+`;
+    } else if (qLower.includes('linked list') || qLower.includes('cycle')) {
+      starterCode = `# Linked List Node & In-Place Reversal
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reverse_list(head):
+    prev = None
+    curr = head
+    while curr:
+        nxt = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nxt
+    return prev
+
+# Create List: 1 -> 2 -> 3
+n3 = ListNode(3)
+n2 = ListNode(2, n3)
+head = ListNode(1, n2)
+reversed_head = reverse_list(head)
+print(f"Reversed Head Value: {reversed_head.val}")
+`;
+    } else if (qLower.includes('parentheses') || qLower.includes('stack')) {
+      starterCode = `# Valid Parentheses Verification using Stack
+def is_valid(s):
+    stack = []
+    mapping = {')': '(', '}': '{', ']': '['}
+    for char in s:
+        if char in mapping:
+            top = stack.pop() if stack else '#'
+            if mapping[char] != top:
+                return False
+        else:
+            stack.append(char)
+    return not stack
+
+test_str = "{[()]}"
+print(f"Is '{test_str}' Valid Parentheses? {is_valid(test_str)}")
+`;
+    } else if (qLower.includes('sql') || qLower.includes('salary')) {
+      starterCode = `# SQL Salary Query Simulation & Logic
+employees = [
+    {"name": "Alice", "salary": 95000, "dept": "Engineering"},
+    {"name": "Bob", "salary": 82000, "dept": "Analytics"},
+    {"name": "Charlie", "salary": 95000, "dept": "Engineering"},
+    {"name": "David", "salary": 72000, "dept": "Design"}
+]
+
+# Find 2nd Highest Unique Salary (DENSE_RANK Simulation)
+unique_salaries = sorted(list(set(e["salary"] for e in employees)), reverse=True)
+second_highest = unique_salaries[1] if len(unique_salaries) > 1 else None
+print(f"2nd Highest Salary: {second_highest}")
+`;
+    } else if (desc) {
+      starterCode = `# ${company} Interview Question:
+# ${q}
+#
+# Model Answer Approach:
+# ${desc.substring(0, 160)}...
+
+print("--- Testing Solution in Visual Sandbox ---")
+`;
+    }
+
+    if (starterCode) {
+      setTimeout(() => {
+        if (window.editor && typeof window.editor.setValue === 'function') {
+          window.editor.setValue(starterCode);
+        }
+      }, 500);
+    }
+  }
+}
+
+// Auto-run on DOM ready and after Monaco load
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initProblemFromUrl, 300);
+});
+
 
