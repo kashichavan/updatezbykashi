@@ -67,4 +67,6 @@ urlpatterns = [
     path('api/owner/jobs/<int:pk>/toggle-status/', views.api_owner_job_toggle_status, name='api_owner_job_toggle_status'),
     path('api/owner/parse-and-post/', views.api_owner_parse_and_post, name='api_owner_parse_and_post'),
     path('api/owner/bulk-parse-and-post/', views.api_owner_bulk_parse_and_post, name='api_owner_bulk_parse_and_post'),
+    path('api/owner/jobdexo/import-urls/', views.api_owner_jobdexo_import, name='api_owner_jobdexo_import'),
+    path('api/owner/jobdexo/fetch-latest/', views.api_owner_jobdexo_fetch_latest, name='api_owner_jobdexo_fetch_latest'),
 ]

@@ -727,6 +727,10 @@
             <button class="crm-sidebar-item owner-nav-item" data-tab="tabBulkParse">
               <span class="crm-sidebar-icon">⚡</span> Bulk Parser Pipeline
             </button>
+            <button class="crm-sidebar-item owner-nav-item" data-tab="tabJobdexo">
+              <span class="crm-sidebar-icon">🌐</span> Jobdexo Auto-Sync
+              <span class="crm-sidebar-badge" style="background: rgba(16, 185, 129, 0.2); color: var(--crm-emerald); border: 1px solid rgba(16, 185, 129, 0.4);">AUTO</span>
+            </button>
             <button class="crm-sidebar-item owner-nav-item" data-tab="tabSmartParse">
               <span class="crm-sidebar-icon">🎯</span> 1-Click Single Parser
             </button>
@@ -898,6 +902,60 @@
               ⚡ Execute Bulk Parse &amp; Publish Group
             </button>
           </form>
+        </div>
+
+        <!-- TAB: JOBDEXO AUTOMATION & SYNC ENGINE -->
+        <div id="tabJobdexo" class="crm-workspace-panel tab-content" style="display: none;">
+          <div style="margin-bottom: 24px;">
+            <span class="crm-login-badge" style="background: rgba(6, 182, 212, 0.15); color: var(--crm-cyan); border-color: rgba(6, 182, 212, 0.3);">
+              JOBDEXO LIVE CRAWLER &amp; AUTO-SYNC
+            </span>
+            <h2 style="font-size: 24px; font-weight: 800; margin: 10px 0 6px; color: #ffffff;">Automated Jobdexo Importer &amp; Drive Generator</h2>
+            <p style="font-size: 13.5px; color: var(--crm-muted); margin: 0; line-height: 1.6;">
+              Automatically crawl and import off-campus opportunities directly from Jobdexo. The engine extracts role, salary, skills, eligibility, and resolves the <strong>official company career direct apply links</strong>.
+            </p>
+          </div>
+
+          <!-- 1-Click Live Crawler Cards -->
+          <div style="background: rgba(13, 18, 31, 0.7); border: 1px solid var(--crm-border); border-radius: 18px; padding: 22px; margin-bottom: 24px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0 0 8px;">⚡ 1-Click Latest Openings Crawler</h3>
+            <p style="font-size: 13px; color: var(--crm-muted); margin: 0 0 16px;">
+              Crawl Jobdexo homepage for the freshest off-campus jobs and bundle them into a 7-day shareable group.
+            </p>
+
+            <div class="crm-form-group" style="margin-bottom: 14px;">
+              <label for="jobdexoGroupName" class="crm-form-label">Custom Group Name (Optional — Auto Timestamp if empty)</label>
+              <input type="text" id="jobdexoGroupName" class="crm-form-input" placeholder="e.g. 🔥 Top Off-Campus Tech Drives Today (Leave empty for auto timestamp)">
+            </div>
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+              <button id="btnFetchJobdexo5" class="btn-crm-primary btn-crm-emerald" style="height: 42px; padding: 0 20px; font-size: 13px;">
+                ⚡ Fetch Latest 5 Jobs
+              </button>
+              <button id="btnFetchJobdexo10" class="btn-crm-primary" style="height: 42px; padding: 0 20px; font-size: 13px; background: linear-gradient(135deg, var(--crm-indigo), var(--crm-purple));">
+                🚀 Fetch Latest 10 Jobs
+              </button>
+            </div>
+          </div>
+
+          <!-- URL Batch Importer Form -->
+          <div style="background: rgba(13, 18, 31, 0.7); border: 1px solid var(--crm-border); border-radius: 18px; padding: 22px;">
+            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0 0 8px;">🔗 Import Specific Jobdexo URLs</h3>
+            <p style="font-size: 13px; color: var(--crm-muted); margin: 0 0 16px;">
+              Paste one or multiple Jobdexo links (1 per line). The engine will extract full job data and create your 7-day shareable group.
+            </p>
+
+            <form id="formJobdexoUrlImport">
+              <div class="crm-form-group">
+                <label for="jobdexoUrlsInput" class="crm-form-label">Jobdexo URL(s) *</label>
+                <textarea id="jobdexoUrlsInput" class="crm-form-input" rows="6" placeholder="https://jobdexo.com/job/C011-J120/data-analyst-fresher-jobsmindin-2026&#10;https://jobdexo.com/job/C559-J142/associate-analyst-automation-testing-deloitte-2026" required></textarea>
+              </div>
+
+              <button type="submit" class="btn-crm-primary" style="height: 42px; padding: 0 22px; font-size: 13px;">
+                📥 Import URLs &amp; Generate Broadcast
+              </button>
+            </form>
+          </div>
         </div>
 
         <!-- TAB 3: 1-CLICK SINGLE PARSER -->

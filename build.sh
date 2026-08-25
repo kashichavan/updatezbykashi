@@ -10,3 +10,7 @@ python manage.py migrate
 python requirements/seed_prod.py
 python manage.py seed_blog
 python manage.py seed_deep_blogs
+
+# Auto-sync newest verified off-campus opportunities from Jobdexo
+python manage.py sync_jobdexo --count 5 || true
+

@@ -16,6 +16,7 @@ from django.utils.text import slugify
 from django.core.cache import cache
 from django.db.models import Count, Q
 from .models import Category, JobPosting, GuideArticle, ContactInquiry, JobGroup
+from .jobdexo_service import auto_import_from_jobdexo
 
 DEFAULT_YOUTUBE_VIDEOS = [
     {
@@ -476,6 +477,109 @@ def api_owner_bulk_parse_and_post(request):
                 'whatsapp_broadcast': whatsapp_broadcast,
                 'telegram_broadcast': telegram_broadcast,
                 'message': f'Successfully published {len(created_jobs)} opportunities and created shareable Group "{job_group.name if job_group else ""}"!'
+            }, status=201)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def api_owner_jobdexo_import(request):
+    """Import jobs from pasted Jobdexo URLs."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            raw_urls = data.get('urls', '')
+            if isinstance(raw_urls, str):
+                urls = [u.strip() for u in raw_urls.split('\n') if u.strip() and 'jobdexo.com' in u]
+            elif isinstance(raw_urls, list):
+                urls = [u.strip() for u in raw_urls if u.strip()]
+            else:
+                urls = []
+
+            if not urls:
+                return JsonResponse({'error': 'Please provide at least one valid Jobdexo URL.'}, status=400)
+
+            group_name = data.get('group_name', '').strip()
+            poster_name = owner_user.username if owner_user else "Owner"
+            poster_email = owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"
+
+            result = auto_import_from_jobdexo(
+                urls=urls,
+                group_name=group_name if group_name else None,
+                poster_name=poster_name,
+                poster_email=poster_email
+            )
+
+            job_group = result.get('job_group')
+            host_url = request.build_absolute_uri('/')[:-1]
+            full_group_url = f"{host_url}/group/{job_group.slug}/" if job_group else ""
+            whatsapp_broadcast = job_group.get_whatsapp_broadcast_text(host_url) if job_group else ""
+            telegram_broadcast = job_group.get_telegram_broadcast_text(host_url) if job_group else ""
+
+            return JsonResponse({
+                'success': True,
+                'imported_count': result['imported_count'],
+                'total_in_group': result['total_in_group'],
+                'created_jobs': result['created_jobs'],
+                'group_id': result['group_id'],
+                'group_name': result['group_name'],
+                'group_slug': result['group_slug'],
+                'group_url': result['group_url'],
+                'full_group_url': full_group_url,
+                'whatsapp_broadcast': whatsapp_broadcast,
+                'telegram_broadcast': telegram_broadcast,
+                'message': f"Successfully imported {result['imported_count']} new jobs from Jobdexo into Group '{result['group_name']}'!"
+            }, status=201)
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def api_owner_jobdexo_fetch_latest(request):
+    """Crawl Jobdexo homepage and auto-import the newest 5 or 10 off-campus openings."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body) if request.body else {}
+            limit = int(data.get('limit', 5))
+            group_name = data.get('group_name', '').strip()
+            poster_name = owner_user.username if owner_user else "Owner"
+            poster_email = owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"
+
+            result = auto_import_from_jobdexo(
+                urls=None,
+                limit=limit,
+                group_name=group_name if group_name else None,
+                poster_name=poster_name,
+                poster_email=poster_email
+            )
+
+            job_group = result.get('job_group')
+            host_url = request.build_absolute_uri('/')[:-1]
+            full_group_url = f"{host_url}/group/{job_group.slug}/" if job_group else ""
+            whatsapp_broadcast = job_group.get_whatsapp_broadcast_text(host_url) if job_group else ""
+            telegram_broadcast = job_group.get_telegram_broadcast_text(host_url) if job_group else ""
+
+            return JsonResponse({
+                'success': True,
+                'imported_count': result['imported_count'],
+                'total_in_group': result['total_in_group'],
+                'created_jobs': result['created_jobs'],
+                'group_id': result['group_id'],
+                'group_name': result['group_name'],
+                'group_slug': result['group_slug'],
+                'group_url': result['group_url'],
+                'full_group_url': full_group_url,
+                'whatsapp_broadcast': whatsapp_broadcast,
+                'telegram_broadcast': telegram_broadcast,
+                'message': f"Successfully fetched and published {result['imported_count']} fresh jobs from Jobdexo into Group '{result['group_name']}'!"
             }, status=201)
 
         except Exception as e:

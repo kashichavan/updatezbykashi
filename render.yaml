@@ -17,8 +17,26 @@ services:
           name: kashii-updatez-db
           property: connectionString
 
+  - type: cron
+    name: jobdexo-daily-sync
+    env: python
+    plan: free
+    schedule: "30 3 * * *" # Daily at 9:00 AM IST (3:30 AM UTC)
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python manage.py sync_jobdexo --count 5"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DJANGO_SETTINGS_MODULE
+        value: reqpulse.settings
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kashii-updatez-db
+          property: connectionString
+
 databases:
   - name: kashii-updatez-db
     plan: free
     databaseName: kashii_updatez_db
     user: kashii_user
+

@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabTitles = {
     'tabJobs': { title: 'Opportunity Pipeline CRM', sub: 'Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.' },
     'tabBulkParse': { title: 'Bulk Multi-Job Automation', sub: 'Parse multi-job Telegram/WhatsApp messages & auto-publish all leads in 1 click.' },
+    'tabJobdexo': { title: 'Jobdexo Auto-Sync Engine', sub: 'Automatically crawl & import off-campus drives directly from Jobdexo with official apply links.' },
     'tabGroups': { title: 'Requirement Groups & Drives', sub: 'Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.' },
     'tabSmartParse': { title: '1-Click Single Parser', sub: 'Extract details from a single job requirement snippet & publish instantly.' },
     'tabPost': { title: 'Publish New Opportunity', sub: 'Manual form to publish structured student job or internship postings.' },
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabUrlMap = {
     'tabJobs': '/owner/manage-jobs/',
     'tabBulkParse': '/owner/bulk-parser/',
+    'tabJobdexo': '/owner/jobdexo-sync/',
     'tabGroups': '/owner/groups/',
     'tabSmartParse': '/owner/single-parser/',
     'tabPost': '/owner/post-job/',
@@ -54,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/owner/': 'tabJobs',
     '/owner/manage-jobs/': 'tabJobs',
     '/owner/bulk-parser/': 'tabBulkParse',
+    '/owner/jobdexo-sync/': 'tabJobdexo',
     '/owner/groups/': 'tabGroups',
     '/owner/single-parser/': 'tabSmartParse',
     '/owner/post-job/': 'tabPost',
@@ -316,6 +319,99 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         showToast('Server error during bulk auto-parsing.', 'error');
+      }
+    });
+  }
+
+  // --- JOBDEXO AUTOMATION & CRAWLER ENGINE ---
+
+  const btnFetchJobdexo5 = document.getElementById('btnFetchJobdexo5');
+  const btnFetchJobdexo10 = document.getElementById('btnFetchJobdexo10');
+  const formJobdexoUrlImport = document.getElementById('formJobdexoUrlImport');
+
+  async function triggerJobdexoLatestFetch(limit = 5) {
+    const groupNameInput = document.getElementById('jobdexoGroupName');
+    const groupName = groupNameInput ? groupNameInput.value.trim() : '';
+
+    try {
+      showToast(`⚡ Crawling Jobdexo for latest ${limit} off-campus opportunities...`, 'success');
+      const jwtAccess = localStorage.getItem('owner_jwt_access');
+      const headers = { 'Content-Type': 'application/json' };
+      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
+      const res = await fetch('/api/owner/jobdexo/fetch-latest/', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ limit, group_name: groupName })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        showToast(`🎉 ${data.message}`, 'success');
+        logActivity(`Jobdexo Auto-Crawler (${limit} jobs)`, data.message);
+        if (groupNameInput) groupNameInput.value = '';
+        loadKpiStats();
+
+        if (data.group_slug) {
+          openBroadcastModal(data);
+        } else {
+          switchTab('tabJobs');
+        }
+      } else {
+        showToast(data.error || 'Failed to crawl Jobdexo.', 'error');
+      }
+    } catch (err) {
+      showToast('Server error while syncing from Jobdexo.', 'error');
+    }
+  }
+
+  if (btnFetchJobdexo5) {
+    btnFetchJobdexo5.addEventListener('click', () => triggerJobdexoLatestFetch(5));
+  }
+
+  if (btnFetchJobdexo10) {
+    btnFetchJobdexo10.addEventListener('click', () => triggerJobdexoLatestFetch(10));
+  }
+
+  if (formJobdexoUrlImport) {
+    formJobdexoUrlImport.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rawUrls = document.getElementById('jobdexoUrlsInput').value.trim();
+      const groupNameInput = document.getElementById('jobdexoGroupName');
+      const groupName = groupNameInput ? groupNameInput.value.trim() : '';
+
+      if (!rawUrls) return;
+
+      try {
+        showToast('📥 Importing jobs from provided Jobdexo URLs...', 'success');
+        const jwtAccess = localStorage.getItem('owner_jwt_access');
+        const headers = { 'Content-Type': 'application/json' };
+        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
+        const res = await fetch('/api/owner/jobdexo/import-urls/', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ urls: rawUrls, group_name: groupName })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showToast(`🎉 ${data.message}`, 'success');
+          logActivity('Jobdexo URL Importer', data.message);
+          document.getElementById('jobdexoUrlsInput').value = '';
+          if (groupNameInput) groupNameInput.value = '';
+          loadKpiStats();
+
+          if (data.group_slug) {
+            openBroadcastModal(data);
+          } else {
+            switchTab('tabJobs');
+          }
+        } else {
+          showToast(data.error || 'Failed to import Jobdexo URLs.', 'error');
+        }
+      } catch (err) {
+        showToast('Server error importing Jobdexo URLs.', 'error');
       }
     });
   }
