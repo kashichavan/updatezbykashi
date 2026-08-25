@@ -33,9 +33,15 @@
         <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
           🎯 <strong>{{ jobs|length }}</strong> Total Requirements
         </span>
-        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
-          ⏱️ Auto 7-Day Fresh Rule
+        {% if is_expired %}
+        <span class="vp-pill" style="background: rgba(244,63,94,0.2); color: #f43f5e; border-color: rgba(244,63,94,0.4); font-weight: 800;">
+          ⛔ Drive Expired (7-Day Limit Reached)
         </span>
+        {% else %}
+        <span class="vp-pill" style="background: rgba(245,158,11,0.2); color: #fbbf24; border-color: rgba(245,158,11,0.4); font-weight: 800;" id="groupTimerPill" data-seconds="{{ time_left_seconds }}">
+          ⏱️ <span id="groupTimeLeftText">{{ time_left_display }}</span> (7-Day Rule)
+        </span>
+        {% endif %}
         <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
           🔗 Official Direct Apply Links
         </span>
@@ -180,6 +186,34 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { btnCopy.textContent = '🔗 Copy Link'; }, 2500);
       });
     });
+  }
+
+  // Live 7-Day Countdown Timer for Group Banner
+  const groupTimerPill = document.getElementById('groupTimerPill');
+  const groupTimeLeftText = document.getElementById('groupTimeLeftText');
+  if (groupTimerPill && groupTimeLeftText) {
+    let remainingSec = parseInt(groupTimerPill.dataset.seconds, 10) || 0;
+    if (remainingSec > 0) {
+      setInterval(() => {
+        remainingSec--;
+        if (remainingSec <= 0) {
+          groupTimeLeftText.textContent = 'Expired';
+          groupTimerPill.style.background = 'rgba(244,63,94,0.2)';
+          groupTimerPill.style.color = '#f43f5e';
+          groupTimerPill.style.borderColor = 'rgba(244,63,94,0.4)';
+        } else {
+          const days = Math.floor(remainingSec / 86400);
+          const hours = Math.floor((remainingSec % 86400) / 3600);
+          const mins = Math.floor((remainingSec % 3600) / 60);
+          const secs = remainingSec % 60;
+          if (days > 0) {
+            groupTimeLeftText.textContent = `${days}d ${hours}h ${mins}m left`;
+          } else {
+            groupTimeLeftText.textContent = `${hours}h ${mins}m ${secs}s left`;
+          }
+        }
+      }, 1000);
+    }
   }
 
   // Card click navigates to shareUrl

@@ -185,6 +185,15 @@ class JobGroup(models.Model):
     is_active = models.BooleanField(default=True)
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    posted_date = models.DateField(
+        default=timezone.now,
+        help_text="Date this drive group was posted. Defaults to today."
+    )
+    deadline = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="Automatically set to 7 days after creation"
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -194,6 +203,35 @@ class JobGroup(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.deadline:
+            self.deadline = timezone.now() + timedelta(days=7)
+        if not self.posted_date:
+            self.posted_date = timezone.now().date()
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
+        if not self.deadline:
+            return False
+        return timezone.now() > self.deadline
+
+    def get_time_left_seconds(self):
+        if not self.deadline:
+            return 0
+        diff = (self.deadline - timezone.now()).total_seconds()
+        return max(0, int(diff))
+
+    def get_time_left_display(self):
+        sec = self.get_time_left_seconds()
+        if sec <= 0:
+            return "Expired"
+        days = sec // 86400
+        hours = (sec % 86400) // 3600
+        if days > 0:
+            return f"{days}d {hours}h left"
+        mins = (sec % 3600) // 60
+        return f"{hours}h {mins}m left"
 
     def get_active_jobs(self):
         return self.jobs.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')

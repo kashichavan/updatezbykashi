@@ -1151,14 +1151,18 @@ def group_detail_view(request, slug):
     return render(request, 'content/group_detail.html', {
         'group': group,
         'jobs': jobs,
+        'is_expired': group.is_expired(),
+        'time_left_seconds': group.get_time_left_seconds(),
+        'time_left_display': group.get_time_left_display(),
         'share_whatsapp_text': group.get_whatsapp_broadcast_text(host_url),
         'share_telegram_text': group.get_telegram_broadcast_text(host_url),
     })
 
 def api_groups(request):
-    """Public JSON API returning active requirement groups."""
+    """Public JSON API returning active requirement groups (active for 7 days)."""
     sync_expired_jobs()
-    groups = JobGroup.objects.filter(is_active=True).prefetch_related('jobs')
+    now = timezone.now()
+    groups = JobGroup.objects.filter(is_active=True, deadline__gt=now).prefetch_related('jobs')
     host_url = request.build_absolute_uri('/')[:-1]
     res = []
     for g in groups:
@@ -1169,6 +1173,8 @@ def api_groups(request):
             'banner_tag': g.banner_tag,
             'description': g.description,
             'jobs_count': g.get_active_jobs().count(),
+            'time_left_seconds': g.get_time_left_seconds(),
+            'time_left_display': g.get_time_left_display(),
             'url': f"/group/{g.slug}/",
             'full_url': f"{host_url}/group/{g.slug}/",
             'created_at': g.created_at.isoformat(),
@@ -1196,6 +1202,10 @@ def api_owner_groups(request):
                 'total_jobs_count': g.jobs.count(),
                 'active_jobs_count': g.get_active_jobs().count(),
                 'views_count': g.views_count,
+                'is_expired': g.is_expired(),
+                'time_left_display': g.get_time_left_display(),
+                'time_left_seconds': g.get_time_left_seconds(),
+                'deadline': g.deadline.strftime('%d %b %Y, %I:%M %p') if g.deadline else "",
                 'created_at': g.created_at.strftime('%d %b %Y, %I:%M %p'),
                 'url': f"/group/{g.slug}/",
                 'full_url': f"{host_url}/group/{g.slug}/",
