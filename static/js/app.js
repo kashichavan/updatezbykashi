@@ -3,6 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
   const isCategoryPage = window.location.pathname.startsWith('/category/');
 
+  let currentCategory = 'software-tech';
+  if (isCategoryPage) {
+    const match = window.location.pathname.match(/\/category\/([^\/]+)/);
+    if (match && match[1]) currentCategory = match[1];
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const isTodayOnly = urlParams.get('today') === 'true' || urlParams.get('today') === '1';
   const isYesterdayOnly = urlParams.get('yesterday') === 'true' || urlParams.get('yesterday') === '1';
@@ -10,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const state = {
     searchQuery: '',
-    category: 'software-tech',
+    category: currentCategory,
     jobType: 'all',
     sort: 'newest',
     isTodayOnly: isTodayOnly,
@@ -322,49 +328,76 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderPagination() {
     if (!paginationContainer) return;
 
+    if (state.totalCount === 0) {
+      paginationContainer.innerHTML = '';
+      return;
+    }
+
     if (state.totalPages <= 1) {
       paginationContainer.innerHTML = `
-        <div style="font-size: 13px; font-weight: 600; color: var(--muted);">
-          Showing latest ${state.totalCount} software & tech requirements
+        <div class="pagination-wrapper">
+          <div class="pagination-info">
+            Showing all <strong>${state.totalCount}</strong> active opportunities
+          </div>
         </div>`;
       return;
     }
 
     const startNum = (state.page - 1) * state.pageSize + 1;
     const endNum = Math.min(state.totalCount, state.page * state.pageSize);
+    const total = state.totalPages;
+    const curr = state.page;
 
-    let pagesHtml = '';
-    for (let p = 1; p <= state.totalPages; p++) {
-      pagesHtml += `
-        <button class="pag-page-btn ${p === state.page ? 'active' : ''}" data-page="${p}">
+    // Smart windowing for page numbers (e.g. 1 2 3 ... 8)
+    let pageNumbers = [];
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) pageNumbers.push(i);
+    } else {
+      if (curr <= 4) {
+        pageNumbers = [1, 2, 3, 4, 5, '...', total];
+      } else if (curr >= total - 3) {
+        pageNumbers = [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+      } else {
+        pageNumbers = [1, '...', curr - 1, curr, curr + 1, '...', total];
+      }
+    }
+
+    const pagesHtml = pageNumbers.map(p => {
+      if (p === '...') {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:38px;color:var(--muted);font-weight:700;">…</span>`;
+      }
+      return `
+        <button class="pag-page-btn ${p === curr ? 'active' : ''}" data-page="${p}">
           ${p}
         </button>
       `;
-    }
+    }).join('');
 
     paginationContainer.innerHTML = `
-      <div style="font-size: 13px; font-weight: 600; color: var(--muted);">
-        Showing <strong>${startNum}–${endNum}</strong> of <strong>${state.totalCount}</strong> active requirements (Newest First)
-      </div>
-
-      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <button class="pag-btn" id="btnPrevPage" ${state.page <= 1 ? 'disabled' : ''}>
-          ‹ Previous
-        </button>
-
-        <div style="display: flex; gap: 6px;">
-          ${pagesHtml}
+      <div class="pagination-wrapper">
+        <div class="pagination-info">
+          Showing <strong>${startNum}–${endNum}</strong> of <strong>${state.totalCount}</strong> active requirements
         </div>
 
-        <button class="pag-btn" id="btnNextPage" ${state.page >= state.totalPages ? 'disabled' : ''}>
-          Next ›
-        </button>
+        <nav class="pagination-nav" aria-label="Requirement pagination">
+          <button class="pag-btn" id="btnPrevPage" ${curr <= 1 ? 'disabled' : ''} aria-label="Previous Page">
+            ‹ Previous
+          </button>
+
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center;">
+            ${pagesHtml}
+          </div>
+
+          <button class="pag-btn" id="btnNextPage" ${curr >= total ? 'disabled' : ''} aria-label="Next Page">
+            Next ›
+          </button>
+        </nav>
       </div>
     `;
 
     // Event Listeners for Pagination Buttons
     const btnPrev = document.getElementById('btnPrevPage');
-    if (btnPrev && state.page > 1) {
+    if (btnPrev && curr > 1) {
       btnPrev.addEventListener('click', () => {
         state.page--;
         scrollAndLoadJobs();
@@ -372,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const btnNext = document.getElementById('btnNextPage');
-    if (btnNext && state.page < state.totalPages) {
+    if (btnNext && curr < total) {
       btnNext.addEventListener('click', () => {
         state.page++;
         scrollAndLoadJobs();
@@ -382,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
     paginationContainer.querySelectorAll('.pag-page-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const targetPage = parseInt(btn.dataset.page);
-        if (targetPage !== state.page) {
+        if (targetPage && targetPage !== state.page) {
           state.page = targetPage;
           scrollAndLoadJobs();
         }
