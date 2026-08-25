@@ -6,69 +6,50 @@
 {% block content %}
 <div class="wrap">
 
-  <!-- Creative Hero Banner with Requirements Radar -->
+  <!-- Creative Hero Banner with Consolas Typewriter & Animated Terminal -->
   <section class="vp-hero">
     <div class="vp-hero-inner">
       <div class="vp-hero-copy">
-        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;">
-          <span style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; box-shadow: 0 0 8px #22c55e;"></span>
-          FRESH DAILY STUDENT REQUIREMENTS &amp; DRIVES
-        </span>
-        <h1 id="typewriterText">Daily Student Jobs &amp; <em>Internship Requirements</em></h1>
+        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
+        <h1 id="typewriterText">Daily Student Jobs & <em>Internship Requirements</em></h1>
         <p class="lead">
-          Verified student requirements, off-campus drives, &amp; software internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
+          Verified student requirements, campus drives, & internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
         </p>
 
         <div class="vp-trust-pills">
           <span class="vp-pill" style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="7-Day"> Auto 7-Day Fresh Rule</span>
-          <span class="vp-pill"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software &amp; Tech</span>
+          <span class="vp-pill"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software & Tech</span>
           <span class="vp-pill"><img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Links"> Official Direct Links</span>
-          <span class="vp-pill">📚 Free Study Materials</span>
         </div>
       </div>
 
-      <!-- Live Requirements Radar / Quick Action Card -->
-      <div class="hero-radar-card">
-        <div class="radar-header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 10px #38bdf8;"></span>
-            <span style="font-size: 13px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px;">PLACEMENT RADAR</span>
+      <!-- Animated Coding Terminal Box -->
+      <div class="coding-terminal">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="t-dot red"></span>
+            <span class="t-dot yellow"></span>
+            <span class="t-dot green"></span>
           </div>
-          <span class="radar-badge">2024 - 2026 BATCH</span>
+          <span class="terminal-title">python_kashi_script.py</span>
         </div>
-
-        <div class="radar-body">
-          <div class="radar-stat-item">
-            <div class="radar-icon-box">⚡</div>
-            <div>
-              <div class="radar-stat-title">100% Active Postings</div>
-              <div class="radar-stat-sub">Strict 7-day expiration ensures zero expired links</div>
-            </div>
+        <div class="terminal-body">
+          <div class="code-line">
+            <span class="code-prompt">&gt;</span>
+            <span class="code-kw">import</span> <span class="code-fn">kashii_updatez</span>
           </div>
-
-          <div class="radar-stat-item">
-            <div class="radar-icon-box">🎯</div>
-            <div>
-              <div class="radar-stat-title">Direct Company Portals</div>
-              <div class="radar-stat-sub">Official ATS &amp; company career application links</div>
-            </div>
+          <div class="code-line">
+            <span class="code-prompt">&gt;</span>
+            <span class="code-kw">def</span> <span class="code-fn">get_fresh_opportunities</span>():
           </div>
-
-          <div class="radar-stat-item">
-            <div class="radar-icon-box">💻</div>
-            <div>
-              <div class="radar-stat-title">Interview Prep &amp; Code Trace</div>
-              <div class="radar-stat-sub">Practice coding challenges in live Monaco sandbox</div>
-            </div>
+          <div class="code-line" style="padding-left: 14px;">
+            <span class="code-cm"># Filter 100% active 7-day requirements</span>
           </div>
-
-          <div class="radar-actions">
-            <a href="#catalogSection" class="btn-radar-primary">
-              🔥 Explore Fresh Drives ↓
-            </a>
-            <a href="/debugger/" class="btn-radar-secondary">
-              ⚡ Open Code Sandbox ↗
-            </a>
+          <div class="code-line" style="padding-left: 14px;">
+            <span class="code-kw">return</span> kashii_updatez.<span class="code-fn">filter</span>(category=<span class="code-str">"Software & Tech"</span>)
+          </div>
+          <div class="code-line" style="margin-top: 10px;">
+            <span class="code-prompt">&gt;&gt;&gt;</span> <span style="color: #4ade80; font-weight: 700;">Status: 100% Verified &amp; Active</span><span class="typing-cursor"></span>
           </div>
         </div>
       </div>
@@ -115,29 +96,26 @@
     </div>
   </section>
 
-  <!-- High-Converting Student Career & Requirements Community Alert Card -->
+  <!-- High-Converting Dedicated Chat with Kashii Instagram Section -->
   <section style="margin-bottom: 36px;">
-    <div class="community-banner-card">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 24px; padding: 32px 28px; color: #ffffff; box-shadow: var(--card-shadow); border: 1px solid #334155;" class="chat-kashii-card">
       <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: space-between;">
         <div style="flex: 1; min-width: 240px;">
-          <span class="community-badge">
-            <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="16" height="16" alt="Alerts"> INSTANT HIRING UPDATES
+          <span style="display: inline-block; padding: 4px 12px; background: rgba(225, 48, 108, 0.2); color: #f43f5e; font-size: 11px; font-weight: 800; font-family: var(--font-code); border-radius: 6px; margin-bottom: 10px; border: 1px solid rgba(244, 63, 94, 0.3);">
+            <img src="{% static 'images/icon-chat.png' %}" class="nav-icon" width="16" height="16" alt="Chat"> INSTANT DIRECT CONVERSATION
           </span>
-          <h2 style="font: 700 24px var(--font-sans); margin: 0 0 10px; color: #ffffff;">Never Miss an Off-Campus Tech Drive</h2>
-          <p style="color: #94a3b8; font-size: 14.5px; margin: 0; line-height: 1.6;">
-            Get instant notifications for fresh student requirements, selection process breakdowns, and placement coding guides on Instagram &amp; Telegram.
+          <h2 style="font: 700 26px var(--font-serif); margin: 0 0 10px; color: #ffffff;">Got Questions? Chat Direct with Kashii</h2>
+          <p style="color: #94a3b8; font-size: 15px; margin: 0; line-height: 1.6;">
+            Need help with job applications, Python code debugging, or career guidance? Tap below to open Instagram DM directly!
           </p>
         </div>
 
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; width: 100%; max-width: 380px;">
-          <a href="https://www.instagram.com/ikashii_07/?hl=en" class="btn-community-insta" target="_blank" rel="noopener">
-            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;">
+        <div style="width: 100%; max-width: 280px;">
+          <a href="https://ig.me/m/ikashii_07" id="btnInstaDirect" class="btn-insta-chat" target="_blank" rel="noopener" style="width: 100%; box-sizing: border-box; justify-content: center;">
+            <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24" style="flex-shrink:0;">
               <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"></path>
             </svg>
-            <span>Instagram Updates ↗</span>
-          </a>
-          <a href="https://ig.me/m/ikashii_07" class="btn-community-dm" target="_blank" rel="noopener">
-            <span>Direct Student DM ↗</span>
+            <span>Chat with Kashii on Instagram DM ↗</span>
           </a>
         </div>
       </div>
