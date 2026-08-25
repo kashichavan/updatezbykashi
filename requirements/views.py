@@ -83,6 +83,9 @@ def get_cached_youtube_videos():
     cache.set('youtube_videos_feed', DEFAULT_YOUTUBE_VIDEOS, 3600)
     return DEFAULT_YOUTUBE_VIDEOS
 
+import threading
+import time
+
 def sync_expired_jobs():
     """Automatically deletes postings older than 3 days (72 hours) so feed stays 100% fresh daily."""
     now = timezone.now()
@@ -90,8 +93,17 @@ def sync_expired_jobs():
     if deleted_count > 0:
         cache.clear()
 
+def trigger_async_jobdexo_refresh():
+    """Triggers non-blocking background auto-import if 10 minutes have elapsed since last crawl."""
+    last_sync = cache.get('last_auto_jobdexo_sync_ts')
+    if not last_sync:
+        cache.set('last_auto_jobdexo_sync_ts', time.time(), 600)  # 10 min throttle
+        t = threading.Thread(target=auto_import_from_jobdexo, kwargs={'limit': 15}, daemon=True, name="AsyncJobdexoRefresh")
+        t.start()
+
 def api_ping(request):
     """Ultra-fast Keep-Alive Heartbeat endpoint for UptimeRobot auto pings."""
+    trigger_async_jobdexo_refresh()
     return JsonResponse({
         'status': 'ok',
         'app': 'Kashii Updatez',
@@ -110,6 +122,7 @@ def ads_txt_view(request):
 
 def index_view(request):
     sync_expired_jobs()
+    trigger_async_jobdexo_refresh()
     videos = get_cached_youtube_videos()
     initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:6]
     from blog.models import BlogPost
