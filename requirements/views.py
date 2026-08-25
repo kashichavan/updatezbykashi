@@ -15,7 +15,7 @@ from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
 from django.db.models import Count, Q
-from .models import Category, JobPosting, GuideArticle, ContactInquiry
+from .models import Category, JobPosting, GuideArticle, ContactInquiry, JobGroup
 
 DEFAULT_YOUTUBE_VIDEOS = [
     {
@@ -344,6 +344,7 @@ def api_owner_bulk_parse_and_post(request):
                 blocks = [raw_text]
 
             created_jobs = []
+            created_job_instances = []
 
             software_category = Category.objects.filter(slug='software-tech').first()
             if not software_category:
@@ -433,13 +434,48 @@ def api_owner_bulk_parse_and_post(request):
                 )
 
                 created_jobs.append({'id': job.id, 'title': job.title, 'company': job.company_name})
+                created_job_instances.append(job)
+
+            # --- AUTOMATIC REQUIREMENT GROUP CREATION ---
+            job_group = None
+            if created_job_instances:
+                group_name = data.get('group_name', '').strip()
+                now_local = timezone.localtime(timezone.now())
+                if not group_name:
+                    group_name = now_local.strftime("Hiring Drive — %d %b %Y, %I:%M %p")
+
+                base_slug = slugify(group_name)
+                if not base_slug:
+                    base_slug = "hiring-drive"
+                slug = f"{base_slug}-{now_local.strftime('%Y%m%d%H%M')}"
+
+                job_group = JobGroup.objects.create(
+                    name=group_name,
+                    slug=slug,
+                    banner_tag="🔥 SPECIAL HIRING DRIVE BUNDLE",
+                    description=f"Curated bundle of {len(created_job_instances)} verified student requirements.",
+                )
+                job_group.jobs.set(created_job_instances)
 
             cache.clear()
+            host_url = request.build_absolute_uri('/')[:-1]
+            group_url = f"/group/{job_group.slug}/" if job_group else ""
+            full_group_url = f"{host_url}/group/{job_group.slug}/" if job_group else ""
+            whatsapp_broadcast = job_group.get_whatsapp_broadcast_text(host_url) if job_group else ""
+            telegram_broadcast = job_group.get_telegram_broadcast_text(host_url) if job_group else ""
+
             return JsonResponse({
                 'success': True,
                 'count': len(created_jobs),
                 'created_jobs': created_jobs,
-                'message': f'Successfully published {len(created_jobs)} opportunities under Software & Tech! Active for 7 days.'
+                'group_id': job_group.id if job_group else None,
+                'group_name': job_group.name if job_group else "",
+                'group_slug': job_group.slug if job_group else "",
+                'group_url': group_url,
+                'full_group_url': full_group_url,
+                'whatsapp_broadcast': whatsapp_broadcast,
+                'telegram_broadcast': telegram_broadcast,
+                'message': f'Successfully published {len(created_jobs)} opportunities and created shareable Group "{job_group.name if job_group else ""}"!'
             }, status=201)
 
         except Exception as e:
@@ -1099,6 +1135,137 @@ def api_job_ig_story_image(request, pk):
     img.save(buf, format='PNG')
     buf.seek(0)
     return HttpResponse(buf.getvalue(), content_type='image/png')
+
+# ==============================================================================
+# REQUIREMENT GROUPS & MULTI-JOB BUNDLES
+# ==============================================================================
+
+def group_detail_view(request, slug):
+    """Public web page displaying a curated collection/drive of multiple job requirements."""
+    sync_expired_jobs()
+    group = get_object_or_404(JobGroup, slug=slug, is_active=True)
+    group.views_count += 1
+    group.save(update_fields=['views_count'])
+    jobs = list(group.get_active_jobs())
+    host_url = request.build_absolute_uri('/')[:-1]
+    return render(request, 'content/group_detail.html', {
+        'group': group,
+        'jobs': jobs,
+        'share_whatsapp_text': group.get_whatsapp_broadcast_text(host_url),
+        'share_telegram_text': group.get_telegram_broadcast_text(host_url),
+    })
+
+def api_groups(request):
+    """Public JSON API returning active requirement groups."""
+    sync_expired_jobs()
+    groups = JobGroup.objects.filter(is_active=True).prefetch_related('jobs')
+    host_url = request.build_absolute_uri('/')[:-1]
+    res = []
+    for g in groups:
+        res.append({
+            'id': g.id,
+            'name': g.name,
+            'slug': g.slug,
+            'banner_tag': g.banner_tag,
+            'description': g.description,
+            'jobs_count': g.get_active_jobs().count(),
+            'url': f"/group/{g.slug}/",
+            'full_url': f"{host_url}/group/{g.slug}/",
+            'created_at': g.created_at.isoformat(),
+        })
+    return JsonResponse({'groups': res})
+
+@csrf_exempt
+def api_owner_groups(request):
+    """Owner endpoint to list all requirement groups or create a new group."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method == 'GET':
+        groups = JobGroup.objects.all().prefetch_related('jobs')
+        res = []
+        host_url = request.build_absolute_uri('/')[:-1]
+        for g in groups:
+            res.append({
+                'id': g.id,
+                'name': g.name,
+                'slug': g.slug,
+                'banner_tag': g.banner_tag,
+                'description': g.description,
+                'total_jobs_count': g.jobs.count(),
+                'active_jobs_count': g.get_active_jobs().count(),
+                'views_count': g.views_count,
+                'created_at': g.created_at.strftime('%d %b %Y, %I:%M %p'),
+                'url': f"/group/{g.slug}/",
+                'full_url': f"{host_url}/group/{g.slug}/",
+            })
+        return JsonResponse({'groups': res})
+
+    elif request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = data.get('name', '').strip()
+            job_ids = data.get('job_ids', [])
+            now_local = timezone.localtime(timezone.now())
+            if not name:
+                name = now_local.strftime("Hiring Drive — %d %b %Y, %I:%M %p")
+
+            base_slug = slugify(name) or "hiring-drive"
+            slug = f"{base_slug}-{now_local.strftime('%Y%m%d%H%M')}"
+
+            group = JobGroup.objects.create(
+                name=name,
+                slug=slug,
+                banner_tag=data.get('banner_tag', '🔥 SPECIAL HIRING DRIVE BUNDLE').strip(),
+                description=data.get('description', '').strip(),
+            )
+            if job_ids:
+                group.jobs.set(JobPosting.objects.filter(id__in=job_ids))
+
+            host_url = request.build_absolute_uri('/')[:-1]
+            return JsonResponse({
+                'success': True,
+                'id': group.id,
+                'name': group.name,
+                'slug': group.slug,
+                'url': f"/group/{group.slug}/",
+                'full_url': f"{host_url}/group/{group.slug}/",
+                'whatsapp_broadcast': group.get_whatsapp_broadcast_text(host_url),
+                'telegram_broadcast': group.get_telegram_broadcast_text(host_url),
+            }, status=201)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def api_owner_group_broadcast(request, pk):
+    """Generates formatted WhatsApp and Telegram multi-job broadcast texts for 1-click copying."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    group = get_object_or_404(JobGroup, pk=pk)
+    host_url = request.build_absolute_uri('/')[:-1]
+    return JsonResponse({
+        'group_id': group.id,
+        'group_name': group.name,
+        'group_slug': group.slug,
+        'group_url': f"/group/{group.slug}/",
+        'full_group_url': f"{host_url}/group/{group.slug}/",
+        'whatsapp_broadcast': group.get_whatsapp_broadcast_text(host_url),
+        'telegram_broadcast': group.get_telegram_broadcast_text(host_url),
+    })
+
+@csrf_exempt
+def api_owner_group_delete(request, pk):
+    """Deletes a requirement group."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    group = get_object_or_404(JobGroup, pk=pk)
+    group.delete()
+    return JsonResponse({'success': True, 'message': 'Requirement group deleted successfully.'})
 
 def custom_404_view(request, exception=None):
     """Custom 404 handler for expired jobs, deleted requirements, or non-existent URLs."""

@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabTitles = {
     'tabJobs': { title: 'Opportunity Pipeline CRM', sub: 'Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.' },
     'tabBulkParse': { title: 'Bulk Multi-Job Automation', sub: 'Parse multi-job Telegram/WhatsApp messages & auto-publish all leads in 1 click.' },
+    'tabGroups': { title: 'Requirement Groups & Drives', sub: 'Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.' },
     'tabSmartParse': { title: '1-Click Single Parser', sub: 'Extract details from a single job requirement snippet & publish instantly.' },
     'tabPost': { title: 'Publish New Opportunity', sub: 'Manual form to publish structured student job or internship postings.' },
     'tabCategory': { title: 'Taxonomy & Categories', sub: 'Manage job categories, view active posting counts, and organize leads.' },
@@ -42,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabUrlMap = {
     'tabJobs': '/owner/manage-jobs/',
     'tabBulkParse': '/owner/bulk-parser/',
+    'tabGroups': '/owner/groups/',
     'tabSmartParse': '/owner/single-parser/',
     'tabPost': '/owner/post-job/',
     'tabCategory': '/owner/categories/',
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     '/owner/': 'tabJobs',
     '/owner/manage-jobs/': 'tabJobs',
     '/owner/bulk-parser/': 'tabBulkParse',
+    '/owner/groups/': 'tabGroups',
     '/owner/single-parser/': 'tabSmartParse',
     '/owner/post-job/': 'tabPost',
     '/owner/categories/': 'tabCategory',
@@ -101,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (targetId === 'tabJobs') loadJobsList(1);
     if (targetId === 'tabCategory') loadCategoryList();
+    if (targetId === 'tabGroups') loadGroupsList();
   }
 
   function setupFiltersAndSearch() {
@@ -119,6 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filterStatusSelect) {
       filterStatusSelect.addEventListener('change', () => {
         loadJobsList(1);
+      });
+    }
+
+    const btnRefreshGroups = document.getElementById('btnRefreshGroups');
+    if (btnRefreshGroups) {
+      btnRefreshGroups.addEventListener('click', () => {
+        loadGroupsList();
+        showToast('Requirement groups refreshed!', 'success');
       });
     }
   }
@@ -203,10 +215,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function handleLogout() {
     try {
+      await fetch('/api/admin/logout/', { method: 'POST' });
       localStorage.removeItem('owner_jwt_access');
       localStorage.removeItem('owner_jwt_refresh');
-      await fetch('/api/admin/logout/', { method: 'POST' });
-      showToast('Logged out of CRM session.', 'success');
+      showToast('Logged out successfully.', 'success');
       showLoginScreen();
     } catch (err) {
       console.error('Logout error:', err);
@@ -238,6 +250,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const kpiCat = document.getElementById('kpiCategories');
       if (kpiCat && catData.categories) kpiCat.textContent = catData.categories.length;
 
+      // Fetch Groups Count
+      const jwtAccess = localStorage.getItem('owner_jwt_access');
+      const headers = {};
+      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+      const groupRes = await fetch('/api/owner/groups/', { headers });
+      if (groupRes.ok) {
+        const groupData = await groupRes.json();
+        const groups = groupData.groups || [];
+        const sidebarGroups = document.getElementById('sidebarGroupsCount');
+        const kpiGroups = document.getElementById('kpiTotalGroups');
+        if (sidebarGroups) sidebarGroups.textContent = groups.length;
+        if (kpiGroups) kpiGroups.textContent = groups.length;
+      }
+
     } catch (err) {
       console.error('Error fetching KPI stats:', err);
     }
@@ -249,10 +275,13 @@ document.addEventListener('DOMContentLoaded', () => {
     formBulkParse.addEventListener('submit', async (e) => {
       e.preventDefault();
       const rawText = document.getElementById('bulkRawText').value.trim();
+      const groupNameInput = document.getElementById('bulkGroupName');
+      const groupName = groupNameInput ? groupNameInput.value.trim() : '';
+
       if (!rawText) return;
 
       try {
-        showToast('Processing bulk multi-job parser pipeline...', 'success');
+        showToast('Processing bulk multi-job parser & creating shareable group...', 'success');
         const jwtAccess = localStorage.getItem('owner_jwt_access');
         const headers = { 'Content-Type': 'application/json' };
         if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
@@ -260,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch('/api/owner/bulk-parse-and-post/', {
           method: 'POST',
           headers,
-          body: JSON.stringify({ raw_text: rawText })
+          body: JSON.stringify({ raw_text: rawText, group_name: groupName })
         });
         const data = await res.json();
 
@@ -268,8 +297,20 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(`⚡ ${data.message}`, 'success');
           logActivity(`Bulk Multi-Job Parser executed`, data.message);
           document.getElementById('bulkRawText').value = '';
+          if (groupNameInput) groupNameInput.value = '';
           loadKpiStats();
-          switchTab('tabJobs');
+
+          // Open Broadcast & Share Modal directly!
+          if (data.group_slug) {
+            openBroadcastModal({
+              group_name: data.group_name,
+              full_group_url: data.full_group_url,
+              whatsapp_broadcast: data.whatsapp_broadcast,
+              telegram_broadcast: data.telegram_broadcast,
+            });
+          } else {
+            switchTab('tabJobs');
+          }
         } else {
           showToast(data.error || 'Failed to bulk parse postings.', 'error');
         }
@@ -725,6 +766,205 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         showToast('Server error adding category.', 'error');
       }
+    });
+  }
+
+  // --- REQUIREMENT GROUPS & BUNDLES ENGINE ---
+
+  async function loadGroupsList() {
+    const container = document.getElementById('ownerGroupsTableContainer');
+    if (!container) return;
+
+    container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">Loading requirement groups...</div>';
+
+    try {
+      const jwtAccess = localStorage.getItem('owner_jwt_access');
+      const headers = {};
+      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+
+      const res = await fetch('/api/owner/groups/', { headers });
+      const data = await res.json();
+      const groups = data.groups || [];
+
+      if (groups.length === 0) {
+        container.innerHTML = `
+          <div style="padding: 48px 24px; text-align: center;">
+            <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
+            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">No Requirement Groups Yet</h3>
+            <p style="font-size: 13px; color: var(--crm-muted); margin-bottom: 16px;">
+              Whenever you use the Bulk Parser, a group is automatically created with a direct shareable link!
+            </p>
+            <button class="btn-crm-primary" style="height: 38px; font-size: 13px;" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
+              ⚡ Open Bulk Parser
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      let html = `
+        <table class="crm-table">
+          <thead>
+            <tr>
+              <th style="width: 32%;">Group / Drive Name</th>
+              <th style="width: 14%;">Active Jobs</th>
+              <th style="width: 18%;">Created Date</th>
+              <th style="width: 10%;">Views</th>
+              <th style="width: 26%; text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      groups.forEach(g => {
+        html += `
+          <tr>
+            <td>
+              <div style="font-weight: 800; color: #ffffff; font-size: 13.5px;">${escapeHtml(g.name)}</div>
+              <div style="font-size: 11px; color: var(--crm-cyan); font-family: monospace; margin-top: 2px;">/group/${escapeHtml(g.slug)}/</div>
+            </td>
+            <td>
+              <span class="crm-table-badge badge-active" style="font-size: 11.5px;">
+                🎯 ${g.active_jobs_count} Active
+              </span>
+            </td>
+            <td style="color: var(--crm-muted); font-size: 12.5px;">${escapeHtml(g.created_at)}</td>
+            <td style="font-weight: 700; color: #e2e8f0; font-size: 13px;">👁️ ${g.views_count}</td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <a href="${escapeHtml(g.url)}" target="_blank" class="btn-crm-action" style="background: rgba(37,99,235,0.2); color: #60a5fa; border-color: rgba(37,99,235,0.4); text-decoration: none; padding: 5px 9px; font-size: 11.5px;">
+                  Open ↗
+                </a>
+                <button class="btn-crm-action btn-group-broadcast" data-id="${g.id}" style="background: rgba(34,197,94,0.18); color: #4ade80; border-color: rgba(34,197,94,0.35); padding: 5px 9px; font-size: 11.5px;">
+                  📱 Broadcast
+                </button>
+                <button class="btn-crm-action btn-group-delete" data-id="${g.id}" data-name="${escapeHtml(g.name)}" style="background: rgba(244,63,94,0.15); color: var(--crm-rose); border-color: rgba(244,63,94,0.3); padding: 5px 8px; font-size: 11.5px;">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+
+      // Attach Broadcast button click handlers
+      container.querySelectorAll('.btn-group-broadcast').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const groupId = btn.dataset.id;
+          try {
+            const jwtAccess = localStorage.getItem('owner_jwt_access');
+            const headers = {};
+            if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+            const res = await fetch(`/api/owner/groups/${groupId}/broadcast/`, { headers });
+            const data = await res.json();
+            if (res.ok) {
+              openBroadcastModal(data);
+            }
+          } catch (err) {
+            showToast('Failed to fetch group broadcast details.', 'error');
+          }
+        });
+      });
+
+      // Attach Delete button click handlers
+      container.querySelectorAll('.btn-group-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const groupId = btn.dataset.id;
+          const groupName = btn.dataset.name;
+          if (confirm(`Are you sure you want to delete group "${groupName}"? (The individual job postings will remain untouched).`)) {
+            try {
+              const jwtAccess = localStorage.getItem('owner_jwt_access');
+              const headers = { 'Content-Type': 'application/json' };
+              if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
+              const res = await fetch(`/api/owner/groups/${groupId}/delete/`, {
+                method: 'POST',
+                headers
+              });
+              if (res.ok) {
+                showToast(`Group "${groupName}" deleted.`, 'success');
+                logActivity(`Deleted group`, groupName);
+                loadGroupsList();
+                loadKpiStats();
+              }
+            } catch (err) {
+              showToast('Error deleting group.', 'error');
+            }
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error('Error loading groups:', err);
+      container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-rose);">Failed to load requirement groups.</div>';
+    }
+  }
+
+  // --- BROADCAST MODAL HANDLER ---
+
+  function openBroadcastModal(data) {
+    const modal = document.getElementById('groupBroadcastModal');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('modalGroupName');
+    const urlInput = document.getElementById('modalGroupUrlInput');
+    const openLink = document.getElementById('btnOpenModalLink');
+    const previewEl = document.getElementById('modalBroadcastPreview');
+
+    const groupUrl = data.full_group_url || (window.location.origin + (data.group_url || ''));
+    if (titleEl) titleEl.textContent = data.group_name || 'Requirement Group Ready';
+    if (urlInput) urlInput.value = groupUrl;
+    if (openLink) openLink.href = groupUrl;
+    if (previewEl) previewEl.value = data.whatsapp_broadcast || '';
+
+    // Setup Copy Link
+    const btnCopyLink = document.getElementById('btnCopyModalLink');
+    if (btnCopyLink) {
+      btnCopyLink.onclick = () => {
+        navigator.clipboard.writeText(groupUrl).then(() => {
+          btnCopyLink.textContent = '✅ Copied!';
+          showToast('Direct group URL copied to clipboard!', 'success');
+          setTimeout(() => { btnCopyLink.textContent = '🔗 Copy Link'; }, 2000);
+        });
+      };
+    }
+
+    // Setup Copy WhatsApp Broadcast
+    const btnCopyWhatsApp = document.getElementById('btnCopyModalWhatsApp');
+    if (btnCopyWhatsApp) {
+      btnCopyWhatsApp.onclick = () => {
+        const text = data.whatsapp_broadcast || '';
+        navigator.clipboard.writeText(text).then(() => {
+          btnCopyWhatsApp.textContent = '✅ WhatsApp Text Copied!';
+          showToast('WhatsApp Broadcast message copied to clipboard!', 'success');
+          setTimeout(() => { btnCopyWhatsApp.textContent = '📱 Copy WhatsApp Broadcast'; }, 2500);
+        });
+      };
+    }
+
+    // Setup Copy Telegram Broadcast
+    const btnCopyTelegram = document.getElementById('btnCopyModalTelegram');
+    if (btnCopyTelegram) {
+      btnCopyTelegram.onclick = () => {
+        const text = data.telegram_broadcast || data.whatsapp_broadcast || '';
+        navigator.clipboard.writeText(text).then(() => {
+          btnCopyTelegram.textContent = '✅ Telegram Post Copied!';
+          showToast('Telegram Post format copied to clipboard!', 'success');
+          setTimeout(() => { btnCopyTelegram.textContent = '✈️ Copy Telegram Post'; }, 2500);
+        });
+      };
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  const btnCloseBroadcastModal = document.getElementById('btnCloseBroadcastModal');
+  if (btnCloseBroadcastModal) {
+    btnCloseBroadcastModal.addEventListener('click', () => {
+      const modal = document.getElementById('groupBroadcastModal');
+      if (modal) modal.style.display = 'none';
     });
   }
 

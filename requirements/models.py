@@ -174,3 +174,81 @@ class ContactInquiry(models.Model):
     def __str__(self):
         return f"Message from {self.name} ({self.email})"
 
+
+class JobGroup(models.Model):
+    """Collection / Bundle of multiple job requirements for 1-click sharing & broadcasting."""
+    name = models.CharField(max_length=200, help_text="e.g. 🔥 Top 5 IT Drives Today - Aug 2026")
+    slug = models.SlugField(max_length=200, unique=True)
+    banner_tag = models.CharField(max_length=100, default="🔥 DAILY MEGA HIRING DRIVE", help_text="Header badge e.g. 💼 DELOITTE SPECIAL")
+    description = models.TextField(blank=True, default="", help_text="Optional summary of this requirement collection")
+    jobs = models.ManyToManyField(JobPosting, related_name='groups', blank=True)
+    is_active = models.BooleanField(default=True)
+    views_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Requirement Group / Bundle"
+        verbose_name_plural = "Requirement Groups / Bundles"
+
+    def __str__(self):
+        return self.name
+
+    def get_active_jobs(self):
+        return self.jobs.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')
+
+    def get_whatsapp_broadcast_text(self, host_url="https://kashiiupdatez.online"):
+        lines = []
+        lines.append(f"🚀 *{self.name.upper()}*")
+        if self.description:
+            lines.append(f"_{self.description}_\n")
+        else:
+            lines.append("")
+
+        active_jobs = list(self.get_active_jobs())
+        if not active_jobs:
+            active_jobs = list(self.jobs.all().select_related('category')[:10])
+
+        number_emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+        for idx, job in enumerate(active_jobs):
+            num = number_emojis[idx] if idx < len(number_emojis) else f"{idx+1}."
+            lines.append(f"{num} *{job.title}* at *{job.company_name}*")
+            lines.append(f"💰 Package: {job.stipend_salary} | 📍 {job.location}")
+            if job.eligibility:
+                elig = (job.eligibility[:75] + '...') if len(job.eligibility) > 75 else job.eligibility
+                lines.append(f"🎓 Eligibility: {elig}")
+            job_link = f"{host_url}/category/{job.category.slug}/job/{job.uuid}/"
+            lines.append(f"🔗 Direct Apply: {job_link}\n")
+
+        group_url = f"{host_url}/group/{self.slug}/"
+        lines.append("─────────────────────")
+        lines.append(f"👉 *View all {len(active_jobs)} requirements on 1 Page:*\n{group_url}")
+        lines.append("\n⚡ _Share with friends & batchmates!_")
+        return "\n".join(lines)
+
+    def get_telegram_broadcast_text(self, host_url="https://kashiiupdatez.online"):
+        lines = []
+        lines.append(f"🚀 **{self.name}**")
+        if self.description:
+            lines.append(f"{self.description}\n")
+        else:
+            lines.append("")
+
+        active_jobs = list(self.get_active_jobs())
+        if not active_jobs:
+            active_jobs = list(self.jobs.all().select_related('category')[:10])
+
+        number_emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+        for idx, job in enumerate(active_jobs):
+            num = number_emojis[idx] if idx < len(number_emojis) else f"{idx+1}."
+            lines.append(f"{num} **{job.title}** — __{job.company_name}__")
+            lines.append(f"• 💰 Package: `{job.stipend_salary}` | 📍 `{job.location}`")
+            job_link = f"{host_url}/category/{job.category.slug}/job/{job.uuid}/"
+            lines.append(f"• 🔗 [Direct Application Link]({job_link})\n")
+
+        group_url = f"{host_url}/group/{self.slug}/"
+        lines.append(f"👉 **[Click Here to Open Full {len(active_jobs)}-Job Group Page]({group_url})**")
+        return "\n".join(lines)
+
+

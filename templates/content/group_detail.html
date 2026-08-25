@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}⚡ {{ group.name }} — Kashii Updatez{% endblock %}
+{% block meta_description %}{{ group.description|default:"Explore all verified requirements in this hiring drive bundle with direct official apply links on Kashii Updatez." }}{% endblock %}
+
+{% block content %}
+<div class="wrap">
+
+  <!-- Group Hero Banner -->
+  <section class="vp-hero" style="background: linear-gradient(135deg, #090d16 0%, #111827 50%, #0f172a 100%); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6);">
+    <div style="max-width: 860px; margin: 0 auto; text-align: center;">
+      <span class="code-badge" style="background: rgba(37,99,235,0.2); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 6px;">
+        <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Group"> {{ group.banner_tag|default:"🔥 SPECIAL HIRING DRIVE BUNDLE" }}
+      </span>
+
+      <h1 style="font-family: var(--font-serif); font-size: clamp(26px, 5vw, 38px); font-weight: 800; color: #ffffff; margin: 14px 0 10px; line-height: 1.25;">
+        {{ group.name }}
+      </h1>
+
+      {% if group.description %}
+      <p style="color: #94a3b8; font-size: 15px; line-height: 1.6; margin: 0 auto 20px; max-width: 680px;">
+        {{ group.description }}
+      </p>
+      {% else %}
+      <p style="color: #94a3b8; font-size: 15px; line-height: 1.6; margin: 0 auto 20px;">
+        Verified collection of {{ jobs|length }} student opportunities. Apply directly via official application links below.
+      </p>
+      {% endif %}
+
+      <!-- Trust Metrics -->
+      <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;">
+        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
+          🎯 <strong>{{ jobs|length }}</strong> Total Requirements
+        </span>
+        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
+          ⏱️ Auto 7-Day Fresh Rule
+        </span>
+        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
+          🔗 Official Direct Apply Links
+        </span>
+      </div>
+
+      <!-- Quick 1-Click Multi-Channel Sharing Actions -->
+      <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <a href="https://wa.me/?text={{ share_whatsapp_text|urlencode }}" target="_blank" rel="noopener"
+           class="button" style="background: #22c55e; color: #ffffff; border-color: #22c55e; font-weight: 800; font-size: 13.5px; padding: 11px 20px; box-shadow: 0 4px 14px rgba(34,197,94,0.35);">
+          📱 Share Drive on WhatsApp
+        </a>
+
+        <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ group.name|urlencode }}" target="_blank" rel="noopener"
+           class="button" style="background: #0284c7; color: #ffffff; border-color: #0284c7; font-weight: 800; font-size: 13.5px; padding: 11px 20px; box-shadow: 0 4px 14px rgba(2,132,199,0.35);">
+          ✈️ Share on Telegram
+        </a>
+
+        <button id="btnCopyGroupLink" class="button button-light" style="font-size: 13.5px; padding: 11px 20px; background: rgba(255,255,255,0.12); color: #ffffff; border-color: rgba(255,255,255,0.25);">
+          🔗 Copy Link
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Job Feed Section -->
+  <main style="margin-top: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+      <div>
+        <h2 style="font: 700 22px var(--font-sans); margin: 0; color: var(--ink);">
+          Requirements in this Drive ({{ jobs|length }})
+        </h2>
+        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">
+          All opportunities are actively accepting applications.
+        </p>
+      </div>
+      <a href="/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
+        ← Back to All Jobs
+      </a>
+    </div>
+
+    <div class="vp-catalog-grid">
+      {% for job in jobs %}
+      <div class="vp-product-card" data-id="{{ job.id }}" data-share-url="/category/{{ job.category.slug }}/job/{{ job.uuid }}/">
+        <div class="vp-card-header">
+          <span class="company-badge">{{ job.company_name }}</span>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="type-badge">{{ job.get_job_type_display }}</span>
+          </div>
+        </div>
+
+        <div class="vp-card-content">
+          <h3>{{ job.title }}</h3>
+          
+          <div class="vp-salary-row">
+            <span style="display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> {{ job.stipend_salary }}</span>
+            <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> {{ job.location }}</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">
+            <img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">{{ job.get_posted_date_display }}</strong>
+          </div>
+
+          {% if job.eligibility %}
+          <div style="font-size: 12.5px; color: #475569; margin-bottom: 8px; line-height: 1.4; background: #f8fafc; padding: 6px 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            🎓 <strong>Eligibility:</strong> {{ job.eligibility|truncatewords:14 }}
+          </div>
+          {% endif %}
+
+          <p>{{ job.description|truncatewords:18 }}</p>
+
+          <div class="skills-wrapper">
+            {% for skill in job.get_skills_list %}
+              <span class="skill-tag">{{ skill }}</span>
+            {% endfor %}
+          </div>
+
+          <div class="vp-price-row">
+            <div class="timer-tag" data-timer="{{ job.id }}" data-seconds="{{ job.get_time_left_seconds }}">
+              ⏱️ <span>Auto-Expires in 7 Days</span>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            {% if job.apply_url %}
+            <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
+               class="external-apply-btn"
+               onclick="event.stopPropagation();"
+               style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);">
+              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="16" height="16" alt="Apply"> Apply Now ↗
+            </a>
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+               onclick="event.stopPropagation();"
+               style="padding:11px 14px;background:var(--blue-light);color:var(--blue-primary);font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:1px solid var(--blue-border);display:flex;align-items:center;justify-content:center;">
+              <img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
+            </a>
+            {% else %}
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+               onclick="event.stopPropagation();"
+               style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;">
+              <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div style="grid-column: 1 / -1; text-align: center; padding: 48px 20px; background: #ffffff; border-radius: 18px; border: 1px solid var(--subtle-border);">
+        <h3 style="font-family: var(--font-serif); font-size: 20px; margin: 0 0 8px;">No active opportunities in this drive</h3>
+        <p style="color: var(--muted); font-size: 14px; margin: 0 0 16px;">Postings in this collection may have expired past their 7-day window.</p>
+        <a href="/" class="button button-dark">Browse All Active Jobs</a>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <!-- Bottom CTA: Follow for Daily Updates -->
+  <section style="margin-top: 48px; background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 20px; padding: 28px 24px; color: #ffffff; text-align: center; border: 1px solid #334155;">
+    <h3 style="font-family: var(--font-serif); font-size: 20px; margin: 0 0 8px;">Never Miss a Student Requirement Alert</h3>
+    <p style="color: #94a3b8; font-size: 14px; margin: 0 0 18px; max-width: 500px; margin-left: auto; margin-right: auto;">
+      Follow @ikashii_07 on Instagram and subscribe to @pythonkashi on YouTube for daily hiring notifications!
+    </p>
+    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+      <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="button" style="background: #e1306c; color: #ffffff; font-weight: 700;">
+        Follow on Instagram ↗
+      </a>
+      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="button" style="background: #dc2626; color: #ffffff; font-weight: 700;">
+        Subscribe on YouTube ↗
+      </a>
+    </div>
+  </section>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const btnCopy = document.getElementById('btnCopyGroupLink');
+  if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        btnCopy.textContent = '✅ Link Copied!';
+        setTimeout(() => { btnCopy.textContent = '🔗 Copy Link'; }, 2500);
+      });
+    });
+  }
+
+  // Card click navigates to shareUrl
+  document.querySelectorAll('.vp-product-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.external-apply-btn')) return;
+      const shareUrl = card.dataset.shareUrl;
+      if (shareUrl) window.location.href = shareUrl;
+    });
+  });
+});
+</script>
+{% endblock %}
