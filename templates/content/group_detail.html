@@ -7,59 +7,55 @@
 {% block content %}
 <div class="wrap">
 
-  <!-- Group Hero Banner -->
-  <section class="vp-hero" style="background: linear-gradient(135deg, #090d16 0%, #111827 50%, #0f172a 100%); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.6);">
-    <div style="max-width: 860px; margin: 0 auto; text-align: center;">
-      <span class="code-badge" style="background: rgba(37,99,235,0.2); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 6px;">
-        <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Group"> {{ group.banner_tag|default:"🔥 SPECIAL HIRING DRIVE BUNDLE" }}
+  <!-- Group Hero Banner (Compact & Sleek) -->
+  <section class="vp-hero" style="background: linear-gradient(135deg, #090d16 0%, #111827 50%, #0f172a 100%); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 18px 16px; margin-bottom: 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);">
+    <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+      <span class="code-badge" style="background: rgba(37,99,235,0.2); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 3px 10px;">
+        <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="12" height="12" alt="Group"> {{ group.banner_tag|default:"🔥 SPECIAL HIRING DRIVE" }}
       </span>
 
-      <h1 style="font-family: var(--font-serif); font-size: clamp(26px, 5vw, 38px); font-weight: 800; color: #ffffff; margin: 14px 0 10px; line-height: 1.25;">
+      <h1 style="font-family: var(--font-serif); font-size: clamp(19px, 4vw, 25px); font-weight: 800; color: #ffffff; margin: 8px 0 6px; line-height: 1.25;">
         {{ group.name }}
       </h1>
 
       {% if group.description %}
-      <p style="color: #94a3b8; font-size: 15px; line-height: 1.6; margin: 0 auto 20px; max-width: 680px;">
+      <p style="color: #94a3b8; font-size: 13px; line-height: 1.45; margin: 0 auto 12px; max-width: 620px;">
         {{ group.description }}
-      </p>
-      {% else %}
-      <p style="color: #94a3b8; font-size: 15px; line-height: 1.6; margin: 0 auto 20px;">
-        Verified collection of {{ jobs|length }} student opportunities. Apply directly via official application links below.
       </p>
       {% endif %}
 
-      <!-- Trust Metrics -->
-      <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 24px;">
-        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
-          🎯 <strong>{{ jobs|length }}</strong> Total Requirements
+      <!-- Trust Metrics (Compact Row) -->
+      <div style="display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;">
+        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15); font-size: 11.5px; padding: 3px 9px;">
+          🎯 <strong>{{ jobs|length }}</strong> Requirements
         </span>
         {% if is_expired %}
-        <span class="vp-pill" style="background: rgba(244,63,94,0.2); color: #f43f5e; border-color: rgba(244,63,94,0.4); font-weight: 800;">
-          ⛔ Drive Expired (7-Day Limit Reached)
+        <span class="vp-pill" style="background: rgba(244,63,94,0.2); color: #f43f5e; border-color: rgba(244,63,94,0.4); font-weight: 800; font-size: 11.5px; padding: 3px 9px;">
+          ⛔ Expired
         </span>
         {% else %}
-        <span class="vp-pill" style="background: rgba(245,158,11,0.2); color: #fbbf24; border-color: rgba(245,158,11,0.4); font-weight: 800;" id="groupTimerPill" data-seconds="{{ time_left_seconds }}">
-          ⏱️ <span id="groupTimeLeftText">{{ time_left_display }}</span> (7-Day Rule)
+        <span class="vp-pill" style="background: rgba(245,158,11,0.2); color: #fbbf24; border-color: rgba(245,158,11,0.4); font-weight: 800; font-size: 11.5px; padding: 3px 9px;" id="groupTimerPill" data-seconds="{{ time_left_seconds }}">
+          ⏱️ <span id="groupTimeLeftText">{{ time_left_display }}</span>
         </span>
         {% endif %}
-        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15);">
-          🔗 Official Direct Apply Links
+        <span class="vp-pill" style="background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15); font-size: 11.5px; padding: 3px 9px;">
+          🔗 Direct Apply
         </span>
       </div>
 
-      <!-- Quick 1-Click Multi-Channel Sharing Actions -->
-      <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center;">
+      <!-- Quick 1-Click Multi-Channel Sharing Actions (Compact) -->
+      <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; align-items: center;">
         <a href="https://wa.me/?text={{ share_whatsapp_text|urlencode }}" target="_blank" rel="noopener"
-           class="button" style="background: #22c55e; color: #ffffff; border-color: #22c55e; font-weight: 800; font-size: 13.5px; padding: 11px 20px; box-shadow: 0 4px 14px rgba(34,197,94,0.35);">
-          📱 Share Drive on WhatsApp
+           class="button" style="background: #22c55e; color: #ffffff; border-color: #22c55e; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(34,197,94,0.3);">
+          📱 Share on WhatsApp
         </a>
 
         <a href="https://t.me/share/url?url={{ request.build_absolute_uri|urlencode }}&text={{ group.name|urlencode }}" target="_blank" rel="noopener"
-           class="button" style="background: #0284c7; color: #ffffff; border-color: #0284c7; font-weight: 800; font-size: 13.5px; padding: 11px 20px; box-shadow: 0 4px 14px rgba(2,132,199,0.35);">
-          ✈️ Share on Telegram
+           class="button" style="background: #0284c7; color: #ffffff; border-color: #0284c7; font-weight: 800; font-size: 12px; padding: 7px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(2,132,199,0.3);">
+          ✈️ Telegram
         </a>
 
-        <button id="btnCopyGroupLink" class="button button-light" style="font-size: 13.5px; padding: 11px 20px; background: rgba(255,255,255,0.12); color: #ffffff; border-color: rgba(255,255,255,0.25);">
+        <button id="btnCopyGroupLink" class="button button-light" style="font-size: 12px; padding: 7px 14px; border-radius: 8px; background: rgba(255,255,255,0.12); color: #ffffff; border-color: rgba(255,255,255,0.25);">
           🔗 Copy Link
         </button>
       </div>
@@ -68,7 +64,7 @@
   </section>
 
   <!-- Job Feed Section -->
-  <main style="margin-top: 32px;">
+  <main style="margin-top: 16px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
       <div>
         <h2 style="font: 700 22px var(--font-sans); margin: 0; color: var(--ink);">
