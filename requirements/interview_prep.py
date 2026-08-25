@@ -1,14 +1,12 @@
 import re
-import urllib.parse
 
 
 def generate_interview_prep(title, company, skills, eligibility=""):
     """
     Generates comprehensive preparation materials including:
-    - Previously asked interview question links & resources
+    - Real, verified study resources & interview preparation links (IndiaBIX, GFG, PrepInsta, LeetCode, Code Debugger)
     - Technical questions & solutions
-    - Coding challenges with direct live debugger practice links
-    - Company-specific exam pattern & syllabus
+    - Coding challenges with direct live practice links
     - Behavioral & HR questions with STAR framework tips
     - Round-by-round strategy roadmap
     """
@@ -119,35 +117,35 @@ def generate_interview_prep(title, company, skills, eligibility=""):
         ]
         practice_lang = "python"
 
-    # 2. Previously Asked Questions & Online Prep Links
+    # 2. Verified Free Study Resources & Interview Redirect Links (Like Jobdexo)
     prep_links = [
         {
-            "title": f"{comp_name} Top 50 Most Repeated Interview Questions",
-            "tag": "PREVIOUS QUESTIONS",
-            "desc": f"Master the frequently asked technical, aptitude, and problem-solving questions reported by candidates in recent {comp_name} hiring drives.",
-            "url": f"/guides/mastering-technical-interviews/",
-            "is_external": False
+            "title": "Aptitude Practice Questions & Online Mock Tests",
+            "tag": "APTITUDE & LOGIC",
+            "desc": "Curated logical, quantitative, and verbal reasoning problems to sharpen reasoning skills required for the initial screening test.",
+            "url": "https://www.indiabix.com/aptitude/questions-and-answers/",
+            "icon": "📖"
         },
         {
-            "title": f"{comp_name} National Exam Pattern & Syllabus (2026)",
-            "tag": "EXAM PATTERN",
-            "desc": f"Complete section-by-section breakdown of Quantitative Aptitude, Logical Reasoning, Verbal Ability, and Coding round weightages for {comp_name}.",
-            "url": f"/guides/off-campus-placement-blueprint/",
-            "is_external": False
+            "title": f"{comp_name} Interview Preparation Corner",
+            "tag": "COMPANY GUIDE",
+            "desc": f"Comprehensive guide covering typical interview formats, common questions, and preparation tips for {comp_name} and off-campus tech roles.",
+            "url": "https://www.geeksforgeeks.org/company-interview-corner/",
+            "icon": "🎯"
         },
         {
-            "title": f"Top 50 {skills.split(',')[0] if skills else 'Coding'} Questions & Cheat Sheet",
-            "tag": "CHEAT SHEET",
-            "desc": f"High-yield syntax summaries, time complexity tables, and standard algorithmic patterns for technical interview rounds.",
-            "url": f"/guides/python-interview-questions-cheat-sheet/",
-            "is_external": False
+            "title": "Comprehensive Interview Prep Resources & Syllabus",
+            "tag": "MOCK TESTS & PAPERS",
+            "desc": "Collection of previous year questions, company-specific test patterns, and interview experiences for technical and HR rounds.",
+            "url": "https://prepinsta.com/",
+            "icon": "📝"
         },
         {
-            "title": f"Live Coding Sandbox & Algorithm Debugger",
-            "tag": "PRACTICE SANDBOX",
-            "desc": f"Practice real-time execution, step-by-step memory pointer tracing, and visual AST debugging in Python, JavaScript, and Java.",
-            "url": f"/debugger/",
-            "is_external": False
+            "title": "Algorithm and Data Structure Problem Set",
+            "tag": "CODING PRACTICE",
+            "desc": "Practice problems to improve coding proficiency and algorithm problem-solving speed for technical rounds.",
+            "url": "https://leetcode.com/problemset/",
+            "icon": "💻"
         }
     ]
 

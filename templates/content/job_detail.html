@@ -627,12 +627,15 @@
           </div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
             {% for item in interview_prep.prep_links %}
-            <a href="{{ item.url }}" style="text-decoration: none; color: inherit; display: block;">
+            <a href="{{ item.url }}" target="_blank" rel="noopener" style="text-decoration: none; color: inherit; display: block;">
               <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 14px; transition: var(--transition); height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
-                  <span style="font-size: 10px; font-weight: 800; color: var(--blue-primary); background: var(--blue-light); border: 1px solid var(--blue-border); padding: 2px 7px; border-radius: 4px; display: inline-block; margin-bottom: 6px;">
-                    {{ item.tag }}
-                  </span>
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="font-size: 10px; font-weight: 800; color: var(--blue-primary); background: var(--blue-light); border: 1px solid var(--blue-border); padding: 2px 7px; border-radius: 4px;">
+                      {{ item.tag }}
+                    </span>
+                    <span style="font-size: 16px;">{{ item.icon|default:"📖" }}</span>
+                  </div>
                   <div style="font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 4px; line-height: 1.4;">
                     {{ item.title }}
                   </div>
@@ -641,7 +644,7 @@
                   </p>
                 </div>
                 <div style="font-size: 12px; font-weight: 700; color: var(--blue-primary); display: flex; align-items: center; gap: 4px;">
-                  Open Study Guide →
+                  Open Resource ↗
                 </div>
               </div>
             </a>
