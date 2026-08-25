@@ -153,6 +153,20 @@ def extract_jobdexo_detail(url):
         raw_sel = re.sub(r'<[^>]+>', '', raw_sel)
         selection_process = html.unescape(raw_sel.strip())
 
+    # 8c. Free Study Materials & Preparation Links
+    study_materials = []
+    study_cards = re.findall(r'<a[^>]*href="([^"]+)"[^>]*class="[^"]*jd-study[^"]*"[^>]*>(.*?)</a>', page_html, re.DOTALL)
+    for link, content in study_cards:
+        t_m = re.search(r'<div class="sm-title">([^<]+)</div>', content)
+        d_m = re.search(r'<div class="sm-desc">([^<]+)</div>', content)
+        i_m = re.search(r'<div class="sm-icon">([^<]+)</div>', content)
+        study_materials.append({
+            'title': html.unescape(t_m.group(1).strip()) if t_m else 'Study Resource',
+            'desc': html.unescape(d_m.group(1).strip()) if d_m else 'Interview and screening practice resource.',
+            'icon': html.unescape(i_m.group(1).strip()) if i_m else '📖',
+            'url': link.strip()
+        })
+
     # 9. Official Apply URL
     apply_url = ""
     apply_m = re.search(r'href="([^"]+)"[^>]*class="[^"]*jd-apply', page_html)
@@ -213,6 +227,7 @@ def extract_jobdexo_detail(url):
         'skills': skills,
         'eligibility': eligibility,
         'selection_process': selection_process,
+        'study_materials': study_materials,
         'description': description,
         'apply_url': apply_url,
         'job_type': job_type,
@@ -352,6 +367,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
                 description=job_data['description'],
                 eligibility=job_data['eligibility'],
                 selection_process=job_data.get('selection_process', ''),
+                study_materials=job_data.get('study_materials', []),
                 status='ACTIVE',
                 is_featured=True,
                 posted_date=job_posted_date,

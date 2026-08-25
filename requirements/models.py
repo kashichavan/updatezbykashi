@@ -51,9 +51,14 @@ class JobPosting(models.Model):
         default="",
         help_text="Step-by-step interview selection rounds e.g. Round 1: Online Aptitude -> Round 2: Technical Interview -> Round 3: HR"
     )
+    study_materials = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of free study material links with title, desc, and url"
+    )
     
-    posted_by = models.CharField(max_length=100, default="Kashii Updatez Admin")
-    poster_email = models.EmailField(default="admin@kashiiupdatez.com")
+    posted_by = models.CharField(max_length=100, blank=True, default="Kashii Updatez Admin")
+    poster_email = models.EmailField(blank=True, default="admin@kashiiupdatez.com")
     
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='ACTIVE')
     views_count = models.PositiveIntegerField(default=0)
@@ -92,6 +97,38 @@ class JobPosting(models.Model):
         raw_rounds = re.split(r'→|->|\n|•|(?=Round\s*\d+:?)', self.selection_process)
         cleaned = [r.strip(' -:•\t\r\n') for r in raw_rounds if r.strip(' -:•\t\r\n')]
         return cleaned if cleaned else [self.selection_process.strip()]
+
+    def get_study_materials_list(self):
+        """Returns curated study materials list or standard high-yield placement defaults."""
+        if self.study_materials and isinstance(self.study_materials, list) and len(self.study_materials) > 0:
+            return self.study_materials
+        # Standard High-Yield Free Study Resources
+        return [
+            {
+                "title": "Aptitude Practice Questions & Mock Tests",
+                "desc": "Curated logical, quantitative, and verbal reasoning problems for the initial online screening round.",
+                "url": "https://www.indiabix.com/aptitude/questions-and-answers/",
+                "icon": "📖"
+            },
+            {
+                "title": "Company-Specific Interview Preparation Corner",
+                "desc": f"Detailed interview experiences, exam formats, and previous test questions for {self.company_name} and tech roles.",
+                "url": "https://www.geeksforgeeks.org/company-interview-corner/",
+                "icon": "🎯"
+            },
+            {
+                "title": "Technical Placement Cheat Sheets & Question Bank",
+                "desc": "High-yield coding cheat sheets, core CS fundamentals (OOP, DBMS, OS, Networks), and rapid revision guides.",
+                "url": "/guides/python-interview-questions-cheat-sheet/",
+                "icon": "📝"
+            },
+            {
+                "title": "Algorithm, DSA & Live Code Debugger Practice",
+                "desc": "Hands-on problem sets to improve coding speed and step-by-step memory debugging.",
+                "url": "/debugger/",
+                "icon": "💻"
+            }
+        ]
 
     def get_posted_date_display(self):
         """Returns human-friendly date: 'Today', 'Yesterday', or 'Aug 3, 2026'"""

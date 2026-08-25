@@ -528,6 +528,33 @@
         </div>
       </div>
 
+      <!-- 📚 Free Study Materials Card (Exact Jobdexo Style & Theme Consistent) -->
+      <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
+        <div class="section-label" style="display:flex; align-items:center; gap:8px; margin-bottom: 14px; font-weight: 800;">
+          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="14" height="14" alt="Study Materials"> 📚 Free Study Materials ({{ job.get_study_materials_list|length }})
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          {% for mat in job.get_study_materials_list %}
+          <a href="{{ mat.url }}" target="_blank" rel="noopener" style="text-decoration: none; color: inherit; display: block;">
+            <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 14px; display: flex; align-items: flex-start; gap: 14px; transition: var(--transition);">
+              <div style="font-size: 22px; line-height: 1; flex-shrink: 0; padding-top: 2px;">
+                {{ mat.icon|default:"📖" }}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <span>{{ mat.title }}</span>
+                  <span style="font-size: 11.5px; font-weight: 700; color: var(--blue-primary); flex-shrink: 0;">Open Resource ↗</span>
+                </div>
+                <div style="font-size: 12.5px; color: var(--muted); line-height: 1.45;">
+                  {{ mat.desc }}
+                </div>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
       <!-- Eligibility Box (Theme Consistent) -->
       <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 14px; padding: 16px 18px; margin-bottom: 20px;">
         <div class="section-label" style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
