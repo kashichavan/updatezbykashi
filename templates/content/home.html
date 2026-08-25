@@ -4,7 +4,57 @@
 {% block title %}⚡ Kashii Updatez — Daily Student Requirements & Internships{% endblock %}
 
 {% block content %}
-<div class="wrap" style="padding-top: 16px;">
+<div class="wrap">
+
+  <!-- Creative Hero Banner with Consolas Typewriter & Animated Terminal -->
+  <section class="vp-hero">
+    <div class="vp-hero-inner">
+      <div class="vp-hero-copy">
+        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
+        <h1 id="typewriterText">Daily Student Jobs & <em>Internship Requirements</em></h1>
+        <p class="lead">
+          Verified student requirements, campus drives, & internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
+        </p>
+
+        <div class="vp-trust-pills">
+          <span class="vp-pill" style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="7-Day"> Auto 7-Day Fresh Rule</span>
+          <span class="vp-pill"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software & Tech</span>
+          <span class="vp-pill"><img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Links"> Official Direct Links</span>
+        </div>
+      </div>
+
+      <!-- Animated Coding Terminal Box -->
+      <div class="coding-terminal">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="t-dot red"></span>
+            <span class="t-dot yellow"></span>
+            <span class="t-dot green"></span>
+          </div>
+          <span class="terminal-title">python_kashi_script.py</span>
+        </div>
+        <div class="terminal-body">
+          <div class="code-line">
+            <span class="code-prompt">&gt;</span>
+            <span class="code-kw">import</span> <span class="code-fn">kashii_updatez</span>
+          </div>
+          <div class="code-line">
+            <span class="code-prompt">&gt;</span>
+            <span class="code-kw">def</span> <span class="code-fn">get_fresh_opportunities</span>():
+          </div>
+          <div class="code-line" style="padding-left: 14px;">
+            <span class="code-cm"># Filter 100% active 7-day requirements</span>
+          </div>
+          <div class="code-line" style="padding-left: 14px;">
+            <span class="code-kw">return</span> kashii_updatez.<span class="code-fn">filter</span>(category=<span class="code-str">"Software & Tech"</span>)
+          </div>
+          <div class="code-line" style="margin-top: 10px;">
+            <span class="code-prompt">&gt;&gt;&gt;</span> <span style="color: #4ade80; font-weight: 700;">Status: 100% Verified &amp; Active</span><span class="typing-cursor"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- 3D Infinite Seamless Marquee: YouTube Video Tutorials (INSTANT PRE-RENDERED) -->
   <section style="margin-bottom: 32px;">
