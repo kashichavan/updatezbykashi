@@ -23,22 +23,30 @@
 <body>
 
   <!-- Flash Announcement Banner -->
-  {% include 'components/flash_banner.html' %}
+  {% block flash_banner %}
+    {% include 'components/flash_banner.html' %}
+  {% endblock %}
 
   <!-- Site Navigation Header -->
-  {% include 'components/navbar.html' %}
+  {% block navbar %}
+    {% include 'components/navbar.html' %}
+  {% endblock %}
 
   <!-- Main Content Body -->
   {% block content %}{% endblock %}
 
   <!-- Site Footer -->
-  {% include 'components/footer.html' %}
+  {% block footer %}
+    {% include 'components/footer.html' %}
+  {% endblock %}
 
   <!-- Floating Instagram Chat Widget (Bottom Right) -->
+  {% block floating_widgets %}
   <a href="instagram://user?username=ikashii_07" id="floatingChatWidget" class="floating-chat-widget" title="Chat directly with Kashii on Instagram DM" onclick="(function(e){ var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); if (!isMobile) { e.preventDefault(); window.open('https://ig.me/m/ikashii_07', '_blank'); } })(event)">
     <span class="chat-icon"><img src="{% static 'images/icon-chat.png' %}" class="mobile-nav-icon" style="filter: brightness(0) invert(1);" width="22" height="22" alt="Chat" loading="eager" decoding="async"></span>
     <span class="chat-label">Chat with Kashii</span>
   </a>
+  {% endblock %}
 
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>

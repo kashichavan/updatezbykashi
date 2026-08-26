@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Owner Studio — Kashii Updatez{% endblock %}
+{% block title %}Owner Control Studio | Kashii Updatez{% endblock %}
+
+{% block flash_banner %}{% endblock %}
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block floating_widgets %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -24,11 +29,6 @@
     --accent-cyan: #06b6d4;
   }
 
-  /* Reset public student elements for full enterprise app experience */
-  .flash-announcement-banner, .site-header, .site-footer, #floatingChatWidget {
-    display: none !important;
-  }
-
   body {
     background-color: var(--bg-main) !important;
     color: var(--text-primary) !important;
@@ -45,29 +45,33 @@
     flex-direction: column;
   }
 
-  /* Top Navigation Bar */
-  .app-header {
-    background: rgba(9, 9, 11, 0.85);
+  /* ==========================================
+     OWNER DEDICATED LINK NAVBAR
+     ========================================== */
+  .owner-header-navbar {
+    background: rgba(12, 12, 15, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-main);
     position: sticky;
     top: 0;
     z-index: 100;
-    padding: 0 20px;
-    height: 60px;
+    padding: 0 16px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-  }
-
-  .header-brand {
-    display: flex;
-    align-items: center;
     gap: 12px;
   }
 
-  .header-logo {
+  .owner-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .owner-brand-logo {
     width: 32px;
     height: 32px;
     border-radius: 8px;
@@ -75,152 +79,138 @@
     display: grid;
     place-items: center;
     font-weight: 800;
-    font-size: 16px;
-    color: #ffffff;
-    box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
-  }
-
-  .header-title-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .header-app-title {
     font-size: 15px;
-    font-weight: 700;
     color: #ffffff;
-    letter-spacing: -0.01em;
-  }
-
-  .header-badge {
-    font-size: 10.5px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 6px;
-    background: #18181b;
-    border: 1px solid var(--border-main);
-    color: var(--text-secondary);
-  }
-
-  .header-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11.5px;
-    font-weight: 600;
-    color: var(--accent-emerald);
-    background: rgba(16, 185, 129, 0.1);
-    padding: 3px 9px;
-    border-radius: 12px;
-    border: 1px solid rgba(16, 185, 129, 0.25);
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .btn-header-action {
-    height: 34px;
-    padding: 0 12px;
-    font-size: 12.5px;
-    font-weight: 600;
-    border-radius: 8px;
-    border: 1px solid var(--border-main);
-    background: #18181b;
-    color: var(--text-primary);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.15s ease;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
     text-decoration: none;
   }
 
-  .btn-header-action:hover {
-    background: #27272a;
-    border-color: #3f3f46;
+  .owner-brand-text {
+    display: flex;
+    flex-direction: column;
   }
 
-  .btn-primary {
-    background: var(--accent-blue) !important;
-    border-color: var(--accent-blue) !important;
-    color: #ffffff !important;
+  .owner-brand-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .owner-brand-badge {
+    font-size: 10px;
     font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-
-  .btn-primary:hover {
-    background: var(--accent-blue-hover) !important;
-    border-color: var(--accent-blue-hover) !important;
-  }
-
-  /* Segmented Horizontal Navigation Sub-header (Linear/Vercel Style) */
-  .nav-subbar {
-    background: #09090b;
-    border-bottom: 1px solid var(--border-main);
-    padding: 0 20px;
+    color: var(--accent-emerald);
     display: flex;
     align-items: center;
     gap: 4px;
+  }
+
+  /* Owner Navigation Links (Middle Section) */
+  .owner-link-nav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
+    flex: 1 1 auto;
+    justify-content: center;
   }
 
-  .nav-subbar::-webkit-scrollbar {
+  .owner-link-nav::-webkit-scrollbar {
     display: none;
   }
 
-  .nav-tab-btn {
-    padding: 12px 14px;
-    font-size: 13px;
+  .owner-link-item {
+    padding: 8px 12px;
+    font-size: 12.5px;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;
+    border-radius: 8px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
     white-space: nowrap;
     transition: all 0.15s ease;
     text-decoration: none;
   }
 
-  .nav-tab-btn:hover {
-    color: var(--text-primary);
+  .owner-link-item:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
   }
 
-  .nav-tab-btn.active {
-    color: var(--accent-blue);
-    border-bottom-color: var(--accent-blue);
+  .owner-link-item.active {
+    color: #ffffff;
+    background: #1e1e24;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 
-  .nav-tab-badge {
+  .owner-link-badge {
     font-size: 10px;
     font-weight: 700;
-    background: #18181b;
+    background: #27272a;
     color: var(--text-secondary);
-    padding: 1px 6px;
+    padding: 1px 5px;
     border-radius: 99px;
-    border: 1px solid var(--border-main);
   }
 
-  .nav-tab-btn.active .nav-tab-badge {
-    background: rgba(59, 130, 246, 0.15);
+  .owner-link-item.active .owner-link-badge {
+    background: rgba(59, 130, 246, 0.2);
     color: var(--accent-blue);
-    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  /* Right Header Controls */
+  .owner-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-owner-action {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 7px;
+    border: 1px solid var(--border-main);
+    background: #18181b;
+    color: var(--text-primary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .btn-owner-action:hover {
+    background: #27272a;
+    border-color: #3f3f46;
+  }
+
+  .btn-owner-primary {
+    background: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+    color: #ffffff !important;
+  }
+
+  .btn-owner-primary:hover {
+    background: var(--accent-blue-hover) !important;
   }
 
   /* Main Workspace Container */
   .workspace-container {
     max-width: 1440px;
     margin: 0 auto;
-    padding: 24px 20px 80px;
+    padding: 20px 16px 80px;
     width: 100%;
     box-sizing: border-box;
   }
@@ -229,15 +219,15 @@
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 14px;
+    margin-bottom: 20px;
   }
 
   .kpi-card {
     background: var(--bg-card);
     border: 1px solid var(--border-main);
     border-radius: 12px;
-    padding: 16px 20px;
+    padding: 16px 18px;
     transition: border-color 0.15s ease;
   }
 
@@ -249,11 +239,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .kpi-title {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -266,7 +256,7 @@
   }
 
   .kpi-value {
-    font-size: 26px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--text-primary);
     letter-spacing: -0.02em;
@@ -275,7 +265,7 @@
   }
 
   .kpi-sub {
-    font-size: 11.5px;
+    font-size: 11px;
     color: var(--text-muted);
     font-weight: 500;
   }
@@ -285,7 +275,7 @@
     background: var(--bg-card);
     border: 1px solid var(--border-main);
     border-radius: 14px;
-    padding: 24px;
+    padding: 22px;
   }
 
   /* Standard Toolbar Controls */
@@ -295,18 +285,18 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   .search-wrapper {
     position: relative;
     flex: 1 1 280px;
-    max-width: 380px;
+    max-width: 360px;
   }
 
   .search-input {
     width: 100%;
-    height: 38px;
+    height: 36px;
     background: var(--bg-input);
     border: 1px solid var(--border-main);
     border-radius: 8px;
@@ -340,11 +330,11 @@
   }
 
   .standard-select {
-    height: 38px;
+    height: 36px;
     background: var(--bg-input);
     border: 1px solid var(--border-main);
     border-radius: 8px;
-    padding: 0 12px;
+    padding: 0 10px;
     font-size: 12.5px;
     font-weight: 600;
     color: var(--text-primary);
@@ -373,7 +363,7 @@
 
   .data-table th {
     background: #18181b;
-    padding: 12px 16px;
+    padding: 11px 14px;
     font-size: 11px;
     font-weight: 700;
     color: var(--text-muted);
@@ -383,7 +373,7 @@
   }
 
   .data-table td {
-    padding: 14px 16px;
+    padding: 13px 14px;
     border-bottom: 1px solid var(--border-subtle);
     color: var(--text-primary);
     vertical-align: middle;
@@ -402,7 +392,7 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 3px 8px;
+    padding: 3px 7px;
     border-radius: 6px;
     font-size: 11px;
     font-weight: 600;
@@ -439,7 +429,7 @@
     background: var(--bg-input);
     border: 1px solid var(--border-main);
     border-radius: 8px;
-    padding: 10px 14px;
+    padding: 10px 12px;
     font-size: 13.5px;
     color: var(--text-primary);
     font-family: inherit;
@@ -456,7 +446,7 @@
   .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 14px;
   }
 
   /* Unauthenticated Login Modal/Card */
@@ -490,7 +480,7 @@
     border-radius: 16px;
     max-width: 600px;
     margin: 40px auto;
-    padding: 28px;
+    padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     box-sizing: border-box;
   }
@@ -500,12 +490,27 @@
     display: none;
   }
 
-  /* ==========================================================================
+  /* ==========================================
      MOBILE RESPONSIVE RULES (< 768px)
-     ========================================================================== */
+     ========================================== */
   @media (max-width: 768px) {
     body {
       padding-bottom: 74px !important;
+    }
+
+    .owner-header-navbar {
+      height: auto;
+      padding: 10px 12px;
+      flex-wrap: wrap;
+    }
+
+    .owner-link-nav {
+      order: 3;
+      width: 100%;
+      justify-content: flex-start;
+      padding: 4px 0 2px;
+      border-top: 1px solid var(--border-subtle);
+      margin-top: 6px;
     }
 
     .kpi-grid {
@@ -522,11 +527,11 @@
     }
 
     .workspace-container {
-      padding: 16px 12px 80px;
+      padding: 14px 10px 80px;
     }
 
     .workspace-card {
-      padding: 16px 14px;
+      padding: 14px 12px;
       border-radius: 12px;
     }
 
@@ -536,7 +541,7 @@
     }
 
     .form-input, .form-textarea, .search-input, .standard-select {
-      font-size: 16px !important; /* Prevents auto-zoom on mobile */
+      font-size: 16px !important;
     }
 
     .standard-toolbar {
@@ -556,7 +561,6 @@
       flex: 1 1 auto;
     }
 
-    /* Mobile Clean Job Cards */
     .table-responsive {
       border: none;
       background: transparent;
@@ -615,63 +619,63 @@
 <div class="app-shell">
 
   <!-- ==========================================
-       TOP APP HEADER
+       DEDICATED OWNER LINK NAVBAR
        ========================================== -->
-  <header class="app-header">
-    <div class="header-brand">
-      <div class="header-logo">⚡</div>
-      <div class="header-title-group">
-        <span class="header-app-title">Kashii Studio</span>
-        <span class="header-badge">Owner Hub</span>
+  <header class="owner-header-navbar">
+    
+    <!-- Left Brand Badge -->
+    <div class="owner-brand-group">
+      <a href="/" target="_blank" class="owner-brand-logo" title="View Public Student Feed">⚡</a>
+      <div class="owner-brand-text">
+        <span class="owner-brand-title">Kashii Studio</span>
+        <span class="owner-brand-badge">● Live Engine</span>
       </div>
-      <span class="header-status">● Live Engine</span>
     </div>
 
-    <div class="header-actions">
-      <button onclick="document.querySelector('[data-tab=tabPost]').click()" class="btn-header-action btn-primary">
-        + Post Job
+    <!-- Center Interactive Workspace Links -->
+    <nav class="owner-link-nav" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+      <button class="owner-link-item owner-nav-item active" data-tab="tabJobs">
+        📊 Pipeline <span class="owner-link-badge" id="sidebarActiveCount">--</span>
       </button>
-      <button onclick="document.querySelector('[data-tab=tabBulkParse]').click()" class="btn-header-action" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.3);">
-        ⚡ Bulk Parse
+      <button class="owner-link-item owner-nav-item" data-tab="tabBulkParse">
+        ⚡ Bulk Parser
       </button>
-      <button id="btnLogoutOwner" class="btn-header-action" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.2);">
+      <button class="owner-link-item owner-nav-item" data-tab="tabJobdexo">
+        🌐 Jobdexo Sync
+      </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabAnalytics">
+        📈 Traffic &amp; Analytics
+      </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabGroups">
+        📦 Groups <span class="owner-link-badge" id="sidebarGroupsCount">--</span>
+      </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
+        🎯 1-Click Parser
+      </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabPost">
+        ✍️ Manual Post
+      </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabCategory">
+        🏷️ Categories
+      </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabActivity">
+        📜 Logs
+      </button>
+    </nav>
+
+    <!-- Right Actions: View Public Site & Post & Logout -->
+    <div class="owner-right-actions">
+      <a href="/" target="_blank" class="btn-owner-action" title="Open student website in new tab">
+        <span>🌐 Student Site ↗</span>
+      </a>
+      <button onclick="document.querySelector('[data-tab=tabPost]').click()" class="btn-owner-action btn-owner-primary">
+        + Post
+      </button>
+      <button id="btnLogoutOwner" class="btn-owner-action" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.25);">
         Logout 🚪
       </button>
     </div>
   </header>
-
-  <!-- ==========================================
-       SEGMENTED HORIZONTAL NAVIGATION (Vercel Style)
-       ========================================== -->
-  <nav class="nav-subbar" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
-    <button class="nav-tab-btn owner-nav-item active" data-tab="tabJobs">
-      📊 Pipeline <span class="nav-tab-badge" id="sidebarActiveCount">--</span>
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabBulkParse">
-      ⚡ Bulk Parser
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabJobdexo">
-      🌐 Jobdexo Sync <span class="nav-tab-badge" style="color: var(--accent-emerald);">AUTO</span>
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabAnalytics">
-      📈 Traffic &amp; Visitors <span class="nav-tab-badge" style="color: var(--accent-cyan);">LIVE</span>
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabGroups">
-      📦 Groups <span class="nav-tab-badge" id="sidebarGroupsCount">--</span>
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabSmartParse">
-      🎯 1-Click Parser
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabPost">
-      ✍️ Manual Post
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabCategory">
-      🏷️ Categories
-    </button>
-    <button class="nav-tab-btn owner-nav-item" data-tab="tabActivity">
-      📜 Activity Log
-    </button>
-  </nav>
 
   <!-- ==========================================
        LOGIN VIEW (If Unauthenticated)
@@ -679,7 +683,7 @@
   <div id="ownerLoginView" class="auth-wrapper" style="{% if is_owner_authenticated %}display: none;{% endif %}">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
       <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: #ffffff;">Owner Studio Login</h2>
-      <span class="header-badge">PRO ACCESS</span>
+      <span class="owner-brand-badge" style="background: #18181b; padding: 2px 7px; border-radius: 6px;">PRO ACCESS</span>
     </div>
     <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
       Sign in to manage student job leads, bulk parsers, crawler engines, and real-time site analytics.
@@ -700,7 +704,7 @@
         <label for="ownerPass" class="form-label">Password *</label>
         <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-header-action btn-primary" style="width: 100%; height: 42px; font-size: 14px; justify-content: center; margin-top: 8px;">
+      <button type="submit" class="btn-owner-action btn-owner-primary" style="width: 100%; height: 42px; font-size: 14px; justify-content: center; margin-top: 8px;">
         Sign In to Hub 🔑
       </button>
     </form>
@@ -789,7 +793,7 @@
          ========================================== -->
     <div id="tabBulkParse" class="workspace-card tab-content" style="display: none;">
       <div style="margin-bottom: 20px;">
-        <span class="header-badge" style="color: var(--accent-emerald);">AUTOMATION ENGINE</span>
+        <span class="status-pill status-active" style="margin-bottom: 8px;">AUTOMATION ENGINE</span>
         <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">Batch Multi-Job Parser &amp; Direct Publisher</h2>
         <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
           Paste multi-job Telegram/WhatsApp messages. The engine parses company details, roles, apply links, publishes all opportunities, and <strong>automatically bundles them into a shareable Group link</strong>!
@@ -807,7 +811,7 @@
           <textarea id="bulkRawText" class="form-textarea" rows="10" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
         </div>
 
-        <button type="submit" class="btn-header-action btn-primary" style="height: 40px; padding: 0 20px; font-size: 13.5px;">
+        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 40px; padding: 0 20px; font-size: 13.5px;">
           ⚡ Execute Bulk Parse &amp; Publish Group
         </button>
       </form>
@@ -818,7 +822,7 @@
          ========================================== -->
     <div id="tabJobdexo" class="workspace-card tab-content" style="display: none;">
       <div style="margin-bottom: 20px;">
-        <span class="header-badge" style="color: var(--accent-cyan);">JOBDEXO LIVE CRAWLER</span>
+        <span class="status-pill" style="background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.25); margin-bottom: 8px;">JOBDEXO LIVE CRAWLER</span>
         <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">Automated Jobdexo Importer &amp; Drive Generator</h2>
         <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
           Automatically crawl and import off-campus opportunities directly from Jobdexo with official direct career apply links.
@@ -838,10 +842,10 @@
         </div>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button id="btnFetchJobdexo5" type="button" class="btn-header-action btn-primary" style="height: 38px;">
+          <button id="btnFetchJobdexo5" type="button" class="btn-owner-action btn-owner-primary" style="height: 38px;">
             ⚡ Fetch Latest 5 Jobs
           </button>
-          <button id="btnFetchJobdexo10" type="button" class="btn-header-action" style="height: 38px; background: #27272a;">
+          <button id="btnFetchJobdexo10" type="button" class="btn-owner-action" style="height: 38px; background: #27272a;">
             🚀 Fetch Latest 10 Jobs
           </button>
         </div>
@@ -860,7 +864,7 @@
             <textarea id="jobdexoUrlsInput" class="form-textarea" rows="4" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
           </div>
 
-          <button type="submit" class="btn-header-action btn-primary" style="height: 38px;">
+          <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 38px;">
             📥 Import URLs &amp; Generate Broadcast
           </button>
         </form>
@@ -872,7 +876,7 @@
          ========================================== -->
     <div id="tabSmartParse" class="workspace-card tab-content" style="display: none;">
       <div style="margin-bottom: 20px;">
-        <span class="header-badge">SINGLE LEAD PARSER</span>
+        <span class="status-pill" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.25); margin-bottom: 8px;">SINGLE LEAD PARSER</span>
         <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">1-Click Single Snippet Parser</h2>
         <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
           Paste raw message text for 1 opportunity. The parser extracts company, job title, skills, apply URL, and publishes it automatically under Software &amp; Tech.
@@ -885,7 +889,7 @@
           <textarea id="rawText" class="form-textarea" rows="8" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Apply Link: https://..." required></textarea>
         </div>
 
-        <button type="submit" class="btn-header-action btn-primary" style="height: 40px;">
+        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 40px;">
           🎯 Parse &amp; Publish Single Lead
         </button>
       </form>
@@ -953,7 +957,7 @@
           <input type="text" id="postEligibility" class="form-input" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)">
         </div>
 
-        <button type="submit" class="btn-header-action btn-primary" style="height: 42px; margin-top: 8px;">
+        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 42px; margin-top: 8px;">
           Publish Lead to Pipeline 🚀
         </button>
       </form>
@@ -976,7 +980,7 @@
             <input type="text" id="catDescription" class="form-input" placeholder="e.g. AWS, Azure, Docker jobs">
           </div>
         </div>
-        <button type="submit" class="btn-header-action btn-primary" style="height: 38px;">+ Create Category</button>
+        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 38px;">+ Create Category</button>
       </form>
 
       <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-secondary);">Existing Categories</h3>
@@ -992,7 +996,7 @@
           <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: #ffffff;">📦 Requirement Groups &amp; Drives</h2>
           <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0;">Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.</p>
         </div>
-        <button id="btnRefreshGroups" type="button" class="btn-header-action">
+        <button id="btnRefreshGroups" type="button" class="btn-owner-action">
           🔄 Refresh Groups
         </button>
       </div>
@@ -1008,11 +1012,11 @@
     <div id="tabAnalytics" class="workspace-card tab-content" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
         <div>
-          <span class="header-badge" style="color: var(--accent-cyan);">REAL-TIME ANALYTICS</span>
+          <span class="status-pill" style="background: rgba(56, 189, 248, 0.1); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.25); margin-bottom: 6px;">REAL-TIME ANALYTICS</span>
           <h2 style="font-size: 20px; font-weight: 700; margin: 6px 0 2px; color: #ffffff;">📊 Website Traffic &amp; Visitors Analytics</h2>
           <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
         </div>
-        <button id="btnRefreshAnalytics" type="button" class="btn-header-action">
+        <button id="btnRefreshAnalytics" type="button" class="btn-owner-action">
           🔄 Refresh Analytics
         </button>
       </div>
@@ -1150,10 +1154,10 @@
         <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Direct Shareable Group URL</div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <input type="text" id="modalGroupUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 12px; color: var(--accent-cyan); flex: 1; min-width: 200px;">
-          <button id="btnCopyModalLink" type="button" class="btn-header-action btn-primary" style="height: 36px; padding: 0 12px; font-size: 12px;">
+          <button id="btnCopyModalLink" type="button" class="btn-owner-action btn-owner-primary" style="height: 36px; padding: 0 12px; font-size: 12px;">
             🔗 Copy Link
           </button>
-          <a id="btnOpenModalLink" href="#" target="_blank" class="btn-header-action" style="height: 36px; padding: 0 12px; font-size: 12px; text-decoration: none;">
+          <a id="btnOpenModalLink" href="#" target="_blank" class="btn-owner-action" style="height: 36px; padding: 0 12px; font-size: 12px; text-decoration: none;">
             Open Page ↗
           </a>
         </div>
@@ -1162,10 +1166,10 @@
       <div style="margin-bottom: 16px;">
         <div style="font-size: 12px; font-weight: 600; color: #ffffff; margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button id="btnCopyModalWhatsApp" type="button" class="btn-header-action" style="flex: 1; min-width: 140px; height: 38px; background: #15803d; color: #ffffff; font-weight: 600; border: none;">
+          <button id="btnCopyModalWhatsApp" type="button" class="btn-owner-action" style="flex: 1; min-width: 140px; height: 38px; background: #15803d; color: #ffffff; font-weight: 600; border: none;">
             📱 Copy WhatsApp Broadcast
           </button>
-          <button id="btnCopyModalTelegram" type="button" class="btn-header-action" style="flex: 1; min-width: 140px; height: 38px; background: #0369a1; color: #ffffff; font-weight: 600; border: none;">
+          <button id="btnCopyModalTelegram" type="button" class="btn-owner-action" style="flex: 1; min-width: 140px; height: 38px; background: #0369a1; color: #ffffff; font-weight: 600; border: none;">
             ✈️ Copy Telegram Post
           </button>
         </div>
@@ -1248,8 +1252,8 @@
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-          <button type="button" id="btnCancelEdit" class="btn-header-action">Cancel</button>
-          <button type="submit" class="btn-header-action btn-primary" style="height: 38px;">Save Changes</button>
+          <button type="button" id="btnCancelEdit" class="btn-owner-action">Cancel</button>
+          <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 38px;">Save Changes</button>
         </div>
       </form>
     </div>
@@ -1285,5 +1289,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=202608262235"></script>
+<script src="{% static 'js/owner.js' %}?v=202608262240"></script>
 {% endblock %}
