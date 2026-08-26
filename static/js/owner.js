@@ -647,49 +647,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const isMobileView = window.innerWidth <= 992;
 
     jobsTableContainer.innerHTML = isMobileView ? `
-      <div class="mobile-jobs-list" style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="mobile-jobs-list" style="display: flex; flex-direction: column; gap: 14px;">
         ${filtered.map(j => {
           const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
           const hoursLeft = Math.ceil(j.time_left_seconds / 3600);
           const compInitial = (j.company_name || 'J')[0].toUpperCase();
           return `
-          <div class="mobile-job-card" style="background: var(--bg-card); border: 1px solid var(--border-main); border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.3);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+          <div class="mobile-job-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
               <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                <div style="width: 36px; height: 36px; border-radius: 8px; background: #18181b; border: 1px solid var(--border-main); color: var(--accent-blue); font-weight: 700; font-size: 15px; display: grid; place-items: center; flex-shrink: 0;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: #eff6ff; border: 1px solid #bfdbfe; color: #2563eb; font-weight: 800; font-size: 16px; display: grid; place-items: center; flex-shrink: 0;">
                   ${compInitial}
                 </div>
                 <div style="min-width: 0;">
-                  <h4 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(j.company_name)}</h4>
-                  <div style="font-size: 11px; color: var(--text-muted); margin-top: 1px;">#${j.id} • <span style="color: var(--text-secondary);">${escapeHtml(j.category_name)}</span></div>
+                  <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(j.company_name)}</h4>
+                  <div style="font-size: 11.5px; color: #64748b; margin-top: 1px;">#${j.id} • <span style="color: #2563eb; font-weight: 600;">${escapeHtml(j.category_name)}</span></div>
                 </div>
               </div>
-              <span class="status-pill ${isExpired ? 'status-expired' : 'status-active'}" style="font-size: 10.5px;">
+              <span class="status-pill ${isExpired ? 'status-expired' : 'status-active'}" style="font-size: 11px;">
                 ${isExpired ? '🔴 Expired' : '🟢 ' + hoursLeft + 'h left'}
               </span>
             </div>
 
-            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-primary); line-height: 1.4; margin-bottom: 12px;">
+            <div style="font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.4; margin-bottom: 12px;">
               ${escapeHtml(j.title)}
             </div>
 
-            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; font-size: 11.5px;">
-              <span style="background: #18181b; border: 1px solid var(--border-main); padding: 3px 8px; border-radius: 6px; color: var(--text-secondary);">💰 ${escapeHtml(j.stipend_salary)}</span>
-              <span style="background: #18181b; border: 1px solid var(--border-main); padding: 3px 8px; border-radius: 6px; color: var(--text-secondary);">📍 ${escapeHtml(j.location || 'India')}</span>
-              <span style="background: #18181b; border: 1px solid var(--border-main); padding: 3px 8px; border-radius: 6px; color: var(--accent-blue); font-weight: 600;">${escapeHtml(j.job_type || 'Full-Time')}</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; font-size: 12px;">
+              <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; color: #475569; font-weight: 600;">💰 ${escapeHtml(j.stipend_salary)}</span>
+              <span style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; color: #475569; font-weight: 600;">📍 ${escapeHtml(j.location || 'India')}</span>
+              <span style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 4px 10px; border-radius: 8px; color: #2563eb; font-weight: 700;">${escapeHtml(j.job_type || 'Full-Time')}</span>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <button class="btn-header-action btn-toggle-job" data-id="${j.id}" style="height: 36px; font-size: 12px; justify-content: center; color: ${isExpired ? 'var(--accent-emerald)' : 'var(--accent-amber)'}; border-color: ${isExpired ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'};">
+              <button class="btn-action-light btn-toggle-job" data-id="${j.id}" style="height: 38px; font-size: 12.5px; justify-content: center; color: ${isExpired ? '#059669' : '#d97706'}; border-color: ${isExpired ? '#a7f3d0' : '#fde68a'}; background: ${isExpired ? '#ecfdf5' : '#fffbeb'}; border-radius: 10px;">
                 ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
               </button>
-              <button class="btn-header-action btn-edit-job" data-id="${j.id}" style="height: 36px; font-size: 12px; justify-content: center; color: var(--accent-cyan); border-color: rgba(6,182,212,0.3);">
+              <button class="btn-action-light btn-edit-job" data-id="${j.id}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #2563eb; border-color: #bfdbfe; background: #eff6ff; border-radius: 10px;">
                 ✏️ Edit Lead
               </button>
-              <a href="${escapeHtml(j.apply_url)}" target="_blank" class="btn-header-action" style="height: 36px; font-size: 12px; justify-content: center; color: var(--accent-blue); border-color: rgba(59,130,246,0.3); text-decoration: none;">
+              <a href="${escapeHtml(j.apply_url)}" target="_blank" class="btn-action-light" style="height: 38px; font-size: 12.5px; justify-content: center; color: #0284c7; border-color: #bae6fd; background: #f0f9ff; text-decoration: none; border-radius: 10px;">
                 ↗ Apply URL
               </a>
-              <button class="btn-header-action btn-delete-job" data-id="${j.id}" style="height: 36px; font-size: 12px; justify-content: center; color: var(--accent-rose); border-color: rgba(244,63,94,0.3);">
+              <button class="btn-action-light btn-delete-job" data-id="${j.id}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #dc2626; border-color: #fecaca; background: #fef2f2; border-radius: 10px;">
                 🗑️ Delete
               </button>
             </div>
@@ -714,19 +714,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const hoursLeft = Math.ceil(j.time_left_seconds / 3600);
             return `
             <tr>
-              <td><span style="font-family: monospace; font-size: 11.5px; color: var(--text-muted);">#${j.id}</span></td>
+              <td><span style="font-family: monospace; font-size: 12px; font-weight: 700; color: #64748b;">#${j.id}</span></td>
               <td>
-                <strong style="color: #ffffff; font-size: 13.5px;">${escapeHtml(j.company_name)}</strong>
-                <div style="color: var(--text-secondary); font-size: 12px; margin-top: 1px;">${escapeHtml(j.title)}</div>
-                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">📍 ${escapeHtml(j.location || 'India')} • 💰 ${escapeHtml(j.stipend_salary)}</div>
+                <strong style="color: #0f172a; font-size: 14px;">${escapeHtml(j.company_name)}</strong>
+                <div style="color: #475569; font-size: 12.5px; margin-top: 1px;">${escapeHtml(j.title)}</div>
+                <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">📍 ${escapeHtml(j.location || 'India')} • 💰 ${escapeHtml(j.stipend_salary)}</div>
               </td>
               <td>
-                <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: var(--accent-blue); font-size: 12px; font-weight: 500; text-decoration: none;">
+                <a href="${escapeHtml(j.apply_url)}" target="_blank" style="color: #2563eb; font-size: 12.5px; font-weight: 600; text-decoration: none;">
                   ${escapeHtml(j.apply_url ? (j.apply_url.length > 26 ? j.apply_url.substring(0, 26) + '...' : j.apply_url) : 'No link')} ↗
                 </a>
               </td>
               <td>
-                <span class="header-badge" style="font-size: 11px;">
+                <span class="status-pill" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-size: 11px;">
                   ${escapeHtml(j.category_name)}
                 </span>
               </td>
@@ -737,13 +737,13 @@ document.addEventListener('DOMContentLoaded', () => {
               </td>
               <td>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                  <button class="btn-header-action btn-toggle-job" data-id="${j.id}" style="height: 30px; padding: 0 8px; font-size: 11.5px; color: ${isExpired ? 'var(--accent-emerald)' : 'var(--accent-amber)'};">
+                  <button class="btn-action-light btn-toggle-job" data-id="${j.id}" style="height: 32px; padding: 0 10px; font-size: 12px; color: ${isExpired ? '#059669' : '#d97706'}; background: ${isExpired ? '#ecfdf5' : '#fffbeb'}; border-color: ${isExpired ? '#a7f3d0' : '#fde68a'};">
                     ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
                   </button>
-                  <button class="btn-header-action btn-edit-job" data-id="${j.id}" style="height: 30px; padding: 0 8px; font-size: 11.5px; color: var(--accent-cyan);">
+                  <button class="btn-action-light btn-edit-job" data-id="${j.id}" style="height: 32px; padding: 0 10px; font-size: 12px; color: #2563eb; background: #eff6ff; border-color: #bfdbfe;">
                     ✏️ Edit
                   </button>
-                  <button class="btn-header-action btn-delete-job" data-id="${j.id}" style="height: 30px; padding: 0 8px; font-size: 11.5px; color: var(--accent-rose);">
+                  <button class="btn-action-light btn-delete-job" data-id="${j.id}" style="height: 32px; padding: 0 10px; font-size: 12px; color: #dc2626; background: #fef2f2; border-color: #fecaca;">
                     🗑️ Delete
                   </button>
                 </div>
@@ -758,15 +758,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextDisabledAttr = !hasNext ? 'disabled' : '';
 
     jobsTableContainer.insertAdjacentHTML('beforeend', `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #18181b; border-top: 1px solid var(--border-main); border-radius: 0 0 10px 10px;">
-        <div style="font-size: 12px; color: var(--text-muted); font-weight: 500;">
-          Showing Page <strong style="color: var(--text-primary);">${curPage}</strong> of <strong style="color: var(--text-primary);">${totalPages}</strong> (${totalCount} total leads)
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-radius: 0 0 12px 12px;">
+        <div style="font-size: 12.5px; color: #64748b; font-weight: 600;">
+          Showing Page <strong style="color: #0f172a;">${curPage}</strong> of <strong style="color: #0f172a;">${totalPages}</strong> (${totalCount} total leads)
         </div>
-        <div style="display: flex; gap: 6px;">
-          <button id="btnPrevPage" class="btn-header-action" style="height: 30px; padding: 0 10px; font-size: 12px;" ${prevDisabledAttr}>
+        <div style="display: flex; gap: 8px;">
+          <button id="btnPrevPage" class="btn-action-light" style="height: 34px; padding: 0 14px; font-size: 12.5px;" ${prevDisabledAttr}>
             ← Previous
           </button>
-          <button id="btnNextPage" class="btn-header-action" style="height: 30px; padding: 0 10px; font-size: 12px;" ${nextDisabledAttr}>
+          <button id="btnNextPage" class="btn-action-light" style="height: 34px; padding: 0 14px; font-size: 12.5px;" ${nextDisabledAttr}>
             Next →
           </button>
         </div>

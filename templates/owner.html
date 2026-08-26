@@ -11,28 +11,35 @@
 {% block extra_css %}
 <style>
   :root {
-    --bg-main: #09090b;
-    --bg-card: #121215;
-    --bg-card-hover: #18181c;
-    --bg-input: #18181b;
-    --border-main: #27272a;
-    --border-subtle: #1e1e24;
-    --text-primary: #f4f4f5;
-    --text-secondary: #a1a1aa;
-    --text-muted: #71717a;
-    --accent-blue: #3b82f6;
-    --accent-blue-hover: #2563eb;
-    --accent-emerald: #10b981;
-    --accent-amber: #f59e0b;
-    --accent-rose: #f43f5e;
-    --accent-purple: #8b5cf6;
-    --accent-cyan: #06b6d4;
+    --blue-primary: #2563eb;
+    --blue-hover: #1d4ed8;
+    --blue-dark: #1e40af;
+    --blue-light: #eff6ff;
+    --blue-border: #bfdbfe;
+    
+    --ink: #0f172a;
+    --paper: #f8fafc;
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
+    --subtle-border: #e2e8f0;
+    --strong-border: #cbd5e1;
+    --muted: #64748b;
+    --faint: #94a3b8;
+    
+    --font-serif: 'Fraunces', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    
+    --card-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    --hover-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
   }
 
   body {
-    background-color: var(--bg-main) !important;
-    color: var(--text-primary) !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Segoe UI", Roboto, sans-serif !important;
+    background-color: var(--paper) !important;
+    color: var(--ink) !important;
+    font-family: var(--font-sans) !important;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
@@ -46,22 +53,23 @@
   }
 
   /* ==========================================
-     OWNER DEDICATED LINK NAVBAR
+     TOP OWNER LINK NAVBAR (Matches Home Page Theme)
      ========================================== */
   .owner-header-navbar {
-    background: rgba(12, 12, 15, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-main);
+    border-bottom: 1px solid var(--subtle-border);
     position: sticky;
     top: 0;
     z-index: 100;
-    padding: 0 16px;
-    height: 56px;
+    padding: 0 18px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   }
 
   .owner-brand-group {
@@ -72,16 +80,16 @@
   }
 
   .owner-brand-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     display: grid;
     place-items: center;
     font-weight: 800;
-    font-size: 15px;
+    font-size: 16px;
     color: #ffffff;
-    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
     text-decoration: none;
   }
 
@@ -91,27 +99,32 @@
   }
 
   .owner-brand-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #ffffff;
-    letter-spacing: -0.01em;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.02em;
     line-height: 1.2;
   }
 
+  .owner-brand-title span {
+    color: var(--blue-primary);
+  }
+
   .owner-brand-badge {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--accent-emerald);
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #059669;
     display: flex;
     align-items: center;
     gap: 4px;
   }
 
-  /* Owner Navigation Links (Middle Section) */
+  /* Center Workspace Link Navbar */
   .owner-link-nav {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
@@ -125,12 +138,12 @@
 
   .owner-link-item {
     padding: 8px 12px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
     background: transparent;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -141,28 +154,28 @@
   }
 
   .owner-link-item:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--ink);
+    background: #f1f5f9;
   }
 
   .owner-link-item.active {
-    color: #ffffff;
-    background: #1e1e24;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    color: var(--blue-primary);
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
   }
 
   .owner-link-badge {
     font-size: 10px;
-    font-weight: 700;
-    background: #27272a;
-    color: var(--text-secondary);
-    padding: 1px 5px;
+    font-weight: 800;
+    background: #e2e8f0;
+    color: var(--muted);
+    padding: 1px 6px;
     border-radius: 99px;
   }
 
   .owner-link-item.active .owner-link-badge {
-    background: rgba(59, 130, 246, 0.2);
-    color: var(--accent-blue);
+    background: var(--blue-primary);
+    color: #ffffff;
   }
 
   /* Right Header Controls */
@@ -173,109 +186,113 @@
     flex-shrink: 0;
   }
 
-  .btn-owner-action {
-    height: 32px;
-    padding: 0 10px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 7px;
-    border: 1px solid var(--border-main);
-    background: #18181b;
-    color: var(--text-primary);
+  .btn-action-light {
+    height: 36px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--strong-border);
+    background: #ffffff;
+    color: var(--ink);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     transition: all 0.15s ease;
     text-decoration: none;
     white-space: nowrap;
   }
 
-  .btn-owner-action:hover {
-    background: #27272a;
-    border-color: #3f3f46;
+  .btn-action-light:hover {
+    background: #f8fafc;
+    border-color: var(--muted);
   }
 
-  .btn-owner-primary {
-    background: var(--accent-blue) !important;
-    border-color: var(--accent-blue) !important;
+  .btn-primary-blue {
+    background: var(--blue-primary) !important;
+    border-color: var(--blue-primary) !important;
     color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
   }
 
-  .btn-owner-primary:hover {
-    background: var(--accent-blue-hover) !important;
+  .btn-primary-blue:hover {
+    background: var(--blue-hover) !important;
+    border-color: var(--blue-hover) !important;
   }
 
   /* Main Workspace Container */
   .workspace-container {
-    max-width: 1440px;
+    max-width: 1360px;
     margin: 0 auto;
-    padding: 20px 16px 80px;
+    padding: 24px 16px 80px;
     width: 100%;
     box-sizing: border-box;
   }
 
-  /* Metric KPI Cards (Clean Standard Row) */
+  /* Metric KPI Cards Row */
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 16px;
+    margin-bottom: 24px;
   }
 
   .kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-main);
-    border-radius: 12px;
-    padding: 16px 18px;
-    transition: border-color 0.15s ease;
+    background: var(--surface);
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.2s ease;
   }
 
   .kpi-card:hover {
-    border-color: #3f3f46;
+    box-shadow: var(--hover-shadow);
+    border-color: var(--blue-border);
   }
 
   .kpi-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   .kpi-title {
     font-size: 11.5px;
-    font-weight: 600;
-    color: var(--text-muted);
+    font-weight: 800;
+    color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
   }
 
   .kpi-icon {
-    font-size: 14px;
-    opacity: 0.8;
+    font-size: 16px;
   }
 
   .kpi-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ink);
     letter-spacing: -0.02em;
     line-height: 1.1;
     margin-bottom: 4px;
   }
 
   .kpi-sub {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 500;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
   }
 
   /* Workspace Card Panel */
   .workspace-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-main);
-    border-radius: 14px;
-    padding: 22px;
+    background: var(--surface);
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--card-shadow);
   }
 
   /* Standard Toolbar Controls */
@@ -285,41 +302,42 @@
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 18px;
+    margin-bottom: 20px;
   }
 
   .search-wrapper {
     position: relative;
-    flex: 1 1 280px;
-    max-width: 360px;
+    flex: 1 1 300px;
+    max-width: 400px;
   }
 
   .search-input {
     width: 100%;
-    height: 36px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-main);
-    border-radius: 8px;
-    padding: 0 12px 0 34px;
-    font-size: 13px;
-    color: var(--text-primary);
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid var(--strong-border);
+    border-radius: var(--radius-md);
+    padding: 0 14px 0 38px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
     outline: none;
     box-sizing: border-box;
     transition: all 0.15s ease;
   }
 
   .search-input:focus {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   }
 
   .search-icon {
     position: absolute;
-    left: 11px;
+    left: 13px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--text-muted);
-    font-size: 13px;
+    color: var(--muted);
+    font-size: 14px;
   }
 
   .filters-group {
@@ -330,57 +348,57 @@
   }
 
   .standard-select {
-    height: 36px;
-    background: var(--bg-input);
-    border: 1px solid var(--border-main);
-    border-radius: 8px;
-    padding: 0 10px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--text-primary);
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid var(--strong-border);
+    border-radius: var(--radius-md);
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
     outline: none;
     cursor: pointer;
   }
 
   .standard-select:focus {
-    border-color: var(--accent-blue);
+    border-color: var(--blue-primary);
   }
 
   /* Modern High-Density Table */
   .table-responsive {
     overflow-x: auto;
-    border-radius: 10px;
-    border: 1px solid var(--border-main);
-    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--subtle-border);
+    background: #ffffff;
   }
 
   .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 13.5px;
     text-align: left;
   }
 
   .data-table th {
-    background: #18181b;
-    padding: 11px 14px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
+    background: #f8fafc;
+    padding: 13px 16px;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--border-main);
+    border-bottom: 1px solid var(--subtle-border);
   }
 
   .data-table td {
-    padding: 13px 14px;
-    border-bottom: 1px solid var(--border-subtle);
-    color: var(--text-primary);
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--ink);
     vertical-align: middle;
   }
 
   .data-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
+    background: #f8fafc;
   }
 
   .data-table tr:last-child td {
@@ -392,46 +410,49 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 3px 7px;
-    border-radius: 6px;
+    padding: 4px 9px;
+    border-radius: 20px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 800;
   }
 
   .status-active {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--accent-emerald);
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
   }
 
   .status-expired {
-    background: rgba(244, 63, 94, 0.1);
-    color: var(--accent-rose);
-    border: 1px solid rgba(244, 63, 94, 0.25);
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
   }
 
-  /* Standard Forms */
+  /* Form Elements */
   .form-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
 
   .form-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
   }
 
   .form-input, .form-textarea {
     width: 100%;
-    background: var(--bg-input);
-    border: 1px solid var(--border-main);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 13.5px;
-    color: var(--text-primary);
+    background: #ffffff;
+    border: 1px solid var(--strong-border);
+    border-radius: var(--radius-md);
+    padding: 11px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
     font-family: inherit;
     outline: none;
     box-sizing: border-box;
@@ -439,25 +460,25 @@
   }
 
   .form-input:focus, .form-textarea:focus {
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   }
 
   .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    gap: 16px;
   }
 
   /* Unauthenticated Login Modal/Card */
   .auth-wrapper {
-    max-width: 400px;
+    max-width: 420px;
     margin: 80px auto;
-    background: var(--bg-card);
-    border: 1px solid var(--border-main);
-    border-radius: 16px;
-    padding: 32px 28px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 24px;
+    padding: 36px 32px;
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
   }
 
   /* Modal Dialog Backdrop */
@@ -466,7 +487,7 @@
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(15, 23, 42, 0.6);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     overflow-y: auto;
@@ -475,13 +496,13 @@
   }
 
   .modal-box {
-    background: var(--bg-card);
-    border: 1px solid var(--border-main);
-    border-radius: 16px;
-    max-width: 600px;
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 20px;
+    max-width: 620px;
     margin: 40px auto;
-    padding: 24px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    padding: 28px;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
     box-sizing: border-box;
   }
 
@@ -495,7 +516,7 @@
      ========================================== */
   @media (max-width: 768px) {
     body {
-      padding-bottom: 74px !important;
+      padding-bottom: 76px !important;
     }
 
     .owner-header-navbar {
@@ -508,8 +529,8 @@
       order: 3;
       width: 100%;
       justify-content: flex-start;
-      padding: 4px 0 2px;
-      border-top: 1px solid var(--border-subtle);
+      padding: 6px 0 2px;
+      border-top: 1px solid #f1f5f9;
       margin-top: 6px;
     }
 
@@ -519,11 +540,12 @@
     }
 
     .kpi-card {
-      padding: 12px 14px;
+      padding: 14px;
+      border-radius: var(--radius-md);
     }
 
     .kpi-value {
-      font-size: 20px;
+      font-size: 22px;
     }
 
     .workspace-container {
@@ -531,8 +553,8 @@
     }
 
     .workspace-card {
-      padding: 14px 12px;
-      border-radius: 12px;
+      padding: 18px 14px;
+      border-radius: var(--radius-md);
     }
 
     .form-grid-2 {
@@ -575,15 +597,16 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 60px;
-      background: rgba(18, 18, 21, 0.95);
+      height: 62px;
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border-main);
+      border-top: 1px solid var(--subtle-border);
       z-index: 1000;
       justify-content: space-around;
       align-items: center;
       padding: 0 4px;
+      box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.05);
     }
 
     .dock-btn {
@@ -594,18 +617,19 @@
       gap: 2px;
       background: transparent;
       border: none;
-      color: var(--text-muted);
+      color: var(--muted);
       font-size: 10px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       padding: 6px 12px;
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       transition: all 0.15s ease;
       text-decoration: none;
     }
 
     .dock-btn.active {
-      color: var(--accent-blue);
+      color: var(--blue-primary);
+      background: var(--blue-light);
     }
   }
 
@@ -619,15 +643,15 @@
 <div class="app-shell">
 
   <!-- ==========================================
-       DEDICATED OWNER LINK NAVBAR
+       DEDICATED OWNER LINK NAVBAR (Clean Home Theme)
        ========================================== -->
   <header class="owner-header-navbar">
     
     <!-- Left Brand Badge -->
     <div class="owner-brand-group">
-      <a href="/" target="_blank" class="owner-brand-logo" title="View Public Student Feed">⚡</a>
+      <a href="/" target="_blank" class="owner-brand-logo" title="View Student Feed">⚡</a>
       <div class="owner-brand-text">
-        <span class="owner-brand-title">Kashii Studio</span>
+        <span class="owner-brand-title">Kashii<span>Studio</span></span>
         <span class="owner-brand-badge">● Live Engine</span>
       </div>
     </div>
@@ -637,6 +661,12 @@
       <button class="owner-link-item owner-nav-item active" data-tab="tabJobs">
         📊 Pipeline <span class="owner-link-badge" id="sidebarActiveCount">--</span>
       </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
+        🎯 1-Click Parser
+      </button>
+      <button class="owner-link-item owner-nav-item" data-tab="tabPost">
+        ✍️ Single Post
+      </button>
       <button class="owner-link-item owner-nav-item" data-tab="tabBulkParse">
         ⚡ Bulk Parser
       </button>
@@ -644,16 +674,10 @@
         🌐 Jobdexo Sync
       </button>
       <button class="owner-link-item owner-nav-item" data-tab="tabAnalytics">
-        📈 Traffic &amp; Analytics
+        📈 Traffic
       </button>
       <button class="owner-link-item owner-nav-item" data-tab="tabGroups">
         📦 Groups <span class="owner-link-badge" id="sidebarGroupsCount">--</span>
-      </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
-        🎯 1-Click Parser
-      </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabPost">
-        ✍️ Manual Post
       </button>
       <button class="owner-link-item owner-nav-item" data-tab="tabCategory">
         🏷️ Categories
@@ -665,13 +689,16 @@
 
     <!-- Right Actions: View Public Site & Post & Logout -->
     <div class="owner-right-actions">
-      <a href="/" target="_blank" class="btn-owner-action" title="Open student website in new tab">
+      <a href="/" target="_blank" class="btn-action-light" title="Open student website in new tab">
         <span>🌐 Student Site ↗</span>
       </a>
-      <button onclick="document.querySelector('[data-tab=tabPost]').click()" class="btn-owner-action btn-owner-primary">
-        + Post
+      <button onclick="document.querySelector('[data-tab=tabSmartParse]').click()" class="btn-action-light" style="background: #faf5ff; color: #7c3aed; border-color: #ddd6fe;">
+        🎯 Parse Lead
       </button>
-      <button id="btnLogoutOwner" class="btn-owner-action" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.25);">
+      <button onclick="document.querySelector('[data-tab=tabPost]').click()" class="btn-action-light btn-primary-blue">
+        + Post Job
+      </button>
+      <button id="btnLogoutOwner" class="btn-action-light" style="color: #dc2626; border-color: #fecaca; background: #fef2f2;">
         Logout 🚪
       </button>
     </div>
@@ -682,30 +709,30 @@
        ========================================== -->
   <div id="ownerLoginView" class="auth-wrapper" style="{% if is_owner_authenticated %}display: none;{% endif %}">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-      <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: #ffffff;">Owner Studio Login</h2>
-      <span class="owner-brand-badge" style="background: #18181b; padding: 2px 7px; border-radius: 6px;">PRO ACCESS</span>
+      <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: var(--ink);">Owner Studio Login</h2>
+      <span class="status-pill status-active">PRO STUDIO</span>
     </div>
-    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
+    <p style="font-size: 13.5px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
       Sign in to manage student job leads, bulk parsers, crawler engines, and real-time site analytics.
     </p>
 
     <form id="formOwnerLogin" method="POST" action="/owner/">
       {% csrf_token %}
       {% if login_error %}
-      <div style="background: rgba(244, 63, 94, 0.1); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.25); padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; font-weight: 600;">
+      <div style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px; font-weight: 700;">
         ⚠️ {{ login_error }}
       </div>
       {% endif %}
       <div class="form-group">
         <label for="ownerUser" class="form-label">Username or Email *</label>
-        <input type="text" id="ownerUser" name="username" class="form-input" placeholder="admin or email" required autocomplete="username">
+        <input type="text" id="ownerUser" name="username" class="form-input" placeholder="Enter owner username or email" required autocomplete="username">
       </div>
       <div class="form-group">
         <label for="ownerPass" class="form-label">Password *</label>
         <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-owner-action btn-owner-primary" style="width: 100%; height: 42px; font-size: 14px; justify-content: center; margin-top: 8px;">
-        Sign In to Hub 🔑
+      <button type="submit" class="btn-action-light btn-primary-blue" style="width: 100%; height: 44px; font-size: 14px; justify-content: center; margin-top: 8px; border-radius: var(--radius-md);">
+        Sign In to Studio 🔑
       </button>
     </form>
   </div>
@@ -722,8 +749,8 @@
           <span class="kpi-title">Active Opportunities</span>
           <span class="kpi-icon">⚡</span>
         </div>
-        <div class="kpi-value" id="kpiActiveJobs">--</div>
-        <div class="kpi-sub" style="color: var(--accent-emerald);">● Live on student feed</div>
+        <div class="kpi-value" id="kpiActiveJobs" style="color: var(--blue-primary);">--</div>
+        <div class="kpi-sub" style="color: #059669;">● Live on student feed</div>
       </div>
 
       <div class="kpi-card">
@@ -741,7 +768,7 @@
           <span class="kpi-icon">⏳</span>
         </div>
         <div class="kpi-value" id="kpiExpiredJobs">--</div>
-        <div class="kpi-sub" style="color: var(--accent-rose);">Auto-cleaned after 72h</div>
+        <div class="kpi-sub" style="color: #dc2626;">Auto-cleaned after 72h</div>
       </div>
 
       <div class="kpi-card">
@@ -784,122 +811,46 @@
       </div>
 
       <div id="ownerJobsTableContainer" class="table-responsive">
-        <div style="padding: 32px; text-align: center; color: var(--text-muted);">Loading CRM opportunity pipeline...</div>
+        <div style="padding: 36px; text-align: center; color: var(--muted);">Loading CRM opportunity pipeline...</div>
       </div>
     </div>
 
     <!-- ==========================================
-         TAB 2: BULK MULTI-JOB PARSER PIPELINE
-         ========================================== -->
-    <div id="tabBulkParse" class="workspace-card tab-content" style="display: none;">
-      <div style="margin-bottom: 20px;">
-        <span class="status-pill status-active" style="margin-bottom: 8px;">AUTOMATION ENGINE</span>
-        <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">Batch Multi-Job Parser &amp; Direct Publisher</h2>
-        <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
-          Paste multi-job Telegram/WhatsApp messages. The engine parses company details, roles, apply links, publishes all opportunities, and <strong>automatically bundles them into a shareable Group link</strong>!
-        </p>
-      </div>
-
-      <form id="formBulkParse">
-        <div class="form-group">
-          <label for="bulkGroupName" class="form-label">🏷️ Requirement Group Name (Optional — Auto Timestamp if empty)</label>
-          <input type="text" id="bulkGroupName" class="form-input" placeholder="e.g. 🔥 Top 5 Freshers IT Drives or Deloitte Mega Drive">
-        </div>
-
-        <div class="form-group">
-          <label for="bulkRawText" class="form-label">Raw Multi-Job Message Stream *</label>
-          <textarea id="bulkRawText" class="form-textarea" rows="10" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
-        </div>
-
-        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 40px; padding: 0 20px; font-size: 13.5px;">
-          ⚡ Execute Bulk Parse &amp; Publish Group
-        </button>
-      </form>
-    </div>
-
-    <!-- ==========================================
-         TAB: JOBDEXO AUTOMATION & SYNC ENGINE
-         ========================================== -->
-    <div id="tabJobdexo" class="workspace-card tab-content" style="display: none;">
-      <div style="margin-bottom: 20px;">
-        <span class="status-pill" style="background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); border: 1px solid rgba(6, 182, 212, 0.25); margin-bottom: 8px;">JOBDEXO LIVE CRAWLER</span>
-        <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">Automated Jobdexo Importer &amp; Drive Generator</h2>
-        <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
-          Automatically crawl and import off-campus opportunities directly from Jobdexo with official direct career apply links.
-        </p>
-      </div>
-
-      <!-- 1-Click Crawler Section -->
-      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
-        <h3 style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0 0 6px;">⚡ 1-Click Latest Openings Crawler</h3>
-        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 14px;">
-          Crawl Jobdexo homepage for the freshest off-campus jobs and bundle them into a 7-day shareable group.
-        </p>
-
-        <div class="form-group">
-          <label for="jobdexoGroupName" class="form-label">Custom Group Name (Optional)</label>
-          <input type="text" id="jobdexoGroupName" class="form-input" placeholder="e.g. 🔥 Top Off-Campus Tech Drives Today">
-        </div>
-
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button id="btnFetchJobdexo5" type="button" class="btn-owner-action btn-owner-primary" style="height: 38px;">
-            ⚡ Fetch Latest 5 Jobs
-          </button>
-          <button id="btnFetchJobdexo10" type="button" class="btn-owner-action" style="height: 38px; background: #27272a;">
-            🚀 Fetch Latest 10 Jobs
-          </button>
-        </div>
-      </div>
-
-      <!-- URL Importer Section -->
-      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 20px;">
-        <h3 style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0 0 6px;">🔗 Import Specific Jobdexo URLs</h3>
-        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 14px;">
-          Paste one or multiple Jobdexo links (1 per line).
-        </p>
-
-        <form id="formJobdexoUrlImport">
-          <div class="form-group">
-            <label for="jobdexoUrlsInput" class="form-label">Jobdexo URL(s) *</label>
-            <textarea id="jobdexoUrlsInput" class="form-textarea" rows="4" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
-          </div>
-
-          <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 38px;">
-            📥 Import URLs &amp; Generate Broadcast
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- ==========================================
-         TAB 3: 1-CLICK SINGLE PARSER
+         TAB: 1-CLICK SINGLE JOB SNIPPET PARSER
          ========================================== -->
     <div id="tabSmartParse" class="workspace-card tab-content" style="display: none;">
-      <div style="margin-bottom: 20px;">
-        <span class="status-pill" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.25); margin-bottom: 8px;">SINGLE LEAD PARSER</span>
-        <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">1-Click Single Snippet Parser</h2>
-        <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
-          Paste raw message text for 1 opportunity. The parser extracts company, job title, skills, apply URL, and publishes it automatically under Software &amp; Tech.
+      <div style="margin-bottom: 22px;">
+        <span class="status-pill" style="background: #faf5ff; color: #7c3aed; border: 1px solid #ddd6fe; margin-bottom: 8px;">
+          🎯 1-CLICK SINGLE PARSER
+        </span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">1-Click Single Snippet Parser &amp; Publisher</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+          Paste raw message text for <strong>1 opportunity</strong> from Telegram or WhatsApp. The engine auto-detects company name, job title, skills, stipend, and official application URL, then instantly publishes it!
         </p>
       </div>
 
       <form id="formSmartParse">
         <div class="form-group">
           <label for="rawText" class="form-label">Raw Requirement Snippet *</label>
-          <textarea id="rawText" class="form-textarea" rows="8" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Apply Link: https://..." required></textarea>
+          <textarea id="rawText" class="form-textarea" rows="9" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Package: 4.5 LPA&#10;Batch: 2026 Batch&#10;Location: Bangalore / Remote&#10;Skills: Java, Spring Boot, SQL&#10;Apply Link: https://..." required></textarea>
         </div>
 
-        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 40px;">
-          🎯 Parse &amp; Publish Single Lead
+        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 44px; padding: 0 24px; font-size: 14px; border-radius: var(--radius-md);">
+          🎯 Parse &amp; Publish Single Lead 🚀
         </button>
       </form>
     </div>
 
     <!-- ==========================================
-         TAB 4: MANUAL JOB CREATION FORM
+         TAB: MANUAL SINGLE JOB CREATION FORM
          ========================================== -->
     <div id="tabPost" class="workspace-card tab-content" style="display: none;">
-      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #ffffff;">Publish New Opportunity Lead</h2>
+      <div style="margin-bottom: 22px;">
+        <span class="status-pill status-active" style="margin-bottom: 8px;">✍️ MANUAL PUBLISHER</span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">Publish Single Opportunity Lead</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0;">Fill in the structured fields below to publish a verified student job lead directly to the pipeline.</p>
+      </div>
+
       <form id="formCreateJob">
         <div class="form-grid-2">
           <div class="form-group">
@@ -928,7 +879,7 @@
 
         <div class="form-group">
           <label for="postApplyUrl" class="form-label">Official Application URL *</label>
-          <input type="url" id="postApplyUrl" class="form-input" placeholder="https://..." required>
+          <input type="url" id="postApplyUrl" class="form-input" placeholder="https://careers.company.com/..." required>
         </div>
 
         <div class="form-grid-2">
@@ -949,7 +900,7 @@
 
         <div class="form-group">
           <label for="postDescription" class="form-label">Job Description *</label>
-          <textarea id="postDescription" class="form-textarea" rows="4" placeholder="Detailed role description..." required></textarea>
+          <textarea id="postDescription" class="form-textarea" rows="4" placeholder="Detailed role description and job responsibilities..." required></textarea>
         </div>
 
         <div class="form-group">
@@ -957,19 +908,102 @@
           <input type="text" id="postEligibility" class="form-input" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)">
         </div>
 
-        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 42px; margin-top: 8px;">
+        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 44px; padding: 0 24px; margin-top: 8px; font-size: 14px; border-radius: var(--radius-md);">
           Publish Lead to Pipeline 🚀
         </button>
       </form>
     </div>
 
     <!-- ==========================================
+         TAB 2: BULK MULTI-JOB PARSER PIPELINE
+         ========================================== -->
+    <div id="tabBulkParse" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 22px;">
+        <span class="status-pill status-active" style="margin-bottom: 8px;">⚡ BULK AUTOMATION</span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">Batch Multi-Job Parser &amp; Group Publisher</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+          Paste multi-job Telegram/WhatsApp messages. The engine parses multiple companies, roles, and apply links, then <strong>automatically bundles them into a shareable Group link</strong>!
+        </p>
+      </div>
+
+      <form id="formBulkParse">
+        <div class="form-group">
+          <label for="bulkGroupName" class="form-label">🏷️ Requirement Group Name (Optional — Auto Timestamp if empty)</label>
+          <input type="text" id="bulkGroupName" class="form-input" placeholder="e.g. 🔥 Top 5 Freshers IT Drives or Deloitte Mega Drive">
+        </div>
+
+        <div class="form-group">
+          <label for="bulkRawText" class="form-label">Raw Multi-Job Message Stream *</label>
+          <textarea id="bulkRawText" class="form-textarea" rows="10" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 44px; padding: 0 24px; font-size: 14px; border-radius: var(--radius-md);">
+          ⚡ Execute Bulk Parse &amp; Publish Group
+        </button>
+      </form>
+    </div>
+
+    <!-- ==========================================
+         TAB: JOBDEXO AUTOMATION & SYNC ENGINE
+         ========================================== -->
+    <div id="tabJobdexo" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 22px;">
+        <span class="status-pill" style="background: var(--blue-light); color: var(--blue-primary); border: 1px solid var(--blue-border); margin-bottom: 8px;">JOBDEXO LIVE CRAWLER</span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">Automated Jobdexo Importer &amp; Drive Generator</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+          Automatically crawl and import off-campus opportunities directly from Jobdexo with official direct career apply links.
+        </p>
+      </div>
+
+      <!-- 1-Click Crawler Section -->
+      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 22px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 6px;">⚡ 1-Click Latest Openings Crawler</h3>
+        <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">
+          Crawl Jobdexo homepage for the freshest off-campus jobs and bundle them into a 7-day shareable group.
+        </p>
+
+        <div class="form-group">
+          <label for="jobdexoGroupName" class="form-label">Custom Group Name (Optional)</label>
+          <input type="text" id="jobdexoGroupName" class="form-input" placeholder="e.g. 🔥 Top Off-Campus Tech Drives Today">
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="btnFetchJobdexo5" type="button" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">
+            ⚡ Fetch Latest 5 Jobs
+          </button>
+          <button id="btnFetchJobdexo10" type="button" class="btn-action-light" style="height: 40px; background: #ffffff; border-radius: var(--radius-md);">
+            🚀 Fetch Latest 10 Jobs
+          </button>
+        </div>
+      </div>
+
+      <!-- URL Importer Section -->
+      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 22px;">
+        <h3 style="font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 6px;">🔗 Import Specific Jobdexo URLs</h3>
+        <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">
+          Paste one or multiple Jobdexo links (1 per line).
+        </p>
+
+        <form id="formJobdexoUrlImport">
+          <div class="form-group">
+            <label for="jobdexoUrlsInput" class="form-label">Jobdexo URL(s) *</label>
+            <textarea id="jobdexoUrlsInput" class="form-textarea" rows="4" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">
+            📥 Import URLs &amp; Generate Broadcast
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
          TAB 5: CATEGORIES MANAGEMENT
          ========================================== -->
     <div id="tabCategory" class="workspace-card tab-content" style="display: none;">
-      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #ffffff;">Taxonomy &amp; Category Management</h2>
+      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; color: var(--ink);">Taxonomy &amp; Category Management</h2>
       
-      <form id="formAddCategory" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-main);">
+      <form id="formAddCategory" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--subtle-border);">
         <div class="form-grid-2">
           <div class="form-group">
             <label for="catName" class="form-label">New Category Name *</label>
@@ -980,29 +1014,29 @@
             <input type="text" id="catDescription" class="form-input" placeholder="e.g. AWS, Azure, Docker jobs">
           </div>
         </div>
-        <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 38px;">+ Create Category</button>
+        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">+ Create Category</button>
       </form>
 
-      <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-secondary);">Existing Categories</h3>
-      <div id="ownerCategoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;"></div>
+      <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 14px; color: var(--ink);">Existing Categories</h3>
+      <div id="ownerCategoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;"></div>
     </div>
 
     <!-- ==========================================
          TAB 5: REQUIREMENT GROUPS & MULTI-JOB BUNDLES
          ========================================== -->
     <div id="tabGroups" class="workspace-card tab-content" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div>
-          <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: #ffffff;">📦 Requirement Groups &amp; Drives</h2>
-          <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0;">Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.</p>
+          <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: var(--ink);">📦 Requirement Groups &amp; Drives</h2>
+          <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.</p>
         </div>
-        <button id="btnRefreshGroups" type="button" class="btn-owner-action">
+        <button id="btnRefreshGroups" type="button" class="btn-action-light" style="border-radius: var(--radius-md);">
           🔄 Refresh Groups
         </button>
       </div>
 
       <div id="ownerGroupsTableContainer" class="table-responsive">
-        <div style="padding: 32px; text-align: center; color: var(--text-muted);">Loading requirement groups...</div>
+        <div style="padding: 36px; text-align: center; color: var(--muted);">Loading requirement groups...</div>
       </div>
     </div>
 
@@ -1010,25 +1044,25 @@
          TAB 6: WEBSITE VISITOR & TRAFFIC ANALYTICS
          ========================================== -->
     <div id="tabAnalytics" class="workspace-card tab-content" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div>
-          <span class="status-pill" style="background: rgba(56, 189, 248, 0.1); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.25); margin-bottom: 6px;">REAL-TIME ANALYTICS</span>
-          <h2 style="font-size: 20px; font-weight: 700; margin: 6px 0 2px; color: #ffffff;">📊 Website Traffic &amp; Visitors Analytics</h2>
-          <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
+          <span class="status-pill" style="background: var(--blue-light); color: var(--blue-primary); border: 1px solid var(--blue-border); margin-bottom: 6px;">REAL-TIME ANALYTICS</span>
+          <h2 style="font-size: 22px; font-weight: 800; margin: 6px 0 2px; color: var(--ink);">📊 Website Traffic &amp; Visitors Analytics</h2>
+          <p style="font-size: 13px; color: var(--muted); margin: 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
         </div>
-        <button id="btnRefreshAnalytics" type="button" class="btn-owner-action">
+        <button id="btnRefreshAnalytics" type="button" class="btn-action-light" style="border-radius: var(--radius-md);">
           🔄 Refresh Analytics
         </button>
       </div>
 
       <!-- 4 Standard KPI Cards -->
-      <div class="kpi-grid" style="margin-bottom: 20px;">
+      <div class="kpi-grid" style="margin-bottom: 22px;">
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-title">Total Unique Visitors</span>
             <span class="kpi-icon">👥</span>
           </div>
-          <div class="kpi-value" id="anaTotalVisitors">--</div>
+          <div class="kpi-value" id="anaTotalVisitors" style="color: var(--blue-primary);">--</div>
           <div class="kpi-sub" id="anaMonthVisitors">-- this month</div>
         </div>
 
@@ -1037,8 +1071,8 @@
             <span class="kpi-title">Today's Visitors</span>
             <span class="kpi-icon">⚡</span>
           </div>
-          <div class="kpi-value" id="anaTodayVisitors" style="color: var(--accent-emerald);">--</div>
-          <div class="kpi-sub" id="anaTodayViews" style="color: var(--accent-emerald);">-- views today</div>
+          <div class="kpi-value" id="anaTodayVisitors" style="color: #059669;">--</div>
+          <div class="kpi-sub" id="anaTodayViews" style="color: #059669;">-- views today</div>
         </div>
 
         <div class="kpi-card">
@@ -1056,47 +1090,47 @@
             <span class="kpi-icon">📱</span>
           </div>
           <div class="kpi-value" id="anaDeviceSplit" style="font-size: 20px; margin-top: 4px;">--</div>
-          <div class="kpi-sub" id="anaTopSource" style="color: var(--accent-amber);">Top: Direct / Social</div>
+          <div class="kpi-sub" id="anaTopSource" style="color: #d97706;">Top: Direct / Social</div>
         </div>
       </div>
 
       <!-- 14-Day Traffic Trend Visualizer -->
-      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 22px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0;">📈 14-Day Daily Traffic &amp; Visitor Trend</h3>
-          <span style="font-size: 11px; color: var(--text-muted);">Daily Unique Visitors &amp; Total Hits</span>
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0;">📈 14-Day Daily Traffic &amp; Visitor Trend</h3>
+          <span style="font-size: 11.5px; color: var(--muted); font-weight: 600;">Daily Unique Visitors &amp; Total Hits</span>
         </div>
-        <div id="anaDailyChartContainer" style="display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 16px; border-bottom: 1px solid var(--border-main); overflow-x: auto;">
+        <div id="anaDailyChartContainer" style="display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 16px; border-bottom: 1px solid var(--subtle-border); overflow-x: auto;">
         </div>
       </div>
 
       <!-- 2-Column Grid: Top Pages & Traffic Sources -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px;">
-        <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px;">
-          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0 0 12px;">🔝 Top Visited Jobs &amp; Pages</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 22px;">
+        <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0 0 14px;">🔝 Top Visited Jobs &amp; Pages</h3>
           <div id="anaTopPagesList" style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="color: var(--text-muted); font-size: 12.5px;">Loading page data...</div>
+            <div style="color: var(--muted); font-size: 13px;">Loading page data...</div>
           </div>
         </div>
 
-        <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px;">
-          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0 0 12px;">🌐 Traffic Sources &amp; Channels</h3>
+        <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0 0 14px;">🌐 Traffic Sources &amp; Channels</h3>
           <div id="anaReferrersList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-            <div style="color: var(--text-muted); font-size: 12.5px;">Loading traffic channels...</div>
+            <div style="color: var(--muted); font-size: 13px;">Loading traffic channels...</div>
           </div>
 
-          <h4 style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 12px 0 8px;">📱 Browsers &amp; OS Platforms</h4>
+          <h4 style="font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin: 14px 0 8px;">📱 Browsers &amp; OS Platforms</h4>
           <div id="anaPlatformsList" style="display: flex; flex-wrap: wrap; gap: 6px;">
-            <div style="color: var(--text-muted); font-size: 12px;">Loading platform info...</div>
+            <div style="color: var(--muted); font-size: 12px;">Loading platform info...</div>
           </div>
         </div>
       </div>
 
       <!-- Live Stream Table -->
-      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0;">⚡ Live Real-Time Activity Feed</h3>
-          <span style="font-size: 11px; color: var(--accent-emerald); font-weight: 600;">● Live Stream</span>
+      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0;">⚡ Live Real-Time Activity Feed</h3>
+          <span style="font-size: 11.5px; color: #059669; font-weight: 700;">● Live Stream</span>
         </div>
         <div id="anaRecentVisitsTable" class="table-responsive">
           <table class="data-table">
@@ -1110,7 +1144,7 @@
               </tr>
             </thead>
             <tbody id="anaRecentVisitsBody">
-              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">Awaiting site traffic...</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: var(--muted); padding: 18px;">Awaiting site traffic...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1121,15 +1155,15 @@
          TAB 7: ACTIVITY LOG STREAM
          ========================================== -->
     <div id="tabActivity" class="workspace-card tab-content" style="display: none;">
-      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 14px; color: #ffffff;">System Activity &amp; Audit Trail</h2>
-      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px;">Real-time audit log of owner parsing actions, status toggles, and publishing events.</p>
+      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 14px; color: var(--ink);">System Activity &amp; Audit Trail</h2>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">Real-time audit log of owner parsing actions, status toggles, and publishing events.</p>
       
       <div id="crmActivityLogStream" style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #18181b; border: 1px solid var(--border-main); border-radius: 8px;">
-          <span style="color: var(--accent-emerald); font-size: 14px;">●</span>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-md);">
+          <span style="color: #059669; font-size: 14px;">●</span>
           <div>
-            <strong style="color: #ffffff; font-size: 13px;">Executive Studio Initialized</strong>
-            <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">Session established &amp; verified.</div>
+            <strong style="color: var(--ink); font-size: 13.5px;">Executive Studio Initialized</strong>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 1px;">Session established &amp; verified.</div>
           </div>
         </div>
       </div>
@@ -1142,34 +1176,34 @@
        ========================================== -->
   <div id="groupBroadcastModal" class="modal-overlay">
     <div class="modal-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <div>
-          <h2 id="modalGroupName" style="font-size: 18px; font-weight: 700; margin: 0; color: #ffffff;">Requirement Group Ready</h2>
-          <span style="font-size: 12px; color: var(--accent-blue);" id="modalGroupTag">Direct Shareable Link Generated</span>
+          <h2 id="modalGroupName" style="font-size: 19px; font-weight: 800; margin: 0; color: var(--ink);">Requirement Group Ready</h2>
+          <span style="font-size: 12px; color: var(--blue-primary); font-weight: 700;" id="modalGroupTag">Direct Shareable Link Generated</span>
         </div>
-        <button id="btnCloseBroadcastModal" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        <button id="btnCloseBroadcastModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted);">&times;</button>
       </div>
 
-      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
-        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Direct Shareable Group URL</div>
+      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 8px;">Direct Shareable Group URL</div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="modalGroupUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 12px; color: var(--accent-cyan); flex: 1; min-width: 200px;">
-          <button id="btnCopyModalLink" type="button" class="btn-owner-action btn-owner-primary" style="height: 36px; padding: 0 12px; font-size: 12px;">
+          <input type="text" id="modalGroupUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 12px; color: var(--blue-primary); flex: 1; min-width: 200px; background: #ffffff;">
+          <button id="btnCopyModalLink" type="button" class="btn-action-light btn-primary-blue" style="height: 38px; padding: 0 14px; font-size: 12.5px; border-radius: var(--radius-sm);">
             🔗 Copy Link
           </button>
-          <a id="btnOpenModalLink" href="#" target="_blank" class="btn-owner-action" style="height: 36px; padding: 0 12px; font-size: 12px; text-decoration: none;">
+          <a id="btnOpenModalLink" href="#" target="_blank" class="btn-action-light" style="height: 38px; padding: 0 14px; font-size: 12.5px; text-decoration: none; border-radius: var(--radius-sm);">
             Open Page ↗
           </a>
         </div>
       </div>
 
       <div style="margin-bottom: 16px;">
-        <div style="font-size: 12px; font-weight: 600; color: #ffffff; margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
+        <div style="font-size: 12.5px; font-weight: 700; color: var(--ink); margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button id="btnCopyModalWhatsApp" type="button" class="btn-owner-action" style="flex: 1; min-width: 140px; height: 38px; background: #15803d; color: #ffffff; font-weight: 600; border: none;">
+          <button id="btnCopyModalWhatsApp" type="button" class="btn-action-light" style="flex: 1; min-width: 140px; height: 40px; background: #16a34a; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
             📱 Copy WhatsApp Broadcast
           </button>
-          <button id="btnCopyModalTelegram" type="button" class="btn-owner-action" style="flex: 1; min-width: 140px; height: 38px; background: #0369a1; color: #ffffff; font-weight: 600; border: none;">
+          <button id="btnCopyModalTelegram" type="button" class="btn-action-light" style="flex: 1; min-width: 140px; height: 40px; background: #0284c7; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
             ✈️ Copy Telegram Post
           </button>
         </div>
@@ -1177,7 +1211,7 @@
 
       <div class="form-group" style="margin-bottom: 0;">
         <label class="form-label">WhatsApp Broadcast Preview</label>
-        <textarea id="modalBroadcastPreview" class="form-textarea" rows="6" readonly style="font-family: monospace; font-size: 11.5px; line-height: 1.4;"></textarea>
+        <textarea id="modalBroadcastPreview" class="form-textarea" rows="6" readonly style="font-family: monospace; font-size: 12px; line-height: 1.4; background: #f8fafc;"></textarea>
       </div>
     </div>
   </div>
@@ -1188,8 +1222,8 @@
   <div id="editJobModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 640px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="font-size: 19px; font-weight: 700; margin: 0; color: #ffffff;">✏️ Edit Opportunity Lead</h2>
-        <button id="btnCloseEditModal" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        <h2 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--ink);">✏️ Edit Opportunity Lead</h2>
+        <button id="btnCloseEditModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted);">&times;</button>
       </div>
 
       <form id="formEditJob">
@@ -1252,8 +1286,8 @@
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-          <button type="button" id="btnCancelEdit" class="btn-owner-action">Cancel</button>
-          <button type="submit" class="btn-owner-action btn-owner-primary" style="height: 38px;">Save Changes</button>
+          <button type="button" id="btnCancelEdit" class="btn-action-light" style="border-radius: var(--radius-md);">Cancel</button>
+          <button type="submit" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">Save Changes</button>
         </div>
       </form>
     </div>
@@ -1266,28 +1300,28 @@
      ========================================== -->
 <nav class="mobile-tab-dock" id="ownerMobileBottomNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
   <button class="dock-btn owner-nav-item active" data-tab="tabJobs">
-    <span style="font-size: 17px;">📊</span>
+    <span style="font-size: 18px;">📊</span>
     <span>Pipeline</span>
   </button>
-  <button class="dock-btn owner-nav-item" data-tab="tabBulkParse">
-    <span style="font-size: 17px;">⚡</span>
-    <span>Bulk</span>
-  </button>
-  <button class="dock-btn owner-nav-item" data-tab="tabJobdexo">
-    <span style="font-size: 17px;">🌐</span>
-    <span>Jobdexo</span>
-  </button>
-  <button class="dock-btn owner-nav-item" data-tab="tabAnalytics">
-    <span style="font-size: 17px;">📈</span>
-    <span>Traffic</span>
+  <button class="dock-btn owner-nav-item" data-tab="tabSmartParse">
+    <span style="font-size: 18px;">🎯</span>
+    <span>1-Parser</span>
   </button>
   <button class="dock-btn owner-nav-item" data-tab="tabPost">
-    <span style="font-size: 17px;">✍️</span>
+    <span style="font-size: 18px;">✍️</span>
     <span>+ Post</span>
+  </button>
+  <button class="dock-btn owner-nav-item" data-tab="tabBulkParse">
+    <span style="font-size: 18px;">⚡</span>
+    <span>Bulk</span>
+  </button>
+  <button class="dock-btn owner-nav-item" data-tab="tabAnalytics">
+    <span style="font-size: 18px;">📈</span>
+    <span>Traffic</span>
   </button>
 </nav>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=202608262240"></script>
+<script src="{% static 'js/owner.js' %}?v=202608262245"></script>
 {% endblock %}
