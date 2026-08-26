@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.db.models import Q
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
@@ -58,7 +59,7 @@ DEFAULT_YOUTUBE_VIDEOS = [
 ]
 
 def is_authenticated_owner(request):
-    if hasattr(request, 'user') and request.user and request.user.is_authenticated and request.user.is_staff:
+    if hasattr(request, 'user') and request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
         return True, request.user
 
     auth_header = request.headers.get('Authorization', '')
@@ -68,7 +69,7 @@ def is_authenticated_owner(request):
             from rest_framework_simplejwt.tokens import AccessToken
             access = AccessToken(token)
             user_id = access.get('user_id')
-            user = User.objects.filter(id=user_id, is_staff=True).first()
+            user = User.objects.filter(id=user_id, is_active=True).filter(Q(is_staff=True) | Q(is_superuser=True)).first()
             if user:
                 return True, user
         except Exception:
@@ -335,7 +336,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
 
 def owner_view(request):
     sync_expired_jobs()
-    is_admin = request.user.is_authenticated and request.user.is_staff
+    is_admin = request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
     return render(request, 'owner.html', {
         'is_owner_authenticated': is_admin,
         'owner_username': request.user.username if is_admin else ''
@@ -825,15 +826,28 @@ def api_admin_login(request):
                 raw_username = request.POST.get('username', '').strip()
                 password = request.POST.get('password', '').strip()
 
+            if not raw_username or not password:
+                return JsonResponse({'error': 'Please provide both username/email and password.'}, status=400)
+
+            user = None
+            # 1. If email format entered, test password against all user accounts with that email
             if '@' in raw_username:
-                user_obj = User.objects.filter(email__iexact=raw_username).first()
+                matching_users = User.objects.filter(email__iexact=raw_username)
+                for u in matching_users:
+                    auth_user = authenticate(request, username=u.username, password=password)
+                    if auth_user is not None:
+                        user = auth_user
+                        break
             else:
-                user_obj = User.objects.filter(username__iexact=raw_username).first()
+                # 2. Try direct username authenticate
+                user = authenticate(request, username=raw_username, password=password)
+                if user is None:
+                    # Try case-insensitive username lookup
+                    u_obj = User.objects.filter(username__iexact=raw_username).first()
+                    if u_obj:
+                        user = authenticate(request, username=u_obj.username, password=password)
 
-            actual_username = user_obj.username if user_obj else raw_username
-
-            user = authenticate(request, username=actual_username, password=password)
-            if user is not None and user.is_staff:
+            if user is not None and user.is_active and (user.is_staff or user.is_superuser):
                 login(request, user)
                 request.session.set_expiry(2592000)  # 30 Days persistent session cookie
                 request.session.modified = True
@@ -842,7 +856,6 @@ def api_admin_login(request):
                 from rest_framework_simplejwt.tokens import RefreshToken
                 refresh = RefreshToken.for_user(user)
 
-                # Cache owner credentials & JWT session details in high-performance Redis/LocMem cache (24 hours)
                 cache_key = f"owner_session_{user.id}"
                 user_session_data = {
                     'user_id': user.id,
@@ -864,7 +877,7 @@ def api_admin_login(request):
                     'message': 'Owner JWT authentication successful & credentials cached!'
                 })
             else:
-                return JsonResponse({'error': 'Invalid owner credentials or insufficient privileges.'}, status=401)
+                return JsonResponse({'error': 'Invalid username/email or password. Please verify credentials.'}, status=401)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -875,7 +888,7 @@ def api_admin_logout(request):
         return JsonResponse({'success': True, 'message': 'Logged out successfully.'})
 
 def api_admin_status(request):
-    is_admin = request.user.is_authenticated and request.user.is_staff
+    is_admin = request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
     username = request.user.username if is_admin else None
 
     if not is_admin:
@@ -887,7 +900,7 @@ def api_admin_status(request):
                 from django.contrib.auth.models import User
                 access = AccessToken(token)
                 user_id = access.get('user_id')
-                user = User.objects.filter(id=user_id, is_staff=True).first()
+                user = User.objects.filter(id=user_id, is_active=True).filter(Q(is_staff=True) | Q(is_superuser=True)).first()
                 if user:
                     is_admin = True
                     username = user.username
