@@ -910,9 +910,23 @@ def api_owner_job_update(request, pk):
                 job.title = data['title'].strip()
             if 'company_name' in data:
                 job.company_name = data['company_name'].strip()
-            if 'category_id' in data:
-                cat = get_object_or_404(Category, id=data['category_id'])
-                job.category = cat
+            if 'category_id' in data and data['category_id']:
+                cat_val = data['category_id']
+                cat = None
+                try:
+                    cat = Category.objects.filter(id=int(cat_val)).first()
+                except (ValueError, TypeError):
+                    pass
+                if not cat and isinstance(cat_val, str):
+                    cat = Category.objects.filter(slug=cat_val).first()
+                if not cat:
+                    cat = Category.objects.first()
+                if cat:
+                    job.category = cat
+            elif 'category_slug' in data and data['category_slug']:
+                cat = Category.objects.filter(slug=data['category_slug']).first()
+                if cat:
+                    job.category = cat
             if 'job_type' in data:
                 job.job_type = data['job_type']
             if 'apply_url' in data:
@@ -1276,6 +1290,7 @@ def api_job_detail(request, pk):
                 'title': job.title,
                 'company_name': job.company_name,
                 'company_logo_icon': job.company_logo_icon,
+                'category_id': job.category.id,
                 'category_name': job.category.name,
                 'category_slug': job.category.slug,
                 'job_type': job.job_type,
