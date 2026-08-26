@@ -1,734 +1,588 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Owner Control Studio | Kashii Updatez Executive Hub{% endblock %}
+{% block title %}Owner Studio — Kashii Updatez{% endblock %}
 
 {% block extra_css %}
 <style>
   :root {
-    --crm-bg: #060911;
-    --crm-surface: #0c101d;
-    --crm-surface-hover: #131b2e;
-    --crm-card: rgba(12, 16, 29, 0.95);
-    --crm-border: rgba(255, 255, 255, 0.08);
-    --crm-border-subtle: rgba(255, 255, 255, 0.04);
-    --crm-border-glow: rgba(6, 182, 212, 0.4);
-    
-    --crm-cyan: #06b6d4;
-    --crm-blue: #3b82f6;
-    --crm-indigo: #6366f1;
-    --crm-purple: #a855f7;
-    --crm-emerald: #10b981;
-    --crm-amber: #f59e0b;
-    --crm-rose: #f43f5e;
-
-    --crm-text: #f8fafc;
-    --crm-muted: #94a3b8;
-    --crm-faint: #64748b;
+    --bg-main: #09090b;
+    --bg-card: #121215;
+    --bg-card-hover: #18181c;
+    --bg-input: #18181b;
+    --border-main: #27272a;
+    --border-subtle: #1e1e24;
+    --text-primary: #f4f4f5;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --accent-blue: #3b82f6;
+    --accent-blue-hover: #2563eb;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --accent-purple: #8b5cf6;
+    --accent-cyan: #06b6d4;
   }
 
-  /* Suppress default public student floating items on owner hub */
-  #floatingChatWidget, .mobile-bottom-nav:not(.crm-mobile-bottom-nav) {
+  /* Reset public student elements for full enterprise app experience */
+  .flash-announcement-banner, .site-header, .site-footer, #floatingChatWidget {
     display: none !important;
   }
 
-  /* Full Screen App Shell Container */
-  .crm-app-container {
-    max-width: 1560px;
-    margin: 12px auto 100px;
-    padding: 0 16px;
-    box-sizing: border-box;
-  }
-
-  /* Unauthenticated Login Card */
-  .crm-login-wrapper {
-    max-width: 440px;
-    margin: 60px auto 100px;
-    background: linear-gradient(145deg, #0c101d 0%, #131b2e 100%);
-    border: 1px solid rgba(6, 182, 212, 0.3);
-    border-radius: 28px;
-    padding: 40px 32px;
-    box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(24px);
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .crm-login-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    background: rgba(6, 182, 212, 0.15);
-    color: var(--crm-cyan);
-    border: 1px solid rgba(6, 182, 212, 0.4);
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-  }
-
-  /* Desktop Grid Layout */
-  .crm-layout {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 24px;
-    min-height: 840px;
-  }
-
-  /* Desktop Sidebar Styling */
-  .crm-sidebar-panel {
-    background: var(--crm-surface);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--crm-border);
-    border-radius: 24px;
-    padding: 24px 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: fit-content;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    position: sticky;
-    top: 20px;
-  }
-
-  .crm-sidebar-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 0 8px 18px;
-    border-bottom: 1px solid var(--crm-border);
-    margin-bottom: 16px;
-  }
-
-  .crm-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-    color: #ffffff;
-    font-size: 16px;
-    box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
-    flex-shrink: 0;
-  }
-
-  .crm-brand-title {
-    font-size: 17px;
-    font-weight: 800;
+  body {
+    background-color: var(--bg-main) !important;
+    color: var(--text-primary) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Segoe UI", Roboto, sans-serif !important;
     margin: 0;
-    color: #ffffff;
-    letter-spacing: -0.02em;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .crm-nav-group-title {
-    font-size: 10px;
-    text-transform: uppercase;
-    font-weight: 800;
-    color: var(--crm-faint);
-    letter-spacing: 1.2px;
-    padding: 10px 12px 6px;
-  }
-
-  .crm-sidebar-nav {
+  /* Enterprise App Shell */
+  .app-shell {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    gap: 4px;
   }
 
-  .crm-sidebar-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 16px;
-    border-radius: 14px;
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--crm-muted);
-    background: transparent;
-    border: 1px solid transparent;
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .crm-sidebar-item:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.06);
-  }
-
-  .crm-sidebar-item.active {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
-    color: #ffffff;
-    border: 1px solid rgba(6, 182, 212, 0.45);
-    box-shadow: 0 4px 20px -2px rgba(6, 182, 212, 0.25);
-  }
-
-  .crm-sidebar-icon {
-    font-size: 16px;
-  }
-
-  .crm-sidebar-badge {
-    margin-left: auto;
-    background: rgba(6, 182, 212, 0.18);
-    color: var(--crm-cyan);
-    font-size: 10.5px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 800;
-    border: 1px solid rgba(6, 182, 212, 0.3);
-  }
-
-  /* Main Executive Content Viewport */
-  .crm-main-viewport {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    min-width: 0;
-  }
-
-  /* Executive Top Header Bar */
-  .crm-top-header {
-    background: var(--crm-surface);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--crm-border);
-    border-radius: 24px;
-    padding: 20px 28px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
-  }
-
-  .crm-header-info h1 {
-    font-size: 22px;
-    font-weight: 800;
-    margin: 0 0 4px;
-    letter-spacing: -0.03em;
-    color: #ffffff;
-  }
-
-  .crm-header-info p {
-    font-size: 13px;
-    color: var(--crm-muted);
-    margin: 0;
-    line-height: 1.5;
-  }
-
-  /* Stat Metric Cards Grid */
-  .crm-metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    gap: 16px;
-  }
-
-  .crm-metric-card {
-    background: var(--crm-surface);
+  /* Top Navigation Bar */
+  .app-header {
+    background: rgba(9, 9, 11, 0.85);
     backdrop-filter: blur(16px);
-    border: 1px solid var(--crm-border);
-    border-radius: 20px;
-    padding: 18px 22px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  }
-
-  .crm-metric-card:hover {
-    transform: translateY(-3px);
-    border-color: rgba(6, 182, 212, 0.4);
-    box-shadow: 0 16px 36px -10px rgba(6, 182, 212, 0.2);
-  }
-
-  .crm-metric-header {
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-main);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 20px;
+    height: 60px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    justify-content: space-between;
   }
 
-  .crm-metric-label {
-    font-size: 11px;
-    font-weight: 800;
-    color: var(--crm-faint);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
-  .crm-metric-icon-box {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
+  .header-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
     display: grid;
     place-items: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  .crm-metric-value {
-    font-size: 28px;
     font-weight: 800;
+    font-size: 16px;
     color: #ffffff;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    margin-bottom: 4px;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
   }
 
-  .crm-metric-sub {
-    font-size: 11.5px;
-    color: var(--crm-emerald);
-    font-weight: 600;
-  }
-
-  /* Workspace Tab Panels */
-  .crm-workspace-panel {
-    background: var(--crm-surface);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--crm-border);
-    border-radius: 24px;
-    padding: 28px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-  }
-
-  /* Toolbar: Search, Filters & Action Bars */
-  .crm-toolbar {
+  .header-title-group {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-bottom: 22px;
+    gap: 8px;
   }
 
-  .crm-search-box {
-    position: relative;
-    width: 320px;
-  }
-
-  .crm-search-box input {
-    width: 100%;
-    height: 44px;
-    background: rgba(6, 9, 17, 0.85);
-    border: 1px solid var(--crm-border);
-    border-radius: 14px;
-    padding: 0 16px 0 42px;
-    color: #ffffff;
-    font-size: 13.5px;
-    font-weight: 600;
-    outline: none;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-  }
-
-  .crm-search-box input:focus {
-    border-color: var(--crm-cyan);
-    box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
-  }
-
-  .crm-search-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--crm-muted);
+  .header-app-title {
     font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
   }
 
-  .crm-filter-group {
+  .header-badge {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: #18181b;
+    border: 1px solid var(--border-main);
+    color: var(--text-secondary);
+  }
+
+  .header-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent-emerald);
+    background: rgba(16, 185, 129, 0.1);
+    padding: 3px 9px;
+    border-radius: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
+  .header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
   }
 
-  .crm-select {
-    height: 44px;
-    background: rgba(6, 9, 17, 0.85);
-    border: 1px solid var(--crm-border);
-    border-radius: 14px;
-    padding: 0 16px;
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 700;
-    outline: none;
+  .btn-header-action {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid var(--border-main);
+    background: #18181b;
+    color: var(--text-primary);
     cursor: pointer;
-  }
-
-  .crm-select option {
-    background: #0c101d;
-    color: #ffffff;
-  }
-
-  /* High Density Interactive CRM Table */
-  .crm-table-container {
-    overflow-x: auto;
-    border-radius: 18px;
-    border: 1px solid var(--crm-border);
-    background: rgba(6, 9, 17, 0.6);
-  }
-
-  .crm-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 13.5px;
-  }
-
-  .crm-table th {
-    background: rgba(12, 16, 29, 0.98);
-    padding: 15px 18px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--crm-faint);
-    border-bottom: 1px solid var(--crm-border);
-  }
-
-  .crm-table td {
-    padding: 16px 18px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    color: var(--crm-text);
-  }
-
-  .crm-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  /* Status Badges */
-  .crm-status-pill {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 800;
-  }
-
-  .crm-status-active {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--crm-emerald);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-  }
-
-  .crm-status-expired {
-    background: rgba(244, 63, 94, 0.15);
-    color: var(--crm-rose);
-    border: 1px solid rgba(244, 63, 94, 0.3);
-  }
-
-  /* Action Buttons */
-  .btn-crm-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: linear-gradient(135deg, var(--crm-cyan) 0%, var(--crm-indigo) 100%);
-    color: #ffffff;
-    padding: 0 22px;
-    height: 44px;
-    border-radius: 14px;
-    font-size: 13.5px;
-    font-weight: 800;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+    transition: all 0.15s ease;
     text-decoration: none;
   }
 
-  .btn-crm-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(6, 182, 212, 0.45);
+  .btn-header-action:hover {
+    background: #27272a;
+    border-color: #3f3f46;
   }
 
-  .btn-crm-emerald {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3) !important;
+  .btn-primary {
+    background: var(--accent-blue) !important;
+    border-color: var(--accent-blue) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
-  .btn-crm-action {
-    padding: 6px 12px;
-    border-radius: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  .btn-primary:hover {
+    background: var(--accent-blue-hover) !important;
+    border-color: var(--accent-blue-hover) !important;
   }
 
-  /* Form Elements */
-  .crm-form-group {
+  /* Segmented Horizontal Navigation Sub-header (Linear/Vercel Style) */
+  .nav-subbar {
+    background: #09090b;
+    border-bottom: 1px solid var(--border-main);
+    padding: 0 20px;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
 
-  .crm-form-label {
-    font-size: 11.5px;
-    font-weight: 800;
-    color: var(--crm-muted);
+  .nav-subbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-tab-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    text-decoration: none;
+  }
+
+  .nav-tab-btn:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-tab-btn.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+  }
+
+  .nav-tab-badge {
+    font-size: 10px;
+    font-weight: 700;
+    background: #18181b;
+    color: var(--text-secondary);
+    padding: 1px 6px;
+    border-radius: 99px;
+    border: 1px solid var(--border-main);
+  }
+
+  .nav-tab-btn.active .nav-tab-badge {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--accent-blue);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  /* Main Workspace Container */
+  .workspace-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Metric KPI Cards (Clean Standard Row) */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: border-color 0.15s ease;
+  }
+
+  .kpi-card:hover {
+    border-color: #3f3f46;
+  }
+
+  .kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .kpi-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
-  .crm-form-input, .crm-form-textarea {
-    width: 100%;
-    background: rgba(6, 9, 17, 0.85);
-    border: 1px solid var(--crm-border);
-    border-radius: 14px;
-    padding: 12px 16px;
-    color: #ffffff;
+  .kpi-icon {
     font-size: 14px;
+    opacity: 0.8;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .kpi-sub {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  /* Workspace Card Panel */
+  .workspace-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
+    border-radius: 14px;
+    padding: 24px;
+  }
+
+  /* Standard Toolbar Controls */
+  .standard-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .search-wrapper {
+    position: relative;
+    flex: 1 1 280px;
+    max-width: 380px;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 38px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-main);
+    border-radius: 8px;
+    padding: 0 12px 0 34px;
+    font-size: 13px;
+    color: var(--text-primary);
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .filters-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .standard-select {
+    height: 38px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-main);
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .standard-select:focus {
+    border-color: var(--accent-blue);
+  }
+
+  /* Modern High-Density Table */
+  .table-responsive {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border-main);
+    background: var(--bg-card);
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .data-table th {
+    background: #18181b;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border-main);
+  }
+
+  .data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    vertical-align: middle;
+  }
+
+  .data-table tr:hover td {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .data-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Status Pills */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .status-active {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-emerald);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
+  .status-expired {
+    background: rgba(244, 63, 94, 0.1);
+    color: var(--accent-rose);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+  }
+
+  /* Standard Forms */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .form-input, .form-textarea {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-main);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    color: var(--text-primary);
     font-family: inherit;
     outline: none;
     box-sizing: border-box;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
   }
 
-  .crm-form-input:focus, .crm-form-textarea:focus {
-    border-color: var(--crm-cyan);
-    box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
+  .form-input:focus, .form-textarea:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
 
-  .crm-form-grid-2 {
+  .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
 
-  .crm-form-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+  /* Unauthenticated Login Modal/Card */
+  .auth-wrapper {
+    max-width: 400px;
+    margin: 80px auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   }
 
-  /* Modal Backdrop & Dialog */
-  .crm-modal-backdrop {
+  /* Modal Dialog Backdrop */
+  .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    z-index: 9999;
-    background: rgba(4, 6, 11, 0.85);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     overflow-y: auto;
     padding: 24px 16px;
     box-sizing: border-box;
   }
 
-  .crm-modal-content {
-    background: #0c101d;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 24px;
-    max-width: 680px;
-    margin: 30px auto;
-    padding: 32px;
-    box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.85);
+  .modal-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
+    border-radius: 16px;
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     box-sizing: border-box;
   }
 
-  /* Activity Feed Stream */
-  .crm-activity-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 0;
-    border-bottom: 1px solid var(--crm-border);
-  }
-  .crm-activity-item:last-child { border-bottom: none; }
-
-  .crm-activity-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-top: 6px;
-    background: var(--crm-cyan);
-    box-shadow: 0 0 10px var(--crm-cyan);
-    flex-shrink: 0;
+  /* Mobile Bottom Tab Dock */
+  .mobile-tab-dock {
+    display: none;
   }
 
   /* ==========================================================================
-     MOBILE & TRAVELLING PHONE RESPONSIVE EXPERIENCE (< 992px)
+     MOBILE RESPONSIVE RULES (< 768px)
      ========================================================================== */
-
-  @media (max-width: 992px) {
+  @media (max-width: 768px) {
     body {
-      padding-bottom: 96px !important;
+      padding-bottom: 74px !important;
     }
 
-    .crm-app-container {
-      padding: 0 8px;
-      margin-top: 6px;
-      margin-bottom: 96px;
-    }
-
-    .crm-layout {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-
-    /* Single Horizontal Swipeable Tab Navigation Bar */
-    .crm-sidebar-panel {
-      padding: 10px;
-      border-radius: 18px;
-      margin-bottom: 6px;
-      width: 100%;
-      box-sizing: border-box;
-      position: static;
-    }
-
-    .crm-sidebar-brand {
-      padding: 0 6px 8px;
-      margin-bottom: 8px;
-    }
-
-    .crm-nav-group-title {
-      display: none;
-    }
-    
-    .crm-sidebar-nav {
-      display: flex;
-      flex-direction: row;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      padding: 4px 2px 8px;
-      gap: 8px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .crm-sidebar-nav::-webkit-scrollbar { display: none; }
-
-    .crm-sidebar-item {
-      white-space: nowrap;
-      flex: 0 0 auto;
-      scroll-snap-align: start;
-      padding: 10px 14px;
-      font-size: 12.5px;
-      border-radius: 99px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: #cbd5e1;
-      width: auto;
-    }
-
-    .crm-sidebar-item.active {
-      background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
-      color: #ffffff;
-      border-color: #06b6d4;
-      box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
-    }
-
-    .crm-top-header {
-      padding: 16px;
-      border-radius: 18px;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-    }
-
-    .crm-header-info h1 {
-      font-size: 19px;
-    }
-
-    .crm-metrics-grid {
+    .kpi-grid {
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
 
-    .crm-metric-card {
-      padding: 14px 12px;
-      border-radius: 16px;
+    .kpi-card {
+      padding: 12px 14px;
     }
 
-    .crm-metric-icon-box {
-      width: 32px;
-      height: 32px;
-      font-size: 14px;
-      border-radius: 10px;
+    .kpi-value {
+      font-size: 20px;
     }
 
-    .crm-metric-value {
-      font-size: 22px;
+    .workspace-container {
+      padding: 16px 12px 80px;
     }
 
-    .crm-metric-label {
-      font-size: 10px;
+    .workspace-card {
+      padding: 16px 14px;
+      border-radius: 12px;
     }
 
-    .crm-workspace-panel {
-      padding: 18px 14px;
-      border-radius: 20px;
-      margin-bottom: 80px;
-    }
-
-    .crm-form-grid-2, .crm-form-grid-3 {
+    .form-grid-2 {
       grid-template-columns: 1fr;
       gap: 12px;
     }
 
-    .crm-form-input, .crm-form-textarea {
-      font-size: 16px !important; /* Prevents mobile browser auto-zoom */
-      padding: 12px 14px;
+    .form-input, .form-textarea, .search-input, .standard-select {
+      font-size: 16px !important; /* Prevents auto-zoom on mobile */
     }
-    
-    .crm-table-container {
+
+    .standard-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .search-wrapper {
+      max-width: 100%;
+    }
+
+    .filters-group {
+      width: 100%;
+    }
+
+    .standard-select {
+      flex: 1 1 auto;
+    }
+
+    /* Mobile Clean Job Cards */
+    .table-responsive {
       border: none;
       background: transparent;
     }
 
-    .crm-table th { display: none; }
+    .data-table th { display: none; }
 
-    .crm-toolbar {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 10px;
-    }
-
-    .crm-search-box {
-      width: 100%;
-    }
-
-    .crm-filter-group {
-      flex-wrap: wrap;
-      width: 100%;
-    }
-
-    .crm-select {
-      flex: 1 1 auto;
-      font-size: 13px;
-      height: 44px;
-    }
-
-    /* Floating Island Bottom Navigation Bar for Mobile */
-    .crm-mobile-bottom-nav {
+    /* Sticky Mobile Bottom Floating Dock */
+    .mobile-tab-dock {
       display: flex !important;
       position: fixed;
-      bottom: 12px;
-      left: 12px;
-      right: 12px;
-      height: 62px;
-      background: rgba(12, 16, 29, 0.95);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 22px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(18, 18, 21, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-main);
       z-index: 1000;
       justify-content: space-around;
       align-items: center;
       padding: 0 4px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
     }
 
-    .crm-mobile-nav-btn {
+    .dock-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -736,688 +590,666 @@
       gap: 2px;
       background: transparent;
       border: none;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
-      padding: 6px 10px;
-      border-radius: 12px;
-      transition: all 0.2s ease;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
       text-decoration: none;
     }
 
-    .crm-mobile-nav-btn.active {
-      color: #38bdf8;
-      background: rgba(6, 182, 212, 0.15);
+    .dock-btn.active {
+      color: var(--accent-blue);
     }
   }
 
-  @media (min-width: 993px) {
-    .crm-mobile-bottom-nav { display: none !important; }
+  @media (min-width: 769px) {
+    .mobile-tab-dock { display: none !important; }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="wrap" style="margin-top: 8px; margin-bottom: 80px; padding: 0 8px;">
-  <div class="crm-app-container">
+<div class="app-shell">
 
-  <!-- LOGIN VIEW (If not authenticated) -->
-  <div id="ownerLoginView" class="crm-login-wrapper" style="{% if is_owner_authenticated %}display: none;{% endif %}">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
-      <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: #ffffff;">⚡ Owner Control Studio</h2>
-      <span class="crm-login-badge">STUDIO ACCESS</span>
+  <!-- ==========================================
+       TOP APP HEADER
+       ========================================== -->
+  <header class="app-header">
+    <div class="header-brand">
+      <div class="header-logo">⚡</div>
+      <div class="header-title-group">
+        <span class="header-app-title">Kashii Studio</span>
+        <span class="header-badge">Owner Hub</span>
+      </div>
+      <span class="header-status">● Live Engine</span>
     </div>
-    <p style="font-size: 13.5px; color: var(--crm-muted); margin-bottom: 20px; line-height: 1.6;">
-      Manage live student job postings, batch auto-parsers, categories, and system analytics.
+
+    <div class="header-actions">
+      <button onclick="document.querySelector('[data-tab=tabPost]').click()" class="btn-header-action btn-primary">
+        + Post Job
+      </button>
+      <button onclick="document.querySelector('[data-tab=tabBulkParse]').click()" class="btn-header-action" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.3);">
+        ⚡ Bulk Parse
+      </button>
+      <button id="btnLogoutOwner" class="btn-header-action" style="color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.2);">
+        Logout 🚪
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       SEGMENTED HORIZONTAL NAVIGATION (Vercel Style)
+       ========================================== -->
+  <nav class="nav-subbar" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+    <button class="nav-tab-btn owner-nav-item active" data-tab="tabJobs">
+      📊 Pipeline <span class="nav-tab-badge" id="sidebarActiveCount">--</span>
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabBulkParse">
+      ⚡ Bulk Parser
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabJobdexo">
+      🌐 Jobdexo Sync <span class="nav-tab-badge" style="color: var(--accent-emerald);">AUTO</span>
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabAnalytics">
+      📈 Traffic &amp; Visitors <span class="nav-tab-badge" style="color: var(--accent-cyan);">LIVE</span>
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabGroups">
+      📦 Groups <span class="nav-tab-badge" id="sidebarGroupsCount">--</span>
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabSmartParse">
+      🎯 1-Click Parser
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabPost">
+      ✍️ Manual Post
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabCategory">
+      🏷️ Categories
+    </button>
+    <button class="nav-tab-btn owner-nav-item" data-tab="tabActivity">
+      📜 Activity Log
+    </button>
+  </nav>
+
+  <!-- ==========================================
+       LOGIN VIEW (If Unauthenticated)
+       ========================================== -->
+  <div id="ownerLoginView" class="auth-wrapper" style="{% if is_owner_authenticated %}display: none;{% endif %}">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: #ffffff;">Owner Studio Login</h2>
+      <span class="header-badge">PRO ACCESS</span>
+    </div>
+    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5;">
+      Sign in to manage student job leads, bulk parsers, crawler engines, and real-time site analytics.
     </p>
 
     <form id="formOwnerLogin" method="POST" action="/owner/">
       {% csrf_token %}
       {% if login_error %}
-      <div style="background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 10px 14px; border-radius: 12px; font-size: 13px; margin-bottom: 16px; font-weight: 700;">
+      <div style="background: rgba(244, 63, 94, 0.1); color: var(--accent-rose); border: 1px solid rgba(244, 63, 94, 0.25); padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; font-weight: 600;">
         ⚠️ {{ login_error }}
       </div>
       {% endif %}
-      <div class="crm-form-group">
-        <label for="ownerUser" class="crm-form-label">Email Address or Username *</label>
-        <input type="text" id="ownerUser" name="username" class="crm-form-input" placeholder="Enter owner email or username" required autocomplete="username">
+      <div class="form-group">
+        <label for="ownerUser" class="form-label">Username or Email *</label>
+        <input type="text" id="ownerUser" name="username" class="form-input" placeholder="admin or email" required autocomplete="username">
       </div>
-      <div class="crm-form-group">
-        <label for="ownerPass" class="crm-form-label">Password</label>
-        <input type="password" id="ownerPass" name="password" class="crm-form-input" placeholder="Enter owner password" required autocomplete="current-password">
+      <div class="form-group">
+        <label for="ownerPass" class="form-label">Password *</label>
+        <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-crm-primary" style="width: 100%; margin-top: 10px; height: 48px; font-size: 14.5px;">
-        Authenticate CRM Access 🔑
+      <button type="submit" class="btn-header-action btn-primary" style="width: 100%; height: 42px; font-size: 14px; justify-content: center; margin-top: 8px;">
+        Sign In to Hub 🔑
       </button>
     </form>
   </div>
 
-  <!-- DASHBOARD WORKSPACE (If authenticated) -->
-  <div id="ownerDashboardView" data-server-auth="{% if is_owner_authenticated %}true{% else %}false{% endif %}" data-owner-user="{{ owner_username }}" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+  <!-- ==========================================
+       DASHBOARD WORKSPACE (If Authenticated)
+       ========================================== -->
+  <div id="ownerDashboardView" data-server-auth="{% if is_owner_authenticated %}true{% else %}false{% endif %}" data-owner-user="{{ owner_username }}" class="workspace-container" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
     
-    <div class="crm-layout">
-      
-      <!-- CRM UNIFIED SIDEBAR / MOBILE SWIPEABLE TOP NAV -->
-      <aside class="crm-sidebar-panel">
-        <div>
-          <div class="crm-sidebar-brand">
-            <div class="crm-avatar" style="background: linear-gradient(135deg, var(--crm-cyan), var(--crm-indigo));">⚡</div>
-            <div>
-              <h3 class="crm-brand-title">Admin Studio</h3>
-              <span style="font-size: 11px; color: var(--crm-emerald); font-weight: 700;">● Live Hub Engine</span>
-            </div>
-          </div>
-
-          <div class="crm-nav-group-title">Core Operations</div>
-          <nav class="crm-sidebar-nav">
-            <button class="crm-sidebar-item owner-nav-item active" data-tab="tabJobs">
-              <span class="crm-sidebar-icon">📊</span> Opportunity Pipeline
-              <span class="crm-sidebar-badge" id="sidebarActiveCount">--</span>
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabBulkParse">
-              <span class="crm-sidebar-icon">⚡</span> Bulk Multi-Parser
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabJobdexo">
-              <span class="crm-sidebar-icon">🌐</span> Jobdexo Auto-Sync
-              <span class="crm-sidebar-badge" style="background: rgba(16, 185, 129, 0.2); color: var(--crm-emerald); border: 1px solid rgba(16, 185, 129, 0.4);">AUTO</span>
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabAnalytics">
-              <span class="crm-sidebar-icon">📈</span> Website Traffic
-              <span class="crm-sidebar-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">LIVE</span>
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabGroups">
-              <span class="crm-sidebar-icon">📦</span> Requirement Groups
-              <span class="crm-sidebar-badge" id="sidebarGroupsCount" style="background: rgba(99, 102, 241, 0.2); color: var(--crm-indigo); border: 1px solid rgba(99, 102, 241, 0.4);">--</span>
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabSmartParse">
-              <span class="crm-sidebar-icon">🎯</span> 1-Click Parser
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabPost">
-              <span class="crm-sidebar-icon">✍️</span> Manual Post
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabCategory">
-              <span class="crm-sidebar-icon">🏷️</span> Categories
-            </button>
-            <button class="crm-sidebar-item owner-nav-item" data-tab="tabActivity">
-              <span class="crm-sidebar-icon">📜</span> System Logs
-            </button>
-          </nav>
+    <!-- TOP KPI METRIC ROW -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Active Opportunities</span>
+          <span class="kpi-icon">⚡</span>
         </div>
-
-        <!-- Sidebar Footer Admin Profile -->
-        <div style="margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--crm-border);">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <div style="font-size: 12px; font-weight: 800; color: #ffffff;" id="sidebarUserLabel">
-                {{ owner_username|default:"Owner" }}
-              </div>
-              <div style="font-size: 10px; color: var(--crm-muted);">Super Admin</div>
-            </div>
-            <button id="btnLogoutOwner" class="btn-crm-action" style="background: rgba(244, 63, 94, 0.15); color: var(--crm-rose); border-color: rgba(244, 63, 94, 0.3);">
-              Logout 🚪
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <!-- MAIN CRM VIEWPORT -->
-      <main class="crm-main-viewport">
-        
-        <!-- TOP EXECUTIVE HEADER -->
-        <header class="crm-top-header">
-          <div class="crm-header-info">
-            <h1 id="crmWorkspaceHeading">Opportunity Pipeline CRM</h1>
-            <p id="crmWorkspaceSubheading">Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.</p>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <button onclick="document.querySelector('[data-tab=\\\tabPost\\]').click()" class="btn-crm-primary" style="height: 38px; padding: 0 16px; font-size: 12.5px; border-radius: 12px;">
-              + Post Job
-            </button>
-            <button onclick="document.querySelector('[data-tab=\\\tabBulkParse\\]').click()" class="btn-crm-primary btn-crm-emerald" style="height: 38px; padding: 0 16px; font-size: 12.5px; border-radius: 12px;">
-              ⚡ Bulk Parse
-            </button>
-            <span class="crm-status-pill crm-status-active">🟢 LIVE</span>
-          </div>
-        </header>
-
-        <!-- KPI METRICS OVERVIEW CARDS -->
-        <section class="crm-metrics-grid">
-          <div class="crm-metric-card">
-            <div class="crm-metric-header">
-              <span class="crm-metric-label">Active Opportunities</span>
-              <div class="crm-metric-icon-box" style="background: rgba(6, 182, 212, 0.15); color: var(--crm-cyan);">⚡</div>
-            </div>
-            <div class="crm-metric-value" id="kpiActiveJobs">--</div>
-            <div class="crm-metric-sub">▲ Live student feed status</div>
-          </div>
-
-          <div class="crm-metric-card">
-            <div class="crm-metric-header">
-              <span class="crm-metric-label">Total Postings</span>
-              <div class="crm-metric-icon-box" style="background: rgba(99, 102, 241, 0.15); color: var(--crm-indigo);">📋</div>
-            </div>
-            <div class="crm-metric-value" id="kpiTotalJobs">--</div>
-            <div class="crm-metric-sub" style="color: var(--crm-muted);">Lifetime published leads</div>
-          </div>
-
-          <div class="crm-metric-card">
-            <div class="crm-metric-header">
-              <span class="crm-metric-label">Expired / Archived</span>
-              <div class="crm-metric-icon-box" style="background: rgba(244, 63, 94, 0.15); color: var(--crm-rose);">⏳</div>
-            </div>
-            <div class="crm-metric-value" id="kpiExpiredJobs">--</div>
-            <div class="crm-metric-sub" style="color: var(--crm-rose);">Auto-cleaned after 72h</div>
-          </div>
-
-          <div class="crm-metric-card">
-            <div class="crm-metric-header">
-              <span class="crm-metric-label">Categories</span>
-              <div class="crm-metric-icon-box" style="background: rgba(168, 85, 247, 0.15); color: var(--crm-purple);">🏷️</div>
-            </div>
-            <div class="crm-metric-value" id="kpiCategories">--</div>
-            <div class="crm-metric-sub" style="color: var(--crm-purple);">Taxonomy categories</div>
-          </div>
-        </section>
-
-        <!-- DYNAMIC WORKSPACE CONTENT PANELS -->
-
-        <!-- TAB 1: OPPORTUNITY PIPELINE & DATA GRID -->
-        <div id="tabJobs" class="crm-workspace-panel tab-content">
-          
-          <div class="crm-toolbar">
-            <div class="crm-search-box">
-              <span class="crm-search-icon">🔍</span>
-              <input type="text" id="crmSearchJobs" placeholder="Search by company, title, or skills...">
-            </div>
-
-            <div class="crm-filter-group">
-              <select id="crmCategoryFilter" class="crm-select">
-                <option value="ALL">All Categories</option>
-              </select>
-
-              <select id="crmStatusFilter" class="crm-select">
-                <option value="ALL">All Status</option>
-                <option value="ACTIVE" selected>Active Only</option>
-                <option value="EXPIRED">Expired / Unpublished</option>
-              </select>
-
-              <select id="ownerPageSize" class="crm-select">
-                <option value="10" selected>10 per page</option>
-                <option value="25">25 per page</option>
-                <option value="50">50 per page</option>
-              </select>
-            </div>
-          </div>
-
-          <div id="ownerJobsTableContainer" class="crm-table-container">
-            <div style="padding: 32px; text-align: center; color: var(--crm-muted);">Loading CRM opportunity pipeline...</div>
-          </div>
-
-        </div>
-
-        <!-- TAB 2: BULK MULTI-JOB PARSER PIPELINE -->
-        <div id="tabBulkParse" class="crm-workspace-panel tab-content" style="display: none;">
-          <div style="margin-bottom: 24px;">
-            <span class="crm-login-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--crm-emerald); border-color: rgba(16, 185, 129, 0.3);">
-              BULK AUTOMATION ENGINE
-            </span>
-            <h2 style="font-size: 22px; font-weight: 800; margin: 10px 0 6px; color: #ffffff;">Batch Multi-Job Parser &amp; Direct Publisher</h2>
-            <p style="font-size: 13.5px; color: var(--crm-muted); margin: 0; line-height: 1.6;">
-              Paste multi-job Telegram/WhatsApp messages. The engine parses company details, roles, apply links, publishes all opportunities, and <strong>automatically bundles them into a shareable Group link</strong>!
-            </p>
-          </div>
-
-          <form id="formBulkParse">
-            <div class="crm-form-group" style="margin-bottom: 16px;">
-              <label for="bulkGroupName" class="crm-form-label">
-                🏷️ Requirement Group / Drive Name (Optional — Auto Timestamp if empty)
-              </label>
-              <input type="text" id="bulkGroupName" class="crm-form-input" placeholder="e.g. 🔥 Top 5 Freshers IT Drives or Deloitte Mega Drive (Leave empty for auto timestamp)">
-            </div>
-
-            <div class="crm-form-group">
-              <label for="bulkRawText" class="crm-form-label">Raw Multi-Job Message Stream *</label>
-              <textarea id="bulkRawText" class="crm-form-textarea" rows="10" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
-            </div>
-
-            <button type="submit" class="btn-crm-primary btn-crm-emerald">
-              ⚡ Execute Bulk Parse &amp; Publish Group
-            </button>
-          </form>
-        </div>
-
-        <!-- TAB: JOBDEXO AUTOMATION & SYNC ENGINE -->
-        <div id="tabJobdexo" class="crm-workspace-panel tab-content" style="display: none;">
-          <div style="margin-bottom: 24px;">
-            <span class="crm-login-badge" style="background: rgba(6, 182, 212, 0.15); color: var(--crm-cyan); border-color: rgba(6, 182, 212, 0.3);">
-              JOBDEXO LIVE CRAWLER &amp; AUTO-SYNC
-            </span>
-            <h2 style="font-size: 22px; font-weight: 800; margin: 10px 0 6px; color: #ffffff;">Automated Jobdexo Importer &amp; Drive Generator</h2>
-            <p style="font-size: 13.5px; color: var(--crm-muted); margin: 0; line-height: 1.6;">
-              Automatically crawl and import off-campus opportunities directly from Jobdexo with official direct career apply links.
-            </p>
-          </div>
-
-          <!-- 1-Click Live Crawler Cards -->
-          <div style="background: rgba(6, 9, 17, 0.7); border: 1px solid var(--crm-border); border-radius: 18px; padding: 22px; margin-bottom: 24px;">
-            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0 0 8px;">⚡ 1-Click Latest Openings Crawler</h3>
-            <p style="font-size: 13px; color: var(--crm-muted); margin: 0 0 16px;">
-              Crawl Jobdexo homepage for the freshest off-campus jobs and bundle them into a 7-day shareable group.
-            </p>
-
-            <div class="crm-form-group" style="margin-bottom: 14px;">
-              <label for="jobdexoGroupName" class="crm-form-label">Custom Group Name (Optional — Auto Timestamp if empty)</label>
-              <input type="text" id="jobdexoGroupName" class="crm-form-input" placeholder="e.g. 🔥 Top Off-Campus Tech Drives Today (Leave empty for auto timestamp)">
-            </div>
-
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-              <button id="btnFetchJobdexo5" type="button" class="btn-crm-primary btn-crm-emerald" style="height: 42px; padding: 0 20px; font-size: 13px;">
-                ⚡ Fetch Latest 5 Jobs
-              </button>
-              <button id="btnFetchJobdexo10" type="button" class="btn-crm-primary" style="height: 42px; padding: 0 20px; font-size: 13px; background: linear-gradient(135deg, var(--crm-indigo), var(--crm-purple));">
-                🚀 Fetch Latest 10 Jobs
-              </button>
-            </div>
-          </div>
-
-          <!-- URL Batch Importer Form -->
-          <div style="background: rgba(6, 9, 17, 0.7); border: 1px solid var(--crm-border); border-radius: 18px; padding: 22px;">
-            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin: 0 0 8px;">🔗 Import Specific Jobdexo URLs</h3>
-            <p style="font-size: 13px; color: var(--crm-muted); margin: 0 0 16px;">
-              Paste one or multiple Jobdexo links (1 per line). The engine will extract full job data and create your 7-day shareable group.
-            </p>
-
-            <form id="formJobdexoUrlImport">
-              <div class="crm-form-group">
-                <label for="jobdexoUrlsInput" class="crm-form-label">Jobdexo URL(s) *</label>
-                <textarea id="jobdexoUrlsInput" class="crm-form-textarea" rows="5" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
-              </div>
-
-              <button type="submit" class="btn-crm-primary" style="height: 42px; padding: 0 22px; font-size: 13px;">
-                📥 Import URLs &amp; Generate Broadcast
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <!-- TAB 3: 1-CLICK SINGLE PARSER -->
-        <div id="tabSmartParse" class="crm-workspace-panel tab-content" style="display: none;">
-          <div style="margin-bottom: 24px;">
-            <span class="crm-login-badge">SINGLE JOB PARSER</span>
-            <h2 style="font-size: 22px; font-weight: 800; margin: 10px 0 6px; color: #ffffff;">1-Click Single Snippet Parser</h2>
-            <p style="font-size: 13.5px; color: var(--crm-muted); margin: 0; line-height: 1.6;">
-              Paste raw message text for 1 opportunity. The parser extracts company, job title, skills, apply URL, and publishes it automatically under Software &amp; Tech.
-            </p>
-          </div>
-
-          <form id="formSmartParse">
-            <div class="crm-form-group">
-              <label for="rawText" class="crm-form-label">Raw Requirement Snippet *</label>
-              <textarea id="rawText" class="crm-form-textarea" rows="8" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Apply Link: https://..." required></textarea>
-            </div>
-
-            <button type="submit" class="btn-crm-primary">
-              🎯 Parse &amp; Publish Single Lead
-            </button>
-          </form>
-        </div>
-
-        <!-- TAB 4: MANUAL JOB CREATION FORM -->
-        <div id="tabPost" class="crm-workspace-panel tab-content" style="display: none;">
-          <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #ffffff;">Publish New Opportunity Lead</h2>
-          <form id="formCreateJob">
-            <div class="crm-form-grid-2">
-              <div class="crm-form-group">
-                <label for="postTitle" class="crm-form-label">Job Title / Role *</label>
-                <input type="text" id="postTitle" class="crm-form-input" placeholder="e.g. Java Full Stack Developer" required>
-              </div>
-              <div class="crm-form-group">
-                <label for="postCompany" class="crm-form-label">Company Name *</label>
-                <input type="text" id="postCompany" class="crm-form-input" placeholder="e.g. BNP Paribas" required>
-              </div>
-            </div>
-
-            <div class="crm-form-grid-2">
-              <div class="crm-form-group">
-                <label for="postCategory" class="crm-form-label">Category *</label>
-                <select id="postCategory" class="crm-form-input" required></select>
-              </div>
-              <div class="crm-form-group">
-                <label for="postJobType" class="crm-form-label">Opportunity Type *</label>
-                <select id="postJobType" class="crm-form-input" required>
-                  <option value="INTERNSHIP">Internship</option>
-                  <option value="FULL_TIME" selected>Full-Time Job</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="crm-form-group">
-              <label for="postApplyUrl" class="crm-form-label">Official Application URL *</label>
-              <input type="url" id="postApplyUrl" class="crm-form-input" placeholder="https://..." required>
-            </div>
-
-            <div class="crm-form-grid-2">
-              <div class="crm-form-group">
-                <label for="postSalary" class="crm-form-label">Stipend / Salary Package *</label>
-                <input type="text" id="postSalary" class="crm-form-input" placeholder="e.g. ₹8,00,000 LPA" required>
-              </div>
-              <div class="crm-form-group">
-                <label for="postLocation" class="crm-form-label">Location *</label>
-                <input type="text" id="postLocation" class="crm-form-input" placeholder="e.g. Chennai / Remote" required>
-              </div>
-            </div>
-
-            <div class="crm-form-group">
-              <label for="postSkills" class="crm-form-label">Required Tech Stack / Skills *</label>
-              <input type="text" id="postSkills" class="crm-form-input" placeholder="e.g. Java, Spring Boot, REST APIs" required>
-            </div>
-
-            <div class="crm-form-group">
-              <label for="postDescription" class="crm-form-label">Job Description *</label>
-              <textarea id="postDescription" class="crm-form-textarea" rows="4" placeholder="Detailed role description..." required></textarea>
-            </div>
-
-            <div class="crm-form-group">
-              <label for="postEligibility" class="crm-form-label">Eligibility Criteria</label>
-              <input type="text" id="postEligibility" class="crm-form-input" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)">
-            </div>
-
-            <button type="submit" class="btn-crm-primary" style="margin-top: 10px;">
-              Publish Lead to Pipeline 🚀
-            </button>
-          </form>
-        </div>
-
-        <!-- TAB 5: CATEGORIES MANAGEMENT -->
-        <div id="tabCategory" class="crm-workspace-panel tab-content" style="display: none;">
-          <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #ffffff;">Taxonomy &amp; Category Management</h2>
-          
-          <form id="formAddCategory" style="margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--crm-border);">
-            <div class="crm-form-grid-2">
-              <div class="crm-form-group">
-                <label for="catName" class="crm-form-label">New Category Name *</label>
-                <input type="text" id="catName" class="crm-form-input" placeholder="e.g. Cloud & DevOps" required>
-              </div>
-              <div class="crm-form-group">
-                <label for="catDescription" class="crm-form-label">Description (Optional)</label>
-                <input type="text" id="catDescription" class="crm-form-input" placeholder="e.g. AWS, Azure, Docker jobs">
-              </div>
-            </div>
-            <button type="submit" class="btn-crm-primary" style="height: 44px; padding: 0 24px;">+ Create Category</button>
-          </form>
-
-          <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 14px; color: #ffffff;">Existing Categories</h3>
-          <div id="ownerCategoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;"></div>
-        </div>
-
-        <!-- TAB 5: REQUIREMENT GROUPS & MULTI-JOB BUNDLES -->
-        <div id="tabGroups" class="crm-workspace-panel tab-content" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-            <div>
-              <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: #ffffff;">📦 Requirement Groups &amp; Drives</h2>
-              <p style="font-size: 13px; color: var(--crm-muted); margin: 4px 0 0;">Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.</p>
-            </div>
-            <button id="btnRefreshGroups" type="button" class="btn-crm-primary" style="height: 38px; padding: 0 16px; font-size: 12.5px;">
-              🔄 Refresh Groups
-            </button>
-          </div>
-
-          <div id="ownerGroupsTableContainer" class="crm-table-container">
-            <div style="padding: 32px; text-align: center; color: var(--crm-muted);">Loading requirement groups...</div>
-          </div>
-        </div>
-
-        <!-- TAB 6: WEBSITE VISITOR & TRAFFIC ANALYTICS -->
-        <div id="tabAnalytics" class="crm-workspace-panel tab-content" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-            <div>
-              <span class="crm-login-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">REAL-TIME ANALYTICS</span>
-              <h2 style="font-size: 22px; font-weight: 800; margin: 10px 0 4px; color: #ffffff;">📊 Website Traffic &amp; Visitors Analytics</h2>
-              <p style="font-size: 13px; color: var(--crm-muted); margin: 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
-            </div>
-            <button id="btnRefreshAnalytics" type="button" class="btn-crm-primary" style="height: 38px; padding: 0 16px; font-size: 12.5px;">
-              🔄 Refresh Analytics
-            </button>
-          </div>
-
-          <!-- 4 Executive KPI Cards -->
-          <div class="crm-metrics-grid" style="margin-bottom: 24px;">
-            <div class="crm-metric-card" style="border-color: rgba(56, 189, 248, 0.3);">
-              <div class="crm-metric-header">
-                <span class="crm-metric-label">Total Unique Visitors</span>
-                <div class="crm-metric-icon-box" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">👥</div>
-              </div>
-              <div class="crm-metric-value" id="anaTotalVisitors">--</div>
-              <div class="crm-metric-sub" id="anaMonthVisitors" style="color: #94a3b8;">-- this month</div>
-            </div>
-
-            <div class="crm-metric-card" style="border-color: rgba(16, 185, 129, 0.3);">
-              <div class="crm-metric-header">
-                <span class="crm-metric-label">Today's Visitors</span>
-                <div class="crm-metric-icon-box" style="background: rgba(16, 185, 129, 0.15); color: var(--crm-emerald);">⚡</div>
-              </div>
-              <div class="crm-metric-value" id="anaTodayVisitors" style="color: #10b981;">--</div>
-              <div class="crm-metric-sub" id="anaTodayViews" style="color: var(--crm-emerald);">-- views today</div>
-            </div>
-
-            <div class="crm-metric-card" style="border-color: rgba(99, 102, 241, 0.3);">
-              <div class="crm-metric-header">
-                <span class="crm-metric-label">Total Page Views</span>
-                <div class="crm-metric-icon-box" style="background: rgba(99, 102, 241, 0.15); color: var(--crm-indigo);">👁️</div>
-              </div>
-              <div class="crm-metric-value" id="anaTotalViews">--</div>
-              <div class="crm-metric-sub" id="anaWeekVisitors" style="color: #a5b4fc;">-- this week</div>
-            </div>
-
-            <div class="crm-metric-card" style="border-color: rgba(245, 158, 11, 0.3);">
-              <div class="crm-metric-header">
-                <span class="crm-metric-label">Device Split</span>
-                <div class="crm-metric-icon-box" style="background: rgba(245, 158, 11, 0.15); color: var(--crm-amber);">📱</div>
-              </div>
-              <div class="crm-metric-value" id="anaDeviceSplit" style="font-size: 20px; margin-top: 4px;">--</div>
-              <div class="crm-metric-sub" id="anaTopSource" style="color: #fbbf24;">Top: Direct / Social</div>
-            </div>
-          </div>
-
-          <!-- 14-Day Traffic Trend Bar Visualizer -->
-          <div style="background: rgba(6, 9, 17, 0.6); border: 1px solid var(--crm-border); border-radius: 18px; padding: 20px; margin-bottom: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h3 style="font-size: 15px; font-weight: 800; color: #ffffff; margin: 0;">📈 14-Day Daily Traffic &amp; Visitor Trend</h3>
-              <span style="font-size: 11px; color: var(--crm-muted);">Daily Unique Visitors &amp; Total Hits</span>
-            </div>
-            <div id="anaDailyChartContainer" style="display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-top: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); overflow-x: auto;">
-            </div>
-          </div>
-
-          <!-- 2-Column Grid: Top Pages & Traffic Sources -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px;">
-            
-            <div style="background: rgba(6, 9, 17, 0.6); border: 1px solid var(--crm-border); border-radius: 18px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">🔝 Top Visited Jobs &amp; Pages</h3>
-              <div id="anaTopPagesList" style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="color: var(--crm-muted); font-size: 13px;">Loading page data...</div>
-              </div>
-            </div>
-
-            <div style="background: rgba(6, 9, 17, 0.6); border: 1px solid var(--crm-border); border-radius: 18px; padding: 20px;">
-              <h3 style="font-size: 15px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">🌐 Traffic Sources &amp; Channels</h3>
-              <div id="anaReferrersList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
-                <div style="color: var(--crm-muted); font-size: 13px;">Loading traffic channels...</div>
-              </div>
-
-              <h4 style="font-size: 12px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin: 16px 0 10px;">📱 Browsers &amp; OS Platforms</h4>
-              <div id="anaPlatformsList" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <div style="color: var(--crm-muted); font-size: 12px;">Loading platform info...</div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Live Real-Time Activity Feed -->
-          <div style="background: rgba(6, 9, 17, 0.6); border: 1px solid var(--crm-border); border-radius: 18px; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-              <h3 style="font-size: 15px; font-weight: 800; color: #ffffff; margin: 0;">⚡ Live Real-Time Activity Feed</h3>
-              <span style="font-size: 11px; color: var(--crm-emerald); font-weight: 700;">● Live Stream</span>
-            </div>
-            <div id="anaRecentVisitsTable" class="crm-table-container">
-              <table class="crm-table" style="width: 100%;">
-                <thead>
-                  <tr>
-                    <th>Time</th>
-                    <th>Page / Requirement</th>
-                    <th>Source</th>
-                    <th>Device &amp; OS</th>
-                    <th>IP Masked</th>
-                  </tr>
-                </thead>
-                <tbody id="anaRecentVisitsBody">
-                  <tr><td colspan="5" style="text-align: center; color: var(--crm-muted); padding: 20px;">Awaiting site traffic...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- TAB 7: ACTIVITY LOG STREAM -->
-        <div id="tabActivity" class="crm-workspace-panel tab-content" style="display: none;">
-          <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 16px; color: #ffffff;">System Activity &amp; Audit Trail</h2>
-          <p style="font-size: 13px; color: var(--crm-muted); margin-bottom: 20px;">Real-time audit log of owner parsing actions, status toggles, and publishing events.</p>
-          
-          <div id="crmActivityLogStream">
-            <div class="crm-activity-item">
-              <div class="crm-activity-dot"></div>
-              <div>
-                <strong style="color: #ffffff; font-size: 13.5px;">Executive CRM Portal Initialized</strong>
-                <div style="font-size: 11.5px; color: var(--crm-muted); margin-top: 2px;">Session established • JWT &amp; Cookie Auth Synchronized</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </main>
-
-    </div>
-  </div>
-
-  <!-- GROUP BROADCAST & SHARE MODAL -->
-  <div id="groupBroadcastModal" class="crm-modal-backdrop">
-    <div class="crm-modal-content" style="max-width: 660px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 26px;">🚀</span>
-          <div>
-            <h2 id="modalGroupName" style="font-size: 19px; font-weight: 800; margin: 0; color: #ffffff;">Requirement Group Ready</h2>
-            <span style="font-size: 12px; color: var(--crm-cyan);" id="modalGroupTag">Direct Shareable Link Generated</span>
-          </div>
-        </div>
-        <button id="btnCloseBroadcastModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--crm-muted);">&times;</button>
+        <div class="kpi-value" id="kpiActiveJobs">--</div>
+        <div class="kpi-sub" style="color: var(--accent-emerald);">● Live on student feed</div>
       </div>
 
-      <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--crm-border); border-radius: 14px; padding: 14px; margin-bottom: 18px;">
-        <div style="font-size: 11px; font-weight: 800; color: var(--crm-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Direct Shareable Group URL</div>
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Postings</span>
+          <span class="kpi-icon">📋</span>
+        </div>
+        <div class="kpi-value" id="kpiTotalJobs">--</div>
+        <div class="kpi-sub">Lifetime published leads</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Expired / Archived</span>
+          <span class="kpi-icon">⏳</span>
+        </div>
+        <div class="kpi-value" id="kpiExpiredJobs">--</div>
+        <div class="kpi-sub" style="color: var(--accent-rose);">Auto-cleaned after 72h</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Categories</span>
+          <span class="kpi-icon">🏷️</span>
+        </div>
+        <div class="kpi-value" id="kpiCategories">--</div>
+        <div class="kpi-sub">Taxonomy categories</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 1: OPPORTUNITY PIPELINE & DATA GRID
+         ========================================== -->
+    <div id="tabJobs" class="workspace-card tab-content">
+      <div class="standard-toolbar">
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills...">
+        </div>
+
+        <div class="filters-group">
+          <select id="crmCategoryFilter" class="standard-select">
+            <option value="ALL">All Categories</option>
+          </select>
+
+          <select id="crmStatusFilter" class="standard-select">
+            <option value="ALL">All Status</option>
+            <option value="ACTIVE" selected>Active Only</option>
+            <option value="EXPIRED">Expired / Unpublished</option>
+          </select>
+
+          <select id="ownerPageSize" class="standard-select">
+            <option value="10" selected>10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="ownerJobsTableContainer" class="table-responsive">
+        <div style="padding: 32px; text-align: center; color: var(--text-muted);">Loading CRM opportunity pipeline...</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 2: BULK MULTI-JOB PARSER PIPELINE
+         ========================================== -->
+    <div id="tabBulkParse" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 20px;">
+        <span class="header-badge" style="color: var(--accent-emerald);">AUTOMATION ENGINE</span>
+        <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">Batch Multi-Job Parser &amp; Direct Publisher</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+          Paste multi-job Telegram/WhatsApp messages. The engine parses company details, roles, apply links, publishes all opportunities, and <strong>automatically bundles them into a shareable Group link</strong>!
+        </p>
+      </div>
+
+      <form id="formBulkParse">
+        <div class="form-group">
+          <label for="bulkGroupName" class="form-label">🏷️ Requirement Group Name (Optional — Auto Timestamp if empty)</label>
+          <input type="text" id="bulkGroupName" class="form-input" placeholder="e.g. 🔥 Top 5 Freshers IT Drives or Deloitte Mega Drive">
+        </div>
+
+        <div class="form-group">
+          <label for="bulkRawText" class="form-label">Raw Multi-Job Message Stream *</label>
+          <textarea id="bulkRawText" class="form-textarea" rows="10" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-header-action btn-primary" style="height: 40px; padding: 0 20px; font-size: 13.5px;">
+          ⚡ Execute Bulk Parse &amp; Publish Group
+        </button>
+      </form>
+    </div>
+
+    <!-- ==========================================
+         TAB: JOBDEXO AUTOMATION & SYNC ENGINE
+         ========================================== -->
+    <div id="tabJobdexo" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 20px;">
+        <span class="header-badge" style="color: var(--accent-cyan);">JOBDEXO LIVE CRAWLER</span>
+        <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">Automated Jobdexo Importer &amp; Drive Generator</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;">
+          Automatically crawl and import off-campus opportunities directly from Jobdexo with official direct career apply links.
+        </p>
+      </div>
+
+      <!-- 1-Click Crawler Section -->
+      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <h3 style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0 0 6px;">⚡ 1-Click Latest Openings Crawler</h3>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 14px;">
+          Crawl Jobdexo homepage for the freshest off-campus jobs and bundle them into a 7-day shareable group.
+        </p>
+
+        <div class="form-group">
+          <label for="jobdexoGroupName" class="form-label">Custom Group Name (Optional)</label>
+          <input type="text" id="jobdexoGroupName" class="form-input" placeholder="e.g. 🔥 Top Off-Campus Tech Drives Today">
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="btnFetchJobdexo5" type="button" class="btn-header-action btn-primary" style="height: 38px;">
+            ⚡ Fetch Latest 5 Jobs
+          </button>
+          <button id="btnFetchJobdexo10" type="button" class="btn-header-action" style="height: 38px; background: #27272a;">
+            🚀 Fetch Latest 10 Jobs
+          </button>
+        </div>
+      </div>
+
+      <!-- URL Importer Section -->
+      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 20px;">
+        <h3 style="font-size: 15px; font-weight: 700; color: #ffffff; margin: 0 0 6px;">🔗 Import Specific Jobdexo URLs</h3>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin: 0 0 14px;">
+          Paste one or multiple Jobdexo links (1 per line).
+        </p>
+
+        <form id="formJobdexoUrlImport">
+          <div class="form-group">
+            <label for="jobdexoUrlsInput" class="form-label">Jobdexo URL(s) *</label>
+            <textarea id="jobdexoUrlsInput" class="form-textarea" rows="4" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn-header-action btn-primary" style="height: 38px;">
+            📥 Import URLs &amp; Generate Broadcast
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 3: 1-CLICK SINGLE PARSER
+         ========================================== -->
+    <div id="tabSmartParse" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 20px;">
+        <span class="header-badge">SINGLE LEAD PARSER</span>
+        <h2 style="font-size: 20px; font-weight: 700; margin: 8px 0 4px; color: #ffffff;">1-Click Single Snippet Parser</h2>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
+          Paste raw message text for 1 opportunity. The parser extracts company, job title, skills, apply URL, and publishes it automatically under Software &amp; Tech.
+        </p>
+      </div>
+
+      <form id="formSmartParse">
+        <div class="form-group">
+          <label for="rawText" class="form-label">Raw Requirement Snippet *</label>
+          <textarea id="rawText" class="form-textarea" rows="8" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Apply Link: https://..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-header-action btn-primary" style="height: 40px;">
+          🎯 Parse &amp; Publish Single Lead
+        </button>
+      </form>
+    </div>
+
+    <!-- ==========================================
+         TAB 4: MANUAL JOB CREATION FORM
+         ========================================== -->
+    <div id="tabPost" class="workspace-card tab-content" style="display: none;">
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #ffffff;">Publish New Opportunity Lead</h2>
+      <form id="formCreateJob">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="postTitle" class="form-label">Job Title / Role *</label>
+            <input type="text" id="postTitle" class="form-input" placeholder="e.g. Java Full Stack Developer" required>
+          </div>
+          <div class="form-group">
+            <label for="postCompany" class="form-label">Company Name *</label>
+            <input type="text" id="postCompany" class="form-input" placeholder="e.g. BNP Paribas" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="postCategory" class="form-label">Category *</label>
+            <select id="postCategory" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label for="postJobType" class="form-label">Opportunity Type *</label>
+            <select id="postJobType" class="form-input" required>
+              <option value="INTERNSHIP">Internship</option>
+              <option value="FULL_TIME" selected>Full-Time Job</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="postApplyUrl" class="form-label">Official Application URL *</label>
+          <input type="url" id="postApplyUrl" class="form-input" placeholder="https://..." required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="postSalary" class="form-label">Stipend / Salary Package *</label>
+            <input type="text" id="postSalary" class="form-input" placeholder="e.g. ₹8,00,000 LPA" required>
+          </div>
+          <div class="form-group">
+            <label for="postLocation" class="form-label">Location *</label>
+            <input type="text" id="postLocation" class="form-input" placeholder="e.g. Chennai / Remote" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="postSkills" class="form-label">Required Tech Stack / Skills *</label>
+          <input type="text" id="postSkills" class="form-input" placeholder="e.g. Java, Spring Boot, REST APIs" required>
+        </div>
+
+        <div class="form-group">
+          <label for="postDescription" class="form-label">Job Description *</label>
+          <textarea id="postDescription" class="form-textarea" rows="4" placeholder="Detailed role description..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="postEligibility" class="form-label">Eligibility Criteria</label>
+          <input type="text" id="postEligibility" class="form-input" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)">
+        </div>
+
+        <button type="submit" class="btn-header-action btn-primary" style="height: 42px; margin-top: 8px;">
+          Publish Lead to Pipeline 🚀
+        </button>
+      </form>
+    </div>
+
+    <!-- ==========================================
+         TAB 5: CATEGORIES MANAGEMENT
+         ========================================== -->
+    <div id="tabCategory" class="workspace-card tab-content" style="display: none;">
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #ffffff;">Taxonomy &amp; Category Management</h2>
+      
+      <form id="formAddCategory" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border-main);">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="catName" class="form-label">New Category Name *</label>
+            <input type="text" id="catName" class="form-input" placeholder="e.g. Cloud & DevOps" required>
+          </div>
+          <div class="form-group">
+            <label for="catDescription" class="form-label">Description (Optional)</label>
+            <input type="text" id="catDescription" class="form-input" placeholder="e.g. AWS, Azure, Docker jobs">
+          </div>
+        </div>
+        <button type="submit" class="btn-header-action btn-primary" style="height: 38px;">+ Create Category</button>
+      </form>
+
+      <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-secondary);">Existing Categories</h3>
+      <div id="ownerCategoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;"></div>
+    </div>
+
+    <!-- ==========================================
+         TAB 5: REQUIREMENT GROUPS & MULTI-JOB BUNDLES
+         ========================================== -->
+    <div id="tabGroups" class="workspace-card tab-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: #ffffff;">📦 Requirement Groups &amp; Drives</h2>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0;">Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.</p>
+        </div>
+        <button id="btnRefreshGroups" type="button" class="btn-header-action">
+          🔄 Refresh Groups
+        </button>
+      </div>
+
+      <div id="ownerGroupsTableContainer" class="table-responsive">
+        <div style="padding: 32px; text-align: center; color: var(--text-muted);">Loading requirement groups...</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 6: WEBSITE VISITOR & TRAFFIC ANALYTICS
+         ========================================== -->
+    <div id="tabAnalytics" class="workspace-card tab-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <span class="header-badge" style="color: var(--accent-cyan);">REAL-TIME ANALYTICS</span>
+          <h2 style="font-size: 20px; font-weight: 700; margin: 6px 0 2px; color: #ffffff;">📊 Website Traffic &amp; Visitors Analytics</h2>
+          <p style="font-size: 12.5px; color: var(--text-muted); margin: 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
+        </div>
+        <button id="btnRefreshAnalytics" type="button" class="btn-header-action">
+          🔄 Refresh Analytics
+        </button>
+      </div>
+
+      <!-- 4 Standard KPI Cards -->
+      <div class="kpi-grid" style="margin-bottom: 20px;">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Unique Visitors</span>
+            <span class="kpi-icon">👥</span>
+          </div>
+          <div class="kpi-value" id="anaTotalVisitors">--</div>
+          <div class="kpi-sub" id="anaMonthVisitors">-- this month</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Today's Visitors</span>
+            <span class="kpi-icon">⚡</span>
+          </div>
+          <div class="kpi-value" id="anaTodayVisitors" style="color: var(--accent-emerald);">--</div>
+          <div class="kpi-sub" id="anaTodayViews" style="color: var(--accent-emerald);">-- views today</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Page Views</span>
+            <span class="kpi-icon">👁️</span>
+          </div>
+          <div class="kpi-value" id="anaTotalViews">--</div>
+          <div class="kpi-sub" id="anaWeekVisitors">-- this week</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Device Split</span>
+            <span class="kpi-icon">📱</span>
+          </div>
+          <div class="kpi-value" id="anaDeviceSplit" style="font-size: 20px; margin-top: 4px;">--</div>
+          <div class="kpi-sub" id="anaTopSource" style="color: var(--accent-amber);">Top: Direct / Social</div>
+        </div>
+      </div>
+
+      <!-- 14-Day Traffic Trend Visualizer -->
+      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0;">📈 14-Day Daily Traffic &amp; Visitor Trend</h3>
+          <span style="font-size: 11px; color: var(--text-muted);">Daily Unique Visitors &amp; Total Hits</span>
+        </div>
+        <div id="anaDailyChartContainer" style="display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 16px; border-bottom: 1px solid var(--border-main); overflow-x: auto;">
+        </div>
+      </div>
+
+      <!-- 2-Column Grid: Top Pages & Traffic Sources -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 20px;">
+        <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px;">
+          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0 0 12px;">🔝 Top Visited Jobs &amp; Pages</h3>
+          <div id="anaTopPagesList" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--text-muted); font-size: 12.5px;">Loading page data...</div>
+          </div>
+        </div>
+
+        <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px;">
+          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0 0 12px;">🌐 Traffic Sources &amp; Channels</h3>
+          <div id="anaReferrersList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+            <div style="color: var(--text-muted); font-size: 12.5px;">Loading traffic channels...</div>
+          </div>
+
+          <h4 style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 12px 0 8px;">📱 Browsers &amp; OS Platforms</h4>
+          <div id="anaPlatformsList" style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <div style="color: var(--text-muted); font-size: 12px;">Loading platform info...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Stream Table -->
+      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 12px; padding: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0;">⚡ Live Real-Time Activity Feed</h3>
+          <span style="font-size: 11px; color: var(--accent-emerald); font-weight: 600;">● Live Stream</span>
+        </div>
+        <div id="anaRecentVisitsTable" class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Page / Requirement</th>
+                <th>Source</th>
+                <th>Device &amp; OS</th>
+                <th>IP Masked</th>
+              </tr>
+            </thead>
+            <tbody id="anaRecentVisitsBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">Awaiting site traffic...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 7: ACTIVITY LOG STREAM
+         ========================================== -->
+    <div id="tabActivity" class="workspace-card tab-content" style="display: none;">
+      <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 14px; color: #ffffff;">System Activity &amp; Audit Trail</h2>
+      <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 18px;">Real-time audit log of owner parsing actions, status toggles, and publishing events.</p>
+      
+      <div id="crmActivityLogStream" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #18181b; border: 1px solid var(--border-main); border-radius: 8px;">
+          <span style="color: var(--accent-emerald); font-size: 14px;">●</span>
+          <div>
+            <strong style="color: #ffffff; font-size: 13px;">Executive Studio Initialized</strong>
+            <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">Session established &amp; verified.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================
+       GROUP BROADCAST & SHARE MODAL
+       ========================================== -->
+  <div id="groupBroadcastModal" class="modal-overlay">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div>
+          <h2 id="modalGroupName" style="font-size: 18px; font-weight: 700; margin: 0; color: #ffffff;">Requirement Group Ready</h2>
+          <span style="font-size: 12px; color: var(--accent-blue);" id="modalGroupTag">Direct Shareable Link Generated</span>
+        </div>
+        <button id="btnCloseBroadcastModal" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
+      </div>
+
+      <div style="background: #18181b; border: 1px solid var(--border-main); border-radius: 10px; padding: 14px; margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">Direct Shareable Group URL</div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <input type="text" id="modalGroupUrlInput" class="crm-form-input" readonly style="font-family: monospace; font-size: 12.5px; background: rgba(255,255,255,0.06); color: #38bdf8; flex: 1; min-width: 200px;">
-          <button id="btnCopyModalLink" type="button" class="btn-crm-action" style="background: var(--crm-cyan); color: #060911; font-weight: 800; white-space: nowrap; height: 38px; padding: 0 14px;">
+          <input type="text" id="modalGroupUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 12px; color: var(--accent-cyan); flex: 1; min-width: 200px;">
+          <button id="btnCopyModalLink" type="button" class="btn-header-action btn-primary" style="height: 36px; padding: 0 12px; font-size: 12px;">
             🔗 Copy Link
           </button>
-          <a id="btnOpenModalLink" href="#" target="_blank" class="btn-crm-action" style="background: rgba(255,255,255,0.1); color: #ffffff; white-space: nowrap; height: 38px; display: inline-flex; align-items: center; padding: 0 14px; text-decoration: none;">
+          <a id="btnOpenModalLink" href="#" target="_blank" class="btn-header-action" style="height: 36px; padding: 0 12px; font-size: 12px; text-decoration: none;">
             Open Page ↗
           </a>
         </div>
       </div>
 
-      <div style="margin-bottom: 18px;">
-        <div style="font-size: 12px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button id="btnCopyModalWhatsApp" type="button" class="btn-crm-action" style="flex: 1; min-width: 160px; height: 42px; background: #22c55e; color: #ffffff; font-weight: 800; font-size: 13px; border: none;">
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 600; color: #ffffff; margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btnCopyModalWhatsApp" type="button" class="btn-header-action" style="flex: 1; min-width: 140px; height: 38px; background: #15803d; color: #ffffff; font-weight: 600; border: none;">
             📱 Copy WhatsApp Broadcast
           </button>
-          <button id="btnCopyModalTelegram" type="button" class="btn-crm-action" style="flex: 1; min-width: 160px; height: 42px; background: #0284c7; color: #ffffff; font-weight: 800; font-size: 13px; border: none;">
+          <button id="btnCopyModalTelegram" type="button" class="btn-header-action" style="flex: 1; min-width: 140px; height: 38px; background: #0369a1; color: #ffffff; font-weight: 600; border: none;">
             ✈️ Copy Telegram Post
           </button>
         </div>
       </div>
 
-      <div class="crm-form-group" style="margin-bottom: 0;">
-        <label class="crm-form-label">WhatsApp Broadcast Preview</label>
-        <textarea id="modalBroadcastPreview" class="crm-form-textarea" rows="7" readonly style="font-family: monospace; font-size: 11.5px; line-height: 1.5; color: #e2e8f0; background: rgba(0,0,0,0.5);"></textarea>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">WhatsApp Broadcast Preview</label>
+        <textarea id="modalBroadcastPreview" class="form-textarea" rows="6" readonly style="font-family: monospace; font-size: 11.5px; line-height: 1.4;"></textarea>
       </div>
     </div>
   </div>
 
-  <!-- EDIT JOB MODAL DRAWER -->
-  <div id="editJobModal" class="crm-modal-backdrop">
-    <div class="crm-modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: #ffffff;">✏️ Edit Opportunity Lead</h2>
-        <button id="btnCloseEditModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--crm-muted);">&times;</button>
+  <!-- ==========================================
+       EDIT JOB MODAL DRAWER
+       ========================================== -->
+  <div id="editJobModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 640px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="font-size: 19px; font-weight: 700; margin: 0; color: #ffffff;">✏️ Edit Opportunity Lead</h2>
+        <button id="btnCloseEditModal" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted);">&times;</button>
       </div>
 
       <form id="formEditJob">
         <input type="hidden" id="eJobId">
         
-        <div class="crm-form-grid-2">
-          <div class="crm-form-group">
-            <label for="eTitle" class="crm-form-label">Job Title / Role *</label>
-            <input type="text" id="eTitle" class="crm-form-input" required>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="eTitle" class="form-label">Job Title / Role *</label>
+            <input type="text" id="eTitle" class="form-input" required>
           </div>
-          <div class="crm-form-group">
-            <label for="eCompany" class="crm-form-label">Company Name *</label>
-            <input type="text" id="eCompany" class="crm-form-input" required>
+          <div class="form-group">
+            <label for="eCompany" class="form-label">Company Name *</label>
+            <input type="text" id="eCompany" class="form-input" required>
           </div>
         </div>
 
-        <div class="crm-form-grid-2">
-          <div class="crm-form-group">
-            <label for="eCategory" class="crm-form-label">Category *</label>
-            <select id="eCategory" class="crm-form-input" required></select>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="eCategory" class="form-label">Category *</label>
+            <select id="eCategory" class="form-input" required></select>
           </div>
-          <div class="crm-form-group">
-            <label for="eJobType" class="crm-form-label">Type *</label>
-            <select id="eJobType" class="crm-form-input" required>
+          <div class="form-group">
+            <label for="eJobType" class="form-label">Type *</label>
+            <select id="eJobType" class="form-input" required>
               <option value="INTERNSHIP">Internship</option>
               <option value="FULL_TIME">Full-Time Job</option>
             </select>
           </div>
         </div>
 
-        <div class="crm-form-group">
-          <label for="eApplyUrl" class="crm-form-label">Application URL *</label>
-          <input type="url" id="eApplyUrl" class="crm-form-input" required>
+        <div class="form-group">
+          <label for="eApplyUrl" class="form-label">Application URL *</label>
+          <input type="url" id="eApplyUrl" class="form-input" required>
         </div>
 
-        <div class="crm-form-grid-2">
-          <div class="crm-form-group">
-            <label for="eSalary" class="crm-form-label">Salary / Stipend *</label>
-            <input type="text" id="eSalary" class="crm-form-input" required>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="eSalary" class="form-label">Salary / Stipend *</label>
+            <input type="text" id="eSalary" class="form-input" required>
           </div>
-          <div class="crm-form-group">
-            <label for="eLocation" class="crm-form-label">Location *</label>
-            <input type="text" id="eLocation" class="crm-form-input" required>
+          <div class="form-group">
+            <label for="eLocation" class="form-label">Location *</label>
+            <input type="text" id="eLocation" class="form-input" required>
           </div>
         </div>
 
-        <div class="crm-form-group">
-          <label for="eSkills" class="crm-form-label">Skills *</label>
-          <input type="text" id="eSkills" class="crm-form-input" required>
+        <div class="form-group">
+          <label for="eSkills" class="form-label">Skills *</label>
+          <input type="text" id="eSkills" class="form-input" required>
         </div>
 
-        <div class="crm-form-group">
-          <label for="eDescription" class="crm-form-label">Description *</label>
-          <textarea id="eDescription" class="crm-form-textarea" rows="4" required></textarea>
+        <div class="form-group">
+          <label for="eDescription" class="form-label">Description *</label>
+          <textarea id="eDescription" class="form-textarea" rows="3" required></textarea>
         </div>
 
-        <div class="crm-form-group">
-          <label for="eEligibility" class="crm-form-label">Eligibility Criteria</label>
-          <input type="text" id="eEligibility" class="crm-form-input">
+        <div class="form-group">
+          <label for="eEligibility" class="form-label">Eligibility Criteria</label>
+          <input type="text" id="eEligibility" class="form-input">
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-          <button type="button" id="btnCancelEdit" class="btn-crm-action" style="background: rgba(255,255,255,0.08); color: #ffffff; padding: 10px 20px; font-size: 13px;">Cancel</button>
-          <button type="submit" class="btn-crm-primary" style="height: 42px; font-size: 13px;">Save Changes</button>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" id="btnCancelEdit" class="btn-header-action">Cancel</button>
+          <button type="submit" class="btn-header-action btn-primary" style="height: 38px;">Save Changes</button>
         </div>
       </form>
     </div>
@@ -1425,25 +1257,27 @@
 
 </div>
 
-<!-- STICKY FLOATING MOBILE BOTTOM NAVIGATION DOCK -->
-<nav class="crm-mobile-bottom-nav" id="ownerMobileBottomNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
-  <button class="crm-mobile-nav-btn owner-nav-item active" data-tab="tabJobs">
+<!-- ==========================================
+     MOBILE BOTTOM DOCK (For Phone Travelling)
+     ========================================== -->
+<nav class="mobile-tab-dock" id="ownerMobileBottomNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+  <button class="dock-btn owner-nav-item active" data-tab="tabJobs">
     <span style="font-size: 17px;">📊</span>
     <span>Pipeline</span>
   </button>
-  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabBulkParse">
+  <button class="dock-btn owner-nav-item" data-tab="tabBulkParse">
     <span style="font-size: 17px;">⚡</span>
     <span>Bulk</span>
   </button>
-  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabJobdexo">
+  <button class="dock-btn owner-nav-item" data-tab="tabJobdexo">
     <span style="font-size: 17px;">🌐</span>
     <span>Jobdexo</span>
   </button>
-  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabAnalytics">
+  <button class="dock-btn owner-nav-item" data-tab="tabAnalytics">
     <span style="font-size: 17px;">📈</span>
     <span>Traffic</span>
   </button>
-  <button class="crm-mobile-nav-btn owner-nav-item" data-tab="tabPost">
+  <button class="dock-btn owner-nav-item" data-tab="tabPost">
     <span style="font-size: 17px;">✍️</span>
     <span>+ Post</span>
   </button>
@@ -1451,5 +1285,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=202608262220"></script>
+<script src="{% static 'js/owner.js' %}?v=202608262235"></script>
 {% endblock %}
