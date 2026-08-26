@@ -22,6 +22,23 @@ document.addEventListener('DOMContentLoaded', () => {
   let allLoadedJobs = [];
   let currentJobsPage = 1;
 
+  async function authFetch(url, options = {}) {
+    const jwtAccess = localStorage.getItem('owner_jwt_access');
+    const headers = { ...(options.headers || {}) };
+    if (jwtAccess && !headers['Authorization']) {
+      headers['Authorization'] = `Bearer ${jwtAccess}`;
+    }
+    const csrfMatch = document.cookie.match(/csrftoken=([^;]+)/);
+    if (csrfMatch && !headers['X-CSRFToken'] && options.method && options.method !== 'GET') {
+      headers['X-CSRFToken'] = csrfMatch[1];
+    }
+    return fetch(url, {
+      ...options,
+      headers,
+      credentials: 'same-origin'
+    });
+  }
+
   init();
 
   async function init() {
@@ -356,13 +373,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         showToast('Processing bulk multi-job parser & creating shareable group...', 'success');
-        const jwtAccess = localStorage.getItem('owner_jwt_access');
-        const headers = { 'Content-Type': 'application/json' };
-        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-        const res = await fetch('/api/owner/bulk-parse-and-post/', {
+        const res = await authFetch('/api/owner/bulk-parse-and-post/', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ raw_text: rawText, group_name: groupName })
         });
         const data = await res.json();
@@ -406,13 +419,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       showToast(`⚡ Crawling Jobdexo for latest ${limit} off-campus opportunities...`, 'success');
-      const jwtAccess = localStorage.getItem('owner_jwt_access');
-      const headers = { 'Content-Type': 'application/json' };
-      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-      const res = await fetch('/api/owner/jobdexo/fetch-latest/', {
+      const res = await authFetch('/api/owner/jobdexo/fetch-latest/', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ limit, group_name: groupName })
       });
       const data = await res.json();
@@ -455,13 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         showToast('📥 Importing jobs from provided Jobdexo URLs...', 'success');
-        const jwtAccess = localStorage.getItem('owner_jwt_access');
-        const headers = { 'Content-Type': 'application/json' };
-        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-        const res = await fetch('/api/owner/jobdexo/import-urls/', {
+        const res = await authFetch('/api/owner/jobdexo/import-urls/', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ urls: rawUrls, group_name: groupName })
         });
         const data = await res.json();
@@ -496,13 +501,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!rawText) return;
 
       try {
-        const jwtAccess = localStorage.getItem('owner_jwt_access');
-        const headers = { 'Content-Type': 'application/json' };
-        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-        const res = await fetch('/api/owner/parse-and-post/', {
+        const res = await authFetch('/api/owner/parse-and-post/', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ raw_text: rawText })
         });
         const data = await res.json();
@@ -543,13 +544,9 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const jwtAccess = localStorage.getItem('owner_jwt_access');
-        const headers = { 'Content-Type': 'application/json' };
-        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-        const res = await fetch('/api/jobs/', {
+        const res = await authFetch('/api/jobs/', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -756,21 +753,24 @@ document.addEventListener('DOMContentLoaded', () => {
       </table>
     `;
 
+    const prevDisabledAttr = !hasPrev ? 'disabled' : '';
+    const nextDisabledAttr = !hasNext ? 'disabled' : '';
+
     jobsTableContainer.insertAdjacentHTML('beforeend', `
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(13, 18, 31, 0.95); border-top: 1px solid var(--crm-border); border-radius: 0 0 16px 16px;">
         <div style="font-size: 12.5px; color: var(--crm-muted); font-weight: 600;">
           Showing Page <strong style="color: #ffffff;">${curPage}</strong> of <strong style="color: #ffffff;">${totalPages}</strong> (${totalCount} total leads)
         </div>
         <div style="display: flex; gap: 8px;">
-          <button id="btnPrevPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${!hasPrev ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
+          <button id="btnPrevPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${prevDisabledAttr}>
             ← Previous
           </button>
-          <button id="btnNextPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${!hasNext ? 'disabled style="opacity: 0.4; cursor: not-allowed;"' : ''}>
+          <button id="btnNextPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${nextDisabledAttr}>
             Next →
           </button>
         </div>
       </div>
-    `;
+    `);
 
     const btnPrev = document.getElementById('btnPrevPage');
     const btnNext = document.getElementById('btnNextPage');
@@ -869,7 +869,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const res = await fetch(`/api/owner/jobs/${id}/update/`, {
+        const res = await authFetch(`/api/owner/jobs/${id}/update/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -891,11 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function toggleJobStatus(id) {
     try {
-      const jwtAccess = localStorage.getItem('owner_jwt_access');
-      const headers = {};
-      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-      const res = await fetch(`/api/owner/jobs/${id}/toggle-status/`, { method: 'POST', headers });
+      const res = await authFetch(`/api/owner/jobs/${id}/toggle-status/`, { method: 'POST' });
       const data = await res.json();
       if (res.ok && data.success) {
         showToast(data.message || 'Status updated!', 'success');
@@ -911,12 +907,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function deleteJob(id) {
+    if (!confirm('Are you sure you want to permanently delete this job lead?')) return;
     try {
-      const jwtAccess = localStorage.getItem('owner_jwt_access');
-      const headers = {};
-      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-      const res = await fetch(`/api/owner/jobs/${id}/delete/`, { method: 'POST', headers });
+      const res = await authFetch(`/api/owner/jobs/${id}/delete/`, { method: 'POST' });
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('Lead deleted from pipeline.', 'success');
@@ -961,13 +954,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const description = document.getElementById('catDescription').value.trim();
 
       try {
-        const jwtAccess = localStorage.getItem('owner_jwt_access');
-        const headers = { 'Content-Type': 'application/json' };
-        if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-        const res = await fetch('/api/owner/categories/', {
+        const res = await authFetch('/api/owner/categories/', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, description })
         });
         const data = await res.json();
@@ -996,11 +985,7 @@ document.addEventListener('DOMContentLoaded', () => {
     container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">Loading requirement groups...</div>';
 
     try {
-      const jwtAccess = localStorage.getItem('owner_jwt_access');
-      const headers = {};
-      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-
-      const res = await fetch('/api/owner/groups/', { headers });
+      const res = await authFetch('/api/owner/groups/');
       const data = await res.json();
       const groups = data.groups || [];
 
@@ -1073,10 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', async () => {
           const groupId = btn.dataset.id;
           try {
-            const jwtAccess = localStorage.getItem('owner_jwt_access');
-            const headers = {};
-            if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-            const res = await fetch(`/api/owner/groups/${groupId}/broadcast/`, { headers });
+            const res = await authFetch(`/api/owner/groups/${groupId}/broadcast/`);
             const data = await res.json();
             if (res.ok) {
               openBroadcastModal(data);
@@ -1094,12 +1076,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const groupName = btn.dataset.name;
           if (confirm(`Are you sure you want to delete group "${groupName}"? (The individual job postings will remain untouched).`)) {
             try {
-              const jwtAccess = localStorage.getItem('owner_jwt_access');
-              const headers = { 'Content-Type': 'application/json' };
-              if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-              const res = await fetch(`/api/owner/groups/${groupId}/delete/`, {
-                method: 'POST',
-                headers
+              const res = await authFetch(`/api/owner/groups/${groupId}/delete/`, {
+                method: 'POST'
               });
               if (res.ok) {
                 showToast(`Group "${groupName}" deleted.`, 'success');
@@ -1189,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- REAL-TIME WEBSITE TRAFFIC & VISITOR ANALYTICS ---
   async function loadAnalyticsData() {
     try {
-      const res = await fetch('/api/owner/analytics/', {
+      const res = await authFetch('/api/owner/analytics/', {
         headers: { 'Accept': 'application/json' }
       });
       const data = await res.json();
