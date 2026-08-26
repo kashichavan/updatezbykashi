@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Count
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
@@ -703,12 +703,15 @@ def api_stats(request):
     })
 
 def api_categories(request):
-    sync_expired_jobs()
-    categories = list(Category.objects.annotate(
-        active_count=Count('job_postings', filter=Q(job_postings__status='ACTIVE'))
-    ).values('id', 'name', 'slug', 'icon', 'description', 'active_count'))
-    
-    return JsonResponse({'categories': categories})
+    try:
+        sync_expired_jobs()
+        categories = list(Category.objects.annotate(
+            active_count=Count('job_postings', filter=Q(job_postings__status='ACTIVE'))
+        ).values('id', 'name', 'slug', 'icon', 'description', 'active_count'))
+        return JsonResponse({'categories': categories})
+    except Exception as e:
+        categories = list(Category.objects.all().values('id', 'name', 'slug', 'icon', 'description'))
+        return JsonResponse({'categories': categories, 'fallback': True})
 
 @csrf_exempt
 def api_owner_categories(request):
