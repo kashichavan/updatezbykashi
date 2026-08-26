@@ -516,13 +516,34 @@
      ========================================== */
   @media (max-width: 768px) {
     body {
-      padding-bottom: 76px !important;
+      padding-bottom: 80px !important;
     }
 
     .owner-header-navbar {
       height: auto;
-      padding: 10px 12px;
+      padding: 10px 14px;
       flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .owner-brand-group {
+      gap: 8px;
+    }
+
+    .owner-brand-title {
+      font-size: 14px;
+    }
+
+    .owner-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .owner-right-actions .btn-action-light {
+      height: 32px;
+      padding: 0 10px;
+      font-size: 11.5px;
     }
 
     .owner-link-nav {
@@ -531,21 +552,34 @@
       justify-content: flex-start;
       padding: 6px 0 2px;
       border-top: 1px solid #f1f5f9;
-      margin-top: 6px;
+      margin-top: 4px;
+      gap: 4px;
+    }
+
+    .owner-link-item {
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 8px;
     }
 
     .kpi-grid {
       grid-template-columns: 1fr 1fr;
       gap: 10px;
+      margin-bottom: 18px;
     }
 
     .kpi-card {
-      padding: 14px;
+      padding: 14px 12px;
       border-radius: var(--radius-md);
     }
 
     .kpi-value {
       font-size: 22px;
+      margin: 4px 0 2px;
+    }
+
+    .kpi-sub {
+      font-size: 11px;
     }
 
     .workspace-container {
@@ -553,8 +587,9 @@
     }
 
     .workspace-card {
-      padding: 18px 14px;
+      padding: 16px 12px;
       border-radius: var(--radius-md);
+      margin-bottom: 16px;
     }
 
     .form-grid-2 {
@@ -563,32 +598,80 @@
     }
 
     .form-input, .form-textarea, .search-input, .standard-select {
-      font-size: 16px !important;
+      font-size: 14px !important;
+      border-radius: 10px !important;
     }
 
     .standard-toolbar {
       flex-direction: column;
       align-items: stretch;
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
     .search-wrapper {
+      width: 100%;
       max-width: 100%;
     }
 
+    .search-input {
+      height: 42px;
+      font-size: 13.5px !important;
+    }
+
     .filters-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
       width: 100%;
     }
 
     .standard-select {
-      flex: 1 1 auto;
+      width: 100%;
+      height: 40px;
+      font-size: 12.5px !important;
+      padding: 0 10px;
+    }
+
+    #ownerPageSize {
+      grid-column: span 2;
+    }
+
+    .vp-catalog-grid {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+    }
+
+    .vp-product-card {
+      padding: 16px 14px !important;
+      border-radius: 14px !important;
+    }
+
+    .vp-product-card h3 {
+      font-size: 16px !important;
+      margin-bottom: 6px !important;
+    }
+
+    .vp-salary-row {
+      font-size: 12.5px !important;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     .table-responsive {
       border: none;
       background: transparent;
+      overflow-x: visible;
     }
 
-    .data-table th { display: none; }
+    .modal-box {
+      width: 95% !important;
+      max-width: 95% !important;
+      max-height: 90vh !important;
+      padding: 18px 14px !important;
+      margin: 20px auto !important;
+      border-radius: 16px !important;
+    }
 
     /* Sticky Mobile Bottom Floating Dock */
     .mobile-tab-dock {
@@ -597,8 +680,8 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 62px;
-      background: rgba(255, 255, 255, 0.95);
+      height: 60px;
+      background: rgba(255, 255, 255, 0.96);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-top: 1px solid var(--subtle-border);
@@ -606,7 +689,7 @@
       justify-content: space-around;
       align-items: center;
       padding: 0 4px;
-      box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
     }
 
     .dock-btn {
@@ -621,7 +704,7 @@
       font-size: 10px;
       font-weight: 700;
       cursor: pointer;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: var(--radius-sm);
       transition: all 0.15s ease;
       text-decoration: none;
