@@ -230,7 +230,7 @@ class JobGroup(models.Model):
     """Collection / Bundle of multiple job requirements for 1-click sharing & broadcasting."""
     name = models.CharField(max_length=200, help_text="e.g. 🔥 Top 5 IT Drives Today - Aug 2026")
     slug = models.SlugField(max_length=200, unique=True)
-    banner_tag = models.CharField(max_length=100, default="🔥 DAILY MEGA HIRING DRIVE", help_text="Header badge e.g. 💼 DELOITTE SPECIAL")
+    banner_tag = models.CharField(max_length=100, default="🔥 KASHIIUPDATEZ TECH DRIVE", help_text="Header badge e.g. 🔥 KASHIIUPDATEZ TECH DRIVE")
     description = models.TextField(blank=True, default="", help_text="Optional summary of this requirement collection")
     jobs = models.ManyToManyField(JobPosting, related_name='groups', blank=True)
     is_active = models.BooleanField(default=True)

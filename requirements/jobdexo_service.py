@@ -423,8 +423,8 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         job_group = JobGroup.objects.create(
             name=group_name,
             slug=slug,
-            banner_tag="🔥 JOBDEXO VERIFIED TECH DRIVE",
-            description=f"Auto-imported collection of {len(created_job_instances)} fresh off-campus opportunities from Jobdexo.",
+            banner_tag="🔥 KASHIIUPDATEZ TECH DRIVE",
+            description=f"Curated collection of {len(created_job_instances)} fresh verified off-campus opportunities by Kashii Updatez.",
             posted_date=now.date(),
             deadline=deadline,
             is_active=True,

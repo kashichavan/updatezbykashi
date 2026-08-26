@@ -109,6 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
       window.history.pushState({}, '', tabUrlMap[targetId]);
     }
 
+    // On mobile screens, smoothly scroll to top of workspace
+    if (window.innerWidth <= 992 && targetEl) {
+      const yOffset = -20;
+      const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    }
+
     if (targetId === 'tabJobs') loadJobsList(1);
     if (targetId === 'tabCategory') loadCategoryList();
     if (targetId === 'tabGroups') loadGroupsList();
@@ -176,6 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function showLoginScreen() {
     if (loginView) loginView.style.display = 'block';
     if (dashboardView) dashboardView.style.display = 'none';
+    const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
+    if (mobileBottomNav) mobileBottomNav.style.display = 'none';
   }
 
   function showDashboard(username) {
@@ -183,9 +192,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dashboardView) dashboardView.style.display = 'block';
     if (sidebarUserLabel) sidebarUserLabel.textContent = username || 'Owner';
 
+    const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
+    if (mobileBottomNav && window.innerWidth <= 992) {
+      mobileBottomNav.style.display = 'flex';
+    }
+
     const btnLogout = document.getElementById('btnLogoutOwner');
     if (btnLogout) {
       btnLogout.addEventListener('click', handleLogout);
+    }
+    const btnMobileLogout = document.getElementById('btnMobileLogout');
+    if (btnMobileLogout) {
+      btnMobileLogout.addEventListener('click', handleLogout);
     }
 
     loadCategoriesForSelect();
