@@ -659,7 +659,7 @@
     <!-- Center Interactive Workspace Links -->
     <nav class="owner-link-nav" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
       <button class="owner-link-item owner-nav-item active" data-tab="tabJobs">
-        📊 Pipeline <span class="owner-link-badge" id="sidebarActiveCount">--</span>
+        📊 Pipeline <span class="owner-link-badge" id="sidebarActiveCount">{{ active_jobs_count|default:"0" }}</span>
       </button>
       <button class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
         🎯 1-Click Parser
@@ -677,7 +677,7 @@
         📈 Traffic
       </button>
       <button class="owner-link-item owner-nav-item" data-tab="tabGroups">
-        📦 Groups <span class="owner-link-badge" id="sidebarGroupsCount">--</span>
+        📦 Groups <span class="owner-link-badge" id="sidebarGroupsCount">{{ total_groups_count|default:"0" }}</span>
       </button>
       <button class="owner-link-item owner-nav-item" data-tab="tabCategory">
         🏷️ Categories
@@ -729,10 +729,10 @@
       </div>
       <div class="form-group">
         <label for="ownerPass" class="form-label">Password *</label>
-        <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+        <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-action-light btn-primary-blue" style="width: 100%; height: 44px; font-size: 14px; justify-content: center; margin-top: 8px; border-radius: var(--radius-md);">
-        Sign In to Studio 🔑
+      <button type="submit" class="btn-action-light btn-primary-blue" style="width: 100%; height: 44px; justify-content: center; font-size: 14px; margin-top: 8px;">
+        Sign In to Studio 🚀
       </button>
     </form>
   </div>
@@ -740,16 +740,33 @@
   <!-- ==========================================
        DASHBOARD WORKSPACE (If Authenticated)
        ========================================== -->
-  <div id="ownerDashboardView" data-server-auth="{% if is_owner_authenticated %}true{% else %}false{% endif %}" data-owner-user="{{ owner_username }}" class="workspace-container" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+  <div id="ownerDashboardView" class="workspace-container" style="{% if not is_owner_authenticated %}display: none;{% endif %}" data-server-auth="{% if is_owner_authenticated %}true{% else %}false{% endif %}" data-owner-user="{{ owner_username }}">
     
-    <!-- TOP KPI METRIC ROW -->
+    <!-- Top Workspace Greeting & Subtitle -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h1 id="crmWorkspaceHeading" style="font-size: 26px; font-weight: 800; margin: 0 0 4px; color: var(--ink); letter-spacing: -0.02em;">
+          Opportunity Pipeline CRM
+        </h1>
+        <p id="crmWorkspaceSubheading" style="font-size: 14px; color: var(--muted); margin: 0;">
+          Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.
+        </p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="status-pill status-active" style="font-size: 12px;">
+          👨‍💻 {{ owner_username|default:"Owner" }} (Executive Admin)
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI Metric Summary Cards -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-header">
           <span class="kpi-title">Active Opportunities</span>
           <span class="kpi-icon">⚡</span>
         </div>
-        <div class="kpi-value" id="kpiActiveJobs" style="color: var(--blue-primary);">--</div>
+        <div class="kpi-value" id="kpiActiveJobs" style="color: var(--blue-primary);">{{ active_jobs_count|default:"0" }}</div>
         <div class="kpi-sub" style="color: #059669;">● Live on student feed</div>
       </div>
 
@@ -758,7 +775,7 @@
           <span class="kpi-title">Total Postings</span>
           <span class="kpi-icon">📋</span>
         </div>
-        <div class="kpi-value" id="kpiTotalJobs">--</div>
+        <div class="kpi-value" id="kpiTotalJobs">{{ total_jobs_count|default:"0" }}</div>
         <div class="kpi-sub">Lifetime published leads</div>
       </div>
 
@@ -767,7 +784,7 @@
           <span class="kpi-title">Expired / Archived</span>
           <span class="kpi-icon">⏳</span>
         </div>
-        <div class="kpi-value" id="kpiExpiredJobs">--</div>
+        <div class="kpi-value" id="kpiExpiredJobs">{{ expired_jobs_count|default:"0" }}</div>
         <div class="kpi-sub" style="color: #dc2626;">Auto-cleaned after 72h</div>
       </div>
 
@@ -776,7 +793,7 @@
           <span class="kpi-title">Categories</span>
           <span class="kpi-icon">🏷️</span>
         </div>
-        <div class="kpi-value" id="kpiCategories">--</div>
+        <div class="kpi-value" id="kpiCategories">{{ categories|length|default:"0" }}</div>
         <div class="kpi-sub">Taxonomy categories</div>
       </div>
     </div>
@@ -794,6 +811,9 @@
         <div class="filters-group">
           <select id="crmCategoryFilter" class="standard-select">
             <option value="ALL">All Categories</option>
+            {% for c in categories %}
+              <option value="{{ c.slug }}">{{ c.name }}</option>
+            {% endfor %}
           </select>
 
           <select id="crmStatusFilter" class="standard-select">
@@ -811,15 +831,88 @@
       </div>
 
       <div id="ownerJobsTableContainer" class="table-responsive">
-        <div style="padding: 28px; display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-            <div style="font-size: 13px; font-weight: 700; color: #2563eb;">⚡ Loading Opportunity Pipeline...</div>
-            <div style="font-size: 12px; color: #64748b;">Connecting to live database</div>
+        {% if initial_jobs %}
+        <div class="vp-catalog-grid" style="margin-bottom: 24px;">
+          {% for j in initial_jobs %}
+          <div class="vp-product-card" data-id="{{ j.id }}">
+            <div class="vp-card-header">
+              <span class="company-badge">{{ j.company_name }}</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <span class="type-badge">{{ j.get_job_type_display }}</span>
+                {% if j.status == 'EXPIRED' %}
+                  <span class="status-pill status-expired" style="font-size: 11px;">🔴 Expired</span>
+                {% else %}
+                  <span class="status-pill status-active" style="font-size: 11px;">🟢 Active</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="vp-card-content">
+              <h3>{{ j.title }}</h3>
+
+              <div class="vp-salary-row">
+                <span>💰 {{ j.stipend_salary }}</span>
+                <span style="color: var(--muted); font-weight: 500;">📍 {{ j.location|default:"India" }}</span>
+              </div>
+
+              <div style="font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                <span>📅 Posted:</span> <strong style="color: var(--ink);">{{ j.get_posted_date_display }}</strong>
+                <span style="margin-left: auto; color: #64748b; font-family: monospace; font-size: 11.5px;">#{{ j.id }}</span>
+              </div>
+
+              <p>{{ j.description|truncatewords:18 }}</p>
+
+              <div class="skills-wrapper">
+                {% for skill in j.get_skills_list %}
+                  {% if forloop.counter <= 4 %}
+                    <span class="skill-tag">{{ skill }}</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <div class="vp-price-row">
+                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: #059669;">
+                  ⏱️ Auto-Expires in 7 Days
+                </div>
+              </div>
+
+              <div style="margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <button class="btn-action-light btn-toggle-job" data-id="{{ j.id }}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #059669; border-color: #a7f3d0; background: #ecfdf5; border-radius: 10px;">
+                  {% if j.status == 'EXPIRED' %}🚀 Publish{% else %}⏸️ Unpublish{% endif %}
+                </button>
+                <button class="btn-action-light btn-edit-job" data-id="{{ j.id }}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #2563eb; border-color: #bfdbfe; background: #eff6ff; border-radius: 10px;">
+                  ✏️ Edit Lead
+                </button>
+                <a href="{{ j.apply_url }}" target="_blank" rel="noopener" class="btn-action-light" style="height: 38px; font-size: 12.5px; justify-content: center; color: #0284c7; border-color: #bae6fd; background: #f0f9ff; text-decoration: none; border-radius: 10px;">
+                  ↗ Apply URL
+                </a>
+                <button class="btn-action-light btn-delete-job" data-id="{{ j.id }}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #dc2626; border-color: #fecaca; background: #fef2f2; border-radius: 10px;">
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
           </div>
-          <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
-          <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
-          <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
+          {% endfor %}
         </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 2px 8px rgba(15,23,42,0.04); flex-wrap: wrap; gap: 12px;">
+          <div style="font-size: 13px; color: #64748b; font-weight: 600;">
+            Showing Page <strong style="color: #0f172a;">1</strong> of <strong style="color: #0f172a;">{{ total_pages }}</strong> ({{ total_jobs_count }} total verified leads)
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 16px; font-size: 13px; border-radius: 10px;" disabled>
+              ← Previous
+            </button>
+            <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 16px; font-size: 13px; border-radius: 10px;" {% if total_pages <= 1 %}disabled{% endif %}>
+              Next →
+            </button>
+          </div>
+        </div>
+        {% else %}
+        <div style="padding: 40px; text-align: center; color: #64748b; font-size: 14px; font-weight: 600;">
+          ✨ No opportunity leads found in pipeline. Click "+ Post Job" or "🎯 Parse Lead" to add one!
+        </div>
+        {% endif %}
       </div>
     </div>
 

@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function init() {
     setupTabSwitching();
     setupFiltersAndSearch();
+    bindJobActionEvents();
     await checkAuthStatus();
     loadAnalyticsData();
   }
@@ -728,36 +729,43 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
+    bindJobActionEvents(curPage, hasPrev, hasNext);
+  }
+
+  function bindJobActionEvents(curPage = 1, hasPrev = false, hasNext = false) {
     const btnPrev = document.getElementById('btnPrevPage');
     const btnNext = document.getElementById('btnNextPage');
-    if (btnPrev && hasPrev) {
-      btnPrev.addEventListener('click', () => loadJobsList(curPage - 1));
+    if (btnPrev && (hasPrev || !btnPrev.disabled)) {
+      btnPrev.onclick = () => loadJobsList(curPage - 1);
     }
-    if (btnNext && hasNext) {
-      btnNext.addEventListener('click', () => loadJobsList(curPage + 1));
+    if (btnNext && (hasNext || !btnNext.disabled)) {
+      btnNext.onclick = () => loadJobsList(curPage + 1);
     }
 
     document.querySelectorAll('.btn-toggle-job').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
         const id = btn.dataset.id;
         await toggleJobStatus(id);
-      });
+      };
     });
 
     document.querySelectorAll('.btn-edit-job').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
         const id = btn.dataset.id;
         await openEditModal(id);
-      });
+      };
     });
 
     document.querySelectorAll('.btn-delete-job').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
         const id = btn.dataset.id;
         if (confirm(`Are you sure you want to delete lead #${id}?`)) {
           await deleteJob(id);
         }
-      });
+      };
     });
   }
 

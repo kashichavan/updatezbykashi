@@ -388,10 +388,36 @@ def owner_view(request):
             login_error = "Invalid username or password. Please verify your credentials."
 
     is_admin = request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
+    
+    initial_jobs = []
+    total_jobs_count = 0
+    active_jobs_count = 0
+    expired_jobs_count = 0
+    total_groups_count = 0
+    categories = []
+    total_pages = 1
+
+    if is_admin:
+        now = timezone.now()
+        initial_jobs = JobPosting.objects.all().select_related('category').order_by('-created_at')[:10]
+        total_jobs_count = JobPosting.objects.count()
+        active_jobs_count = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
+        expired_jobs_count = JobPosting.objects.filter(Q(status='EXPIRED') | Q(deadline__lte=now)).count()
+        total_groups_count = JobGroup.objects.count()
+        categories = list(Category.objects.all())
+        total_pages = max(1, (total_jobs_count + 9) // 10)
+
     return render(request, 'owner.html', {
         'is_owner_authenticated': is_admin,
         'owner_username': request.user.username if is_admin else '',
-        'login_error': login_error
+        'login_error': login_error,
+        'initial_jobs': initial_jobs,
+        'total_jobs_count': total_jobs_count,
+        'active_jobs_count': active_jobs_count,
+        'expired_jobs_count': expired_jobs_count,
+        'total_groups_count': total_groups_count,
+        'categories': categories,
+        'total_pages': total_pages,
     })
 
 def api_youtube_videos(request):
