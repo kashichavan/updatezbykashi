@@ -1451,7 +1451,11 @@
         <div class="form-grid-2">
           <div class="form-group">
             <label for="eCategory" class="form-label">Category *</label>
-            <select id="eCategory" class="form-input" required></select>
+            <select id="eCategory" class="form-input" required>
+              {% for c in categories %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+              {% endfor %}
+            </select>
           </div>
           <div class="form-group">
             <label for="eJobType" class="form-label">Type *</label>

@@ -876,9 +876,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.onclick = async (e) => {
         e.stopPropagation();
         const id = btn.dataset.id;
-        if (confirm(`Are you sure you want to delete lead #${id}?`)) {
-          await deleteJob(id);
-        }
+        await deleteJob(id);
       };
     });
   }
@@ -891,43 +889,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function openEditModal(id) {
     try {
-      await loadCategoriesForSelect();
+      showToast('Opening lead editor...', 'info');
       const res = await fetch(`/api/jobs/${id}/`);
       const data = await res.json();
       const job = data.job;
 
       document.getElementById('eJobId').value = job.id;
-      document.getElementById('eTitle').value = job.title;
-      document.getElementById('eCompany').value = job.company_name;
+      document.getElementById('eTitle').value = job.title || '';
+      document.getElementById('eCompany').value = job.company_name || '';
       
       const eCategorySelect = document.getElementById('eCategory');
       if (eCategorySelect) {
-        const catRes = await fetch('/api/categories/');
-        const catData = await catRes.json();
-        const matchingCat = catData.categories.find(c => c.slug === job.category_slug);
-        if (matchingCat) eCategorySelect.value = matchingCat.id;
+        if (eCategorySelect.options.length === 0) {
+          const catRes = await fetch('/api/categories/');
+          const catData = await catRes.json();
+          eCategorySelect.innerHTML = catData.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+        }
+        for (let opt of eCategorySelect.options) {
+          if (opt.text.toLowerCase() === (job.category_name || '').toLowerCase() || opt.value == job.category_id) {
+            opt.selected = true;
+            break;
+          }
+        }
       }
 
-      document.getElementById('eJobType').value = job.job_type;
+      document.getElementById('eJobType').value = job.job_type || 'FULL_TIME';
       document.getElementById('eApplyUrl').value = job.apply_url || '';
-      document.getElementById('eSalary').value = job.stipend_salary;
-      document.getElementById('eLocation').value = job.location;
-      document.getElementById('eSkills').value = job.skills_required;
-      document.getElementById('eDescription').value = job.description;
+      document.getElementById('eSalary').value = job.stipend_salary || '';
+      document.getElementById('eLocation').value = job.location || '';
+      document.getElementById('eSkills').value = job.skills_required || '';
+      document.getElementById('eDescription').value = job.description || '';
       document.getElementById('eEligibility').value = job.eligibility || '';
 
-      if (editModal) editModal.style.display = 'block';
+      if (editModal) {
+        editModal.style.display = 'flex';
+        editModal.style.opacity = '1';
+        editModal.style.visibility = 'visible';
+        editModal.style.pointerEvents = 'auto';
+        editModal.classList.add('active');
+      }
     } catch (err) {
+      console.error('Failed to open edit modal:', err);
       showToast('Error loading lead details for edit.', 'error');
     }
   }
 
   function closeEditModal() {
-    if (editModal) editModal.style.display = 'none';
+    if (editModal) {
+      editModal.style.display = 'none';
+      editModal.style.opacity = '0';
+      editModal.style.visibility = 'hidden';
+      editModal.style.pointerEvents = 'none';
+      editModal.classList.remove('active');
+    }
   }
 
   if (btnCloseEditModal) btnCloseEditModal.addEventListener('click', closeEditModal);
   if (btnCancelEdit) btnCancelEdit.addEventListener('click', closeEditModal);
+
+  if (editModal) {
+    editModal.addEventListener('click', (e) => {
+      if (e.target === editModal) closeEditModal();
+    });
+  }
 
   if (formEditJob) {
     formEditJob.addEventListener('submit', async (e) => {
@@ -936,7 +960,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const payload = {
         title: document.getElementById('eTitle').value.trim(),
         company_name: document.getElementById('eCompany').value.trim(),
-        category_id: parseInt(document.getElementById('eCategory').value),
+        category_id: parseInt(document.getElementById('eCategory').value, 10),
         job_type: document.getElementById('eJobType').value,
         apply_url: document.getElementById('eApplyUrl').value.trim(),
         stipend_salary: document.getElementById('eSalary').value.trim(),
@@ -957,7 +981,7 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast('Lead updated successfully!', 'success');
           logActivity(`Lead updated #${id}`, `${payload.company_name} - ${payload.title}`);
           closeEditModal();
-          loadJobsList(currentJobsPage);
+          await loadJobsList(currentJobsPage);
         } else {
           showToast(data.error || 'Failed to update lead.', 'error');
         }
@@ -985,15 +1009,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function deleteJob(id) {
-    if (!confirm('Are you sure you want to permanently delete this job lead?')) return;
+    if (!confirm(`Are you sure you want to permanently delete lead #${id}?`)) return;
     try {
       const res = await authFetch(`/api/owner/jobs/${id}/delete/`, { method: 'POST' });
       const data = await res.json();
       if (res.ok && data.success) {
         showToast('Lead deleted from pipeline.', 'success');
         logActivity(`Lead deleted #${id}`, 'Permanently removed from CRM');
+        const card = document.querySelector(`.vp-product-card[data-id="${id}"]`);
+        if (card) card.remove();
         loadKpiStats();
-        loadJobsList(currentJobsPage);
       } else {
         showToast(data.error || 'Failed to delete lead.', 'error');
       }
