@@ -32,11 +32,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (csrfMatch && !headers['X-CSRFToken'] && options.method && options.method !== 'GET') {
       headers['X-CSRFToken'] = csrfMatch[1];
     }
-    return fetch(url, {
+    let res = await fetch(url, {
       ...options,
       headers,
       credentials: 'same-origin'
     });
+
+    if (res.status === 401 && headers['Authorization']) {
+      localStorage.removeItem('owner_jwt_access');
+      delete headers['Authorization'];
+      res = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'same-origin'
+      });
+    }
+
+    return res;
   }
 
   init();
@@ -134,7 +146,14 @@ document.addEventListener('DOMContentLoaded', () => {
       window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
     }
 
-    if (targetId === 'tabJobs') loadJobsList(1);
+    if (targetId === 'tabJobs') {
+      const hasPreRenderedCards = jobsTableContainer && jobsTableContainer.querySelector('.vp-product-card');
+      if (!updateHistory && hasPreRenderedCards) {
+        bindJobActionEvents();
+      } else {
+        loadJobsList(1);
+      }
+    }
     if (targetId === 'tabCategory') loadCategoryList();
     if (targetId === 'tabGroups') loadGroupsList();
     if (targetId === 'tabAnalytics') loadAnalyticsData();
