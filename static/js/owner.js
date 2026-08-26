@@ -647,48 +647,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const isMobileView = window.innerWidth <= 992;
 
     jobsTableContainer.innerHTML = isMobileView ? `
-      <div class="crm-mobile-jobs-list" style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="crm-mobile-jobs-list" style="display: flex; flex-direction: column; gap: 14px;">
         ${filtered.map(j => {
           const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
           const hoursLeft = Math.ceil(j.time_left_seconds / 3600);
           const compInitial = (j.company_name || 'J')[0].toUpperCase();
           return `
-          <div class="crm-mobile-job-card" style="background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(13, 18, 31, 0.95) 100%); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
-              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25)); border: 1px solid rgba(6, 182, 212, 0.4); color: #38bdf8; font-weight: 800; font-size: 16px; display: grid; place-items: center; flex-shrink: 0;">
+          <div class="crm-mobile-job-card" style="background: #0c101d; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 18px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                <div style="width: 42px; height: 42px; border-radius: 14px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(99, 102, 241, 0.2)); border: 1px solid rgba(6, 182, 212, 0.35); color: #38bdf8; font-weight: 800; font-size: 17px; display: grid; place-items: center; flex-shrink: 0;">
                   ${compInitial}
                 </div>
                 <div style="min-width: 0;">
-                  <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(j.company_name)}</h4>
-                  <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">#${j.id} • ${escapeHtml(j.category_name)}</span>
+                  <h4 style="margin: 0; font-size: 15.5px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.01em;">${escapeHtml(j.company_name)}</h4>
+                  <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">#${j.id} • <span style="color: #a5b4fc; font-weight: 600;">${escapeHtml(j.category_name)}</span></div>
                 </div>
               </div>
-              <span class="crm-status-pill ${isExpired ? 'crm-status-expired' : 'crm-status-active'}" style="font-size: 10.5px; padding: 3px 8px; flex-shrink: 0;">
+              <span class="crm-status-pill ${isExpired ? 'crm-status-expired' : 'crm-status-active'}" style="font-size: 11px; padding: 4px 10px; flex-shrink: 0;">
                 ${isExpired ? '🔴 Expired' : '🟢 ' + hoursLeft + 'h left'}
               </span>
             </div>
 
-            <div style="font-size: 13.5px; font-weight: 700; color: #f1f5f9; line-height: 1.4; margin-bottom: 10px;">
+            <div style="font-size: 14px; font-weight: 700; color: #f8fafc; line-height: 1.45; margin-bottom: 12px;">
               ${escapeHtml(j.title)}
             </div>
 
-            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; font-size: 11.5px;">
-              <span style="background: rgba(255, 255, 255, 0.05); padding: 4px 8px; border-radius: 8px; color: #e2e8f0;">💰 ${escapeHtml(j.stipend_salary)}</span>
-              <span style="background: rgba(255, 255, 255, 0.05); padding: 4px 8px; border-radius: 8px; color: #e2e8f0;">📍 ${escapeHtml(j.location || 'India')}</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; font-size: 11.5px;">
+              <span style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); padding: 4px 10px; border-radius: 10px; color: #cbd5e1; font-weight: 600;">💰 ${escapeHtml(j.stipend_salary)}</span>
+              <span style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); padding: 4px 10px; border-radius: 10px; color: #cbd5e1; font-weight: 600;">📍 ${escapeHtml(j.location || 'India')}</span>
+              <span style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.25); padding: 4px 10px; border-radius: 10px; color: #a5b4fc; font-weight: 700;">${escapeHtml(j.job_type || 'Full-Time')}</span>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <button class="btn-crm-action btn-toggle-job" data-id="${j.id}" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(255,255,255,0.06); color: ${isExpired ? '#10b981' : '#f59e0b'}; border: 1px solid ${isExpired ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}; border-radius: 12px;">
+              <button class="btn-crm-action btn-toggle-job" data-id="${j.id}" style="height: 42px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.05); color: ${isExpired ? '#10b981' : '#f59e0b'}; border: 1px solid ${isExpired ? 'rgba(16,185,129,0.35)' : 'rgba(245,158,11,0.35)'}; border-radius: 12px; font-weight: 800;">
                 ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
               </button>
-              <button class="btn-crm-action btn-edit-job" data-id="${j.id}" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(6, 182, 212, 0.12); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 12px;">
-                ✏️ Edit
+              <button class="btn-crm-action btn-edit-job" data-id="${j.id}" style="height: 42px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(6, 182, 212, 0.12); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.35); border-radius: 12px; font-weight: 800;">
+                ✏️ Edit Lead
               </button>
-              <a href="${escapeHtml(j.apply_url)}" target="_blank" class="btn-crm-action" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(99, 102, 241, 0.12); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; text-decoration: none;">
-                ↗ Apply Link
+              <a href="${escapeHtml(j.apply_url)}" target="_blank" class="btn-crm-action" style="height: 42px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(99, 102, 241, 0.12); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 12px; text-decoration: none; font-weight: 800;">
+                ↗ Apply URL
               </a>
-              <button class="btn-crm-action btn-delete-job" data-id="${j.id}" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 12px;">
+              <button class="btn-crm-action btn-delete-job" data-id="${j.id}" style="height: 42px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.35); border-radius: 12px; font-weight: 800;">
                 🗑️ Delete
               </button>
             </div>
@@ -757,15 +758,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextDisabledAttr = !hasNext ? 'disabled' : '';
 
     jobsTableContainer.insertAdjacentHTML('beforeend', `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(13, 18, 31, 0.95); border-top: 1px solid var(--crm-border); border-radius: 0 0 16px 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #0c101d; border-top: 1px solid var(--crm-border); border-radius: 0 0 18px 18px;">
         <div style="font-size: 12.5px; color: var(--crm-muted); font-weight: 600;">
           Showing Page <strong style="color: #ffffff;">${curPage}</strong> of <strong style="color: #ffffff;">${totalPages}</strong> (${totalCount} total leads)
         </div>
         <div style="display: flex; gap: 8px;">
-          <button id="btnPrevPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${prevDisabledAttr}>
+          <button id="btnPrevPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.12);" ${prevDisabledAttr}>
             ← Previous
           </button>
-          <button id="btnNextPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.15);" ${nextDisabledAttr}>
+          <button id="btnNextPage" class="btn-crm-action" style="background: rgba(255,255,255,0.05); color: #ffffff; padding: 8px 16px; border-color: rgba(255,255,255,0.12);" ${nextDisabledAttr}>
             Next →
           </button>
         </div>
