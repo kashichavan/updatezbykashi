@@ -1058,6 +1058,10 @@ def api_jobs(request):
                 Q(location__icontains=query)
             )
 
+        status_filter = request.GET.get('status', '').strip()
+        if status_filter and status_filter != 'ALL':
+            qs = qs.filter(status=status_filter)
+
         if category_slug and category_slug != 'all':
             qs = qs.filter(category__slug=category_slug)
 
@@ -1067,12 +1071,28 @@ def api_jobs(request):
         if sort == 'deadline':
             qs = qs.order_by('deadline')
 
+        try:
+            page_int = int(page)
+        except ValueError:
+            page_int = 1
+
+        try:
+            page_size_int = int(page_size)
+        except ValueError:
+            page_size_int = 10
+
+        total_count = qs.count()
+        total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
+        page_int = min(max(1, page_int), total_pages)
+
+        start_idx = (page_int - 1) * page_size_int
+        end_idx = start_idx + page_size_int
+        paginated_qs = qs[start_idx:end_idx]
+
         results = []
         now = timezone.now()
-        for j in qs:
+        for j in paginated_qs:
             time_left_seconds = max(0, int((j.deadline - now).total_seconds()))
-            
-            # Use the explicit posted_date field (editable in admin)
             posted_date_display = j.get_posted_date_display()
 
             results.append({
@@ -1107,26 +1127,8 @@ def api_jobs(request):
                 'posted_date_display': posted_date_display,
             })
 
-        try:
-            page_int = int(page)
-        except ValueError:
-            page_int = 1
-
-        try:
-            page_size_int = int(page_size)
-        except ValueError:
-            page_size_int = 6
-
-        total_count = len(results)
-        total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
-        page_int = min(max(1, page_int), total_pages)
-
-        start_idx = (page_int - 1) * page_size_int
-        end_idx = start_idx + page_size_int
-        paginated_results = results[start_idx:end_idx]
-
         response_data = {
-            'jobs': paginated_results,
+            'jobs': results,
             'total_count': total_count,
             'total_pages': total_pages,
             'current_page': page_int,
@@ -1135,7 +1137,7 @@ def api_jobs(request):
             'has_previous': page_int > 1,
         }
 
-        cache.set(cache_key, response_data, 120)
+        cache.set(cache_key, response_data, 60)
         return JsonResponse(response_data)
 
     elif request.method == 'POST':

@@ -788,7 +788,7 @@
       <div class="standard-toolbar">
         <div class="search-wrapper">
           <span class="search-icon">🔍</span>
-          <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills...">
+          <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills, location...">
         </div>
 
         <div class="filters-group">
@@ -797,8 +797,8 @@
           </select>
 
           <select id="crmStatusFilter" class="standard-select">
-            <option value="ALL">All Status</option>
-            <option value="ACTIVE" selected>Active Only</option>
+            <option value="ALL" selected>All Status</option>
+            <option value="ACTIVE">Active Only (72h)</option>
             <option value="EXPIRED">Expired / Unpublished</option>
           </select>
 
@@ -811,7 +811,15 @@
       </div>
 
       <div id="ownerJobsTableContainer" class="table-responsive">
-        <div style="padding: 36px; text-align: center; color: var(--muted);">Loading CRM opportunity pipeline...</div>
+        <div style="padding: 28px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-size: 13px; font-weight: 700; color: #2563eb;">⚡ Loading Opportunity Pipeline...</div>
+            <div style="font-size: 12px; color: #64748b;">Connecting to live database</div>
+          </div>
+          <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
+          <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
+          <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
+        </div>
       </div>
     </div>
 

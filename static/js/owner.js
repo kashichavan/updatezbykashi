@@ -152,13 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function setupFiltersAndSearch() {
     if (searchInput) {
       searchInput.addEventListener('input', debounce(() => {
-        renderFilteredJobs();
-      }, 250));
+        loadJobsList(1);
+      }, 300));
     }
 
     if (filterCategorySelect) {
       filterCategorySelect.addEventListener('change', () => {
-        renderFilteredJobs();
+        loadJobsList(1);
       });
     }
 
@@ -591,27 +591,45 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadJobsList(page = 1) {
     if (!jobsTableContainer) return;
     currentJobsPage = page;
-    jobsTableContainer.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">Loading CRM opportunity pipeline...</div>';
+    
+    // Modern lightweight shimmer skeleton
+    jobsTableContainer.innerHTML = `
+      <div style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <div style="font-size: 13px; font-weight: 700; color: #2563eb;">⚡ Loading Opportunity Pipeline...</div>
+          <div style="font-size: 12px; color: #64748b;">Connecting to live database</div>
+        </div>
+        <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
+        <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
+        <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
+      </div>
+    `;
 
     const pageSizeSelect = document.getElementById('ownerPageSize');
     const pageSize = pageSizeSelect ? pageSizeSelect.value : 10;
     const statusVal = filterStatusSelect ? filterStatusSelect.value : 'ALL';
+    const query = searchInput ? searchInput.value.trim() : '';
+    const selectedCat = filterCategorySelect ? filterCategorySelect.value : 'ALL';
 
     let url = `/api/jobs/?sort=newest&page=${page}&page_size=${pageSize}`;
-    if (statusVal === 'EXPIRED') {
-      url += `&status=EXPIRED`;
+    if (statusVal && statusVal !== 'ALL') {
+      url += `&status=${encodeURIComponent(statusVal)}`;
+    }
+    if (query) {
+      url += `&q=${encodeURIComponent(query)}`;
+    }
+    if (selectedCat && selectedCat !== 'ALL') {
+      url += `&category=${encodeURIComponent(selectedCat)}`;
     }
 
     try {
-      const res = await fetch(url);
+      const res = await authFetch(url);
       const data = await res.json();
       allLoadedJobs = data.jobs || [];
-
       renderFilteredJobs(data);
-
     } catch (err) {
       console.error('Failed to load jobs:', err);
-      jobsTableContainer.innerHTML = '<div style="padding: 24px; text-align: center; color: #ef4444;">Error loading opportunity pipeline data.</div>';
+      jobsTableContainer.innerHTML = '<div style="padding: 28px; text-align: center; color: #dc2626; font-weight: 700;">⚠️ Error loading opportunity pipeline data. Please check connection.</div>';
     }
   }
 
@@ -619,24 +637,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!jobsTableContainer) return;
 
     let filtered = [...allLoadedJobs];
-    const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-    const selectedCat = filterCategorySelect ? filterCategorySelect.value : 'ALL';
-
-    if (query) {
-      filtered = filtered.filter(j => 
-        j.company_name.toLowerCase().includes(query) ||
-        j.title.toLowerCase().includes(query) ||
-        j.skills_required.toLowerCase().includes(query) ||
-        (j.location && j.location.toLowerCase().includes(query))
-      );
-    }
-
-    if (selectedCat !== 'ALL') {
-      filtered = filtered.filter(j => j.category_slug === selectedCat);
-    }
 
     if (!filtered || filtered.length === 0) {
-      jobsTableContainer.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">No opportunity leads matched your search or status filter.</div>';
+      jobsTableContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: #64748b; font-size: 14px; font-weight: 600;">✨ No opportunity leads matched your search or status filter.</div>';
       return;
     }
     const curPage = serverPaginationData ? serverPaginationData.current_page : 1;
