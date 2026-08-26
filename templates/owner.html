@@ -1510,33 +1510,33 @@
     </div>
   </div>
 
-</div>
+  <!-- ==========================================
+       MOBILE BOTTOM DOCK (For Phone Travelling)
+       ========================================== -->
+  <nav class="mobile-tab-dock" id="ownerMobileBottomNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+    <button class="dock-btn owner-nav-item active" data-tab="tabJobs">
+      <span style="font-size: 18px;">📊</span>
+      <span>Pipeline</span>
+    </button>
+    <button class="dock-btn owner-nav-item" data-tab="tabSmartParse">
+      <span style="font-size: 18px;">🎯</span>
+      <span>1-Parser</span>
+    </button>
+    <button class="dock-btn owner-nav-item" data-tab="tabPost">
+      <span style="font-size: 18px;">✍️</span>
+      <span>+ Post</span>
+    </button>
+    <button class="dock-btn owner-nav-item" data-tab="tabBulkParse">
+      <span style="font-size: 18px;">⚡</span>
+      <span>Bulk</span>
+    </button>
+    <button class="dock-btn owner-nav-item" data-tab="tabAnalytics">
+      <span style="font-size: 18px;">📈</span>
+      <span>Traffic</span>
+    </button>
+  </nav>
 
-<!-- ==========================================
-     MOBILE BOTTOM DOCK (For Phone Travelling)
-     ========================================== -->
-<nav class="mobile-tab-dock" id="ownerMobileBottomNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
-  <button class="dock-btn owner-nav-item active" data-tab="tabJobs">
-    <span style="font-size: 18px;">📊</span>
-    <span>Pipeline</span>
-  </button>
-  <button class="dock-btn owner-nav-item" data-tab="tabSmartParse">
-    <span style="font-size: 18px;">🎯</span>
-    <span>1-Parser</span>
-  </button>
-  <button class="dock-btn owner-nav-item" data-tab="tabPost">
-    <span style="font-size: 18px;">✍️</span>
-    <span>+ Post</span>
-  </button>
-  <button class="dock-btn owner-nav-item" data-tab="tabBulkParse">
-    <span style="font-size: 18px;">⚡</span>
-    <span>Bulk</span>
-  </button>
-  <button class="dock-btn owner-nav-item" data-tab="tabAnalytics">
-    <span style="font-size: 18px;">📈</span>
-    <span>Traffic</span>
-  </button>
-</nav>
+</div>
 {% endblock %}
 
 {% block extra_js %}
