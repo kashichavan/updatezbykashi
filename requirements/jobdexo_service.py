@@ -78,6 +78,82 @@ def normalize_text(text):
     return re.sub(r'[^a-z0-9]', '', (text or '').lower())
 
 
+def extract_official_apply_url(page_html, fallback_url=""):
+    """
+    Extracts the REAL external/official company application link from a Jobdexo HTML page.
+    Filters out internal links, social share URLs, and study material anchors.
+    """
+    if not page_html:
+        return fallback_url
+
+    # 1. Primary Priority: Match official "jd-apply" anchor tags (with multi-line attribute support)
+    primary_patterns = [
+        r'<a\s+[^>]*?class=[\"\'][^\"\']*?jd-apply[^\"\']*?[\"\'][^>]*?href=[\"\']([^\"\']+)[\"\']',
+        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?class=[\"\'][^\"\']*?jd-apply[^\"\']*?[\"\']',
+        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>\s*✅\s*Apply on Official Website',
+        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>\s*⚡\s*Apply Now Before Others',
+        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>[^<]*Apply on Official',
+        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>[^<]*Apply on Company',
+        r'<a\s+[^>]*?href=[\"\'](https?://(?!jobdexo\.com|wa\.me|t\.me|telegram\.me|whatsapp\.com|ambitionbox\.com|indiabix\.com|geeksforgeeks\.org|prepinsta\.com|leetcode\.com)[^\"\']+)[\"\'][^>]*?>[^<]*Apply',
+    ]
+
+    for pat in primary_patterns:
+        m = re.search(pat, page_html, re.IGNORECASE | re.DOTALL)
+        if m:
+            extracted = html.unescape(m.group(1).strip())
+            if extracted and not extracted.startswith(('#', 'javascript:', 'mailto:')) and 'jobdexo.com' not in extracted:
+                return extracted
+
+    # 2. Secondary Priority: Match explicit ATS and company career portal links
+    career_patterns = [
+        r'href=[\"\'](https?://[a-zA-Z0-9.-]*(?:careers|jobs|recruiting|myworkdayjobs|smartrecruiters|greenhouse|lever|taleo|icims|jobvite|oraclecloud|workday|successfactors|darwinbox|keka|freshteam|zoho|instahyre|unstop|jobsmind)[^\"\']+)[\"\']',
+        r'href=[\"\'](https?://(?:www\.)?linkedin\.com/jobs/view/[^\"\']+)[\"\']',
+        r'href=[\"\'](https?://[a-zA-Z0-9.-]*amazon\.jobs/[^\"\']+)[\"\']',
+    ]
+
+    for pat in career_patterns:
+        m = re.search(pat, page_html, re.IGNORECASE)
+        if m:
+            extracted = html.unescape(m.group(1).strip())
+            if extracted and 'jobdexo.com' not in extracted:
+                return extracted
+
+    # 3. Third Priority: Look for data-apply or data-url attributes
+    data_m = re.search(r'data-(?:apply-url|apply|target-url)=[\"\']([^\"\']+)[\"\']', page_html, re.IGNORECASE)
+    if data_m:
+        extracted = html.unescape(data_m.group(1).strip())
+        if extracted and 'http' in extracted and 'jobdexo.com' not in extracted:
+            return extracted
+
+    return fallback_url
+
+
+def resolve_all_jobdexo_apply_urls():
+    """
+    Crawls and replaces all existing JobPosting apply_url records in the DB
+    that currently point to jobdexo.com with their official external ATS career apply URLs.
+    """
+    from .models import JobPosting
+    postings = JobPosting.objects.filter(apply_url__icontains='jobdexo.com')
+    total = postings.count()
+    updated_count = 0
+
+    for job in postings:
+        target_url = job.apply_url
+        try:
+            html_content = fetch_url_html(target_url, retries=1)
+            real_url = extract_official_apply_url(html_content, fallback_url=None)
+            if real_url and 'jobdexo.com' not in real_url:
+                job.apply_url = real_url
+                job.save(update_fields=['apply_url'])
+                updated_count += 1
+                time.sleep(0.5)
+        except Exception:
+            pass
+
+    return {'total': total, 'updated': updated_count}
+
+
 def fallback_parse_from_slug(url):
     """
     Fallback parser: In case Jobdexo rate-limits details (HTTP 429),
@@ -257,17 +333,10 @@ def extract_jobdexo_detail(url):
             'url': link.strip()
         })
 
-    # 9. Official Apply URL
-    apply_url = ""
-    apply_m = re.search(r'href="([^"]+)"[^>]*class="[^"]*jd-apply', page_html)
-    if not apply_m:
-        apply_m = re.search(r'class="[^"]*jd-apply[^"]*"[^>]*href="([^"]+)"', page_html)
-    if apply_m:
-        apply_url = html.unescape(apply_m.group(1).strip())
-    
+    # 9. Official Apply URL Extraction (Strictly Direct / Career ATS Link)
+    apply_url = extract_official_apply_url(page_html, url)
     if not apply_url or 'jobdexo.com' in apply_url:
-        if not apply_url:
-            apply_url = url
+        apply_url = url
 
     # 10. Check Posting Date & Freshness
     is_expired = False

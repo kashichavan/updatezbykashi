@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from requirements.jobdexo_service import auto_import_from_jobdexo
+from requirements.jobdexo_service import auto_import_from_jobdexo, resolve_all_jobdexo_apply_urls
 
 
 class Command(BaseCommand):
@@ -15,6 +15,10 @@ class Command(BaseCommand):
         count = options['count']
         custom_name = options['group_name']
         urls = options['urls']
+
+        self.stdout.write(self.style.NOTICE("🔍 Resolving any legacy Jobdexo apply URLs to direct career ATS links..."))
+        resolved = resolve_all_jobdexo_apply_urls()
+        self.stdout.write(self.style.SUCCESS(f"✅ Resolved {resolved['updated']} legacy links!"))
 
         self.stdout.write(self.style.NOTICE(f"🚀 Starting Jobdexo Sync (fetching up to {count} latest jobs)..."))
 
