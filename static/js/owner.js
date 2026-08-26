@@ -644,7 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalCount = serverPaginationData ? serverPaginationData.total_count : filtered.length;
     const hasPrev = serverPaginationData ? serverPaginationData.has_previous : false;
     const hasNext = serverPaginationData ? serverPaginationData.has_next : false;
-    const isMobileView = window.innerWidth <= 768;
+    const isMobileView = window.innerWidth <= 992;
 
     jobsTableContainer.innerHTML = isMobileView ? `
       <div class="crm-mobile-jobs-list" style="display: flex; flex-direction: column; gap: 12px;">
