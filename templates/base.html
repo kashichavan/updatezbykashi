@@ -20,7 +20,7 @@
      crossorigin="anonymous"></script>
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
   <!-- Flash Announcement Banner -->
   {% block flash_banner %}

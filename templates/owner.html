@@ -7,6 +7,7 @@
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block floating_widgets %}{% endblock %}
+{% block body_class %}{% if is_owner_authenticated %}is-owner-authenticated{% endif %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -673,9 +674,9 @@
       border-radius: 16px !important;
     }
 
-    /* Sticky Mobile Bottom Floating Dock */
+    /* Sticky Mobile Bottom Floating Dock (Only when workspace is authenticated) */
     .mobile-tab-dock {
-      display: flex !important;
+      display: none !important;
       position: fixed;
       bottom: 0;
       left: 0;
@@ -690,6 +691,10 @@
       align-items: center;
       padding: 0 4px;
       box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    body.is-owner-authenticated .mobile-tab-dock {
+      display: flex !important;
     }
 
     .dock-btn {

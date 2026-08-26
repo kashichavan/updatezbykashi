@@ -261,18 +261,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showLoginScreen() {
+    document.body.classList.remove('is-owner-authenticated');
     if (loginView) {
       loginView.style.display = 'block';
-      loginView.style.removeProperty('display');
+      loginView.style.setProperty('display', 'block', 'important');
     }
     if (dashboardView) {
       dashboardView.style.display = 'none';
+      dashboardView.style.setProperty('display', 'none', 'important');
     }
     const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
-    if (mobileBottomNav) mobileBottomNav.style.display = 'none';
+    if (mobileBottomNav) {
+      mobileBottomNav.style.display = 'none';
+      mobileBottomNav.style.setProperty('display', 'none', 'important');
+    }
   }
 
   function showDashboard(username) {
+    document.body.classList.add('is-owner-authenticated');
     if (loginView) {
       loginView.style.display = 'none';
       loginView.style.setProperty('display', 'none', 'important');
@@ -286,6 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
     if (mobileBottomNav && window.innerWidth <= 992) {
       mobileBottomNav.style.display = 'flex';
+      mobileBottomNav.style.setProperty('display', 'flex', 'important');
     }
 
     const btnLogout = document.getElementById('btnLogoutOwner');
@@ -299,7 +306,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadCategoriesForSelect();
     loadKpiStats();
-    loadJobsList(1);
+
+    // If server rendered login page before client JWT auth, fetch pipeline
+    if (!document.querySelector('#ownerJobsTableContainer .vp-product-card')) {
+      loadJobsList(1);
+    }
   }
 
   if (formLogin) {
