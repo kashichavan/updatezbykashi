@@ -990,11 +990,11 @@
           </div>
           <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
             {% if page_obj.has_previous %}
-              <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
+              <a id="btnPrevPage" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
                 ← Previous
               </a>
             {% else %}
-              <button class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
+              <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
                 ← Previous
               </button>
             {% endif %}
@@ -1010,11 +1010,11 @@
             {% endfor %}
 
             {% if page_obj.has_next %}
-              <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
+              <a id="btnNextPage" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
                 Next →
               </a>
             {% else %}
-              <button class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
+              <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
                 Next →
               </button>
             {% endif %}
