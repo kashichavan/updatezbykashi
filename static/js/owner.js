@@ -802,7 +802,25 @@ document.addEventListener('DOMContentLoaded', () => {
     bindJobActionEvents(curPage, totalPages);
   }
 
-  function bindJobActionEvents(curPage = 1, totalPages = 1) {
+  function bindJobActionEvents(curPage = null, totalPages = null) {
+    if (curPage === null) {
+      const urlParams = new URLSearchParams(window.location.search);
+      curPage = parseInt(urlParams.get('page') || '1', 10);
+    }
+    if (totalPages === null) {
+      const activeBtn = document.querySelector('.pag-page-btn.active');
+      if (activeBtn) {
+        curPage = parseInt(activeBtn.dataset.page || activeBtn.textContent.trim() || '1', 10);
+      }
+      const allPageBtns = document.querySelectorAll('.pag-page-btn');
+      if (allPageBtns.length > 0) {
+        const lastBtn = allPageBtns[allPageBtns.length - 1];
+        totalPages = parseInt(lastBtn.dataset.page || lastBtn.textContent.trim() || '1', 10);
+      } else {
+        totalPages = 1;
+      }
+    }
+
     const btnPrev = document.getElementById('btnPrevPage');
     const btnNext = document.getElementById('btnNextPage');
     
@@ -824,12 +842,16 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    document.querySelectorAll('.btn-page-number').forEach(btn => {
+    document.querySelectorAll('.pag-btn-link, .btn-page-number').forEach(btn => {
       btn.onclick = (e) => {
         e.preventDefault();
-        const p = parseInt(btn.dataset.page, 10);
-        if (p && p !== curPage) {
-          loadJobsList(p);
+        let targetPage = parseInt(btn.dataset.page, 10);
+        if (!targetPage && btn.getAttribute('href')) {
+          const m = btn.getAttribute('href').match(/page=(\d+)/);
+          if (m) targetPage = parseInt(m[1], 10);
+        }
+        if (targetPage && targetPage !== curPage) {
+          loadJobsList(targetPage);
         }
       };
     });

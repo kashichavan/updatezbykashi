@@ -915,9 +915,9 @@
       </div>
 
       <div id="ownerJobsTableContainer" class="table-responsive">
-        {% if initial_jobs %}
+        {% if page_obj %}
         <div class="vp-catalog-grid" style="margin-bottom: 24px;">
-          {% for j in initial_jobs %}
+          {% for j in page_obj %}
           <div class="vp-product-card" data-id="{{ j.id }}">
             <div class="vp-card-header">
               <span class="company-badge">{{ j.company_name }}</span>
@@ -981,15 +981,38 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 2px 8px rgba(15,23,42,0.04); flex-wrap: wrap; gap: 12px;">
           <div style="font-size: 13px; color: #64748b; font-weight: 600;">
-            Showing Page <strong style="color: #0f172a;">1</strong> of <strong style="color: #0f172a;">{{ total_pages }}</strong> ({{ total_jobs_count }} total verified leads)
+            Showing <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> verified leads (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
           </div>
-          <div style="display: flex; gap: 8px;">
-            <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 16px; font-size: 13px; border-radius: 10px;" disabled>
-              ← Previous
-            </button>
-            <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 16px; font-size: 13px; border-radius: 10px;" {% if total_pages <= 1 %}disabled{% endif %}>
-              Next →
-            </button>
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
+                ← Previous
+              </a>
+            {% else %}
+              <button class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
+                ← Previous
+              </button>
+            {% endif %}
+
+            {% for p in page_numbers %}
+              {% if p == '...' %}
+                <span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>
+              {% else %}
+                <a href="?page={{ p }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="pag-page-btn pag-btn-link {% if page_obj.number == p %}active{% endif %}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid {% if page_obj.number == p %}#2563eb{% else %}#e2e8f0{% endif %}; background: {% if page_obj.number == p %}#2563eb{% else %}#ffffff{% endif %}; color: {% if page_obj.number == p %}#ffffff{% else %}#0f172a{% endif %}; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                  {{ p }}
+                </a>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
+                Next →
+              </a>
+            {% else %}
+              <button class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
+                Next →
+              </button>
+            {% endif %}
           </div>
         </div>
         {% else %}

@@ -389,35 +389,82 @@ def owner_view(request):
 
     is_admin = request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
     
-    initial_jobs = []
+    page_obj = None
+    page_numbers = []
     total_jobs_count = 0
     active_jobs_count = 0
     expired_jobs_count = 0
     total_groups_count = 0
     categories = []
-    total_pages = 1
+    search_query = ''
+    selected_category = 'ALL'
+    selected_status = 'ALL'
+    page_size = 10
 
     if is_admin:
+        from django.core.paginator import Paginator
         now = timezone.now()
-        initial_jobs = JobPosting.objects.all().select_related('category').order_by('-created_at')[:10]
+        page_number = request.GET.get('page', 1)
+        try:
+            page_size = int(request.GET.get('page_size', 10))
+        except (ValueError, TypeError):
+            page_size = 10
+            
+        search_query = request.GET.get('q', '').strip()
+        selected_category = request.GET.get('category', 'ALL').strip()
+        selected_status = request.GET.get('status', 'ALL').strip()
+
+        jobs_qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
+        if search_query:
+            jobs_qs = jobs_qs.filter(
+                Q(title__icontains=search_query) |
+                Q(company_name__icontains=search_query) |
+                Q(skills_required__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(location__icontains=search_query)
+            )
+        if selected_category and selected_category != 'ALL':
+            jobs_qs = jobs_qs.filter(category__slug=selected_category)
+        if selected_status and selected_status != 'ALL':
+            jobs_qs = jobs_qs.filter(status=selected_status)
+
         total_jobs_count = JobPosting.objects.count()
         active_jobs_count = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
         expired_jobs_count = JobPosting.objects.filter(Q(status='EXPIRED') | Q(deadline__lte=now)).count()
         total_groups_count = JobGroup.objects.count()
         categories = list(Category.objects.all())
-        total_pages = max(1, (total_jobs_count + 9) // 10)
+
+        paginator = Paginator(jobs_qs, page_size)
+        page_obj = paginator.get_page(page_number)
+        
+        # Calculate smart page numbers range for template (e.g. 1 2 3 ... 13)
+        total_pages = paginator.num_pages
+        curr_page = page_obj.number
+        if total_pages <= 7:
+            page_numbers = list(range(1, total_pages + 1))
+        else:
+            if curr_page <= 4:
+                page_numbers = [1, 2, 3, 4, 5, '...', total_pages]
+            elif curr_page >= total_pages - 3:
+                page_numbers = [1, '...', total_pages - 4, total_pages - 3, total_pages - 2, total_pages - 1, total_pages]
+            else:
+                page_numbers = [1, '...', curr_page - 1, curr_page, curr_page + 1, '...', total_pages]
 
     return render(request, 'owner.html', {
         'is_owner_authenticated': is_admin,
         'owner_username': request.user.username if is_admin else '',
         'login_error': login_error,
-        'initial_jobs': initial_jobs,
+        'page_obj': page_obj,
+        'page_numbers': page_numbers,
+        'search_query': search_query,
+        'selected_category': selected_category,
+        'selected_status': selected_status,
+        'page_size': page_size,
         'total_jobs_count': total_jobs_count,
         'active_jobs_count': active_jobs_count,
         'expired_jobs_count': expired_jobs_count,
         'total_groups_count': total_groups_count,
         'categories': categories,
-        'total_pages': total_pages,
     })
 
 def api_youtube_videos(request):
