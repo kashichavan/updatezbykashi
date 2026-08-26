@@ -51,16 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return res;
   }
 
-  init();
-
-  async function init() {
-    setupTabSwitching();
-    setupFiltersAndSearch();
-    bindJobActionEvents();
-    await checkAuthStatus();
-    loadAnalyticsData();
-  }
-
   const tabTitles = {
     'tabJobs': { title: 'Opportunity Pipeline CRM', sub: 'Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.' },
     'tabBulkParse': { title: 'Bulk Multi-Job Automation', sub: 'Parse multi-job Telegram/WhatsApp messages & auto-publish all leads in 1 click.' },
@@ -97,6 +87,16 @@ document.addEventListener('DOMContentLoaded', () => {
     '/owner/categories/': 'tabCategory',
     '/owner/activity/': 'tabActivity'
   };
+
+  init();
+
+  async function init() {
+    setupTabSwitching();
+    setupFiltersAndSearch();
+    bindJobActionEvents();
+    await checkAuthStatus();
+    loadAnalyticsData();
+  }
 
   function setupTabSwitching() {
     document.querySelectorAll('.owner-nav-item').forEach(tab => {
