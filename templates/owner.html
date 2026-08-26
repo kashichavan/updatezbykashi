@@ -705,14 +705,20 @@
       Manage live student job postings, batch auto-parsers, categories, and system analytics.
     </p>
 
-    <form id="formOwnerLogin">
+    <form id="formOwnerLogin" method="POST" action="/owner/">
+      {% csrf_token %}
+      {% if login_error %}
+      <div style="background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); padding: 10px 14px; border-radius: 12px; font-size: 13px; margin-bottom: 16px; font-weight: 700;">
+        ⚠️ {{ login_error }}
+      </div>
+      {% endif %}
       <div class="crm-form-group">
         <label for="ownerUser" class="crm-form-label">Email Address or Username *</label>
-        <input type="text" id="ownerUser" class="crm-form-input" placeholder="Enter owner email or username" required autocomplete="username">
+        <input type="text" id="ownerUser" name="username" class="crm-form-input" placeholder="Enter owner email or username" required autocomplete="username">
       </div>
       <div class="crm-form-group">
         <label for="ownerPass" class="crm-form-label">Password</label>
-        <input type="password" id="ownerPass" class="crm-form-input" placeholder="Enter owner password" required autocomplete="current-password">
+        <input type="password" id="ownerPass" name="password" class="crm-form-input" placeholder="Enter owner password" required autocomplete="current-password">
       </div>
       <button type="submit" class="btn-crm-primary" style="width: 100%; margin-top: 10px; height: 48px; font-size: 14.5px;">
         Authenticate CRM Access 🔑
@@ -1408,6 +1414,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=202608262145"></script>
+<script src="{% static 'js/owner.js' %}?v=202608262150"></script>
 {% endblock %}
 

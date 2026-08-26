@@ -265,11 +265,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       } catch (err) {
-        showToast('Login request failed. Please check network connection.', 'error');
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Authenticate CRM Access 🔑';
-        }
+        console.warn('Fetch login failed, submitting natively...', err);
+        formLogin.submit();
       }
     });
   }
