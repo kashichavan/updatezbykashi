@@ -181,15 +181,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showLoginScreen() {
-    if (loginView) loginView.style.display = 'block';
-    if (dashboardView) dashboardView.style.display = 'none';
+    if (loginView) {
+      loginView.style.display = 'block';
+      loginView.style.removeProperty('display');
+    }
+    if (dashboardView) {
+      dashboardView.style.display = 'none';
+    }
     const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
     if (mobileBottomNav) mobileBottomNav.style.display = 'none';
   }
 
   function showDashboard(username) {
-    if (loginView) loginView.style.display = 'none';
-    if (dashboardView) dashboardView.style.display = 'block';
+    if (loginView) {
+      loginView.style.display = 'none';
+      loginView.style.setProperty('display', 'none', 'important');
+    }
+    if (dashboardView) {
+      dashboardView.style.display = 'block';
+      dashboardView.style.setProperty('display', 'block', 'important');
+    }
     if (sidebarUserLabel) sidebarUserLabel.textContent = username || 'Owner';
 
     const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
@@ -216,6 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const username = document.getElementById('ownerUser').value.trim();
       const password = document.getElementById('ownerPass').value.trim();
+      const submitBtn = formLogin.querySelector('button[type="submit"]');
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Authenticating... ⏳';
+      }
 
       try {
         const res = await fetch('/api/admin/login/', {
@@ -232,19 +249,27 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast('Authenticated successfully as Executive Owner!', 'success');
           logActivity(`Owner login: ${username}`, 'Success');
           
-          const urlParams = new URLSearchParams(window.location.search);
-          const nextUrl = urlParams.get('next');
-          if (nextUrl) {
-            window.location.href = nextUrl;
-            return;
-          }
-          
           showDashboard(data.username);
+
+          // Seamless transition reload
+          setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const nextUrl = urlParams.get('next');
+            window.location.href = nextUrl || '/owner/manage-jobs/';
+          }, 350);
         } else {
           showToast(data.error || 'Invalid credentials.', 'error');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Authenticate CRM Access 🔑';
+          }
         }
       } catch (err) {
-        showToast('Login request failed.', 'error');
+        showToast('Login request failed. Please check network connection.', 'error');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Authenticate CRM Access 🔑';
+        }
       }
     });
   }
@@ -255,7 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('owner_jwt_access');
       localStorage.removeItem('owner_jwt_refresh');
       showToast('Logged out successfully.', 'success');
-      showLoginScreen();
+      setTimeout(() => {
+        window.location.href = '/owner/';
+      }, 300);
     } catch (err) {
       console.error('Logout error:', err);
     }
