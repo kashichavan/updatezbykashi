@@ -95,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupFiltersAndSearch();
     bindJobActionEvents();
     await checkAuthStatus();
-    loadAnalyticsData();
   }
 
   function setupTabSwitching() {
