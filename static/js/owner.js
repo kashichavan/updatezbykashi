@@ -161,22 +161,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function checkAuthStatus() {
+    const serverAuthEl = document.getElementById('ownerDashboardView');
+    const isServerAuth = serverAuthEl && serverAuthEl.getAttribute('data-server-auth') === 'true';
+    const serverUser = serverAuthEl ? serverAuthEl.getAttribute('data-owner-user') : '';
+
+    if (isServerAuth) {
+      showDashboard(serverUser || 'Owner');
+      return;
+    }
+
     try {
       const jwtAccess = localStorage.getItem('owner_jwt_access');
       const headers = {};
       if (jwtAccess) {
         headers['Authorization'] = `Bearer ${jwtAccess}`;
       }
-      const res = await fetch('/api/admin/status/', { headers });
+      const res = await fetch('/api/admin/status/', {
+        headers,
+        credentials: 'same-origin'
+      });
       const data = await res.json();
       if (data.is_admin) {
         showDashboard(data.username);
-      } else {
+      } else if (!isServerAuth) {
         showLoginScreen();
       }
     } catch (err) {
       console.error('Auth check error:', err);
-      showLoginScreen();
+      if (!isServerAuth) {
+        showLoginScreen();
+      }
     }
   }
 

@@ -727,7 +727,7 @@
   </div>
 
   <!-- DASHBOARD WORKSPACE (If authenticated) -->
-  <div id="ownerDashboardView" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+  <div id="ownerDashboardView" data-server-auth="{% if is_owner_authenticated %}true{% else %}false{% endif %}" data-owner-user="{{ owner_username }}" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
     
     <div class="crm-layout">
       
@@ -1414,6 +1414,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=202608262150"></script>
+<script src="{% static 'js/owner.js' %}?v=202608262155"></script>
 {% endblock %}
 
