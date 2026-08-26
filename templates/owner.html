@@ -803,9 +803,10 @@
          ========================================== -->
     <div id="tabJobs" class="workspace-card tab-content">
       <div class="standard-toolbar">
-        <div class="search-wrapper">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills, location...">
+        <div class="search-wrapper" style="position: relative; flex: 1;">
+          <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted);">🔍</span>
+          <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills, location..." style="width: 100%; padding-left: 42px; padding-right: 36px;">
+          <button id="btnSearchClear" type="button" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: #94a3b8; cursor: pointer; padding: 4px;" title="Clear search">✕</button>
         </div>
 
         <div class="filters-group">

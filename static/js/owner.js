@@ -169,11 +169,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  let activeSearchTimeout = null;
+
   function setupFiltersAndSearch() {
+    const btnClear = document.getElementById('btnSearchClear');
+
     if (searchInput) {
-      searchInput.addEventListener('input', debounce(() => {
+      const handleSearch = () => {
+        const val = searchInput.value.trim();
+        if (btnClear) btnClear.style.display = val ? 'block' : 'none';
+        clearTimeout(activeSearchTimeout);
+        activeSearchTimeout = setTimeout(() => {
+          loadJobsList(1);
+        }, 250);
+      };
+
+      searchInput.addEventListener('input', handleSearch);
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          clearTimeout(activeSearchTimeout);
+          loadJobsList(1);
+        }
+      });
+    }
+
+    if (btnClear) {
+      btnClear.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = '';
+          btnClear.style.display = 'none';
+          searchInput.focus();
+        }
         loadJobsList(1);
-      }, 300));
+      });
     }
 
     if (filterCategorySelect) {
@@ -608,25 +637,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- OPPORTUNITY PIPELINE LIST ENGINE ---
 
+  // --- OPPORTUNITY PIPELINE LIST ENGINE ---
+
   async function loadJobsList(page = 1) {
     if (!jobsTableContainer) return;
     currentJobsPage = page;
     
-    // Modern lightweight shimmer skeleton
-    jobsTableContainer.innerHTML = `
-      <div style="padding: 24px; display: flex; flex-direction: column; gap: 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-          <div style="font-size: 13px; font-weight: 700; color: #2563eb;">⚡ Loading Opportunity Pipeline...</div>
-          <div style="font-size: 12px; color: #64748b;">Connecting to live database</div>
-        </div>
-        <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
-        <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
-        <div style="height: 56px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;"></div>
-      </div>
-    `;
+    // Smooth loading indicator without layout jumping
+    jobsTableContainer.style.opacity = '0.5';
 
     const pageSizeSelect = document.getElementById('ownerPageSize');
-    const pageSize = pageSizeSelect ? pageSizeSelect.value : 10;
+    const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) : 10;
     const statusVal = filterStatusSelect ? filterStatusSelect.value : 'ALL';
     const query = searchInput ? searchInput.value.trim() : '';
     const selectedCat = filterCategorySelect ? filterCategorySelect.value : 'ALL';
@@ -650,6 +671,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Failed to load jobs:', err);
       jobsTableContainer.innerHTML = '<div style="padding: 28px; text-align: center; color: #dc2626; font-weight: 700;">⚠️ Error loading opportunity pipeline data. Please check connection.</div>';
+    } finally {
+      jobsTableContainer.style.opacity = '1';
     }
   }
 
@@ -662,11 +685,38 @@ document.addEventListener('DOMContentLoaded', () => {
       jobsTableContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: #64748b; font-size: 14px; font-weight: 600;">✨ No opportunity leads matched your search or status filter.</div>';
       return;
     }
-    const curPage = serverPaginationData ? serverPaginationData.current_page : 1;
-    const totalPages = serverPaginationData ? serverPaginationData.total_pages : 1;
-    const totalCount = serverPaginationData ? serverPaginationData.total_count : filtered.length;
-    const hasPrev = serverPaginationData ? serverPaginationData.has_previous : false;
-    const hasNext = serverPaginationData ? serverPaginationData.has_next : false;
+    const curPage = serverPaginationData ? (serverPaginationData.current_page || 1) : 1;
+    const totalPages = serverPaginationData ? (serverPaginationData.total_pages || 1) : 1;
+    const totalCount = serverPaginationData ? (serverPaginationData.total_count || filtered.length) : filtered.length;
+    const pageSizeSelect = document.getElementById('ownerPageSize');
+    const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) : 10;
+    const startNum = (curPage - 1) * pageSize + 1;
+    const endNum = Math.min(totalCount, curPage * pageSize);
+
+    // Smart windowing for page numbers (e.g. 1 2 3 ... 8)
+    let pageNumbers = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+    } else {
+      if (curPage <= 4) {
+        pageNumbers = [1, 2, 3, 4, 5, '...', totalPages];
+      } else if (curPage >= totalPages - 3) {
+        pageNumbers = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+      } else {
+        pageNumbers = [1, '...', curPage - 1, curPage, curPage + 1, '...', totalPages];
+      }
+    }
+
+    const pagesHtml = pageNumbers.map(p => {
+      if (p === '...') {
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>`;
+      }
+      return `
+        <button class="pag-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid ${p === curPage ? '#2563eb' : '#e2e8f0'}; background: ${p === curPage ? '#2563eb' : '#ffffff'}; color: ${p === curPage ? '#ffffff' : '#0f172a'}; cursor: pointer;">
+          ${p}
+        </button>
+      `;
+    }).join('');
 
     jobsTableContainer.innerHTML = `
       <div class="vp-catalog-grid" style="margin-bottom: 24px;">
@@ -735,31 +785,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 2px 8px rgba(15,23,42,0.04); flex-wrap: wrap; gap: 12px;">
         <div style="font-size: 13px; color: #64748b; font-weight: 600;">
-          Showing Page <strong style="color: #0f172a;">${curPage}</strong> of <strong style="color: #0f172a;">${totalPages}</strong> (${totalCount} total verified leads)
+          Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalCount}</strong> verified leads (Page ${curPage} of ${totalPages})
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 16px; font-size: 13px; border-radius: 10px;" ${!hasPrev ? 'disabled' : ''}>
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" ${curPage <= 1 ? 'disabled' : ''}>
             ← Previous
           </button>
-          <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 16px; font-size: 13px; border-radius: 10px;" ${!hasNext ? 'disabled' : ''}>
+          ${pagesHtml}
+          <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" ${curPage >= totalPages ? 'disabled' : ''}>
             Next →
           </button>
         </div>
       </div>
     `;
 
-    bindJobActionEvents(curPage, hasPrev, hasNext);
+    bindJobActionEvents(curPage, totalPages);
   }
 
-  function bindJobActionEvents(curPage = 1, hasPrev = false, hasNext = false) {
+  function bindJobActionEvents(curPage = 1, totalPages = 1) {
     const btnPrev = document.getElementById('btnPrevPage');
     const btnNext = document.getElementById('btnNextPage');
-    if (btnPrev && (hasPrev || !btnPrev.disabled)) {
-      btnPrev.onclick = () => loadJobsList(curPage - 1);
+    
+    if (btnPrev) {
+      btnPrev.onclick = (e) => {
+        e.preventDefault();
+        if (curPage > 1) {
+          loadJobsList(curPage - 1);
+        }
+      };
     }
-    if (btnNext && (hasNext || !btnNext.disabled)) {
-      btnNext.onclick = () => loadJobsList(curPage + 1);
+    
+    if (btnNext) {
+      btnNext.onclick = (e) => {
+        e.preventDefault();
+        if (curPage < totalPages) {
+          loadJobsList(curPage + 1);
+        }
+      };
     }
+
+    document.querySelectorAll('.btn-page-number').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const p = parseInt(btn.dataset.page, 10);
+        if (p && p !== curPage) {
+          loadJobsList(p);
+        }
+      };
+    });
 
     document.querySelectorAll('.btn-toggle-job').forEach(btn => {
       btn.onclick = async (e) => {

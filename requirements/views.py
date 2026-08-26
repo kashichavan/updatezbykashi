@@ -1035,18 +1035,23 @@ def api_jobs(request):
         query = request.GET.get('q', '').strip()
         category_slug = request.GET.get('category', '').strip()
         job_type = request.GET.get('job_type', '').strip()
+        status_filter = request.GET.get('status', '').strip()
         filter_today = request.GET.get('today', '').strip()
         filter_yesterday = request.GET.get('yesterday', '').strip()
         filter_previous = request.GET.get('previous', '').strip()
         sort = request.GET.get('sort', 'newest')
         page = request.GET.get('page', '1')
-        page_size = request.GET.get('page_size', '6')
+        page_size = request.GET.get('page_size', '10')
 
-        raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
+        # Cache key including all filter dimensions
+        raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
         cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
-        cached_response = cache.get(cache_key)
-        if cached_response:
-            return JsonResponse(cached_response)
+        
+        # Don't use stale cache if searching with query
+        if not query:
+            cached_response = cache.get(cache_key)
+            if cached_response:
+                return JsonResponse(cached_response)
 
         # STRICT NEWEST-FIRST SORTING (-created_at)
         qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
