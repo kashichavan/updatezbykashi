@@ -604,14 +604,63 @@ document.addEventListener('DOMContentLoaded', () => {
       jobsTableContainer.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">No opportunity leads matched your search or status filter.</div>';
       return;
     }
-
     const curPage = serverPaginationData ? serverPaginationData.current_page : 1;
     const totalPages = serverPaginationData ? serverPaginationData.total_pages : 1;
     const totalCount = serverPaginationData ? serverPaginationData.total_count : filtered.length;
     const hasPrev = serverPaginationData ? serverPaginationData.has_previous : false;
     const hasNext = serverPaginationData ? serverPaginationData.has_next : false;
+    const isMobileView = window.innerWidth <= 768;
 
-    jobsTableContainer.innerHTML = `
+    jobsTableContainer.innerHTML = isMobileView ? `
+      <div class="crm-mobile-jobs-list" style="display: flex; flex-direction: column; gap: 12px;">
+        ${filtered.map(j => {
+          const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
+          const hoursLeft = Math.ceil(j.time_left_seconds / 3600);
+          const compInitial = (j.company_name || 'J')[0].toUpperCase();
+          return `
+          <div class="crm-mobile-job-card" style="background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(13, 18, 31, 0.95) 100%); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 18px; padding: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <div style="width: 38px; height: 38px; border-radius: 12px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25)); border: 1px solid rgba(6, 182, 212, 0.4); color: #38bdf8; font-weight: 800; font-size: 16px; display: grid; place-items: center; flex-shrink: 0;">
+                  ${compInitial}
+                </div>
+                <div style="min-width: 0;">
+                  <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(j.company_name)}</h4>
+                  <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">#${j.id} • ${escapeHtml(j.category_name)}</span>
+                </div>
+              </div>
+              <span class="crm-status-pill ${isExpired ? 'crm-status-expired' : 'crm-status-active'}" style="font-size: 10.5px; padding: 3px 8px; flex-shrink: 0;">
+                ${isExpired ? '🔴 Expired' : '🟢 ' + hoursLeft + 'h left'}
+              </span>
+            </div>
+
+            <div style="font-size: 13.5px; font-weight: 700; color: #f1f5f9; line-height: 1.4; margin-bottom: 10px;">
+              ${escapeHtml(j.title)}
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; font-size: 11.5px;">
+              <span style="background: rgba(255, 255, 255, 0.05); padding: 4px 8px; border-radius: 8px; color: #e2e8f0;">💰 ${escapeHtml(j.stipend_salary)}</span>
+              <span style="background: rgba(255, 255, 255, 0.05); padding: 4px 8px; border-radius: 8px; color: #e2e8f0;">📍 ${escapeHtml(j.location || 'India')}</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button class="btn-crm-action btn-toggle-job" data-id="${j.id}" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(255,255,255,0.06); color: ${isExpired ? '#10b981' : '#f59e0b'}; border: 1px solid ${isExpired ? 'rgba(16,185,129,0.3)' : 'rgba(245,158,11,0.3)'}; border-radius: 12px;">
+                ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
+              </button>
+              <button class="btn-crm-action btn-edit-job" data-id="${j.id}" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(6, 182, 212, 0.12); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 12px;">
+                ✏️ Edit
+              </button>
+              <a href="${escapeHtml(j.apply_url)}" target="_blank" class="btn-crm-action" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(99, 102, 241, 0.12); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; text-decoration: none;">
+                ↗ Apply Link
+              </a>
+              <button class="btn-crm-action btn-delete-job" data-id="${j.id}" style="height: 40px; font-size: 12.5px; display: flex; align-items: center; justify-content: center; gap: 4px; background: rgba(244, 63, 94, 0.12); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); border-radius: 12px;">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `}).join('')}
+      </div>
+    ` : `
       <table class="crm-table">
         <thead>
           <tr>
@@ -667,7 +716,9 @@ document.addEventListener('DOMContentLoaded', () => {
           `}).join('')}
         </tbody>
       </table>
+    `;
 
+    jobsTableContainer.insertAdjacentHTML('beforeend', `
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(13, 18, 31, 0.95); border-top: 1px solid var(--crm-border); border-radius: 0 0 16px 16px;">
         <div style="font-size: 12.5px; color: var(--crm-muted); font-weight: 600;">
           Showing Page <strong style="color: #ffffff;">${curPage}</strong> of <strong style="color: #ffffff;">${totalPages}</strong> (${totalCount} total leads)
