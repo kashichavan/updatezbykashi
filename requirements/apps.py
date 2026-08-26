@@ -11,8 +11,8 @@ class RequirementsConfig(AppConfig):
         is_management_cmd = any(cmd in sys.argv for cmd in ['makemigrations', 'migrate', 'check', 'test', 'collectstatic', 'createsuperuser'])
         if not is_management_cmd:
             try:
-                from .jobdexo_service import start_5min_sync_daemon
-                start_5min_sync_daemon()
+                from .jobdexo_service import start_hourly_sync_daemon
+                start_hourly_sync_daemon()
             except Exception:
                 pass
 

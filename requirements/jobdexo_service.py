@@ -537,23 +537,23 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
 
 
 # ==============================================================================
-# 5-MINUTE RECURRING AUTO-SYNC BACKGROUND WORKER
+# HOURLY RECURRING AUTO-SYNC BACKGROUND WORKER (Every 1 Hour)
 # ==============================================================================
 
 _SYNC_WORKER_RUNNING = False
 _SYNC_LOCK = threading.Lock()
 
 
-def _background_5min_sync_loop():
-    """Background worker thread that runs every 5 minutes (300 seconds)."""
+def _background_hourly_sync_loop():
+    """Background worker thread that runs every 1 hour (3600 seconds)."""
     global _SYNC_WORKER_RUNNING
-    print("🚀 [Jobdexo Auto-Sync] Background 5-minute sync daemon started.")
+    print("🚀 [Jobdexo Auto-Sync] Background hourly sync daemon started (1-hour interval).")
     
     while _SYNC_WORKER_RUNNING:
         try:
-            # Sleep 300 seconds (5 minutes) with slight jitter
-            time.sleep(300 + random.randint(5, 20))
-            print("⚡ [Jobdexo Auto-Sync] Running 5-minute automated crawl across all sections...")
+            # Sleep 3600 seconds (1 hour) with slight randomized jitter
+            time.sleep(3600 + random.randint(10, 60))
+            print("⚡ [Jobdexo Auto-Sync] Running hourly automated crawl across all sections...")
             result = auto_import_from_jobdexo(limit=5)
             if result['imported_count'] > 0:
                 print(f"✅ [Jobdexo Auto-Sync] Added {result['imported_count']} fresh non-duplicate jobs! Group: {result['group_name']}")
@@ -563,13 +563,17 @@ def _background_5min_sync_loop():
             print(f"ℹ️ [Jobdexo Auto-Sync] Cycle notice: {e}")
 
 
-def start_5min_sync_daemon():
-    """Starts the 5-minute background auto-sync worker if not already running."""
+def start_hourly_sync_daemon():
+    """Starts the 1-hour background auto-sync worker if not already running."""
     global _SYNC_WORKER_RUNNING
     with _SYNC_LOCK:
         if not _SYNC_WORKER_RUNNING:
             _SYNC_WORKER_RUNNING = True
-            t = threading.Thread(target=_background_5min_sync_loop, daemon=True, name="Jobdexo5MinSyncWorker")
+            t = threading.Thread(target=_background_hourly_sync_loop, daemon=True, name="JobdexoHourlySyncWorker")
             t.start()
             return True
     return False
+
+
+# Alias for backward compatibility
+start_5min_sync_daemon = start_hourly_sync_daemon
