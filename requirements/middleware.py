@@ -1,6 +1,145 @@
 import hashlib
+import time
 import re
 from django.utils import timezone
+from django.core.cache import cache
+from django.http import JsonResponse, HttpResponse
+
+
+class RateLimitMiddleware:
+    """
+    Enterprise-grade sliding-window rate limiting middleware.
+    Protects authentication against brute-force attacks, limits API abuse,
+    and defends public feeds against scrapers and DDoS.
+    """
+
+    EXEMPT_PREFIXES = (
+        '/static/',
+        '/media/',
+        '/favicon.ico',
+        '/robots.txt',
+        '/ads.txt',
+        '/sitemap.xml',
+        '/instagram/webhook',
+        '/meta/webhook',
+    )
+
+    # (Pattern matcher, max_requests, window_seconds, rule_id)
+    RATE_RULES = [
+        # 1. Login & Auth endpoints: 10 requests per 60s
+        ({'prefix': '/api/admin/login', 'methods': ['POST']}, 10, 60, 'auth_login'),
+        ({'prefix': '/owner', 'methods': ['POST']}, 10, 60, 'owner_login'),
+
+        # 2. Critical Action APIs: 40 requests per 60s
+        ({'prefix': '/api/owner/', 'methods': ['POST', 'PUT', 'DELETE']}, 40, 60, 'owner_actions'),
+
+        # 3. Public API queries (Student feed & search): 120 requests per 60s
+        ({'prefix': '/api/', 'methods': None}, 120, 60, 'public_api'),
+
+        # 4. General HTML Web Browsing: 300 requests per 60s
+        ({'prefix': '/', 'methods': None}, 300, 60, 'general_web'),
+    ]
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            return x_forwarded_for.split(',')[0].strip()
+        return request.META.get('REMOTE_ADDR', '127.0.0.1')
+
+    def get_rule_for_request(self, request):
+        path = request.path
+        method = request.method
+
+        for matcher, max_reqs, window_sec, rule_id in self.RATE_RULES:
+            if path.startswith(matcher['prefix']):
+                if matcher['methods'] is None or method in matcher['methods']:
+                    return max_reqs, window_sec, rule_id
+        return None, None, None
+
+    def __call__(self, request):
+        path = request.path
+
+        # 1. Skip static & webhook endpoints
+        if any(path.startswith(prefix) for prefix in self.EXEMPT_PREFIXES):
+            return self.get_response(request)
+
+        # 2. Check rule
+        limit, window, rule_id = self.get_rule_for_request(request)
+
+        if limit:
+            client_ip = self.get_client_ip(request)
+            cache_key = f"rl:{client_ip}:{rule_id}"
+            current_time = int(time.time())
+
+            # Get timestamp list from cache
+            request_log = cache.get(cache_key, [])
+            window_start = current_time - window
+
+            # Filter out timestamps outside the sliding window
+            request_log = [t for t in request_log if t > window_start]
+
+            if len(request_log) >= limit:
+                retry_after = window - (current_time - request_log[0]) if request_log else window
+                retry_after = max(1, retry_after)
+
+                is_json = path.startswith('/api/') or 'application/json' in request.headers.get('Accept', '').lower()
+                if is_json:
+                    resp = JsonResponse({
+                        'error': 'Too Many Requests',
+                        'message': f'Rate limit exceeded for {rule_id}. Please retry after {retry_after} seconds.',
+                        'retry_after_seconds': retry_after,
+                        'status': 429
+                    }, status=429)
+                else:
+                    resp = HttpResponse(
+                        f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>429 — Rate Limit Exceeded | Kashii Updatez</title>
+  <style>
+    body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; color: #0f172a; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }}
+    .card {{ max-width: 440px; width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; box-shadow: 0 10px 30px rgba(15,23,42,0.08); text-align: center; }}
+    .badge {{ display: inline-block; padding: 4px 10px; background: #fef2f2; color: #dc2626; border-radius: 20px; font-size: 11px; font-weight: 800; margin-bottom: 14px; border: 1px solid #fecaca; }}
+    h1 {{ font-size: 22px; font-weight: 800; margin: 0 0 8px; color: #0f172a; }}
+    p {{ font-size: 13.5px; color: #64748b; line-height: 1.5; margin: 0 0 20px; }}
+    .timer {{ font-family: monospace; font-size: 20px; font-weight: 800; color: #2563eb; background: #eff6ff; border: 1px solid #bfdbfe; padding: 10px; border-radius: 12px; margin-bottom: 20px; }}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">429 RATE LIMIT REACHED</span>
+    <h1>Too Many Requests</h1>
+    <p>You have reached the maximum allowed request rate. Please wait a few moments before trying again.</p>
+    <div class="timer">Retry in {retry_after}s</div>
+    <a href="/" style="display: inline-block; background: #2563eb; color: #fff; text-decoration: none; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700;">Return to Home</a>
+  </div>
+</body>
+</html>""",
+                        status=429,
+                        content_type='text/html'
+                    )
+
+                resp['Retry-After'] = str(retry_after)
+                resp['X-RateLimit-Limit'] = str(limit)
+                resp['X-RateLimit-Remaining'] = '0'
+                resp['X-RateLimit-Reset'] = str(retry_after)
+                return resp
+
+            # Record this request
+            request_log.append(current_time)
+            cache.set(cache_key, request_log, timeout=window + 10)
+
+            response = self.get_response(request)
+            response['X-RateLimit-Limit'] = str(limit)
+            response['X-RateLimit-Remaining'] = str(max(0, limit - len(request_log)))
+            return response
+
+        return self.get_response(request)
 
 
 class VisitorAnalyticsMiddleware:
