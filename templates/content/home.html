@@ -130,9 +130,6 @@
     </div>
   </section>
 
-  <!-- Google AdSense Top Leaderboard Banner -->
-  {% include 'components/adsense_unit.html' with ad_type='leaderboard' %}
-
   <!-- Paginated Grid Feed (Displays 9 Opportunities per Page) -->
   <main>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
@@ -202,13 +199,6 @@
           </div>
         </div>
       </div>
-
-      {% if forloop.counter == 3 %}
-        <div style="grid-column: 1 / -1; width: 100%;">
-          {% include 'components/adsense_unit.html' with ad_type='infeed' %}
-        </div>
-      {% endif %}
-
       {% empty %}
       <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #fff; border-radius: 16px; border: 1px solid var(--subtle-border);">
         <p style="color: var(--muted); margin: 0;">Loading fresh software &amp; tech requirements...</p>
@@ -220,9 +210,6 @@
     <div id="paginationContainer" style="margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
       <!-- Dynamically populated via JS -->
     </div>
-
-    <!-- Google AdSense Bottom Multiplex Ad Unit -->
-    {% include 'components/adsense_unit.html' with ad_type='multiplex' %}
   </main>
 
   <!-- Featured Tech & Coding Blog Section -->
