@@ -99,10 +99,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setupTabSwitching() {
     document.querySelectorAll('.owner-nav-item').forEach(tab => {
-      tab.addEventListener('click', () => {
+      tab.addEventListener('click', (e) => {
+        e.preventDefault();
         const targetId = tab.dataset.tab;
-        switchTab(targetId, true);
+        if (targetId) {
+          switchTab(targetId, true);
+        }
       });
+    });
+
+    const btnHeaderParseLead = document.getElementById('btnHeaderParseLead');
+    if (btnHeaderParseLead) {
+      btnHeaderParseLead.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('tabSmartParse', true);
+      });
+    }
+
+    const btnHeaderPostJob = document.getElementById('btnHeaderPostJob');
+    if (btnHeaderPostJob) {
+      btnHeaderPostJob.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab('tabPost', true);
+      });
+    }
+
+    window.addEventListener('popstate', () => {
+      const currentPath = window.location.pathname;
+      if (urlTabMap[currentPath]) {
+        switchTab(urlTabMap[currentPath], false);
+      } else {
+        switchTab('tabJobs', false);
+      }
     });
 
     const currentPath = window.location.pathname;
@@ -121,6 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function switchTab(targetId, updateHistory = true) {
+    if (!targetId) return;
+
     document.querySelectorAll('.owner-nav-item').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
 
@@ -139,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // On mobile screens, smoothly scroll to top of workspace
-    if (window.innerWidth <= 992 && targetEl) {
+    if (window.innerWidth <= 768 && targetEl) {
       const yOffset = -20;
       const y = targetEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
@@ -157,6 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (targetId === 'tabGroups') loadGroupsList();
     if (targetId === 'tabAnalytics') loadAnalyticsData();
   }
+
+  window.ownerSwitchTab = switchTab;
 
   const btnRefreshAnalytics = document.getElementById('btnRefreshAnalytics');
   if (btnRefreshAnalytics) {
@@ -269,6 +301,16 @@ document.addEventListener('DOMContentLoaded', () => {
       dashboardView.style.display = 'none';
       dashboardView.style.setProperty('display', 'none', 'important');
     }
+    const ownerSubNav = document.getElementById('ownerSubNav');
+    if (ownerSubNav) {
+      ownerSubNav.style.display = 'none';
+      ownerSubNav.style.setProperty('display', 'none', 'important');
+    }
+    const ownerAuthActions = document.getElementById('ownerAuthActions');
+    if (ownerAuthActions) {
+      ownerAuthActions.style.display = 'none';
+      ownerAuthActions.style.setProperty('display', 'none', 'important');
+    }
     const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
     if (mobileBottomNav) {
       mobileBottomNav.style.display = 'none';
@@ -286,10 +328,20 @@ document.addEventListener('DOMContentLoaded', () => {
       dashboardView.style.display = 'block';
       dashboardView.style.setProperty('display', 'block', 'important');
     }
+    const ownerSubNav = document.getElementById('ownerSubNav');
+    if (ownerSubNav) {
+      ownerSubNav.style.display = 'flex';
+      ownerSubNav.style.setProperty('display', 'flex', 'important');
+    }
+    const ownerAuthActions = document.getElementById('ownerAuthActions');
+    if (ownerAuthActions) {
+      ownerAuthActions.style.display = 'flex';
+      ownerAuthActions.style.setProperty('display', 'flex', 'important');
+    }
     if (sidebarUserLabel) sidebarUserLabel.textContent = username || 'Owner';
 
     const mobileBottomNav = document.getElementById('ownerMobileBottomNav');
-    if (mobileBottomNav && window.innerWidth <= 992) {
+    if (mobileBottomNav && window.innerWidth <= 768) {
       mobileBottomNav.style.display = 'flex';
       mobileBottomNav.style.setProperty('display', 'flex', 'important');
     }

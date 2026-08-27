@@ -45,8 +45,11 @@ urlpatterns = [
     path('owner/single-parser/', views.owner_view, name='owner_single_parser'),
     path('owner/post-job/', views.owner_view, name='owner_post_job'),
     path('owner/manage-jobs/', views.owner_view, name='owner_manage_jobs'),
+    path('owner/jobdexo-sync/', views.owner_view, name='owner_jobdexo_sync'),
+    path('owner/analytics/', views.owner_view, name='owner_analytics'),
     path('owner/categories/', views.owner_view, name='owner_categories'),
     path('owner/groups/', views.owner_view, name='owner_groups'),
+    path('owner/activity/', views.owner_view, name='owner_activity'),
 
     # Public API Endpoints
     path('api/ping', views.api_ping, name='api_ping'),

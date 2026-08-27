@@ -746,49 +746,51 @@
 
     <!-- Center Interactive Workspace Links -->
     <nav class="owner-link-nav" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
-      <button class="owner-link-item owner-nav-item active" data-tab="tabJobs">
+      <button type="button" class="owner-link-item owner-nav-item active" data-tab="tabJobs">
         📊 Pipeline <span class="owner-link-badge" id="sidebarActiveCount">{{ active_jobs_count|default:"0" }}</span>
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
         🎯 1-Click Parser
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabPost">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabPost">
         ✍️ Single Post
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabBulkParse">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabBulkParse">
         ⚡ Bulk Parser
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabJobdexo">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabJobdexo">
         🌐 Jobdexo Sync
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabAnalytics">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabAnalytics">
         📈 Traffic
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabGroups">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabGroups">
         📦 Groups <span class="owner-link-badge" id="sidebarGroupsCount">{{ total_groups_count|default:"0" }}</span>
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabCategory">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabCategory">
         🏷️ Categories
       </button>
-      <button class="owner-link-item owner-nav-item" data-tab="tabActivity">
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabActivity">
         📜 Logs
       </button>
     </nav>
 
     <!-- Right Actions: View Public Site & Post & Logout -->
-    <div class="owner-right-actions">
+    <div class="owner-right-actions" id="ownerRightActions">
       <a href="/" target="_blank" class="btn-action-light" title="Open student website in new tab">
         <span>🌐 Student Site ↗</span>
       </a>
-      <button onclick="document.querySelector('[data-tab=tabSmartParse]').click()" class="btn-action-light" style="background: #faf5ff; color: #7c3aed; border-color: #ddd6fe;">
-        🎯 Parse Lead
-      </button>
-      <button onclick="document.querySelector('[data-tab=tabPost]').click()" class="btn-action-light btn-primary-blue">
-        + Post Job
-      </button>
-      <button id="btnLogoutOwner" class="btn-action-light" style="color: #dc2626; border-color: #fecaca; background: #fef2f2;">
-        Logout 🚪
-      </button>
+      <div id="ownerAuthActions" style="display: {% if is_owner_authenticated %}flex{% else %}none{% endif %}; align-items: center; gap: 8px;">
+        <button type="button" id="btnHeaderParseLead" class="btn-action-light" style="background: #faf5ff; color: #7c3aed; border-color: #ddd6fe;">
+          🎯 Parse Lead
+        </button>
+        <button type="button" id="btnHeaderPostJob" class="btn-action-light btn-primary-blue">
+          + Post Job
+        </button>
+        <button type="button" id="btnLogoutOwner" class="btn-action-light" style="color: #dc2626; border-color: #fecaca; background: #fef2f2;">
+          Logout 🚪
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1540,5 +1542,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=202608262352"></script>
+<script src="{% static 'js/owner.js' %}?v=202608271435"></script>
 {% endblock %}
