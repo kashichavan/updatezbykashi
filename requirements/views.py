@@ -114,12 +114,14 @@ def api_ping(request):
 
 def ads_txt_verification_view(request):
     """Direct plain-text verification view for ad networks."""
-    return HttpResponse("8f373caaa0ca1b604bcf", content_type="text/plain")
+    return HttpResponse("8f373caaa0ca1b604bcf", content_type="text/plain; charset=utf-8")
 
 def ads_txt_view(request):
     """Standard Google AdSense Authorized Digital Sellers (ads.txt) file."""
     content = "google.com, pub-2115508498538506, DIRECT, f08c47fec0942fa0\n"
-    return HttpResponse(content, content_type="text/plain")
+    response = HttpResponse(content, content_type="text/plain; charset=utf-8")
+    response['Cache-Control'] = 'public, max-age=86400'
+    return response
 
 
 def index_view(request):

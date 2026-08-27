@@ -15,6 +15,9 @@ urlpatterns = [
 
     # Verification / Ads Text File Root Routes
     path('ads.txt', ads_txt_view, name='ads_txt'),
+    path('ads.txt/', ads_txt_view, name='ads_txt_slash'),
+    path('app-ads.txt', ads_txt_view, name='app_ads_txt'),
+    path('app-ads.txt/', ads_txt_view, name='app_ads_txt_slash'),
     path('c1a8fc4a2f71995dfc59.txt', ads_txt_verification_view, name='ads_verification_file'),
 
     # Direct Learning Academy Routes (Python, Java, JavaScript)
