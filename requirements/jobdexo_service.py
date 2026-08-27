@@ -595,7 +595,7 @@ def extract_jobdexo_detail(url):
     }
 
 
-def fetch_multi_section_jobdexo_urls(limit=25):
+def fetch_multi_section_jobdexo_urls(limit=35):
     """
     Crawls across distinct Jobdexo sections with polite pacing.
     """
@@ -605,7 +605,8 @@ def fetch_multi_section_jobdexo_urls(limit=25):
     for endpoint in JOBDEXO_SOURCE_ENDPOINTS:
         try:
             page_html = fetch_url_html(endpoint)
-            found_urls = re.findall(r'href="(/job/[^"]+)"', page_html)
+            # Match both relative /job/... and absolute https://jobdexo.com/job/... links
+            found_urls = re.findall(r'href=[\"\']((?:https?://(?:www\.)?jobdexo\.com)?/job/[^\"\']+)[\"\']', page_html)
             for u in found_urls:
                 full_url = f"https://jobdexo.com{u}" if u.startswith('/') else u
                 if full_url not in seen_urls:
@@ -714,7 +715,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     )
 
     if not urls:
-        urls = fetch_multi_section_jobdexo_urls(limit=limit * 2)
+        urls = fetch_multi_section_jobdexo_urls(limit=max(35, limit * 4))
 
     created_jobs = []
     created_job_instances = []

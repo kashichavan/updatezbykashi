@@ -709,6 +709,11 @@ def api_owner_jobdexo_fetch_latest(request):
             whatsapp_broadcast = job_group.get_whatsapp_broadcast_text(host_url) if job_group else ""
             telegram_broadcast = job_group.get_telegram_broadcast_text(host_url) if job_group else ""
 
+            if result['imported_count'] > 0:
+                message = f"Successfully fetched and published {result['imported_count']} fresh jobs from Jobdexo into Group '{result['group_name']}'!"
+            else:
+                message = "All recent Jobdexo job opportunities are already up-to-date in your system! (0 new duplicates found)."
+
             return JsonResponse({
                 'success': True,
                 'imported_count': result['imported_count'],
@@ -721,8 +726,8 @@ def api_owner_jobdexo_fetch_latest(request):
                 'full_group_url': full_group_url,
                 'whatsapp_broadcast': whatsapp_broadcast,
                 'telegram_broadcast': telegram_broadcast,
-                'message': f"Successfully fetched and published {result['imported_count']} fresh jobs from Jobdexo into Group '{result['group_name']}'!"
-            }, status=201)
+                'message': message
+            }, status=201 if result['imported_count'] > 0 else 200)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
