@@ -728,9 +728,13 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         if not url:
             continue
 
+        # Fast Pre-Check: Instantly skip if source_url or apply_url is already in database
+        if JobPosting.objects.filter(Q(source_url=url) | Q(apply_url=url)).exists():
+            continue
+
         try:
-            # Polite pacing between job item scrapes (prevents 429 rate limiting)
-            time.sleep(random.uniform(0.8, 1.5))
+            # Polite pacing between new job scrapes (prevents 429 rate limiting)
+            time.sleep(random.uniform(0.3, 0.6))
             job_data = extract_jobdexo_detail(url)
 
             # Skip expired or stale jobs
