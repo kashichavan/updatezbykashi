@@ -562,40 +562,71 @@ def fetch_multi_section_jobdexo_urls(limit=25):
 
 def is_job_duplicate_in_db(job_data, seen_in_batch=None):
     """
-    Multi-tier strict deduplication:
-    1. In-batch URL & text check.
-    2. Direct official application URL match in database.
-    3. Normalized company name + normalized title match in database.
+    Enterprise-grade multi-tier strict deduplication engine:
+    1. In-batch canonical key & clean URL tracking.
+    2. Clean application URL match (stripping query parameters and trailing slashes).
+    3. Exact normalized company + normalized title match across the entire database.
+    4. Substring & high-overlap fuzzy deduplication for same company.
     """
     apply_url = (job_data.get('apply_url') or '').strip()
     source_url = (job_data.get('source_url') or '').strip()
-    norm_title = normalize_text(job_data.get('title'))
-    norm_comp = normalize_text(job_data.get('company'))
+    raw_title = job_data.get('title') or ''
+    raw_comp = job_data.get('company') or ''
+    
+    norm_title = normalize_text(raw_title)
+    norm_comp = normalize_text(raw_comp)
+
+    # Clean URL (strip tracking query params and protocol for pure endpoint matching)
+    clean_apply = re.sub(r'\?.*$', '', apply_url).rstrip('/').lower() if apply_url and 'jobdexo.com' not in apply_url else None
+    clean_source = re.sub(r'\?.*$', '', source_url).rstrip('/').lower() if source_url else None
 
     # 1. Batch level check
     if seen_in_batch is not None:
         batch_key = f"{norm_comp}::{norm_title}"
         if batch_key in seen_in_batch:
             return True
-        if apply_url and apply_url in seen_in_batch:
+        if clean_apply and clean_apply in seen_in_batch:
+            return True
+        if clean_source and clean_source in seen_in_batch:
             return True
         seen_in_batch.add(batch_key)
-        if apply_url:
-            seen_in_batch.add(apply_url)
+        if clean_apply:
+            seen_in_batch.add(clean_apply)
+        if clean_source:
+            seen_in_batch.add(clean_source)
 
-    # 2. Match exact apply_url in database
-    if apply_url and apply_url != source_url:
-        if JobPosting.objects.filter(apply_url=apply_url).exists():
+    # 2. Match exact or clean apply_url in database
+    if clean_apply:
+        # Match URL without query string
+        if JobPosting.objects.filter(apply_url__icontains=clean_apply[:60]).exists():
             return True
 
-    # 3. Match normalized title + company in active postings
-    if norm_title and norm_comp:
-        matching_company_jobs = JobPosting.objects.filter(
-            company_name__icontains=job_data.get('company')[:6]
+    # 3. Match normalized title + company in all postings
+    if norm_comp:
+        company_jobs = JobPosting.objects.filter(
+            Q(company_name__iexact=raw_comp) |
+            Q(company_name__icontains=raw_comp[:5])
         )
-        for existing in matching_company_jobs:
-            if normalize_text(existing.company_name) == norm_comp and normalize_text(existing.title) == norm_title:
+        for existing in company_jobs:
+            exist_comp_norm = normalize_text(existing.company_name)
+            exist_title_norm = normalize_text(existing.title)
+            
+            # Exact normalized match
+            if exist_comp_norm == norm_comp and exist_title_norm == norm_title:
                 return True
+                
+            # Same company + high title similarity (one is substring of other or token match)
+            if exist_comp_norm == norm_comp:
+                if (len(norm_title) > 6 and norm_title in exist_title_norm) or (len(exist_title_norm) > 6 and exist_title_norm in norm_title):
+                    return True
+                # Word tokens overlap >= 80%
+                t1_tokens = set(re.findall(r'[a-z0-9]+', raw_title.lower()))
+                t2_tokens = set(re.findall(r'[a-z0-9]+', existing.title.lower()))
+                if t1_tokens and t2_tokens:
+                    intersection = t1_tokens.intersection(t2_tokens)
+                    similarity = len(intersection) / max(len(t1_tokens), len(t2_tokens))
+                    if similarity >= 0.8:
+                        return True
 
     return False
 
