@@ -6,12 +6,16 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from requirements.views import custom_404_view, ads_txt_verification_view, ads_txt_view
+from requirements.views import custom_404_view, ads_txt_verification_view, ads_txt_view, api_ping
 from debugger.views import learn_topic_view
 from api.ninja_api import api as ninja_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Keep-Alive & Healthcheck Endpoint
+    path('api/ping', api_ping, name='api_ping'),
+    path('api/ping/', api_ping, name='api_ping_slash'),
 
     # Verification / Ads Text File Root Routes
     path('ads.txt', ads_txt_view, name='ads_txt'),

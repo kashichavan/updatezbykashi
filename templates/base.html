@@ -10,14 +10,25 @@
   <meta name="c1a8fc4a2f71995dfc598f373caaa0ca1b604bcf" content="c1a8fc4a2f71995dfc598f373caaa0ca1b604bcf" />
   <meta name="referrer" content="no-referrer-when-downgrade" />
   
+  <!-- High-Speed Google AdSense Network Preconnect & DNS-Prefetch -->
+  <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+  <link rel="preconnect" href="https://googleads.g.doubleclick.net" crossorigin>
+  <link rel="preconnect" href="https://tpc.googlesyndication.com" crossorigin>
+  <link rel="preconnect" href="https://adservice.google.com" crossorigin>
+  <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com">
+  <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net">
+  <link rel="dns-prefetch" href="https://tpc.googlesyndication.com">
+  <link rel="dns-prefetch" href="https://adservice.google.com">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="shortcut icon" href="{% static 'images/icon-apply.png' %}" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=202608242138">
-  <!-- Google AdSense Auto Ads Script -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2115508498538506"
-     crossorigin="anonymous"></script>
+  
+  <!-- High-Priority Preloaded Google AdSense Auto Ads Engine -->
+  <link rel="preload" href="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2115508498538506" as="script" crossorigin="anonymous">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2115508498538506" crossorigin="anonymous"></script>
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
