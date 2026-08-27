@@ -508,6 +508,9 @@
     </div>
   </header>
 
+  <!-- Google AdSense Top Leaderboard Banner -->
+  {% include 'components/adsense_unit.html' with ad_type='leaderboard' %}
+
   <!-- ── 2. WEB APP TWO-COLUMN GRID (MAIN CONTENT + STICKY SIDEBAR) ── -->
   <div class="web-app-grid">
 
@@ -740,6 +743,9 @@
       </section>
       {% endif %}
 
+      <!-- Google AdSense In-Article Multiplex Ad Unit -->
+      {% include 'components/adsense_unit.html' with ad_type='multiplex' %}
+
     </main>
 
     <!-- RIGHT COLUMN: STICKY WEB APP SIDEBAR (APPLY & SHARE ACTIONS) -->
@@ -758,6 +764,9 @@
         </a>
       </section>
       {% endif %}
+
+      <!-- Google AdSense Sidebar Display Unit -->
+      {% include 'components/adsense_unit.html' with ad_type='rectangle' %}
 
       <!-- Share Requirement Box -->
       <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 20px; padding: 22px; box-shadow: var(--card-shadow); margin-bottom: 24px;">

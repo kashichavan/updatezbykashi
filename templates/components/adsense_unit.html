@@ -1,0 +1,65 @@
+{% comment %}
+  Kashii Updatez - High-Converting Google AdSense Ad Unit Component
+  Publisher ID: ca-pub-2115508498538506
+  Usage:
+    {% include 'components/adsense_unit.html' with ad_type='leaderboard' %}
+    {% include 'components/adsense_unit.html' with ad_type='infeed' %}
+    {% include 'components/adsense_unit.html' with ad_type='rectangle' %}
+    {% include 'components/adsense_unit.html' with ad_type='multiplex' %}
+{% endcomment %}
+
+{% if not is_owner_authenticated %}
+<div class="adsense-wrapper adsense-{{ ad_type|default:'responsive' }}" style="margin: 20px auto; text-align: center; overflow: hidden; max-width: 100%;">
+  <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-family: var(--font-code, monospace);">
+    Advertisement
+  </div>
+
+  {% if ad_type == 'infeed' %}
+    <!-- In-Feed Native Job Ad Unit -->
+    <ins class="adsbygoogle"
+         style="display:block; min-height: 120px;"
+         data-ad-format="fluid"
+         data-ad-layout-key="-fb+5w+4e-db+86"
+         data-ad-client="ca-pub-2115508498538506"
+         data-ad-slot="{% if infeed_slot %}{{ infeed_slot }}{% else %}auto{% endif %}"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
+  {% elif ad_type == 'multiplex' %}
+    <!-- Multiplex / Matched Content Ad Unit -->
+    <ins class="adsbygoogle"
+         style="display:block; min-height: 250px;"
+         data-ad-format="autorelaxed"
+         data-ad-client="ca-pub-2115508498538506"
+         data-ad-slot="{% if multiplex_slot %}{{ multiplex_slot }}{% else %}auto{% endif %}"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
+  {% elif ad_type == 'rectangle' %}
+    <!-- Medium Rectangle / Sidebar Display Unit (300x250 / Responsive) -->
+    <ins class="adsbygoogle"
+         style="display:block; min-height: 250px;"
+         data-ad-client="ca-pub-2115508498538506"
+         data-ad-slot="{% if rectangle_slot %}{{ rectangle_slot }}{% else %}auto{% endif %}"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
+  {% else %}
+    <!-- Leaderboard / Top Responsive Banner Ad -->
+    <ins class="adsbygoogle"
+         style="display:block; min-height: 90px;"
+         data-ad-client="ca-pub-2115508498538506"
+         data-ad-slot="{% if banner_slot %}{{ banner_slot }}{% else %}auto{% endif %}"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+  {% endif %}
+</div>
+{% endif %}

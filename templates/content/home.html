@@ -112,6 +112,10 @@
       </div>
 
       <div class="filter-selects" style="display: flex; gap: 6px;">
+        <select id="filterCategory" style="display: none;">
+          <option value="all">All Categories</option>
+        </select>
+
         <select id="filterJobType">
           <option value="all">All Types</option>
           <option value="INTERNSHIP">Internships</option>
@@ -126,12 +130,15 @@
     </div>
   </section>
 
-  <!-- Paginated Grid Feed (Displays Latest 3 Opportunities on Homepage) -->
+  <!-- Google AdSense Top Leaderboard Banner -->
+  {% include 'components/adsense_unit.html' with ad_type='leaderboard' %}
+
+  <!-- Paginated Grid Feed (Displays 9 Opportunities per Page) -->
   <main>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
       <div>
         <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="18" height="18" alt="Requirements"> Latest Requirements</h2>
-        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Showing newest 3 postings — sorted by date posted (newest first)</p>
+        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Showing 9 verified opportunities per page — sorted newest first</p>
       </div>
       <a href="/category/software-tech/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary);">View All ↗</a>
     </div>
@@ -195,6 +202,13 @@
           </div>
         </div>
       </div>
+
+      {% if forloop.counter == 3 %}
+        <div style="grid-column: 1 / -1; width: 100%;">
+          {% include 'components/adsense_unit.html' with ad_type='infeed' %}
+        </div>
+      {% endif %}
+
       {% empty %}
       <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #fff; border-radius: 16px; border: 1px solid var(--subtle-border);">
         <p style="color: var(--muted); margin: 0;">Loading fresh software &amp; tech requirements...</p>
@@ -206,6 +220,9 @@
     <div id="paginationContainer" style="margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
       <!-- Dynamically populated via JS -->
     </div>
+
+    <!-- Google AdSense Bottom Multiplex Ad Unit -->
+    {% include 'components/adsense_unit.html' with ad_type='multiplex' %}
   </main>
 
   <!-- Featured Tech & Coding Blog Section -->
