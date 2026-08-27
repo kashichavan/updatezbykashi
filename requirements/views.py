@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q, Count
+from django.db import transaction
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
@@ -125,7 +126,7 @@ def index_view(request):
     sync_expired_jobs()
     trigger_async_jobdexo_refresh()
     videos = get_cached_youtube_videos()
-    initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:6]
+    initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:18]
     from blog.models import BlogPost
     recent_posts = BlogPost.objects.filter(is_published=True).select_related('category').order_by('-published_at')[:3]
     return render(request, 'content/home.html', {

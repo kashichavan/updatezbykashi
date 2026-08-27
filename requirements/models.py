@@ -74,6 +74,19 @@ class JobPosting(models.Model):
     deadline = models.DateTimeField(help_text="Automatically set to 7 days after posting")
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['-posted_date', '-created_at']
+        verbose_name = "Job Posting"
+        verbose_name_plural = "Job Postings"
+        indexes = [
+            models.Index(fields=['status', '-posted_date', '-created_at']),
+            models.Index(fields=['category', 'status', '-posted_date']),
+            models.Index(fields=['uuid']),
+            models.Index(fields=['posted_date']),
+            models.Index(fields=['company_name']),
+            models.Index(fields=['status', 'deadline']),
+        ]
+
     def save(self, *args, **kwargs):
         # Auto-set 7-day deadline upon creation if not explicitly set
         if not self.deadline:

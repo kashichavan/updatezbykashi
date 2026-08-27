@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isYesterdayOnly: isYesterdayOnly,
     isPreviousOnly: isPreviousOnly,
     page: 1,
-    pageSize: 6, // 6 opportunities per page
+    pageSize: 18, // 18 opportunities per page for high volume discovery
     totalPages: 1,
     totalCount: 0,
     jobs: [],
