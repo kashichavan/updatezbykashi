@@ -8,10 +8,10 @@ import random
 import threading
 import urllib.request
 import urllib.error
-from datetime import timedelta
 from django.utils import timezone
 from django.utils.text import slugify
 from django.core.cache import cache
+from django.db.models import Q
 from .models import Category, JobPosting, JobGroup
 from .company_resolver import resolve_company_name
 
@@ -154,40 +154,174 @@ def resolve_all_jobdexo_apply_urls():
     return {'total': total, 'updated': updated_count}
 
 
+def clean_company_name(raw_name="", title="", slug="", apply_url=""):
+    """
+    Intelligently cleans and resolves official company names from Jobdexo pages,
+    hostnames, domain slugs, and title strings. Prevents 'Technology Partner' fallbacks.
+    """
+    c = html.unescape(raw_name or "").strip()
+    c = re.sub(r'^[🏢🏛️💼\s]+', '', c).strip()
+    c = re.sub(r'^(?:Company|Hiring Organization|Organization)\s*[:\-]\s*', '', c, flags=re.IGNORECASE).strip()
+
+    # Dictionary of known corporate brands and domain keys
+    domain_mapping = {
+        'cashkaro': 'CashKaro',
+        'retape': 'ReTape AI',
+        'spglobal': 'S&P Global',
+        'sampp': 'S&P Global',
+        'thinkitive': 'Thinkitive Technologies',
+        'zs': 'ZS Associates',
+        'vyaparapp': 'Vyapar Apps',
+        'vyapar': 'Vyapar Apps',
+        'jobsmind': 'Vyapar Apps',
+        'metlife': 'MetLife',
+        'hcltech': 'HCLTech',
+        'hcl': 'HCLTech',
+        'ownly': 'Ownly',
+        'recruitcrm': 'Recruit CRM',
+        'recruit': 'Recruit CRM',
+        'capgemini': 'Capgemini',
+        'quest': 'Quest Global',
+        'volga': 'Volga Partners',
+        'juspay': 'Juspay',
+        'amazon': 'Amazon',
+        'cisco': 'Cisco',
+        'deloitte': 'Deloitte',
+        'kpmg': 'KPMG',
+        'oracle': 'Oracle',
+        'accenture': 'Accenture',
+        'tcs': 'TCS',
+        'infosys': 'Infosys',
+        'cognizant': 'Cognizant',
+        'wipro': 'Wipro',
+        'salesforce': 'Salesforce',
+        'stripe': 'Stripe',
+        'cgi': 'CGI',
+        'techmahindra': 'Tech Mahindra',
+        'tatagroup': 'Tata Group',
+        'tata': 'Tata Group',
+        'globallogic': 'GlobalLogic',
+        'dassault': 'Dassault Systèmes',
+        'turing': 'Turing',
+        'reskom': 'Reskom',
+        'hrone': 'HROne',
+        'ukg': 'UKG',
+        'binance': 'Binance',
+        'portcast': 'Portcast',
+    }
+
+    # Form hosts that should not override company brand
+    form_hosts = ['docs.google.com', 'forms.gle', 'forms.cloud.microsoft', 'forms.office.com', 'forms.microsoft.com']
+    clean_apply_url = apply_url if not any(h in (apply_url or '').lower() for h in form_hosts) else ''
+
+    # 1. Match against known domain keywords in title, slug, and raw_name first
+    primary_context = f"{c} {title} {slug}".lower()
+    for key, brand in domain_mapping.items():
+        if re.search(r'\b' + re.escape(key) + r'\b', primary_context) or key in primary_context:
+            return brand
+
+    # 2. Check direct corporate career apply_url
+    if clean_apply_url:
+        for key, brand in domain_mapping.items():
+            if key in clean_apply_url.lower():
+                return brand
+
+    generic_exclusions = {
+        'software', 'engineer', 'developer', 'analyst', 'intern', 'fresher', 'freshers',
+        'associate', 'hiring', 'trainee', 'product', 'data', 'operations', 'qa', 'tester',
+        'lead', 'senior', 'junior', 'executive', 'specialist', 'designer', 'consultant',
+        'support', 'technical', 'technology', 'system', 'systems', 'cloud', 'frontend',
+        'backend', 'fullstack', 'full', 'stack', 'devops', 'aiml', 'machine', 'learning',
+        'artificial', 'intelligence', 'network', 'embedded', 'applications', 'application',
+        'services', 'service', 'role', 'internship', 'program', 'drive', 'campus', 'offcampus',
+        'opening', 'job', 'jobs', 'remote', 'hybrid', 'india', 'pune', 'bengaluru', 'bangalore',
+        'hyderabad', 'gurgaon', 'noida', 'chennai', 'mumbai', 'kolkata', 'delhi', 'technology partner',
+        'featured partner', 'featured company', 'policy bazaar', 'partner', 'company', 'n/a'
+    }
+
+    # 3. If raw name is already a clean proper name
+    c_clean = c.rstrip('.,-')
+    if c_clean and c_clean.lower() not in generic_exclusions and not any(c_clean.lower().endswith(tld) for tld in ['.com', '.in', '.io', '.ai', '.org', '.net', 'com', 'kekacom']):
+        if len(c_clean) > 2:
+            return c_clean
+
+    # 4. Check for domain
+    if '.' in c or any(c.lower().endswith(tld) for tld in ['com', 'in', 'io', 'ai', 'co', 'org', 'net']):
+        domain = c.lower()
+        domain = re.sub(r'^https?://', '', domain)
+        domain = re.sub(r'^(?:www\.|jobs\.|careers\.|joinus\.|boards\.)', '', domain)
+        domain = domain.split('/')[0].split('?')[0]
+        brand = re.sub(r'\.(?:com|in|org|net|co|io|ai|tech|global)$', '', domain)
+        brand = re.sub(r'(?:com|in|org|net|co|io|ai|tech|global)$', '', brand)
+        if '.' in brand:
+            brand = brand.split('.')[0]
+        if brand and brand.lower() not in generic_exclusions:
+            return brand.capitalize()
+
+    # 5. Search title from right to left for company brand word
+    if title:
+        parts = title.strip().split()
+        for word in reversed(parts):
+            w_clean = re.sub(r'[^a-zA-Z]', '', word)
+            if len(w_clean) > 2 and w_clean.lower() not in generic_exclusions:
+                return w_clean.capitalize()
+
+    return "Featured Partner"
+
+
+def resolve_all_jobdexo_company_names():
+    """
+    Scans all JobPosting records in the database with generic placeholder names
+    (like 'Technology Partner' or domain strings) and replaces them with their real company names.
+    """
+    from .models import JobPosting
+    postings = JobPosting.objects.filter(
+        Q(company_name__icontains='Technology Partner') |
+        Q(company_name__icontains='Featured Partner') |
+        Q(company_name__icontains='Policy Bazaar') |
+        Q(company_name__icontains='.com') |
+        Q(company_name__icontains='kekacom')
+    )
+    total = postings.count()
+    updated_count = 0
+
+    for job in postings:
+        cleaned = clean_company_name(
+            raw_name=job.company_name,
+            title=job.title,
+            slug=job.apply_url or "",
+            apply_url=job.apply_url or ""
+        )
+        if cleaned and cleaned != job.company_name:
+            job.company_name = cleaned
+            job.save(update_fields=['company_name'])
+            updated_count += 1
+
+    return {'total': total, 'updated': updated_count}
+
+
 def fallback_parse_from_slug(url):
     """
     Fallback parser: In case Jobdexo rate-limits details (HTTP 429),
     extract company, role title, and batch from the URL slug itself.
-    e.g. /job/C1138-J204/sde-i-intern-amazon-2026-2
     """
     slug = url.rstrip('/').split('/')[-1]
-    # Remove trailing digits / counters
     slug_clean = re.sub(r'-\d+$', '', slug)
     parts = slug_clean.split('-')
     
-    # Common company names in slug
-    known_companies = [
-        'amazon', 'cisco', 'deloitte', 'kpmg', 'oracle', 'accenture',
-        'barclays', 'tcs', 'infosys', 'cognizant', 'wipro', 'quest',
-        'salesforce', 'microsoft', 'google', 'stripe', 'juspay', 'capgemini',
-        'cgi', 'turing', 'reskom', 'hrone', 'ukg', 'binance', 'portcast'
-    ]
-    
-    company = "Technology Partner"
-    for comp in known_companies:
-        if comp in parts:
-            company = comp.capitalize()
-            break
-
-    # Build readable title
-    title_words = [p.capitalize() for p in parts if p.lower() != company.lower() and not p.isdigit()]
+    title_words = [p.capitalize() for p in parts if not p.isdigit()]
     title = " ".join(title_words) or "Software & Tech Opportunity"
     if not any(k in title.lower() for k in ['engineer', 'developer', 'intern', 'analyst', 'consultant']):
         title = f"{title} Engineer"
 
+    company = clean_company_name(title=title, slug=slug, apply_url=url)
+    if company.lower() in title.lower():
+        title = re.sub(r'\b' + re.escape(company) + r'\b', '', title, flags=re.IGNORECASE).strip()
+        title = re.sub(r'\s+', ' ', title).strip()
+
     is_intern = 'intern' in slug.lower()
     return {
-        'title': title,
+        'title': title or "Software & Tech Opportunity",
         'company': company,
         'salary': "Competitive Package (Freshers)",
         'location': "Remote / Hybrid, India",
@@ -216,7 +350,6 @@ def extract_jobdexo_detail(url):
         page_html = fetch_url_html(url)
     except urllib.error.HTTPError as e:
         if e.code == 429:
-            # Graceful fallback to slug parsing if 429
             return fallback_parse_from_slug(url)
         raise
 
@@ -239,31 +372,16 @@ def extract_jobdexo_detail(url):
     else:
         title = "Software & Tech Opportunity"
 
-    # 3. Company Name
-    company = ""
-    comp_m = re.search(r'<div class="jd-meta-lbl">\s*🏢\s*Company\s*</div>\s*<div class="jd-meta-val">([^<]+)</div>', page_html, re.IGNORECASE)
+    # 3. Company Name Resolution (Strict Brand Name Cleaning)
+    raw_company = ""
+    comp_m = re.search(r'<div class="jd-company[^"]*">([^<]+)</div>', page_html)
     if comp_m:
-        company = html.unescape(comp_m.group(1).strip())
-    
-    if not company:
-        comp_m2 = re.search(r'<div class="jd-company[^"]*">([^<]+)</div>', page_html)
-        if comp_m2:
-            company = html.unescape(comp_m2.group(1).strip())
+        raw_company = html.unescape(comp_m.group(1).strip())
+    elif schema_data.get('hiringOrganization', {}).get('name'):
+        raw_company = schema_data.get('hiringOrganization', {}).get('name')
 
-    if not company and schema_data.get('hiringOrganization', {}).get('name'):
-        company = schema_data.get('hiringOrganization', {}).get('name')
-
-    if not company or company.startswith('🏢'):
-        company = company.lstrip('🏢').strip()
-        if not company:
-            slug_parts = url.rstrip('/').split('/')[-1].split('-')
-            for known in ['deloitte', 'kpmg', 'oracle', 'accenture', 'barclays', 'tcs', 'infosys', 'cognizant', 'wipro', 'quest', 'vyapar', 'metlife', 'globallogic', 'dassault', 'cisco', 'amazon', 'stripe', 'microsoft']:
-                if known in slug_parts:
-                    company = known.capitalize()
-                    break
-
-    if not company:
-        company = "Featured Partner"
+    slug = url.rstrip('/').split('/')[-1]
+    company = clean_company_name(raw_name=raw_company, title=title, slug=slug, apply_url=url)
 
     # 4. Salary
     salary = "Competitive Salary (Freshers)"
