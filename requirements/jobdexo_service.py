@@ -300,6 +300,67 @@ def resolve_all_jobdexo_company_names():
     return {'total': total, 'updated': updated_count}
 
 
+def extract_salary_from_html(page_html, schema_data=None, fallback="Competitive Package (Best in Industry)"):
+    """
+    Extracts the official Salary / Stipend / Package from Jobdexo HTML and JSON-LD schema.
+    Handles LPA ranges, monthly stipends, and structured schema values.
+    """
+    if not page_html:
+        return fallback
+
+    # 1. Schema.org JSON-LD extraction
+    if schema_data and isinstance(schema_data, dict):
+        base_sal = schema_data.get('baseSalary') or schema_data.get('estimatedSalary')
+        if base_sal:
+            if isinstance(base_sal, str) and base_sal.strip():
+                return base_sal.strip()
+            if isinstance(base_sal, dict):
+                val = base_sal.get('value')
+                if isinstance(val, str) and val.strip():
+                    return val.strip()
+                if isinstance(val, (int, float)):
+                    if val > 100000:
+                        return f"{val/100000:.1f} LPA"
+                    return f"₹{val:,}/month"
+                if isinstance(val, dict):
+                    inner_val = val.get('value') or val.get('minValue')
+                    if inner_val:
+                        return str(inner_val).strip()
+                min_v = base_sal.get('minValue')
+                max_v = base_sal.get('maxValue')
+                if min_v and max_v:
+                    return f"{min_v} - {max_v} LPA"
+
+    # 2. Meta Badge with re.DOTALL and re.IGNORECASE
+    m1 = re.search(r'class=[\"\']jd-meta-lbl[\"\'][^>]*>.*?Salary.*?</div>\s*<div[^>]*class=[\"\']jd-meta-val[\"\'][^>]*>([^<]+)</div>', page_html, re.DOTALL | re.IGNORECASE)
+    if m1:
+        s = html.unescape(m1.group(1).strip())
+        if s and not s.lower().startswith('view') and not s.lower().startswith('check'):
+            return s
+
+    # 3. Salary Insights Card
+    m2 = re.search(r'class=[\"\']jd-card-title[\"\'][^>]*>.*?Salary.*?Insights.*?</div>\s*<div[^>]*>([^<]+)</div>', page_html, re.DOTALL | re.IGNORECASE)
+    if m2:
+        s = html.unescape(m2.group(1).strip())
+        if s and not s.lower().startswith('view'):
+            return s
+
+    # 4. Regex Pattern Matching across HTML
+    pat_lpa = re.search(r'\b(\d+(?:\.\d+)?\s*(?:-\s*\d+(?:\.\d+)?)?\s*LPA)\b', page_html, re.IGNORECASE)
+    if pat_lpa:
+        return pat_lpa.group(1).strip()
+
+    pat_inr = re.search(r'(₹\s*\d[\d,]*(?:\s*-\s*₹?\s*\d[\d,]*)?\s*(?:\/\s*(?:month|mo|year|yr|pm))?)', page_html, re.IGNORECASE)
+    if pat_inr:
+        return pat_inr.group(1).strip()
+
+    pat_ctc = re.search(r'(\d+(?:\.\d+)?\s*(?:-\s*\d+(?:\.\d+)?)?\s*(?:Lakhs?|CTC))', page_html, re.IGNORECASE)
+    if pat_ctc:
+        return pat_ctc.group(1).strip()
+
+    return fallback
+
+
 def fallback_parse_from_slug(url):
     """
     Fallback parser: In case Jobdexo rate-limits details (HTTP 429),
@@ -314,24 +375,32 @@ def fallback_parse_from_slug(url):
     if not any(k in title.lower() for k in ['engineer', 'developer', 'intern', 'analyst', 'consultant']):
         title = f"{title} Engineer"
 
-    company = clean_company_name(title=title, slug=slug, apply_url=url)
-    if company.lower() in title.lower():
-        title = re.sub(r'\b' + re.escape(company) + r'\b', '', title, flags=re.IGNORECASE).strip()
-        title = re.sub(r'\s+', ' ', title).strip()
 
-    is_intern = 'intern' in slug.lower()
+    year = "2026"
+    for p in reversed(parts):
+        if p.isdigit() and len(p) == 4:
+            year = p
+            break
+
+    company = "Tech Company"
+    if parts:
+        company = clean_company_name(raw_name=parts[-1].capitalize(), title=" ".join(parts), slug=slug, apply_url=url)
+
+    role_parts = [p.capitalize() for p in parts if not p.isdigit() and p.lower() != parts[-1].lower()]
+    title = f"{' '.join(role_parts)} ({year})" if role_parts else f"Software Engineer ({year})"
+
     return {
-        'title': title or "Software & Tech Opportunity",
+        'title': title,
         'company': company,
-        'salary': "Competitive Package (Freshers)",
-        'location': "Remote / Hybrid, India",
-        'skills': "Problem Solving, Data Structures, Software Engineering",
-        'eligibility': "Open to all graduating freshers & college students.",
-        'selection_process': "Online Assessment > Technical Interview > HR Discussion",
+        'salary': 'Competitive Salary (Freshers)',
+        'location': 'Remote / Hybrid, India',
+        'skills': 'Problem Solving, Software Engineering, Communication',
+        'eligibility': f'Open to {year} batch and all graduating freshers.',
+        'selection_process': 'Online Assessment -> Technical Interview -> HR Round',
         'study_materials': [],
-        'description': f"{company} is hiring for {title}. Please check the official application link for comprehensive eligibility and role specifications.",
+        'description': f"{company} is actively hiring for {title}. Open to freshers and college graduates. Check the official application link for comprehensive eligibility and role specifications.",
         'apply_url': url,
-        'job_type': 'INTERNSHIP' if is_intern else 'FULL_TIME',
+        'job_type': 'INTERNSHIP' if 'intern' in slug.lower() else 'FULL_TIME',
         'source_url': url,
         'posted_date': timezone.now().date(),
         'is_expired': False,
@@ -340,58 +409,52 @@ def fallback_parse_from_slug(url):
 
 def extract_jobdexo_detail(url):
     """
-    Parses a single Jobdexo job page and extracts structured job details
-    including the official application link.
+    Scrapes full detail page from Jobdexo with robust schema extraction,
+    multi-source fallbacks, and real ATS application link resolver.
     """
-    if not url.startswith('http'):
-        url = f"https://jobdexo.com{url}"
-
     try:
-        page_html = fetch_url_html(url)
-    except urllib.error.HTTPError as e:
-        if e.code == 429:
-            return fallback_parse_from_slug(url)
-        raise
+        page_html = fetch_url_html(url, retries=2)
+    except Exception as e:
+        return fallback_parse_from_slug(url)
 
-    # 1. Parse JSON-LD Schema if available
+    # 1. Structured Data extraction (JSON-LD schema)
     schema_data = {}
-    schema_match = re.search(r'<script type="application/ld\+json">(.*?)</script>', page_html, re.DOTALL)
-    if schema_match:
+    schema_m = re.search(r'<script type="application/ld\+json">({.*?})</script>', page_html, re.DOTALL)
+    if schema_m:
         try:
-            schema_data = json.loads(schema_match.group(1).strip())
+            schema_data = json.loads(schema_m.group(1))
         except Exception:
             pass
 
-    # 2. Job Title
+    # 2. Title
     title = ""
-    title_m = re.search(r'<h1[^>]*class="[^"]*jd-job-title[^"]*">([^<]+)</h1>', page_html)
-    if title_m:
-        title = html.unescape(title_m.group(1).strip())
-    elif schema_data.get('title'):
+    if schema_data.get('title'):
         title = schema_data.get('title')
     else:
-        title = "Software & Tech Opportunity"
+        h1_m = re.search(r'<h1[^>]*class="[^"]*jd-hero-title[^"]*"[^>]*>(.*?)</h1>', page_html, re.DOTALL)
+        if h1_m:
+            title = html.unescape(re.sub(r'<[^>]+>', '', h1_m.group(1)).strip())
+        else:
+            title_m = re.search(r'<title>(.*?)</title>', page_html)
+            if title_m:
+                title = title_m.group(1).split('|')[0].split('-')[0].strip()
 
-    # 3. Company Name Resolution (Strict Brand Name Cleaning)
+    if not title:
+        title = "Software Engineer - Campus Recruitment"
+
+    # 3. Company Name
     raw_company = ""
-    comp_m = re.search(r'<div class="jd-company[^"]*">([^<]+)</div>', page_html)
-    if comp_m:
-        raw_company = html.unescape(comp_m.group(1).strip())
+    badge_m = re.search(r'<span class="jd-company-badge"[^>]*>(.*?)</span>', page_html, re.DOTALL)
+    if badge_m:
+        raw_company = html.unescape(re.sub(r'<[^>]+>', '', badge_m.group(1)).strip())
     elif schema_data.get('hiringOrganization', {}).get('name'):
         raw_company = schema_data.get('hiringOrganization', {}).get('name')
 
     slug = url.rstrip('/').split('/')[-1]
     company = clean_company_name(raw_name=raw_company, title=title, slug=slug, apply_url=url)
 
-    # 4. Salary
-    salary = "Competitive Salary (Freshers)"
-    sal_m = re.search(r'<div class="jd-meta-lbl">\s*💰\s*Salary\s*</div>\s*<div class="jd-meta-val">([^<]+)</div>', page_html, re.IGNORECASE)
-    if sal_m:
-        salary = html.unescape(sal_m.group(1).strip())
-    else:
-        sal_insight = re.search(r'<div class="jd-card-title">\s*💰\s*Salary Insights\s*</div>\s*<div[^>]*>([^<]+)</div>', page_html, re.IGNORECASE)
-        if sal_insight:
-            salary = html.unescape(sal_insight.group(1).strip())
+    # 4. Salary / Stipend / Package (Robust Multi-Source Extraction)
+    salary = extract_salary_from_html(page_html, schema_data=schema_data, fallback="Competitive Package (Best in Industry)")
 
     # 5. Location
     location = "Remote / Hybrid, India"
