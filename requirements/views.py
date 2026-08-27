@@ -128,7 +128,7 @@ def index_view(request):
     sync_expired_jobs()
     trigger_async_jobdexo_refresh()
     videos = get_cached_youtube_videos()
-    initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:18]
+    initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:9]
     from blog.models import BlogPost
     recent_posts = BlogPost.objects.filter(is_published=True).select_related('category').order_by('-published_at')[:3]
     return render(request, 'content/home.html', {
@@ -1105,7 +1105,7 @@ def api_jobs(request):
         filter_previous = request.GET.get('previous', '').strip()
         sort = request.GET.get('sort', 'newest')
         page = request.GET.get('page', '1')
-        page_size = request.GET.get('page_size', '10')
+        page_size = request.GET.get('page_size', '9')
 
         # Cache key including all filter dimensions
         raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
