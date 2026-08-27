@@ -49,6 +49,8 @@ urlpatterns = [
     path('owner/groups/', views.owner_view, name='owner_groups'),
 
     # Public API Endpoints
+    path('api/ping', views.api_ping, name='api_ping'),
+    path('api/ping/', views.api_ping, name='api_ping_slash'),
     path('api/stats/', views.api_stats, name='api_stats'),
     path('api/categories/', views.api_categories, name='api_categories'),
     path('api/groups/', views.api_groups, name='api_groups'),
