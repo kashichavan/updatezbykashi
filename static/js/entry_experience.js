@@ -1,12 +1,9 @@
 /**
- * KASHII UPDATEZ — High-Illumination 3D Particle Morphing & Radiant Reveal
- * Key Highlights:
- * - High-Density (6,000+ Points) Crisp Particle Swarm
- * - Ultra-Bright, High-Contrast Palette (Rich Deep Onyx + Radiant Electric Royal Blue)
- * - Seamless Transition to Razor-Sharp Luminous Editorial Serif Typography
- * - Floating Radiant Sparkle Motes & Ambient Pulsing Illumination
- * - High-Contrast Illuminated HUD Status Badge
- * - Silky Iris Bloom Wipe into Homepage Feed
+ * KASHII UPDATEZ — Exact Clean Prototype Entry Experience
+ * - Pure white background with soft blue auroras
+ * - 3D Three.js particle wave assembling "Kashii" (#111111) & "Updatez" (#3457e6)
+ * - Subtle status indicator: "Assembling today's opportunities" -> "Taking you home"
+ * - Clean Iris Wipe transition revealing the homepage
  */
 
 (function () {
@@ -15,29 +12,27 @@
   const isIntroPage = window.location.pathname === '/intro/' || window.location.pathname === '/welcome/' || window.location.pathname === '/intro' || window.location.pathname === '/welcome';
   const forceIntro = isIntroPage || urlParams.get('intro') === '1' || urlParams.get('replay') === '1';
 
-  const entryEl = document.getElementById('kashiiEntry');
-  const wipeEl = document.getElementById('kashiiWipe');
-  const canvas = document.getElementById('entryCanvas');
-  const solidText = document.getElementById('entrySolidText');
-  const statusEl = document.getElementById('entryStatus');
-  const statusText = document.getElementById('entryStatusText');
-  const skipBtn = document.getElementById('entrySkipBtn');
+  const entry = document.getElementById('entry') || document.getElementById('kashiiEntry');
+  const wipe = document.getElementById('wipe') || document.getElementById('kashiiWipe');
+  const canvas = document.getElementById('entry-canvas') || document.getElementById('entryCanvas');
+  const status = document.getElementById('entry-status') || document.getElementById('entryStatus');
+  const skip = document.getElementById('skip-btn') || document.getElementById('entrySkipBtn');
 
-  // Bypass admin & owner portals
+  // Bypass admin and owner portals
   const isOwnerOrAdmin = window.location.pathname.startsWith('/owner') || window.location.pathname.startsWith('/admin');
   if (isOwnerOrAdmin) {
-    if (entryEl) entryEl.style.display = 'none';
-    if (wipeEl) wipeEl.style.display = 'none';
+    if (entry) entry.style.display = 'none';
+    if (wipe) wipe.style.display = 'none';
     document.documentElement.classList.add('entry-done');
     return;
   }
 
-  if (!entryEl || !canvas) return;
+  if (!entry || !canvas) return;
 
   // Session guard: if already played in this session and not forced
   if (!forceIntro && sessionStorage.getItem(SESSION_KEY)) {
-    entryEl.style.display = 'none';
-    if (wipeEl) wipeEl.style.display = 'none';
+    entry.style.display = 'none';
+    if (wipe) wipe.style.display = 'none';
     document.documentElement.classList.add('entry-done');
     return;
   }
@@ -49,30 +44,22 @@
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
   let sequenceFinished = false;
-  let raf = null;
 
-  // Hard safety timeout (6.0s fail-safe)
+  // Safety timer to prevent any freeze
   const safetyTimer = setTimeout(() => {
     if (!sequenceFinished) {
-      finishSequence();
+      finish();
     }
-  }, 6000);
+  }, 4000);
 
-  // 1. High-Resolution Serif Typography Sampling (Dense 2px Grid)
   async function buildTextPoints() {
     try {
-      if (document.fonts && document.fonts.load) {
-        await Promise.race([
-          Promise.all([
-            document.fonts.load("900 120px 'Playfair Display'"),
-            document.fonts.load("italic 600 120px 'Playfair Display'")
-          ]),
-          sleep(300)
-        ]);
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
       }
     } catch (e) {}
 
-    const W = 1000, H = 260;
+    const W = 900, H = 220;
     const off = document.createElement('canvas');
     off.width = W;
     off.height = H;
@@ -83,35 +70,34 @@
     ctx.textBaseline = 'alphabetic';
 
     const fontSerif = "'Playfair Display', Georgia, serif";
-    ctx.font = `900 120px ${fontSerif}`;
+    ctx.font = `900 110px ${fontSerif}`;
     const kText = 'Kashii';
     const kWidth = ctx.measureText(kText).width;
 
-    ctx.font = `italic 600 120px ${fontSerif}`;
+    ctx.font = `italic 600 110px ${fontSerif}`;
     const uText = 'Updatez';
     const uWidth = ctx.measureText(uText).width;
 
-    const totalW = kWidth + uWidth + 12;
+    const totalW = kWidth + uWidth + 8;
     const startX = (W - totalW) / 2;
-    const baseY = H / 2 + 42;
+    const baseY = H / 2 + 38;
 
-    // Crisp high-contrast rendering
-    ctx.font = `900 120px ${fontSerif}`;
-    ctx.fillStyle = '#0f172a'; // Deep Onyx
+    ctx.font = `900 110px ${fontSerif}`;
+    ctx.fillStyle = '#111111';
     ctx.fillText(kText, startX, baseY);
 
-    ctx.font = `italic 600 120px ${fontSerif}`;
-    ctx.fillStyle = '#2563eb'; // Vibrant Royal Blue
-    ctx.fillText(uText, startX + kWidth + 12, baseY);
+    ctx.font = `italic 600 110px ${fontSerif}`;
+    ctx.fillStyle = '#3457e6';
+    ctx.fillText(uText, startX + kWidth + 8, baseY);
 
     const img = ctx.getImageData(0, 0, W, H).data;
-    const gap = 2; // High-Density Grid
+    const gap = 3;
     const pts = [];
 
     for (let y = 0; y < H; y += gap) {
       for (let x = 0; x < W; x += gap) {
         const idx = (y * W + x) * 4;
-        if (img[idx + 3] > 110) {
+        if (img[idx + 3] > 128) {
           pts.push({
             x,
             y,
@@ -126,8 +112,7 @@
     return { pts, W, H };
   }
 
-  // 2. High-Illumination Particle Engine
-  let scene, camera, renderer, points, bgMotes;
+  let scene, camera, renderer, points;
   let particleCount = 0;
   let posArr, colorArr, startArr, targetArr, delayArr, endColorArr;
   let animStart = 0;
@@ -135,27 +120,24 @@
 
   function sizeRenderer() {
     if (!renderer || !canvas || !camera) return;
-    const w = canvas.clientWidth || Math.min(window.innerWidth * 0.86, 740);
-    const h = canvas.clientHeight || Math.min(window.innerWidth * 0.35, 250);
+    const w = canvas.clientWidth || Math.min(window.innerWidth * 0.80, 680);
+    const h = canvas.clientHeight || Math.min(window.innerWidth * 0.32, 220);
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
 
-  function makeCrispSprite() {
+  function makeSprite() {
     const c = document.createElement('canvas');
-    c.width = 64;
-    c.height = 64;
+    c.width = 32;
+    c.height = 32;
     const cx = c.getContext('2d');
-    
-    // Core solid disc with soft anti-aliased edge and subtle bloom ring
-    const g = cx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    const g = cx.createRadialGradient(16, 16, 0, 16, 16, 16);
     g.addColorStop(0, 'rgba(255,255,255,1)');
-    g.addColorStop(0.55, 'rgba(255,255,255,0.98)');
-    g.addColorStop(0.85, 'rgba(255,255,255,0.45)');
+    g.addColorStop(0.4, 'rgba(255,255,255,0.8)');
     g.addColorStop(1, 'rgba(255,255,255,0)');
     cx.fillStyle = g;
-    cx.fillRect(0, 0, 64, 64);
+    cx.fillRect(0, 0, 32, 32);
     return new THREE.CanvasTexture(c);
   }
 
@@ -165,17 +147,17 @@
     try {
       const { pts, W, H } = await buildTextPoints();
       particleCount = pts.length;
-      if (particleCount === 0) return false;
+      if (!particleCount) return false;
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-      camera.position.z = 6.4;
+      camera.position.z = 5.6;
 
       renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       sizeRenderer();
 
-      const scale = 7.0 / W;
+      const scale = 6.2 / W;
       posArr = new Float32Array(particleCount * 3);
       colorArr = new Float32Array(particleCount * 3);
       startArr = new Float32Array(particleCount * 3);
@@ -193,7 +175,7 @@
         const p = pts[i];
         const tx = (p.x - W / 2) * scale;
         const ty = -(p.y - H / 2) * scale;
-        const tz = (Math.random() - 0.5) * 0.12;
+        const tz = (Math.random() - 0.5) * 0.1;
 
         targetArr[i * 3] = tx;
         targetArr[i * 3 + 1] = ty;
@@ -201,27 +183,25 @@
 
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
-        const rad = 4.2 + Math.random() * 3.5;
+        const rad = 3.2 + Math.random() * 2.4;
 
         startArr[i * 3] = rad * Math.sin(phi) * Math.cos(theta);
         startArr[i * 3 + 1] = rad * Math.sin(phi) * Math.sin(theta);
-        startArr[i * 3 + 2] = rad * Math.cos(phi) * 0.7;
+        startArr[i * 3 + 2] = rad * Math.cos(phi) * 0.6;
 
         posArr[i * 3] = startArr[i * 3];
         posArr[i * 3 + 1] = startArr[i * 3 + 1];
         posArr[i * 3 + 2] = startArr[i * 3 + 2];
 
-        // Radiant electric blue-white initialization
-        colorArr[i * 3] = 0.40;
-        colorArr[i * 3 + 1] = 0.65;
-        colorArr[i * 3 + 2] = 1.00;
+        colorArr[i * 3] = 0.95;
+        colorArr[i * 3 + 1] = 0.96;
+        colorArr[i * 3 + 2] = 0.98;
 
         endColorArr[i * 3] = p.r;
         endColorArr[i * 3 + 1] = p.g;
         endColorArr[i * 3 + 2] = p.b;
 
-        // Smooth luxurious wave stagger
-        delayArr[i] = Math.max(0, Math.min(1, (p.x - minX) / (maxX - minX || 1))) * 850 + Math.random() * 350;
+        delayArr[i] = ((p.x - minX) / (maxX - minX || 1)) * 500 + Math.random() * 250;
       }
 
       const geo = new THREE.BufferGeometry();
@@ -229,8 +209,8 @@
       geo.setAttribute('color', new THREE.BufferAttribute(colorArr, 3));
 
       const mat = new THREE.PointsMaterial({
-        size: 0.046, // Solid, High-Contrast Particle Size
-        map: makeCrispSprite(),
+        size: 0.024,
+        map: makeSprite(),
         vertexColors: true,
         transparent: true,
         depthWrite: false,
@@ -240,39 +220,11 @@
       points = new THREE.Points(geo, mat);
       scene.add(points);
 
-      // Ambient Sparkling Floating Light Motes
-      const moteCount = 60;
-      const moteGeo = new THREE.BufferGeometry();
-      const motePos = new Float32Array(moteCount * 3);
-      for (let m = 0; m < moteCount * 3; m += 3) {
-        motePos[m] = (Math.random() - 0.5) * 8;
-        motePos[m + 1] = (Math.random() - 0.5) * 4;
-        motePos[m + 2] = (Math.random() - 0.5) * 3;
-      }
-      moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
-      const moteMat = new THREE.PointsMaterial({
-        size: 0.040,
-        color: 0x38bdf8,
-        transparent: true,
-        opacity: 0.55,
-        map: makeCrispSprite(),
-        depthWrite: false,
-      });
-      bgMotes = new THREE.Points(moteGeo, moteMat);
-      scene.add(bgMotes);
-
       window.addEventListener('resize', sizeRenderer);
       window.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX / window.innerWidth - 0.5;
-        mouseY = e.clientY / window.innerHeight - 0.5;
+        mouseX = (e.clientX / window.innerWidth - 0.5) * 0.4;
+        mouseY = (e.clientY / window.innerHeight - 0.5) * 0.4;
       });
-
-      window.addEventListener('touchmove', (e) => {
-        if (e.touches && e.touches.length > 0) {
-          mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 1.4;
-          mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 1.4;
-        }
-      }, { passive: true });
 
       return true;
     } catch (e) {
@@ -280,22 +232,15 @@
     }
   }
 
-  // Luxurious slow particle formation duration (1650ms)
-  const FORM_DURATION = 1650;
+  const FORM_DURATION = 800;
   let formationDone = false;
 
   function renderLoop() {
     if (sequenceFinished) return;
-    raf = requestAnimationFrame(renderLoop);
+    requestAnimationFrame(renderLoop);
     const elapsed = performance.now() - animStart;
 
-    if (bgMotes) {
-      bgMotes.rotation.y = elapsed * 0.00015;
-      bgMotes.rotation.x = elapsed * 0.00008;
-    }
-
-    if (!points || !points.geometry) return;
-
+    if (!points) return;
     const posAttr = points.geometry.attributes.position;
     const colAttr = points.geometry.attributes.color;
 
@@ -310,9 +255,9 @@
       posArr[i * 3 + 1] = lerp(startArr[i * 3 + 1], targetArr[i * 3 + 1], eased);
       posArr[i * 3 + 2] = lerp(startArr[i * 3 + 2], targetArr[i * 3 + 2], eased);
 
-      colorArr[i * 3] = lerp(0.40, endColorArr[i * 3], eased);
-      colorArr[i * 3 + 1] = lerp(0.65, endColorArr[i * 3], eased);
-      colorArr[i * 3 + 2] = lerp(1.00, endColorArr[i * 3], eased);
+      colorArr[i * 3] = lerp(0.95, endColorArr[i * 3], eased);
+      colorArr[i * 3 + 1] = lerp(0.96, endColorArr[i * 3 + 1], eased);
+      colorArr[i * 3 + 2] = lerp(0.98, endColorArr[i * 3 + 2], eased);
     }
 
     posAttr.array = posArr;
@@ -320,83 +265,28 @@
     colAttr.array = colorArr;
     colAttr.needsUpdate = true;
 
-    camera.position.x = lerp(camera.position.x, mouseX * 0.35, 0.04);
-    camera.position.y = lerp(camera.position.y, -mouseY * 0.22, 0.04);
+    camera.position.x = lerp(camera.position.x, mouseX, 0.05);
+    camera.position.y = lerp(camera.position.y, -mouseY, 0.05);
     camera.lookAt(0, 0, 0);
 
     renderer.render(scene, camera);
 
     if (allDone && !formationDone) {
       formationDone = true;
-      if (solidText) {
-        solidText.classList.add('visible', 'shine-sweep');
-      }
     }
   }
 
-  // 3. Relaxed, Smooth, Cinematic Sequence Flow
-  let sequenceRunning = false;
-  let skipRequested = false;
+  let skipped = false;
 
-  async function runEntrySequence() {
-    if (sequenceRunning) return;
-    sequenceRunning = true;
-
-    const initialized = await initScene();
-    if (!initialized) {
-      finishSequence();
-      return;
-    }
-
-    animStart = performance.now();
-    renderLoop();
-
-    await sleep(300);
-    if (statusEl) {
-      statusEl.classList.add('show');
-    }
-    if (statusText) {
-      statusText.textContent = "Assembling today's opportunities...";
-    }
-
-    // Wait gracefully for fluid particle assembly
-    const startWait = performance.now();
-    while (!formationDone && !skipRequested && performance.now() - startWait < 2400) {
-      await sleep(40);
-    }
-
-    if (!skipRequested) {
-      if (statusText) {
-        statusText.textContent = "⚡ 100% Verified Stream Active";
-      }
-      // Hold gracefully so user can read and appreciate the shining brand
-      await sleep(1100);
-      
-      if (statusText) {
-        statusText.textContent = "Taking you home...";
-      }
-      await sleep(600);
-    }
-
-    await finishSequence();
-  }
-
-  async function finishSequence() {
+  async function finish() {
     if (sequenceFinished) return;
     sequenceFinished = true;
     clearTimeout(safetyTimer);
 
-    if (entryEl) {
-      entryEl.classList.add('fade-out');
-    }
+    if (entry) entry.classList.add('fade-out');
+    if (wipe) wipe.classList.add('expand');
 
-    if (wipeEl) {
-      wipeEl.classList.add('expand');
-    }
-
-    await sleep(850);
-
-    if (raf) cancelAnimationFrame(raf);
+    await sleep(700);
 
     const redirectTarget = urlParams.get('redirect') || urlParams.get('to');
     if (isIntroPage) {
@@ -409,62 +299,88 @@
       return;
     }
 
-    if (entryEl) {
-      entryEl.style.display = 'none';
+    if (entry) {
+      entry.style.display = 'none';
       document.body.style.overflow = '';
       document.documentElement.classList.add('entry-done');
     }
 
-    if (wipeEl) {
-      await sleep(120);
-      wipeEl.classList.remove('expand');
-      wipeEl.classList.add('contract');
+    if (wipe) {
+      await sleep(100);
+      wipe.classList.remove('expand');
+      wipe.classList.add('contract');
 
       if (window.startTypewriter) {
         window.startTypewriter();
       }
 
-      await sleep(950);
-      wipeEl.classList.remove('contract');
-      wipeEl.style.display = 'none';
+      await sleep(800);
+      wipe.style.display = 'none';
     }
   }
 
-  if (skipBtn) skipBtn.addEventListener('click', () => { skipRequested = true; finishSequence(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') finishSequence(); });
+  async function runSequence() {
+    if (skip) {
+      skip.addEventListener('click', () => {
+        skipped = true;
+        finish();
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') finish();
+    });
+
+    const ready = await initScene();
+    if (!ready) {
+      finish();
+      return;
+    }
+
+    animStart = performance.now();
+    renderLoop();
+
+    await sleep(200);
+    if (status) status.classList.add('show');
+
+    while (!formationDone && !skipped) {
+      await sleep(30);
+    }
+
+    if (!skipped) {
+      await sleep(300);
+      if (status) status.textContent = "Taking you home";
+      await sleep(200);
+    }
+
+    await finish();
+  }
 
   // Global Replay
   window.replayKashiiEntry = async function () {
-    sequenceRunning = false;
     sequenceFinished = false;
-    skipRequested = false;
+    skipped = false;
     formationDone = false;
 
-    if (solidText) {
-      solidText.classList.remove('visible', 'shine-sweep');
-    }
-
-    if (entryEl) {
-      entryEl.style.display = 'flex';
-      entryEl.classList.remove('fade-out');
+    if (entry) {
+      entry.style.display = 'flex';
+      entry.classList.remove('fade-out');
       document.body.style.overflow = 'hidden';
       document.documentElement.classList.remove('entry-done');
     }
 
-    if (wipeEl) {
-      wipeEl.style.display = 'block';
-      wipeEl.classList.remove('expand', 'contract');
+    if (wipe) {
+      wipe.style.display = 'block';
+      wipe.classList.remove('expand', 'contract');
     }
 
-    if (statusEl) {
-      statusEl.classList.remove('show');
-    }
-    if (statusText) {
-      statusText.textContent = "Assembling today's opportunities...";
+    if (status) {
+      status.classList.remove('show');
+      status.textContent = "Assembling today's opportunities";
     }
 
-    await runEntrySequence();
+    await runSequence();
   };
 
-  runEntrySequence();
+  runSequence();
 })();
