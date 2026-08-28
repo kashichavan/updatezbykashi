@@ -47,10 +47,11 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const lerp = (a, b, t) => a + (b - a) * t;
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-  const easeInOutQuad = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
   let sequenceFinished = false;
-  let raf = null;  // Hard safety timeout (relaxed to 6.0s)
+  let raf = null;
+
+  // Hard safety timeout (6.0s fail-safe)
   const safetyTimer = setTimeout(() => {
     if (!sequenceFinished) {
       finishSequence();
@@ -311,7 +312,7 @@
 
       colorArr[i * 3] = lerp(0.40, endColorArr[i * 3], eased);
       colorArr[i * 3 + 1] = lerp(0.65, endColorArr[i * 3], eased);
-      colorArr[i * 3 + 2] = lerp(1.00, endColorArr[i * 3 + 2], eased);
+      colorArr[i * 3 + 2] = lerp(1.00, endColorArr[i * 3], eased);
     }
 
     posAttr.array = posArr;
@@ -427,7 +428,6 @@
       wipeEl.classList.remove('contract');
       wipeEl.style.display = 'none';
     }
-  }
   }
 
   if (skipBtn) skipBtn.addEventListener('click', () => { skipRequested = true; finishSequence(); });
