@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>UI/UX & Visual Alignment Quality Audit — Kashii Updatez</title>
+<style>
+  :root { --bg: #0f172a; --card: #1e293b; --border: #334155; --text: #f8fafc; --accent: #38bdf8; --green: #22c55e; --red: #ef4444; }
+  body { margin: 0; padding: 32px; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .header { max-width: 1280px; margin: 0 auto 32px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .header h1 { margin: 0 0 8px; font-size: 28px; color: var(--accent); }
+  .page-audit-section { max-width: 1280px; margin: 0 auto 32px; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 24px; }
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; }
+  .page-header h2 { margin: 0; font-size: 20px; }
+  .page-link { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 14px; }
+  .vp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .vp-card { background: #0b1329; border: 1px solid #1e293b; border-radius: 10px; padding: 16px; }
+  .vp-card h4 { margin: 0 0 10px; font-size: 14px; color: #94a3b8; }
+  .vp-metrics { font-size: 12px; color: #cbd5e1; display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+  .screenshot-thumb { width: 100%; height: 220px; object-fit: cover; object-position: top; border-radius: 6px; border: 1px solid #334155; transition: transform 0.2s; }
+  .screenshot-thumb:hover { transform: scale(1.02); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+  .badge.pass { background: rgba(34, 197, 94, 0.2); color: var(--green); }
+  .badge.fail { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+  .js-err-box { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--red); color: #fca5a5; padding: 8px 12px; border-radius: 6px; margin-bottom: 14px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎨 Kashii Updatez UI/UX & Responsive Quality Audit</h1>
+    <p>Target: <strong>https://kashiiupdatez.online</strong> | Generated on: 2026-08-28 14:56:08</p>
+  </div>
+  
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Home Page</h2>
+                <a href="https://kashiiupdatez.online/" target="_blank" class="page-link">/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/home_page_1920w.png" target="_blank">
+                        <img src="desktop/home_page_1920w.png" class="screenshot-thumb" alt="Home Page Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/home_page_768w.png" target="_blank">
+                        <img src="desktop/home_page_768w.png" class="screenshot-thumb" alt="Home Page Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/home_page_390w.png" target="_blank">
+                        <img src="mobile/home_page_390w.png" class="screenshot-thumb" alt="Home Page Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Developer Academy</h2>
+                <a href="https://kashiiupdatez.online/learn/" target="_blank" class="page-link">/learn/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/developer_academy_1920w.png" target="_blank">
+                        <img src="desktop/developer_academy_1920w.png" class="screenshot-thumb" alt="Developer Academy Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/developer_academy_768w.png" target="_blank">
+                        <img src="desktop/developer_academy_768w.png" class="screenshot-thumb" alt="Developer Academy Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/developer_academy_390w.png" target="_blank">
+                        <img src="mobile/developer_academy_390w.png" class="screenshot-thumb" alt="Developer Academy Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Python Track</h2>
+                <a href="https://kashiiupdatez.online/learn/python/" target="_blank" class="page-link">/learn/python/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/python_track_1920w.png" target="_blank">
+                        <img src="desktop/python_track_1920w.png" class="screenshot-thumb" alt="Python Track Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/python_track_768w.png" target="_blank">
+                        <img src="desktop/python_track_768w.png" class="screenshot-thumb" alt="Python Track Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/python_track_390w.png" target="_blank">
+                        <img src="mobile/python_track_390w.png" class="screenshot-thumb" alt="Python Track Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Visual Code Debugger</h2>
+                <a href="https://kashiiupdatez.online/debugger/" target="_blank" class="page-link">/debugger/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/visual_code_debugger_1920w.png" target="_blank">
+                        <img src="desktop/visual_code_debugger_1920w.png" class="screenshot-thumb" alt="Visual Code Debugger Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/visual_code_debugger_768w.png" target="_blank">
+                        <img src="desktop/visual_code_debugger_768w.png" class="screenshot-thumb" alt="Visual Code Debugger Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/visual_code_debugger_390w.png" target="_blank">
+                        <img src="mobile/visual_code_debugger_390w.png" class="screenshot-thumb" alt="Visual Code Debugger Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>SQL Sandbox</h2>
+                <a href="https://kashiiupdatez.online/sql/" target="_blank" class="page-link">/sql/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/sql_sandbox_1920w.png" target="_blank">
+                        <img src="desktop/sql_sandbox_1920w.png" class="screenshot-thumb" alt="SQL Sandbox Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/sql_sandbox_768w.png" target="_blank">
+                        <img src="desktop/sql_sandbox_768w.png" class="screenshot-thumb" alt="SQL Sandbox Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/sql_sandbox_390w.png" target="_blank">
+                        <img src="mobile/sql_sandbox_390w.png" class="screenshot-thumb" alt="SQL Sandbox Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Student Guides Hub</h2>
+                <a href="https://kashiiupdatez.online/guides/" target="_blank" class="page-link">/guides/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/student_guides_hub_1920w.png" target="_blank">
+                        <img src="desktop/student_guides_hub_1920w.png" class="screenshot-thumb" alt="Student Guides Hub Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/student_guides_hub_768w.png" target="_blank">
+                        <img src="desktop/student_guides_hub_768w.png" class="screenshot-thumb" alt="Student Guides Hub Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/student_guides_hub_390w.png" target="_blank">
+                        <img src="mobile/student_guides_hub_390w.png" class="screenshot-thumb" alt="Student Guides Hub Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Tech & Coding Blog</h2>
+                <a href="https://kashiiupdatez.online/blog/" target="_blank" class="page-link">/blog/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/tech_and_coding_blog_1920w.png" target="_blank">
+                        <img src="desktop/tech_and_coding_blog_1920w.png" class="screenshot-thumb" alt="Tech & Coding Blog Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/tech_and_coding_blog_768w.png" target="_blank">
+                        <img src="desktop/tech_and_coding_blog_768w.png" class="screenshot-thumb" alt="Tech & Coding Blog Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/tech_and_coding_blog_390w.png" target="_blank">
+                        <img src="mobile/tech_and_coding_blog_390w.png" class="screenshot-thumb" alt="Tech & Coding Blog Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>About Kashii</h2>
+                <a href="https://kashiiupdatez.online/about/" target="_blank" class="page-link">/about/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/about_kashii_1920w.png" target="_blank">
+                        <img src="desktop/about_kashii_1920w.png" class="screenshot-thumb" alt="About Kashii Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/about_kashii_768w.png" target="_blank">
+                        <img src="desktop/about_kashii_768w.png" class="screenshot-thumb" alt="About Kashii Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/about_kashii_390w.png" target="_blank">
+                        <img src="mobile/about_kashii_390w.png" class="screenshot-thumb" alt="About Kashii Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>YouTube Hub</h2>
+                <a href="https://kashiiupdatez.online/youtube/" target="_blank" class="page-link">/youtube/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/youtube_hub_1920w.png" target="_blank">
+                        <img src="desktop/youtube_hub_1920w.png" class="screenshot-thumb" alt="YouTube Hub Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/youtube_hub_768w.png" target="_blank">
+                        <img src="desktop/youtube_hub_768w.png" class="screenshot-thumb" alt="YouTube Hub Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/youtube_hub_390w.png" target="_blank">
+                        <img src="mobile/youtube_hub_390w.png" class="screenshot-thumb" alt="YouTube Hub Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Privacy Policy</h2>
+                <a href="https://kashiiupdatez.online/privacy-policy/" target="_blank" class="page-link">/privacy-policy/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/privacy_policy_1920w.png" target="_blank">
+                        <img src="desktop/privacy_policy_1920w.png" class="screenshot-thumb" alt="Privacy Policy Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/privacy_policy_768w.png" target="_blank">
+                        <img src="desktop/privacy_policy_768w.png" class="screenshot-thumb" alt="Privacy Policy Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/privacy_policy_390w.png" target="_blank">
+                        <img src="mobile/privacy_policy_390w.png" class="screenshot-thumb" alt="Privacy Policy Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Terms of Service</h2>
+                <a href="https://kashiiupdatez.online/terms/" target="_blank" class="page-link">/terms/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/terms_of_service_1920w.png" target="_blank">
+                        <img src="desktop/terms_of_service_1920w.png" class="screenshot-thumb" alt="Terms of Service Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/terms_of_service_768w.png" target="_blank">
+                        <img src="desktop/terms_of_service_768w.png" class="screenshot-thumb" alt="Terms of Service Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/terms_of_service_390w.png" target="_blank">
+                        <img src="mobile/terms_of_service_390w.png" class="screenshot-thumb" alt="Terms of Service Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Website Disclaimer</h2>
+                <a href="https://kashiiupdatez.online/disclaimer/" target="_blank" class="page-link">/disclaimer/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/website_disclaimer_1920w.png" target="_blank">
+                        <img src="desktop/website_disclaimer_1920w.png" class="screenshot-thumb" alt="Website Disclaimer Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/website_disclaimer_768w.png" target="_blank">
+                        <img src="desktop/website_disclaimer_768w.png" class="screenshot-thumb" alt="Website Disclaimer Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/website_disclaimer_390w.png" target="_blank">
+                        <img src="mobile/website_disclaimer_390w.png" class="screenshot-thumb" alt="Website Disclaimer Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+        <div class="page-audit-section">
+            <div class="page-header">
+                <h2>Contact & Support</h2>
+                <a href="https://kashiiupdatez.online/contact/" target="_blank" class="page-link">/contact/ ↗</a>
+            </div>
+            
+            <div class="vp-grid">
+                <div class="vp-card">
+                    <h4>Desktop (1920x1080)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 1920px (Scroll: 1920px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/contact_and_support_1920w.png" target="_blank">
+                        <img src="desktop/contact_and_support_1920w.png" class="screenshot-thumb" alt="Contact & Support Desktop (1920x1080)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Tablet (768x1024)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 768px (Scroll: 768px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="desktop/contact_and_support_768w.png" target="_blank">
+                        <img src="desktop/contact_and_support_768w.png" class="screenshot-thumb" alt="Contact & Support Tablet (768x1024)">
+                    </a>
+                </div>
+                
+                <div class="vp-card">
+                    <h4>Mobile iPhone 14 (390x844)</h4>
+                    <div class="vp-metrics">
+                        <div>Status: <span class="badge pass">No Overflow</span></div>
+                        <div>Width: 390px (Scroll: 390px)</div>
+                        <div>Missing Alt: 0</div>
+                    </div>
+                    <a href="mobile/contact_and_support_390w.png" target="_blank">
+                        <img src="mobile/contact_and_support_390w.png" class="screenshot-thumb" alt="Contact & Support Mobile iPhone 14 (390x844)">
+                    </a>
+                </div>
+                </div>
+        </div>
+        
+</body>
+</html>
