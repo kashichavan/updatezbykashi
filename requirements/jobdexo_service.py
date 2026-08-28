@@ -8,7 +8,8 @@ import random
 import threading
 import urllib.request
 import urllib.error
-from datetime import timedelta
+import urllib.parse
+from datetime import timedelta, datetime
 from django.utils import timezone
 from django.utils.text import slugify
 from django.core.cache import cache
@@ -26,7 +27,7 @@ USER_AGENTS = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15',
 ]
 
-# 5-6 Distinct Jobdexo Discovery Sections
+# Distinct Jobdexo Discovery Sections
 JOBDEXO_SOURCE_ENDPOINTS = [
     'https://jobdexo.com/',
     'https://jobdexo.com/?q=developer',
@@ -37,7 +38,7 @@ JOBDEXO_SOURCE_ENDPOINTS = [
 ]
 
 
-def fetch_url_html(url, retries=2, backoff=2.5):
+def fetch_url_html(url, retries=2, backoff=2.0):
     """
     Safely fetch HTML content from a URL with browser emulation headers,
     rate-limit handling, and exponential backoff retry for HTTP 429.
@@ -63,15 +64,39 @@ def fetch_url_html(url, retries=2, backoff=2.5):
                 return response.read().decode('utf-8', errors='ignore')
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < retries:
-                sleep_time = backoff * (attempt + 1) + random.uniform(1.0, 2.5)
+                sleep_time = backoff * (attempt + 1) + random.uniform(1.0, 2.0)
                 time.sleep(sleep_time)
                 continue
             raise
-        except Exception as e:
+        except Exception:
             if attempt < retries:
                 time.sleep(backoff)
                 continue
             raise
+
+
+def canonical_clean_url(url):
+    """
+    Strips tracking query parameters (utm_*, ref, gh_src, source, etc.)
+    and trailing slashes to produce a canonical URL for accurate deduplication.
+    """
+    if not url:
+        return ""
+    url = url.strip()
+    try:
+        parsed = urllib.parse.urlparse(url)
+        # Keep clean scheme and netloc + path
+        path = parsed.path.rstrip('/')
+        # Filter query params
+        tracking_params = {'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'ref', 'source', 'gh_src', 'src', 'from', 'aff', 'iid'}
+        query_pairs = urllib.parse.parse_qsl(parsed.query, keep_blank_values=False)
+        clean_pairs = [(k, v) for k, v in query_pairs if k.lower() not in tracking_params and not k.lower().startswith('utm_')]
+        clean_query = urllib.parse.urlencode(clean_pairs)
+        
+        canonical = urllib.parse.urlunparse((parsed.scheme.lower(), parsed.netloc.lower(), path, '', clean_query, ''))
+        return canonical.rstrip('/')
+    except Exception:
+        return re.sub(r'\?.*$', '', url).rstrip('/').lower()
 
 
 def normalize_text(text):
@@ -79,35 +104,70 @@ def normalize_text(text):
     return re.sub(r'[^a-z0-9]', '', (text or '').lower())
 
 
+def clean_job_title(raw_title, company_name=""):
+    """
+    Standardizes job titles by removing noise phrases such as:
+    - '— 2026', '(2026)', '2026 Batch'
+    - 'at Company Name', '— All Batches', 'Off Campus Drive'
+    - 'Campus Recruitment', '| Bangalore', 'Fresher'
+    """
+    if not raw_title:
+        return "Software Engineer"
+
+    t = html.unescape(raw_title).strip()
+
+    # Remove trailing/leading quotes and pipes
+    t = re.sub(r'^[\"\'\s\-–—|]+|[\"\'\s\-–—|]+$', '', t)
+
+    # Remove batch / year suffixes: e.g. (2026), — 2026, | 2026 Batch
+    t = re.sub(r'\s*[\(\[\{]?(?:202[4-8]|2030)\s*(?:Batch|Passout|Freshers?)?[\)\]\}]?', '', t, flags=re.IGNORECASE)
+    t = re.sub(r'\s*[–—\-]\s*202[4-8]\b', '', t, flags=re.IGNORECASE)
+
+    # Remove '— All Batches', '— Freshers'
+    t = re.sub(r'\s*[–—\-]\s*(?:All Batches|Freshers?|Immediate Joiner|Across India)\b', '', t, flags=re.IGNORECASE)
+
+    # Remove 'at Company Name'
+    if company_name:
+        t = re.sub(r'\s+at\s+' + re.escape(company_name) + r'\b', '', t, flags=re.IGNORECASE)
+
+    # Remove generic site noise: e.g. 'Off Campus Drive', 'Recruitment 2026'
+    t = re.sub(r'\b(?:Off Campus Drive|Campus Recruitment|Hiring Drive|Mega Drive)\b', '', t, flags=re.IGNORECASE)
+
+    # Clean redundant spaces and punctuation
+    t = re.sub(r'\s*[–—\-|\/]+\s*$', '', t).strip()
+    t = re.sub(r'\s+', ' ', t).strip()
+
+    return t or "Software Engineer"
+
+
 def extract_official_apply_url(page_html, fallback_url=""):
     """
-    Extracts the REAL external/official company application link from a Jobdexo HTML page.
-    Filters out internal links, social share URLs, and study material anchors.
+    Standard, robust extraction of the REAL external company/ATS apply link from Jobdexo HTML.
+    Prioritizes official career portal anchors and filters out internal, social, or ad redirect links.
     """
     if not page_html:
         return fallback_url
 
-    # 1. Primary Priority: Match official "jd-apply" anchor tags (with multi-line attribute support)
-    primary_patterns = [
-        r'<a\s+[^>]*?class=[\"\'][^\"\']*?jd-apply[^\"\']*?[\"\'][^>]*?href=[\"\']([^\"\']+)[\"\']',
-        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?class=[\"\'][^\"\']*?jd-apply[^\"\']*?[\"\']',
-        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>\s*✅\s*Apply on Official Website',
-        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>\s*⚡\s*Apply Now Before Others',
-        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>[^<]*Apply on Official',
-        r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>[^<]*Apply on Company',
-        r'<a\s+[^>]*?href=[\"\'](https?://(?!jobdexo\.com|wa\.me|t\.me|telegram\.me|whatsapp\.com|ambitionbox\.com|indiabix\.com|geeksforgeeks\.org|prepinsta\.com|leetcode\.com)[^\"\']+)[\"\'][^>]*?>[^<]*Apply',
-    ]
+    # 1. Search all HTML anchors with explicit 'Apply on Official Website' or 'Apply on Company'
+    for href, text in re.findall(r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>(.*?)</a>', page_html, re.IGNORECASE | re.DOTALL):
+        href_clean = html.unescape(href.strip())
+        text_clean = html.unescape(re.sub(r'<[^>]+>', '', text).strip())
 
-    for pat in primary_patterns:
-        m = re.search(pat, page_html, re.IGNORECASE | re.DOTALL)
-        if m:
-            extracted = html.unescape(m.group(1).strip())
-            if extracted and not extracted.startswith(('#', 'javascript:', 'mailto:')) and 'jobdexo.com' not in extracted:
-                return extracted
+        # Exclude internal, affiliate, social, and study links
+        if any(bad in href_clean.lower() for bad in [
+            'jobdexo.com', 'jobbroom.com', 'ambitionbox.com', 'wa.me', 't.me',
+            'telegram.me', 'whatsapp.com', 'indiabix.com', 'geeksforgeeks.org',
+            'prepinsta.com', 'leetcode.com', 'javascript:', 'mailto:', '#'
+        ]):
+            continue
 
-    # 2. Secondary Priority: Match explicit ATS and company career portal links
+        if any(keyword in text_clean.lower() for keyword in ['apply on official', 'apply on company', 'official website', 'apply now']):
+            if href_clean.startswith(('http://', 'https://')):
+                return canonical_clean_url(href_clean)
+
+    # 2. Match known enterprise ATS & Corporate Careers Portal links in page HTML
     career_patterns = [
-        r'href=[\"\'](https?://[a-zA-Z0-9.-]*(?:careers|jobs|recruiting|myworkdayjobs|smartrecruiters|greenhouse|lever|taleo|icims|jobvite|oraclecloud|workday|successfactors|darwinbox|keka|freshteam|zoho|instahyre|unstop|jobsmind)[^\"\']+)[\"\']',
+        r'href=[\"\'](https?://[a-zA-Z0-9.-]*(?:careers|jobs|recruiting|myworkdayjobs|smartrecruiters|greenhouse|lever|taleo|icims|jobvite|oraclecloud|workday|successfactors|darwinbox|keka|freshteam|zoho|instahyre|unstop|ashbyhq|workable|eightfold|ycombinator|internship\.aicte-india)[^\"\']+)[\"\']',
         r'href=[\"\'](https?://(?:www\.)?linkedin\.com/jobs/view/[^\"\']+)[\"\']',
         r'href=[\"\'](https?://[a-zA-Z0-9.-]*amazon\.jobs/[^\"\']+)[\"\']',
     ]
@@ -117,236 +177,38 @@ def extract_official_apply_url(page_html, fallback_url=""):
         if m:
             extracted = html.unescape(m.group(1).strip())
             if extracted and 'jobdexo.com' not in extracted:
-                return extracted
+                return canonical_clean_url(extracted)
 
-    # 3. Third Priority: Look for data-apply or data-url attributes
+    # 3. Fallback: check data-apply or data-target-url attributes
     data_m = re.search(r'data-(?:apply-url|apply|target-url)=[\"\']([^\"\']+)[\"\']', page_html, re.IGNORECASE)
     if data_m:
         extracted = html.unescape(data_m.group(1).strip())
-        if extracted and 'http' in extracted and 'jobdexo.com' not in extracted:
-            return extracted
+        if extracted and extracted.startswith(('http://', 'https://')) and 'jobdexo.com' not in extracted:
+            return canonical_clean_url(extracted)
 
     return fallback_url
 
 
-def resolve_all_jobdexo_apply_urls():
-    """
-    Crawls and replaces all existing JobPosting apply_url records in the DB
-    that currently point to jobdexo.com with their official external ATS career apply URLs.
-    """
-    from .models import JobPosting
-    postings = JobPosting.objects.filter(apply_url__icontains='jobdexo.com')
-    total = postings.count()
-    updated_count = 0
-
-    for job in postings:
-        target_url = job.apply_url
-        try:
-            html_content = fetch_url_html(target_url, retries=1)
-            real_url = extract_official_apply_url(html_content, fallback_url=None)
-            if real_url and 'jobdexo.com' not in real_url:
-                job.apply_url = real_url
-                job.save(update_fields=['apply_url'])
-                updated_count += 1
-                time.sleep(0.5)
-        except Exception:
-            pass
-
-    return {'total': total, 'updated': updated_count}
-
-
-def clean_company_name(raw_name="", title="", slug="", apply_url=""):
-    """
-    Intelligently cleans and resolves official company names from Jobdexo pages,
-    hostnames, domain slugs, and title strings. Prevents 'Technology Partner' fallbacks.
-    """
-    c = html.unescape(raw_name or "").strip()
-    c = re.sub(r'^[🏢🏛️💼\s]+', '', c).strip()
-    c = re.sub(r'^(?:Company|Hiring Organization|Organization)\s*[:\-]\s*', '', c, flags=re.IGNORECASE).strip()
-
-    # Dictionary of known corporate brands and domain keys
-    domain_mapping = {
-        'cashkaro': 'CashKaro',
-        'retape': 'ReTape AI',
-        'spglobal': 'S&P Global',
-        'sampp': 'S&P Global',
-        'thinkitive': 'Thinkitive Technologies',
-        'zs': 'ZS Associates',
-        'vyaparapp': 'Vyapar Apps',
-        'vyapar': 'Vyapar Apps',
-        'jobsmind': 'Vyapar Apps',
-        'metlife': 'MetLife',
-        'hcltech': 'HCLTech',
-        'hcl': 'HCLTech',
-        'ownly': 'Ownly',
-        'recruitcrm': 'Recruit CRM',
-        'recruit': 'Recruit CRM',
-        'capgemini': 'Capgemini',
-        'quest': 'Quest Global',
-        'volga': 'Volga Partners',
-        'juspay': 'Juspay',
-        'amazon': 'Amazon',
-        'cisco': 'Cisco',
-        'deloitte': 'Deloitte',
-        'kpmg': 'KPMG',
-        'oracle': 'Oracle',
-        'accenture': 'Accenture',
-        'tcs': 'TCS',
-        'infosys': 'Infosys',
-        'cognizant': 'Cognizant',
-        'wipro': 'Wipro',
-        'salesforce': 'Salesforce',
-        'stripe': 'Stripe',
-        'cgi': 'CGI',
-        'techmahindra': 'Tech Mahindra',
-        'tatagroup': 'Tata Group',
-        'tata': 'Tata Group',
-        'globallogic': 'GlobalLogic',
-        'dassault': 'Dassault Systèmes',
-        'turing': 'Turing',
-        'reskom': 'Reskom',
-        'hrone': 'HROne',
-        'ukg': 'UKG',
-        'binance': 'Binance',
-        'portcast': 'Portcast',
-    }
-
-    # Form hosts that should not override company brand
-    form_hosts = ['docs.google.com', 'forms.gle', 'forms.cloud.microsoft', 'forms.office.com', 'forms.microsoft.com']
-    clean_apply_url = apply_url if not any(h in (apply_url or '').lower() for h in form_hosts) else ''
-
-    # 1. Match against known domain keywords in title, slug, and raw_name first
-    primary_context = f"{c} {title} {slug}".lower()
-    for key, brand in domain_mapping.items():
-        if re.search(r'\b' + re.escape(key) + r'\b', primary_context) or key in primary_context:
-            return brand
-
-    # 2. Check direct corporate career apply_url
-    if clean_apply_url:
-        for key, brand in domain_mapping.items():
-            if key in clean_apply_url.lower():
-                return brand
-
-    generic_exclusions = {
-        'software', 'engineer', 'developer', 'analyst', 'intern', 'fresher', 'freshers',
-        'associate', 'hiring', 'trainee', 'product', 'data', 'operations', 'qa', 'tester',
-        'lead', 'senior', 'junior', 'executive', 'specialist', 'designer', 'consultant',
-        'support', 'technical', 'technology', 'system', 'systems', 'cloud', 'frontend',
-        'backend', 'fullstack', 'full', 'stack', 'devops', 'aiml', 'machine', 'learning',
-        'artificial', 'intelligence', 'network', 'embedded', 'applications', 'application',
-        'services', 'service', 'role', 'internship', 'program', 'drive', 'campus', 'offcampus',
-        'opening', 'job', 'jobs', 'remote', 'hybrid', 'india', 'pune', 'bengaluru', 'bangalore',
-        'hyderabad', 'gurgaon', 'noida', 'chennai', 'mumbai', 'kolkata', 'delhi', 'technology partner',
-        'featured partner', 'featured company', 'policy bazaar', 'partner', 'company', 'n/a'
-    }
-
-    # 3. If raw name is already a clean proper name
-    c_clean = c.rstrip('.,-')
-    if c_clean and c_clean.lower() not in generic_exclusions and not any(c_clean.lower().endswith(tld) for tld in ['.com', '.in', '.io', '.ai', '.org', '.net', 'com', 'kekacom']):
-        if len(c_clean) > 2:
-            return c_clean
-
-    # 4. Check for domain
-    if '.' in c or any(c.lower().endswith(tld) for tld in ['com', 'in', 'io', 'ai', 'co', 'org', 'net']):
-        domain = c.lower()
-        domain = re.sub(r'^https?://', '', domain)
-        domain = re.sub(r'^(?:www\.|jobs\.|careers\.|joinus\.|boards\.)', '', domain)
-        domain = domain.split('/')[0].split('?')[0]
-        brand = re.sub(r'\.(?:com|in|org|net|co|io|ai|tech|global)$', '', domain)
-        brand = re.sub(r'(?:com|in|org|net|co|io|ai|tech|global)$', '', brand)
-        if '.' in brand:
-            brand = brand.split('.')[0]
-        if brand and brand.lower() not in generic_exclusions:
-            return brand.capitalize()
-
-    # 5. Search title from right to left for company brand word
-    if title:
-        parts = title.strip().split()
-        for word in reversed(parts):
-            w_clean = re.sub(r'[^a-zA-Z]', '', word)
-            if len(w_clean) > 2 and w_clean.lower() not in generic_exclusions:
-                return w_clean.capitalize()
-
-    return "Featured Partner"
-
-
-def resolve_all_jobdexo_company_names():
-    """
-    Scans all JobPosting records in the database with generic placeholder names
-    (like 'Technology Partner' or domain strings) and replaces them with their real company names.
-    """
-    from .models import JobPosting
-    postings = JobPosting.objects.filter(
-        Q(company_name__icontains='Technology Partner') |
-        Q(company_name__icontains='Featured Partner') |
-        Q(company_name__icontains='Policy Bazaar') |
-        Q(company_name__icontains='.com') |
-        Q(company_name__icontains='kekacom')
-    )
-    total = postings.count()
-    updated_count = 0
-
-    for job in postings:
-        cleaned = clean_company_name(
-            raw_name=job.company_name,
-            title=job.title,
-            slug=job.apply_url or "",
-            apply_url=job.apply_url or ""
-        )
-        if cleaned and cleaned != job.company_name:
-            job.company_name = cleaned
-            job.save(update_fields=['company_name'])
-            updated_count += 1
-
-    return {'total': total, 'updated': updated_count}
-
-
 def extract_salary_from_html(page_html, schema_data=None, fallback="Competitive Package (Best in Industry)"):
-    """
-    Extracts the official Salary / Stipend / Package from Jobdexo HTML and JSON-LD schema.
-    Handles LPA ranges, monthly stipends, and structured schema values.
-    """
-    if not page_html:
-        return fallback
+    """Extracts salary/stipend information cleanly from Schema.org or HTML markup."""
+    schema_data = schema_data or {}
+    
+    # 1. From JSON-LD Schema
+    base_sal = schema_data.get('baseSalary', {})
+    if isinstance(base_sal, dict):
+        val = base_sal.get('value', {})
+        if isinstance(val, dict) and val.get('value'):
+            return str(val.get('value')).strip()
+        elif base_sal.get('value'):
+            return str(base_sal.get('value')).strip()
+    elif isinstance(base_sal, (str, int, float)) and str(base_sal).strip():
+        return str(base_sal).strip()
 
-    # 1. Schema.org JSON-LD extraction
-    if schema_data and isinstance(schema_data, dict):
-        base_sal = schema_data.get('baseSalary') or schema_data.get('estimatedSalary')
-        if base_sal:
-            if isinstance(base_sal, str) and base_sal.strip():
-                return base_sal.strip()
-            if isinstance(base_sal, dict):
-                val = base_sal.get('value')
-                if isinstance(val, str) and val.strip():
-                    return val.strip()
-                if isinstance(val, (int, float)):
-                    if val > 100000:
-                        return f"{val/100000:.1f} LPA"
-                    return f"₹{val:,}/month"
-                if isinstance(val, dict):
-                    inner_val = val.get('value') or val.get('minValue')
-                    if inner_val:
-                        return str(inner_val).strip()
-                min_v = base_sal.get('minValue')
-                max_v = base_sal.get('maxValue')
-                if min_v and max_v:
-                    return f"{min_v} - {max_v} LPA"
+    # 2. From HTML tags
+    pat_tag = re.search(r'<span class="jd-tag jt-emerald">\s*💰\s*([^<]+)</span>', page_html)
+    if pat_tag:
+        return pat_tag.group(1).strip()
 
-    # 2. Meta Badge with re.DOTALL and re.IGNORECASE
-    m1 = re.search(r'class=[\"\']jd-meta-lbl[\"\'][^>]*>.*?Salary.*?</div>\s*<div[^>]*class=[\"\']jd-meta-val[\"\'][^>]*>([^<]+)</div>', page_html, re.DOTALL | re.IGNORECASE)
-    if m1:
-        s = html.unescape(m1.group(1).strip())
-        if s and not s.lower().startswith('view') and not s.lower().startswith('check'):
-            return s
-
-    # 3. Salary Insights Card
-    m2 = re.search(r'class=[\"\']jd-card-title[\"\'][^>]*>.*?Salary.*?Insights.*?</div>\s*<div[^>]*>([^<]+)</div>', page_html, re.DOTALL | re.IGNORECASE)
-    if m2:
-        s = html.unescape(m2.group(1).strip())
-        if s and not s.lower().startswith('view'):
-            return s
-
-    # 4. Regex Pattern Matching across HTML
     pat_lpa = re.search(r'\b(\d+(?:\.\d+)?\s*(?:-\s*\d+(?:\.\d+)?)?\s*LPA)\b', page_html, re.IGNORECASE)
     if pat_lpa:
         return pat_lpa.group(1).strip()
@@ -355,84 +217,44 @@ def extract_salary_from_html(page_html, schema_data=None, fallback="Competitive 
     if pat_inr:
         return pat_inr.group(1).strip()
 
-    pat_ctc = re.search(r'(\d+(?:\.\d+)?\s*(?:-\s*\d+(?:\.\d+)?)?\s*(?:Lakhs?|CTC))', page_html, re.IGNORECASE)
-    if pat_ctc:
-        return pat_ctc.group(1).strip()
-
     return fallback
-
-
-def fallback_parse_from_slug(url):
-    """
-    Fallback parser: In case Jobdexo rate-limits details (HTTP 429),
-    extract company, role title, and batch from the URL slug itself.
-    """
-    slug = url.rstrip('/').split('/')[-1]
-    slug_clean = re.sub(r'-\d+$', '', slug)
-    parts = slug_clean.split('-')
-    
-    title_words = [p.capitalize() for p in parts if not p.isdigit()]
-    title = " ".join(title_words) or "Software & Tech Opportunity"
-    if not any(k in title.lower() for k in ['engineer', 'developer', 'intern', 'analyst', 'consultant']):
-        title = f"{title} Engineer"
-
-
-    year = "2026"
-    for p in reversed(parts):
-        if p.isdigit() and len(p) == 4:
-            year = p
-            break
-
-    company = "Tech Company"
-    if parts:
-        company = clean_company_name(raw_name=parts[-1].capitalize(), title=" ".join(parts), slug=slug, apply_url=url)
-
-    role_parts = [p.capitalize() for p in parts if not p.isdigit() and p.lower() != parts[-1].lower()]
-    title = f"{' '.join(role_parts)} ({year})" if role_parts else f"Software Engineer ({year})"
-
-    return {
-        'title': title,
-        'company': company,
-        'salary': 'Competitive Salary (Freshers)',
-        'location': 'Remote / Hybrid, India',
-        'skills': 'Problem Solving, Software Engineering, Communication',
-        'eligibility': f'Open to {year} batch and all graduating freshers.',
-        'selection_process': 'Online Assessment -> Technical Interview -> HR Round',
-        'study_materials': [],
-        'description': f"{company} is actively hiring for {title}. Open to freshers and college graduates. Check the official application link for comprehensive eligibility and role specifications.",
-        'apply_url': url,
-        'job_type': 'INTERNSHIP' if 'intern' in slug.lower() else 'FULL_TIME',
-        'source_url': url,
-        'posted_date': timezone.now().date(),
-        'is_expired': False,
-    }
 
 
 def extract_jobdexo_detail(url):
     """
-    Scrapes full detail page from Jobdexo with robust schema extraction,
-    multi-source fallbacks, and real ATS application link resolver.
+    Standard scraper for full detail Jobdexo pages.
+    Parses JSON-LD Schema.org JobPosting + BreadcrumbList with robust HTML fallback.
     """
     try:
         page_html = fetch_url_html(url, retries=2)
-    except Exception as e:
-        return fallback_parse_from_slug(url)
+    except Exception:
+        return None
 
-    # 1. Structured Data extraction (JSON-LD schema)
+    # 1. Parse JSON-LD Schema.org Data (with strict=False to handle raw unescaped newlines)
     schema_data = {}
-    schema_m = re.search(r'<script type="application/ld\+json">({.*?})</script>', page_html, re.DOTALL)
-    if schema_m:
+    breadcrumb_data = {}
+    
+    json_scripts = re.findall(r'<script type=[\"\']application/ld\+json[\"\']>(.*?)</script>', page_html, re.DOTALL)
+    for js_block in json_scripts:
         try:
-            schema_data = json.loads(schema_m.group(1))
+            parsed = json.loads(js_block.strip(), strict=False)
+            if isinstance(parsed, dict):
+                if parsed.get('@type') == 'JobPosting':
+                    schema_data = parsed
+                elif parsed.get('@type') == 'BreadcrumbList':
+                    breadcrumb_data = parsed
         except Exception:
             pass
 
-    # 2. Title
+    # 2. Title Extraction
     title = ""
     if schema_data.get('title'):
-        title = schema_data.get('title')
+        title = schema_data.get('title').strip()
     else:
-        h1_m = re.search(r'<h1[^>]*class="[^"]*jd-hero-title[^"]*"[^>]*>(.*?)</h1>', page_html, re.DOTALL)
+        # Check standard h1 class
+        h1_m = re.search(r'<h1[^>]*class=[\"\'][^\"\']*jd-job-title[^\"\']*[\"\'][^>]*>(.*?)</h1>', page_html, re.DOTALL | re.IGNORECASE)
+        if not h1_m:
+            h1_m = re.search(r'<h1[^>]*>(.*?)</h1>', page_html, re.DOTALL | re.IGNORECASE)
         if h1_m:
             title = html.unescape(re.sub(r'<[^>]+>', '', h1_m.group(1)).strip())
         else:
@@ -440,74 +262,86 @@ def extract_jobdexo_detail(url):
             if title_m:
                 title = title_m.group(1).split('|')[0].split('-')[0].strip()
 
-    if not title:
-        title = "Software Engineer - Campus Recruitment"
-
-    # 3. Company Name
+    # 3. Company Extraction
     raw_company = ""
-    badge_m = re.search(r'<span class="jd-company-badge"[^>]*>(.*?)</span>', page_html, re.DOTALL)
-    if badge_m:
-        raw_company = html.unescape(re.sub(r'<[^>]+>', '', badge_m.group(1)).strip())
-    elif schema_data.get('hiringOrganization', {}).get('name'):
-        raw_company = schema_data.get('hiringOrganization', {}).get('name')
+    if schema_data.get('hiringOrganization', {}).get('name'):
+        raw_company = schema_data.get('hiringOrganization', {}).get('name').strip()
+    elif schema_data.get('identifier', {}).get('name'):
+        raw_company = schema_data.get('identifier', {}).get('name').strip()
 
-    slug = url.rstrip('/').split('/')[-1]
-    company = clean_company_name(raw_name=raw_company, title=title, slug=slug, apply_url=url)
+    # Fallback to Breadcrumb item 3
+    if not raw_company and breadcrumb_data.get('itemListElement'):
+        items = breadcrumb_data.get('itemListElement', [])
+        if len(items) >= 3 and items[2].get('name'):
+            raw_company = items[2].get('name').strip()
 
-    # 4. Salary / Stipend / Package (Robust Multi-Source Extraction)
+    # 4. Resolve standardized company name
+    company = resolve_company_name(
+        raw_name=raw_company,
+        title=title,
+        description=schema_data.get('description', '') or page_html[:1000],
+        apply_url=url,
+        url=url
+    )
+
+    # 5. Clean Title (strip batch noise and redundant company mentions)
+    clean_title = clean_job_title(title, company_name=company)
+
+    # 6. Salary
     salary = extract_salary_from_html(page_html, schema_data=schema_data, fallback="Competitive Package (Best in Industry)")
 
-    # 5. Location
+    # 7. Location
     location = "Remote / Hybrid, India"
-    loc_m = re.search(r'<div class="jd-meta-lbl">\s*📍\s*Location\s*</div>\s*<div class="jd-meta-val">([^<]+)</div>', page_html, re.IGNORECASE)
-    if loc_m:
-        location = html.unescape(loc_m.group(1).strip())
+    if schema_data.get('jobLocation', {}).get('address', {}).get('addressLocality'):
+        location = schema_data.get('jobLocation', {}).get('address', {}).get('addressLocality').strip()
     else:
-        loc_tag = re.search(r'<span class="jd-tag jt-slate">\s*📍\s*([^<]+)</span>', page_html)
-        if loc_tag:
-            location = html.unescape(loc_tag.group(1).strip())
+        loc_m = re.search(r'<span class=[\"\']jd-tag jt-slate[\"\']>\s*📍\s*([^<]+)</span>', page_html)
+        if loc_m:
+            location = html.unescape(loc_m.group(1).strip())
 
-    # 6. Skills
-    skills_tags = re.findall(r'<span class="jd-skill">([^<]+)</span>', page_html)
+    # 8. Skills
+    skills_tags = re.findall(r'<span class=[\"\']jd-skill[\"\']>([^<]+)</span>', page_html)
     skills = ", ".join([html.unescape(s.strip()) for s in skills_tags if s.strip()])
     if not skills:
         skills = "Problem Solving, Software Engineering, Communication"
 
-    # 7. Eligibility Criteria
+    # 9. Eligibility
     eligibility = "Open to all freshers & eligible graduating batches."
-    elig_m = re.search(r'<div class="jd-card-title">\s*✅\s*Eligibility Criteria\s*</div>\s*<div class="jd-prose">([^<]+)</div>', page_html, re.IGNORECASE)
+    elig_m = re.search(r'<div class=[\"\']jd-card-title[\"\']>\s*✅\s*Eligibility Criteria\s*</div>\s*<div class=[\"\']jd-prose[\"\']>([^<]+)</div>', page_html, re.IGNORECASE)
     if elig_m:
         eligibility = html.unescape(elig_m.group(1).strip())
 
-    # 8. Description & About the Role
+    # 10. Description
     description = ""
-    desc_m = re.search(r'<div class="jd-prose"[^>]*id="jdDesc"[^>]*>(.*?)</div>', page_html, re.DOTALL)
-    if not desc_m:
-        desc_m = re.search(r'<div class="jd-card-title">\s*📋\s*About the Role\s*</div>\s*<div class="jd-prose"[^>]*>(.*?)</div>', page_html, re.DOTALL)
-    if desc_m:
-        raw_desc = re.sub(r'<br\s*/?>', '\n', desc_m.group(1))
+    if schema_data.get('description'):
+        raw_desc = schema_data.get('description').strip()
+        raw_desc = re.sub(r'<br\s*/?>', '\n', raw_desc)
         raw_desc = re.sub(r'<[^>]+>', '', raw_desc)
         description = html.unescape(raw_desc.strip())
     else:
-        description = f"{company} is hiring for {title}.\nLocation: {location}\nSalary: {salary}\nKey Skills: {skills}"
+        desc_m = re.search(r'<div class=[\"\']jd-prose[\"\'][^>]*id=[\"\']jdDesc[\"\'][^>]*>(.*?)</div>', page_html, re.DOTALL)
+        if desc_m:
+            raw_desc = re.sub(r'<br\s*/?>', '\n', desc_m.group(1))
+            raw_desc = re.sub(r'<[^>]+>', '', raw_desc)
+            description = html.unescape(raw_desc.strip())
 
-    # 8b. Selection Process & Interview Rounds
+    if not description:
+        description = f"{company} is hiring for {clean_title}.\nLocation: {location}\nSalary: {salary}\nKey Skills: {skills}"
+
+    # 11. Selection Process & Study Materials
     selection_process = ""
-    sel_m = re.search(r'<div class="jd-card-title">\s*🏆\s*Selection Process\s*</div>\s*<div class="jd-prose"[^>]*>(.*?)</div>', page_html, re.DOTALL)
+    sel_m = re.search(r'<div class=[\"\']jd-card-title[\"\']>\s*🏆\s*Selection Process\s*</div>\s*<div class=[\"\']jd-prose[\"\'][^>]*>(.*?)</div>', page_html, re.DOTALL)
     if sel_m:
         raw_sel = re.sub(r'<br\s*/?>', '\n', sel_m.group(1))
         raw_sel = re.sub(r'<[^>]+>', '', raw_sel)
         selection_process = html.unescape(raw_sel.strip())
-        raw_sel = re.sub(r'<[^>]+>', '', raw_sel)
-        selection_process = html.unescape(raw_sel.strip())
 
-    # 8c. Free Study Materials & Preparation Links
     study_materials = []
-    study_cards = re.findall(r'<a[^>]*href="([^"]+)"[^>]*class="[^"]*jd-study[^"]*"[^>]*>(.*?)</a>', page_html, re.DOTALL)
+    study_cards = re.findall(r'<a[^>]*href=[\"\']([^\"\']+)[\"\'][^>]*class=[\"\'][^\"\']*jd-study[^\"\']*[\"\'][^>]*>(.*?)</a>', page_html, re.DOTALL)
     for link, content in study_cards:
-        t_m = re.search(r'<div class="sm-title">([^<]+)</div>', content)
-        d_m = re.search(r'<div class="sm-desc">([^<]+)</div>', content)
-        i_m = re.search(r'<div class="sm-icon">([^<]+)</div>', content)
+        t_m = re.search(r'<div class=[\"\']sm-title[\"\']>([^<]+)</div>', content)
+        d_m = re.search(r'<div class=[\"\']sm-desc[\"\']>([^<]+)</div>', content)
+        i_m = re.search(r'<div class=[\"\']sm-icon[\"\']>([^<]+)</div>', content)
         study_materials.append({
             'title': html.unescape(t_m.group(1).strip()) if t_m else 'Study Resource',
             'desc': html.unescape(d_m.group(1).strip()) if d_m else 'Interview and screening practice resource.',
@@ -515,71 +349,28 @@ def extract_jobdexo_detail(url):
             'url': link.strip()
         })
 
-    # 9. Official Apply URL Extraction (Strictly Direct / Career ATS Link)
-    apply_url = extract_official_apply_url(page_html, url)
-    if not apply_url or 'jobdexo.com' in apply_url:
-        apply_url = url
+    # 12. Official Apply URL
+    apply_url = extract_official_apply_url(page_html, fallback_url=url)
 
-    # 10. Check Posting Date & Freshness
+    # 13. Expiration Check
     is_expired = False
     posted_date = timezone.now().date()
-
     if schema_data.get('datePosted'):
         try:
-            from datetime import datetime
             dp_str = schema_data.get('datePosted')[:10]
             parsed_dp = datetime.strptime(dp_str, '%Y-%m-%d').date()
             posted_date = parsed_dp
-            if (timezone.now().date() - parsed_dp).days > 3:
+            if (timezone.now().date() - parsed_dp).days > 7:
                 is_expired = True
         except Exception:
             pass
 
-    deadline_m = re.search(r'Deadline:\s*(\d{1,2}\s+[A-Za-z]{3,}\s+\d{4})', page_html, re.IGNORECASE)
-    if deadline_m:
-        try:
-            from datetime import datetime
-            parsed_dl = datetime.strptime(deadline_m.group(1).strip(), '%d %b %Y')
-            if parsed_dl.date() < timezone.now().date():
-                is_expired = True
-        except Exception:
-            pass
-
-    if schema_data.get('validThrough'):
-        try:
-            vt = schema_data.get('validThrough')[:10]
-            from datetime import datetime
-            parsed_vt = datetime.strptime(vt, '%Y-%m-%d')
-            if parsed_vt.date() < timezone.now().date():
-                is_expired = True
-        except Exception:
-            pass
-
-    # Extract meta description
-    meta_desc = ""
-    og_m = re.search(r'<meta[^>]+property=[\'"]og:description[\'"][^>]+content=[\'"]([^\'"]+)[\'"]', page_html, re.IGNORECASE)
-    if not og_m:
-        og_m = re.search(r'<meta[^>]+name=[\'"]description[\'"][^>]+content=[\'"]([^\'"]+)[\'"]', page_html, re.IGNORECASE)
-    if og_m:
-        meta_desc = html.unescape(og_m.group(1).strip())
-
-    full_desc_context = f"{meta_desc}\n{description}" if meta_desc else description
-
-    lower_title = f"{title} {description}".lower()
-    is_intern = any(k in lower_title for k in ['intern', 'internship', 'apprentice', 'trainee', 'co-op'])
-    job_type = 'INTERNSHIP' if is_intern else 'FULL_TIME'
-
-    resolved_company = resolve_company_name(
-        raw_name=company,
-        title=title,
-        description=full_desc_context,
-        apply_url=apply_url,
-        url=url
-    )
+    lower_ctx = f"{clean_title} {description}".lower()
+    job_type = 'INTERNSHIP' if any(k in lower_ctx for k in ['intern', 'internship', 'apprentice', 'trainee', 'co-op']) else 'FULL_TIME'
 
     return {
-        'title': title,
-        'company': resolved_company,
+        'title': clean_title,
+        'company': company,
         'salary': salary,
         'location': location,
         'skills': skills,
@@ -596,27 +387,24 @@ def extract_jobdexo_detail(url):
 
 
 def fetch_multi_section_jobdexo_urls(limit=35):
-    """
-    Crawls across distinct Jobdexo sections with polite pacing.
-    """
+    """Crawls across distinct Jobdexo sections with polite pacing."""
     discovered_urls = []
     seen_urls = set()
 
     for endpoint in JOBDEXO_SOURCE_ENDPOINTS:
         try:
             page_html = fetch_url_html(endpoint)
-            # Match both relative /job/... and absolute https://jobdexo.com/job/... links
             found_urls = re.findall(r'href=[\"\']((?:https?://(?:www\.)?jobdexo\.com)?/job/[^\"\']+)[\"\']', page_html)
             for u in found_urls:
                 full_url = f"https://jobdexo.com{u}" if u.startswith('/') else u
-                if full_url not in seen_urls:
+                full_url = canonical_clean_url(full_url)
+                if full_url and full_url not in seen_urls:
                     seen_urls.add(full_url)
                     discovered_urls.append(full_url)
                 if len(discovered_urls) >= limit:
                     break
-            # Polite pacing between endpoint scrapes
-            time.sleep(random.uniform(0.6, 1.2))
-        except Exception as err:
+            time.sleep(random.uniform(0.3, 0.6))
+        except Exception:
             pass
 
         if len(discovered_urls) >= limit:
@@ -627,83 +415,189 @@ def fetch_multi_section_jobdexo_urls(limit=35):
 
 def is_job_duplicate_in_db(job_data, seen_in_batch=None):
     """
-    Enterprise-grade multi-tier strict deduplication engine:
-    1. In-batch canonical key & clean URL tracking.
-    2. Clean application URL match (stripping query parameters and trailing slashes).
-    3. Exact normalized company + normalized title match across the entire database.
-    4. Substring & high-overlap fuzzy deduplication for same company.
+    Standard, multi-tier deduplication engine:
+    1. Canonical URL match (Official ATS Apply URL & Source URL).
+    2. Exact (Normalized Company + Normalized Clean Title).
+    3. Token overlap / Jaccard similarity for identical company.
+    4. Auto-heals existing job: If existing job points to jobdexo.com, updates it to the new official ATS URL.
     """
     apply_url = (job_data.get('apply_url') or '').strip()
     source_url = (job_data.get('source_url') or '').strip()
+    clean_apply = canonical_clean_url(apply_url)
     raw_title = job_data.get('title') or ''
     raw_comp = job_data.get('company') or ''
-    
+
     norm_title = normalize_text(raw_title)
     norm_comp = normalize_text(raw_comp)
 
-    # Clean URL (strip tracking query params and protocol for pure endpoint matching)
-    clean_apply = re.sub(r'\?.*$', '', apply_url).rstrip('/').lower() if apply_url and 'jobdexo.com' not in apply_url else None
-    clean_source = re.sub(r'\?.*$', '', source_url).rstrip('/').lower() if source_url else None
-
-    # 1. Batch level check
+    # 1. Batch level deduplication
     if seen_in_batch is not None:
         batch_key = f"{norm_comp}::{norm_title}"
         if batch_key in seen_in_batch:
             return True
-        if clean_apply and clean_apply in seen_in_batch:
-            return True
-        if clean_source and clean_source in seen_in_batch:
+        if clean_apply and clean_apply in seen_in_batch and 'jobdexo.com' not in clean_apply:
             return True
         seen_in_batch.add(batch_key)
-        if clean_apply:
+        if clean_apply and 'jobdexo.com' not in clean_apply:
             seen_in_batch.add(clean_apply)
-        if clean_source:
-            seen_in_batch.add(clean_source)
 
-    # 2. Match exact or clean apply_url in database
-    if clean_apply:
-        # Match URL without query string
-        if JobPosting.objects.filter(apply_url__icontains=clean_apply[:60]).exists():
+    # 2. Database Canonical Apply URL Match (Official ATS career link)
+    if clean_apply and 'jobdexo.com' not in clean_apply:
+        if JobPosting.objects.filter(apply_url__iexact=clean_apply).exists():
+            return True
+        # Also check without trailing slash or protocol
+        domain_path = re.sub(r'^https?:\/\/', '', clean_apply).rstrip('/')
+        if JobPosting.objects.filter(apply_url__icontains=domain_path).exists():
             return True
 
-    # 3. Match normalized title + company in all postings
-    if norm_comp:
-        company_jobs = JobPosting.objects.filter(
-            Q(company_name__iexact=raw_comp) |
-            Q(company_name__icontains=raw_comp[:5])
-        )
-        for existing in company_jobs:
-            exist_comp_norm = normalize_text(existing.company_name)
-            exist_title_norm = normalize_text(existing.title)
-            
-            # Exact normalized match
-            if exist_comp_norm == norm_comp and exist_title_norm == norm_title:
+    # 3. Exact (Normalized Company + Normalized Title) Match
+    existing_same_company = JobPosting.objects.filter(
+        Q(company_name__iexact=raw_comp) | 
+        Q(company_name__iexact=raw_comp.replace(' ', '')) |
+        Q(company_name__icontains=raw_comp)
+    )
+
+    t1_tokens = set(re.findall(r'[a-z0-9]+', raw_title.lower()))
+    for existing in existing_same_company:
+        t2_tokens = set(re.findall(r'[a-z0-9]+', existing.title.lower()))
+        
+        # Exact normalized title match
+        if normalize_text(existing.title) == norm_title:
+            # If existing job has a legacy jobdexo apply_url, upgrade it to the new official ATS URL
+            if clean_apply and 'jobdexo.com' not in clean_apply and 'jobdexo.com' in existing.apply_url:
+                existing.apply_url = clean_apply
+                existing.save(update_fields=['apply_url'])
+            return True
+
+        # High Token Jaccard Similarity (>= 0.75) for same company
+        if t1_tokens and t2_tokens:
+            intersection = t1_tokens.intersection(t2_tokens)
+            similarity = len(intersection) / max(len(t1_tokens), len(t2_tokens))
+            if similarity >= 0.75:
+                if clean_apply and 'jobdexo.com' not in clean_apply and 'jobdexo.com' in existing.apply_url:
+                    existing.apply_url = clean_apply
+                    existing.save(update_fields=['apply_url'])
                 return True
-                
-            # Same company + high title similarity (one is substring of other or token match)
-            if exist_comp_norm == norm_comp:
-                if (len(norm_title) > 6 and norm_title in exist_title_norm) or (len(exist_title_norm) > 6 and exist_title_norm in norm_title):
-                    return True
-                # Word tokens overlap >= 80%
-                t1_tokens = set(re.findall(r'[a-z0-9]+', raw_title.lower()))
-                t2_tokens = set(re.findall(r'[a-z0-9]+', existing.title.lower()))
-                if t1_tokens and t2_tokens:
-                    intersection = t1_tokens.intersection(t2_tokens)
-                    similarity = len(intersection) / max(len(t1_tokens), len(t2_tokens))
-                    if similarity >= 0.8:
-                        return True
 
     return False
 
 
+def cleanup_all_database_duplicates():
+    """
+    One-shot master routine that merges and deletes all existing duplicate JobPosting records,
+    standardizes corrupted company names (e.g. Jobsashbyhq -> LG Ad Solutions), cleans titles,
+    and upgrades legacy jobdexo apply links.
+    """
+    all_jobs = list(JobPosting.objects.all().order_by('created_at'))
+    seen_keys = {}
+    deleted_count = 0
+    updated_count = 0
+
+    for job in all_jobs:
+        # Standardize company name
+        resolved_company = resolve_company_name(
+            raw_name=job.company_name,
+            title=job.title,
+            description=job.description,
+            apply_url=job.apply_url,
+            url=job.apply_url or ""
+        )
+        
+        # Standardize title
+        clean_title = clean_job_title(job.title, company_name=resolved_company)
+
+        # Standardize canonical apply URL
+        clean_apply = canonical_clean_url(job.apply_url)
+
+        # Build deduplication fingerprint key
+        comp_key = normalize_text(resolved_company)
+        title_key = normalize_text(clean_title)
+        primary_key = f"{comp_key}::{title_key}"
+
+        if primary_key in seen_keys:
+            # Already have this job! Delete the duplicate record
+            job.delete()
+            deleted_count += 1
+            continue
+
+        seen_keys[primary_key] = job.id
+
+        # Update fields if standardized
+        needs_save = False
+        if job.company_name != resolved_company:
+            job.company_name = resolved_company
+            needs_save = True
+        if job.title != clean_title:
+            job.title = clean_title
+            needs_save = True
+        if job.apply_url != clean_apply and clean_apply:
+            job.apply_url = clean_apply
+            needs_save = True
+
+        if needs_save:
+            job.save(update_fields=['company_name', 'title', 'apply_url'])
+            updated_count += 1
+
+    cache.clear()
+    return {'deleted_duplicates': deleted_count, 'updated_jobs': updated_count}
+
+
+def resolve_all_jobdexo_apply_urls():
+    """
+    Crawls and replaces all existing JobPosting apply_url records in the DB
+    that currently point to jobdexo.com with their official external ATS career apply URLs.
+    """
+    postings = JobPosting.objects.filter(apply_url__icontains='jobdexo.com')
+    total = postings.count()
+    updated_count = 0
+
+    for job in postings:
+        target_url = job.apply_url
+        try:
+            html_content = fetch_url_html(target_url, retries=1)
+            real_url = extract_official_apply_url(html_content, fallback_url=None)
+            if real_url and 'jobdexo.com' not in real_url:
+                job.apply_url = real_url
+                job.save(update_fields=['apply_url'])
+                updated_count += 1
+                time.sleep(0.3)
+        except Exception:
+            pass
+
+    return {'total': total, 'updated': updated_count}
+
+
+def resolve_all_jobdexo_company_names():
+    """Batch resolves clean company names for all existing postings."""
+    postings = JobPosting.objects.all()
+    total = postings.count()
+    updated_count = 0
+
+    for job in postings:
+        resolved = resolve_company_name(
+            raw_name=job.company_name,
+            title=job.title,
+            description=job.description,
+            apply_url=job.apply_url,
+            url=""
+        )
+        if resolved != job.company_name:
+            job.company_name = resolved
+            job.save(update_fields=['company_name'])
+            updated_count += 1
+
+    return {'total': total, 'updated': updated_count}
+
+
 def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     """
-    Main ingestion engine:
-    1. Extracts jobs across Jobdexo sections (or provided URLs).
-    2. Uses polite scraping with backoff retry.
-    3. Strictly filters out duplicate jobs.
-    4. Publishes new verified openings under 'Software & Tech' with 7-day expiry.
-    5. Automatically groups them into a 7-day shareable group.
+    Standard Ingestion Engine:
+    1. Fetches candidate Jobdexo URLs.
+    2. Performs fast pre-check to skip already-imported URLs.
+    3. Scrapes Schema.org metadata and official career ATS apply links.
+    4. Applies multi-tier strict deduplication.
+    5. Publishes verified openings under 'Software & Tech' category.
+    6. Bundles into a 7-day shareable group.
     """
     software_category, _ = Category.objects.get_or_create(
         slug='software-tech',
@@ -728,27 +622,25 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         if not url:
             continue
 
-        # Fast Pre-Check: Instantly skip if source_url or apply_url is already in database
-        if JobPosting.objects.filter(Q(source_url=url) | Q(apply_url=url)).exists():
+        # Fast Pre-Check: skip if exact canonical URL exists in DB
+        clean_candidate_url = canonical_clean_url(url)
+        if JobPosting.objects.filter(apply_url=clean_candidate_url).exists():
             continue
 
         try:
-            # Polite pacing between new job scrapes (prevents 429 rate limiting)
-            time.sleep(random.uniform(0.3, 0.6))
+            time.sleep(random.uniform(0.3, 0.5))
             job_data = extract_jobdexo_detail(url)
-
-            # Skip expired or stale jobs
-            if job_data.get('is_expired'):
+            if not job_data or job_data.get('is_expired'):
                 continue
 
-            # Strict Deduplication Check
+            # Standard Deduplication Check
             if is_job_duplicate_in_db(job_data, seen_in_batch=seen_in_batch):
                 continue
 
             job_posted_date = job_data.get('posted_date', now.date())
             job_deadline = timezone.now() + timedelta(days=7)
 
-            # Create new non-duplicate job posting
+            # Create standard verified job posting
             job = JobPosting.objects.create(
                 title=job_data['title'],
                 company_name=job_data['company'],
@@ -784,11 +676,10 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
             if len(created_jobs) >= limit:
                 break
 
-        except Exception as e:
-            # Silently ignore individual scrape errors or log cleanly
+        except Exception:
             continue
 
-    # Create / Update Requirement Group
+    # Create Requirement Group
     job_group = None
     if created_job_instances:
         now_local = timezone.localtime(timezone.now())
@@ -838,7 +729,6 @@ def _background_hourly_sync_loop():
     
     while _SYNC_WORKER_RUNNING:
         try:
-            # Sleep 3600 seconds (1 hour) with slight randomized jitter
             time.sleep(3600 + random.randint(10, 60))
             print("⚡ [Jobdexo Auto-Sync] Running hourly automated crawl across all sections...")
             result = auto_import_from_jobdexo(limit=5)
