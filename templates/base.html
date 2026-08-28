@@ -48,10 +48,10 @@
   <div class="site-grain"></div>
 
   {% block entry_experience %}
-    <!-- 3D Particle Morphing Entry Experience -->
+    <!-- Apple / Linear Style Kinetic Glowing Vector & Iridescent Beam Entry -->
     <div id="kashiiEntry" role="dialog" aria-modal="true" aria-label="Welcome to Kashii Updatez">
-      <div class="aurora a1"></div>
-      <div class="aurora a2"></div>
+      <div class="mesh-glow mesh-1"></div>
+      <div class="mesh-glow mesh-2"></div>
       
       <!-- Top Bar Controls -->
       <div class="entry-topbar">
@@ -59,29 +59,47 @@
           <span class="pulse-dot"></span> KASHII UPDATEZ &middot; DAILY STUDENT CAREERS
         </span>
         <button id="entrySkipBtn" type="button" aria-label="Skip introduction animation">
-          Skip Intro ›
+          Skip ›
         </button>
       </div>
 
-      <!-- Center Stage Canvas -->
+      <!-- Center Stage: Iridescent Beam Gem + Razor-Sharp Kinetic Wordmark -->
       <div class="entry-center-stage">
-        <canvas id="entryCanvas" width="900" height="240"></canvas>
+        <div class="gem-wrapper">
+          <div class="gem-beam-spinner"></div>
+          <div class="gem-inner">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="url(#boltGrad)" stroke="#38bdf8" stroke-width="1.2" stroke-linejoin="round"/>
+              <defs>
+                <linearGradient id="boltGrad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#38bdf8"/>
+                  <stop offset="0.5" stop-color="#60a5fa"/>
+                  <stop offset="1" stop-color="#a855f7"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <h1 id="entryWordmark" class="entry-brand-typography">
+          <span class="word-kashii">Kashii</span>
+          <span class="word-updatez">Updatez</span>
+        </h1>
+
         <p class="entry-sub-tag">
-          Verified 7-Day Student Jobs &middot; Campus Drives &middot; Python Kashi Coding Hub
+          Verified 7-Day Student Jobs &middot; Campus Drives &middot; Python Kashi Hub
         </p>
       </div>
 
-      <!-- Bottom Status & Loader Progress -->
-      <div class="entry-bottom-bar">
+      <!-- Bottom HUD Telemetry Card -->
+      <div class="entry-hud-card">
+        <div class="entry-hud-header">
+          <span id="entryStatusText" class="entry-hud-status">Synchronizing 7-Day Live Feed...</span>
+          <span id="entryMetricCount" class="entry-hud-count">0%</span>
+        </div>
         <div class="entry-progress-track">
-          <div id="entryProgressBar" class="entry-progress-fill"></div>
+          <div id="entryProgressFill" class="entry-progress-fill"></div>
         </div>
-        <div id="entryStatus" class="entry-status-text">
-          ✨ Initializing 7-Day Verified Stream...
-        </div>
-        <button id="entryEnterBtn" type="button" class="entry-enter-btn">
-          Explore Opportunities ➔
-        </button>
       </div>
     </div>
   {% endblock %}
@@ -118,8 +136,7 @@
   <!-- Core App Scripts -->
   <script src="{% static 'js/app.js' %}?v=202608281200"></script>
   {% block entry_scripts %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="{% static 'js/entry_experience.js' %}?v=202608281200"></script>
+    <script src="{% static 'js/entry_experience.js' %}?v=202608281300"></script>
   {% endblock %}
   {% block extra_js %}{% endblock %}
 </body>
