@@ -48,16 +48,29 @@
   <div class="site-grain"></div>
 
   {% block entry_experience %}
-    <!-- Natural 3D Particle Entry Experience -->
+    <!-- High-Illumination 3D Particle Entry Experience -->
     <div id="kashiiEntry" role="dialog" aria-modal="true" aria-label="Welcome to Kashii Updatez">
       <div class="aurora a1"></div>
       <div class="aurora a2"></div>
+      <div class="aurora-center"></div>
+      
       <button id="entrySkipBtn" type="button" aria-label="Skip introduction animation">Skip ›</button>
-      <canvas id="entryCanvas"></canvas>
-      <div id="entryStatus">Assembling today's opportunities</div>
+      
+      <div class="entry-stage-wrap">
+        <canvas id="entryCanvas"></canvas>
+        <div id="entrySolidText" class="entry-solid-text">
+          <span class="solid-kashii">Kashii</span>
+          <span class="solid-updatez">Updatez</span>
+        </div>
+      </div>
+
+      <div id="entryStatus" class="entry-status-badge">
+        <span class="status-pulse-dot"></span>
+        <span id="entryStatusText">Assembling today's opportunities...</span>
+      </div>
     </div>
 
-    <!-- Smooth Blue Iris Wipe Transition -->
+    <!-- Smooth Radiant Blue Iris Wipe Transition -->
     <div id="kashiiWipe"></div>
   {% endblock %}
 

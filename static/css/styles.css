@@ -1361,7 +1361,7 @@ a {
 }
 
 /* ==========================================================================
-   KASHII UPDATEZ — NATURAL 3D PARTICLE ENTRY EXPERIENCE
+   KASHII UPDATEZ — HIGH-ILLUMINATION 3D PARTICLE & RADIANT REVEAL
    ========================================================================== */
 
 html.entry-done #kashiiEntry,
@@ -1373,8 +1373,9 @@ html.entry-done #kashiiWipe {
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: #ffffff;
+  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #f0f7ff 60%, #e0edff 100%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -1382,104 +1383,223 @@ html.entry-done #kashiiWipe {
 }
 
 #kashiiEntry.fade-out {
-  transition: opacity 0.5s ease;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 0;
   pointer-events: none;
 }
 
+/* Radiant Ambient Auroras */
 .aurora {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.45;
   pointer-events: none;
 }
 
 .aurora.a1 {
-  width: 420px;
-  height: 420px;
-  background: #c9d7ff;
-  top: -120px;
-  left: -100px;
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.40) 0%, rgba(99, 102, 241, 0.16) 55%, transparent 75%);
+  top: -140px;
+  left: -120px;
+  filter: blur(65px);
   animation: float1 12s ease-in-out infinite;
 }
 
 .aurora.a2 {
-  width: 360px;
-  height: 360px;
-  background: #e0e7ff;
-  bottom: -120px;
-  right: -80px;
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(147, 197, 253, 0.50) 0%, rgba(168, 85, 247, 0.16) 60%, transparent 80%);
+  bottom: -140px;
+  right: -100px;
+  filter: blur(65px);
   animation: float2 14s ease-in-out infinite;
+}
+
+.aurora-center {
+  position: absolute;
+  width: 650px;
+  height: 320px;
+  background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.22) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 75%);
+  filter: blur(55px);
+  pointer-events: none;
 }
 
 @keyframes float1 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(40px, 30px) scale(1.08); }
+  50% { transform: translate(45px, 35px) scale(1.1); }
 }
 
 @keyframes float2 {
   0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-30px, -40px) scale(1.06); }
+  50% { transform: translate(-35px, -45px) scale(1.08); }
+}
+
+/* Stage & Typography Container */
+.entry-stage-wrap {
+  position: relative;
+  width: min(88vw, 760px);
+  height: min(34vw, 250px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
 }
 
 #entryCanvas {
-  width: min(80vw, 680px);
-  height: min(32vw, 220px);
-  position: relative;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 2;
 }
 
-#entryStatus {
+/* Razor-Sharp Luminous Editorial Typography */
+.entry-solid-text {
   position: absolute;
-  bottom: calc(50% - 120px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Inter', var(--font-sans), sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #8a8f9c;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(8px, 1.8vw, 16px);
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(48px, 9.2vw, 96px);
+  line-height: 1;
   opacity: 0;
-  transition: opacity 0.4s ease;
-  white-space: nowrap;
+  transform: scale(0.98);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+  position: relative;
+}
+
+.entry-solid-text.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.solid-kashii {
+  font-weight: 900;
+  color: #0a0f1d;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+}
+
+.solid-updatez {
+  font-style: italic;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #4f46e5 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 22px rgba(37, 99, 235, 0.35));
+}
+
+/* Specular Shimmer Streak */
+.entry-solid-text::after {
+  content: '';
+  position: absolute;
+  top: -15%;
+  bottom: -15%;
+  left: -35%;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.85), transparent);
+  transform: skewX(-25deg);
+  opacity: 0;
   pointer-events: none;
 }
 
-#entryStatus.show {
+.entry-solid-text.shine-sweep::after {
+  animation: shineSweepText 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes shineSweepText {
+  0% { left: -35%; opacity: 0; }
+  30% { opacity: 1; }
+  100% { left: 135%; opacity: 0; }
+}
+
+/* Illuminated Status Badge */
+.entry-status-badge {
+  position: absolute;
+  bottom: clamp(24px, 6vh, 48px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1.5px solid rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8px 28px rgba(37, 99, 235, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 9px 22px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #0f172a;
+  opacity: 0;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.entry-status-badge.show {
   opacity: 1;
 }
 
+.status-pulse-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2563eb;
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+  animation: pulseDotGlow 2s infinite;
+}
+
+@keyframes pulseDotGlow {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+/* Illuminated Skip Button */
 #entrySkipBtn {
   position: absolute;
   top: 24px;
   right: 24px;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid #e9eaee;
-  color: #8a8f9c;
-  font-family: 'Inter', var(--font-sans), sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 8px 18px;
+  z-index: 15;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(37, 99, 235, 0.2);
+  color: #2563eb;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 8px 20px;
   border-radius: var(--radius-full);
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #entrySkipBtn:hover {
-  border-color: #3457e6;
-  color: #3457e6;
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(37, 99, 235, 0.35);
 }
 
+/* Radiant Royal Blue Iris Bloom Wipe */
 #kashiiWipe {
   position: fixed;
   inset: 0;
   z-index: 100000;
-  background: #3457e6;
+  background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
   clip-path: circle(0% at 50% 50%);
   -webkit-clip-path: circle(0% at 50% 50%);
   pointer-events: none;
@@ -1506,5 +1626,6 @@ html.entry-done #kashiiWipe {
   opacity: 0.025;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
 
 
