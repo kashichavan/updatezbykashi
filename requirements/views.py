@@ -87,6 +87,9 @@ def get_cached_youtube_videos():
 
 import threading
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 def sync_expired_jobs():
     """Automatically deletes postings older than 3 days (72 hours) so feed stays 100% fresh daily."""
@@ -95,12 +98,35 @@ def sync_expired_jobs():
     if deleted_count > 0:
         cache.clear()
 
-def trigger_async_jobdexo_refresh():
-    """Triggers non-blocking background auto-import if 10 minutes have elapsed since last crawl."""
+def _safe_bg_jobdexo_import(limit=15):
+    """Safely executes background Jobdexo ingestion with proper DB connection cleanup."""
+    try:
+        from django.db import close_old_connections
+        close_old_connections()
+        result = auto_import_from_jobdexo(limit=limit)
+        imported = result.get('imported_count', 0)
+        if imported > 0:
+            logger.info(f"🚀 [Jobdexo Auto-Import] Successfully imported {imported} fresh opportunities into DB.")
+    except Exception as e:
+        logger.error(f"❌ [Jobdexo Auto-Import] Background error: {e}", exc_info=True)
+    finally:
+        try:
+            from django.db import close_old_connections
+            close_old_connections()
+        except Exception:
+            pass
+
+def trigger_async_jobdexo_refresh(force=False, limit=15):
+    """Triggers non-blocking background auto-import if 5 minutes have elapsed since last crawl."""
     last_sync = cache.get('last_auto_jobdexo_sync_ts')
-    if not last_sync:
-        cache.set('last_auto_jobdexo_sync_ts', time.time(), 600)  # 10 min throttle
-        t = threading.Thread(target=auto_import_from_jobdexo, kwargs={'limit': 15}, daemon=True, name="AsyncJobdexoRefresh")
+    if force or not last_sync:
+        cache.set('last_auto_jobdexo_sync_ts', time.time(), 300)  # 5 min throttle
+        t = threading.Thread(
+            target=_safe_bg_jobdexo_import,
+            kwargs={'limit': limit},
+            daemon=True,
+            name="AsyncJobdexoRefresh"
+        )
         t.start()
 
 def api_ping(request):
@@ -109,6 +135,25 @@ def api_ping(request):
     return JsonResponse({
         'status': 'ok',
         'app': 'Kashii Updatez',
+        'timestamp': timezone.now().isoformat()
+    })
+
+def api_cron_sync_jobs(request):
+    """
+    Public cron trigger endpoint for automated Jobdexo synchronization.
+    Can be pinged by UptimeRobot, GitHub Actions, or cron-job.org.
+    """
+    force = request.GET.get('force') == '1' or request.GET.get('force') == 'true'
+    try:
+        limit = min(25, max(1, int(request.GET.get('limit', 10))))
+    except ValueError:
+        limit = 10
+
+    trigger_async_jobdexo_refresh(force=force, limit=limit)
+    return JsonResponse({
+        'status': 'sync_triggered',
+        'limit': limit,
+        'force': force,
         'timestamp': timezone.now().isoformat()
     })
 

@@ -10,16 +10,19 @@ class Command(BaseCommand):
         parser.add_argument('--count', type=int, default=5, help='Number of latest jobs to fetch from Jobdexo (default: 5)')
         parser.add_argument('--group-name', type=str, default='', help='Optional custom name for the created requirement group')
         parser.add_argument('--urls', nargs='+', type=str, default=[], help='Specific Jobdexo URLs to import')
+        parser.add_argument('--resolve-all', action='store_true', help='Resolve all legacy apply URLs (can be slow)')
 
     def handle(self, *args, **options):
         count = options['count']
         custom_name = options['group_name']
         urls = options['urls']
+        resolve_all = options.get('resolve_all', False)
 
-        self.stdout.write(self.style.NOTICE("🔍 Resolving any legacy Jobdexo apply URLs and company names..."))
-        resolved = resolve_all_jobdexo_apply_urls()
-        resolved_companies = resolve_all_jobdexo_company_names()
-        self.stdout.write(self.style.SUCCESS(f"✅ Resolved {resolved['updated']} legacy apply links & {resolved_companies['updated']} company names!"))
+        if resolve_all:
+            self.stdout.write(self.style.NOTICE("🔍 Resolving legacy Jobdexo apply URLs and company names..."))
+            resolved = resolve_all_jobdexo_apply_urls()
+            resolved_companies = resolve_all_jobdexo_company_names()
+            self.stdout.write(self.style.SUCCESS(f"✅ Resolved {resolved['updated']} legacy apply links & {resolved_companies['updated']} company names!"))
 
         self.stdout.write(self.style.NOTICE(f"🚀 Starting Jobdexo Sync (fetching up to {count} latest jobs)..."))
 
