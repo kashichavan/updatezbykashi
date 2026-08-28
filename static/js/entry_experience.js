@@ -401,7 +401,14 @@
 
     if (raf) cancelAnimationFrame(raf);
 
+    const isIntroPage = window.location.pathname === '/intro/' || window.location.pathname === '/welcome/' || window.location.pathname === '/intro' || window.location.pathname === '/welcome';
     const redirectTarget = urlParams.get('redirect') || urlParams.get('to');
+    
+    if (isIntroPage) {
+      window.location.href = redirectTarget || '/';
+      return;
+    }
+
     if (redirectTarget && !redirectTarget.startsWith('//') && !redirectTarget.includes('://')) {
       // Automatic redirection to destination page
       window.location.href = redirectTarget;
