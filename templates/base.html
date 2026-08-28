@@ -48,17 +48,28 @@
   <div class="site-grain"></div>
 
   {% block entry_experience %}
-    <!-- Kashii Updatez Entry Experience -->
-    <div id="entry" role="dialog" aria-modal="true" aria-label="Welcome to Kashii Updatez">
+    <!-- Ultra-Clean Minimalist Editorial Entry Experience -->
+    <div id="kashiiEntry" role="dialog" aria-modal="true" aria-label="Welcome to Kashii Updatez">
       <div class="aurora a1"></div>
       <div class="aurora a2"></div>
-      <button id="skip-btn" type="button" aria-label="Skip introduction animation">Skip ›</button>
-      <canvas id="entry-canvas"></canvas>
-      <div id="entry-status">Assembling today's opportunities</div>
-    </div>
+      
+      <button id="entrySkipBtn" type="button" aria-label="Skip introduction animation">Skip ›</button>
 
-    <!-- Smooth Blue Iris Wipe Transition -->
-    <div id="wipe"></div>
+      <div class="entry-center-stage">
+        <h1 id="entryWordmark" class="entry-brand-typography">
+          <span class="word-kashii">Kashii</span>
+          <span class="word-updatez">Updatez</span>
+        </h1>
+        <p id="entrySubTag" class="entry-sub-tag">
+          Daily Student Opportunities &middot; Campus Drives &middot; Python Kashi
+        </p>
+      </div>
+
+      <div class="entry-status-badge">
+        <span class="status-pulse-dot"></span>
+        <span id="entryStatusText">Assembling today's opportunities...</span>
+      </div>
+    </div>
   {% endblock %}
 
   <!-- Flash Announcement Banner -->
@@ -93,8 +104,7 @@
   <!-- Core App Scripts -->
   <script src="{% static 'js/app.js' %}?v=202608281200"></script>
   {% block entry_scripts %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="{% static 'js/entry_experience.js' %}?v=202608281310"></script>
+    <script src="{% static 'js/entry_experience.js' %}?v=202608281420"></script>
   {% endblock %}
   {% block extra_js %}{% endblock %}
 </body>

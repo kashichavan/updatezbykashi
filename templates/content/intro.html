@@ -17,23 +17,33 @@
   <!-- Subtle Film Grain -->
   <div class="site-grain"></div>
 
-  <!-- Kashii Updatez Entry Experience -->
-  <div id="entry" style="display: flex;">
+  <!-- Ultra-Clean Minimalist Editorial Entry Experience -->
+  <div id="kashiiEntry" style="display: flex;">
     <div class="aurora a1"></div>
     <div class="aurora a2"></div>
-    <button id="skip-btn" type="button" aria-label="Skip introduction animation">Skip ›</button>
-    <canvas id="entry-canvas"></canvas>
-    <div id="entry-status">Assembling today's opportunities</div>
+    
+    <button id="entrySkipBtn" type="button" aria-label="Skip introduction animation">Skip ›</button>
+
+    <div class="entry-center-stage">
+      <h1 id="entryWordmark" class="entry-brand-typography">
+        <span class="word-kashii">Kashii</span>
+        <span class="word-updatez">Updatez</span>
+      </h1>
+      <p id="entrySubTag" class="entry-sub-tag">
+        Daily Student Opportunities &middot; Campus Drives &middot; Python Kashi
+      </p>
+    </div>
+
+    <div class="entry-status-badge">
+      <span class="status-pulse-dot"></span>
+      <span id="entryStatusText">Assembling today's opportunities...</span>
+    </div>
   </div>
 
-  <!-- Smooth Blue Iris Wipe Transition -->
-  <div id="wipe"></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     // Force intro animation on dedicated intro page
     sessionStorage.removeItem('kashiiEntryPlayed');
   </script>
-  <script src="{% static 'js/entry_experience.js' %}?v=202608281310"></script>
+  <script src="{% static 'js/entry_experience.js' %}?v=202608281420"></script>
 </body>
 </html>
