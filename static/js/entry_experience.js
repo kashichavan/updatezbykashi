@@ -1,11 +1,11 @@
 /**
- * KASHII UPDATEZ — Ultra-Resilient 3D Particle Morphing & Iris Wipe Entry Experience
- * 100% Fail-Safe Architecture:
- * - Guaranteed Maximum 2.2s Hard Timeout (never gets stuck or blocks page load)
- * - 250ms Font Race with instant serif fallback
- * - Instant Skip & Dismiss on Click / Touch / Escape key
- * - Clean Iris circular wipe transition into live website feed
- * - Zero-latency session guard for repeat navigation
+ * KASHII UPDATEZ — Luxury 3D Cyber-Constellation Entry Experience
+ * Inspired by Awwwards, Vercel & Linear Aesthetics:
+ * - High-density 3D particle constellation wordmark (Icy Cyan Pearl + Electric Violet-Blue)
+ * - Deep obsidian cyber-nebula with floating ambient stardust
+ * - Responsive 3D mouse & touch physics tilt
+ * - Ultra-smooth cinematic dissolve transition (Zero double-zooms, Zero screen flash)
+ * - Strict 2.4s fail-safe timeout & instant click/escape bypass
  */
 
 (function () {
@@ -22,8 +22,8 @@
   const progressBar = document.getElementById('entryProgressBar');
   const enterBtn = document.getElementById('entryEnterBtn');
 
+  // Bypass admin & owner portals
   const isOwnerOrAdmin = window.location.pathname.startsWith('/owner') || window.location.pathname.startsWith('/admin');
-
   if (isOwnerOrAdmin) {
     if (entryEl) entryEl.style.display = 'none';
     if (wipeEl) wipeEl.style.display = 'none';
@@ -46,21 +46,19 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const lerp = (a, b, t) => a + (b - a) * t;
   const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-  const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 
   let sequenceFinished = false;
   let raf = null;
 
-  // Hard safety timeout: under ANY circumstance, dismiss after 2.2 seconds max
+  // 2.4s Maximum Hard Safety Timeout
   const safetyTimer = setTimeout(() => {
     if (!sequenceFinished) {
       finishSequence();
     }
-  }, 2200);
+  }, 2400);
 
-  // 1. Rasterize Wordmark typography into coordinate point cloud
+  // 1. High-Density Typography Rasterization
   async function buildTextPoints() {
-    // Race font loading with a 250ms strict timeout
     try {
       if (document.fonts && document.fonts.load) {
         await Promise.race([
@@ -69,7 +67,7 @@
             document.fonts.load("italic 600 120px 'Playfair Display'"),
             document.fonts.load("800 120px 'Plus Jakarta Sans'")
           ]),
-          sleep(250)
+          sleep(200)
         ]);
       }
     } catch (e) {}
@@ -90,16 +88,16 @@
     ctx.textBaseline = 'middle';
 
     const fontSerif = "'Playfair Display', 'Fraunces', Georgia, serif";
-    const fontSize = isMobile ? 84 : (isTablet ? 98 : 112);
+    const fontSize = isMobile ? 84 : (isTablet ? 98 : 114);
 
     if (isMobile) {
       ctx.font = `900 ${fontSize}px ${fontSerif}`;
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'center';
-      ctx.fillText('Kashii', W / 2, H / 2 - 44);
+      ctx.fillText('Kashii', W / 2, H / 2 - 46);
 
       ctx.font = `italic 600 ${fontSize}px ${fontSerif}`;
-      ctx.fillStyle = '#2563eb';
+      ctx.fillStyle = '#38bdf8';
       ctx.textAlign = 'center';
       ctx.fillText('Updatez', W / 2, H / 2 + 48);
     } else {
@@ -111,19 +109,19 @@
       const uText = 'Updatez';
       const uWidth = ctx.measureText(uText).width;
 
-      const totalW = kWidth + uWidth + 14;
+      const totalW = kWidth + uWidth + 16;
       const startX = (W - totalW) / 2;
       const centerY = H / 2;
 
       ctx.font = `900 ${fontSize}px ${fontSerif}`;
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#ffffff';
       ctx.textAlign = 'left';
       ctx.fillText(kText, startX, centerY);
 
       ctx.font = `italic 600 ${fontSize}px ${fontSerif}`;
-      ctx.fillStyle = '#2563eb';
+      ctx.fillStyle = '#38bdf8';
       ctx.textAlign = 'left';
-      ctx.fillText(uText, startX + kWidth + 14, centerY);
+      ctx.fillText(uText, startX + kWidth + 16, centerY);
     }
 
     const img = ctx.getImageData(0, 0, W, H).data;
@@ -134,14 +132,19 @@
       for (let x = 0; x < W; x += gap) {
         const idx = (y * W + x) * 4;
         const alpha = img[idx + 3];
-        if (alpha > 100) {
-          pts.push({
-            x,
-            y,
-            r: img[idx] / 255,
-            g: img[idx + 1] / 255,
-            b: img[idx + 2] / 255,
-          });
+        if (alpha > 90) {
+          const isKashii = isMobile ? (y < H / 2) : (x < W / 2 + 10);
+          
+          let r = 0.96, g = 0.98, b = 1.0; // Icy White Pearl
+          if (!isKashii) {
+            // Electric Cyan to Royal Violet Gradient
+            const t = (x / W);
+            r = lerp(0.22, 0.65, t);
+            g = lerp(0.74, 0.38, t);
+            b = lerp(0.97, 0.98, t);
+          }
+
+          pts.push({ x, y, r, g, b });
         }
       }
     }
@@ -149,7 +152,7 @@
     return { pts, W, H, isStacked: isMobile };
   }
 
-  // 2. Three.js Particle Universe
+  // 2. Three.js 3D Particle Universe
   let scene, camera, renderer, points, bgSparks;
   let particleCount = 0;
   let posArr, colorArr, startArr, targetArr, delayArr, endColorArr;
@@ -168,36 +171,32 @@
     camera.updateProjectionMatrix();
   }
 
-  function makeCircleSprite() {
+  function makeGlowSprite() {
     const c = document.createElement('canvas');
     c.width = 64;
     c.height = 64;
     const cx = c.getContext('2d');
     const g = cx.createRadialGradient(32, 32, 0, 32, 32, 32);
-    g.addColorStop(0, 'rgba(255,255,255,1)');
-    g.addColorStop(0.35, 'rgba(255,255,255,0.9)');
-    g.addColorStop(0.7, 'rgba(255,255,255,0.25)');
-    g.addColorStop(1, 'rgba(255,255,255,0)');
+    g.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    g.addColorStop(0.3, 'rgba(186, 230, 253, 0.9)');
+    g.addColorStop(0.65, 'rgba(56, 189, 248, 0.3)');
+    g.addColorStop(1, 'rgba(14, 165, 233, 0)');
     cx.fillStyle = g;
     cx.fillRect(0, 0, 64, 64);
     return new THREE.CanvasTexture(c);
   }
 
   async function initScene() {
-    if (typeof THREE === 'undefined') {
-      return false;
-    }
+    if (typeof THREE === 'undefined') return false;
 
     try {
       const { pts, W, H, isStacked } = await buildTextPoints();
       particleCount = pts.length;
-      if (particleCount === 0) {
-        return false;
-      }
+      if (particleCount === 0) return false;
 
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-      camera.position.z = isStacked ? 6.5 : 5.8;
+      camera.position.z = isStacked ? 6.4 : 5.7;
 
       renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -221,57 +220,60 @@
         const p = pts[i];
         const tx = (p.x - W / 2) * scale;
         const ty = -(p.y - H / 2) * scale;
-        const tz = (Math.random() - 0.5) * 0.16;
+        const tz = (Math.random() - 0.5) * 0.14;
 
         targetArr[i * 3] = tx;
         targetArr[i * 3 + 1] = ty;
         targetArr[i * 3 + 2] = tz;
 
+        // Spiral cosmic orbit
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
-        const rad = 3.2 + Math.random() * 3.0;
+        const rad = 3.2 + Math.random() * 2.8;
 
         startArr[i * 3] = rad * Math.sin(phi) * Math.cos(theta);
         startArr[i * 3 + 1] = rad * Math.sin(phi) * Math.sin(theta);
-        startArr[i * 3 + 2] = rad * Math.cos(phi) * 0.7;
+        startArr[i * 3 + 2] = rad * Math.cos(phi) * 0.6;
 
         posArr[i * 3] = startArr[i * 3];
         posArr[i * 3 + 1] = startArr[i * 3 + 1];
         posArr[i * 3 + 2] = startArr[i * 3 + 2];
 
-        colorArr[i * 3] = 0.90;
-        colorArr[i * 3 + 1] = 0.94;
-        colorArr[i * 3 + 2] = 0.99;
+        // Start with deep indigo-blue stardust
+        colorArr[i * 3] = 0.25;
+        colorArr[i * 3 + 1] = 0.45;
+        colorArr[i * 3 + 2] = 0.95;
 
         endColorArr[i * 3] = p.r;
         endColorArr[i * 3 + 1] = p.g;
         endColorArr[i * 3 + 2] = p.b;
 
-        delayArr[i] = Math.max(0, Math.min(1, (p.x - minX) / (maxX - minX || 1))) * 550 + Math.random() * 250;
+        delayArr[i] = Math.max(0, Math.min(1, (p.x - minX) / (maxX - minX || 1))) * 450 + Math.random() * 200;
       }
 
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
       geo.setAttribute('color', new THREE.BufferAttribute(colorArr, 3));
 
-      const sprite = makeCircleSprite();
+      const sprite = makeGlowSprite();
       const isMobile = window.innerWidth < 640;
 
       const mat = new THREE.PointsMaterial({
-        size: isMobile ? 0.042 : 0.032,
+        size: isMobile ? 0.040 : 0.032,
         map: sprite,
         vertexColors: true,
         transparent: true,
         opacity: 0.98,
         depthWrite: false,
         sizeAttenuation: true,
+        blending: THREE.AdditiveBlending,
       });
 
       points = new THREE.Points(geo, mat);
       scene.add(points);
 
-      // Ambient background sparks
-      const bgCount = 35;
+      // Ambient Floating Stardust Constellation
+      const bgCount = 50;
       const bgGeo = new THREE.BufferGeometry();
       const bgPos = new Float32Array(bgCount * 3);
       for (let b = 0; b < bgCount; b++) {
@@ -281,25 +283,26 @@
       }
       bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
       const bgMat = new THREE.PointsMaterial({
-        size: 0.024,
-        color: 0x93c5fd,
+        size: 0.025,
+        color: 0x38bdf8,
         map: sprite,
         transparent: true,
-        opacity: 0.55,
+        opacity: 0.5,
+        blending: THREE.AdditiveBlending,
       });
       bgSparks = new THREE.Points(bgGeo, bgMat);
       scene.add(bgSparks);
 
       window.addEventListener('resize', sizeRenderer);
       window.addEventListener('mousemove', (e) => {
-        targetMouseX = (e.clientX / window.innerWidth - 0.5) * 1.2;
-        targetMouseY = (e.clientY / window.innerHeight - 0.5) * 1.2;
+        targetMouseX = (e.clientX / window.innerWidth - 0.5) * 1.0;
+        targetMouseY = (e.clientY / window.innerHeight - 0.5) * 1.0;
       });
 
       window.addEventListener('touchmove', (e) => {
         if (e.touches && e.touches.length > 0) {
-          targetMouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 1.8;
-          targetMouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 1.8;
+          targetMouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 1.4;
+          targetMouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 1.4;
         }
       }, { passive: true });
 
@@ -309,10 +312,8 @@
     }
   }
 
-  const FORM_DURATION = 800;
+  const FORM_DURATION = 650;
   let formationDone = false;
-  let isZoomingIn = false;
-  let zoomStartTime = 0;
 
   function renderLoop() {
     if (sequenceFinished) return;
@@ -338,9 +339,9 @@
       posArr[i * 3 + 1] = lerp(startArr[i * 3 + 1], targetArr[i * 3 + 1], eased);
       posArr[i * 3 + 2] = lerp(startArr[i * 3 + 2], targetArr[i * 3 + 2], eased);
 
-      colorArr[i * 3] = lerp(0.90, endColorArr[i * 3], eased);
-      colorArr[i * 3 + 1] = lerp(0.94, endColorArr[i * 3 + 1], eased);
-      colorArr[i * 3 + 2] = lerp(0.99, endColorArr[i * 3 + 2], eased);
+      colorArr[i * 3] = lerp(0.25, endColorArr[i * 3], eased);
+      colorArr[i * 3 + 1] = lerp(0.45, endColorArr[i * 3 + 1], eased);
+      colorArr[i * 3 + 2] = lerp(0.95, endColorArr[i * 3 + 2], eased);
     }
 
     if (progressBar && !formationDone) {
@@ -354,22 +355,17 @@
     colAttr.needsUpdate = true;
 
     if (bgSparks) {
-      bgSparks.rotation.y = elapsed * 0.00015;
+      bgSparks.rotation.y = elapsed * 0.00012;
     }
 
-    mouseX = lerp(mouseX, targetMouseX, 0.06);
-    mouseY = lerp(mouseY, targetMouseY, 0.06);
+    // Smooth physics damping
+    mouseX = lerp(mouseX, targetMouseX, 0.05);
+    mouseY = lerp(mouseY, targetMouseY, 0.05);
 
-    camera.position.x = mouseX * 0.40;
-    camera.position.y = -mouseY * 0.28;
-
-    if (isZoomingIn) {
-      const zProgress = Math.min(1, (performance.now() - zoomStartTime) / 500);
-      const zEase = easeInOutQuad(zProgress);
-      camera.position.z = lerp(5.8, 1.8, zEase);
-    }
-
+    camera.position.x = mouseX * 0.30;
+    camera.position.y = -mouseY * 0.20;
     camera.lookAt(0, 0, 0);
+
     renderer.render(scene, camera);
 
     if (allDone && !formationDone) {
@@ -378,7 +374,7 @@
     }
   }
 
-  // 3. Orchestration & Status Steps
+  // 3. Orchestration & Dissolve Transition
   let sequenceRunning = false;
   let skipRequested = false;
 
@@ -395,27 +391,27 @@
     animStart = performance.now();
     renderLoop();
 
-    await sleep(150);
+    await sleep(100);
     if (statusEl) {
       statusEl.classList.add('show');
       statusEl.textContent = "✨ Assembling Verified Tech Drives...";
     }
 
-    await sleep(350);
+    await sleep(300);
     if (statusEl && !skipRequested) {
-      statusEl.textContent = "⚡ Synchronizing 7-Day Active Opportunities...";
+      statusEl.textContent = "⚡ Synchronizing 7-Day Opportunities...";
     }
 
-    // Wait max 1.2s for formation
+    // Wait max 950ms for particle assembly
     const waitStart = performance.now();
-    while (!formationDone && !skipRequested && performance.now() - waitStart < 1200) {
-      await sleep(30);
+    while (!formationDone && !skipRequested && performance.now() - waitStart < 950) {
+      await sleep(25);
     }
 
     if (!skipRequested) {
-      if (statusEl) statusEl.textContent = "🚀 Welcome to Kashii Updatez";
+      if (statusEl) statusEl.textContent = "🚀 Launching Feed...";
       if (enterBtn) enterBtn.classList.add('show');
-      await sleep(450);
+      await sleep(350);
     }
 
     await finishSequence();
@@ -426,23 +422,16 @@
     sequenceFinished = true;
     clearTimeout(safetyTimer);
 
-    isZoomingIn = true;
-    zoomStartTime = performance.now();
-
+    // Clean, high-end opacity curtain dissolve (No double-zoom, No jarring flash)
     if (entryEl) {
       entryEl.classList.add('fade-out');
     }
 
-    if (wipeEl) {
-      wipeEl.classList.add('expand');
-    }
-
-    await sleep(550);
+    await sleep(450);
 
     if (raf) cancelAnimationFrame(raf);
 
     const redirectTarget = urlParams.get('redirect') || urlParams.get('to');
-    
     if (isIntroPage) {
       window.location.href = redirectTarget || '/';
       return;
@@ -460,21 +449,16 @@
     }
 
     if (wipeEl) {
-      await sleep(80);
-      wipeEl.classList.remove('expand');
-      wipeEl.classList.add('contract');
-
-      if (window.startTypewriter) {
-        window.startTypewriter();
-      }
-
-      await sleep(750);
-      wipeEl.classList.remove('contract');
       wipeEl.style.display = 'none';
+    }
+
+    // Smoothly start hero headline typewriter on homepage
+    if (window.startTypewriter) {
+      window.startTypewriter();
     }
   }
 
-  // User click/key bypass handlers
+  // Dismissal handlers
   if (skipBtn) skipBtn.addEventListener('click', () => { skipRequested = true; finishSequence(); });
   if (enterBtn) enterBtn.addEventListener('click', () => { skipRequested = true; finishSequence(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') finishSequence(); });
@@ -485,7 +469,6 @@
     sequenceFinished = false;
     skipRequested = false;
     formationDone = false;
-    isZoomingIn = false;
 
     if (progressBar) progressBar.style.width = '0%';
     if (enterBtn) enterBtn.classList.remove('show');
@@ -497,11 +480,6 @@
       document.documentElement.classList.remove('entry-done');
     }
 
-    if (wipeEl) {
-      wipeEl.style.display = 'block';
-      wipeEl.classList.remove('expand', 'contract');
-    }
-
     if (statusEl) {
       statusEl.classList.remove('show');
       statusEl.textContent = "✨ Assembling Verified Tech Drives...";
@@ -510,6 +488,5 @@
     await runEntrySequence();
   };
 
-  // Launch sequence safely
   runEntrySequence();
 })();
