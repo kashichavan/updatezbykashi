@@ -50,14 +50,12 @@
   const easeInOutQuad = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
   let sequenceFinished = false;
-  let raf = null;
-
-  // Hard safety timeout
+  let raf = null;  // Hard safety timeout (relaxed to 6.0s)
   const safetyTimer = setTimeout(() => {
     if (!sequenceFinished) {
       finishSequence();
     }
-  }, 3200);
+  }, 6000);
 
   // 1. High-Resolution Serif Typography Sampling (Dense 2px Grid)
   async function buildTextPoints() {
@@ -68,7 +66,7 @@
             document.fonts.load("900 120px 'Playfair Display'"),
             document.fonts.load("italic 600 120px 'Playfair Display'")
           ]),
-          sleep(250)
+          sleep(300)
         ]);
       }
     } catch (e) {}
@@ -202,7 +200,7 @@
 
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
-        const rad = 4.0 + Math.random() * 3.2;
+        const rad = 4.2 + Math.random() * 3.5;
 
         startArr[i * 3] = rad * Math.sin(phi) * Math.cos(theta);
         startArr[i * 3 + 1] = rad * Math.sin(phi) * Math.sin(theta);
@@ -221,7 +219,8 @@
         endColorArr[i * 3 + 1] = p.g;
         endColorArr[i * 3 + 2] = p.b;
 
-        delayArr[i] = Math.max(0, Math.min(1, (p.x - minX) / (maxX - minX || 1))) * 600 + Math.random() * 280;
+        // Smooth luxurious wave stagger
+        delayArr[i] = Math.max(0, Math.min(1, (p.x - minX) / (maxX - minX || 1))) * 850 + Math.random() * 350;
       }
 
       const geo = new THREE.BufferGeometry();
@@ -280,7 +279,8 @@
     }
   }
 
-  const FORM_DURATION = 850;
+  // Luxurious slow particle formation duration (1650ms)
+  const FORM_DURATION = 1650;
   let formationDone = false;
 
   function renderLoop() {
@@ -289,8 +289,8 @@
     const elapsed = performance.now() - animStart;
 
     if (bgMotes) {
-      bgMotes.rotation.y = elapsed * 0.0002;
-      bgMotes.rotation.x = elapsed * 0.0001;
+      bgMotes.rotation.y = elapsed * 0.00015;
+      bgMotes.rotation.x = elapsed * 0.00008;
     }
 
     if (!points || !points.geometry) return;
@@ -310,7 +310,7 @@
       posArr[i * 3 + 2] = lerp(startArr[i * 3 + 2], targetArr[i * 3 + 2], eased);
 
       colorArr[i * 3] = lerp(0.40, endColorArr[i * 3], eased);
-      colorArr[i * 3 + 1] = lerp(0.65, endColorArr[i * 3 + 1], eased);
+      colorArr[i * 3 + 1] = lerp(0.65, endColorArr[i * 3], eased);
       colorArr[i * 3 + 2] = lerp(1.00, endColorArr[i * 3 + 2], eased);
     }
 
@@ -319,8 +319,8 @@
     colAttr.array = colorArr;
     colAttr.needsUpdate = true;
 
-    camera.position.x = lerp(camera.position.x, mouseX * 0.35, 0.06);
-    camera.position.y = lerp(camera.position.y, -mouseY * 0.22, 0.06);
+    camera.position.x = lerp(camera.position.x, mouseX * 0.35, 0.04);
+    camera.position.y = lerp(camera.position.y, -mouseY * 0.22, 0.04);
     camera.lookAt(0, 0, 0);
 
     renderer.render(scene, camera);
@@ -333,7 +333,7 @@
     }
   }
 
-  // 3. Natural Flow & Radiant Reveal
+  // 3. Relaxed, Smooth, Cinematic Sequence Flow
   let sequenceRunning = false;
   let skipRequested = false;
 
@@ -350,7 +350,7 @@
     animStart = performance.now();
     renderLoop();
 
-    await sleep(200);
+    await sleep(300);
     if (statusEl) {
       statusEl.classList.add('show');
     }
@@ -358,17 +358,23 @@
       statusText.textContent = "Assembling today's opportunities...";
     }
 
-    // Wait for assembly
+    // Wait gracefully for fluid particle assembly
     const startWait = performance.now();
-    while (!formationDone && !skipRequested && performance.now() - startWait < 1200) {
-      await sleep(30);
+    while (!formationDone && !skipRequested && performance.now() - startWait < 2400) {
+      await sleep(40);
     }
 
     if (!skipRequested) {
       if (statusText) {
-        statusText.textContent = "⚡ Verified Stream Ready";
+        statusText.textContent = "⚡ 100% Verified Stream Active";
       }
-      await sleep(450);
+      // Hold gracefully so user can read and appreciate the shining brand
+      await sleep(1100);
+      
+      if (statusText) {
+        statusText.textContent = "Taking you home...";
+      }
+      await sleep(600);
     }
 
     await finishSequence();
@@ -387,7 +393,7 @@
       wipeEl.classList.add('expand');
     }
 
-    await sleep(600);
+    await sleep(850);
 
     if (raf) cancelAnimationFrame(raf);
 
@@ -409,7 +415,7 @@
     }
 
     if (wipeEl) {
-      await sleep(100);
+      await sleep(120);
       wipeEl.classList.remove('expand');
       wipeEl.classList.add('contract');
 
@@ -417,10 +423,11 @@
         window.startTypewriter();
       }
 
-      await sleep(750);
+      await sleep(950);
       wipeEl.classList.remove('contract');
       wipeEl.style.display = 'none';
     }
+  }
   }
 
   if (skipBtn) skipBtn.addEventListener('click', () => { skipRequested = true; finishSequence(); });
