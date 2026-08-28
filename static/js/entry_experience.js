@@ -1,12 +1,11 @@
 /**
- * KASHII UPDATEZ — Apple / Linear Style Kinetic Glowing Vector & Iridescent Beam Entry
- * Features:
- * - 100% Razor-Sharp Vector Typography with 3D Spring-Physics Letter Split
- * - Rotating Iridescent Conic-Gradient Neon Beam Gem
- * - High-Velocity Specular Laser Light Sweep
- * - Live HUD Telemetry Counter (0% -> 100% Active Verification)
- * - Silky Smooth Curtain Slide-Up Transition (Zero Double-Zoom, Zero Canvas Grain)
- * - Strict 2.0s Safety Timeout & Instant Click/Escape Bypass
+ * KASHII UPDATEZ — Natural 3D Particle Morphing Entry Experience
+ * Authentic Organic Implementation:
+ * - Editorial Serif typography: "Kashii" (#111111) + "Updatez" (#3457e6)
+ * - Soft organic ambient auroras
+ * - 3D particle left-to-right staggered wave assembly with cubic easing
+ * - Interactive mouse/touch parallax tilt
+ * - Iris wipe transition revealing the clean student portal
  */
 
 (function () {
@@ -16,25 +15,26 @@
   const forceIntro = isIntroPage || urlParams.get('intro') === '1' || urlParams.get('replay') === '1';
 
   const entryEl = document.getElementById('kashiiEntry');
+  const wipeEl = document.getElementById('kashiiWipe');
+  const canvas = document.getElementById('entryCanvas');
+  const statusEl = document.getElementById('entryStatus');
   const skipBtn = document.getElementById('entrySkipBtn');
-  const counterEl = document.getElementById('entryMetricCount');
-  const statusEl = document.getElementById('entryStatusText');
-  const progressFill = document.getElementById('entryProgressFill');
-  const brandWordmark = document.getElementById('entryWordmark');
 
-  // Bypass admin and owner portals
+  // Bypass admin & owner portals
   const isOwnerOrAdmin = window.location.pathname.startsWith('/owner') || window.location.pathname.startsWith('/admin');
   if (isOwnerOrAdmin) {
     if (entryEl) entryEl.style.display = 'none';
+    if (wipeEl) wipeEl.style.display = 'none';
     document.documentElement.classList.add('entry-done');
     return;
   }
 
-  if (!entryEl) return;
+  if (!entryEl || !canvas) return;
 
   // Session guard: if already played in this session and not forced
   if (!forceIntro && sessionStorage.getItem(SESSION_KEY)) {
     entryEl.style.display = 'none';
+    if (wipeEl) wipeEl.style.display = 'none';
     document.documentElement.classList.add('entry-done');
     return;
   }
@@ -42,100 +42,294 @@
   sessionStorage.setItem(SESSION_KEY, '1');
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
   let sequenceFinished = false;
+  let raf = null;
 
-  // 2.0s Maximum Hard Safety Timeout
+  // Safety timer
   const safetyTimer = setTimeout(() => {
     if (!sequenceFinished) {
       finishSequence();
     }
-  }, 2000);
+  }, 2800);
 
-  // Split wordmark into individual staggered 3D kinetic spans
-  function initKineticTypography() {
-    if (!brandWordmark) return;
+  // 1. Natural Serif Typography Rasterization
+  async function buildTextPoints() {
+    try {
+      if (document.fonts && document.fonts.load) {
+        await Promise.race([
+          Promise.all([
+            document.fonts.load("900 110px 'Playfair Display'"),
+            document.fonts.load("italic 600 110px 'Playfair Display'")
+          ]),
+          sleep(200)
+        ]);
+      }
+    } catch (e) {}
 
-    const kashiiText = 'Kashii';
-    const updatezText = 'Updatez';
+    const W = 900, H = 220;
+    const off = document.createElement('canvas');
+    off.width = W;
+    off.height = H;
+    const ctx = off.getContext('2d');
+    if (!ctx) return { pts: [], W, H };
 
-    let html = '<span class="word-kashii">';
-    for (let i = 0; i < kashiiText.length; i++) {
-      html += `<span class="k-char" style="animation-delay: ${i * 45}ms">${kashiiText[i]}</span>`;
-    }
-    html += '</span><span class="word-updatez">';
-    for (let j = 0; j < updatezText.length; j++) {
-      html += `<span class="k-char u-char" style="animation-delay: ${(kashiiText.length + j) * 45}ms">${updatezText[j]}</span>`;
-    }
-    html += '</span>';
+    ctx.clearRect(0, 0, W, H);
+    ctx.textBaseline = 'alphabetic';
 
-    brandWordmark.innerHTML = html;
-  }
+    const fontSerif = "'Playfair Display', Georgia, serif";
+    ctx.font = `900 110px ${fontSerif}`;
+    const kText = 'Kashii';
+    const kWidth = ctx.measureText(kText).width;
 
-  // Smooth Telemetry Counter Animation (0 -> 100)
-  function animateCounter(duration) {
-    const start = performance.now();
-    return new Promise((resolve) => {
-      function tick(now) {
-        if (sequenceFinished) {
-          if (counterEl) counterEl.textContent = '100%';
-          if (progressFill) progressFill.style.width = '100%';
-          resolve();
-          return;
-        }
+    ctx.font = `italic 600 110px ${fontSerif}`;
+    const uText = 'Updatez';
+    const uWidth = ctx.measureText(uText).width;
 
-        const elapsed = now - start;
-        const progress = Math.min(1, elapsed / duration);
-        const currentVal = Math.round(progress * 100);
+    const totalW = kWidth + uWidth + 8;
+    const startX = (W - totalW) / 2;
+    const baseY = H / 2 + 38;
 
-        if (counterEl) counterEl.textContent = `${currentVal}%`;
-        if (progressFill) progressFill.style.width = `${currentVal}%`;
+    ctx.font = `900 110px ${fontSerif}`;
+    ctx.fillStyle = '#111111';
+    ctx.fillText(kText, startX, baseY);
 
-        if (progress < 1) {
-          requestAnimationFrame(tick);
-        } else {
-          resolve();
+    ctx.font = `italic 600 110px ${fontSerif}`;
+    ctx.fillStyle = '#3457e6';
+    ctx.fillText(uText, startX + kWidth + 8, baseY);
+
+    const img = ctx.getImageData(0, 0, W, H).data;
+    const gap = 3;
+    const pts = [];
+
+    for (let y = 0; y < H; y += gap) {
+      for (let x = 0; x < W; x += gap) {
+        const idx = (y * W + x) * 4;
+        if (img[idx + 3] > 128) {
+          pts.push({
+            x,
+            y,
+            r: img[idx] / 255,
+            g: img[idx + 1] / 255,
+            b: img[idx + 2] / 255,
+          });
         }
       }
-      requestAnimationFrame(tick);
-    });
+    }
+
+    return { pts, W, H };
   }
 
-  // Interactive mouse/touch radiant spotlight
-  function initSpotlight() {
-    window.addEventListener('mousemove', (e) => {
-      const x = (e.clientX / window.innerWidth) * 100;
-      const y = (e.clientY / window.innerHeight) * 100;
-      if (entryEl) {
-        entryEl.style.setProperty('--spotlight-x', `${x}%`);
-        entryEl.style.setProperty('--spotlight-y', `${y}%`);
+  // 2. Three.js Organic Particle Universe
+  let scene, camera, renderer, points;
+  let particleCount = 0;
+  let posArr, colorArr, startArr, targetArr, delayArr, endColorArr;
+  let animStart = 0;
+  let mouseX = 0, mouseY = 0;
+
+  function sizeRenderer() {
+    if (!renderer || !canvas || !camera) return;
+    const w = canvas.clientWidth || Math.min(window.innerWidth * 0.82, 680);
+    const h = canvas.clientHeight || Math.min(window.innerWidth * 0.32, 220);
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  function makeSprite() {
+    const c = document.createElement('canvas');
+    c.width = 64;
+    c.height = 64;
+    const cx = c.getContext('2d');
+    const g = cx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.3, 'rgba(255,255,255,0.85)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    cx.fillStyle = g;
+    cx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  }
+
+  async function initScene() {
+    if (typeof THREE === 'undefined') return false;
+
+    try {
+      const { pts, W, H } = await buildTextPoints();
+      particleCount = pts.length;
+      if (particleCount === 0) return false;
+
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+      camera.position.z = 6.2;
+
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      sizeRenderer();
+
+      const scale = 6.6 / W;
+      posArr = new Float32Array(particleCount * 3);
+      colorArr = new Float32Array(particleCount * 3);
+      startArr = new Float32Array(particleCount * 3);
+      targetArr = new Float32Array(particleCount * 3);
+      delayArr = new Float32Array(particleCount);
+      endColorArr = new Float32Array(particleCount * 3);
+
+      let minX = Infinity, maxX = -Infinity;
+      pts.forEach((p) => {
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+      });
+
+      for (let i = 0; i < particleCount; i++) {
+        const p = pts[i];
+        const tx = (p.x - W / 2) * scale;
+        const ty = -(p.y - H / 2) * scale;
+        const tz = (Math.random() - 0.5) * 0.15;
+
+        targetArr[i * 3] = tx;
+        targetArr[i * 3 + 1] = ty;
+        targetArr[i * 3 + 2] = tz;
+
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(Math.random() * 2 - 1);
+        const rad = 3.6 + Math.random() * 2.8;
+
+        startArr[i * 3] = rad * Math.sin(phi) * Math.cos(theta);
+        startArr[i * 3 + 1] = rad * Math.sin(phi) * Math.sin(theta);
+        startArr[i * 3 + 2] = rad * Math.cos(phi) * 0.65;
+
+        posArr[i * 3] = startArr[i * 3];
+        posArr[i * 3 + 1] = startArr[i * 3 + 1];
+        posArr[i * 3 + 2] = startArr[i * 3 + 2];
+
+        // Soft starting blue-white tint
+        colorArr[i * 3] = 0.92;
+        colorArr[i * 3 + 1] = 0.95;
+        colorArr[i * 3 + 2] = 0.99;
+
+        endColorArr[i * 3] = p.r;
+        endColorArr[i * 3 + 1] = p.g;
+        endColorArr[i * 3 + 2] = p.b;
+
+        delayArr[i] = Math.max(0, Math.min(1, (p.x - minX) / (maxX - minX || 1))) * 650 + Math.random() * 320;
       }
-    });
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(colorArr, 3));
+
+      const mat = new THREE.PointsMaterial({
+        size: 0.030,
+        map: makeSprite(),
+        vertexColors: true,
+        transparent: true,
+        depthWrite: false,
+        sizeAttenuation: true,
+      });
+
+      points = new THREE.Points(geo, mat);
+      scene.add(points);
+
+      window.addEventListener('resize', sizeRenderer);
+      window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX / window.innerWidth - 0.5;
+        mouseY = e.clientY / window.innerHeight - 0.5;
+      });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          mouseX = (e.touches[0].clientX / window.innerWidth - 0.5) * 1.5;
+          mouseY = (e.touches[0].clientY / window.innerHeight - 0.5) * 1.5;
+        }
+      }, { passive: true });
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
-  async function runSequence() {
-    initKineticTypography();
-    initSpotlight();
+  const FORM_DURATION = 920;
+  let formationDone = false;
 
-    if (entryEl) entryEl.classList.add('animating');
+  function renderLoop() {
+    if (sequenceFinished) return;
+    raf = requestAnimationFrame(renderLoop);
+    const elapsed = performance.now() - animStart;
 
-    // Trigger typography split
-    await sleep(150);
+    if (!points || !points.geometry) return;
 
-    // Fast metric telemetry count-up (650ms)
-    await animateCounter(650);
+    const posAttr = points.geometry.attributes.position;
+    const colAttr = points.geometry.attributes.color;
 
+    let allDone = true;
+    for (let i = 0; i < particleCount; i++) {
+      const localT = Math.max(0, Math.min(1, (elapsed - delayArr[i]) / FORM_DURATION));
+      if (localT < 1) allDone = false;
+
+      const eased = easeOutCubic(localT);
+
+      posArr[i * 3] = lerp(startArr[i * 3], targetArr[i * 3], eased);
+      posArr[i * 3 + 1] = lerp(startArr[i * 3 + 1], targetArr[i * 3 + 1], eased);
+      posArr[i * 3 + 2] = lerp(startArr[i * 3 + 2], targetArr[i * 3 + 2], eased);
+
+      colorArr[i * 3] = lerp(0.92, endColorArr[i * 3], eased);
+      colorArr[i * 3 + 1] = lerp(0.95, endColorArr[i * 3 + 1], eased);
+      colorArr[i * 3 + 2] = lerp(0.99, endColorArr[i * 3 + 2], eased);
+    }
+
+    posAttr.array = posArr;
+    posAttr.needsUpdate = true;
+    colAttr.array = colorArr;
+    colAttr.needsUpdate = true;
+
+    camera.position.x = lerp(camera.position.x, mouseX * 0.35, 0.05);
+    camera.position.y = lerp(camera.position.y, -mouseY * 0.22, 0.05);
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+
+    if (allDone && !formationDone) {
+      formationDone = true;
+    }
+  }
+
+  // 3. Natural Lifecycle & Iris Transition
+  let sequenceRunning = false;
+  let skipRequested = false;
+
+  async function runEntrySequence() {
+    if (sequenceRunning) return;
+    sequenceRunning = true;
+
+    const initialized = await initScene();
+    if (!initialized) {
+      finishSequence();
+      return;
+    }
+
+    animStart = performance.now();
+    renderLoop();
+
+    await sleep(250);
     if (statusEl) {
-      statusEl.textContent = '⚡ Verified Stream Live';
-      statusEl.classList.add('active');
+      statusEl.classList.add('show');
+      statusEl.textContent = "Assembling today's opportunities";
     }
 
-    // Trigger specular light streak sweep
-    if (brandWordmark) {
-      brandWordmark.classList.add('laser-sweep');
+    // Wait for organic particle assembly
+    const startWait = performance.now();
+    while (!formationDone && !skipRequested && performance.now() - startWait < 1400) {
+      await sleep(30);
     }
 
-    await sleep(400);
+    if (!skipRequested) {
+      await sleep(400);
+      if (statusEl) statusEl.textContent = "Taking you home";
+      await sleep(350);
+    }
 
     await finishSequence();
   }
@@ -145,12 +339,17 @@
     sequenceFinished = true;
     clearTimeout(safetyTimer);
 
-    // Apple/Linear Silky Curtain Slide-Up Transition
     if (entryEl) {
-      entryEl.classList.add('curtain-slide-up');
+      entryEl.classList.add('fade-out');
+    }
+
+    if (wipeEl) {
+      wipeEl.classList.add('expand');
     }
 
     await sleep(650);
+
+    if (raf) cancelAnimationFrame(raf);
 
     const redirectTarget = urlParams.get('redirect') || urlParams.get('to');
     if (isIntroPage) {
@@ -169,48 +368,50 @@
       document.documentElement.classList.add('entry-done');
     }
 
-    // Trigger hero headline typewriter on homepage
-    if (window.startTypewriter) {
-      window.startTypewriter();
+    if (wipeEl) {
+      await sleep(100);
+      wipeEl.classList.remove('expand');
+      wipeEl.classList.add('contract');
+
+      if (window.startTypewriter) {
+        window.startTypewriter();
+      }
+
+      await sleep(800);
+      wipeEl.classList.remove('contract');
+      wipeEl.style.display = 'none';
     }
   }
 
-  // User skip triggers
-  if (skipBtn) skipBtn.addEventListener('click', finishSequence);
-  if (entryEl) {
-    entryEl.addEventListener('click', (e) => {
-      if (e.target.id === 'entrySkipBtn') return;
-      finishSequence();
-    });
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') finishSequence();
-  });
+  if (skipBtn) skipBtn.addEventListener('click', () => { skipRequested = true; finishSequence(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') finishSequence(); });
 
-  // Global Replay Handler
+  // Global Replay
   window.replayKashiiEntry = async function () {
+    sequenceRunning = false;
     sequenceFinished = false;
+    skipRequested = false;
+    formationDone = false;
 
     if (entryEl) {
       entryEl.style.display = 'flex';
-      entryEl.classList.remove('curtain-slide-up', 'animating');
+      entryEl.classList.remove('fade-out');
       document.body.style.overflow = 'hidden';
       document.documentElement.classList.remove('entry-done');
     }
 
-    if (brandWordmark) {
-      brandWordmark.classList.remove('laser-sweep');
+    if (wipeEl) {
+      wipeEl.style.display = 'block';
+      wipeEl.classList.remove('expand', 'contract');
     }
 
-    if (counterEl) counterEl.textContent = '0%';
-    if (progressFill) progressFill.style.width = '0%';
     if (statusEl) {
-      statusEl.textContent = 'Synchronizing 7-Day Live Feed...';
-      statusEl.classList.remove('active');
+      statusEl.classList.remove('show');
+      statusEl.textContent = "Assembling today's opportunities";
     }
 
-    await runSequence();
+    await runEntrySequence();
   };
 
-  runSequence();
+  runEntrySequence();
 })();
