@@ -26,9 +26,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,600&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=202608281200">
   
-  <!-- High-Priority Preloaded Google AdSense Auto Ads Engine -->
-  <link rel="preload" href="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2115508498538506" as="script" crossorigin="anonymous">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2115508498538506" crossorigin="anonymous"></script>
+  <!-- Instant Session Entry Guard (Prevents layout shift and bypasses admin/owner portal) -->
+  <script>
+    (function(){
+      try {
+        var path = window.location.pathname;
+        var p = new URLSearchParams(window.location.search);
+        var isOwnerOrAdmin = path.indexOf('/owner') === 0 || path.indexOf('/admin') === 0;
+        var isIntro = path === '/intro/' || path === '/welcome/' || p.get('intro') === '1' || p.get('replay') === '1';
+        if (isOwnerOrAdmin || (!isIntro && sessionStorage.getItem('kashiiEntryPlayed'))) {
+          document.documentElement.classList.add('entry-done');
+        }
+      } catch(e){}
+    })();
+  </script>
   {% block extra_css %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -36,45 +47,47 @@
   <!-- Subtle Film Texture -->
   <div class="site-grain"></div>
 
-  <!-- 3D Particle Morphing Entry Experience -->
-  <div id="kashiiEntry" role="dialog" aria-modal="true" aria-label="Welcome to Kashii Updatez">
-    <div class="aurora a1"></div>
-    <div class="aurora a2"></div>
-    
-    <!-- Top Bar Controls -->
-    <div class="entry-topbar">
-      <span class="entry-badge">
-        <span class="pulse-dot"></span> KASHII UPDATEZ &middot; DAILY STUDENT CAREERS
-      </span>
-      <button id="entrySkipBtn" type="button" aria-label="Skip introduction animation">
-        Skip Intro ›
-      </button>
-    </div>
-
-    <!-- Center Stage Canvas -->
-    <div class="entry-center-stage">
-      <canvas id="entryCanvas" width="900" height="240"></canvas>
-      <p class="entry-sub-tag">
-        Verified 7-Day Student Jobs &middot; Campus Drives &middot; Python Kashi Coding Hub
-      </p>
-    </div>
-
-    <!-- Bottom Status & Loader Progress -->
-    <div class="entry-bottom-bar">
-      <div class="entry-progress-track">
-        <div id="entryProgressBar" class="entry-progress-fill"></div>
+  {% block entry_experience %}
+    <!-- 3D Particle Morphing Entry Experience -->
+    <div id="kashiiEntry" role="dialog" aria-modal="true" aria-label="Welcome to Kashii Updatez">
+      <div class="aurora a1"></div>
+      <div class="aurora a2"></div>
+      
+      <!-- Top Bar Controls -->
+      <div class="entry-topbar">
+        <span class="entry-badge">
+          <span class="pulse-dot"></span> KASHII UPDATEZ &middot; DAILY STUDENT CAREERS
+        </span>
+        <button id="entrySkipBtn" type="button" aria-label="Skip introduction animation">
+          Skip Intro ›
+        </button>
       </div>
-      <div id="entryStatus" class="entry-status-text">
-        ✨ Initializing 7-Day Verified Stream...
-      </div>
-      <button id="entryEnterBtn" type="button" class="entry-enter-btn">
-        Explore Opportunities ➔
-      </button>
-    </div>
-  </div>
 
-  <!-- Dynamic Royal Blue Iris Wipe Transition -->
-  <div id="kashiiWipe"></div>
+      <!-- Center Stage Canvas -->
+      <div class="entry-center-stage">
+        <canvas id="entryCanvas" width="900" height="240"></canvas>
+        <p class="entry-sub-tag">
+          Verified 7-Day Student Jobs &middot; Campus Drives &middot; Python Kashi Coding Hub
+        </p>
+      </div>
+
+      <!-- Bottom Status & Loader Progress -->
+      <div class="entry-bottom-bar">
+        <div class="entry-progress-track">
+          <div id="entryProgressBar" class="entry-progress-fill"></div>
+        </div>
+        <div id="entryStatus" class="entry-status-text">
+          ✨ Initializing 7-Day Verified Stream...
+        </div>
+        <button id="entryEnterBtn" type="button" class="entry-enter-btn">
+          Explore Opportunities ➔
+        </button>
+      </div>
+    </div>
+
+    <!-- Dynamic Royal Blue Iris Wipe Transition -->
+    <div id="kashiiWipe"></div>
+  {% endblock %}
 
   <!-- Flash Announcement Banner -->
   {% block flash_banner %}
@@ -105,10 +118,12 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- Core App & 3D Three.js Animation Engines -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Core App Scripts -->
   <script src="{% static 'js/app.js' %}?v=202608281200"></script>
-  <script src="{% static 'js/entry_experience.js' %}?v=202608281200"></script>
+  {% block entry_scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="{% static 'js/entry_experience.js' %}?v=202608281200"></script>
+  {% endblock %}
   {% block extra_js %}{% endblock %}
 </body>
 </html>

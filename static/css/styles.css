@@ -1364,6 +1364,11 @@ a {
    KASHII UPDATEZ — 3D PARTICLE MORPHING & IRIS WIPE ENTRY EXPERIENCE
    ========================================================================== */
 
+html.entry-done #kashiiEntry,
+html.entry-done #kashiiWipe {
+  display: none !important;
+}
+
 #kashiiEntry {
   position: fixed;
   inset: 0;
