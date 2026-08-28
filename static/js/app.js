@@ -107,6 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
     typePart1();
   }
 
+  window.startTypewriter = startTypewriter;
+
   // --- GLOBAL SIDE DRAWER SETUP ---
 
   function setupGlobalDrawer() {

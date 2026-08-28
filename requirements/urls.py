@@ -4,6 +4,8 @@ from debugger.views import learn_topic_view
 
 urlpatterns = [
     path('', views.index_view, name='index'),
+    path('intro/', views.intro_view, name='intro'),
+    path('welcome/', views.intro_view, name='welcome'),
     path('about/', views.about_view, name='about'),
     path('youtube/', views.youtube_view, name='youtube'),
     

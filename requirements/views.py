@@ -137,6 +137,11 @@ def index_view(request):
         'recent_posts': recent_posts,
     })
 
+def intro_view(request):
+    """Standalone 3D particle morphing intro landing page with automatic redirect."""
+    redirect_target = request.GET.get('redirect', '/')
+    return render(request, 'content/intro.html', {'redirect_target': redirect_target})
+
 def about_view(request):
     return render(request, 'content/about.html')
 
