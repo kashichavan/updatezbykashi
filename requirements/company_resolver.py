@@ -133,6 +133,10 @@ KNOWN_COMPANIES_MAP = {
     'data eminence': 'Data Eminence',
     'rezo': 'Rezo.ai',
     'rezo.ai': 'Rezo.ai',
+    'rezoai': 'Rezo.ai',
+    'jobsworkable': 'Workable (Volga Partners)',
+    'jobsashbyhq': 'LG Ad Solutions',
+    'batches': 'Tudip Technologies',
     'rtx': 'RTX Corporation',
     'raytheon': 'RTX Corporation',
 }

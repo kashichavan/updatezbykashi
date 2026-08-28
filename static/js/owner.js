@@ -556,12 +556,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const btnCleanDuplicates = document.getElementById('btnCleanDuplicates');
+
   if (btnFetchJobdexo5) {
     btnFetchJobdexo5.addEventListener('click', () => triggerJobdexoLatestFetch(5));
   }
 
   if (btnFetchJobdexo10) {
     btnFetchJobdexo10.addEventListener('click', () => triggerJobdexoLatestFetch(10));
+  }
+
+  if (btnCleanDuplicates) {
+    btnCleanDuplicates.addEventListener('click', async () => {
+      try {
+        showToast('🧹 Cleaning database duplicates and standardizing company names...', 'success');
+        const res = await authFetch('/api/owner/jobdexo/cleanup/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showToast(`✨ ${data.message}`, 'success');
+          logActivity('Database Cleanup', data.message);
+          loadKpiStats();
+          loadRecentJobs();
+        } else {
+          showToast(data.error || 'Cleanup failed.', 'error');
+        }
+      } catch (err) {
+        showToast('Server error while cleaning database.', 'error');
+      }
+    });
   }
 
   if (formJobdexoUrlImport) {

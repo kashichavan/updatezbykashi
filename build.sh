@@ -11,6 +11,9 @@ python requirements/seed_prod.py
 python manage.py seed_blog
 python manage.py seed_deep_blogs
 
+# Auto-clean legacy database duplicates & normalize company names
+python manage.py shell -c "import requirements.jobdexo_service as j; j.cleanup_all_database_duplicates()" || true
+
 # Auto-sync newest verified off-campus opportunities from Jobdexo
 python manage.py sync_jobdexo --count 5 || true
 

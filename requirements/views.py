@@ -17,7 +17,7 @@ from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
 from .models import Category, JobPosting, GuideArticle, ContactInquiry, JobGroup
-from .jobdexo_service import auto_import_from_jobdexo
+from .jobdexo_service import auto_import_from_jobdexo, cleanup_all_database_duplicates
 from .company_resolver import resolve_company_name
 
 DEFAULT_YOUTUBE_VIDEOS = [
@@ -693,6 +693,9 @@ def api_owner_jobdexo_fetch_latest(request):
 
     if request.method == 'POST':
         try:
+            # First, deduplicate and normalize existing records
+            cleanup_res = cleanup_all_database_duplicates()
+
             data = json.loads(request.body) if request.body else {}
             limit = int(data.get('limit', 5))
             group_name = data.get('group_name', '').strip()
@@ -712,7 +715,7 @@ def api_owner_jobdexo_fetch_latest(request):
             if result['imported_count'] > 0:
                 message = f"Successfully fetched and published {result['imported_count']} fresh jobs from Jobdexo into Group '{result['group_name']}'!"
             else:
-                message = "All recent Jobdexo job opportunities are already up-to-date in your system! (0 new duplicates found)."
+                message = f"All recent Jobdexo job opportunities are already up-to-date in your system! (Cleaned {cleanup_res['deleted_duplicates']} legacy duplicates)."
 
             return JsonResponse({
                 'success': True,
@@ -726,11 +729,31 @@ def api_owner_jobdexo_fetch_latest(request):
                 'full_group_url': full_group_url,
                 'whatsapp_broadcast': whatsapp_broadcast,
                 'telegram_broadcast': telegram_broadcast,
+                'cleaned_duplicates': cleanup_res['deleted_duplicates'],
+                'updated_jobs': cleanup_res['updated_jobs'],
                 'message': message
             }, status=201 if result['imported_count'] > 0 else 200)
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def api_owner_jobdexo_cleanup_duplicates(request):
+    """Manual trigger to merge and remove all duplicate job postings and fix legacy company names."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    try:
+        cleanup_res = cleanup_all_database_duplicates()
+        return JsonResponse({
+            'success': True,
+            'deleted_duplicates': cleanup_res['deleted_duplicates'],
+            'updated_jobs': cleanup_res['updated_jobs'],
+            'message': f"Database cleaned successfully! Removed {cleanup_res['deleted_duplicates']} duplicates and updated {cleanup_res['updated_jobs']} postings."
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 @csrf_exempt
 def api_owner_parse_and_post(request):

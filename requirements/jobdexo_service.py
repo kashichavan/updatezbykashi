@@ -27,14 +27,18 @@ USER_AGENTS = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15',
 ]
 
-# Distinct Jobdexo Discovery Sections
+# Distinct Jobdexo Discovery Sections and Pagination
 JOBDEXO_SOURCE_ENDPOINTS = [
     'https://jobdexo.com/',
+    'https://jobdexo.com/?page=2',
+    'https://jobdexo.com/?page=3',
+    'https://jobdexo.com/?page=4',
     'https://jobdexo.com/?q=developer',
     'https://jobdexo.com/?q=software',
     'https://jobdexo.com/?q=analyst',
     'https://jobdexo.com/?q=internship',
     'https://jobdexo.com/?q=engineer',
+    'https://jobdexo.com/?q=fresher',
 ]
 
 
