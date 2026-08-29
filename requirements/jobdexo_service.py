@@ -9,6 +9,7 @@ import threading
 import urllib.request
 import urllib.error
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import timedelta, datetime
 from django.utils import timezone
 from django.utils.text import slugify
@@ -391,15 +392,71 @@ def extract_jobdexo_detail(url):
 
 
 def fetch_multi_section_jobdexo_urls(limit=35):
-    """Crawls across distinct Jobdexo sections with polite pacing."""
+    """
+    Crawls across distinct Jobdexo sections concurrently with smart pre-filtering.
+    Extracts job cards directly from the list pages to identify new opportunities
+    without downloading redundant detail pages.
+    """
     discovered_urls = []
     seen_urls = set()
 
-    for endpoint in JOBDEXO_SOURCE_ENDPOINTS:
+    # Preload existing company::title fingerprints from DB to skip duplicates immediately
+    existing_fingerprints = set()
+    try:
+        for comp, title in JobPosting.objects.values_list('company_name', 'title'):
+            existing_fingerprints.add(f"{normalize_text(comp)}::{normalize_text(title)}")
+    except Exception:
+        pass
+
+    def _scrape_endpoint(endpoint):
         try:
-            page_html = fetch_url_html(endpoint)
-            found_urls = re.findall(r'href=[\"\']((?:https?://(?:www\.)?jobdexo\.com)?/job/[^\"\']+)[\"\']', page_html)
-            for u in found_urls:
+            return fetch_url_html(endpoint)
+        except Exception:
+            return None
+
+    # Fetch discovery endpoints concurrently (max 4 workers for polite concurrency)
+    endpoint_htmls = []
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future_map = {executor.submit(_scrape_endpoint, ep): ep for ep in JOBDEXO_SOURCE_ENDPOINTS}
+        for future in as_completed(future_map):
+            page_html = future.result()
+            if page_html:
+                endpoint_htmls.append(page_html)
+
+    for page_html in endpoint_htmls:
+        # 1. Parse structured job cards from listing page
+        card_matches = re.findall(
+            r'<article class=[\"\']job-card[\"\']>.*?<div class=[\"\']job-company[\"\']>([^<]+)</div>.*?<h3 class=[\"\']job-title[\"\']>\s*<a href=[\"\']([^\"\']+)[\"\']>([^<]+)</a>',
+            page_html,
+            re.DOTALL
+        )
+
+        for raw_comp, path, raw_title in card_matches:
+            full_url = f"https://jobdexo.com{path}" if path.startswith('/') else path
+            full_url = canonical_clean_url(full_url)
+            if not full_url or full_url in seen_urls:
+                continue
+
+            comp_clean = html.unescape(raw_comp.strip())
+            title_clean = html.unescape(raw_title.strip())
+            resolved_comp = resolve_company_name(comp_clean, title=title_clean, url=full_url)
+            clean_t = clean_job_title(title_clean, company_name=resolved_comp)
+            fp = f"{normalize_text(resolved_comp)}::{normalize_text(clean_t)}"
+
+            seen_urls.add(full_url)
+
+            # If this job already exists in our database, skip fetching its detail page
+            if fp in existing_fingerprints:
+                continue
+
+            discovered_urls.append(full_url)
+            if len(discovered_urls) >= limit:
+                break
+
+        # Fallback: catch any extra job links on the page if card regex missed them
+        if len(discovered_urls) < limit:
+            all_found_urls = re.findall(r'href=[\"\']((?:https?://(?:www\.)?jobdexo\.com)?/job/[^\"\']+)[\"\']', page_html)
+            for u in all_found_urls:
                 full_url = f"https://jobdexo.com{u}" if u.startswith('/') else u
                 full_url = canonical_clean_url(full_url)
                 if full_url and full_url not in seen_urls:
@@ -407,9 +464,6 @@ def fetch_multi_section_jobdexo_urls(limit=35):
                     discovered_urls.append(full_url)
                 if len(discovered_urls) >= limit:
                     break
-            time.sleep(random.uniform(0.3, 0.6))
-        except Exception:
-            pass
 
         if len(discovered_urls) >= limit:
             break
@@ -598,7 +652,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     Standard Ingestion Engine:
     1. Fetches candidate Jobdexo URLs.
     2. Performs fast pre-check to skip already-imported URLs.
-    3. Scrapes Schema.org metadata and official career ATS apply links.
+    3. Scrapes Schema.org metadata and official career ATS apply links in parallel.
     4. Applies multi-tier strict deduplication.
     5. Publishes verified openings under 'Software & Tech' category.
     6. Bundles into a 7-day shareable group.
@@ -621,22 +675,30 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     now = timezone.now()
     deadline = now + timedelta(days=7)
 
-    for url in urls:
-        url = url.strip()
-        if not url:
-            continue
+    # Filter out empty or duplicate candidate URLs
+    valid_candidate_urls = []
+    for u in urls:
+        u_clean = (u or '').strip()
+        if u_clean and u_clean not in valid_candidate_urls:
+            valid_candidate_urls.append(u_clean)
 
-        # Fast Pre-Check: skip if exact canonical URL exists in DB
-        clean_candidate_url = canonical_clean_url(url)
-        if JobPosting.objects.filter(apply_url=clean_candidate_url).exists():
-            continue
+    # Fetch details concurrently using ThreadPoolExecutor for fast non-blocking execution
+    extracted_jobs = []
+    if valid_candidate_urls:
+        max_workers = min(6, len(valid_candidate_urls))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_url = {executor.submit(extract_jobdexo_detail, u): u for u in valid_candidate_urls}
+            for future in as_completed(future_to_url):
+                try:
+                    job_data = future.result()
+                    if job_data and not job_data.get('is_expired'):
+                        extracted_jobs.append(job_data)
+                except Exception:
+                    pass
 
+    # Save non-duplicate fresh jobs
+    for job_data in extracted_jobs:
         try:
-            time.sleep(random.uniform(0.3, 0.5))
-            job_data = extract_jobdexo_detail(url)
-            if not job_data or job_data.get('is_expired'):
-                continue
-
             # Standard Deduplication Check
             if is_job_duplicate_in_db(job_data, seen_in_batch=seen_in_batch):
                 continue
@@ -691,7 +753,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
             group_name = now_local.strftime("🔥 Top Off-Campus Tech Drives — %d %b %Y")
 
         base_slug = slugify(group_name) or "jobdexo-drive"
-        slug = f"{base_slug}-{now_local.strftime('%Y%m%d%H%M')}"
+        slug = f"{base_slug}-{now_local.strftime('%Y%m%d%H%M%S')}"
 
         job_group = JobGroup.objects.create(
             name=group_name,
@@ -719,7 +781,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
 
 
 # ==============================================================================
-# HOURLY RECURRING AUTO-SYNC BACKGROUND WORKER (Every 1 Hour)
+# RECURRING AUTO-SYNC BACKGROUND WORKER (Every 30 Minutes + Immediate Startup)
 # ==============================================================================
 
 _SYNC_WORKER_RUNNING = False
@@ -727,30 +789,43 @@ _SYNC_LOCK = threading.Lock()
 
 
 def _background_hourly_sync_loop():
-    """Background worker thread that runs every 1 hour (3600 seconds)."""
+    """Background worker thread that runs on startup and every 30 minutes (1800 seconds)."""
     global _SYNC_WORKER_RUNNING
-    print("🚀 [Jobdexo Auto-Sync] Background hourly sync daemon started (1-hour interval).")
+    print("🚀 [Jobdexo Auto-Sync] Background sync daemon initialized.")
+    
+    # 1. Warm-up delay to allow Django application and database to complete startup
+    time.sleep(5)
     
     while _SYNC_WORKER_RUNNING:
         try:
-            time.sleep(3600 + random.randint(10, 60))
-            print("⚡ [Jobdexo Auto-Sync] Running hourly automated crawl across all sections...")
-            result = auto_import_from_jobdexo(limit=5)
-            if result['imported_count'] > 0:
-                print(f"✅ [Jobdexo Auto-Sync] Added {result['imported_count']} fresh non-duplicate jobs! Group: {result['group_name']}")
+            from django.db import close_old_connections
+            close_old_connections()
+            print("⚡ [Jobdexo Auto-Sync] Running automated crawl across all sections...")
+            result = auto_import_from_jobdexo(limit=10)
+            if result.get('imported_count', 0) > 0:
+                print(f"✅ [Jobdexo Auto-Sync] Added {result['imported_count']} fresh non-duplicate jobs! Group: {result.get('group_name')}")
             else:
-                print("ℹ️ [Jobdexo Auto-Sync] Checked sections: No new non-duplicate jobs found.")
+                print("ℹ️ [Jobdexo Auto-Sync] Checked sections: Feed is 100% up-to-date.")
         except Exception as e:
             print(f"ℹ️ [Jobdexo Auto-Sync] Cycle notice: {e}")
+        finally:
+            try:
+                from django.db import close_old_connections
+                close_old_connections()
+            except Exception:
+                pass
+
+        # Sleep for 30 minutes before next recurring sync
+        time.sleep(1800 + random.randint(10, 60))
 
 
 def start_hourly_sync_daemon():
-    """Starts the 1-hour background auto-sync worker if not already running."""
+    """Starts the background auto-sync worker if not already running."""
     global _SYNC_WORKER_RUNNING
     with _SYNC_LOCK:
         if not _SYNC_WORKER_RUNNING:
             _SYNC_WORKER_RUNNING = True
-            t = threading.Thread(target=_background_hourly_sync_loop, daemon=True, name="JobdexoHourlySyncWorker")
+            t = threading.Thread(target=_background_hourly_sync_loop, daemon=True, name="JobdexoSyncWorker")
             t.start()
             return True
     return False
@@ -758,3 +833,4 @@ def start_hourly_sync_daemon():
 
 # Alias for backward compatibility
 start_5min_sync_daemon = start_hourly_sync_daemon
+

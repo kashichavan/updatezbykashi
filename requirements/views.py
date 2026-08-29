@@ -1172,6 +1172,7 @@ def api_admin_status(request):
 @csrf_exempt
 def api_jobs(request):
     sync_expired_jobs()
+    trigger_async_jobdexo_refresh()
 
     if request.method == 'GET':
         query = request.GET.get('q', '').strip()
