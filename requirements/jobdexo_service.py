@@ -414,9 +414,9 @@ def fetch_multi_section_jobdexo_urls(limit=35):
         except Exception:
             return None
 
-    # Fetch discovery endpoints concurrently (max 4 workers for polite concurrency)
+    # Fetch discovery endpoints concurrently (max 2 workers for lightweight memory footprint)
     endpoint_htmls = []
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         future_map = {executor.submit(_scrape_endpoint, ep): ep for ep in JOBDEXO_SOURCE_ENDPOINTS}
         for future in as_completed(future_map):
             page_html = future.result()
@@ -682,10 +682,10 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         if u_clean and u_clean not in valid_candidate_urls:
             valid_candidate_urls.append(u_clean)
 
-    # Fetch details concurrently using ThreadPoolExecutor for fast non-blocking execution
+    # Fetch details concurrently using ThreadPoolExecutor (max 3 workers for lightweight memory)
     extracted_jobs = []
     if valid_candidate_urls:
-        max_workers = min(6, len(valid_candidate_urls))
+        max_workers = min(3, len(valid_candidate_urls))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_url = {executor.submit(extract_jobdexo_detail, u): u for u in valid_candidate_urls}
             for future in as_completed(future_to_url):
@@ -767,6 +767,13 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         job_group.jobs.set(created_job_instances)
 
     cache.clear()
+    
+    # Release memory from intermediate objects
+    import gc
+    del extracted_jobs
+    del valid_candidate_urls
+    gc.collect()
+
     return {
         'success': True,
         'imported_count': len(created_jobs),
@@ -786,12 +793,29 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
 
 _SYNC_WORKER_RUNNING = False
 _SYNC_LOCK = threading.Lock()
+_FLOCK_HANDLE = None
+
+
+def _try_acquire_process_lock():
+    """
+    Ensures only ONE Gunicorn worker process across the entire server runs
+    the background daemon. Other workers gracefully skip starting another thread.
+    """
+    global _FLOCK_HANDLE
+    try:
+        import fcntl
+        lock_path = os.path.join('/tmp', 'kashii_jobdexo_daemon.lock')
+        _FLOCK_HANDLE = open(lock_path, 'a')
+        fcntl.flock(_FLOCK_HANDLE, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return True
+    except Exception:
+        return False
 
 
 def _background_hourly_sync_loop():
     """Background worker thread that runs on startup and every 30 minutes (1800 seconds)."""
     global _SYNC_WORKER_RUNNING
-    print("🚀 [Jobdexo Auto-Sync] Background sync daemon initialized.")
+    print("🚀 [Jobdexo Auto-Sync] Background sync daemon initialized (single-worker process).")
     
     # 1. Warm-up delay to allow Django application and database to complete startup
     time.sleep(5)
@@ -812,6 +836,8 @@ def _background_hourly_sync_loop():
             try:
                 from django.db import close_old_connections
                 close_old_connections()
+                import gc
+                gc.collect()
             except Exception:
                 pass
 
@@ -820,10 +846,13 @@ def _background_hourly_sync_loop():
 
 
 def start_hourly_sync_daemon():
-    """Starts the background auto-sync worker if not already running."""
+    """Starts the background auto-sync worker if not already running in any process."""
     global _SYNC_WORKER_RUNNING
     with _SYNC_LOCK:
         if not _SYNC_WORKER_RUNNING:
+            if not _try_acquire_process_lock():
+                # Another worker process already owns the daemon lock
+                return False
             _SYNC_WORKER_RUNNING = True
             t = threading.Thread(target=_background_hourly_sync_loop, daemon=True, name="JobdexoSyncWorker")
             t.start()

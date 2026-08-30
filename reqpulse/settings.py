@@ -205,6 +205,10 @@ else:
         "default": {
             "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
             "LOCATION": "kashii-updatez-cache",
+            "OPTIONS": {
+                "MAX_ENTRIES": 500,
+                "CULL_FREQUENCY": 2,
+            }
         }
     }
 

@@ -171,7 +171,6 @@ def ads_txt_view(request):
 
 def index_view(request):
     sync_expired_jobs()
-    trigger_async_jobdexo_refresh()
     videos = get_cached_youtube_videos()
     initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:9]
     from blog.models import BlogPost
@@ -1172,7 +1171,6 @@ def api_admin_status(request):
 @csrf_exempt
 def api_jobs(request):
     sync_expired_jobs()
-    trigger_async_jobdexo_refresh()
 
     if request.method == 'GET':
         query = request.GET.get('q', '').strip()
@@ -1535,9 +1533,13 @@ def api_job_ig_story_image(request, pk):
     draw.text((540, btn_y + 170), "kashiiupdatez.online", fill=(148, 163, 184), font=font_domain, anchor="mm")
 
     buf = BytesIO()
-    img.save(buf, format='PNG')
-    buf.seek(0)
-    return HttpResponse(buf.getvalue(), content_type='image/png')
+    img.save(buf, format='PNG', optimize=True)
+    img_data = buf.getvalue()
+    buf.close()
+    img.close()
+    response = HttpResponse(img_data, content_type='image/png')
+    response['Cache-Control'] = 'public, max-age=3600'
+    return response
 
 # ==============================================================================
 # REQUIREMENT GROUPS & MULTI-JOB BUNDLES
