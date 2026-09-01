@@ -231,8 +231,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     jobsGrid.innerHTML = jobs.map(j => {
-      const formattedTime = formatTimeLeft(j.time_left_seconds);
-      const skillsHtml = j.skills_list.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
+      const maxSkills = 5;
+      const allSkills = j.skills_list || [];
+      const visibleSkills = allSkills.slice(0, maxSkills);
+      const remainingCount = allSkills.length - maxSkills;
+      let skillsHtml = visibleSkills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
+      if (remainingCount > 0) {
+        skillsHtml += `<span class="skill-tag skill-more" title="${escapeHtml(allSkills.join(', '))}">+${remainingCount} more</span>`;
+      }
       const isDeactivated = j.status === 'EXPIRED' || j.time_left_seconds <= 0;
       const postedDate = j.posted_date_display || 'Today';
       const isNewToday = postedDate === 'Today';
@@ -531,6 +537,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btnCloseDetail.addEventListener('click', () => detailModal.classList.remove('active'));
       detailModal.addEventListener('click', (e) => {
         if (e.target === detailModal) detailModal.classList.remove('active');
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && detailModal.classList.contains('active')) {
+          detailModal.classList.remove('active');
+        }
       });
     }
   }

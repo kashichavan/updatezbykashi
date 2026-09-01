@@ -8,17 +8,9 @@
       <!-- Brand & Mission Column -->
       <div>
         <a href="/" class="brand" style="font-size: 22px;">Kashii<span>Updatez</span></a>
-        <p style="font-size: 13px; color: #64748b; margin: 10px 0 16px; line-height: 1.7;">
+        <p style="font-size: 13px; color: #64748b; margin: 10px 0 0; line-height: 1.7;">
           Free educational platform offering verified student job requirements, campus recruitment alerts, Python &amp; Django technical guides, and interactive visual code debugging tools by Kashinath (Kashii).
         </p>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: #fef2f2; border: 1px solid #fecaca;" title="YouTube">
-            <img src="{% static 'images/icon-youtube.png' %}" width="16" height="16" alt="YouTube">
-          </a>
-          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: #fdf2f8; border: 1px solid #fbcfe8;" title="Instagram">
-            <img src="{% static 'images/icon-chat.png' %}" width="16" height="16" alt="Instagram">
-          </a>
-        </div>
       </div>
 
       <!-- Quick Navigation Column -->
@@ -54,10 +46,18 @@
         <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--ink); margin-bottom: 14px;">
           Connect
         </div>
-        <p style="font-size: 13px; color: #64748b; margin: 0 0 10px; line-height: 1.6;">
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; line-height: 1.6;">
           Created with ❤️ by <strong style="color: var(--ink);">Kashinath (Kashii)</strong>.
         </p>
-        <a href="/contact/" style="display: inline-block; background: #eff6ff; color: var(--blue-primary); border: 1px solid var(--blue-border); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none;">
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px;">
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--radius-sm); background: #fef2f2; border: 1px solid #fecaca;" title="YouTube">
+            <img src="{% static 'images/icon-youtube.png' %}" width="16" height="16" alt="YouTube">
+          </a>
+          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: var(--radius-sm); background: #fdf2f8; border: 1px solid #fbcfe8;" title="Instagram">
+            <img src="{% static 'images/icon-chat.png' %}" width="16" height="16" alt="Instagram">
+          </a>
+        </div>
+        <a href="/contact/" style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: var(--blue-primary); border: 1px solid var(--blue-border); padding: 8px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; text-decoration: none;">
           ✉️ Send Feedback / Query
         </a>
       </div>

@@ -4,7 +4,7 @@
    ========================================================================== */
 
 :root {
-  /* Color Palette */
+  /* Color Palette - WCAG AA Accessible */
   --blue-primary: #2563eb;
   --blue-hover: #1d4ed8;
   --blue-dark: #1e40af;
@@ -15,21 +15,32 @@
   --paper: #f8fafc;
   --subtle-border: #e2e8f0;
   --muted: #64748b;
+  --text-secondary: #475569;
+  --accent-red: #dc2626;
   
-  /* Fonts */
+  /* Standardized Typography (2 Web Fonts + System Mono) */
   --font-serif: 'Fraunces', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-code: 'Fira Code', 'Courier New', monospace;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+
+  /* Standard Modular Type Scale */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 2rem;      /* 32px */
 
   /* Elevation & Shadows */
   --card-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
   --hover-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.15), 0 10px 15px -5px rgba(37, 99, 235, 0.08);
-  --modal-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  --modal-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35);
 
-  /* Radius & Transitions */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
+  /* Standardized Corner Radii (4 Tokens) */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
   --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -265,18 +276,23 @@ a {
   gap: 8px;
   padding: 10px 18px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 13px;
-  box-shadow: 0 10px 25px rgba(225, 48, 108, 0.4);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.35);
   transition: var(--transition);
   text-decoration: none;
 }
 
 .floating-chat-widget:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 14px 30px rgba(225, 48, 108, 0.55);
+  transform: translateY(-2px);
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.5);
 }
 
 @media (min-width: 769px) {
@@ -292,13 +308,18 @@ a {
 .flash-banner {
   background: linear-gradient(90deg, var(--ink), #1e293b);
   color: #ffffff;
-  padding: 10px 16px;
-  font-size: 13px;
+  padding: 8px 0;
+  font-size: var(--text-xs);
   font-weight: 500;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+.flash-banner-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 12px;
 }
 
 .flash-banner b {
@@ -308,18 +329,26 @@ a {
 }
 
 .flash-close {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #ffffff;
-  font-size: 16px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  opacity: 0.7;
-  padding: 4px;
+  border-radius: var(--radius-sm);
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+  transition: var(--transition);
+  flex-shrink: 0;
 }
 
-.flash-close:hover {
-  opacity: 1;
+.flash-close:hover, .flash-close:focus-visible {
+  background: rgba(255, 255, 255, 0.25);
+  outline: 2px solid #60a5fa;
 }
 
 /* ==========================================================================
@@ -1156,13 +1185,20 @@ a {
 }
 
 .skill-tag {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   color: var(--ink);
   background: var(--paper);
   border: 1px solid var(--subtle-border);
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.skill-tag.skill-more {
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  border: 1px dashed #cbd5e1;
+  cursor: default;
 }
 
 .vp-price-row {
@@ -1279,15 +1315,16 @@ a {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(6px);
-  z-index: 300;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 500;
   display: grid;
   place-items: center;
   padding: 20px;
   opacity: 0;
   visibility: hidden;
-  transition: var(--transition);
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-overlay.active {

@@ -10,7 +10,7 @@
   <section class="vp-hero">
     <div class="vp-hero-inner">
       <div class="vp-hero-copy">
-        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
+        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;line-height:1.4;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
         <h1 id="typewriterText">Daily Student Jobs & <em>Internship Requirements</em></h1>
         <p class="lead">
           Verified student requirements, campus drives, & internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
@@ -61,7 +61,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="color: #dc2626; font-weight: 800; font-size: 16px;">▶</span>
-        <h3 style="font: 700 18px var(--font-sans); margin: 0; color: var(--ink);">Latest Tutorials from @pythonkashi</h3>
+        <h2 style="font: 700 18px var(--font-sans); margin: 0; color: var(--ink);">Latest Tutorials from @pythonkashi</h2>
       </div>
       <a href="/youtube/" style="font-size: 13px; font-weight: 700; color: #dc2626;">View All Videos ↗</a>
     </div>
@@ -165,9 +165,14 @@
           <p>{{ job.description|truncatewords:20 }}</p>
 
           <div class="skills-wrapper">
-            {% for skill in job.get_skills_list %}
+            {% for skill in job.get_skills_list|slice:":5" %}
               <span class="skill-tag">{{ skill }}</span>
             {% endfor %}
+            {% with total=job.get_skills_list|length %}
+              {% if total > 5 %}
+                <span class="skill-tag skill-more" title="{{ job.skills_required }}">+{{ total|add:"-5" }} more</span>
+              {% endif %}
+            {% endwith %}
           </div>
 
           <div class="vp-price-row">
@@ -217,8 +222,8 @@
   <section style="margin-top: 56px; border-top: 1px solid var(--subtle-border); padding-top: 40px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <div>
-        <span style="font-size: 11px; font-weight: 800; color: var(--blue-primary); font-family: monospace; letter-spacing: 0.6px; text-transform: uppercase;">
-          TECH BLOG &amp; MASTERCLASSES
+        <span style="font-size: 12px; font-weight: 700; color: var(--blue-primary); font-family: var(--font-mono); letter-spacing: 0.3px;">
+          Tech Blog &amp; Masterclasses
         </span>
         <h2 style="font: 700 24px var(--font-serif); margin: 4px 0 0; color: var(--ink);">
           Featured Engineering Articles &amp; Coding Handbooks
@@ -265,14 +270,14 @@
 </div>
 
 <!-- Job Detail Drawer -->
-<div id="detailModal" class="modal-overlay">
+<div id="detailModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
   <div class="modal-content">
     <div class="modal-header">
       <div>
         <span id="detailCompany" class="company-badge">Company</span>
         <span id="detailJobType" class="type-badge">Type</span>
       </div>
-      <button id="btnCloseDetail" class="close-btn">✕</button>
+      <button id="btnCloseDetail" class="close-btn" type="button" aria-label="Close job details modal">✕</button>
     </div>
 
     <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
