@@ -764,8 +764,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!jobsTableContainer) return;
     currentJobsPage = page;
     
-    // Smooth loading indicator without layout jumping
-    jobsTableContainer.style.opacity = '0.5';
+    // Skeleton loading state
+    jobsTableContainer.innerHTML = `
+      <div class="vp-catalog-grid" style="margin-bottom: 24px;">
+        ${[1, 2, 3, 4, 5, 6].map(() => `
+          <div class="vp-product-card" style="opacity: 0.7; pointer-events: none;">
+            <div class="vp-card-header">
+              <div style="width: 90px; height: 22px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
+              <div style="width: 60px; height: 20px; background: #e2e8f0; border-radius: var(--radius-full);"></div>
+            </div>
+            <div style="width: 75%; height: 20px; background: #e2e8f0; border-radius: var(--radius-sm); margin: 10px 0 8px;"></div>
+            <div style="width: 45%; height: 16px; background: #f1f5f9; border-radius: var(--radius-sm); margin-bottom: 12px;"></div>
+            <div style="width: 100%; height: 40px; background: #f8fafc; border-radius: var(--radius-sm); margin-bottom: 14px;"></div>
+            <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+              <div style="width: 50px; height: 20px; background: #f1f5f9; border-radius: var(--radius-sm);"></div>
+              <div style="width: 60px; height: 20px; background: #f1f5f9; border-radius: var(--radius-sm);"></div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
+              <div style="height: 38px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
+              <div style="height: 38px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
 
     const pageSizeSelect = document.getElementById('ownerPageSize');
     const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) : 10;
@@ -791,9 +813,16 @@ document.addEventListener('DOMContentLoaded', () => {
       renderFilteredJobs(data);
     } catch (err) {
       console.error('Failed to load jobs:', err);
-      jobsTableContainer.innerHTML = '<div style="padding: 28px; text-align: center; color: #dc2626; font-weight: 700;">⚠️ Error loading opportunity pipeline data. Please check connection.</div>';
-    } finally {
-      jobsTableContainer.style.opacity = '1';
+      jobsTableContainer.innerHTML = `
+        <div style="padding: 36px 20px; text-align: center; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-md); margin-bottom: 20px;">
+          <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+          <strong style="color: var(--color-text-danger); font-size: var(--text-base); display: block; margin-bottom: 4px;">Failed to load opportunity pipeline</strong>
+          <p style="color: var(--color-text-muted); font-size: var(--text-sm); margin: 0 0 16px;">There was an issue communicating with the backend server.</p>
+          <button type="button" class="btn btn-secondary" onclick="loadJobsList(${page})" style="border-color: #fca5a5; color: var(--color-text-danger);">
+            🔄 Try Again
+          </button>
+        </div>
+      `;
     }
   }
 
@@ -803,7 +832,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let filtered = [...allLoadedJobs];
 
     if (!filtered || filtered.length === 0) {
-      jobsTableContainer.innerHTML = '<div style="padding: 40px; text-align: center; color: #64748b; font-size: 14px; font-weight: 600;">✨ No opportunity leads matched your search or status filter.</div>';
+      jobsTableContainer.innerHTML = `
+        <div style="padding: 48px 20px; text-align: center; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); margin-bottom: 20px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+          <strong style="color: var(--color-text-primary); font-size: var(--text-base); display: block; margin-bottom: 4px;">No opportunity leads found</strong>
+          <p style="color: var(--color-text-muted); font-size: var(--text-sm); margin: 0 0 16px;">Try clearing your search filters or post a new job requirement.</p>
+          <button type="button" class="btn btn-primary" onclick="switchTab('tabPost')">
+            ✍️ + Post New Job
+          </button>
+        </div>
+      `;
       return;
     }
     const curPage = serverPaginationData ? (serverPaginationData.current_page || 1) : 1;
@@ -1908,27 +1946,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const visitsBody = document.getElementById('anaRecentVisitsBody');
       if (visitsBody) {
         if (!data.recent_visits || data.recent_visits.length === 0) {
-          visitsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--crm-muted); padding: 20px;">No recent live visits yet.</td></tr>';
+          visitsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 20px;">No recent live visits yet.</td></tr>';
         } else {
           visitsBody.innerHTML = data.recent_visits.map(v => `
             <tr>
-              <td style="white-space: nowrap; font-size: 12px; color: #94a3b8;">
-                <span style="color: var(--crm-cyan); font-weight: 700;">${escapeHtml(v.time)}</span><br>
+              <td style="white-space: nowrap; font-size: var(--text-xs); color: var(--color-text-muted);">
+                <strong style="color: var(--blue-primary);">${escapeHtml(v.time)}</strong><br>
                 <small>${escapeHtml(v.date)}</small>
               </td>
               <td>
-                <div style="font-weight: 700; color: #ffffff; font-size: 13px;">${escapeHtml(v.page_title)}</div>
-                <div style="font-size: 11px; color: var(--crm-muted); font-family: monospace;">${escapeHtml(v.path)}</div>
+                <div style="font-weight: 700; color: var(--color-text-primary); font-size: var(--text-sm);">${escapeHtml(v.page_title || v.path)}</div>
+                <div style="font-size: 11px; color: var(--color-text-muted); font-family: monospace;">${escapeHtml(v.path)}</div>
               </td>
               <td>
-                <span class="crm-category-tag" style="background: rgba(99,102,241,0.15); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3);">
-                  ${escapeHtml(v.referrer)}
+                <span class="company-badge" style="font-size: 11px;">
+                  ${escapeHtml(v.referrer || 'Direct')}
                 </span>
               </td>
-              <td style="font-size: 12px; color: #cbd5e1;">
-                ${v.device === 'Mobile' ? '📱 Mobile' : (v.device === 'Tablet' ? '📟 Tablet' : '💻 Desktop')} • ${escapeHtml(v.os)} (${escapeHtml(v.browser)})
+              <td style="font-size: var(--text-xs); color: var(--color-text-secondary);">
+                ${v.device === 'Mobile' ? '📱 Mobile' : (v.device === 'Tablet' ? '📟 Tablet' : '💻 Desktop')} • ${escapeHtml(v.os || '')} (${escapeHtml(v.browser || '')})
               </td>
-              <td style="font-family: monospace; font-size: 11.5px; color: #64748b;">
+              <td style="font-family: monospace; font-size: 11.5px; color: var(--color-text-muted);">
                 ${escapeHtml(v.ip)}
               </td>
             </tr>
