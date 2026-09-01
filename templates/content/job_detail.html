@@ -722,25 +722,21 @@
 
         <!-- 2. Previously Asked Coding Challenges -->
         <div style="margin-bottom: 22px;">
-          <div class="section-label" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-            <span style="display: inline-flex; align-items: center; gap: 6px;">
-              <img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="" aria-hidden="true">
-              Previously Asked Coding Challenges
-            </span>
-            <span style="font-size: 11px; font-weight: 700; color: #10b981;">⚡ Interactive In-Browser IDE</span>
+          <div class="section-label" style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+            <img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt=""> Previously Asked Coding Challenges
           </div>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
             {% for ch in interview_prep.coding_challenges %}
             <a href="{{ ch.url }}" class="resource-card">
-              <div>
-                <div style="font-size: 11px; font-weight: 800; color: var(--blue-primary); margin-bottom: 4px;">{{ ch.difficulty }}</div>
-                <div style="font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 4px; line-height: 1.4;">
-                  {{ ch.title }}
-                </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: var(--blue-primary);">{{ ch.difficulty }}</span>
+                <span style="font-size: 11px; font-weight: 700; color: #10b981; display: inline-flex; align-items: center; gap: 4px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="12" height="12" alt=""> Live IDE</span>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); margin-top: 4px;">
-                <span>{{ ch.frequency }}</span>
-                <span style="color: var(--blue-primary); font-weight: 700;">Practice ↗</span>
+              <div style="font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; line-height: 1.4;">
+                {{ ch.title }}
+              </div>
+              <div style="font-size: 12px; color: var(--muted);">
+                {{ ch.frequency }}
               </div>
             </a>
             {% endfor %}
@@ -882,23 +878,22 @@
 
     <div class="related-grid">
       {% for r in related_jobs %}
-      <a href="/category/{{ r.category.slug }}/job/{{ r.uuid }}/" class="resource-card" style="padding: 18px 20px; border-radius: var(--radius-lg); text-decoration: none;">
+      <a href="/category/{{ r.category.slug }}/job/{{ r.uuid }}/" style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 18px; padding: 20px; text-decoration: none; transition: var(--transition); display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--card-shadow);">
         <div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span class="company-badge" style="font-size: 11px; font-weight: 700;">{{ r.company_name }}</span>
+            <span class="company-badge" style="font-size: 12px;">{{ r.company_name }}</span>
             <span style="font-size: 11px; font-weight: 700; color: var(--blue-primary);">{{ r.get_posted_date_display }}</span>
           </div>
           <h4 style="font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 6px; line-height: 1.35;">
             {{ r.title }}
           </h4>
-          <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span style="display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="14" height="14" alt="Location"> {{ r.location }}</span>
-            <span>&bull;</span>
-            <span style="display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="14" height="14" alt="Salary"> {{ r.stipend_salary }}</span>
+          <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:3px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="14" height="14" alt="Location"> {{ r.location }}</span> • 
+            <span style="display:inline-flex;align-items:center;gap:3px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="14" height="14" alt="Salary"> {{ r.stipend_salary }}</span>
           </p>
         </div>
         <span style="font-size: 13px; font-weight: 800; color: var(--blue-primary); display: flex; align-items: center; gap: 4px;">
-          View &amp; Share Requirement ↗
+          View & Share Requirement ↗
         </span>
       </a>
       {% endfor %}
