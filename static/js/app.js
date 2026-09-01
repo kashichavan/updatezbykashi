@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
   const isCategoryPage = window.location.pathname.startsWith('/category/');
 
-  let currentCategory = 'software-tech';
+  let currentCategory = isCategoryPage ? '' : 'all';
   if (isCategoryPage) {
     const match = window.location.pathname.match(/\/category\/([^\/]+)/);
     if (match && match[1]) currentCategory = match[1];
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const state = {
     searchQuery: '',
-    category: currentCategory,
+    category: currentCategory || 'all',
     jobType: 'all',
     sort: 'newest',
     isTodayOnly: isTodayOnly,
@@ -169,18 +169,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- PAGINATED JOBS ENGINE (NEWEST FIRST) ---
 
-  async function loadJobs() {
+  async function loadJobs(showPlaceholder = false) {
     if (!jobsGrid) return;
 
     try {
-      jobsGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-          <div style="font-size: 14px; font-weight: 700; color: var(--blue-primary);">Syncing latest student requirements...</div>
-        </div>`;
+      const hasInitialCards = jobsGrid.querySelectorAll('.vp-product-card').length > 0;
+      if (showPlaceholder || !hasInitialCards) {
+        jobsGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
+            <div style="font-size: 14px; font-weight: 700; color: var(--blue-primary);">Syncing latest student requirements...</div>
+          </div>`;
+      }
 
       const params = new URLSearchParams({
         q: state.searchQuery,
-        category: state.category || 'software-tech',
+        category: (state.category && state.category !== 'all') ? state.category : '',
         job_type: state.jobType,
         today: state.isTodayOnly ? 'true' : '',
         yesterday: state.isYesterdayOnly ? 'true' : '',
@@ -193,17 +196,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`/api/jobs/?${params.toString()}`);
       const data = await res.json();
 
-      state.jobs = data.jobs || [];
-      state.totalCount = data.total_count || 0;
-      state.totalPages = data.total_pages || 1;
-      state.page = data.current_page || 1;
+      if (data && data.jobs && (data.jobs.length > 0 || !hasInitialCards || showPlaceholder)) {
+        state.jobs = data.jobs || [];
+        state.totalCount = data.total_count || 0;
+        state.totalPages = data.total_pages || 1;
+        state.page = data.current_page || 1;
 
-      renderJobs(state.jobs);
-      renderPagination();
+        renderJobs(state.jobs);
+        renderPagination();
+      }
 
     } catch (err) {
       console.error('Failed to load jobs:', err);
-      jobsGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #ef4444; font-weight: 700;">Error loading opportunities feed.</div>`;
+      const hasInitialCards = jobsGrid.querySelectorAll('.vp-product-card').length > 0;
+      if (!hasInitialCards) {
+        jobsGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #ef4444; font-weight: 700;">Error loading opportunities feed.</div>`;
+      }
     }
   }
 

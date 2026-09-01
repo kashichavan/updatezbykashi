@@ -173,6 +173,11 @@ def index_view(request):
     sync_expired_jobs()
     videos = get_cached_youtube_videos()
     initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:9]
+    if not initial_jobs.exists():
+        initial_jobs = JobPosting.objects.filter(status='ACTIVE').select_related('category').order_by('-created_at')[:9]
+        if not initial_jobs.exists():
+            initial_jobs = JobPosting.objects.all().select_related('category').order_by('-created_at')[:9]
+
     from blog.models import BlogPost
     recent_posts = BlogPost.objects.filter(is_published=True).select_related('category').order_by('-published_at')[:3]
     return render(request, 'content/home.html', {
@@ -1254,6 +1259,14 @@ def api_jobs(request):
             page_size_int = 10
 
         total_count = qs.count()
+        if total_count == 0 and not query and page_int == 1:
+            fallback_qs = JobPosting.objects.filter(status='ACTIVE').select_related('category').order_by('-created_at')
+            if not fallback_qs.exists():
+                fallback_qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
+            if fallback_qs.exists():
+                qs = fallback_qs
+                total_count = qs.count()
+
         total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
         page_int = min(max(1, page_int), total_pages)
 
