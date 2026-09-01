@@ -10,7 +10,7 @@
   <section class="vp-hero">
     <div class="vp-hero-inner">
       <div class="vp-hero-copy">
-        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;line-height:1.4;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> Fresh Daily Student Requirements</span>
+        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;line-height:1.4;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
         <h1 id="typewriterText">Daily Student Jobs & <em>Internship Requirements</em></h1>
         <p class="lead">
           Verified student requirements, campus drives, & internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
@@ -69,7 +69,7 @@
     <div class="logo-marquee-wrapper" style="margin-bottom: 0; min-height: 160px;">
       <div id="ytMarqueeTrack" class="logo-marquee-track">
         <!-- Set 1: eager load so thumbnails appear immediately for first-time visitors -->
-        {% for v in youtube_videos|slice:":6" %}
+        {% for v in youtube_videos %}
           <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
             <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="eager" fetchpriority="high" width="240" height="135">
             <div class="yt-play-overlay">▶</div>
@@ -77,7 +77,7 @@
           </a>
         {% endfor %}
         <!-- Set 2: duplicate for seamless infinite scroll -->
-        {% for v in youtube_videos|slice:":6" %}
+        {% for v in youtube_videos %}
           <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
             <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="lazy" width="240" height="135">
             <div class="yt-play-overlay">▶</div>
@@ -85,7 +85,7 @@
           </a>
         {% endfor %}
         <!-- Set 3: extra duplicate to keep scroll gap-free on wide screens -->
-        {% for v in youtube_videos|slice:":6" %}
+        {% for v in youtube_videos %}
           <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
             <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="lazy" width="240" height="135">
             <div class="yt-play-overlay">▶</div>
@@ -186,19 +186,18 @@
             <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
                class="external-apply-btn"
                onclick="event.stopPropagation();"
-               style="flex:1;">
-              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
+               style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);">
+              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="16" height="16" alt="Apply"> Apply Now ↗
             </a>
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
-               class="detail-page-btn"
-               onclick="event.stopPropagation();">
+               onclick="event.stopPropagation();"
+               style="padding:11px 14px;background:var(--blue-light);color:var(--blue-primary);font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:1px solid var(--blue-border);display:flex;align-items:center;justify-content:center;">
               <img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
             </a>
             {% else %}
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
-               class="external-apply-btn"
                onclick="event.stopPropagation();"
-               style="width:100%;">
+               style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;">
               <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
             </a>
             {% endif %}
@@ -266,10 +265,12 @@
   </section>
   {% endif %}
 
+
+
 </div>
 
 <!-- Job Detail Drawer -->
-<div id="detailModal" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+<div id="detailModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
   <div class="modal-content">
     <div class="modal-header">
       <div>

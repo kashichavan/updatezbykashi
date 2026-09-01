@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="vp-price-row">
               <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">
-                ⏱️ <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
+                ⏱️ <span>${isDeactivated ? 'Deactivated' : formattedTime}</span>
               </div>
             </div>
 
@@ -298,23 +298,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener"
                    class="external-apply-btn"
                    onclick="event.stopPropagation();"
-                   style="flex:1;">
-                  <img src="/static/images/icon-apply.png" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);">
+                  <img src="/static/images/icon-apply.png" class="nav-icon" style="filter:brightness(0) invert(1);" width="16" height="16" alt="Apply"> Apply Now ↗
                 </a>
                 <a href="${escapeHtml(shareUrl)}"
-                   class="detail-page-btn"
-                   onclick="event.stopPropagation();">
+                   onclick="event.stopPropagation();"
+                   style="padding:11px 14px;background:var(--blue-light);color:var(--blue-primary);font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:1px solid var(--blue-border);display:flex;align-items:center;justify-content:center;">
                   <img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
                 </a>
               ` : isDeactivated ? `
-                <div style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:#f1f5f9;color:#94a3b8;font-size:12px;font-weight:700;border-radius:var(--radius-sm);border:1px solid #e2e8f0;">
-                  ⛔ Closed Opportunity
-                </div>
+                <button disabled style="display:flex;align-items:center;justify-content:center;width:100%;padding:11px 0;background:#f1f5f9;color:#94a3b8;font-size:13px;font-weight:700;border-radius:10px;border:1px solid #e2e8f0;cursor:not-allowed;">
+                  ⛔ Deactivated
+                </button>
               ` : `
                 <a href="${escapeHtml(shareUrl)}"
-                   class="external-apply-btn"
                    onclick="event.stopPropagation();"
-                   style="width:100%;">
+                   style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;">
                   <img src="/static/images/icon-feed.png" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
                 </a>
               `}
