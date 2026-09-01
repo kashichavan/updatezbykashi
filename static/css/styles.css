@@ -395,7 +395,7 @@ a {
 }
 
 .vp-sidebar-btn {
-  display: none;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   background: var(--paper);
@@ -542,11 +542,6 @@ a {
 
 /* Mobile & Tablet State (< 880px) */
 @media (max-width: 880px) {
-  .vp-sidebar-btn {
-    display: inline-flex;
-    padding: 6px 10px;
-    font-size: 12px;
-  }
   .nav-links {
     display: none;
   }

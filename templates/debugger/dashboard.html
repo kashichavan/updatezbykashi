@@ -270,11 +270,14 @@
 
   <!-- ── 3. AI STEP STORY BANNER ── -->
   <div id="aiExplainBanner" class="step-story-banner">
-    <div style="display:flex; align-items:center; width:100%; gap:10px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
       <span id="aiExplainBannerText">
         💡 <strong>Beginner Guide:</strong> Select a language above → set breakpoints by clicking on
         line numbers → click <strong>"Start Debugging"</strong>!
       </span>
+      <button class="section-maximize-btn" id="btnMaximizeWorkspace" onclick="toggleFullWorkspaceMaximize()" title="Maximize Full IDE Workspace" style="flex-shrink:0;">
+        ⛶ Maximize IDE
+      </button>
     </div>
   </div>
 
@@ -290,14 +293,11 @@
         </span>
         <!-- Font Size & Fullscreen Controls -->
         <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Font:</span>
+          <span style="font-size:11px; color:#94a3b8; font-weight:600;">Font:</span>
           <button class="font-size-btn" onclick="changeFontSize(-1)" title="Decrease font size">A−</button>
           <span id="fontSizeLabel"
-                style="font-size:12px; color:var(--accent); font-family:var(--font-mono); min-width:22px; text-align:center;">14</span>
+                style="font-size:11px; color:#38bdf8; font-family:monospace; min-width:22px; text-align:center;">14</span>
           <button class="font-size-btn" onclick="changeFontSize(1)"  title="Increase font size">A+</button>
-          <button class="section-maximize-btn" id="btnMaximizeWorkspace" onclick="toggleFullWorkspaceMaximize()" title="Maximize Full IDE Workspace">
-            ⛶ Maximize IDE
-          </button>
           <button class="section-maximize-btn" onclick="toggleSectionMaximize(this.closest('.editor-card-box'))" title="Maximize Code Editor">
             ⛶ Maximize
           </button>
@@ -317,7 +317,7 @@
             Variables &amp; Memory Inspector
           </span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Live Variables &amp; Objects</span>
+            <span style="font-size:11px; color:#94a3b8;">Live Variables &amp; Objects</span>
             <button class="section-maximize-btn" onclick="toggleSectionMaximize(this.closest('.visual-card'))" title="Maximize Variables Panel">
               ⛶ Maximize
             </button>
@@ -325,8 +325,8 @@
         </div>
         <div class="visual-card-body">
           <div id="variablesContainer">
-            <div style="color:var(--text-muted); text-align:center; padding:24px 10px; font-size:13px;">
-              Click <strong style="color:var(--accent)">Start Debugging</strong>
+            <div style="color:#94a3b8; text-align:center; padding:24px 10px;">
+              Click <strong style="color:#38bdf8">Start Debugging</strong>
               to inspect memory allocations line-by-line.
             </div>
           </div>
@@ -341,7 +341,7 @@
             Call Stack Frames
           </span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Execution Depth</span>
+            <span style="font-size:11px; color:#94a3b8;">Execution Depth</span>
             <button class="section-maximize-btn" onclick="toggleSectionMaximize(this.closest('.visual-card'))" title="Maximize Call Stack Panel">
               ⛶ Maximize
             </button>
@@ -349,8 +349,8 @@
         </div>
         <div class="visual-card-body">
           <div id="callStackList" style="display:flex; flex-direction:column; gap:8px;">
-            <div style="color:var(--text-muted);font-size:12px;font-style:italic;text-align:center;padding:12px 0;">
-              ↳ Global Stack Frame <span style="color:var(--accent)">(Idle)</span>
+            <div style="color:#94a3b8;font-size:12px;font-style:italic;text-align:center;padding:12px 0;">
+              ↳ Global Stack Frame <span style="color:#60a5fa">(Idle)</span>
             </div>
           </div>
         </div>
