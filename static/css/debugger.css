@@ -466,15 +466,15 @@
 }
 
 .btn-start-debug {
-  padding: 7px 18px;
+  padding: 8px 18px;
   background: var(--primary);
   color: #ffffff;
-  font-size: 13px;
+  font-size: var(--text-xs);
   font-weight: 800;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -488,15 +488,15 @@
 }
 
 .dbg-step-btn {
-  padding: 5px 13px;
+  padding: 6px 14px;
   background: var(--bg-card);
   color: var(--text-main);
-  font-size: 12px;
-  font-weight: 800;
-  border-radius: 8px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: var(--transition);
   display: inline-flex;
   align-items: center;
   gap: 5px;
