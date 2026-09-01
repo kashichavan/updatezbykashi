@@ -3,10 +3,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
   const isCategoryPage = window.location.pathname.startsWith('/category/');
 
-  let currentCategory = 'software-tech';
+  let currentCategory = 'all';
   if (isCategoryPage) {
     const match = window.location.pathname.match(/\/category\/([^\/]+)/);
     if (match && match[1]) currentCategory = match[1];
+  } else if (window.CATEGORY_SLUG_OVERRIDE) {
+    currentCategory = window.CATEGORY_SLUG_OVERRIDE;
   }
 
   const urlParams = new URLSearchParams(window.location.search);
@@ -180,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const params = new URLSearchParams({
         q: state.searchQuery,
-        category: state.category || 'software-tech',
+        category: state.category || 'all',
         job_type: state.jobType,
         today: state.isTodayOnly ? 'true' : '',
         yesterday: state.isYesterdayOnly ? 'true' : '',
@@ -480,8 +482,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.isTodayOnly) {
           btnFilterToday.classList.add('active');
         } else {
-          const techTab = document.querySelector('.vp-tab[data-category="software-tech"]');
-          if (techTab) techTab.classList.add('active');
+          const defaultTab = document.querySelector('.vp-tab[data-category="all"]') || document.querySelector('.vp-tab[data-category]');
+          if (defaultTab) defaultTab.classList.add('active');
         }
 
         loadJobs();
@@ -493,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.isTodayOnly = false;
         state.isYesterdayOnly = false;
         state.isPreviousOnly = false;
-        state.category = tab.dataset.category || 'software-tech';
+        state.category = tab.dataset.category || 'all';
         state.page = 1;
 
         document.querySelectorAll('.vp-tabs .vp-tab').forEach(t => t.classList.remove('active'));
