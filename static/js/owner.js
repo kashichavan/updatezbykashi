@@ -193,9 +193,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnRefreshAnalytics = document.getElementById('btnRefreshAnalytics');
   if (btnRefreshAnalytics) {
     btnRefreshAnalytics.addEventListener('click', () => {
-      btnRefreshAnalytics.textContent = '🔄 Updating...';
+      const icon = document.getElementById('refreshIconSvg');
+      const text = document.getElementById('btnRefreshText');
+      if (icon) icon.classList.add('spin-animation');
+      if (text) text.textContent = 'Updating...';
+      btnRefreshAnalytics.disabled = true;
+
       loadAnalyticsData().finally(() => {
-        setTimeout(() => { btnRefreshAnalytics.textContent = '🔄 Refresh Analytics'; }, 800);
+        setTimeout(() => {
+          if (icon) icon.classList.remove('spin-animation');
+          if (text) text.textContent = 'Refresh Data';
+          btnRefreshAnalytics.disabled = false;
+        }, 600);
       });
     });
   }
@@ -1410,21 +1419,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const topPagesContainer = document.getElementById('anaTopPagesList');
       if (topPagesContainer) {
         if (!data.top_pages || data.top_pages.length === 0) {
-          topPagesContainer.innerHTML = '<div style="color: var(--crm-muted); font-size: 13px;">No page views recorded yet.</div>';
+          topPagesContainer.innerHTML = '<div style="color: var(--color-text-muted); font-size: var(--text-sm); padding: 12px 0;">No page views recorded yet.</div>';
         } else {
           topPagesContainer.innerHTML = data.top_pages.map((p, idx) => `
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--crm-border); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div class="ana-page-row">
               <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 13px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                  <span style="color: var(--crm-cyan); font-weight: 800; margin-right: 4px;">#${idx + 1}</span> ${escapeHtml(p.page_title || p.path)}
-                </div>
-                <div style="font-size: 11px; color: var(--crm-muted); font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                  ${escapeHtml(p.path)}
-                </div>
+                <a href="${escapeHtml(p.path)}" target="_blank" rel="noopener noreferrer" class="ana-page-link" title="Open ${escapeHtml(p.path)} in new tab">
+                  <div class="ana-page-title">
+                    <span style="color: var(--blue-primary); font-weight: 800; margin-right: 4px;">#${idx + 1}</span>
+                    <span>${escapeHtml(p.page_title || p.path)}</span>
+                  </div>
+                  <div class="ana-page-path">
+                    ${escapeHtml(p.path)} <span style="font-size: 10px; opacity: 0.7;">↗</span>
+                  </div>
+                </a>
               </div>
               <div style="text-align: right; flex-shrink: 0;">
-                <div style="font-size: 13px; font-weight: 800; color: #38bdf8;">${p.views} views</div>
-                <div style="font-size: 10.5px; color: #94a3b8;">${p.unique_visitors} unique</div>
+                <div style="font-size: var(--text-sm); font-weight: 800; color: var(--blue-primary);">${Number(p.views || 0).toLocaleString()} views</div>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted);">${Number(p.unique_visitors || 0).toLocaleString()} unique</div>
               </div>
             </div>
           `).join('');
@@ -1435,36 +1447,38 @@ document.addEventListener('DOMContentLoaded', () => {
       const referrersContainer = document.getElementById('anaReferrersList');
       if (referrersContainer) {
         if (!data.referrers || data.referrers.length === 0) {
-          referrersContainer.innerHTML = '<div style="color: var(--crm-muted); font-size: 13px;">No referrer data yet.</div>';
+          referrersContainer.innerHTML = '<div style="color: var(--color-text-muted); font-size: var(--text-sm);">No referrer data yet.</div>';
         } else {
           referrersContainer.innerHTML = data.referrers.map(r => `
             <div>
-              <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+              <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); font-weight: 600; color: var(--color-text-secondary); margin-bottom: 4px;">
                 <span>${escapeHtml(r.source)}</span>
-                <span style="color: #38bdf8;">${r.count} hits (${r.percentage}%)</span>
+                <span style="color: var(--blue-primary); font-weight: 700;">${r.count} hits (${r.percentage}%)</span>
               </div>
-              <div style="height: 6px; width: 100%; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
-                <div style="height: 100%; width: ${r.percentage}%; background: linear-gradient(90deg, #06b6d4, #6366f1); border-radius: 4px;"></div>
+              <div style="height: 6px; width: 100%; background: var(--surface-hover); border-radius: var(--radius-full); overflow: hidden; border: 1px solid var(--subtle-border);">
+                <div style="height: 100%; width: ${r.percentage}%; background: linear-gradient(90deg, #2563eb, #38bdf8); border-radius: var(--radius-full);"></div>
               </div>
             </div>
           `).join('');
         }
       }
 
-      // 5. Operating Systems & Platforms
+      // 5. Operating Systems & Platforms Breakdown
       const platformsContainer = document.getElementById('anaPlatformsList');
       if (platformsContainer) {
-        const osList = (data.operating_systems || []).map(o => `
-          <span style="background: rgba(255,255,255,0.05); border: 1px solid var(--crm-border); border-radius: 8px; padding: 4px 10px; font-size: 11.5px; color: #cbd5e1;">
-            💻 ${escapeHtml(o.os)}: <strong style="color: #ffffff;">${o.count}</strong>
-          </span>
+        const osItems = (data.operating_systems || []).map(o => `
+          <div class="platform-card-item">
+            <span style="font-weight: 600;">💻 ${escapeHtml(o.os)}</span>
+            <strong style="color: var(--color-text-primary); font-weight: 700;">${o.count}</strong>
+          </div>
         `);
-        const browserList = (data.browsers || []).map(b => `
-          <span style="background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 4px 10px; font-size: 11.5px; color: #38bdf8;">
-            🌐 ${escapeHtml(b.browser)}: <strong style="color: #ffffff;">${b.count}</strong>
-          </span>
+        const browserItems = (data.browsers || []).map(b => `
+          <div class="platform-card-item">
+            <span style="font-weight: 600;">🌐 ${escapeHtml(b.browser)}</span>
+            <strong style="color: var(--blue-primary); font-weight: 700;">${b.count}</strong>
+          </div>
         `);
-        platformsContainer.innerHTML = [...osList, ...browserList].join('') || '<span style="color: var(--crm-muted); font-size: 12px;">No platform data yet</span>';
+        platformsContainer.innerHTML = [...osItems, ...browserItems].join('') || '<div style="color: var(--color-text-muted); font-size: var(--text-xs);">No platform data yet</div>';
       }
 
       // 6. Recent Real-Time Visitors Table

@@ -29,20 +29,43 @@
     --muted: #64748b;
     --faint: #94a3b8;
     
+    /* 1. Consistent Typographic Scale */
+    --text-xs:   0.75rem;   /* 12px */
+    --text-sm:   0.8125rem; /* 13px */
+    --text-base: 0.875rem;  /* 14px */
+    --text-md:   1rem;      /* 16px */
+    --text-lg:   1.125rem;  /* 18px */
+    --text-xl:   1.375rem;  /* 22px */
+    --text-2xl:  1.625rem;  /* 26px */
+    --text-3xl:  1.75rem;   /* 28px */
+
+    /* 2. Semantic Text Color System */
+    --color-text-primary:   #0f172a;
+    --color-text-secondary: #334155;
+    --color-text-muted:     #64748b;
+    --color-text-brand:     #2563eb;
+    --color-text-success:   #059669;
+    --color-text-danger:    #dc2626;
+
+    /* 3. Consistent Corner Radii System */
+    --radius-xs:   4px;
+    --radius-sm:   6px;
+    --radius-md:  10px;
+    --radius-lg:  14px;
+    --radius-full: 9999px;
+
     --font-serif: 'Fraunces', Georgia, serif;
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     
     --card-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
     --hover-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
   }
 
   body {
     background-color: var(--paper) !important;
-    color: var(--ink) !important;
+    color: var(--color-text-primary) !important;
     font-family: var(--font-sans) !important;
+    font-size: var(--text-base);
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
@@ -85,12 +108,12 @@
   .owner-brand-logo {
     width: 34px;
     height: 34px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     display: grid;
     place-items: center;
     font-weight: 800;
-    font-size: 16px;
+    font-size: var(--text-md);
     color: #ffffff;
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
     text-decoration: none;
@@ -105,7 +128,7 @@
     font-family: var(--font-sans);
     font-size: 15px;
     font-weight: 800;
-    color: var(--ink);
+    color: var(--color-text-primary);
     letter-spacing: -0.02em;
     line-height: 1.2;
   }
@@ -117,7 +140,7 @@
   .owner-brand-badge {
     font-size: 10.5px;
     font-weight: 700;
-    color: #059669;
+    color: var(--color-text-success);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -127,25 +150,18 @@
   .owner-link-nav {
     display: flex;
     align-items: center;
-    gap: 3px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
+    gap: 4px;
     flex: 1 1 auto;
     justify-content: center;
   }
 
-  .owner-link-nav::-webkit-scrollbar {
-    display: none;
-  }
-
   .owner-link-item {
-    padding: 8px 12px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--muted);
+    padding: 7px 12px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
     background: transparent;
-    border: none;
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;
     display: inline-flex;
@@ -154,26 +170,28 @@
     white-space: nowrap;
     transition: all 0.15s ease;
     text-decoration: none;
+    line-height: 1.2;
   }
 
   .owner-link-item:hover {
-    color: var(--ink);
-    background: #f1f5f9;
+    color: var(--color-text-primary);
+    background: var(--surface-hover);
   }
 
   .owner-link-item.active {
     color: var(--blue-primary);
     background: var(--blue-light);
-    border: 1px solid var(--blue-border);
+    border-color: var(--blue-border);
+    font-weight: 700;
   }
 
   .owner-link-badge {
     font-size: 10px;
     font-weight: 800;
     background: #e2e8f0;
-    color: var(--muted);
+    color: var(--color-text-muted);
     padding: 1px 6px;
-    border-radius: 99px;
+    border-radius: var(--radius-full);
   }
 
   .owner-link-item.active .owner-link-badge {
@@ -181,7 +199,72 @@
     color: #ffffff;
   }
 
-  /* Right Header Controls */
+  /* Secondary Tools Dropdown in Nav */
+  .nav-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .nav-dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 190px;
+    background: var(--surface);
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 200;
+  }
+
+  .nav-dropdown:hover .nav-dropdown-menu,
+  .nav-dropdown:focus-within .nav-dropdown-menu,
+  .nav-dropdown-menu.show {
+    display: flex;
+  }
+
+  .nav-dropdown-item {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.12s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  .nav-dropdown-item:hover,
+  .nav-dropdown-item:focus {
+    background: var(--surface-hover);
+    color: var(--blue-primary);
+  }
+
+  .nav-dropdown-item.active {
+    background: var(--blue-light);
+    color: var(--blue-primary);
+    font-weight: 700;
+  }
+
+  /* Right Header Controls & 4. Unified Button System */
   .owner-right-actions {
     display: flex;
     align-items: center;
@@ -189,15 +272,85 @@
     flex-shrink: 0;
   }
 
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1;
+    box-sizing: border-box;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--blue-primary);
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    background: var(--blue-primary);
+    color: #ffffff !important;
+    border-color: var(--blue-primary);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  }
+
+  .btn-primary:hover {
+    background: var(--blue-hover);
+    border-color: var(--blue-hover);
+  }
+
+  .btn-secondary {
+    background: #ffffff;
+    color: var(--color-text-primary) !important;
+    border: 1px solid var(--strong-border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: var(--color-text-muted);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-text-secondary) !important;
+    border-color: transparent;
+  }
+
+  .btn-ghost:hover {
+    background: var(--surface-hover);
+    color: var(--color-text-primary) !important;
+  }
+
+  .btn-danger-ghost {
+    background: transparent;
+    color: var(--color-text-danger) !important;
+    border: 1px solid transparent;
+  }
+
+  .btn-danger-ghost:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  /* Backwards compatibility aliases */
   .btn-action-light {
     height: 36px;
     padding: 0 12px;
-    font-size: 12.5px;
-    font-weight: 700;
+    font-size: var(--text-sm);
+    font-weight: 600;
     border-radius: var(--radius-sm);
     border: 1px solid var(--strong-border);
     background: #ffffff;
-    color: var(--ink);
+    color: var(--color-text-primary);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -205,11 +358,12 @@
     transition: all 0.15s ease;
     text-decoration: none;
     white-space: nowrap;
+    box-sizing: border-box;
   }
 
   .btn-action-light:hover {
-    background: #f8fafc;
-    border-color: var(--muted);
+    background: var(--surface-hover);
+    border-color: var(--color-text-muted);
   }
 
   .btn-primary-blue {
@@ -262,12 +416,14 @@
     margin-bottom: 8px;
   }
 
+  /* 5 & 6. KPI Title Readability & Sentence Case */
   .kpi-title {
-    font-size: 11.5px;
-    font-weight: 800;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: 1.3;
   }
 
   .kpi-icon {
@@ -275,18 +431,83 @@
   }
 
   .kpi-value {
-    font-size: 28px;
+    font-size: var(--text-3xl);
     font-weight: 800;
-    color: var(--ink);
+    color: var(--color-text-primary);
     letter-spacing: -0.02em;
     line-height: 1.1;
     margin-bottom: 4px;
   }
 
   .kpi-sub {
-    font-size: 12px;
-    color: var(--muted);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
     font-weight: 600;
+  }
+
+  /* 11. Top Visited Pages Links */
+  .ana-page-row {
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: all 0.15s ease;
+  }
+  .ana-page-row:hover {
+    border-color: var(--blue-border);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.06);
+  }
+  .ana-page-link {
+    display: block;
+    text-decoration: none;
+    color: var(--color-text-primary);
+  }
+  .ana-page-link:hover .ana-page-title {
+    color: var(--blue-primary);
+    text-decoration: underline;
+  }
+  .ana-page-title {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.15s ease;
+  }
+  .ana-page-path {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 12. Structured Platforms Breakdown */
+  .platform-card-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 12px;
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+  }
+
+  /* 13. Refresh Button Spin Animation */
+  .spin-animation {
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   /* Workspace Card Panel */
@@ -747,50 +968,61 @@
     </div>
 
     <!-- Center Interactive Workspace Links -->
-    <nav class="owner-link-nav" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+    <nav class="owner-link-nav" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-label="Owner Studio Navigation">
       <button type="button" class="owner-link-item owner-nav-item active" data-tab="tabJobs">
-        📊 Pipeline <span class="owner-link-badge" id="sidebarActiveCount">{{ active_jobs_count|default:"0" }}</span>
-      </button>
-      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
-        🎯 1-Click Parser
+        Pipeline <span class="owner-link-badge" id="sidebarActiveCount">{{ active_jobs_count|default:"0" }}</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabPost">
-        ✍️ Single Post
-      </button>
-      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabBulkParse">
-        ⚡ Bulk Parser
-      </button>
-      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabJobdexo">
-        🌐 Jobdexo Sync
+        Single Post
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabAnalytics">
-        📈 Traffic
+        Traffic Analytics
       </button>
-      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabGroups">
-        📦 Groups <span class="owner-link-badge" id="sidebarGroupsCount">{{ total_groups_count|default:"0" }}</span>
-      </button>
-      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabCategory">
-        🏷️ Categories
-      </button>
-      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabActivity">
-        📜 Logs
-      </button>
+
+      <!-- Secondary Tools Dropdown -->
+      <div class="nav-dropdown">
+        <button type="button" class="owner-link-item nav-dropdown-toggle" aria-haspopup="menu" aria-expanded="false" id="moreToolsDropdownBtn">
+          <span>More Tools</span>
+          <span style="font-size: 10px; opacity: 0.7;">▾</span>
+        </button>
+        <div class="nav-dropdown-menu" role="menu" aria-labelledby="moreToolsDropdownBtn">
+          <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabSmartParse" role="menuitem">
+            <span>1-Click Parser</span>
+          </button>
+          <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabBulkParse" role="menuitem">
+            <span>Bulk Parser</span>
+          </button>
+          <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabJobdexo" role="menuitem">
+            <span>Jobdexo Sync</span>
+          </button>
+          <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabGroups" role="menuitem">
+            <span>WhatsApp Groups</span>
+            <span class="owner-link-badge" id="sidebarGroupsCount" style="margin-left: 6px;">{{ total_groups_count|default:"0" }}</span>
+          </button>
+          <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabCategory" role="menuitem">
+            <span>Categories</span>
+          </button>
+          <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabActivity" role="menuitem">
+            <span>Audit Logs</span>
+          </button>
+        </div>
+      </div>
     </nav>
 
     <!-- Right Actions: View Public Site & Post & Logout -->
     <div class="owner-right-actions" id="ownerRightActions">
-      <a href="/" target="_blank" class="btn-action-light" title="Open student website in new tab">
-        <span>🌐 Student Site ↗</span>
+      <a href="/" target="_blank" class="btn btn-secondary" title="Open student website in new tab" rel="noopener noreferrer">
+        <span>Student Site ↗</span>
       </a>
       <div id="ownerAuthActions" style="display: {% if is_owner_authenticated %}flex{% else %}none{% endif %}; align-items: center; gap: 8px;">
-        <button type="button" id="btnHeaderParseLead" class="btn-action-light" style="background: #faf5ff; color: #7c3aed; border-color: #ddd6fe;">
-          🎯 Parse Lead
+        <button type="button" id="btnHeaderParseLead" class="btn btn-secondary">
+          Parse Lead
         </button>
-        <button type="button" id="btnHeaderPostJob" class="btn-action-light btn-primary-blue">
+        <button type="button" id="btnHeaderPostJob" class="btn btn-primary">
           + Post Job
         </button>
-        <button type="button" id="btnLogoutOwner" class="btn-action-light" style="color: #dc2626; border-color: #fecaca; background: #fef2f2;">
-          Logout 🚪
+        <button type="button" id="btnLogoutOwner" class="btn btn-danger-ghost">
+          Logout
         </button>
       </div>
     </div>
@@ -1264,14 +1496,24 @@
          TAB 6: WEBSITE VISITOR & TRAFFIC ANALYTICS
          ========================================== -->
     <div id="tabAnalytics" class="workspace-card tab-content" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <div>
           <span class="status-pill" style="background: var(--blue-light); color: var(--blue-primary); border: 1px solid var(--blue-border); margin-bottom: 6px;">REAL-TIME ANALYTICS</span>
-          <h2 style="font-size: 22px; font-weight: 800; margin: 6px 0 2px; color: var(--ink);">📊 Website Traffic &amp; Visitors Analytics</h2>
-          <p style="font-size: 13px; color: var(--muted); margin: 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--blue-primary);">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 0; color: var(--color-text-primary);">Website Traffic &amp; Visitors Analytics</h2>
+          </div>
+          <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
         </div>
-        <button id="btnRefreshAnalytics" type="button" class="btn-action-light" style="border-radius: var(--radius-md);">
-          🔄 Refresh Analytics
+        <button id="btnRefreshAnalytics" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border);" aria-label="Refresh real-time analytics data">
+          <svg id="refreshIconSvg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          <span id="btnRefreshText">Refresh Data</span>
         </button>
       </div>
 
@@ -1280,7 +1522,7 @@
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-title">Total Unique Visitors</span>
-            <span class="kpi-icon">👥</span>
+            <span class="kpi-icon" style="color: var(--blue-primary);">👥</span>
           </div>
           <div class="kpi-value" id="anaTotalVisitors" style="color: var(--blue-primary);">--</div>
           <div class="kpi-sub" id="anaMonthVisitors">-- this month</div>
@@ -1289,16 +1531,16 @@
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-title">Today's Visitors</span>
-            <span class="kpi-icon">⚡</span>
+            <span class="kpi-icon" style="color: var(--color-text-success);">⚡</span>
           </div>
-          <div class="kpi-value" id="anaTodayVisitors" style="color: #059669;">--</div>
-          <div class="kpi-sub" id="anaTodayViews" style="color: #059669;">-- views today</div>
+          <div class="kpi-value" id="anaTodayVisitors" style="color: var(--color-text-success);">--</div>
+          <div class="kpi-sub" id="anaTodayViews" style="color: var(--color-text-success);">-- views today</div>
         </div>
 
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-title">Total Page Views</span>
-            <span class="kpi-icon">👁️</span>
+            <span class="kpi-icon" style="color: var(--color-text-primary);">👁️</span>
           </div>
           <div class="kpi-value" id="anaTotalViews">--</div>
           <div class="kpi-sub" id="anaWeekVisitors">-- this week</div>
@@ -1307,18 +1549,18 @@
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-title">Device Split</span>
-            <span class="kpi-icon">📱</span>
+            <span class="kpi-icon" style="color: #d97706;">📱</span>
           </div>
-          <div class="kpi-value" id="anaDeviceSplit" style="font-size: 20px; margin-top: 4px;">--</div>
+          <div class="kpi-value" id="anaDeviceSplit" style="font-size: var(--text-xl); margin-top: 4px;">--</div>
           <div class="kpi-sub" id="anaTopSource" style="color: #d97706;">Top: Direct / Social</div>
         </div>
       </div>
 
       <!-- 14-Day Traffic Trend Visualizer -->
-      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 22px;">
+      <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 22px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0;">📈 14-Day Daily Traffic &amp; Visitor Trend</h3>
-          <span style="font-size: 11.5px; color: var(--muted); font-weight: 600;">Daily Unique Visitors &amp; Total Hits</span>
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0;">14-Day Daily Traffic &amp; Visitor Trend</h3>
+          <span style="font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 600;">Daily Unique Visitors &amp; Total Hits</span>
         </div>
         <div id="anaDailyChartContainer" style="display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 16px; border-bottom: 1px solid var(--subtle-border); overflow-x: auto;">
         </div>
@@ -1326,31 +1568,31 @@
 
       <!-- 2-Column Grid: Top Pages & Traffic Sources -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 22px;">
-        <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
-          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0 0 14px;">🔝 Top Visited Jobs &amp; Pages</h3>
+        <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0 0 14px;">Top Visited Jobs &amp; Pages</h3>
           <div id="anaTopPagesList" style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="color: var(--muted); font-size: 13px;">Loading page data...</div>
+            <div style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading page data...</div>
           </div>
         </div>
 
-        <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
-          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0 0 14px;">🌐 Traffic Sources &amp; Channels</h3>
-          <div id="anaReferrersList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-            <div style="color: var(--muted); font-size: 13px;">Loading traffic channels...</div>
+        <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0 0 14px;">Traffic Sources &amp; Channels</h3>
+          <div id="anaReferrersList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+            <div style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading traffic channels...</div>
           </div>
 
-          <h4 style="font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin: 14px 0 8px;">📱 Browsers &amp; OS Platforms</h4>
-          <div id="anaPlatformsList" style="display: flex; flex-wrap: wrap; gap: 6px;">
-            <div style="color: var(--muted); font-size: 12px;">Loading platform info...</div>
+          <h4 style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-secondary); text-transform: none; margin: 18px 0 10px;">Browsers &amp; Operating Systems</h4>
+          <div id="anaPlatformsList" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--color-text-muted); font-size: var(--text-xs);">Loading platform info...</div>
           </div>
         </div>
       </div>
 
       <!-- Live Stream Table -->
-      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+      <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-          <h3 style="font-size: 15px; font-weight: 800; color: var(--ink); margin: 0;">⚡ Live Real-Time Activity Feed</h3>
-          <span style="font-size: 11.5px; color: #059669; font-weight: 700;">● Live Stream</span>
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0;">Live Real-Time Activity Feed</h3>
+          <span style="font-size: var(--text-xs); color: var(--color-text-success); font-weight: 700;">● Live Stream</span>
         </div>
         <div id="anaRecentVisitsTable" class="table-responsive">
           <table class="data-table">
