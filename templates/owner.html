@@ -1128,6 +1128,10 @@
         </div>
 
         <div class="filters-group">
+          <button id="btnOpenMoveByIdPipeline" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border); font-weight: 700;" title="Move or assign any requirement by typing its Job ID">
+            ⇄ Move by Job ID
+          </button>
+
           <select id="crmCategoryFilter" class="standard-select">
             <option value="ALL">All Categories</option>
             {% for c in categories %}
@@ -1484,6 +1488,9 @@
           <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0;">Shareable collections of multiple requirements with auto-cleanup of empty groups and 1-click requirement transfers.</p>
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button id="btnOpenMoveByIdGroups" type="button" class="btn btn-primary" title="Move or assign any requirement by typing its Job ID">
+            ⇄ Move by Job ID
+          </button>
           <button id="btnAutoOrganizeGroups" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border);" title="Automatically consolidate requirements and remove empty groups">
             ⚡ Auto-Move &amp; Clean Empty Groups
           </button>
@@ -1782,10 +1789,16 @@
         <input type="hidden" id="moveJobIds">
         <input type="hidden" id="moveFromGroupId">
 
-        <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px;">
-          <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Requirements Selected</div>
-          <div id="moveJobsSummaryText" style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">1 requirement selected</div>
-          <div id="moveSourceGroupText" style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">From Group: Current Group</div>
+        <!-- Explicit Editable Requirement Job ID Field -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="manualJobIdsInput" class="form-label">Requirement Job ID(s) *</label>
+          <div style="position: relative;">
+            <input type="text" id="manualJobIdsInput" class="form-input" placeholder="Type Job ID e.g. 263 or comma-separated: 263, 264" required style="font-family: monospace; font-size: var(--text-sm); font-weight: 700; color: var(--blue-primary); padding-left: 12px;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <span id="moveJobsSummaryText" style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted);">Requirement #263 selected</span>
+            <span id="moveSourceGroupText" style="font-size: 11px; color: var(--color-text-muted);">From: Pipeline</span>
+          </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 14px;">

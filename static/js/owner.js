@@ -1589,6 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modal) return;
 
     const jobIdsInput = document.getElementById('moveJobIds');
+    const manualJobIdsInput = document.getElementById('manualJobIdsInput');
     const fromGroupIdInput = document.getElementById('moveFromGroupId');
     const summaryText = document.getElementById('moveJobsSummaryText');
     const sourceGroupText = document.getElementById('moveSourceGroupText');
@@ -1598,19 +1599,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const newGroupNameInput = document.getElementById('newSpecificGroupNameInput');
     const newGroupTagInput = document.getElementById('newSpecificGroupTagInput');
 
-    if (jobIdsInput) jobIdsInput.value = JSON.stringify(jobIds);
+    const validIds = Array.isArray(jobIds) ? jobIds.filter(id => id !== undefined && id !== null && id !== '') : [];
+
+    if (jobIdsInput) jobIdsInput.value = JSON.stringify(validIds);
+    if (manualJobIdsInput) manualJobIdsInput.value = validIds.length > 0 ? validIds.join(', ') : '';
     if (fromGroupIdInput) fromGroupIdInput.value = fromGroupId || '';
 
-    if (summaryText) {
-      if (jobTitles.length === 1) {
-        summaryText.textContent = `1 requirement: "${jobTitles[0]}"`;
-      } else {
-        summaryText.textContent = `${jobTitles.length} requirements selected (${jobTitles.slice(0, 2).join(', ')}${jobTitles.length > 2 ? '...' : ''})`;
+    function updateSummaryFromInput() {
+      const raw = manualJobIdsInput ? manualJobIdsInput.value.trim() : '';
+      if (!raw) {
+        if (summaryText) summaryText.textContent = 'Type Job ID(s) above';
+        return;
+      }
+      const parsed = raw.split(',').map(x => x.trim()).filter(x => x.length > 0);
+      if (summaryText) {
+        if (parsed.length === 1) {
+          summaryText.textContent = `Requirement #${parsed[0]} selected`;
+        } else {
+          summaryText.textContent = `${parsed.length} requirements selected (#${parsed.join(', #')})`;
+        }
       }
     }
 
+    if (manualJobIdsInput) {
+      manualJobIdsInput.oninput = updateSummaryFromInput;
+      updateSummaryFromInput();
+    }
+
     if (sourceGroupText) {
-      sourceGroupText.textContent = fromGroupName ? `From Source Group: ${fromGroupName}` : 'From: All Pipeline Requirements';
+      sourceGroupText.textContent = fromGroupName ? `From Source Group: ${fromGroupName}` : 'From: Pipeline';
     }
 
     if (filterInput) filterInput.value = '';
@@ -1668,6 +1685,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     modal.style.display = 'flex';
+    if (manualJobIdsInput && !validIds.length) {
+      setTimeout(() => manualJobIdsInput.focus(), 50);
+    }
   }
 
   function closeMoveRequirementsModal() {
@@ -1680,17 +1700,48 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCloseMoveModal) btnCloseMoveModal.addEventListener('click', closeMoveRequirementsModal);
   if (btnCancelMove) btnCancelMove.addEventListener('click', closeMoveRequirementsModal);
 
+  // Quick Action Buttons for Move by Job ID
+  const btnOpenMoveByIdPipeline = document.getElementById('btnOpenMoveByIdPipeline');
+  const btnOpenMoveByIdGroups = document.getElementById('btnOpenMoveByIdGroups');
+
+  if (btnOpenMoveByIdPipeline) {
+    btnOpenMoveByIdPipeline.addEventListener('click', () => {
+      openMoveRequirementsModal({
+        jobIds: [],
+        jobTitles: [],
+        fromGroupId: null,
+        fromGroupName: ''
+      });
+    });
+  }
+
+  if (btnOpenMoveByIdGroups) {
+    btnOpenMoveByIdGroups.addEventListener('click', () => {
+      openMoveRequirementsModal({
+        jobIds: [],
+        jobTitles: [],
+        fromGroupId: null,
+        fromGroupName: ''
+      });
+    });
+  }
+
   const formMoveRequirements = document.getElementById('formMoveRequirements');
   if (formMoveRequirements) {
     formMoveRequirements.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const jobIdsRaw = document.getElementById('moveJobIds').value;
+      const manualJobIdsVal = document.getElementById('manualJobIdsInput')?.value.trim() || '';
       const fromGroupId = document.getElementById('moveFromGroupId').value;
       const toGroupId = document.getElementById('moveToGroupSelect').value;
       const actionType = document.querySelector('input[name="moveActionType"]:checked')?.value || 'move';
       const btnConfirm = document.getElementById('btnConfirmMove');
       const newGroupName = document.getElementById('newSpecificGroupNameInput')?.value.trim() || '';
       const newGroupTag = document.getElementById('newSpecificGroupTagInput')?.value.trim() || '';
+
+      if (!manualJobIdsVal) {
+        showToast('Please type at least one Requirement Job ID (e.g. 263).', 'error');
+        return;
+      }
 
       if (!toGroupId) {
         showToast('Please select a specific destination group or choose to create a new one.', 'error');
@@ -1702,15 +1753,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      let jobIds = [];
-      try {
-        jobIds = JSON.parse(jobIdsRaw);
-      } catch (err) {
-        jobIds = [parseInt(jobIdsRaw, 10)];
-      }
+      const jobIds = manualJobIdsVal
+        .split(',')
+        .map(x => parseInt(x.trim(), 10))
+        .filter(n => !isNaN(n) && n > 0);
 
       if (!jobIds || jobIds.length === 0) {
-        showToast('No requirements selected to transfer.', 'error');
+        showToast('Please enter a valid numeric Requirement Job ID (e.g. 263).', 'error');
         return;
       }
 
@@ -1736,6 +1785,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const res = await authFetch('/api/owner/groups/move-jobs/', {
           method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         const data = await res.json();
