@@ -1479,12 +1479,17 @@
     <div id="tabGroups" class="workspace-card tab-content" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
         <div>
-          <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: var(--ink);">📦 Requirement Groups &amp; Drives</h2>
-          <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.</p>
+          <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 0; color: var(--color-text-primary);">Requirement Groups &amp; Drives</h2>
+          <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0;">Shareable collections of multiple requirements with auto-cleanup of empty groups and 1-click requirement transfers.</p>
         </div>
-        <button id="btnRefreshGroups" type="button" class="btn-action-light" style="border-radius: var(--radius-md);">
-          🔄 Refresh Groups
-        </button>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button id="btnAutoOrganizeGroups" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border);" title="Automatically consolidate requirements and remove empty groups">
+            ⚡ Auto-Move &amp; Clean Empty Groups
+          </button>
+          <button id="btnRefreshGroups" type="button" class="btn btn-secondary">
+            🔄 Refresh Groups
+          </button>
+        </div>
       </div>
 
       <div id="ownerGroupsTableContainer" class="table-responsive">
@@ -1754,6 +1759,60 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
           <button type="button" id="btnCancelEdit" class="btn-action-light" style="border-radius: var(--radius-md);">Cancel</button>
           <button type="submit" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MOVE REQUIREMENTS BETWEEN GROUPS MODAL
+       ========================================== -->
+  <div id="moveRequirementsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">⇄</span>
+          <h2 style="font-size: 18px; font-weight: 800; margin: 0; color: var(--color-text-primary);">Move Requirements Between Groups</h2>
+        </div>
+        <button id="btnCloseMoveModal" type="button" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+      </div>
+
+      <form id="formMoveRequirements">
+        <input type="hidden" id="moveJobIds">
+        <input type="hidden" id="moveFromGroupId">
+
+        <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 16px;">
+          <div style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 4px;">Requirements Selected</div>
+          <div id="moveJobsSummaryText" style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">1 requirement selected</div>
+          <div id="moveSourceGroupText" style="font-size: var(--text-xs); color: var(--color-text-muted); margin-top: 2px;">From Group: Current Group</div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="moveToGroupSelect" class="form-label">Destination Group *</label>
+          <select id="moveToGroupSelect" class="form-input" required style="width: 100%;">
+            <option value="">-- Choose Target Group --</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Transfer Action</label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-size: var(--text-sm); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="moveActionType" value="move" checked>
+              <span><strong>Move</strong> (Remove from current group &amp; add to target)</span>
+            </label>
+            <label style="font-size: var(--text-sm); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="moveActionType" value="copy">
+              <span><strong>Copy</strong> (Keep in current group and also add to target)</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" id="btnCancelMove" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="btnConfirmMove" class="btn btn-primary" style="min-width: 130px;">
+            Confirm Move ⇄
+          </button>
         </div>
       </form>
     </div>

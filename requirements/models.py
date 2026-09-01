@@ -91,9 +91,9 @@ class JobPosting(models.Model):
         # Auto-set 7-day deadline upon creation if not explicitly set
         if not self.deadline:
             self.deadline = timezone.now() + timedelta(days=7)
-        # Auto-set posted_date from today if not set
+        # Auto-set posted_date from today in Indian Standard Time if not set
         if not self.posted_date:
-            self.posted_date = timezone.now().date()
+            self.posted_date = timezone.localtime(timezone.now()).date()
         super().save(*args, **kwargs)
 
     def is_expired(self):
@@ -144,9 +144,9 @@ class JobPosting(models.Model):
         ]
 
     def get_posted_date_display(self):
-        """Returns human-friendly date: 'Today', 'Yesterday', or 'Aug 3, 2026'"""
+        """Returns human-friendly date: 'Today', 'Yesterday', or 'Aug 3, 2026' in Indian Standard Time"""
         from datetime import timedelta as td
-        today = timezone.now().date()
+        today = timezone.localtime(timezone.now()).date()
         yesterday = today - td(days=1)
         if self.posted_date == today:
             return 'Today'
@@ -272,7 +272,7 @@ class JobGroup(models.Model):
         if not self.deadline:
             self.deadline = timezone.now() + timedelta(days=7)
         if not self.posted_date:
-            self.posted_date = timezone.now().date()
+            self.posted_date = timezone.localtime(timezone.now()).date()
         super().save(*args, **kwargs)
 
     def is_expired(self):

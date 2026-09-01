@@ -91,10 +91,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def cleanup_empty_groups():
+    """Automatically deletes any JobGroup that has zero requirements."""
+    try:
+        from django.db.models import Count
+        empty_qs = JobGroup.objects.annotate(job_count=Count('jobs')).filter(job_count=0)
+        deleted_count, _ = empty_qs.delete()
+        return deleted_count
+    except Exception as e:
+        logger.error(f"Error cleaning empty groups: {e}")
+        return 0
+
 def sync_expired_jobs():
-    """Automatically deletes postings older than 3 days (72 hours) so feed stays 100% fresh daily."""
+    """Automatically deletes postings older than 3 days (72 hours) and auto-cleans empty requirement groups."""
     now = timezone.now()
     deleted_count, _ = JobPosting.objects.filter(deadline__lte=now).delete()
+    cleanup_empty_groups()
     if deleted_count > 0:
         cache.clear()
 
@@ -1198,7 +1210,7 @@ def api_jobs(request):
         qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
 
         if filter_yesterday == 'true' or filter_yesterday == '1':
-            today_date = timezone.now().date()
+            today_date = timezone.localtime(timezone.now()).date()
             yesterday_date = today_date - timedelta(days=1)
             yesterday_qs = qs.filter(posted_date=yesterday_date)
             if yesterday_qs.exists():
@@ -1208,7 +1220,7 @@ def api_jobs(request):
                 four_days_ago = today_date - timedelta(days=4)
                 qs = qs.filter(posted_date__gte=four_days_ago)
         elif filter_today == 'true' or filter_today == '1':
-            today_date = timezone.now().date()
+            today_date = timezone.localtime(timezone.now()).date()
             today_qs = qs.filter(posted_date=today_date)
             if today_qs.exists():
                 qs = today_qs
@@ -1217,7 +1229,7 @@ def api_jobs(request):
                 four_days_ago = today_date - timedelta(days=4)
                 qs = qs.filter(posted_date__gte=four_days_ago)
         elif filter_previous == 'true' or filter_previous == '1':
-            today_date = timezone.now().date()
+            today_date = timezone.localtime(timezone.now()).date()
             four_days_ago = today_date - timedelta(days=4)
             qs = qs.filter(posted_date__gte=four_days_ago)
 
@@ -1588,16 +1600,33 @@ def api_groups(request):
 
 @csrf_exempt
 def api_owner_groups(request):
-    """Owner endpoint to list all requirement groups or create a new group."""
+    """Owner endpoint to list all requirement groups or create a new group with Indian Standard Time."""
     is_auth, owner_user = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method == 'GET':
+        # Auto-delete any groups that have zero requirements
+        cleanup_empty_groups()
+
         groups = JobGroup.objects.all().prefetch_related('jobs')
         res = []
         host_url = request.build_absolute_uri('/')[:-1]
         for g in groups:
+            group_jobs = [
+                {
+                    'id': j.id,
+                    'title': j.title,
+                    'company_name': j.company_name,
+                    'location': j.location,
+                    'stipend_salary': j.stipend_salary,
+                    'status': j.status,
+                    'status_display': j.get_status_display(),
+                    'posted_date': timezone.localtime(j.created_at).strftime('%d %b %Y') if j.created_at else str(j.posted_date),
+                    'apply_url': j.apply_url,
+                }
+                for j in g.jobs.all().order_by('-created_at')
+            ]
             res.append({
                 'id': g.id,
                 'name': g.name,
@@ -1606,12 +1635,13 @@ def api_owner_groups(request):
                 'description': g.description,
                 'total_jobs_count': g.jobs.count(),
                 'active_jobs_count': g.get_active_jobs().count(),
+                'jobs': group_jobs,
                 'views_count': g.views_count,
                 'is_expired': g.is_expired(),
                 'time_left_display': g.get_time_left_display(),
                 'time_left_seconds': g.get_time_left_seconds(),
-                'deadline': g.deadline.strftime('%d %b %Y, %I:%M %p') if g.deadline else "",
-                'created_at': g.created_at.strftime('%d %b %Y, %I:%M %p'),
+                'deadline': timezone.localtime(g.deadline).strftime('%d %b %Y, %I:%M %p IST') if g.deadline else "",
+                'created_at': timezone.localtime(g.created_at).strftime('%d %b %Y, %I:%M %p IST'),
                 'url': f"/group/{g.slug}/",
                 'full_url': f"{host_url}/group/{g.slug}/",
             })
@@ -1624,7 +1654,7 @@ def api_owner_groups(request):
             job_ids = data.get('job_ids', [])
             now_local = timezone.localtime(timezone.now())
             if not name:
-                name = now_local.strftime("Hiring Drive — %d %b %Y, %I:%M %p")
+                name = now_local.strftime("Hiring Drive — %d %b %Y, %I:%M %p IST")
 
             base_slug = slugify(name) or "hiring-drive"
             slug = f"{base_slug}-{now_local.strftime('%Y%m%d%H%M')}"
@@ -1651,6 +1681,156 @@ def api_owner_groups(request):
             }, status=201)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def api_owner_groups_move_jobs(request):
+    """
+    Moves one or more requirements from one group to another (or adds/reassigns them).
+    Auto-deletes the source group if it ends up with zero requirements.
+    Payload:
+    {
+        "job_ids": [101, 102],
+        "from_group_id": 5,      # Optional: source group to remove jobs from
+        "to_group_id": 8,        # Required: target group to add jobs into
+        "action": "move"         # "move" (removes from source and adds to target) or "copy"
+    }
+    """
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        job_ids = data.get('job_ids', [])
+        if not job_ids and 'job_id' in data:
+            job_ids = [data['job_id']]
+
+        if not job_ids:
+            return JsonResponse({'error': 'Please select at least one requirement to move.'}, status=400)
+
+        to_group_id = data.get('to_group_id')
+        from_group_id = data.get('from_group_id')
+        action = data.get('action', 'move')
+
+        if not to_group_id:
+            return JsonResponse({'error': 'Target group (to_group_id) is required.'}, status=400)
+
+        to_group = get_object_or_404(JobGroup, pk=to_group_id)
+        jobs_to_move = JobPosting.objects.filter(id__in=job_ids)
+
+        if not jobs_to_move.exists():
+            return JsonResponse({'error': 'Specified job requirements not found.'}, status=404)
+
+        count = jobs_to_move.count()
+
+        from_group = None
+        source_label = ""
+        if from_group_id and action == 'move':
+            from_group = JobGroup.objects.filter(pk=from_group_id).first()
+            if from_group:
+                from_group.jobs.remove(*jobs_to_move)
+                source_label = f" from '{from_group.name}'"
+                # Auto-delete source group if it now has zero requirements
+                if from_group.jobs.count() == 0:
+                    deleted_name = from_group.name
+                    from_group.delete()
+                    source_label += f" (Empty group '{deleted_name}' auto-deleted)"
+
+        to_group.jobs.add(*jobs_to_move)
+
+        msg = f"Successfully moved {count} requirement{'s' if count != 1 else ''}{source_label} to '{to_group.name}'!"
+
+        # Global cleanup of any other zero-job groups
+        cleanup_empty_groups()
+
+        return JsonResponse({
+            'success': True,
+            'message': msg,
+            'moved_count': count,
+            'target_group_id': to_group.id,
+            'target_group_name': to_group.name,
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+@csrf_exempt
+def api_owner_groups_auto_organize(request):
+    """
+    Intelligently auto-organizes and auto-moves requirements:
+    1. Consolidates active opportunities into a fresh Master Daily Hiring Drive.
+    2. Auto-deletes any groups that have zero requirements.
+    """
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed.'}, status=405)
+
+    sync_expired_jobs()
+    now_local = timezone.localtime(timezone.now())
+
+    active_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at'))
+    
+    if not active_jobs:
+        deleted_empty = cleanup_empty_groups()
+        return JsonResponse({
+            'success': True,
+            'message': f'No active requirements found to organize. Auto-deleted {deleted_empty} empty group(s).'
+        })
+
+    master_name = now_local.strftime("🔥 Master Tech Hiring Drive — %d %b %Y")
+    master_slug = slugify(f"master-drive-{now_local.strftime('%Y%m%d')}")
+    master_group, created = JobGroup.objects.get_or_create(
+        slug=master_slug,
+        defaults={
+            'name': master_name,
+            'banner_tag': '🔥 MASTER TECH & OFF-CAMPUS HIRING DRIVE',
+            'description': 'Curated verified active requirements for tech roles, freshers, and experienced engineering talent.',
+            'posted_date': now_local.date(),
+            'deadline': timezone.now() + timedelta(days=7),
+            'is_active': True,
+        }
+    )
+
+    master_group.jobs.add(*active_jobs)
+    moved_count = len(active_jobs)
+
+    deleted_empty = cleanup_empty_groups()
+
+    return JsonResponse({
+        'success': True,
+        'message': f"Auto-moved {moved_count} requirement(s) into '{master_group.name}'! Auto-deleted {deleted_empty} empty group(s).",
+        'master_group_id': master_group.id,
+        'master_group_name': master_group.name,
+        'moved_count': moved_count,
+        'deleted_empty_groups': deleted_empty
+    })
+
+@csrf_exempt
+def api_owner_group_remove_job(request, group_pk, job_pk):
+    """Removes a single requirement from a group and auto-deletes the group if it becomes empty."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    group = get_object_or_404(JobGroup, pk=group_pk)
+    job = get_object_or_404(JobPosting, pk=job_pk)
+    group.jobs.remove(job)
+
+    group_name = group.name
+    was_deleted = False
+    if group.jobs.count() == 0:
+        group.delete()
+        was_deleted = True
+
+    return JsonResponse({
+        'success': True,
+        'message': f"Removed '{job.title}' from '{group_name}'." + (" Group had 0 requirements and was auto-deleted." if was_deleted else "")
+    })
 
 @csrf_exempt
 def api_owner_group_broadcast(request, pk):

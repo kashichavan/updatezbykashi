@@ -261,7 +261,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRefreshGroups) {
       btnRefreshGroups.addEventListener('click', () => {
         loadGroupsList();
-        showToast('Requirement groups refreshed!', 'success');
+        showToast('Requirement groups refreshed and empty groups cleaned up!', 'success');
+      });
+    }
+
+    const btnAutoOrganizeGroups = document.getElementById('btnAutoOrganizeGroups');
+    if (btnAutoOrganizeGroups) {
+      btnAutoOrganizeGroups.addEventListener('click', async () => {
+        btnAutoOrganizeGroups.textContent = '⚡ Organizing & Cleaning...';
+        btnAutoOrganizeGroups.disabled = true;
+        try {
+          const res = await authFetch('/api/owner/groups/auto-organize/', { method: 'POST' });
+          const data = await res.json();
+          if (res.ok) {
+            showToast(data.message || 'Auto-organized requirements successfully!', 'success');
+            logActivity('Auto-organized groups', data.message);
+            loadGroupsList();
+            loadKpiStats();
+          } else {
+            showToast(data.error || 'Failed to auto-organize groups.', 'error');
+          }
+        } catch (err) {
+          showToast('Network error while auto-organizing groups.', 'error');
+        } finally {
+          btnAutoOrganizeGroups.textContent = '⚡ Auto-Move & Clean Empty Groups';
+          btnAutoOrganizeGroups.disabled = false;
+        }
       });
     }
   }
@@ -1177,26 +1202,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- REQUIREMENT GROUPS & BUNDLES ENGINE ---
 
+  let allGroupsData = [];
+
+  // --- INDIAN STANDARD TIME (IST) FORMATTING HELPERS ---
+  function getIndianTimeString(dateObj = new Date()) {
+    try {
+      return new Intl.DateTimeFormat('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      }).format(dateObj) + ' IST';
+    } catch (e) {
+      return dateObj.toLocaleTimeString();
+    }
+  }
+
+  function getIndianDateTimeString(dateObj = new Date()) {
+    try {
+      return new Intl.DateTimeFormat('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }).format(dateObj) + ' IST';
+    } catch (e) {
+      return dateObj.toLocaleString();
+    }
+  }
+
   async function loadGroupsList() {
     const container = document.getElementById('ownerGroupsTableContainer');
     if (!container) return;
 
-    container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-muted);">Loading requirement groups...</div>';
+    container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--color-text-muted);">Loading requirement groups...</div>';
 
     try {
       const res = await authFetch('/api/owner/groups/');
       const data = await res.json();
       const groups = data.groups || [];
+      allGroupsData = groups;
 
       if (groups.length === 0) {
         container.innerHTML = `
           <div style="padding: 48px 24px; text-align: center;">
             <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
-            <h3 style="font-size: 16px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">No Requirement Groups Yet</h3>
-            <p style="font-size: 13px; color: var(--crm-muted); margin-bottom: 16px;">
-              Whenever you use the Bulk Parser, a group is automatically created with a direct shareable link!
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 6px;">No Requirement Groups Yet</h3>
+            <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">
+              Whenever you use the Bulk Parser or Create Group, a bundle is automatically created with direct shareable links!
             </p>
-            <button class="btn-crm-primary" style="height: 38px; font-size: 13px;" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
+            <button class="btn btn-primary" style="height: 38px; font-size: 13px;" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
               ⚡ Open Bulk Parser
             </button>
           </div>
@@ -1205,44 +1264,98 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let html = `
-        <table class="crm-table">
+        <table class="data-table" style="width: 100%;">
           <thead>
             <tr>
-              <th style="width: 32%;">Group / Drive Name</th>
-              <th style="width: 14%;">Active Jobs</th>
-              <th style="width: 18%;">Created Date</th>
+              <th style="width: 30%;">Group / Drive Name</th>
+              <th style="width: 15%;">Active Jobs</th>
+              <th style="width: 20%;">Created Date (IST)</th>
               <th style="width: 10%;">Views</th>
-              <th style="width: 26%; text-align: right;">Actions</th>
+              <th style="width: 25%; text-align: right;">Actions</th>
             </tr>
           </thead>
           <tbody>
       `;
 
       groups.forEach(g => {
+        const jobsCount = g.jobs ? g.jobs.length : (g.total_jobs_count || 0);
         html += `
-          <tr>
+          <tr data-group-id="${g.id}">
             <td>
-              <div style="font-weight: 800; color: #ffffff; font-size: 13.5px;">${escapeHtml(g.name)}</div>
-              <div style="font-size: 11px; color: var(--crm-cyan); font-family: monospace; margin-top: 2px;">/group/${escapeHtml(g.slug)}/</div>
+              <div style="font-weight: 800; color: var(--color-text-primary); font-size: 14px;">${escapeHtml(g.name)}</div>
+              <div style="font-size: 11px; color: var(--blue-primary); font-family: ui-monospace, monospace; margin-top: 2px;">/group/${escapeHtml(g.slug)}/</div>
             </td>
             <td>
-              <span class="crm-table-badge badge-active" style="font-size: 11.5px;">
-                🎯 ${g.active_jobs_count} Active
-              </span>
+              <button type="button" class="btn-toggle-group-jobs btn btn-ghost" data-group-id="${g.id}" style="height: 28px; padding: 0 8px; font-size: 12px; background: var(--blue-light); color: var(--blue-primary); border-radius: var(--radius-sm); border: 1px solid var(--blue-border);" title="Click to view & move requirements">
+                📂 ${g.active_jobs_count} Jobs ▾
+              </button>
             </td>
-            <td style="color: var(--crm-muted); font-size: 12.5px;">${escapeHtml(g.created_at)}</td>
-            <td style="font-weight: 700; color: #e2e8f0; font-size: 13px;">👁️ ${g.views_count}</td>
+            <td style="color: var(--color-text-muted); font-size: 12.5px;">${escapeHtml(g.created_at)}</td>
+            <td style="font-weight: 700; color: var(--color-text-primary); font-size: 13px;">👁️ ${g.views_count}</td>
             <td style="text-align: right;">
               <div style="display: inline-flex; gap: 6px; align-items: center;">
-                <a href="${escapeHtml(g.url)}" target="_blank" class="btn-crm-action" style="background: rgba(37,99,235,0.2); color: #60a5fa; border-color: rgba(37,99,235,0.4); text-decoration: none; padding: 5px 9px; font-size: 11.5px;">
+                <button type="button" class="btn-toggle-group-jobs btn btn-secondary" data-group-id="${g.id}" style="padding: 4px 9px; font-size: 12px; height: 32px;">
+                  ⇄ Move Jobs
+                </button>
+                <a href="${escapeHtml(g.url)}" target="_blank" class="btn btn-secondary" style="padding: 4px 9px; font-size: 12px; height: 32px;" title="Open live public group page">
                   Open ↗
                 </a>
-                <button class="btn-crm-action btn-group-broadcast" data-id="${g.id}" style="background: rgba(34,197,94,0.18); color: #4ade80; border-color: rgba(34,197,94,0.35); padding: 5px 9px; font-size: 11.5px;">
-                  📱 Broadcast
+                <button type="button" class="btn btn-secondary btn-group-broadcast" data-id="${g.id}" style="padding: 4px 9px; font-size: 12px; height: 32px; background: #ecfdf5; color: #059669; border-color: #a7f3d0;" title="Get WhatsApp / Telegram broadcast message">
+                  Broadcast
                 </button>
-                <button class="btn-crm-action btn-group-delete" data-id="${g.id}" data-name="${escapeHtml(g.name)}" style="background: rgba(244,63,94,0.15); color: var(--crm-rose); border-color: rgba(244,63,94,0.3); padding: 5px 8px; font-size: 11.5px;">
+                <button type="button" class="btn btn-danger-ghost btn-group-delete" data-id="${g.id}" data-name="${escapeHtml(g.name)}" style="padding: 4px 8px; font-size: 12px; height: 32px;" title="Delete group bundle">
                   🗑️
                 </button>
+              </div>
+            </td>
+          </tr>
+          <!-- Expandable Group Requirements Drawer Row -->
+          <tr id="group-jobs-drawer-${g.id}" class="group-jobs-drawer-row" style="display: none; background: #f8fafc;">
+            <td colspan="5" style="padding: 16px 20px; border-bottom: 2px solid var(--blue-border);">
+              <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <label style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                      <input type="checkbox" class="select-all-group-jobs" data-group-id="${g.id}">
+                      <span>Select All (${jobsCount})</span>
+                    </label>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-bulk-move-jobs btn btn-primary" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" style="height: 30px; font-size: 12px; padding: 0 10px; display: none;">
+                      ⇄ Move Selected (<span class="selected-count">0</span>)
+                    </button>
+                  </div>
+                </div>
+
+                <div class="group-jobs-list" data-group-id="${g.id}" style="display: flex; flex-direction: column; gap: 6px;">
+                  ${(!g.jobs || g.jobs.length === 0) ? `
+                    <div style="padding: 14px; text-align: center; color: var(--color-text-muted); font-size: var(--text-xs);">
+                      No requirements currently in this group. Use the Bulk Parser or Move tools to assign jobs here.
+                    </div>
+                  ` : g.jobs.map(j => `
+                    <div class="group-job-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-sm); gap: 10px;">
+                      <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                        <input type="checkbox" class="group-job-checkbox" data-group-id="${g.id}" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}">
+                        <div style="min-width: 0; flex: 1;">
+                          <div style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${escapeHtml(j.title)} <span style="font-weight: 500; color: var(--color-text-muted);">at ${escapeHtml(j.company_name)}</span>
+                          </div>
+                          <div style="font-size: 11px; color: var(--color-text-muted);">
+                            📍 ${escapeHtml(j.location || 'India')} • 💰 ${escapeHtml(j.stipend_salary || 'Competitive')} • 📅 ${escapeHtml(j.posted_date || '')}
+                          </div>
+                        </div>
+                      </div>
+                      <div style="display: inline-flex; gap: 6px; align-items: center; flex-shrink: 0;">
+                        <button type="button" class="btn-move-single-job btn btn-secondary" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-from-group-id="${g.id}" data-from-group-name="${escapeHtml(g.name)}" style="height: 28px; padding: 0 9px; font-size: 11.5px; border-color: var(--blue-border); color: var(--blue-primary);">
+                          ⇄ Move
+                        </button>
+                        <button type="button" class="btn-remove-single-job btn btn-danger-ghost" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" style="height: 28px; padding: 0 8px; font-size: 11.5px;" title="Remove from this group only">
+                          ✕ Remove
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
               </div>
             </td>
           </tr>
@@ -1252,7 +1365,117 @@ document.addEventListener('DOMContentLoaded', () => {
       html += '</tbody></table>';
       container.innerHTML = html;
 
-      // Attach Broadcast button click handlers
+      // 1. Toggle Drawer Handlers
+      container.querySelectorAll('.btn-toggle-group-jobs').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const groupId = btn.dataset.groupId;
+          const drawer = document.getElementById(`group-jobs-drawer-${groupId}`);
+          if (drawer) {
+            const isHidden = drawer.style.display === 'none';
+            drawer.style.display = isHidden ? 'table-row' : 'none';
+            btn.textContent = isHidden ? `📂 Hide Jobs ▴` : `📂 Jobs ▾`;
+          }
+        });
+      });
+
+      // 2. Single Job Move Button Click
+      container.querySelectorAll('.btn-move-single-job').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const jobId = parseInt(btn.dataset.jobId, 10);
+          const jobTitle = btn.dataset.jobTitle;
+          const fromGroupId = parseInt(btn.dataset.fromGroupId, 10);
+          const fromGroupName = btn.dataset.fromGroupName;
+
+          openMoveRequirementsModal({
+            jobIds: [jobId],
+            jobTitles: [jobTitle],
+            fromGroupId: fromGroupId,
+            fromGroupName: fromGroupName
+          });
+        });
+      });
+
+      // 3. Remove Single Job from Group
+      container.querySelectorAll('.btn-remove-single-job').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const jobId = btn.dataset.jobId;
+          const jobTitle = btn.dataset.jobTitle;
+          const groupId = btn.dataset.groupId;
+          const groupName = btn.dataset.groupName;
+
+          if (confirm(`Remove "${jobTitle}" from group "${groupName}"? (The job posting will remain active on the student feed).`)) {
+            try {
+              const res = await authFetch(`/api/owner/groups/${groupId}/remove-job/${jobId}/`, {
+                method: 'POST'
+              });
+              const data = await res.json();
+              if (res.ok) {
+                showToast(data.message || 'Job removed from group.', 'success');
+                logActivity('Removed job from group', `${jobTitle} from ${groupName}`);
+                loadGroupsList();
+              } else {
+                showToast(data.error || 'Failed to remove job from group.', 'error');
+              }
+            } catch (err) {
+              showToast('Network error removing job from group.', 'error');
+            }
+          }
+        });
+      });
+
+      // 4. Checkbox Selection & Bulk Move
+      container.querySelectorAll('.select-all-group-jobs').forEach(chkAll => {
+        chkAll.addEventListener('change', () => {
+          const groupId = chkAll.dataset.groupId;
+          const checkboxes = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]`);
+          checkboxes.forEach(c => { c.checked = chkAll.checked; });
+          updateBulkMoveButtonState(groupId);
+        });
+      });
+
+      container.querySelectorAll('.group-job-checkbox').forEach(chk => {
+        chk.addEventListener('change', () => {
+          const groupId = chk.dataset.groupId;
+          updateBulkMoveButtonState(groupId);
+        });
+      });
+
+      function updateBulkMoveButtonState(groupId) {
+        const checked = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]:checked`);
+        const bulkBtn = container.querySelector(`.btn-bulk-move-jobs[data-group-id="${groupId}"]`);
+        if (bulkBtn) {
+          if (checked.length > 0) {
+            bulkBtn.style.display = 'inline-flex';
+            const countEl = bulkBtn.querySelector('.selected-count');
+            if (countEl) countEl.textContent = checked.length;
+          } else {
+            bulkBtn.style.display = 'none';
+          }
+        }
+      }
+
+      // 5. Bulk Move Button Click
+      container.querySelectorAll('.btn-bulk-move-jobs').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const groupId = parseInt(btn.dataset.groupId, 10);
+          const groupName = btn.dataset.groupName;
+          const checked = Array.from(container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]:checked`));
+          
+          if (checked.length === 0) return;
+
+          const jobIds = checked.map(c => parseInt(c.dataset.jobId, 10));
+          const jobTitles = checked.map(c => c.dataset.jobTitle);
+
+          openMoveRequirementsModal({
+            jobIds: jobIds,
+            jobTitles: jobTitles,
+            fromGroupId: groupId,
+            fromGroupName: groupName
+          });
+        });
+      });
+
+      // 6. Broadcast Button
       container.querySelectorAll('.btn-group-broadcast').forEach(btn => {
         btn.addEventListener('click', async () => {
           const groupId = btn.dataset.id;
@@ -1268,7 +1491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // Attach Delete button click handlers
+      // 7. Delete Button
       container.querySelectorAll('.btn-group-delete').forEach(btn => {
         btn.addEventListener('click', async () => {
           const groupId = btn.dataset.id;
@@ -1293,8 +1516,124 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Error loading groups:', err);
-      container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--crm-rose);">Failed to load requirement groups.</div>';
+      container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--color-text-danger);">Failed to load requirement groups.</div>';
     }
+  }
+
+  // --- MOVE REQUIREMENTS MODAL WORKFLOW ---
+
+  function openMoveRequirementsModal({ jobIds, jobTitles, fromGroupId, fromGroupName }) {
+    const modal = document.getElementById('moveRequirementsModal');
+    if (!modal) return;
+
+    const jobIdsInput = document.getElementById('moveJobIds');
+    const fromGroupIdInput = document.getElementById('moveFromGroupId');
+    const summaryText = document.getElementById('moveJobsSummaryText');
+    const sourceGroupText = document.getElementById('moveSourceGroupText');
+    const targetSelect = document.getElementById('moveToGroupSelect');
+
+    if (jobIdsInput) jobIdsInput.value = JSON.stringify(jobIds);
+    if (fromGroupIdInput) fromGroupIdInput.value = fromGroupId || '';
+
+    if (summaryText) {
+      if (jobTitles.length === 1) {
+        summaryText.textContent = `1 requirement: "${jobTitles[0]}"`;
+      } else {
+        summaryText.textContent = `${jobTitles.length} requirements selected (${jobTitles.slice(0, 2).join(', ')}${jobTitles.length > 2 ? '...' : ''})`;
+      }
+    }
+
+    if (sourceGroupText) {
+      sourceGroupText.textContent = fromGroupName ? `From Source Group: ${fromGroupName}` : 'From: All Pipeline Requirements';
+    }
+
+    // Populate destination groups dropdown excluding source group
+    if (targetSelect) {
+      const destinationGroups = allGroupsData.filter(g => g.id !== fromGroupId);
+      if (destinationGroups.length === 0) {
+        targetSelect.innerHTML = '<option value="">-- No other groups found. Create one in Bulk Parser --</option>';
+      } else {
+        targetSelect.innerHTML = '<option value="">-- Select Destination Group --</option>' + 
+          destinationGroups.map(g => `<option value="${g.id}">${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`).join('');
+      }
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeMoveRequirementsModal() {
+    const modal = document.getElementById('moveRequirementsModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  const btnCloseMoveModal = document.getElementById('btnCloseMoveModal');
+  const btnCancelMove = document.getElementById('btnCancelMove');
+  if (btnCloseMoveModal) btnCloseMoveModal.addEventListener('click', closeMoveRequirementsModal);
+  if (btnCancelMove) btnCancelMove.addEventListener('click', closeMoveRequirementsModal);
+
+  const formMoveRequirements = document.getElementById('formMoveRequirements');
+  if (formMoveRequirements) {
+    formMoveRequirements.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const jobIdsRaw = document.getElementById('moveJobIds').value;
+      const fromGroupId = document.getElementById('moveFromGroupId').value;
+      const toGroupId = document.getElementById('moveToGroupSelect').value;
+      const actionType = document.querySelector('input[name="moveActionType"]:checked')?.value || 'move';
+      const btnConfirm = document.getElementById('btnConfirmMove');
+
+      if (!toGroupId) {
+        showToast('Please select a destination group.', 'error');
+        return;
+      }
+
+      let jobIds = [];
+      try {
+        jobIds = JSON.parse(jobIdsRaw);
+      } catch (err) {
+        jobIds = [parseInt(jobIdsRaw, 10)];
+      }
+
+      if (!jobIds || jobIds.length === 0) {
+        showToast('No requirements selected to transfer.', 'error');
+        return;
+      }
+
+      if (btnConfirm) {
+        btnConfirm.textContent = 'Moving...';
+        btnConfirm.disabled = true;
+      }
+
+      try {
+        const res = await authFetch('/api/owner/groups/move-jobs/', {
+          method: 'POST',
+          body: JSON.stringify({
+            job_ids: jobIds,
+            from_group_id: fromGroupId ? parseInt(fromGroupId, 10) : null,
+            to_group_id: parseInt(toGroupId, 10),
+            action: actionType
+          })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          showToast(data.message || 'Requirements transferred successfully!', 'success');
+          logActivity('Transferred requirements', data.message);
+          closeMoveRequirementsModal();
+          loadGroupsList();
+          loadKpiStats();
+        } else {
+          showToast(data.error || 'Failed to move requirements.', 'error');
+        }
+      } catch (err) {
+        console.error('Error moving jobs between groups:', err);
+        showToast('Network error while moving requirements.', 'error');
+      } finally {
+        if (btnConfirm) {
+          btnConfirm.textContent = 'Confirm Move ⇄';
+          btnConfirm.disabled = false;
+        }
+      }
+    });
   }
 
   // --- BROADCAST MODAL HANDLER ---
@@ -1521,14 +1860,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- AUDIT LOG STREAM ---
   function logActivity(action, details) {
     if (!activityStream) return;
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const timeStr = getIndianTimeString();
     const item = document.createElement('div');
     item.className = 'crm-activity-item';
     item.innerHTML = `
       <div class="crm-activity-dot"></div>
       <div>
-        <strong style="color: #ffffff; font-size: 13.5px;">${escapeHtml(action)}</strong>
-        <div style="font-size: 11.5px; color: var(--crm-muted); margin-top: 2px;">${escapeHtml(details)} • ${timeStr}</div>
+        <strong style="color: var(--color-text-primary); font-size: 13.5px;">${escapeHtml(action)}</strong>
+        <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">${escapeHtml(details)} • ${timeStr}</div>
       </div>
     `;
     activityStream.prepend(item);
