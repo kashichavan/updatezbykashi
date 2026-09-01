@@ -1703,10 +1703,32 @@ def api_owner_groups_move_jobs(request):
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
     try:
-        data = json.loads(request.body)
+        try:
+            data = json.loads(request.body)
+        except Exception:
+            data = request.POST.dict()
+
         job_ids = data.get('job_ids', [])
         if not job_ids and 'job_id' in data:
             job_ids = [data['job_id']]
+
+        if isinstance(job_ids, str):
+            try:
+                job_ids = json.loads(job_ids)
+            except Exception:
+                job_ids = [int(x.strip()) for x in job_ids.split(',') if x.strip().isdigit()]
+
+        if not isinstance(job_ids, list):
+            job_ids = [job_ids]
+
+        # Convert all to integer IDs
+        parsed_job_ids = []
+        for j in job_ids:
+            try:
+                parsed_job_ids.append(int(j))
+            except (ValueError, TypeError):
+                continue
+        job_ids = parsed_job_ids
 
         if not job_ids:
             return JsonResponse({'error': 'Please select at least one requirement to move.'}, status=400)
@@ -1716,7 +1738,13 @@ def api_owner_groups_move_jobs(request):
         action = data.get('action', 'move')
         new_group_name = data.get('new_group_name', '').strip()
 
-        if str(to_group_id) == 'NEW' or (not to_group_id and new_group_name):
+        if isinstance(from_group_id, str):
+            if from_group_id.isdigit():
+                from_group_id = int(from_group_id)
+            else:
+                from_group_id = None
+
+        if str(to_group_id).upper() == 'NEW' or (not to_group_id and new_group_name):
             if not new_group_name:
                 now_local = timezone.localtime(timezone.now())
                 new_group_name = now_local.strftime("Specific Hiring Drive — %d %b %Y, %I:%M %p IST")
@@ -1726,29 +1754,33 @@ def api_owner_groups_move_jobs(request):
             to_group = JobGroup.objects.create(
                 name=new_group_name,
                 slug=slug,
-                banner_tag=data.get('banner_tag', '🔥 SPECIFIC HIRING DRIVE BUNDLE').strip(),
+                banner_tag=data.get('banner_tag', '🔥 SPECIFIC HIRING DRIVE BUNDLE').strip() or '🔥 SPECIFIC HIRING DRIVE BUNDLE',
                 description=data.get('description', '').strip(),
                 posted_date=now_local.date(),
                 deadline=timezone.now() + timedelta(days=7),
                 is_active=True,
             )
         elif to_group_id:
-            to_group = get_object_or_404(JobGroup, pk=to_group_id)
+            try:
+                target_pk = int(to_group_id)
+                to_group = get_object_or_404(JobGroup, pk=target_pk)
+            except (ValueError, TypeError):
+                return JsonResponse({'error': 'Invalid target group ID.'}, status=400)
         else:
             return JsonResponse({'error': 'Target specific group (to_group_id or new_group_name) is required.'}, status=400)
 
-        jobs_to_move = JobPosting.objects.filter(id__in=job_ids)
+        jobs_to_move = list(JobPosting.objects.filter(id__in=job_ids))
 
-        if not jobs_to_move.exists():
+        if not jobs_to_move:
             return JsonResponse({'error': 'Specified job requirements not found.'}, status=404)
 
-        count = jobs_to_move.count()
+        count = len(jobs_to_move)
 
         from_group = None
         source_label = ""
         if from_group_id and action == 'move':
             from_group = JobGroup.objects.filter(pk=from_group_id).first()
-            if from_group:
+            if from_group and from_group.id != to_group.id:
                 from_group.jobs.remove(*jobs_to_move)
                 source_label = f" from '{from_group.name}'"
                 # Auto-delete source group if it now has zero requirements
@@ -1772,6 +1804,7 @@ def api_owner_groups_move_jobs(request):
             'target_group_name': to_group.name,
         })
     except Exception as e:
+        logger.exception("Error in api_owner_groups_move_jobs")
         return JsonResponse({'error': str(e)}, status=400)
 
 @csrf_exempt

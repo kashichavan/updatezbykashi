@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (jwtAccess && !headers['Authorization']) {
       headers['Authorization'] = `Bearer ${jwtAccess}`;
     }
+    if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+      headers['Content-Type'] = 'application/json';
+    }
     const csrfMatch = document.cookie.match(/csrftoken=([^;]+)/);
     if (csrfMatch && !headers['X-CSRFToken'] && options.method && options.method !== 'GET') {
       headers['X-CSRFToken'] = csrfMatch[1];
