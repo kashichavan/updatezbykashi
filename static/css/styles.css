@@ -1120,11 +1120,17 @@ a {
 
 .vp-card-content h3 {
   font-family: var(--font-serif);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.35;
   color: var(--ink);
   margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 44px;
 }
 
 .vp-salary-row {
@@ -1169,7 +1175,7 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto; /* Pushes timer & apply button cleanly to bottom without big gap */
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid var(--subtle-border);
 }
@@ -1182,6 +1188,43 @@ a {
   padding: 4px 10px;
   border-radius: var(--radius-full);
   border: 1px solid var(--subtle-border);
+}
+
+.external-apply-btn, .detail-page-btn {
+  height: 38px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm, 6px);
+  font-size: var(--text-xs, 12px);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--transition);
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.external-apply-btn {
+  background: var(--blue-primary);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+}
+
+.external-apply-btn:hover {
+  background: var(--blue-hover);
+  transform: translateY(-1px);
+}
+
+.detail-page-btn {
+  background: var(--blue-light);
+  color: var(--blue-primary);
+  border: 1px solid var(--blue-border);
+}
+
+.detail-page-btn:hover {
+  background: #dbeafe;
 }
 
 /* ==========================================================================
