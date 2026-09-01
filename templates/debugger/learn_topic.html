@@ -18,14 +18,13 @@
     grid-template-columns: 290px 1fr;
     gap: 28px;
     align-items: start;
-    font-family: var(--font-sans);
   }
 
   /* Language Switcher Bar */
   .lang-switcher-bar {
     background: #ffffff;
     border: 1px solid var(--subtle-border);
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
     padding: 8px 12px;
     display: flex;
     gap: 8px;
@@ -35,17 +34,16 @@
   }
   .lang-pill {
     padding: 8px 16px;
-    border-radius: var(--radius-md);
-    font-size: var(--text-xs);
+    border-radius: 12px;
+    font-size: 13px;
     font-weight: 700;
     text-decoration: none;
     color: var(--muted);
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: var(--transition);
+    transition: all 0.2s;
     white-space: nowrap;
-    border: 1px solid transparent;
   }
   .lang-pill:hover {
     background: #f1f5f9;
@@ -61,20 +59,19 @@
   .learn-sidebar {
     background: #ffffff;
     border: 1px solid var(--subtle-border);
-    border-radius: var(--radius-lg);
+    border-radius: 20px;
     padding: 20px;
     box-shadow: var(--card-shadow);
     position: sticky;
     top: 84px;
     max-height: calc(100vh - 104px);
     overflow-y: auto;
-    font-family: var(--font-sans);
   }
   .sidebar-header {
-    font-size: var(--text-xs);
+    font-size: 14px;
     font-weight: 800;
-    text-transform: none;
-    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--ink);
     margin-bottom: 14px;
     display: flex;
@@ -94,12 +91,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 9px 12px;
-    border-radius: var(--radius-md);
-    font-size: var(--text-sm);
+    border-radius: 10px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #475569;
     text-decoration: none;
-    transition: var(--transition);
+    transition: all 0.15s;
     line-height: 1.4;
   }
   .topic-link:hover {
@@ -108,22 +105,21 @@
   }
   .topic-link.active {
     background: #eff6ff;
-    color: var(--blue-primary);
+    color: #2563eb;
     font-weight: 700;
-    border-left: 3px solid var(--blue-primary);
+    border-left: 3px solid #2563eb;
   }
 
   /* Main Content Card */
   .learn-content-card {
     background: #ffffff;
     border: 1px solid var(--subtle-border);
-    border-radius: var(--radius-lg);
-    padding: 40px 36px;
+    border-radius: 24px;
+    padding: 44px 40px;
     box-shadow: var(--card-shadow);
-    color: var(--text-secondary);
-    line-height: 1.75;
-    font-size: var(--text-base);
-    font-family: var(--font-sans);
+    color: #334155;
+    line-height: 1.7;
+    font-size: 15px;
   }
 
   .lesson-section {
@@ -131,7 +127,7 @@
     padding-top: 10px;
   }
   .lesson-section-title {
-    font: 800 var(--text-xl) var(--font-serif);
+    font: 800 22px var(--font-serif);
     color: var(--ink);
     margin: 0 0 16px;
     display: flex;
@@ -144,39 +140,35 @@
   /* Notion-style Table of Contents */
   .lesson-toc {
     background: #f8fafc;
-    border: 1px solid var(--subtle-border);
-    border-left: 4px solid var(--blue-primary);
-    border-radius: var(--radius-md);
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 12px;
     padding: 18px 22px;
     margin: 0 0 28px;
   }
   .lesson-toc-title {
-    font-size: var(--text-xs);
+    font-size: 12px;
     font-weight: 800;
-    letter-spacing: 0.5px;
-    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
     margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
   .lesson-toc ol {
-    margin: 0;
-    padding-left: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    margin: 0; padding-left: 20px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
   }
-  .lesson-toc li { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.5; }
-  .lesson-toc a { color: var(--blue-primary); text-decoration: none; font-weight: 600; }
+  .lesson-toc li { font-size: 13px; color: #475569; line-height: 1.6; }
+  .lesson-toc a { color: #2563eb; text-decoration: none; font-weight: 600; }
   .lesson-toc a:hover { text-decoration: underline; }
 
   /* Callout Boxes */
   .callout-box {
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
     padding: 22px 24px;
     margin: 20px 0;
-    line-height: 1.7;
+    line-height: 1.65;
   }
   .analogy-box {
     background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
@@ -192,18 +184,17 @@
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border: 1px solid #e2e8f0;
     color: #1e293b;
-    font-family: var(--font-mono) !important;
   }
 
   /* Notion-style Tip / Warning / Info / Danger callouts */
   .notion-callout {
     display: flex; gap: 14px; align-items: flex-start;
-    padding: 16px 20px; border-radius: var(--radius-md); margin: 16px 0;
-    font-size: var(--text-sm); line-height: 1.65;
+    padding: 16px 20px; border-radius: 12px; margin: 16px 0;
+    font-size: 14px; line-height: 1.65;
   }
-  .notion-callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+  .notion-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
   .notion-callout-content { flex: 1; }
-  .notion-callout strong { display: block; margin-bottom: 4px; font-size: var(--text-sm); }
+  .notion-callout strong { display: block; margin-bottom: 4px; font-size: 14px; }
   .callout-tip { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
   .callout-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
   .callout-info { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
@@ -215,14 +206,14 @@
     counter-increment: steps;
     display: flex; gap: 14px; align-items: flex-start;
     padding: 14px 18px; margin-bottom: 8px;
-    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md);
-    font-size: var(--text-sm); line-height: 1.6;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+    font-size: 14px; line-height: 1.6;
   }
   .steps-list li::before {
     content: counter(steps);
     min-width: 28px; height: 28px;
-    background: var(--blue-primary); color: white;
-    border-radius: var(--radius-full); font-weight: 800; font-size: var(--text-xs);
+    background: #2563eb; color: white;
+    border-radius: 50%; font-weight: 800; font-size: 13px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; margin-top: 1px;
   }
@@ -231,9 +222,9 @@
   .term-chip {
     display: inline-block;
     background: #eff6ff; color: #1d4ed8;
-    font-family: var(--font-mono) !important;
-    font-size: var(--text-xs); font-weight: 700;
-    padding: 2px 8px; border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 6px;
     border: 1px solid #bfdbfe;
   }
 
@@ -913,7 +904,7 @@
     <a href="/learn/{{ l.key }}/" class="lang-pill {% if l.key == active_lang %}active{% endif %}">
       <span>{{ l.icon }}</span>
       <span>{{ l.title }}</span>
-      <span style="font-size: 12px; font-weight: 600; opacity: 0.85;">({{ l.badge }})</span>
+      <span style="font-size: 11px; opacity: 0.7; font-weight: 500;">({{ l.badge }})</span>
     </a>
     {% endfor %}
   </div>
@@ -939,8 +930,8 @@
         {% for topic in topics %}
         <li>
           <a href="/learn/{{ active_lang }}/{{ topic.slug }}/" class="topic-link {% if topic.slug == current_topic.slug %}active{% endif %}">
-            <span style="flex: 1; margin-right: 8px;">{{ topic.title }}</span>
-            <span style="font-size: 11px; font-weight: 600; color: var(--muted); background: rgba(15,23,42,0.05); padding: 2px 6px; border-radius: var(--radius-sm); white-space: nowrap;">{{ topic.read_time }}</span>
+            <span>{{ topic.title }}</span>
+            <span style="font-size: 11px; opacity: 0.6;">{{ topic.read_time }}</span>
           </a>
         </li>
         {% endfor %}
@@ -1012,7 +1003,7 @@
     <!-- 1. Topic Introduction -->
     {% if current_topic.introduction %}
     <section id="section-intro" class="lesson-section">
-      <h2 class="lesson-section-title">1. Introduction</h2>
+      <h2 class="lesson-section-title">1. 📖 Introduction</h2>
       <div style="font-size: 15px; line-height: 1.8; color: #334155;">
         {{ current_topic.introduction|safe }}
       </div>
@@ -1022,7 +1013,7 @@
     <!-- 2. Real-World Analogy -->
     {% if current_topic.analogy %}
     <section id="section-analogy" class="lesson-section">
-      <h2 class="lesson-section-title">2. Real-World Analogy</h2>
+      <h2 class="lesson-section-title">2. 🧠 Real-World Analogy</h2>
       <div class="callout-box analogy-box">
         <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; opacity: 0.75;">
           🎯 Analogy
@@ -1061,7 +1052,7 @@
     <!-- 3. Mental Model -->
     {% if current_topic.mental_model %}
     <section id="section-mental-model" class="lesson-section">
-      <h2 class="lesson-section-title">3. Mental Model &amp; Visual Flow</h2>
+      <h2 class="lesson-section-title">3. 🗺️ Mental Model &amp; Visual Flow</h2>
       <div class="callout-box model-box" style="font-family: 'JetBrains Mono', monospace;">
         {{ current_topic.mental_model|safe }}
       </div>
@@ -1071,7 +1062,7 @@
     <!-- 4. Why Does This Exist? -->
     {% if current_topic.why_exists %}
     <section id="section-why" class="lesson-section">
-      <h2 class="lesson-section-title">4. Why Does This Exist?</h2>
+      <h2 class="lesson-section-title">4. ❓ Why Does This Exist?</h2>
       <div style="font-size: 15px; line-height: 1.8; color: #334155;">
         {{ current_topic.why_exists|safe }}
       </div>
@@ -1081,7 +1072,7 @@
     <!-- 5. Real-World Industry Usage -->
     {% if current_topic.use_case %}
     <section id="section-usecase" class="lesson-section">
-      <h2 class="lesson-section-title">5. Real-World Industry Usage</h2>
+      <h2 class="lesson-section-title">5. 🏢 Real-World Industry Usage</h2>
       <div class="callout-box usecase-box">
         <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; opacity: 0.75;">
           🏭 Production Scenario
@@ -1097,7 +1088,7 @@
     <!-- 6. Syntax Breakdown -->
     {% if current_topic.syntax_guide %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">6. Syntax Breakdown</h2>
+      <h2 class="lesson-section-title">6. 📖 Syntax Breakdown</h2>
       {{ current_topic.syntax_guide|safe }}
     </section>
     {% endif %}
@@ -1105,7 +1096,7 @@
     <!-- 7. First Simple Example -->
     {% if current_topic.first_example %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">7. First Simple Example</h2>
+      <h2 class="lesson-section-title">7. 🚀 First Simple Example</h2>
       <div class="code-display-card">
         <div class="code-header-bar">
           <span>{{ current_topic.first_example.title|default:"Basic Example" }}</span>
@@ -1132,7 +1123,7 @@
     <!-- 8. How It Actually Works (Runtime Internals) -->
     {% if current_topic.how_it_works %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">8. How It Works Under the Hood</h2>
+      <h2 class="lesson-section-title">8. ⚙️ How Does It Work Under the Hood?</h2>
       <div style="font-size: 15px; line-height: 1.7;">
         {{ current_topic.how_it_works|safe }}
       </div>
@@ -1142,7 +1133,7 @@
     <!-- 9. Progressive Examples (Beginner to Advanced) -->
     {% if current_topic.progressive_examples %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">9. Progressive Code Examples</h2>
+      <h2 class="lesson-section-title">9. 📚 Progressive Code Examples</h2>
       {% for eg in current_topic.progressive_examples %}
       <div style="margin: 20px 0;">
         <h3 style="font: 700 16px var(--font-sans); color: var(--ink); margin: 0 0 8px;">
@@ -1177,7 +1168,7 @@
     <section id="section-videos" class="lesson-section">
       <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
         <div>
-          <h2 class="lesson-section-title" style="margin: 0 0 4px; border-bottom: none; padding-bottom: 0;">Video Masterclasses &amp; Tutorials</h2>
+          <h2 class="lesson-section-title" style="margin: 0 0 4px; border-bottom: none; padding-bottom: 0;">🎬 Video Masterclasses &amp; YouTube Tutorials</h2>
           <p style="font-size: 14px; color: var(--muted); margin: 0;">
             Watch step-by-step visual lessons from <strong>@pythonkashi</strong>, <strong>freeCodeCamp</strong>, <strong>Fireship</strong>, and top educators.
           </p>
@@ -1220,6 +1211,7 @@
       <!-- macOS Style Header Bar -->
       <div class="debugger-top-bar">
         <div style="display: flex; align-items: center; gap: 12px;">
+          <!-- Traffic Light Dots -->
           <div style="display: flex; gap: 6px; align-items: center;">
             <span style="width: 11px; height: 11px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
             <span style="width: 11px; height: 11px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
@@ -1242,58 +1234,65 @@
         </div>
       </div>
 
-      <!-- Playback Controls Bar -->
+      <!-- Playback Controls Bar (Same as IDE Debugger) -->
       <div class="debugger-controls">
         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
           <button id="btnExecuteTrace" class="dbg-btn dbg-btn-run">
             ▶ Start Debugging
           </button>
-          <button id="btnStepPrev" class="dbg-btn dbg-btn-step" disabled title="Previous step (Left Arrow)">
-            ⏮ Prev
+          <button id="btnFirst" class="dbg-btn dbg-btn-step" disabled title="Jump to First Step">
+            ⏮ First
           </button>
-          <button id="btnStepNext" class="dbg-btn dbg-btn-step" disabled title="Next step (Right Arrow)">
-            Step ⏭
+          <button id="btnStepPrev" class="dbg-btn dbg-btn-step" disabled title="Step Back to Previous Line">
+            ◀ Back
           </button>
-          <button id="btnAutoPlay" class="dbg-btn dbg-btn-step" disabled title="Auto play trace">
-            ▶ Play
+          <button id="btnStepNext" class="dbg-btn dbg-btn-step" disabled title="Step to Next Line" style="background: #1e3a8a; color: #93c5fd; border-color: #3b82f6;">
+            Next ▶
           </button>
-          <button id="btnResetTrace" class="dbg-btn dbg-btn-step" disabled title="Reset trace to start">
-            ⏹ Reset
+          <button id="btnLast" class="dbg-btn dbg-btn-step" disabled title="Jump to Last Step">
+            Last ⏭
+          </button>
+          <button id="btnAutoPlay" class="dbg-btn dbg-btn-step" disabled title="Auto Play Line by Line">
+            ▶ Auto Play
           </button>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; color: #94a3b8;">
-          <span id="stepCounterLabel">Step 0 / 0</span>
-          <div style="display: flex; align-items: center; gap: 4px;">
-            <label for="playbackSpeedSelect" style="font-size: 11px; text-transform: uppercase;">Speed:</label>
-            <select id="playbackSpeedSelect" style="background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 6px; padding: 3px 6px; font-size: 11px; outline: none;">
-              <option value="1200">0.8x</option>
-              <option value="800" selected>1.0x</option>
-              <option value="450">1.5x</option>
-              <option value="250">2.5x</option>
-            </select>
-          </div>
+        <!-- Timeline Slider & Step Counter -->
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; max-width: 380px;">
+          <span style="font-size: 11px; font-weight: 700; color: #94a3b8; white-space: nowrap;">Timeline:</span>
+          <input type="range" id="timelineSlider" min="0" max="0" value="0" style="flex: 1; cursor: pointer;" disabled>
+          <span id="stepCounterLabel" style="font-size: 12px; font-weight: 800; color: #38bdf8; font-family: monospace; white-space: nowrap; background: rgba(56,189,248,0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(56,189,248,0.25);">
+            Step 0 / 0
+          </span>
         </div>
       </div>
 
-      <!-- Editor & Interactive Step Viewer Area -->
+      <!-- Live Step Story Banner -->
+      <div id="stepStoryBanner" style="background: #131d33; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; padding: 10px 18px; font-size: 13px; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+        <span id="stepStoryIcon" style="font-size: 15px;">💡</span>
+        <span id="stepStoryText">Click <strong>"Start Debugging"</strong> or <strong>"Next ▶"</strong> to trace code line-by-line.</span>
+      </div>
+
+      <!-- Code Area: Line Highlight View + Editable Textarea -->
       <div class="debugger-code-area">
-        <!-- Live AST Line-by-line Highlighter View (Shown during trace) -->
-        <div id="codeTraceView" style="display: none; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 13px; line-height: 1.55; color: #c9d1d9; max-height: 220px; overflow-y: auto; background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 12px;"></div>
+        <!-- Visual Trace Line Highlighting Container -->
+        <div id="codeTraceView" style="background: #0d1117; border: 1px solid #30363d; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; max-height: 220px; overflow-y: auto;">
+          <!-- Dynamically populated by JS with line numbers and active pointer -->
+        </div>
 
-        <!-- Editable Codearea (Shown by default) -->
-        <textarea id="codeEditorInput" class="code-editor-textarea" spellcheck="false">{{ current_topic.starter_code }}</textarea>
+        <!-- Hidden / Editable Fallback Textarea -->
+        <textarea id="codeEditorInput" class="code-editor-textarea" style="display: none;" spellcheck="false">{{ current_topic.starter_code }}</textarea>
       </div>
 
-      <!-- Inspector Panels (Variables Heap & Console Output) -->
+      <!-- Real-Time Inspection Panels -->
       <div class="debugger-panels-grid">
         
-        <!-- Variables & Call Stack Panel -->
-        <div class="debugger-panel" style="border-right: 1px solid #30363d;">
+        <!-- Variable Watcher Panel -->
+        <div class="debugger-panel" style="border-right: 1px solid #1e293b;">
           <div class="panel-title">
-            <span>📊</span> Live Variables Watcher
+            <span>📊</span> Live Variable Watcher
           </div>
-          <div style="overflow-x: auto; max-height: 150px;">
+          <div style="max-height: 150px; overflow-y: auto;">
             <table class="var-table">
               <thead>
                 <tr>
@@ -1327,7 +1326,7 @@
     <!-- 11. Common Mistakes -->
     {% if current_topic.common_mistakes %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">11. Common Mistakes &amp; How to Avoid Them</h2>
+      <h2 class="lesson-section-title">11. ⚠️ Common Mistakes &amp; How to Avoid Them</h2>
       {% for m in current_topic.common_mistakes %}
       <div style="margin: 16px 0;">
         <div style="font-weight: 700; color: var(--ink); margin-bottom: 6px;">
@@ -1353,7 +1352,7 @@
     <!-- 12. Important Rules to Remember -->
     {% if current_topic.rules %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">12. Rules to Remember</h2>
+      <h2 class="lesson-section-title">12. 📌 Rules to Remember</h2>
       <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
         {% for r in current_topic.rules %}
         <li><strong>{{ r.rule }}:</strong> {{ r.detail }}</li>
@@ -1365,7 +1364,7 @@
     <!-- 13. Comparison Section -->
     {% if current_topic.comparison %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">13. Comparison: {{ current_topic.comparison.title }}</h2>
+      <h2 class="lesson-section-title">13. ⚖️ Comparison: {{ current_topic.comparison.title }}</h2>
       <table class="lesson-table">
         <thead>
           <tr>
@@ -1390,7 +1389,7 @@
     <!-- 14. Performance & Complexity -->
     {% if current_topic.performance %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">14. Performance &amp; Complexity</h2>
+      <h2 class="lesson-section-title">14. 🚀 Performance &amp; Complexity</h2>
       <div style="font-size: 15px; line-height: 1.7;">
         {{ current_topic.performance|safe }}
       </div>
@@ -1400,7 +1399,7 @@
     <!-- 15. Mini Project -->
     {% if current_topic.mini_project %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">15. Real-World Mini Project</h2>
+      <h2 class="lesson-section-title">15. 🏗️ Real-World Mini Project</h2>
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
         <h3 style="font: 800 18px var(--font-serif); color: var(--ink); margin: 0 0 10px;">
           {{ current_topic.mini_project.title }}
@@ -1427,9 +1426,9 @@
             </div>
             <pre class="code-pre"><code>{{ current_topic.mini_project.solution_code }}</code></pre>
           </div>
-          {% if current_topic.mini_project.explanation %}
-          <p style="margin: 10px 0 0; font-size: 14px; line-height: 1.6;">{{ current_topic.mini_project.explanation|safe }}</p>
-          {% endif %}
+          <p style="font-size: 14px; margin: 10px 0 0; color: #475569;">
+            {{ current_topic.mini_project.solution_explanation }}
+          </p>
         </details>
       </div>
     </section>
@@ -1438,7 +1437,7 @@
     <!-- 16. Practice Exercises -->
     {% if current_topic.practice_exercises %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">16. Practice Exercises</h2>
+      <h2 class="lesson-section-title">16. 🧪 Practice Exercises</h2>
       {% for ex in current_topic.practice_exercises %}
       <div style="margin: 16px 0; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
@@ -1468,7 +1467,7 @@
     <!-- 17. Predict the Output Quiz -->
     {% if current_topic.predict_quizzes %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">17. Predict the Output</h2>
+      <h2 class="lesson-section-title">17. 🔍 Predict the Output</h2>
       {% for q in current_topic.predict_quizzes %}
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 14px 0;">
         <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">Question {{ forloop.counter }}: What will be printed?</div>
@@ -1493,7 +1492,7 @@
     <!-- 18. Debug This Broken Code -->
     {% if current_topic.debug_challenges %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">18. Debug This Code</h2>
+      <h2 class="lesson-section-title">18. 🐞 Debug This Code</h2>
       {% for dbg in current_topic.debug_challenges %}
       <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 18px; margin: 14px 0;">
         <strong style="color: #9f1239;">Challenge {{ forloop.counter }}: Fix the Bug in this snippet</strong>
@@ -1516,7 +1515,7 @@
     <!-- 19. Interview Questions -->
     {% if current_topic.interview_questions %}
     <section id="section-interview" class="lesson-section">
-      <h2 class="lesson-section-title">19. Technical Interview Questions</h2>
+      <h2 class="lesson-section-title">19. 🎯 Technical Interview Questions</h2>
       <div class="notion-callout callout-info" style="margin-bottom: 20px;">
         <span class="notion-callout-icon">💼</span>
         <div class="notion-callout-content">
@@ -1543,7 +1542,7 @@
     <!-- 20. Quick Revision -->
     {% if current_topic.quick_revision %}
     <section id="section-revision" class="lesson-section">
-      <h2 class="lesson-section-title">20. Quick Revision Cheatsheet</h2>
+      <h2 class="lesson-section-title">20. ⚡ Quick Revision Cheatsheet</h2>
       <div class="revision-grid">
         {% for pt in current_topic.quick_revision %}
         <div class="revision-chip">
@@ -1558,7 +1557,7 @@
     <!-- 21. Final Challenge -->
     {% if current_topic.final_challenge %}
     <section class="lesson-section">
-      <h2 class="lesson-section-title">21. Final Capstone Challenge</h2>
+      <h2 class="lesson-section-title">21. 🏆 Final Capstone Challenge</h2>
       <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; padding: 26px; color: #f8fafc;">
         <h3 style="font: 800 20px var(--font-serif); color: #38bdf8; margin: 0 0 10px;">
           {{ current_topic.final_challenge.title }}
@@ -1583,25 +1582,41 @@
     </section>
     {% endif %}
 
-    <!-- Unified Lesson Navigation Footer -->
-    <nav class="lesson-nav-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--subtle-border); flex-wrap: wrap; gap: 12px;">
+    <!-- 22. Related Topics & Internal Linking -->
+    <section class="lesson-section" style="border-top: 1px solid var(--subtle-border); padding-top: 24px;">
+      <h3 style="font: 700 18px var(--font-sans); color: var(--ink); margin: 0 0 14px;">
+        🔗 Next Steps &amp; Related Topics
+      </h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+        {% if prev_topic %}
+        <a href="/learn/{{ active_lang }}/{{ prev_topic.slug }}/" style="background: #f1f5f9; color: #334155; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;">
+          &larr; Previous: {{ prev_topic.title }}
+        </a>
+        {% endif %}
+        {% if next_topic %}
+        <a href="/learn/{{ active_lang }}/{{ next_topic.slug }}/" style="background: #eff6ff; color: #2563eb; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 700;">
+          Next: {{ next_topic.title }} &rarr;
+        </a>
+        {% endif %}
+        <a href="/learn/{{ active_lang }}/" style="background: #f8fafc; color: var(--muted); padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;">
+          📚 View Full {{ lang_data.short_title }} Syllabus
+        </a>
+      </div>
+    </section>
+
+    <!-- Bottom Pagination Footer -->
+    <nav style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--subtle-border); flex-wrap: wrap; gap: 16px;">
       {% if prev_topic %}
-      <a href="/learn/{{ active_lang }}/{{ prev_topic.slug }}/" class="btn btn-secondary" style="font-size: var(--text-sm); border-radius: var(--radius-md);">
-        &larr; Previous: {{ prev_topic.title|truncatechars:24 }}
+      <a href="/learn/{{ active_lang }}/{{ prev_topic.slug }}/" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: none; padding: 10px 18px; background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: 12px;">
+        &larr; {{ prev_topic.title|truncatechars:28 }}
       </a>
       {% else %}
-      <a href="/learn/{{ active_lang }}/" class="btn btn-secondary" style="font-size: var(--text-sm); border-radius: var(--radius-md);">
-        📚 {{ lang_data.short_title }} Syllabus
-      </a>
+      <div></div>
       {% endif %}
 
-      <a href="/learn/{{ active_lang }}/" class="btn btn-ghost" style="font-size: var(--text-sm);">
-        View All {{ topics|length }} Lessons
-      </a>
-
       {% if next_topic %}
-      <a href="/learn/{{ active_lang }}/{{ next_topic.slug }}/" class="btn btn-primary" style="font-size: var(--text-sm); border-radius: var(--radius-md);">
-        Next: {{ next_topic.title|truncatechars:24 }} &rarr;
+      <a href="/learn/{{ active_lang }}/{{ next_topic.slug }}/" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; padding: 10px 20px; background: var(--blue-primary); border-radius: 12px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+        {{ next_topic.title|truncatechars:28 }} &rarr;
       </a>
       {% endif %}
     </nav>
