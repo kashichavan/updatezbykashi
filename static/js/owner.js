@@ -898,6 +898,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="btn-action-light btn-delete-job" data-id="${j.id}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #dc2626; border-color: #fecaca; background: #fef2f2; border-radius: 10px;">
                   🗑️ Delete
                 </button>
+                <button class="btn btn-secondary btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}" style="height: 36px; font-size: 12px; justify-content: center; color: var(--blue-primary); border-color: var(--blue-border); background: var(--blue-light); border-radius: 8px; grid-column: span 2;" title="Move or assign this requirement to a specific group">
+                  ⇄ Move / Assign to Specific Group
+                </button>
               </div>
             </div>
           </div>
@@ -998,6 +1001,20 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         const id = btn.dataset.id;
         await deleteJob(id);
+      };
+    });
+
+    document.querySelectorAll('.btn-pipeline-move-job').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const jobId = parseInt(btn.dataset.id, 10);
+        const jobTitle = btn.dataset.title;
+        openMoveRequirementsModal({
+          jobIds: [jobId],
+          jobTitles: [jobTitle],
+          fromGroupId: null,
+          fromGroupName: ''
+        });
       };
     });
   }
@@ -1522,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- MOVE REQUIREMENTS MODAL WORKFLOW ---
 
-  function openMoveRequirementsModal({ jobIds, jobTitles, fromGroupId, fromGroupName }) {
+  async function openMoveRequirementsModal({ jobIds, jobTitles, fromGroupId, fromGroupName }) {
     const modal = document.getElementById('moveRequirementsModal');
     if (!modal) return;
 
@@ -1531,6 +1548,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryText = document.getElementById('moveJobsSummaryText');
     const sourceGroupText = document.getElementById('moveSourceGroupText');
     const targetSelect = document.getElementById('moveToGroupSelect');
+    const filterInput = document.getElementById('filterTargetGroupInput');
+    const newGroupDrawer = document.getElementById('newSpecificGroupDrawer');
+    const newGroupNameInput = document.getElementById('newSpecificGroupNameInput');
+    const newGroupTagInput = document.getElementById('newSpecificGroupTagInput');
 
     if (jobIdsInput) jobIdsInput.value = JSON.stringify(jobIds);
     if (fromGroupIdInput) fromGroupIdInput.value = fromGroupId || '';
@@ -1547,15 +1568,58 @@ document.addEventListener('DOMContentLoaded', () => {
       sourceGroupText.textContent = fromGroupName ? `From Source Group: ${fromGroupName}` : 'From: All Pipeline Requirements';
     }
 
-    // Populate destination groups dropdown excluding source group
-    if (targetSelect) {
-      const destinationGroups = allGroupsData.filter(g => g.id !== fromGroupId);
-      if (destinationGroups.length === 0) {
-        targetSelect.innerHTML = '<option value="">-- No other groups found. Create one in Bulk Parser --</option>';
-      } else {
-        targetSelect.innerHTML = '<option value="">-- Select Destination Group --</option>' + 
-          destinationGroups.map(g => `<option value="${g.id}">${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`).join('');
+    if (filterInput) filterInput.value = '';
+    if (newGroupNameInput) newGroupNameInput.value = '';
+    if (newGroupTagInput) newGroupTagInput.value = '';
+    if (newGroupDrawer) newGroupDrawer.style.display = 'none';
+
+    // If groups cache is empty, load latest groups
+    if (!allGroupsData || allGroupsData.length === 0) {
+      try {
+        const gRes = await authFetch('/api/owner/groups/');
+        const gData = await gRes.json();
+        allGroupsData = gData.groups || [];
+      } catch (err) {
+        console.error('Error fetching groups for move modal:', err);
       }
+    }
+
+    function renderTargetGroupOptions(filterText = '') {
+      if (!targetSelect) return;
+      const lowerFilter = filterText.toLowerCase().trim();
+      const filteredGroups = allGroupsData.filter(g => {
+        if (fromGroupId && g.id === fromGroupId) return false;
+        if (!lowerFilter) return true;
+        return g.name.toLowerCase().includes(lowerFilter) || (g.slug && g.slug.toLowerCase().includes(lowerFilter));
+      });
+
+      let optionsHtml = '<option value="">-- Choose Target Specific Group --</option>';
+      optionsHtml += '<option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
+
+      filteredGroups.forEach(g => {
+        optionsHtml += `<option value="${g.id}">📁 ${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`;
+      });
+
+      targetSelect.innerHTML = optionsHtml;
+    }
+
+    renderTargetGroupOptions('');
+
+    if (filterInput) {
+      filterInput.oninput = () => {
+        renderTargetGroupOptions(filterInput.value);
+      };
+    }
+
+    if (targetSelect) {
+      targetSelect.onchange = () => {
+        if (targetSelect.value === 'NEW') {
+          if (newGroupDrawer) newGroupDrawer.style.display = 'block';
+          if (newGroupNameInput) newGroupNameInput.focus();
+        } else {
+          if (newGroupDrawer) newGroupDrawer.style.display = 'none';
+        }
+      };
     }
 
     modal.style.display = 'flex';
@@ -1580,9 +1644,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const toGroupId = document.getElementById('moveToGroupSelect').value;
       const actionType = document.querySelector('input[name="moveActionType"]:checked')?.value || 'move';
       const btnConfirm = document.getElementById('btnConfirmMove');
+      const newGroupName = document.getElementById('newSpecificGroupNameInput')?.value.trim() || '';
+      const newGroupTag = document.getElementById('newSpecificGroupTagInput')?.value.trim() || '';
 
       if (!toGroupId) {
-        showToast('Please select a destination group.', 'error');
+        showToast('Please select a specific destination group or choose to create a new one.', 'error');
+        return;
+      }
+
+      if (toGroupId === 'NEW' && !newGroupName) {
+        showToast('Please enter a name for the new specific group.', 'error');
         return;
       }
 
@@ -1604,14 +1675,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
+        const payload = {
+          job_ids: jobIds,
+          from_group_id: fromGroupId ? parseInt(fromGroupId, 10) : null,
+          action: actionType
+        };
+
+        if (toGroupId === 'NEW') {
+          payload.to_group_id = 'NEW';
+          payload.new_group_name = newGroupName;
+          payload.banner_tag = newGroupTag;
+        } else {
+          payload.to_group_id = parseInt(toGroupId, 10);
+        }
+
         const res = await authFetch('/api/owner/groups/move-jobs/', {
           method: 'POST',
-          body: JSON.stringify({
-            job_ids: jobIds,
-            from_group_id: fromGroupId ? parseInt(fromGroupId, 10) : null,
-            to_group_id: parseInt(toGroupId, 10),
-            action: actionType
-          })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
 

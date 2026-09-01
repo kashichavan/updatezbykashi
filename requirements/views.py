@@ -1714,11 +1714,29 @@ def api_owner_groups_move_jobs(request):
         to_group_id = data.get('to_group_id')
         from_group_id = data.get('from_group_id')
         action = data.get('action', 'move')
+        new_group_name = data.get('new_group_name', '').strip()
 
-        if not to_group_id:
-            return JsonResponse({'error': 'Target group (to_group_id) is required.'}, status=400)
+        if str(to_group_id) == 'NEW' or (not to_group_id and new_group_name):
+            if not new_group_name:
+                now_local = timezone.localtime(timezone.now())
+                new_group_name = now_local.strftime("Specific Hiring Drive — %d %b %Y, %I:%M %p IST")
+            base_slug = slugify(new_group_name) or "specific-drive"
+            now_local = timezone.localtime(timezone.now())
+            slug = f"{base_slug}-{now_local.strftime('%Y%m%d%H%M%S')}"
+            to_group = JobGroup.objects.create(
+                name=new_group_name,
+                slug=slug,
+                banner_tag=data.get('banner_tag', '🔥 SPECIFIC HIRING DRIVE BUNDLE').strip(),
+                description=data.get('description', '').strip(),
+                posted_date=now_local.date(),
+                deadline=timezone.now() + timedelta(days=7),
+                is_active=True,
+            )
+        elif to_group_id:
+            to_group = get_object_or_404(JobGroup, pk=to_group_id)
+        else:
+            return JsonResponse({'error': 'Target specific group (to_group_id or new_group_name) is required.'}, status=400)
 
-        to_group = get_object_or_404(JobGroup, pk=to_group_id)
         jobs_to_move = JobPosting.objects.filter(id__in=job_ids)
 
         if not jobs_to_move.exists():
