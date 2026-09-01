@@ -29,7 +29,7 @@
     --muted: #64748b;
     --faint: #94a3b8;
     
-    /* 1. Consistent Typographic Scale */
+    /* 1. Consistent Typographic Scale (7 steps) */
     --text-xs:   0.75rem;   /* 12px */
     --text-sm:   0.8125rem; /* 13px */
     --text-base: 0.875rem;  /* 14px */
@@ -37,9 +37,9 @@
     --text-lg:   1.125rem;  /* 18px */
     --text-xl:   1.375rem;  /* 22px */
     --text-2xl:  1.625rem;  /* 26px */
-    --text-3xl:  1.75rem;   /* 28px */
+    --text-3xl:  1.875rem;  /* 30px */
 
-    /* 2. Semantic Text Color System */
+    /* 2. Semantic Text Color System (6 tokens) */
     --color-text-primary:   #0f172a;
     --color-text-secondary: #334155;
     --color-text-muted:     #64748b;
@@ -47,18 +47,20 @@
     --color-text-success:   #059669;
     --color-text-danger:    #dc2626;
 
-    /* 3. Consistent Corner Radii System */
-    --radius-xs:   4px;
+    /* 3. Consistent Corner Radii System (4 tokens) */
     --radius-sm:   6px;
     --radius-md:  10px;
     --radius-lg:  14px;
     --radius-full: 9999px;
 
-    --font-serif: 'Fraunces', Georgia, serif;
     --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     
-    --card-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-    --hover-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+    --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --hover-shadow: 0 10px 20px -4px rgba(37, 99, 235, 0.1), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+  }
+
+  * {
+    box-sizing: border-box;
   }
 
   body {
@@ -69,6 +71,11 @@
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body.is-owner-authenticated {
+    padding-bottom: 74px !important;
   }
 
   /* Enterprise App Shell */
@@ -76,21 +83,23 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
   }
 
   /* ==========================================
-     TOP OWNER LINK NAVBAR (Matches Home Page Theme)
+     TOP OWNER LINK NAVBAR (Mobile-First & Web)
      ========================================== */
   .owner-header-navbar {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--subtle-border);
     position: sticky;
     top: 0;
     z-index: 100;
-    padding: 0 18px;
-    height: 60px;
+    padding: 0 16px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -101,21 +110,21 @@
   .owner-brand-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
   }
 
   .owner-brand-logo {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-md);
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     display: grid;
     place-items: center;
     font-weight: 800;
-    font-size: var(--text-md);
+    font-size: var(--text-sm);
     color: #ffffff;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     text-decoration: none;
   }
 
@@ -126,7 +135,7 @@
 
   .owner-brand-title {
     font-family: var(--font-sans);
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 800;
     color: var(--color-text-primary);
     letter-spacing: -0.02em;
@@ -138,7 +147,7 @@
   }
 
   .owner-brand-badge {
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--color-text-success);
     display: flex;
@@ -146,7 +155,7 @@
     gap: 4px;
   }
 
-  /* Center Workspace Link Navbar */
+  /* Center Workspace Link Navbar (Desktop / Tablet) */
   .owner-link-nav {
     display: flex;
     align-items: center;
@@ -171,6 +180,7 @@
     transition: all 0.15s ease;
     text-decoration: none;
     line-height: 1.2;
+    box-sizing: border-box;
   }
 
   .owner-link-item:hover {
@@ -182,6 +192,7 @@
     color: var(--blue-primary);
     background: var(--blue-light);
     border-color: var(--blue-border);
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.1);
     font-weight: 700;
   }
 
@@ -215,7 +226,7 @@
     position: absolute;
     top: calc(100% + 4px);
     right: 0;
-    min-width: 190px;
+    min-width: 200px;
     background: var(--surface);
     border: 1px solid var(--subtle-border);
     border-radius: var(--radius-md);
@@ -264,6 +275,23 @@
     font-weight: 700;
   }
 
+  /* Mobile Secondary Horizontal Sub-Nav Strip */
+  .mobile-subnav-strip {
+    display: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: none;
+    padding: 8px 12px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--subtle-border);
+    gap: 6px;
+  }
+
+  .mobile-subnav-strip::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Right Header Controls & 4. Unified Button System */
   .owner-right-actions {
     display: flex;
@@ -298,9 +326,9 @@
 
   .btn-primary {
     background: var(--blue-primary);
-    color: #ffffff !important;
     border-color: var(--blue-primary);
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+    color: #ffffff !important;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
   }
 
   .btn-primary:hover {
@@ -310,79 +338,43 @@
 
   .btn-secondary {
     background: #ffffff;
-    color: var(--color-text-primary) !important;
-    border: 1px solid var(--strong-border);
+    border-color: var(--strong-border);
+    color: var(--color-text-secondary);
   }
 
   .btn-secondary:hover {
     background: var(--surface-hover);
-    border-color: var(--color-text-muted);
+    color: var(--color-text-primary);
+    border-color: var(--muted);
   }
 
   .btn-ghost {
     background: transparent;
-    color: var(--color-text-secondary) !important;
     border-color: transparent;
+    color: var(--color-text-secondary);
   }
 
   .btn-ghost:hover {
     background: var(--surface-hover);
-    color: var(--color-text-primary) !important;
+    color: var(--color-text-primary);
   }
 
   .btn-danger-ghost {
-    background: transparent;
-    color: var(--color-text-danger) !important;
-    border: 1px solid transparent;
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: var(--color-text-danger);
   }
 
   .btn-danger-ghost:hover {
-    background: #fef2f2;
-    border-color: #fecaca;
-  }
-
-  /* Backwards compatibility aliases */
-  .btn-action-light {
-    height: 36px;
-    padding: 0 12px;
-    font-size: var(--text-sm);
-    font-weight: 600;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--strong-border);
-    background: #ffffff;
-    color: var(--color-text-primary);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.15s ease;
-    text-decoration: none;
-    white-space: nowrap;
-    box-sizing: border-box;
-  }
-
-  .btn-action-light:hover {
-    background: var(--surface-hover);
-    border-color: var(--color-text-muted);
-  }
-
-  .btn-primary-blue {
-    background: var(--blue-primary) !important;
-    border-color: var(--blue-primary) !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
-  }
-
-  .btn-primary-blue:hover {
-    background: var(--blue-hover) !important;
-    border-color: var(--blue-hover) !important;
+    background: #fee2e2;
+    border-color: #fca5a5;
   }
 
   /* Main Workspace Container */
   .workspace-container {
     max-width: 1360px;
     margin: 0 auto;
-    padding: 24px 16px 80px;
+    padding: 20px 16px 80px;
     width: 100%;
     box-sizing: border-box;
   }
@@ -391,15 +383,15 @@
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 14px;
+    margin-bottom: 22px;
   }
 
   .kpi-card {
     background: var(--surface);
     border: 1px solid var(--subtle-border);
     border-radius: var(--radius-lg);
-    padding: 18px 20px;
+    padding: 16px 18px;
     box-shadow: var(--card-shadow);
     transition: all 0.2s ease;
   }
@@ -413,16 +405,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
-  /* 5 & 6. KPI Title Readability & Sentence Case */
   .kpi-title {
-    font-size: var(--text-sm);
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: 700;
     color: var(--color-text-muted);
     text-transform: none;
-    letter-spacing: normal;
     line-height: 1.3;
   }
 
@@ -431,7 +421,7 @@
   }
 
   .kpi-value {
-    font-size: var(--text-3xl);
+    font-size: var(--text-2xl);
     font-weight: 800;
     color: var(--color-text-primary);
     letter-spacing: -0.02em;
@@ -440,74 +430,9 @@
   }
 
   .kpi-sub {
-    font-size: var(--text-xs);
+    font-size: 11.5px;
     color: var(--color-text-muted);
     font-weight: 600;
-  }
-
-  /* 11. Top Visited Pages Links */
-  .ana-page-row {
-    background: #ffffff;
-    border: 1px solid var(--subtle-border);
-    border-radius: var(--radius-md);
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    transition: all 0.15s ease;
-  }
-  .ana-page-row:hover {
-    border-color: var(--blue-border);
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.06);
-  }
-  .ana-page-link {
-    display: block;
-    text-decoration: none;
-    color: var(--color-text-primary);
-  }
-  .ana-page-link:hover .ana-page-title {
-    color: var(--blue-primary);
-    text-decoration: underline;
-  }
-  .ana-page-title {
-    font-size: var(--text-sm);
-    font-weight: 700;
-    color: var(--color-text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: color 0.15s ease;
-  }
-  .ana-page-path {
-    font-size: var(--text-xs);
-    color: var(--color-text-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* 12. Structured Platforms Breakdown */
-  .platform-card-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 7px 12px;
-    background: #ffffff;
-    border: 1px solid var(--subtle-border);
-    border-radius: var(--radius-sm);
-    font-size: var(--text-xs);
-    color: var(--color-text-secondary);
-  }
-
-  /* 13. Refresh Button Spin Animation */
-  .spin-animation {
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
   }
 
   /* Workspace Card Panel */
@@ -515,24 +440,24 @@
     background: var(--surface);
     border: 1px solid var(--subtle-border);
     border-radius: var(--radius-lg);
-    padding: 28px;
+    padding: 24px;
     box-shadow: var(--card-shadow);
+    margin-bottom: 20px;
   }
 
   /* Standard Toolbar Controls */
   .standard-toolbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   .search-wrapper {
     position: relative;
-    flex: 1 1 300px;
-    max-width: 400px;
+    flex: 1 1 280px;
+    min-width: 240px;
   }
 
   .search-input {
@@ -542,7 +467,7 @@
     border: 1px solid var(--strong-border);
     border-radius: var(--radius-md);
     padding: 0 14px 0 38px;
-    font-size: 13.5px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--ink);
     outline: none;
@@ -560,7 +485,7 @@
     left: 13px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--muted);
+    color: var(--color-text-muted);
     font-size: 14px;
   }
 
@@ -576,8 +501,8 @@
     background: #ffffff;
     border: 1px solid var(--strong-border);
     border-radius: var(--radius-md);
-    padding: 0 14px;
-    font-size: 13px;
+    padding: 0 12px;
+    font-size: var(--text-xs);
     font-weight: 700;
     color: var(--ink);
     outline: none;
@@ -588,45 +513,95 @@
     border-color: var(--blue-primary);
   }
 
-  /* Modern High-Density Table */
-  .table-responsive {
-    overflow-x: auto;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--subtle-border);
+  /* Responsive Catalog Grid & Cards */
+  .vp-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .vp-product-card {
     background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-lg);
+    padding: 18px 16px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
   }
 
-  .data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-    text-align: left;
+  .vp-product-card:hover {
+    border-color: var(--blue-border);
+    box-shadow: var(--hover-shadow);
   }
 
-  .data-table th {
-    background: #f8fafc;
-    padding: 13px 16px;
-    font-size: 11.5px;
+  .vp-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .company-badge {
+    font-size: var(--text-xs);
     font-weight: 800;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid var(--subtle-border);
+    color: var(--blue-primary);
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
   }
 
-  .data-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid #f1f5f9;
-    color: var(--ink);
-    vertical-align: middle;
+  .type-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    background: var(--surface-hover);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
   }
 
-  .data-table tr:hover td {
-    background: #f8fafc;
+  .job-card-title, .vp-product-card h2, .vp-product-card h3 {
+    font-size: var(--text-base);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 6px;
+    line-height: 1.35;
   }
 
-  .data-table tr:last-child td {
-    border-bottom: none;
+  .vp-salary-row {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .skills-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+
+  .skill-tag {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-hover);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--subtle-border);
+    display: inline-flex;
+    align-items: center;
   }
 
   /* Status Pills */
@@ -634,8 +609,8 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 4px 9px;
-    border-radius: 20px;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
     font-size: 11px;
     font-weight: 800;
   }
@@ -657,13 +632,13 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
   }
 
   .form-label {
-    font-size: 12.5px;
+    font-size: var(--text-xs);
     font-weight: 800;
-    color: var(--ink);
+    color: var(--color-text-primary);
     text-transform: uppercase;
     letter-spacing: 0.4px;
   }
@@ -673,8 +648,8 @@
     background: #ffffff;
     border: 1px solid var(--strong-border);
     border-radius: var(--radius-md);
-    padding: 11px 14px;
-    font-size: 14px;
+    padding: 10px 14px;
+    font-size: var(--text-base);
     font-weight: 500;
     color: var(--ink);
     font-family: inherit;
@@ -691,18 +666,72 @@
   .form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 14px;
   }
 
-  /* Unauthenticated Login Modal/Card */
-  .auth-wrapper {
-    max-width: 420px;
-    margin: 80px auto;
-    background: #ffffff;
+  /* Modern High-Density Table */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
     border: 1px solid var(--subtle-border);
-    border-radius: 24px;
-    padding: 36px 32px;
-    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12);
+    background: #ffffff;
+    width: 100%;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    text-align: left;
+  }
+
+  .data-table th {
+    background: #f8fafc;
+    padding: 11px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--subtle-border);
+  }
+
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--color-text-primary);
+    vertical-align: middle;
+  }
+
+  .data-table tr:hover td {
+    background: #f8fafc;
+  }
+
+  /* Modal Close Button */
+  .modal-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--subtle-border);
+    background: var(--surface-hover);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+  }
+
+  .modal-close-btn:hover,
+  .modal-close-btn:focus-visible {
+    background: #e2e8f0;
+    color: var(--color-text-primary);
+    border-color: var(--strong-border);
+    outline: none;
   }
 
   /* Modal Dialog Backdrop */
@@ -711,21 +740,24 @@
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: rgba(15, 23, 42, 0.6);
+    background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     overflow-y: auto;
-    padding: 24px 16px;
+    padding: 16px;
     box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
   }
 
   .modal-box {
     background: #ffffff;
     border: 1px solid var(--subtle-border);
-    border-radius: 20px;
-    max-width: 620px;
-    margin: 40px auto;
-    padding: 28px;
+    border-radius: var(--radius-lg);
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+    padding: 24px;
     box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
     box-sizing: border-box;
   }
@@ -739,122 +771,80 @@
      MOBILE RESPONSIVE RULES (< 768px)
      ========================================== */
   @media (max-width: 768px) {
-    body {
-      padding-bottom: 80px !important;
-    }
-
     .owner-header-navbar {
-      height: auto;
-      padding: 10px 14px;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .owner-brand-group {
-      gap: 8px;
-    }
-
-    .owner-brand-title {
-      font-size: 14px;
-    }
-
-    .owner-right-actions {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .owner-right-actions .btn-action-light {
-      height: 32px;
-      padding: 0 10px;
-      font-size: 11.5px;
+      height: 52px;
+      padding: 0 12px;
     }
 
     .owner-link-nav {
-      order: 3;
-      width: 100%;
-      justify-content: flex-start;
-      padding: 6px 0 2px;
-      border-top: 1px solid #f1f5f9;
-      margin-top: 4px;
-      gap: 4px;
+      display: none !important;
     }
 
-    .owner-link-item {
-      padding: 6px 10px;
+    .mobile-subnav-strip {
+      display: flex !important;
+    }
+
+    .owner-right-actions .btn {
+      height: 32px;
+      padding: 0 10px;
       font-size: 12px;
-      border-radius: 8px;
-    }
-
-    .kpi-grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .kpi-card {
-      padding: 14px 12px;
-      border-radius: var(--radius-md);
-    }
-
-    .kpi-value {
-      font-size: 22px;
-      margin: 4px 0 2px;
-    }
-
-    .kpi-sub {
-      font-size: 11px;
     }
 
     .workspace-container {
-      padding: 14px 10px 80px;
+      padding: 12px 10px 84px;
     }
 
     .workspace-card {
       padding: 16px 12px;
       border-radius: var(--radius-md);
+      margin-bottom: 14px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
       margin-bottom: 16px;
     }
 
-    .form-grid-2 {
-      grid-template-columns: 1fr;
-      gap: 12px;
+    .kpi-card {
+      padding: 12px 10px;
+      border-radius: var(--radius-md);
     }
 
-    .form-input, .form-textarea, .search-input, .standard-select {
-      font-size: 14px !important;
-      border-radius: 10px !important;
+    .kpi-value {
+      font-size: var(--text-xl);
+      margin-bottom: 2px;
     }
 
     .standard-toolbar {
       flex-direction: column;
       align-items: stretch;
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 14px;
     }
 
     .search-wrapper {
       width: 100%;
-      max-width: 100%;
+      min-width: 100%;
     }
 
     .search-input {
       height: 42px;
-      font-size: 13.5px !important;
+      font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
     }
 
     .filters-group {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
     }
 
     .standard-select {
       width: 100%;
-      height: 40px;
-      font-size: 12.5px !important;
-      padding: 0 10px;
+      height: 38px;
+      font-size: 13px !important;
+      padding: 0 8px;
     }
 
     #ownerPageSize {
@@ -863,29 +853,21 @@
 
     .vp-catalog-grid {
       grid-template-columns: 1fr !important;
-      gap: 14px !important;
+      gap: 12px !important;
     }
 
     .vp-product-card {
-      padding: 16px 14px !important;
-      border-radius: 14px !important;
+      padding: 14px 12px !important;
     }
 
-    .vp-product-card h3 {
-      font-size: 16px !important;
-      margin-bottom: 6px !important;
+    .form-grid-2 {
+      grid-template-columns: 1fr !important;
+      gap: 10px;
     }
 
-    .vp-salary-row {
-      font-size: 12.5px !important;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .table-responsive {
-      border: none;
-      background: transparent;
-      overflow-x: visible;
+    .form-input, .form-textarea {
+      font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+      padding: 10px 12px;
     }
 
     .modal-box {
@@ -893,19 +875,20 @@
       max-width: 95% !important;
       max-height: 90vh !important;
       padding: 18px 14px !important;
-      margin: 20px auto !important;
-      border-radius: 16px !important;
+      margin: 10px auto !important;
+      border-radius: var(--radius-md) !important;
+      overflow-y: auto;
     }
 
-    /* Sticky Mobile Bottom Floating Dock (Only when workspace is authenticated) */
-    .mobile-tab-dock {
-      display: none !important;
+    /* Fixed Bottom Dock on Mobile */
+    body.is-owner-authenticated .mobile-tab-dock {
+      display: flex !important;
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       height: 60px;
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-top: 1px solid var(--subtle-border);
@@ -913,11 +896,8 @@
       justify-content: space-around;
       align-items: center;
       padding: 0 4px;
+      padding-bottom: max(4px, env(safe-area-inset-bottom));
       box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
-    }
-
-    body.is-owner-authenticated .mobile-tab-dock {
-      display: flex !important;
     }
 
     .dock-btn {
@@ -928,14 +908,15 @@
       gap: 2px;
       background: transparent;
       border: none;
-      color: var(--muted);
+      color: var(--color-text-muted);
       font-size: 10px;
       font-weight: 700;
       cursor: pointer;
-      padding: 6px 10px;
+      padding: 5px 8px;
       border-radius: var(--radius-sm);
       transition: all 0.15s ease;
       text-decoration: none;
+      flex: 1;
     }
 
     .dock-btn.active {
@@ -946,6 +927,7 @@
 
   @media (min-width: 769px) {
     .mobile-tab-dock { display: none !important; }
+    .mobile-subnav-strip { display: none !important; }
   }
 </style>
 {% endblock %}
@@ -1015,9 +997,6 @@
         <span>Student Site ↗</span>
       </a>
       <div id="ownerAuthActions" style="display: {% if is_owner_authenticated %}flex{% else %}none{% endif %}; align-items: center; gap: 8px;">
-        <button type="button" id="btnHeaderParseLead" class="btn btn-secondary">
-          Parse Lead
-        </button>
         <button type="button" id="btnHeaderPostJob" class="btn btn-primary">
           + Post Job
         </button>
@@ -1028,37 +1007,52 @@
     </div>
   </header>
 
+  <!-- Mobile Swipeable Horizontal Sub-Nav Strip (Phone Navigation) -->
+  <nav class="mobile-subnav-strip" id="mobileSubNavStrip" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-label="Mobile Studio Navigation">
+    <button type="button" class="owner-link-item owner-nav-item active" data-tab="tabJobs">📊 Pipeline</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabPost">✍️ + Post</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabSmartParse">🎯 1-Parser</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabBulkParse">⚡ Bulk</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabGroups">📦 Groups</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabAnalytics">📈 Analytics</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabJobdexo">🤖 Jobdexo</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabCategory">🏷️ Categories</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabActivity">📋 Logs</button>
+  </nav>
+
   <!-- ==========================================
        LOGIN VIEW (If Unauthenticated)
        ========================================== -->
-  <div id="ownerLoginView" class="auth-wrapper" style="{% if is_owner_authenticated %}display: none;{% endif %}">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-      <h2 style="font-size: 22px; font-weight: 800; margin: 0; color: var(--ink);">Owner Studio Login</h2>
-      <span class="status-pill status-active">PRO STUDIO</span>
-    </div>
-    <p style="font-size: 13.5px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
-      Sign in to manage student job leads, bulk parsers, crawler engines, and real-time site analytics.
-    </p>
+  <div id="ownerLoginView" class="workspace-container" style="max-width: 440px; margin: 40px auto; {% if is_owner_authenticated %}display: none;{% endif %}">
+    <div class="workspace-card" style="padding: 28px 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 0; color: var(--color-text-primary);">Owner Studio Login</h2>
+        <span class="status-pill status-active">PRO STUDIO</span>
+      </div>
+      <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: 20px; line-height: 1.5;">
+        Sign in to manage student job leads, bulk parsers, crawler engines, and real-time site analytics.
+      </p>
 
-    <form id="formOwnerLogin" method="POST" action="/owner/">
-      {% csrf_token %}
-      {% if login_error %}
-      <div style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px; font-weight: 700;">
-        ⚠️ {{ login_error }}
-      </div>
-      {% endif %}
-      <div class="form-group">
-        <label for="ownerUser" class="form-label">Username or Email *</label>
-        <input type="text" id="ownerUser" name="username" class="form-input" placeholder="Enter owner username or email" required autocomplete="username">
-      </div>
-      <div class="form-group">
-        <label for="ownerPass" class="form-label">Password *</label>
-        <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
-      </div>
-      <button type="submit" class="btn-action-light btn-primary-blue" style="width: 100%; height: 44px; justify-content: center; font-size: 14px; margin-top: 8px;">
-        Sign In to Studio 🚀
-      </button>
-    </form>
+      <form id="formOwnerLogin" method="POST" action="/owner/">
+        {% csrf_token %}
+        {% if login_error %}
+        <div style="background: #fef2f2; color: var(--color-text-danger); border: 1px solid #fecaca; padding: 10px 14px; border-radius: var(--radius-md); font-size: var(--text-sm); margin-bottom: 16px; font-weight: 700;">
+          ⚠️ {{ login_error }}
+        </div>
+        {% endif %}
+        <div class="form-group">
+          <label for="ownerUser" class="form-label">Username or Email *</label>
+          <input type="text" id="ownerUser" name="username" class="form-input" placeholder="Enter owner username or email" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="ownerPass" class="form-label">Password *</label>
+          <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; font-size: var(--text-base); margin-top: 8px;">
+          Sign In to Studio 🚀
+        </button>
+      </form>
+    </div>
   </div>
 
   <!-- ==========================================
@@ -1069,10 +1063,10 @@
     <!-- Top Workspace Greeting & Subtitle -->
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <div>
-        <h1 id="crmWorkspaceHeading" style="font-size: 26px; font-weight: 800; margin: 0 0 4px; color: var(--ink); letter-spacing: -0.02em;">
+        <h1 id="crmWorkspaceHeading" style="font-size: var(--text-2xl); font-weight: 800; margin: 0 0 6px; color: var(--color-text-primary); letter-spacing: -0.025em;">
           Opportunity Pipeline CRM
         </h1>
-        <p id="crmWorkspaceSubheading" style="font-size: 14px; color: var(--muted); margin: 0;">
+        <p id="crmWorkspaceSubheading" style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0;">
           Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.
         </p>
       </div>
@@ -1091,7 +1085,7 @@
           <span class="kpi-icon">⚡</span>
         </div>
         <div class="kpi-value" id="kpiActiveJobs" style="color: var(--blue-primary);">{{ active_jobs_count|default:"0" }}</div>
-        <div class="kpi-sub" style="color: #059669;">● Live on student feed</div>
+        <div class="kpi-sub" style="color: var(--color-text-success);">● Live on student feed</div>
       </div>
 
       <div class="kpi-card">
@@ -1109,7 +1103,7 @@
           <span class="kpi-icon">⏳</span>
         </div>
         <div class="kpi-value" id="kpiExpiredJobs">{{ expired_jobs_count|default:"0" }}</div>
-        <div class="kpi-sub" style="color: #dc2626;">Auto-cleaned after 72h</div>
+        <div class="kpi-sub" style="color: var(--color-text-danger);">Auto-cleaned after 72h</div>
       </div>
 
       <div class="kpi-card">
@@ -1128,9 +1122,9 @@
     <div id="tabJobs" class="workspace-card tab-content">
       <div class="standard-toolbar">
         <div class="search-wrapper" style="position: relative; flex: 1;">
-          <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted);">🔍</span>
+          <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-muted);">🔍</span>
           <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills, location..." style="width: 100%; padding-left: 42px; padding-right: 36px;">
-          <button id="btnSearchClear" type="button" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: #94a3b8; cursor: pointer; padding: 4px;" title="Clear search">✕</button>
+          <button id="btnSearchClear" type="button" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: var(--color-text-muted); cursor: pointer; padding: 4px;" title="Clear search">✕</button>
         </div>
 
         <div class="filters-group">
@@ -1173,19 +1167,19 @@
             </div>
 
             <div class="vp-card-content">
-              <h3>{{ j.title }}</h3>
+              <h2 class="job-card-title">{{ j.title }}</h2>
 
               <div class="vp-salary-row">
                 <span>💰 {{ j.stipend_salary }}</span>
-                <span style="color: var(--muted); font-weight: 500;">📍 {{ j.location|default:"India" }}</span>
+                <span style="color: var(--color-text-muted); font-weight: 500;">📍 {{ j.location|default:"India" }}</span>
               </div>
 
-              <div style="font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
-                <span>📅 Posted:</span> <strong style="color: var(--ink);">{{ j.get_posted_date_display }}</strong>
-                <span style="margin-left: auto; color: #64748b; font-family: monospace; font-size: 11.5px;">#{{ j.id }}</span>
+              <div style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                <span>📅 Posted:</span> <strong style="color: var(--color-text-primary);">{{ j.get_posted_date_display }}</strong>
+                <span style="margin-left: auto; color: var(--color-text-muted); font-family: monospace; font-size: 11.5px;">#{{ j.id }}</span>
               </div>
 
-              <p>{{ j.description|truncatewords:18 }}</p>
+              <p style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.45; margin-bottom: 10px;">{{ j.description|truncatewords:18 }}</p>
 
               <div class="skills-wrapper">
                 {% for skill in j.get_skills_list %}
@@ -1195,33 +1189,40 @@
                 {% endfor %}
               </div>
 
-              <div class="vp-price-row">
-                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: #059669;">
+              <div class="vp-price-row" style="margin-top: 10px;">
+                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: var(--color-text-success);">
                   ⏱️ Auto-Expires in 7 Days
                 </div>
               </div>
 
-              <div style="margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <button class="btn-action-light btn-toggle-job" data-id="{{ j.id }}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #059669; border-color: #a7f3d0; background: #ecfdf5; border-radius: 10px;">
-                  {% if j.status == 'EXPIRED' %}🚀 Publish{% else %}⏸️ Unpublish{% endif %}
-                </button>
-                <button class="btn-action-light btn-edit-job" data-id="{{ j.id }}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #2563eb; border-color: #bfdbfe; background: #eff6ff; border-radius: 10px;">
-                  ✏️ Edit Lead
-                </button>
-                <a href="{{ j.apply_url }}" target="_blank" rel="noopener" class="btn-action-light" style="height: 38px; font-size: 12.5px; justify-content: center; color: #0284c7; border-color: #bae6fd; background: #f0f9ff; text-decoration: none; border-radius: 10px;">
-                  ↗ Apply URL
-                </a>
-                <button class="btn-action-light btn-delete-job" data-id="{{ j.id }}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #dc2626; border-color: #fecaca; background: #fef2f2; border-radius: 10px;">
-                  🗑️ Delete
-                </button>
+              <div class="card-action-bar" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <button type="button" class="btn btn-primary btn-edit-job" data-id="{{ j.id }}" style="height: 38px;">
+                    ✏️ Edit Lead
+                  </button>
+                  <a href="{{ j.apply_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="height: 38px;">
+                    ↗ Apply URL
+                  </a>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                  <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="{{ j.id }}" data-title="{{ j.title|escapejs }}" style="height: 34px; font-size: 12px;" title="Move or assign this requirement to a specific group">
+                    ⇄ Move
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-toggle-job" data-id="{{ j.id }}" style="height: 34px; font-size: 12px; color: {% if j.status == 'EXPIRED' %}var(--color-text-success){% else %}var(--color-text-secondary){% endif %};">
+                    {% if j.status == 'EXPIRED' %}🚀 Publish{% else %}⏸️ Unpublish{% endif %}
+                  </button>
+                  <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="{{ j.id }}" style="height: 34px; font-size: 12px;" title="Delete lead">
+                    🗑️ Delete
+                  </button>
+                </div>
               </div>
             </div>
           </div>
           {% endfor %}
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 2px 8px rgba(15,23,42,0.04); flex-wrap: wrap; gap: 12px;">
-          <div style="font-size: 13px; color: #64748b; font-weight: 600;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
+          <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
             Showing <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> verified leads (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
           </div>
           <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
@@ -1357,7 +1358,7 @@
           <input type="text" id="postEligibility" class="form-input" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)">
         </div>
 
-        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 44px; padding: 0 24px; margin-top: 8px; font-size: 14px; border-radius: var(--radius-md);">
+        <button type="submit" class="btn btn-primary" style="height: 44px; padding: 0 24px; font-size: var(--text-base); width: 100%;">
           Publish Lead to Pipeline 🚀
         </button>
       </form>
@@ -1367,10 +1368,10 @@
          TAB 2: BULK MULTI-JOB PARSER PIPELINE
          ========================================== -->
     <div id="tabBulkParse" class="workspace-card tab-content" style="display: none;">
-      <div style="margin-bottom: 22px;">
+      <div style="margin-bottom: 20px;">
         <span class="status-pill status-active" style="margin-bottom: 8px;">⚡ BULK AUTOMATION</span>
-        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">Batch Multi-Job Parser &amp; Group Publisher</h2>
-        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+        <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 8px 0 4px; color: var(--color-text-primary);">Batch Multi-Job Parser &amp; Group Publisher</h2>
+        <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; line-height: 1.5;">
           Paste multi-job Telegram/WhatsApp messages. The engine parses multiple companies, roles, and apply links, then <strong>automatically bundles them into a shareable Group link</strong>!
         </p>
       </div>
@@ -1386,7 +1387,7 @@
           <textarea id="bulkRawText" class="form-textarea" rows="10" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
         </div>
 
-        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 44px; padding: 0 24px; font-size: 14px; border-radius: var(--radius-md);">
+        <button type="submit" class="btn btn-primary" style="height: 44px; padding: 0 24px; font-size: var(--text-base); width: 100%;">
           ⚡ Execute Bulk Parse &amp; Publish Group
         </button>
       </form>
@@ -1396,18 +1397,18 @@
          TAB: JOBDEXO AUTOMATION & SYNC ENGINE
          ========================================== -->
     <div id="tabJobdexo" class="workspace-card tab-content" style="display: none;">
-      <div style="margin-bottom: 22px;">
+      <div style="margin-bottom: 20px;">
         <span class="status-pill" style="background: var(--blue-light); color: var(--blue-primary); border: 1px solid var(--blue-border); margin-bottom: 8px;">JOBDEXO LIVE CRAWLER</span>
-        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">Automated Jobdexo Importer &amp; Drive Generator</h2>
-        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+        <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 8px 0 4px; color: var(--color-text-primary);">Automated Jobdexo Importer &amp; Drive Generator</h2>
+        <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; line-height: 1.5;">
           Automatically crawl and import off-campus opportunities directly from Jobdexo with official direct career apply links.
         </p>
       </div>
 
       <!-- 1-Click Crawler Section -->
-      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 22px; margin-bottom: 22px;">
-        <h3 style="font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 6px;">⚡ 1-Click Latest Openings Crawler</h3>
-        <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">
+      <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 18px;">
+        <h3 style="font-size: var(--text-base); font-weight: 800; color: var(--color-text-primary); margin: 0 0 6px;">⚡ 1-Click Latest Openings Crawler</h3>
+        <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin: 0 0 14px;">
           Crawl Jobdexo homepage for the freshest off-campus jobs and bundle them into a 7-day shareable group.
         </p>
 
@@ -1416,23 +1417,23 @@
           <input type="text" id="jobdexoGroupName" class="form-input" placeholder="e.g. 🔥 Top Off-Campus Tech Drives Today">
         </div>
 
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button id="btnFetchJobdexo5" type="button" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btnFetchJobdexo5" type="button" class="btn btn-primary" style="flex: 1; min-width: 140px; height: 40px;">
             ⚡ Fetch Latest 5 Jobs
           </button>
-          <button id="btnFetchJobdexo10" type="button" class="btn-action-light" style="height: 40px; background: #ffffff; border-radius: var(--radius-md);">
+          <button id="btnFetchJobdexo10" type="button" class="btn btn-secondary" style="flex: 1; min-width: 140px; height: 40px;">
             🚀 Fetch Latest 10 Jobs
           </button>
-          <button id="btnCleanDuplicates" type="button" class="btn-action-light" style="height: 40px; background: #fff5f5; border: 1px solid #fecaca; color: #dc2626; border-radius: var(--radius-md);">
-            🧹 Clean DB Duplicates &amp; Fix Names
+          <button id="btnCleanDuplicates" type="button" class="btn btn-danger-ghost" style="flex: 1; min-width: 140px; height: 40px;">
+            🧹 Clean Duplicates
           </button>
         </div>
       </div>
 
       <!-- URL Importer Section -->
-      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 22px;">
-        <h3 style="font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 6px;">🔗 Import Specific Jobdexo URLs</h3>
-        <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">
+      <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 18px;">
+        <h3 style="font-size: var(--text-base); font-weight: 800; color: var(--color-text-primary); margin: 0 0 6px;">🔗 Import Specific Jobdexo URLs</h3>
+        <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin: 0 0 14px;">
           Paste one or multiple Jobdexo links (1 per line).
         </p>
 
@@ -1442,7 +1443,7 @@
             <textarea id="jobdexoUrlsInput" class="form-textarea" rows="4" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
           </div>
 
-          <button type="submit" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">
+          <button type="submit" class="btn btn-primary" style="height: 40px; width: 100%;">
             📥 Import URLs &amp; Generate Broadcast
           </button>
         </form>
@@ -1453,9 +1454,9 @@
          TAB 5: CATEGORIES MANAGEMENT
          ========================================== -->
     <div id="tabCategory" class="workspace-card tab-content" style="display: none;">
-      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 20px; color: var(--ink);">Taxonomy &amp; Category Management</h2>
+      <h2 style="font-size: var(--text-xl); font-weight: 800; margin-bottom: 18px; color: var(--color-text-primary);">Taxonomy &amp; Category Management</h2>
       
-      <form id="formAddCategory" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--subtle-border);">
+      <form id="formAddCategory" style="margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--subtle-border);">
         <div class="form-grid-2">
           <div class="form-group">
             <label for="catName" class="form-label">New Category Name *</label>
@@ -1466,11 +1467,11 @@
             <input type="text" id="catDescription" class="form-input" placeholder="e.g. AWS, Azure, Docker jobs">
           </div>
         </div>
-        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">+ Create Category</button>
+        <button type="submit" class="btn btn-primary" style="height: 40px; width: 100%; max-width: 220px;">+ Create Category</button>
       </form>
 
-      <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 14px; color: var(--ink);">Existing Categories</h3>
-      <div id="ownerCategoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px;"></div>
+      <h3 style="font-size: var(--text-base); font-weight: 800; margin-bottom: 14px; color: var(--color-text-primary);">Existing Categories</h3>
+      <div id="ownerCategoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;"></div>
     </div>
 
     <!-- ==========================================
@@ -1645,32 +1646,32 @@
     <div class="modal-box">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <div>
-          <h2 id="modalGroupName" style="font-size: 19px; font-weight: 800; margin: 0; color: var(--ink);">Requirement Group Ready</h2>
-          <span style="font-size: 12px; color: var(--blue-primary); font-weight: 700;" id="modalGroupTag">Direct Shareable Link Generated</span>
+          <h2 id="modalGroupName" style="font-size: var(--text-lg); font-weight: 800; margin: 0; color: var(--color-text-primary);">Requirement Group Ready</h2>
+          <span style="font-size: var(--text-xs); color: var(--blue-primary); font-weight: 700;" id="modalGroupTag">Direct Shareable Link Generated</span>
         </div>
-        <button id="btnCloseBroadcastModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted);">&times;</button>
+        <button id="btnCloseBroadcastModal" type="button" class="modal-close-btn" aria-label="Close broadcast modal">&times;</button>
       </div>
 
-      <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
-        <div style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; margin-bottom: 8px;">Direct Shareable Group URL</div>
+      <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 8px;">Direct Shareable Group URL</div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <input type="text" id="modalGroupUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 12px; color: var(--blue-primary); flex: 1; min-width: 200px; background: #ffffff;">
-          <button id="btnCopyModalLink" type="button" class="btn-action-light btn-primary-blue" style="height: 38px; padding: 0 14px; font-size: 12.5px; border-radius: var(--radius-sm);">
+          <button id="btnCopyModalLink" type="button" class="btn btn-primary" style="height: 38px; padding: 0 14px; font-size: 12.5px;">
             🔗 Copy Link
           </button>
-          <a id="btnOpenModalLink" href="#" target="_blank" class="btn-action-light" style="height: 38px; padding: 0 14px; font-size: 12.5px; text-decoration: none; border-radius: var(--radius-sm);">
+          <a id="btnOpenModalLink" href="#" target="_blank" class="btn btn-secondary" style="height: 38px; padding: 0 14px; font-size: 12.5px; text-decoration: none;">
             Open Page ↗
           </a>
         </div>
       </div>
 
       <div style="margin-bottom: 16px;">
-        <div style="font-size: 12.5px; font-weight: 700; color: var(--ink); margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
+        <div style="font-size: 12.5px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button id="btnCopyModalWhatsApp" type="button" class="btn-action-light" style="flex: 1; min-width: 140px; height: 40px; background: #16a34a; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
+          <button id="btnCopyModalWhatsApp" type="button" class="btn" style="flex: 1; min-width: 140px; height: 40px; background: #16a34a; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
             📱 Copy WhatsApp Broadcast
           </button>
-          <button id="btnCopyModalTelegram" type="button" class="btn-action-light" style="flex: 1; min-width: 140px; height: 40px; background: #0284c7; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
+          <button id="btnCopyModalTelegram" type="button" class="btn" style="flex: 1; min-width: 140px; height: 40px; background: #0284c7; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
             ✈️ Copy Telegram Post
           </button>
         </div>
@@ -1689,8 +1690,8 @@
   <div id="editJobModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 640px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--ink);">✏️ Edit Opportunity Lead</h2>
-        <button id="btnCloseEditModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted);">&times;</button>
+        <h2 style="font-size: var(--text-lg); font-weight: 800; margin: 0; color: var(--color-text-primary);">✏️ Edit Opportunity Lead</h2>
+        <button id="btnCloseEditModal" type="button" class="modal-close-btn" aria-label="Close edit modal">&times;</button>
       </div>
 
       <form id="formEditJob">
@@ -1757,8 +1758,8 @@
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-          <button type="button" id="btnCancelEdit" class="btn-action-light" style="border-radius: var(--radius-md);">Cancel</button>
-          <button type="submit" class="btn-action-light btn-primary-blue" style="height: 40px; border-radius: var(--radius-md);">Save Changes</button>
+          <button type="button" id="btnCancelEdit" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="height: 40px;">Save Changes</button>
         </div>
       </form>
     </div>
@@ -1774,7 +1775,7 @@
           <span style="font-size: 20px;">⇄</span>
           <h2 style="font-size: 18px; font-weight: 800; margin: 0; color: var(--color-text-primary);">Move Requirements Between Groups</h2>
         </div>
-        <button id="btnCloseMoveModal" type="button" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-text-muted); line-height: 1;">&times;</button>
+        <button id="btnCloseMoveModal" type="button" class="modal-close-btn" aria-label="Close move requirements modal">&times;</button>
       </div>
 
       <form id="formMoveRequirements">

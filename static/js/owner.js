@@ -861,62 +861,66 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="vp-card-content">
-              <h3>${escapeHtml(j.title)}</h3>
+              <h2 class="job-card-title">${escapeHtml(j.title)}</h2>
 
               <div class="vp-salary-row">
                 <span>💰 ${escapeHtml(j.stipend_salary || 'Competitive')}</span>
-                <span style="color: var(--muted); font-weight: 500;">📍 ${escapeHtml(j.location || 'India')}</span>
+                <span style="color: var(--color-text-muted); font-weight: 500;">📍 ${escapeHtml(j.location || 'India')}</span>
               </div>
 
-              <div style="font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
-                <span>📅 Posted:</span> <strong style="color: var(--ink);">${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</strong>
-                <span style="margin-left: auto; color: #64748b; font-family: monospace; font-size: 11.5px;">#${j.id}</span>
+              <div style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                <span>📅 Posted:</span> <strong style="color: var(--color-text-primary);">${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</strong>
+                <span style="margin-left: auto; color: var(--color-text-muted); font-family: monospace; font-size: 11.5px;">#${j.id}</span>
               </div>
 
-              <p>${escapeHtml(j.description ? (j.description.length > 130 ? j.description.substring(0, 130) + '...' : j.description) : 'Verified student opening.')}</p>
+              <p style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.45; margin-bottom: 10px;">${escapeHtml(j.description ? (j.description.length > 130 ? j.description.substring(0, 130) + '...' : j.description) : 'Verified student opening.')}</p>
 
               <div class="skills-wrapper">
                 ${skillsList.slice(0, 4).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}
               </div>
 
-              <div class="vp-price-row">
-                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: ${isExpired ? '#dc2626' : '#059669'};">
+              <div class="vp-price-row" style="margin-top: 10px;">
+                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: ${isExpired ? 'var(--color-text-danger)' : 'var(--color-text-success)'};">
                   ⏱️ ${isExpired ? 'Expired / Inactive' : 'Auto-Expires in 7 Days (' + hoursLeft + 'h left)'}
                 </div>
               </div>
 
-              <div style="margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <button class="btn-action-light btn-toggle-job" data-id="${j.id}" style="height: 38px; font-size: 12.5px; justify-content: center; color: ${isExpired ? '#059669' : '#d97706'}; border-color: ${isExpired ? '#a7f3d0' : '#fde68a'}; background: ${isExpired ? '#ecfdf5' : '#fffbeb'}; border-radius: 10px;">
-                  ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
-                </button>
-                <button class="btn-action-light btn-edit-job" data-id="${j.id}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #2563eb; border-color: #bfdbfe; background: #eff6ff; border-radius: 10px;">
-                  ✏️ Edit Lead
-                </button>
-                <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener" class="btn-action-light" style="height: 38px; font-size: 12.5px; justify-content: center; color: #0284c7; border-color: #bae6fd; background: #f0f9ff; text-decoration: none; border-radius: 10px;">
-                  ↗ Apply URL
-                </a>
-                <button class="btn-action-light btn-delete-job" data-id="${j.id}" style="height: 38px; font-size: 12.5px; justify-content: center; color: #dc2626; border-color: #fecaca; background: #fef2f2; border-radius: 10px;">
-                  🗑️ Delete
-                </button>
-                <button class="btn btn-secondary btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}" style="height: 36px; font-size: 12px; justify-content: center; color: var(--blue-primary); border-color: var(--blue-border); background: var(--blue-light); border-radius: 8px; grid-column: span 2;" title="Move or assign this requirement to a specific group">
-                  ⇄ Move / Assign to Specific Group
-                </button>
+              <div class="card-action-bar" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <button type="button" class="btn btn-primary btn-edit-job" data-id="${j.id}" style="height: 38px;">
+                    ✏️ Edit Lead
+                  </button>
+                  <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="height: 38px;">
+                    ↗ Apply URL
+                  </a>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                  <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}" style="height: 34px; font-size: 12px;" title="Move or assign this requirement to a specific group">
+                    ⇄ Move
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-toggle-job" data-id="${j.id}" style="height: 34px; font-size: 12px; color: ${isExpired ? 'var(--color-text-success)' : 'var(--color-text-secondary)'};">
+                    ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
+                  </button>
+                  <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="${j.id}" style="height: 34px; font-size: 12px;" title="Delete lead">
+                    🗑️ Delete
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         `}).join('')}
       </div>
 
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; box-shadow: 0 2px 8px rgba(15,23,42,0.04); flex-wrap: wrap; gap: 12px;">
-        <div style="font-size: 13px; color: #64748b; font-weight: 600;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
+        <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
           Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalCount}</strong> verified leads (Page ${curPage} of ${totalPages})
         </div>
         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-          <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" ${curPage <= 1 ? 'disabled' : ''}>
+          <button id="btnPrevPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage <= 1 ? 'disabled' : ''}>
             ← Previous
           </button>
           ${pagesHtml}
-          <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" ${curPage >= totalPages ? 'disabled' : ''}>
+          <button id="btnNextPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage >= totalPages ? 'disabled' : ''}>
             Next →
           </button>
         </div>
