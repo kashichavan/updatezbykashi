@@ -818,7 +818,7 @@ def _background_hourly_sync_loop():
     print("🚀 [Jobdexo Auto-Sync] Background sync daemon initialized (single-worker process).")
     
     # 1. Warm-up delay to allow Django application and database to complete startup
-    time.sleep(5)
+    time.sleep(60)
     
     while _SYNC_WORKER_RUNNING:
         try:

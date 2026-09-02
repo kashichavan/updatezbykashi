@@ -104,7 +104,30 @@ elif os.environ.get("DB_ENGINE"):
         "PORT": os.environ.get("DB_PORT", "5432"),
     }}
 else:
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+            "OPTIONS": {
+                "timeout": 30,
+            }
+        }
+    }
+
+# Ensure SQLite uses WAL mode for concurrent non-blocking reads
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    try:
+        import sqlite3
+        from django.db.backends.signals import connection_created
+        def configure_sqlite_wal(sender, connection, **kwargs):
+            if connection.vendor == 'sqlite':
+                cursor = connection.cursor()
+                cursor.execute('PRAGMA journal_mode = WAL;')
+                cursor.execute('PRAGMA synchronous = NORMAL;')
+                cursor.execute('PRAGMA busy_timeout = 30000;')
+        connection_created.connect(configure_sqlite_wal)
+    except Exception:
+        pass
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

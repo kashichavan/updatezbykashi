@@ -1607,13 +1607,29 @@ def api_owner_groups(request):
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method == 'GET':
-        # Auto-delete any groups that have zero requirements
-        cleanup_empty_groups()
+        cache_key = 'api_owner_groups_json'
+        if request.GET.get('refresh') != '1':
+            cached_res = cache.get(cache_key)
+            if cached_res:
+                return JsonResponse(cached_res)
 
-        groups = JobGroup.objects.all().prefetch_related('jobs')
+        now = timezone.now()
+        from django.db.models import Prefetch
+
+        groups = JobGroup.objects.all().prefetch_related(
+            Prefetch('jobs', queryset=JobPosting.objects.only(
+                'id', 'title', 'company_name', 'location', 'stipend_salary',
+                'status', 'posted_date', 'created_at', 'apply_url', 'deadline'
+            ).order_by('-created_at'))
+        ).order_by('-created_at')
+
         res = []
         host_url = request.build_absolute_uri('/')[:-1]
         for g in groups:
+            all_jobs_list = list(g.jobs.all())
+            total_count = len(all_jobs_list)
+            active_count = sum(1 for j in all_jobs_list if j.status == 'ACTIVE' and j.deadline and j.deadline > now)
+
             group_jobs = [
                 {
                     'id': j.id,
@@ -1626,7 +1642,7 @@ def api_owner_groups(request):
                     'posted_date': timezone.localtime(j.created_at).strftime('%d %b %Y') if j.created_at else str(j.posted_date),
                     'apply_url': j.apply_url,
                 }
-                for j in g.jobs.all().order_by('-created_at')
+                for j in all_jobs_list[:15]
             ]
             res.append({
                 'id': g.id,
@@ -1634,8 +1650,8 @@ def api_owner_groups(request):
                 'slug': g.slug,
                 'banner_tag': g.banner_tag,
                 'description': g.description,
-                'total_jobs_count': g.jobs.count(),
-                'active_jobs_count': g.get_active_jobs().count(),
+                'total_jobs_count': total_count,
+                'active_jobs_count': active_count,
                 'jobs': group_jobs,
                 'views_count': g.views_count,
                 'is_expired': g.is_expired(),
@@ -1646,9 +1662,13 @@ def api_owner_groups(request):
                 'url': f"/group/{g.slug}/",
                 'full_url': f"{host_url}/group/{g.slug}/",
             })
-        return JsonResponse({'groups': res})
+        
+        response_payload = {'groups': res}
+        cache.set(cache_key, response_payload, 60)
+        return JsonResponse(response_payload)
 
     elif request.method == 'POST':
+        cache.delete('api_owner_groups_json')
         try:
             data = json.loads(request.body)
             name = data.get('name', '').strip()
@@ -1796,6 +1816,7 @@ def api_owner_groups_move_jobs(request):
 
         # Global cleanup of any other zero-job groups
         cleanup_empty_groups()
+        cache.delete('api_owner_groups_json')
 
         return JsonResponse({
             'success': True,
@@ -1829,6 +1850,7 @@ def api_owner_groups_auto_organize(request):
     
     if not active_jobs:
         deleted_empty = cleanup_empty_groups()
+        cache.delete('api_owner_groups_json')
         return JsonResponse({
             'success': True,
             'message': f'No active requirements found to organize. Auto-deleted {deleted_empty} empty group(s).'
@@ -1852,6 +1874,7 @@ def api_owner_groups_auto_organize(request):
     moved_count = len(active_jobs)
 
     deleted_empty = cleanup_empty_groups()
+    cache.delete('api_owner_groups_json')
 
     return JsonResponse({
         'success': True,
@@ -1878,6 +1901,8 @@ def api_owner_group_remove_job(request, group_pk, job_pk):
     if group.jobs.count() == 0:
         group.delete()
         was_deleted = True
+
+    cache.delete('api_owner_groups_json')
 
     return JsonResponse({
         'success': True,
@@ -1912,6 +1937,7 @@ def api_owner_group_delete(request, pk):
 
     group = get_object_or_404(JobGroup, pk=pk)
     group.delete()
+    cache.delete('api_owner_groups_json')
     return JsonResponse({'success': True, 'message': 'Requirement group deleted successfully.'})
 
 def custom_404_view(request, exception=None):
