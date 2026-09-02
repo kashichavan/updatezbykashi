@@ -2098,4 +2098,72 @@ document.addEventListener('DOMContentLoaded', () => {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
     });
   }
+
+  // --- GLOBAL EVENT DELEGATION (Bulletproof Click Handling) ---
+  document.addEventListener('click', (e) => {
+    // 1. Pipeline Move Button
+    const btnPipelineMove = e.target.closest('.btn-pipeline-move-job');
+    if (btnPipelineMove) {
+      e.preventDefault();
+      e.stopPropagation();
+      const jobId = parseInt(btnPipelineMove.dataset.id, 10);
+      const jobTitle = btnPipelineMove.dataset.title || '';
+      openMoveRequirementsModal({
+        jobIds: [jobId],
+        jobTitles: [jobTitle],
+        fromGroupId: null,
+        fromGroupName: ''
+      });
+      return;
+    }
+
+    // 2. Toolbar Quick Move by Job ID
+    const btnQuickMove = e.target.closest('#btnOpenMoveByIdPipeline, #btnOpenMoveByIdGroups');
+    if (btnQuickMove) {
+      e.preventDefault();
+      e.stopPropagation();
+      openMoveRequirementsModal({
+        jobIds: [],
+        jobTitles: [],
+        fromGroupId: null,
+        fromGroupName: ''
+      });
+      return;
+    }
+
+    // 3. Move Single Requirement in Group Drawer
+    const btnMoveGroupJob = e.target.closest('.btn-move-group-job');
+    if (btnMoveGroupJob) {
+      e.preventDefault();
+      e.stopPropagation();
+      const jobId = parseInt(btnMoveGroupJob.dataset.jobId, 10);
+      const jobTitle = btnMoveGroupJob.dataset.jobTitle || '';
+      const fromGroupId = parseInt(btnMoveGroupJob.dataset.fromGroupId, 10);
+      const fromGroupName = btnMoveGroupJob.dataset.fromGroupName || '';
+      openMoveRequirementsModal({
+        jobIds: [jobId],
+        jobTitles: [jobTitle],
+        fromGroupId: fromGroupId,
+        fromGroupName: fromGroupName
+      });
+      return;
+    }
+
+    // 4. Modal Close / Cancel Buttons
+    const btnCloseModal = e.target.closest('#btnCloseMoveModal, #btnCancelMove');
+    if (btnCloseModal) {
+      e.preventDefault();
+      closeMoveRequirementsModal();
+      return;
+    }
+
+    // 5. Close Modal on Backdrop Click
+    if (e.target.id === 'moveRequirementsModal') {
+      closeMoveRequirementsModal();
+      return;
+    }
+  });
+
+  window.openMoveRequirementsModal = openMoveRequirementsModal;
+  window.closeMoveRequirementsModal = closeMoveRequirementsModal;
 });
