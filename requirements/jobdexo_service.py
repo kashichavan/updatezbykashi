@@ -638,14 +638,86 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     5. Publishes verified openings under 'Software & Tech' category.
     6. Bundles into a 7-day shareable group.
     """
-    software_category, _ = Category.objects.get_or_create(
-        slug='software-tech',
-        defaults={
-            'name': 'Software & Tech',
-            'icon': 'code',
-            'description': 'Software engineering, QA automation, web development, internships, and IT roles.'
-        }
-    )
+def get_or_create_standard_categories():
+    """Ensures all standard categories exist and returns them in a dict keyed by slug."""
+    categories_def = [
+        ('software-tech', 'IT & Software', 'code', 'Software Engineering, Full Stack, Backend, Frontend, Cloud, DevOps, QA Automation & Cybersecurity.'),
+        ('non-it-operations', 'Non-IT & Operations', 'phone', 'Customer Support, International/Domestic Voice Process, Telecaller, BPO, HR, Sales, BCom/BBA Walk-in Drives & Operations.'),
+        ('internships', 'Internships', 'academic-cap', 'College & Fresher Engineering, Technical, and Research Internships.'),
+        ('data-ai', 'Data & AI', 'cpu', 'Data Analyst, Data Scientist, Machine Learning, AI Agents, BI Analytics & Prompt Engineering.'),
+        ('design-media', 'UI/UX & Design', 'paint-brush', 'UI/UX Design, Product Design, Graphic Design & Digital Media.'),
+    ]
+    cat_map = {}
+    for slug, name, icon, desc in categories_def:
+        obj, _ = Category.objects.get_or_create(
+            slug=slug,
+            defaults={'name': name, 'icon': icon, 'description': desc}
+        )
+        cat_map[slug] = obj
+    return cat_map
+
+
+def classify_opportunity_category(job_data, cat_map):
+    """
+    Intelligently classifies any job opening into its appropriate Category:
+    1. Non-IT & Operations (Voice, Non-Voice, Customer Support, Telecaller, BPO, Sales, HR, BCom/BBA Walkins, Operations)
+    2. Data & AI (Data Analyst, Data Scientist, Machine Learning, AI Agent, BI Analytics)
+    3. UI/UX & Design (Design, UX/UI, Graphic, Product Designer)
+    4. Internships (Internship, Trainee, Apprentice)
+    5. IT & Software (Software Engineer, Developer, QA, DevOps, Cloud, etc.)
+    """
+    title = (job_data.get('title') or '').lower()
+    skills = (job_data.get('skills') or '').lower()
+    desc = (job_data.get('description') or '')[:250].lower()
+    eligibility = (job_data.get('eligibility') or '')[:250].lower()
+    blob = f"{title} {skills} {desc} {eligibility}"
+
+    non_it_keywords = [
+        'customer support', 'customer service', 'customer care', 'voice process', 'non-voice', 'non voice',
+        'domestic voice', 'international voice', 'telecaller', 'tele-caller', 'telesales', 'telemarketing',
+        'bpo', 'kpo', 'call center', 'helpdesk', 'service desk technical support', 'service desk',
+        'data entry', 'back office', 'back-office', 'operations associate', 'operations executive',
+        'bcom', 'bba', 'bbm', 'b.com', 'b.ba', 'walkin drive for fresher bcom',
+        'sales executive', 'business development associate', 'inside sales', 'field sales',
+        'recruiter', 'hr executive', 'talent acquisition', 'human resources', 'transcription',
+        'voice recording', 'voice data collection', 'content moderator', 'accountant', 'accounts executive',
+        'collection project'
+    ]
+    if any(k in title or k in blob for k in non_it_keywords):
+        return cat_map.get('non-it-operations', cat_map.get('software-tech'))
+
+    data_ai_keywords = [
+        'data analyst', 'data scientist', 'machine learning', 'ai agent', 'ai engineer',
+        'deep learning', 'nlp', 'computer vision', 'power bi', 'tableau', 'data analytics',
+        'bi & analytics'
+    ]
+    if any(k in title for k in data_ai_keywords):
+        return cat_map.get('data-ai', cat_map.get('software-tech'))
+
+    design_keywords = [
+        'ui/ux', 'ui designer', 'ux designer', 'graphic designer', 'product designer', 'visual designer', 'figma'
+    ]
+    if any(k in title for k in design_keywords):
+        return cat_map.get('design-media', cat_map.get('software-tech'))
+
+    internship_keywords = ['intern', 'internship', 'trainee', 'apprentice']
+    if any(k in title for k in internship_keywords) or job_data.get('job_type') == 'INTERNSHIP':
+        return cat_map.get('internships', cat_map.get('software-tech'))
+
+    return cat_map.get('software-tech')
+
+
+def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
+    """
+    Standard Ingestion Engine:
+    1. Fetches candidate Jobdexo URLs.
+    2. Performs fast pre-check to skip already-imported URLs.
+    3. Scrapes Schema.org metadata and official career ATS apply links in parallel.
+    4. Applies multi-tier strict deduplication.
+    5. Intelligently classifies into IT vs Non-IT vs Data & AI vs Internships.
+    6. Bundles into a 7-day shareable group.
+    """
+    cat_map = get_or_create_standard_categories()
 
     if not urls:
         urls = fetch_multi_section_jobdexo_urls(limit=max(120, limit * 10))
@@ -686,13 +758,14 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
 
             job_posted_date = job_data.get('posted_date', now.date())
             job_deadline = timezone.now() + timedelta(days=7)
+            job_category = classify_opportunity_category(job_data, cat_map)
 
             # Create standard verified job posting
             job = JobPosting.objects.create(
                 title=job_data['title'],
                 company_name=job_data['company'],
                 company_logo_icon='building',
-                category=software_category,
+                category=job_category,
                 job_type=job_data['job_type'],
                 stipend_salary=job_data['salary'],
                 location=job_data['location'],

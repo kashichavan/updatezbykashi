@@ -156,12 +156,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (drawerCategoryNav) {
-        drawerCategoryNav.innerHTML = data.categories.map(c => `
-          <a href="/category/${c.slug}/" class="drawer-link" data-slug="${c.slug}">
-            <span>💻 ${escapeHtml(c.name)}</span>
-            <span class="d-tag">${c.active_count} OPEN</span>
-          </a>
-        `).join('');
+        const catIcons = {
+          'software-tech': '💻',
+          'non-it-operations': '📞',
+          'internships': '🎓',
+          'data-ai': '📊',
+          'design-media': '🎨',
+        };
+        drawerCategoryNav.innerHTML = data.categories.map(c => {
+          const icon = catIcons[c.slug] || '💼';
+          return `
+            <a href="/category/${c.slug}/" class="drawer-link" data-slug="${c.slug}">
+              <span>${icon} ${escapeHtml(c.name)}</span>
+              <span class="d-tag">${c.active_count} OPEN</span>
+            </a>
+          `;
+        }).join('');
       }
 
     } catch (err) {
@@ -255,12 +265,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const postedDate = j.posted_date_display || 'Today';
       const isNewToday = postedDate === 'Today';
 
+      const isNonIT = j.category_slug === 'non-it-operations';
+      const isDataAI = j.category_slug === 'data-ai';
+      const isIntern = j.category_slug === 'internships';
+      const catStyle = isNonIT
+        ? 'background:#fef3c7;color:#b45309;border:1px solid #fde68a;'
+        : isDataAI
+        ? 'background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe;'
+        : isIntern
+        ? 'background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;'
+        : 'background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;';
+      const catIcon = isNonIT ? '📞' : isDataAI ? '📊' : isIntern ? '🎓' : '💻';
+
       const shareUrl = j.share_url || `/category/${j.category_slug}/job/${j.uuid}/`;
       return `
         <div class="vp-product-card" data-id="${j.id}" data-share-url="${escapeHtml(shareUrl)}">
           <div class="vp-card-header">
             <span class="company-badge">${escapeHtml(j.company_name)}</span>
-            <div style="display:flex;gap:6px;align-items:center;">
+            <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+              <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;">${catIcon} ${escapeHtml(j.category_name || 'Tech')}</span>
               ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;">NEW</span>' : ''}
               <span class="type-badge">${j.job_type_display}</span>
             </div>
