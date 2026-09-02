@@ -467,44 +467,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- KPI STATS CALCULATOR ---
   async function loadKpiStats() {
     try {
-      const res = await fetch('/api/jobs/?page=1&page_size=100');
-      const data = await res.json();
-      const jobs = data.jobs || [];
-
-      const activeCount = jobs.filter(j => j.time_left_seconds > 0 && j.status !== 'EXPIRED').length;
-      const expiredCount = jobs.filter(j => j.time_left_seconds <= 0 || j.status === 'EXPIRED').length;
-
-      const kpiActive = document.getElementById('kpiActiveJobs');
-      const kpiTotal = document.getElementById('kpiTotalJobs');
-      const kpiExpired = document.getElementById('kpiExpiredJobs');
-      const sidebarBadge = document.getElementById('sidebarActiveCount');
-
-      if (kpiActive) kpiActive.textContent = activeCount;
-      if (sidebarBadge) sidebarBadge.textContent = `${activeCount} Live`;
-      if (kpiTotal) kpiTotal.textContent = data.total_count || jobs.length;
-      if (kpiExpired) kpiExpired.textContent = expiredCount;
-
-      const catRes = await fetch('/api/categories/');
-      const catData = await catRes.json();
-      const kpiCat = document.getElementById('kpiCategories');
-      if (kpiCat && catData.categories) kpiCat.textContent = catData.categories.length;
-
-      // Fetch Groups Count
-      const jwtAccess = localStorage.getItem('owner_jwt_access');
-      const headers = {};
-      if (jwtAccess) headers['Authorization'] = `Bearer ${jwtAccess}`;
-      const groupRes = await fetch('/api/owner/groups/', { headers });
-      if (groupRes.ok) {
-        const groupData = await groupRes.json();
-        const groups = groupData.groups || [];
+      const res = await authFetch('/api/owner/kpi-stats/');
+      if (res.ok) {
+        const data = await res.json();
+        const kpiActive = document.getElementById('kpiActiveJobs');
+        const kpiTotal = document.getElementById('kpiTotalJobs');
+        const kpiExpired = document.getElementById('kpiExpiredJobs');
+        const sidebarBadge = document.getElementById('sidebarActiveCount');
+        const kpiCat = document.getElementById('kpiCategories');
         const sidebarGroups = document.getElementById('sidebarGroupsCount');
         const kpiGroups = document.getElementById('kpiTotalGroups');
-        if (sidebarGroups) sidebarGroups.textContent = groups.length;
-        if (kpiGroups) kpiGroups.textContent = groups.length;
-      }
 
+        if (kpiActive && data.active_jobs !== undefined) kpiActive.textContent = data.active_jobs;
+        if (sidebarBadge && data.active_jobs !== undefined) sidebarBadge.textContent = `${data.active_jobs} Live`;
+        if (kpiTotal && data.total_jobs !== undefined) kpiTotal.textContent = data.total_jobs;
+        if (kpiExpired && data.expired_jobs !== undefined) kpiExpired.textContent = data.expired_jobs;
+        if (kpiCat && data.total_categories !== undefined) kpiCat.textContent = data.total_categories;
+        if (sidebarGroups && data.total_groups !== undefined) sidebarGroups.textContent = data.total_groups;
+        if (kpiGroups && data.total_groups !== undefined) kpiGroups.textContent = data.total_groups;
+      }
     } catch (err) {
-      console.error('Error fetching KPI stats:', err);
+      console.warn('Fast KPI fetch error, keeping existing values:', err);
     }
   }
 
@@ -1588,8 +1571,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('moveRequirementsModal');
     if (!modal) return;
 
-    // Show modal immediately
-    modal.style.display = 'flex';
+    // Show modal immediately with high priority styles and class
+    modal.classList.add('active', 'open');
+    modal.style.setProperty('display', 'flex', 'important');
 
     const jobIdsInput = document.getElementById('moveJobIds');
     const manualJobIdsInput = document.getElementById('manualJobIdsInput');
@@ -1662,23 +1646,24 @@ document.addEventListener('DOMContentLoaded', () => {
       targetSelect.innerHTML = optionsHtml;
     }
 
-    // Set initial loading state in dropdown
-    if (targetSelect) {
+    // Render immediately if we already have group data in memory
+    if (allGroupsData && allGroupsData.length > 0) {
+      renderTargetGroupOptions('');
+    } else if (targetSelect) {
       targetSelect.innerHTML = '<option value="">⏳ Loading existing groups...</option><option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
     }
 
-    // Fetch fresh groups from API
+    // Fetch lean summary groups from API
     try {
-      const gRes = await authFetch('/api/owner/groups/');
+      const gRes = await authFetch('/api/owner/groups/?summary=true');
       if (gRes.ok) {
         const gData = await gRes.json();
         allGroupsData = gData.groups || [];
+        renderTargetGroupOptions(filterInput ? filterInput.value : '');
       }
     } catch (err) {
       console.error('Error fetching groups for move modal:', err);
     }
-
-    renderTargetGroupOptions('');
 
     if (filterInput) {
       filterInput.oninput = () => {
@@ -1704,7 +1689,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeMoveRequirementsModal() {
     const modal = document.getElementById('moveRequirementsModal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+      modal.classList.remove('active', 'open');
+      modal.style.setProperty('display', 'none', 'important');
+    }
   }
 
   const btnCloseMoveModal = document.getElementById('btnCloseMoveModal');

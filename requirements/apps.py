@@ -7,9 +7,12 @@ class RequirementsConfig(AppConfig):
     name = 'requirements'
 
     def ready(self):
-        # Don't start background daemon during manage.py migration / build commands
-        is_management_cmd = any(cmd in sys.argv for cmd in ['makemigrations', 'migrate', 'check', 'test', 'collectstatic', 'createsuperuser'])
-        if not is_management_cmd:
+        # Only start daemon during actual 'runserver' (reloader child) or explicit daemon flag
+        should_start = (
+            'runserver' in sys.argv and os.environ.get('RUN_MAIN') == 'true'
+        ) or os.environ.get('ENABLE_AUTO_SYNC_DAEMON') == '1'
+
+        if should_start:
             try:
                 from .jobdexo_service import start_hourly_sync_daemon
                 start_hourly_sync_daemon()

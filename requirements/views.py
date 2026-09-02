@@ -1607,13 +1607,40 @@ def api_owner_groups(request):
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
     if request.method == 'GET':
-        cache_key = 'api_owner_groups_json'
+        is_summary = request.GET.get('summary') == 'true'
+        cache_key = f"api_owner_groups_json_{'summary' if is_summary else 'full'}"
         if request.GET.get('refresh') != '1':
             cached_res = cache.get(cache_key)
             if cached_res:
                 return JsonResponse(cached_res)
 
         now = timezone.now()
+        host_url = request.build_absolute_uri('/')[:-1]
+
+        if is_summary:
+            from django.db.models import Count, Q
+            groups_qs = JobGroup.objects.annotate(
+                active_count=Count('jobs', filter=Q(jobs__status='ACTIVE', jobs__deadline__gt=now), distinct=True),
+                total_count=Count('jobs', distinct=True)
+            ).values('id', 'name', 'slug', 'banner_tag', 'active_count', 'total_count').order_by('-created_at')
+
+            res = [
+                {
+                    'id': g['id'],
+                    'name': g['name'],
+                    'slug': g['slug'],
+                    'banner_tag': g['banner_tag'],
+                    'total_jobs_count': g['total_count'],
+                    'active_jobs_count': g['active_count'],
+                    'url': f"/group/{g['slug']}/",
+                    'full_url': f"{host_url}/group/{g['slug']}/",
+                }
+                for g in groups_qs
+            ]
+            response_payload = {'groups': res}
+            cache.set(cache_key, response_payload, 60)
+            return JsonResponse(response_payload)
+
         from django.db.models import Prefetch
 
         groups = JobGroup.objects.all().prefetch_related(
@@ -2083,6 +2110,31 @@ def api_owner_analytics(request):
         'recent_visits': recent_visits,
         'timestamp': timezone.now().isoformat(),
     })
+
+
+@csrf_exempt
+def api_owner_kpi_stats(request):
+    """Ultra-fast lightweight endpoint returning only scalar numbers for owner KPI dashboard cards."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    now = timezone.now()
+    total_jobs = JobPosting.objects.count()
+    active_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
+    expired_jobs = JobPosting.objects.filter(Q(status='EXPIRED') | Q(deadline__lte=now)).count()
+    total_groups = JobGroup.objects.count()
+    total_categories = Category.objects.count()
+
+    return JsonResponse({
+        'success': True,
+        'total_jobs': total_jobs,
+        'active_jobs': active_jobs,
+        'expired_jobs': expired_jobs,
+        'total_groups': total_groups,
+        'total_categories': total_categories,
+    })
+
 
 
 
