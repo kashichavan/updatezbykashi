@@ -300,26 +300,26 @@
   </div>
 
   <!-- 8. Mobile Bottom Navigation Bar (Mobile First) -->
-  <nav class="mobile-bottom-nav">
+  <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
     <a href="/" class="mobile-nav-item active">
-      <img src="{% static 'images/icon-feed.png' %}" class="mobile-nav-icon" alt="Feed">
+      <img src="{% static 'images/icon-feed.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Feed">
       <span>Feed</span>
     </a>
+    <a href="/debugger/" class="mobile-nav-item">
+      <img src="{% static 'images/icon-apply.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Debugger">
+      <span>Debugger</span>
+    </a>
     <a href="#about-creator" class="mobile-nav-item">
-      <img src="{% static 'images/icon-about.png' %}" class="mobile-nav-icon" alt="About">
+      <img src="{% static 'images/icon-about.png' %}" class="mobile-nav-icon" width="22" height="22" alt="About">
       <span>About</span>
     </a>
-    <a href="https://www.youtube.com/@pythonkashi" target="_blank" class="mobile-nav-item">
-      <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" alt="YouTube">
+    <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="mobile-nav-item">
+      <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" width="22" height="22" alt="YouTube">
       <span>YouTube</span>
     </a>
     <a href="#" id="mobileToggleDrawer" class="mobile-nav-item" onclick="document.getElementById('drawerOverlay').classList.add('is-open'); return false;">
-      <img src="/static/images/icon-type.png" class="nav-icon" width="16" height="16" alt="Categories">
+      <img src="{% static 'images/icon-type.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Categories">
       <span>Categories</span>
-    </a>
-    <a href="/owner/" target="_blank" class="mobile-nav-item">
-      <img src="/static/images/icon-share.png" class="nav-icon" width="16" height="16" alt="Settings">
-      <span>Owner</span>
     </a>
   </nav>
 
