@@ -1,4 +1,5 @@
 import re
+import html
 import urllib.parse
 
 # 1. Comprehensive Master Directory of Corporate Tech Employers & Brands
@@ -164,6 +165,7 @@ def resolve_company_name(raw_name='', title='', description='', apply_url='', ur
     and aggregator domains by checking context and master dictionary.
     """
     raw_clean = (raw_name or '').strip().lstrip('🏢•-| ').strip()
+    raw_clean = html.unescape(html.unescape(raw_clean)).replace('&amp;', '&').replace('&amp', '&')
     
     # Strip URL protocol / trailing slashes if raw_name was a full URL
     if raw_clean.startswith('http://') or raw_clean.startswith('https://'):

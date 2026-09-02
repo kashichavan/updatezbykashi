@@ -127,10 +127,7 @@ def clean_job_title(raw_title, company_name=""):
     - 'at Company Name', '— All Batches', 'Off Campus Drive'
     - 'Campus Recruitment', '| Bangalore', 'Fresher'
     """
-    if not raw_title:
-        return "Software Engineer"
-
-    t = html.unescape(raw_title).strip()
+    t = html.unescape(html.unescape(raw_title)).replace('&amp;', '&').replace('&amp', '&').strip()
 
     # Remove trailing/leading quotes and pipes
     t = re.sub(r'^[\"\'\s\-–—|]+|[\"\'\s\-–—|]+$', '', t)
