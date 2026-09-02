@@ -846,23 +846,23 @@ def _try_acquire_process_lock():
 
 
 def _background_hourly_sync_loop():
-    """Background worker thread that runs on startup and every 30 minutes (1800 seconds)."""
+    """Background worker thread that runs on startup and periodically every 20 minutes."""
     global _SYNC_WORKER_RUNNING
     print("🚀 [Jobdexo Auto-Sync] Background sync daemon initialized (single-worker process).")
     
-    # 1. Warm-up delay to allow Django application and database to complete startup
-    time.sleep(60)
+    # 1. Brief warm-up delay to allow database connections to settle
+    time.sleep(10)
     
     while _SYNC_WORKER_RUNNING:
         try:
             from django.db import close_old_connections
             close_old_connections()
-            print("⚡ [Jobdexo Auto-Sync] Running automated crawl across all sections...")
+            print("⚡ [Jobdexo Auto-Sync] Running automated discovery crawl across all sections...")
             result = auto_import_from_jobdexo(limit=10)
             if result.get('imported_count', 0) > 0:
-                print(f"✅ [Jobdexo Auto-Sync] Added {result['imported_count']} fresh non-duplicate jobs! Group: {result.get('group_name')}")
+                print(f"✅ [Jobdexo Auto-Sync] Ingested {result['imported_count']} fresh jobs! Group: {result.get('group_name')}")
             else:
-                print("ℹ️ [Jobdexo Auto-Sync] Checked sections: Feed is 100% up-to-date.")
+                print("ℹ️ [Jobdexo Auto-Sync] All sections checked: No new opportunities found at this moment.")
         except Exception as e:
             print(f"ℹ️ [Jobdexo Auto-Sync] Cycle notice: {e}")
         finally:
@@ -874,8 +874,8 @@ def _background_hourly_sync_loop():
             except Exception:
                 pass
 
-        # Sleep for 30 minutes before next recurring sync
-        time.sleep(1800 + random.randint(10, 60))
+        # Sleep for 20 minutes before next recurring sync
+        time.sleep(1200 + random.randint(10, 30))
 
 
 def start_hourly_sync_daemon():
