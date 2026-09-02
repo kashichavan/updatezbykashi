@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     jobsGrid.innerHTML = jobs.map(j => {
       const formattedTime = formatTimeLeft(j.time_left_seconds);
-      const skillsHtml = (j.skills_list || []).slice(0, 5).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
+      const skillsHtml = (j.skills_list || []).slice(0, 3).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
       const isDeactivated = j.status === 'EXPIRED' || j.time_left_seconds <= 0;
       const postedDate = j.posted_date_display || 'Today';
       const isNewToday = postedDate === 'Today';
@@ -274,21 +274,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> ${escapeHtml(j.location)}</span>
             </div>
 
-            ${isNewToday ? `
-              <div style="display:inline-flex;align-items:center;gap:5px;background:var(--blue-light);color:var(--blue-primary);font-size:11px;font-weight:800;padding:3px 10px;border-radius:99px;border:1px solid var(--blue-border);margin-bottom:8px;">
-                <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted Today
-              </div>
-            ` : `
-              <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">
-                <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">${postedDate}</strong>
-              </div>
-            `}
-
             <p>${escapeHtml(j.description)}</p>
 
-            <div class="skills-wrapper">
-              ${skillsHtml}
-            </div>
+            ${skillsHtml ? `<div class="skills-wrapper">${skillsHtml}</div>` : ''}
 
             <div class="vp-price-row">
               <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">
@@ -296,13 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
 
-            <!-- Apply / View Page Buttons -->
-            <div style="margin-top:12px; display:flex; gap:8px;">
+            <!-- Balanced 50/50 Action Grid -->
+            <div class="card-action-grid">
               ${!isDeactivated && j.apply_url ? `
                 <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener"
                    class="external-apply-btn"
-                   onclick="event.stopPropagation();"
-                   style="flex:1;">
+                   onclick="event.stopPropagation();">
                   <img src="/static/images/icon-apply.png" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
                 </a>
                 <a href="${escapeHtml(shareUrl)}"
@@ -311,14 +298,14 @@ document.addEventListener('DOMContentLoaded', () => {
                   <img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
                 </a>
               ` : isDeactivated ? `
-                <div style="display:flex;align-items:center;justify-content:center;width:100%;height:38px;background:#f1f5f9;color:#94a3b8;font-size:12px;font-weight:700;border-radius:var(--radius-sm, 6px);border:1px solid #e2e8f0;">
+                <div style="grid-column: 1 / -1; display:flex;align-items:center;justify-content:center;height:38px;background:#f1f5f9;color:#94a3b8;font-size:12px;font-weight:700;border-radius:var(--radius-sm, 6px);border:1px solid #e2e8f0;">
                   ⛔ Closed Opportunity
                 </div>
               ` : `
                 <a href="${escapeHtml(shareUrl)}"
                    class="external-apply-btn"
                    onclick="event.stopPropagation();"
-                   style="width:100%;">
+                   style="grid-column: 1 / -1;">
                   <img src="/static/images/icon-feed.png" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
                 </a>
               `}

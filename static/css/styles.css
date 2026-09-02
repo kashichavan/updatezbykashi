@@ -391,14 +391,14 @@ a {
 /* Nav Links Container */
 .nav-links {
   display: flex;
-  gap: 6px;
+  gap: 16px;
   align-items: center;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .nav-links a {
-  padding: 7px 12px;
+  padding: 8px 14px;
   border-radius: var(--radius-full);
   font-size: 13px;
   font-weight: 600;
@@ -1190,9 +1190,17 @@ a {
   border: 1px solid var(--subtle-border);
 }
 
+.card-action-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+}
+
 .external-apply-btn, .detail-page-btn {
   height: 38px;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: var(--radius-sm, 6px);
   font-size: var(--text-xs, 12px);
   font-weight: 700;
@@ -1203,6 +1211,7 @@ a {
   transition: var(--transition);
   text-decoration: none;
   box-sizing: border-box;
+  width: 100%;
 }
 
 .external-apply-btn {
