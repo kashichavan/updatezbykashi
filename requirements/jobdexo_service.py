@@ -639,13 +639,10 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     6. Bundles into a 7-day shareable group.
     """
 def get_or_create_standard_categories():
-    """Ensures all standard categories exist and returns them in a dict keyed by slug."""
+    """Ensures primary categories (Software Engineering & Non IT) exist and returns them in a dict keyed by slug."""
     categories_def = [
-        ('software-tech', 'IT & Software', 'code', 'Software Engineering, Full Stack, Backend, Frontend, Cloud, DevOps, QA Automation & Cybersecurity.'),
-        ('non-it-operations', 'Non-IT & Operations', 'phone', 'Customer Support, International/Domestic Voice Process, Telecaller, BPO, HR, Sales, BCom/BBA Walk-in Drives & Operations.'),
-        ('internships', 'Internships', 'academic-cap', 'College & Fresher Engineering, Technical, and Research Internships.'),
-        ('data-ai', 'Data & AI', 'cpu', 'Data Analyst, Data Scientist, Machine Learning, AI Agents, BI Analytics & Prompt Engineering.'),
-        ('design-media', 'UI/UX & Design', 'paint-brush', 'UI/UX Design, Product Design, Graphic Design & Digital Media.'),
+        ('software-engineering', 'Software Engineering', 'code', 'Software Engineering, Full Stack, Backend, Frontend, Cloud, DevOps, QA Automation, Data, AI & Tech Internships.'),
+        ('non-it', 'Non IT', 'phone', 'Customer Support, International/Domestic Voice Process, Telecaller, BPO, HR, Sales, BCom/BBA Walk-in Drives & Operations.'),
     ]
     cat_map = {}
     for slug, name, icon, desc in categories_def:
@@ -653,18 +650,18 @@ def get_or_create_standard_categories():
             slug=slug,
             defaults={'name': name, 'icon': icon, 'description': desc}
         )
+        if obj.name != name:
+            obj.name = name
+            obj.save(update_fields=['name'])
         cat_map[slug] = obj
     return cat_map
 
 
 def classify_opportunity_category(job_data, cat_map):
     """
-    Intelligently classifies any job opening into its appropriate Category:
-    1. Non-IT & Operations (Voice, Non-Voice, Customer Support, Telecaller, BPO, Sales, HR, BCom/BBA Walkins, Operations)
-    2. Data & AI (Data Analyst, Data Scientist, Machine Learning, AI Agent, BI Analytics)
-    3. UI/UX & Design (Design, UX/UI, Graphic, Product Designer)
-    4. Internships (Internship, Trainee, Apprentice)
-    5. IT & Software (Software Engineer, Developer, QA, DevOps, Cloud, etc.)
+    Intelligently classifies any job opening into 2 primary categories:
+    1. Non IT (Voice, Non-Voice, Customer Support, Telecaller, BPO, Sales, HR, BCom/BBA Walkins, Operations)
+    2. Software Engineering (Software Engineer, Developer, QA, DevOps, Cloud, AI/ML, Data Analyst, Tech Intern)
     """
     title = (job_data.get('title') or '').lower()
     skills = (job_data.get('skills') or '').lower()
@@ -684,27 +681,9 @@ def classify_opportunity_category(job_data, cat_map):
         'collection project'
     ]
     if any(k in title or k in blob for k in non_it_keywords):
-        return cat_map.get('non-it-operations', cat_map.get('software-tech'))
+        return cat_map.get('non-it', cat_map.get('software-engineering'))
 
-    data_ai_keywords = [
-        'data analyst', 'data scientist', 'machine learning', 'ai agent', 'ai engineer',
-        'deep learning', 'nlp', 'computer vision', 'power bi', 'tableau', 'data analytics',
-        'bi & analytics'
-    ]
-    if any(k in title for k in data_ai_keywords):
-        return cat_map.get('data-ai', cat_map.get('software-tech'))
-
-    design_keywords = [
-        'ui/ux', 'ui designer', 'ux designer', 'graphic designer', 'product designer', 'visual designer', 'figma'
-    ]
-    if any(k in title for k in design_keywords):
-        return cat_map.get('design-media', cat_map.get('software-tech'))
-
-    internship_keywords = ['intern', 'internship', 'trainee', 'apprentice']
-    if any(k in title for k in internship_keywords) or job_data.get('job_type') == 'INTERNSHIP':
-        return cat_map.get('internships', cat_map.get('software-tech'))
-
-    return cat_map.get('software-tech')
+    return cat_map.get('software-engineering')
 
 
 def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
