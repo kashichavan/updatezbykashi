@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnToggleDrawer = document.getElementById('btnToggleDrawer');
   const btnCloseDrawer = document.getElementById('btnCloseDrawer');
   const drawerCategoryNav = document.getElementById('drawerCategoryNav');
+  const drawerSearchInput = document.getElementById('drawerSearchInput');
 
   // Flash Banner
   const flashBanner = document.getElementById('flashBanner');
@@ -118,6 +119,20 @@ document.addEventListener('DOMContentLoaded', () => {
       btnToggleDrawer.addEventListener('click', (e) => {
         e.preventDefault();
         drawerOverlay.classList.add('is-open');
+        if (drawerSearchInput) {
+          setTimeout(() => drawerSearchInput.focus(), 120);
+        }
+      });
+    }
+
+    const mobileToggleDrawer = document.getElementById('mobileToggleDrawer');
+    if (mobileToggleDrawer && drawerOverlay) {
+      mobileToggleDrawer.addEventListener('click', (e) => {
+        e.preventDefault();
+        drawerOverlay.classList.add('is-open');
+        if (drawerSearchInput) {
+          setTimeout(() => drawerSearchInput.focus(), 120);
+        }
       });
     }
 
@@ -139,6 +154,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (flashClose && flashBanner) {
       flashClose.addEventListener('click', () => {
         flashBanner.style.display = 'none';
+      });
+    }
+
+    // Mobile Instant Drawer Search
+    if (drawerSearchInput) {
+      let drawerSearchTimeout;
+      drawerSearchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+
+        // 1. Live filter category items inside the drawer
+        document.querySelectorAll('#drawerCategoryNav .drawer-link').forEach(link => {
+          const text = link.textContent.toLowerCase();
+          link.style.display = (!query || text.includes(query)) ? 'flex' : 'none';
+        });
+
+        // 2. Debounce and sync with main catalog search
+        clearTimeout(drawerSearchTimeout);
+        drawerSearchTimeout = setTimeout(() => {
+          if (searchInput) searchInput.value = e.target.value;
+          state.searchQuery = e.target.value;
+          state.page = 1;
+          if (isHomePage || isCategoryPage) {
+            loadJobs();
+          }
+        }, 300);
+      });
+
+      drawerSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (drawerOverlay) drawerOverlay.classList.remove('is-open');
+          if (isHomePage || isCategoryPage) {
+            scrollAndLoadJobs();
+          } else {
+            window.location.href = `/?q=${encodeURIComponent(drawerSearchInput.value)}#catalogSection`;
+          }
+        }
       });
     }
   }
@@ -169,6 +221,29 @@ document.addEventListener('DOMContentLoaded', () => {
             </a>
           `;
         }).join('');
+
+        // Smooth category selection in mobile drawer on Homepage
+        drawerCategoryNav.querySelectorAll('.drawer-link').forEach(link => {
+          link.addEventListener('click', (e) => {
+            const slug = link.dataset.slug;
+            if (isHomePage) {
+              e.preventDefault();
+              if (drawerOverlay) drawerOverlay.classList.remove('is-open');
+
+              state.isTodayOnly = false;
+              state.isYesterdayOnly = false;
+              state.isPreviousOnly = false;
+              state.category = slug || 'all';
+              state.page = 1;
+
+              document.querySelectorAll('.vp-tabs .vp-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.category === slug);
+              });
+
+              scrollAndLoadJobs();
+            }
+          });
+        });
       }
 
     } catch (err) {
