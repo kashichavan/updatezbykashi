@@ -1588,6 +1588,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('moveRequirementsModal');
     if (!modal) return;
 
+    // Show modal immediately
+    modal.style.display = 'flex';
+
     const jobIdsInput = document.getElementById('moveJobIds');
     const manualJobIdsInput = document.getElementById('manualJobIdsInput');
     const fromGroupIdInput = document.getElementById('moveFromGroupId');
@@ -1635,21 +1638,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (newGroupTagInput) newGroupTagInput.value = '';
     if (newGroupDrawer) newGroupDrawer.style.display = 'none';
 
-    // If groups cache is empty, load latest groups
-    if (!allGroupsData || allGroupsData.length === 0) {
-      try {
-        const gRes = await authFetch('/api/owner/groups/');
-        const gData = await gRes.json();
-        allGroupsData = gData.groups || [];
-      } catch (err) {
-        console.error('Error fetching groups for move modal:', err);
-      }
-    }
-
     function renderTargetGroupOptions(filterText = '') {
       if (!targetSelect) return;
       const lowerFilter = filterText.toLowerCase().trim();
-      const filteredGroups = allGroupsData.filter(g => {
+      const filteredGroups = (allGroupsData || []).filter(g => {
         if (fromGroupId && g.id === fromGroupId) return false;
         if (!lowerFilter) return true;
         return g.name.toLowerCase().includes(lowerFilter) || (g.slug && g.slug.toLowerCase().includes(lowerFilter));
@@ -1658,11 +1650,32 @@ document.addEventListener('DOMContentLoaded', () => {
       let optionsHtml = '<option value="">-- Choose Target Specific Group --</option>';
       optionsHtml += '<option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
 
-      filteredGroups.forEach(g => {
-        optionsHtml += `<option value="${g.id}">📁 ${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`;
-      });
+      if (filteredGroups.length > 0) {
+        filteredGroups.forEach(g => {
+          optionsHtml += `<option value="${g.id}">📁 ${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`;
+        });
+      } else if (allGroupsData && allGroupsData.length === 0) {
+        optionsHtml = '<option value="NEW" selected style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
+        if (newGroupDrawer) newGroupDrawer.style.display = 'block';
+      }
 
       targetSelect.innerHTML = optionsHtml;
+    }
+
+    // Set initial loading state in dropdown
+    if (targetSelect) {
+      targetSelect.innerHTML = '<option value="">⏳ Loading existing groups...</option><option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
+    }
+
+    // Fetch fresh groups from API
+    try {
+      const gRes = await authFetch('/api/owner/groups/');
+      if (gRes.ok) {
+        const gData = await gRes.json();
+        allGroupsData = gData.groups || [];
+      }
+    } catch (err) {
+      console.error('Error fetching groups for move modal:', err);
     }
 
     renderTargetGroupOptions('');
@@ -1684,7 +1697,6 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
 
-    modal.style.display = 'flex';
     if (manualJobIdsInput && !validIds.length) {
       setTimeout(() => manualJobIdsInput.focus(), 50);
     }
@@ -1744,7 +1756,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (!toGroupId) {
-        showToast('Please select a specific destination group or choose to create a new one.', 'error');
+        showToast('Please select a destination group or choose to create a new one.', 'error');
         return;
       }
 
@@ -1790,11 +1802,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
 
-        if (res.ok) {
+        if (res.ok && data.success) {
           showToast(data.message || 'Requirements transferred successfully!', 'success');
           logActivity('Transferred requirements', data.message);
           closeMoveRequirementsModal();
           loadGroupsList();
+          loadJobsList(currentJobsPage);
           loadKpiStats();
         } else {
           showToast(data.error || 'Failed to move requirements.', 'error');

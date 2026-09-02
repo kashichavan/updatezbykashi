@@ -91,11 +91,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def cleanup_empty_groups():
-    """Automatically deletes any JobGroup that has zero requirements."""
+def cleanup_empty_groups(grace_period_minutes=120):
+    """Automatically deletes empty groups older than grace period (default 2 hours)."""
     try:
         from django.db.models import Count
-        empty_qs = JobGroup.objects.annotate(job_count=Count('jobs')).filter(job_count=0)
+        threshold = timezone.now() - timedelta(minutes=grace_period_minutes)
+        empty_qs = JobGroup.objects.annotate(job_count=Count('jobs')).filter(job_count=0, created_at__lte=threshold)
         deleted_count, _ = empty_qs.delete()
         return deleted_count
     except Exception as e:
