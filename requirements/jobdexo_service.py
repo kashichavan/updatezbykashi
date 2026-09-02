@@ -28,22 +28,28 @@ USER_AGENTS = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15',
 ]
 
-# Distinct Jobdexo Discovery Sections and Pagination
+# Distinct Jobdexo Discovery Sections, Pagination, and Search Endpoints
 JOBDEXO_SOURCE_ENDPOINTS = [
     'https://jobdexo.com/',
     'https://jobdexo.com/?page=2',
     'https://jobdexo.com/?page=3',
     'https://jobdexo.com/?page=4',
+    'https://jobdexo.com/?page=5',
+    'https://jobdexo.com/?type=fulltime',
+    'https://jobdexo.com/?type=internship',
+    'https://jobdexo.com/?type=remote',
+    'https://jobdexo.com/?type=wfh',
     'https://jobdexo.com/?q=developer',
     'https://jobdexo.com/?q=software',
-    'https://jobdexo.com/?q=analyst',
-    'https://jobdexo.com/?q=internship',
     'https://jobdexo.com/?q=engineer',
-    'https://jobdexo.com/?q=fresher',
+    'https://jobdexo.com/?q=trainee',
+    'https://jobdexo.com/?q=python',
+    'https://jobdexo.com/?q=react',
+    'https://jobdexo.com/?q=graduate',
 ]
 
 
-def fetch_url_html(url, retries=2, backoff=2.0):
+def fetch_url_html(url, retries=1, backoff=1.5):
     """
     Safely fetch HTML content from a URL with browser emulation headers,
     rate-limit handling, and exponential backoff retry for HTTP 429.
@@ -65,12 +71,17 @@ def fetch_url_html(url, retries=2, backoff=2.0):
                     'Sec-Ch-Ua-Platform': '"macOS"',
                 }
             )
-            with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=12) as response:
+            with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=7) as response:
                 return response.read().decode('utf-8', errors='ignore')
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < retries:
-                sleep_time = backoff * (attempt + 1) + random.uniform(1.0, 2.0)
+                sleep_time = backoff * (attempt + 1) + random.uniform(0.5, 1.5)
                 time.sleep(sleep_time)
+                continue
+            raise
+        except Exception:
+            if attempt < retries:
+                time.sleep(backoff)
                 continue
             raise
         except Exception:
@@ -414,9 +425,9 @@ def fetch_multi_section_jobdexo_urls(limit=35):
         except Exception:
             return None
 
-    # Fetch discovery endpoints concurrently (max 2 workers for lightweight memory footprint)
+    # Fetch discovery endpoints concurrently
     endpoint_htmls = []
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         future_map = {executor.submit(_scrape_endpoint, ep): ep for ep in JOBDEXO_SOURCE_ENDPOINTS}
         for future in as_completed(future_map):
             page_html = future.result()
@@ -424,46 +435,16 @@ def fetch_multi_section_jobdexo_urls(limit=35):
                 endpoint_htmls.append(page_html)
 
     for page_html in endpoint_htmls:
-        # 1. Parse structured job cards from listing page
-        card_matches = re.findall(
-            r'<article class=[\"\']job-card[\"\']>.*?<div class=[\"\']job-company[\"\']>([^<]+)</div>.*?<h3 class=[\"\']job-title[\"\']>\s*<a href=[\"\']([^\"\']+)[\"\']>([^<]+)</a>',
-            page_html,
-            re.DOTALL
-        )
-
-        for raw_comp, path, raw_title in card_matches:
-            full_url = f"https://jobdexo.com{path}" if path.startswith('/') else path
+        # Match all /job/ links from HTML
+        found_links = re.findall(r'href=[\"\']((?:https?://(?:www\.)?jobdexo\.com)?/job/[^\"\']+)[\"\']', page_html)
+        for u in found_links:
+            full_url = f"https://jobdexo.com{u}" if u.startswith('/') else u
             full_url = canonical_clean_url(full_url)
-            if not full_url or full_url in seen_urls:
-                continue
-
-            comp_clean = html.unescape(raw_comp.strip())
-            title_clean = html.unescape(raw_title.strip())
-            resolved_comp = resolve_company_name(comp_clean, title=title_clean, url=full_url)
-            clean_t = clean_job_title(title_clean, company_name=resolved_comp)
-            fp = f"{normalize_text(resolved_comp)}::{normalize_text(clean_t)}"
-
-            seen_urls.add(full_url)
-
-            # If this job already exists in our database, skip fetching its detail page
-            if fp in existing_fingerprints:
-                continue
-
-            discovered_urls.append(full_url)
+            if full_url and full_url not in seen_urls:
+                seen_urls.add(full_url)
+                discovered_urls.append(full_url)
             if len(discovered_urls) >= limit:
                 break
-
-        # Fallback: catch any extra job links on the page if card regex missed them
-        if len(discovered_urls) < limit:
-            all_found_urls = re.findall(r'href=[\"\']((?:https?://(?:www\.)?jobdexo\.com)?/job/[^\"\']+)[\"\']', page_html)
-            for u in all_found_urls:
-                full_url = f"https://jobdexo.com{u}" if u.startswith('/') else u
-                full_url = canonical_clean_url(full_url)
-                if full_url and full_url not in seen_urls:
-                    seen_urls.add(full_url)
-                    discovered_urls.append(full_url)
-                if len(discovered_urls) >= limit:
-                    break
 
         if len(discovered_urls) >= limit:
             break
@@ -667,7 +648,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
     )
 
     if not urls:
-        urls = fetch_multi_section_jobdexo_urls(limit=max(35, limit * 4))
+        urls = fetch_multi_section_jobdexo_urls(limit=max(120, limit * 10))
 
     created_jobs = []
     created_job_instances = []
@@ -682,10 +663,10 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         if u_clean and u_clean not in valid_candidate_urls:
             valid_candidate_urls.append(u_clean)
 
-    # Fetch details concurrently using ThreadPoolExecutor (max 3 workers for lightweight memory)
+    # Fetch details concurrently using ThreadPoolExecutor
     extracted_jobs = []
     if valid_candidate_urls:
-        max_workers = min(3, len(valid_candidate_urls))
+        max_workers = min(6, len(valid_candidate_urls))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_url = {executor.submit(extract_jobdexo_detail, u): u for u in valid_candidate_urls}
             for future in as_completed(future_to_url):
