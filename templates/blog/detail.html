@@ -317,6 +317,9 @@
     {{ post.content|safe }}
   </article>
 
+  <!-- In-Article Google AdSense Unit -->
+  {% include 'components/adsense_unit.html' %}
+
   <!-- Tags -->
   {% if post.tags.all %}
   <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 36px 0 20px; padding-top: 20px; border-top: 1px solid #1e293b;">

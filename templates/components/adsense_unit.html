@@ -1,4 +1,13 @@
-{% comment %}
-  Google AdSense Unit Component (Dormant until AdSense approval)
-  Auto-Ads script in base.html handles all crawlers and approval automatically.
-{% endcomment %}
+{% load static %}
+<!-- Google AdSense Official Responsive Ad Unit -->
+<div class="adsense-unit-container" style="margin: 28px auto; text-align: center; max-width: 100%; overflow: hidden; min-height: 90px; display: flex; justify-content: center; align-items: center;">
+  <ins class="adsbygoogle"
+       style="display:block; width:100%; text-align:center;"
+       data-ad-client="ca-pub-2115508498538506"
+       data-ad-slot="{{ ad_slot|default:'auto' }}"
+       data-ad-format="{{ ad_format|default:'auto' }}"
+       data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+</div>
