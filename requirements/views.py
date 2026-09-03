@@ -336,8 +336,67 @@ def sitemap_xml_view(request):
     xml_lines.append('</urlset>')
     return HttpResponse('\n'.join(xml_lines), content_type='application/xml')
 
+def rss_feed_view(request):
+    """RSS 2.0 Feed for Google Search, Bing, RSS readers and instant syndication."""
+    host = request.build_absolute_uri('/')[:-1]
+    now_rfc = timezone.now().strftime("%a, %d %b %Y %H:%M:%S GMT")
+    
+    items = []
+    
+    # Active Jobs
+    for job in JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).order_by('-created_at')[:35]:
+        pub_date = job.created_at.strftime("%a, %d %b %Y %H:%M:%S GMT")
+        cat_name = job.category.name if job.category else "Opportunity"
+        items.append(f"""    <item>
+      <title><![CDATA[{job.company_name} is hiring: {job.title}]]></title>
+      <link>{host}/category/{job.category.slug}/job/{job.uuid}/</link>
+      <guid isPermaLink="true">{host}/category/{job.category.slug}/job/{job.uuid}/</guid>
+      <pubDate>{pub_date}</pubDate>
+      <description><![CDATA[Apply for {job.title} at {job.company_name}. Location: {job.location}. Salary: {job.stipend_salary}. 100% verified student opportunity on Kashii Update.]]></description>
+      <category><![CDATA[{cat_name}]]></category>
+    </item>""")
+
+    # Blog Masterclasses
+    try:
+        from blog.models import BlogPost
+        for post in BlogPost.objects.filter(is_published=True).order_by('-published_at')[:20]:
+            p_date = post.published_at.strftime("%a, %d %b %Y %H:%M:%S GMT") if post.published_at else now_rfc
+            cat_name = post.category.name if post.category else "Technology"
+            items.append(f"""    <item>
+      <title><![CDATA[{post.title}]]></title>
+      <link>{host}/blog/{post.slug}/</link>
+      <guid isPermaLink="true">{host}/blog/{post.slug}/</guid>
+      <pubDate>{p_date}</pubDate>
+      <description><![CDATA[{post.excerpt or post.title}. In-depth technical masterclass by Python Kashi on Kashii Update.]]></description>
+      <category><![CDATA[{cat_name}]]></category>
+    </item>""")
+    except Exception:
+        pass
+
+    xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kashii Update — Daily Student Jobs, Internships &amp; Python Tutorials</title>
+    <link>{host}/</link>
+    <description>Official RSS feed of Kashii Update (kashiiupdatez.online) by Python Kashi. Fresh off-campus recruitment drives, internships, and technical guides.</description>
+    <language>en-us</language>
+    <lastBuildDate>{now_rfc}</lastBuildDate>
+    <atom:link href="{host}/rss.xml" rel="self" type="application/rss+xml" />
+{chr(10).join(items)}
+  </channel>
+</rss>"""
+    return HttpResponse(xml_content, content_type='application/xml; charset=utf-8')
+
+
+INDEXNOW_KEY = '7e4c3a9d2b1f8e5a0c6d7b8a9e1f2c3d'
+
+def indexnow_key_view(request):
+    """IndexNow protocol verification file for instant indexing by Bing, Yandex, Seznam, Naver."""
+    return HttpResponse(INDEXNOW_KEY, content_type='text/plain; charset=utf-8')
+
+
 def robots_txt_view(request):
-    """Robots.txt directing crawlers to sitemap.xml."""
+    """Robots.txt directing crawlers to sitemap.xml and rss.xml."""
     host = request.build_absolute_uri('/')[:-1]
     content = (
         "User-agent: *\n"
@@ -350,7 +409,10 @@ def robots_txt_view(request):
         "Allow: /\n\n"
         "User-agent: Googlebot\n"
         "Allow: /\n\n"
+        "User-agent: Bingbot\n"
+        "Allow: /\n\n"
         f"Sitemap: {host}/sitemap.xml\n"
+        f"Sitemap: {host}/rss.xml\n"
     )
     return HttpResponse(content, content_type='text/plain')
 

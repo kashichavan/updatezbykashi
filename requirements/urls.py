@@ -30,6 +30,11 @@ urlpatterns = [
 
     # Search Engine & Crawler Discovery Endpoints
     path('sitemap.xml', views.sitemap_xml_view, name='sitemap_xml'),
+    path('rss.xml', views.rss_feed_view, name='rss_xml'),
+    path('feed.xml', views.rss_feed_view, name='feed_xml'),
+    path('feed/', views.rss_feed_view, name='feed_slash'),
+    path('7e4c3a9d2b1f8e5a0c6d7b8a9e1f2c3d.txt', views.indexnow_key_view, name='indexnow_key'),
+    path('indexnow.txt', views.indexnow_key_view, name='indexnow_key_alias'),
     path('robots.txt', views.robots_txt_view, name='robots_txt'),
     path('ads.txt', views.ads_txt_view, name='ads_txt'),
     path('ads.txt/', views.ads_txt_view, name='ads_txt_slash'),
