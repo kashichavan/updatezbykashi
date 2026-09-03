@@ -339,7 +339,19 @@ def sitemap_xml_view(request):
 def robots_txt_view(request):
     """Robots.txt directing crawlers to sitemap.xml."""
     host = request.build_absolute_uri('/')[:-1]
-    content = f"User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /api/admin/\nDisallow: /owner/\n\nSitemap: {host}/sitemap.xml\n"
+    content = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin/\n"
+        "Disallow: /api/admin/\n"
+        "Disallow: /owner/\n"
+        "Disallow: /api/owner/\n\n"
+        "User-agent: Mediapartners-Google\n"
+        "Allow: /\n\n"
+        "User-agent: Googlebot\n"
+        "Allow: /\n\n"
+        f"Sitemap: {host}/sitemap.xml\n"
+    )
     return HttpResponse(content, content_type='text/plain')
 
 
