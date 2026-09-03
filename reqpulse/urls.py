@@ -6,7 +6,16 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
-from requirements.views import custom_404_view, ads_txt_verification_view, ads_txt_view, api_ping
+from requirements.views import (
+    custom_404_view,
+    ads_txt_verification_view,
+    ads_txt_view,
+    api_ping,
+    sitemap_xml_view,
+    robots_txt_view,
+    rss_feed_view,
+    indexnow_key_view,
+)
 from debugger.views import learn_topic_view
 from api.ninja_api import api as ninja_api
 
@@ -16,6 +25,15 @@ urlpatterns = [
     # Keep-Alive & Healthcheck Endpoint
     path('api/ping', api_ping, name='api_ping'),
     path('api/ping/', api_ping, name='api_ping_slash'),
+
+    # Search Engine & Crawler Discovery Root Routes
+    path('sitemap.xml', sitemap_xml_view, name='sitemap_xml_root'),
+    path('robots.txt', robots_txt_view, name='robots_txt_root'),
+    path('rss.xml', rss_feed_view, name='rss_xml_root'),
+    path('feed.xml', rss_feed_view, name='feed_xml_root'),
+    path('feed/', rss_feed_view, name='feed_slash_root'),
+    path('7e4c3a9d2b1f8e5a0c6d7b8a9e1f2c3d.txt', indexnow_key_view, name='indexnow_key_root'),
+    path('indexnow.txt', indexnow_key_view, name='indexnow_key_alias_root'),
 
     # Verification / Ads Text File Root Routes
     path('ads.txt', ads_txt_view, name='ads_txt'),
