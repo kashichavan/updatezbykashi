@@ -317,8 +317,8 @@
     {{ post.content|safe }}
   </article>
 
-  <!-- In-Article Google AdSense Unit -->
-  {% include 'components/adsense_unit.html' %}
+  <!-- High-CPC In-Article Google AdSense Native Unit -->
+  {% include 'components/adsense_unit.html' with ad_type='in-article' margin_y='36px' %}
 
   <!-- Tags -->
   {% if post.tags.all %}
@@ -357,6 +357,9 @@
       </p>
     </div>
   </div>
+
+  <!-- High-RPM Multiplex / Matched Content Ad Unit -->
+  {% include 'components/adsense_unit.html' with ad_type='multiplex' margin_y='36px' %}
 
   <!-- Related Recommended Stories -->
   {% if related_posts %}
