@@ -163,6 +163,7 @@ else:
 # Immediate Static Asset Expiration (Prevents stale browser caching of JS/CSS)
 WHITENOISE_MAX_AGE = 0
 WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+WHITENOISE_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
