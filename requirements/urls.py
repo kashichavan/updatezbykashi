@@ -29,6 +29,9 @@ urlpatterns = [
     path('contact-us/', views.contact_view, name='contact_alias'),
 
     # Search Engine & Crawler Discovery Endpoints
+    path('sw.js', views.service_worker_view, name='service_worker_sw'),
+    path('sw.js/', views.service_worker_view, name='service_worker_sw_slash'),
+    path('service-worker.js', views.service_worker_view, name='service_worker_full'),
     path('sitemap.xml', views.sitemap_xml_view, name='sitemap_xml'),
     path('rss.xml', views.rss_feed_view, name='rss_xml'),
     path('feed.xml', views.rss_feed_view, name='feed_xml'),

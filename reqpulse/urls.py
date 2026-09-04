@@ -15,6 +15,7 @@ from requirements.views import (
     robots_txt_view,
     rss_feed_view,
     indexnow_key_view,
+    service_worker_view,
 )
 from debugger.views import learn_topic_view
 from api.ninja_api import api as ninja_api
@@ -25,6 +26,11 @@ urlpatterns = [
     # Keep-Alive & Healthcheck Endpoint
     path('api/ping', api_ping, name='api_ping'),
     path('api/ping/', api_ping, name='api_ping_slash'),
+
+    # Monetag / PWA Service Worker Root Route
+    path('sw.js', service_worker_view, name='service_worker_sw'),
+    path('sw.js/', service_worker_view, name='service_worker_sw_slash'),
+    path('service-worker.js', service_worker_view, name='service_worker_full'),
 
     # Search Engine & Crawler Discovery Root Routes
     path('sitemap.xml', sitemap_xml_view, name='sitemap_xml_root'),

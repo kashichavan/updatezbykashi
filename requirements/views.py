@@ -181,6 +181,20 @@ def ads_txt_view(request):
     response['Cache-Control'] = 'public, max-age=86400'
     return response
 
+def service_worker_view(request):
+    """Serves Monetag Service Worker script at root /sw.js with full root scope."""
+    content = """self.options = {
+    "domain": "3nbf4.com",
+    "zoneId": 11725134
+};
+self.lary = "";
+importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
+"""
+    response = HttpResponse(content, content_type="application/javascript; charset=utf-8")
+    response['Service-Worker-Allowed'] = '/'
+    response['Cache-Control'] = 'public, max-age=3600'
+    return response
+
 
 def index_view(request):
     sync_expired_jobs()
