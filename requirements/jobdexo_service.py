@@ -161,7 +161,14 @@ def extract_official_apply_url(page_html, fallback_url=""):
     if not page_html:
         return fallback_url
 
-    # 1. Search all HTML anchors with explicit 'Apply on Official Website' or 'Apply on Company'
+    # 1. First priority: Extract the exact official career link passed into Jobdexo's jdOpenApply('https://...', ...) function
+    jd_apply_matches = re.findall(r'jdOpenApply\s*\(\s*[\'\"]([^\'\"]+)[\'\"]', page_html, re.IGNORECASE)
+    for raw_link in jd_apply_matches:
+        candidate_link = html.unescape(raw_link.strip())
+        if candidate_link and candidate_link.startswith(('http://', 'https://')) and 'jobdexo.com' not in candidate_link:
+            return canonical_clean_url(candidate_link)
+
+    # 2. Search all HTML anchors with explicit 'Apply on Official Website' or 'Apply on Company'
     for href, text in re.findall(r'<a\s+[^>]*?href=[\"\']([^\"\']+)[\"\'][^>]*?>(.*?)</a>', page_html, re.IGNORECASE | re.DOTALL):
         href_clean = html.unescape(href.strip())
         text_clean = html.unescape(re.sub(r'<[^>]+>', '', text).strip())
@@ -178,7 +185,7 @@ def extract_official_apply_url(page_html, fallback_url=""):
             if href_clean.startswith(('http://', 'https://')):
                 return canonical_clean_url(href_clean)
 
-    # 2. Match known enterprise ATS & Corporate Careers Portal links in page HTML
+    # 3. Match known enterprise ATS & Corporate Careers Portal links in page HTML
     career_patterns = [
         r'href=[\"\'](https?://[a-zA-Z0-9.-]*(?:careers|jobs|recruiting|myworkdayjobs|smartrecruiters|greenhouse|lever|taleo|icims|jobvite|oraclecloud|workday|successfactors|darwinbox|keka|freshteam|zoho|instahyre|unstop|ashbyhq|workable|eightfold|ycombinator|internship\.aicte-india)[^\"\']+)[\"\']',
         r'href=[\"\'](https?://(?:www\.)?linkedin\.com/jobs/view/[^\"\']+)[\"\']',
@@ -192,7 +199,7 @@ def extract_official_apply_url(page_html, fallback_url=""):
             if extracted and 'jobdexo.com' not in extracted:
                 return canonical_clean_url(extracted)
 
-    # 3. Fallback: check data-apply or data-target-url attributes
+    # 4. Fallback: check data-apply or data-target-url attributes
     data_m = re.search(r'data-(?:apply-url|apply|target-url)=[\"\']([^\"\']+)[\"\']', page_html, re.IGNORECASE)
     if data_m:
         extracted = html.unescape(data_m.group(1).strip())
@@ -399,22 +406,13 @@ def extract_jobdexo_detail(url):
     }
 
 
-def fetch_multi_section_jobdexo_urls(limit=35):
+def fetch_multi_section_jobdexo_urls(limit=50):
     """
     Crawls across distinct Jobdexo sections concurrently with smart pre-filtering.
-    Extracts job cards directly from the list pages to identify new opportunities
-    without downloading redundant detail pages.
+    Extracts job cards directly from the list pages to identify new opportunities.
     """
     discovered_urls = []
     seen_urls = set()
-
-    # Preload existing company::title fingerprints from DB to skip duplicates immediately
-    existing_fingerprints = set()
-    try:
-        for comp, title in JobPosting.objects.values_list('company_name', 'title'):
-            existing_fingerprints.add(f"{normalize_text(comp)}::{normalize_text(title)}")
-    except Exception:
-        pass
 
     def _scrape_endpoint(endpoint):
         try:
@@ -424,7 +422,7 @@ def fetch_multi_section_jobdexo_urls(limit=35):
 
     # Fetch discovery endpoints concurrently
     endpoint_htmls = []
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         future_map = {executor.submit(_scrape_endpoint, ep): ep for ep in JOBDEXO_SOURCE_ENDPOINTS}
         for future in as_completed(future_map):
             page_html = future.result()
@@ -625,16 +623,6 @@ def resolve_all_jobdexo_company_names():
     return {'total': total, 'updated': updated_count}
 
 
-def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
-    """
-    Standard Ingestion Engine:
-    1. Fetches candidate Jobdexo URLs.
-    2. Performs fast pre-check to skip already-imported URLs.
-    3. Scrapes Schema.org metadata and official career ATS apply links in parallel.
-    4. Applies multi-tier strict deduplication.
-    5. Publishes verified openings under 'Software & Tech' category.
-    6. Bundles into a 7-day shareable group.
-    """
 def get_or_create_standard_categories():
     """Ensures primary categories (Software Engineering & Non IT) exist and returns them in a dict keyed by slug."""
     categories_def = [
