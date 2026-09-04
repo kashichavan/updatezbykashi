@@ -665,26 +665,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Dual-Window Monetag Monetization & Official Job Application Trigger
-  document.addEventListener('click', function(e) {
-    const target = e.target.closest('a.btn-apply-portal, a.mobile-apply-btn, #detailExternalLink');
-    if (!target) return;
-    
-    const applyUrl = target.getAttribute('href');
-    if (!applyUrl || applyUrl === '#' || applyUrl.startsWith('javascript:')) return;
-
-    // 1. Open official application in a new window/tab
-    window.open(applyUrl, '_blank');
-
-    // 2. If Monetag Direct Link is configured, open in separate background window
-    if (window.MONETAG_DIRECT_LINK && window.MONETAG_DIRECT_LINK.length > 5) {
-      setTimeout(function() {
-        try {
-          window.open(window.MONETAG_DIRECT_LINK, '_blank');
-        } catch (err) {}
-      }, 100);
-    }
-
-    e.preventDefault();
-  }, true);
 });
+
