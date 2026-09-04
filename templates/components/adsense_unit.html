@@ -1,5 +1,9 @@
-{% load static %}
-<!-- High-RPM & High-CPC Google AdSense Unit Container -->
+{% comment %}
+  Google AdSense UI Display Units (Dormant until AdSense approval)
+  Site ownership verification and Auto-Ads script in base.html & index.html
+  continue to handle Googlebot and AdSense review crawlers automatically.
+{% endcomment %}
+{% if show_adsense_units %}
 <div class="adsense-unit-wrapper {{ custom_class|default:'' }}" style="margin: {{ margin_y|default:'28px' }} auto; text-align: center; max-width: 100%; overflow: hidden; clear: both;">
   <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; margin-bottom: 6px; font-family: monospace;">
     Sponsored Advertisement
@@ -42,3 +46,4 @@
     (adsbygoogle = window.adsbygoogle || []).push({});
   </script>
 </div>
+{% endif %}
