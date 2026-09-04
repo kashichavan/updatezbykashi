@@ -665,5 +665,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Smart Monetization Flow: 1st Click Opens Ad Window, 2nd Click Allows Direct Application
+  document.addEventListener('click', function(e) {
+    const target = e.target.closest('a.btn-apply-portal, a.mobile-apply-btn, #detailExternalLink');
+    if (!target) return;
+    
+    const applyUrl = target.getAttribute('href');
+    if (!applyUrl || applyUrl === '#' || applyUrl.startsWith('javascript:')) return;
+
+    // Check if user has already unlocked direct apply for this session/job
+    const storageKey = 'kashii_apply_unlocked_' + (target.dataset.jobId || window.location.pathname);
+    const isUnlocked = sessionStorage.getItem(storageKey) === 'true';
+
+    if (!isUnlocked && window.MONETAG_DIRECT_LINK && window.MONETAG_DIRECT_LINK.length > 5) {
+      // 1st Click: Mark unlocked, open Monetag sponsor link in new window, and inform user
+      e.preventDefault();
+      sessionStorage.setItem(storageKey, 'true');
+      
+      // Open Direct Link
+      window.open(window.MONETAG_DIRECT_LINK, '_blank');
+
+      if (window.showToast) {
+        window.showToast("Click 'Apply Now' once more to open the official job portal!", "info");
+      }
+      return;
+    }
+
+    // 2nd Click (and subsequent clicks): Open official job application directly without hindrance
+    // Let default link navigation / window.open proceed naturally
+  }, false);
+
 });
+
 
