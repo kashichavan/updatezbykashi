@@ -2056,7 +2056,19 @@ def api_owner_group_delete(request, pk):
     return JsonResponse({'success': True, 'message': 'Requirement group deleted successfully.'})
 
 def custom_404_view(request, exception=None):
-    """Custom 404 handler for expired jobs, deleted requirements, or non-existent URLs."""
+    """Custom 404 handler with fallback resolvers for root files."""
+    path = request.path.strip('/')
+    if path in ['sw.js', 'service-worker.js']:
+        return service_worker_view(request)
+    if path in ['ads.txt', 'app-ads.txt']:
+        return ads_txt_view(request)
+    if path in ['7e4c3a9d2b1f8e5a0c6d7b8a9e1f2c3d.txt', 'indexnow.txt']:
+        return indexnow_key_view(request)
+    if path == 'rss.xml':
+        return rss_feed_view(request)
+    if path == 'sitemap.xml':
+        return sitemap_xml_view(request)
+
     response = render(request, '404.html', status=404)
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
     response['Pragma'] = 'no-cache'
