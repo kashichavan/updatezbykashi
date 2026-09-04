@@ -104,12 +104,20 @@ def cleanup_empty_groups(grace_period_minutes=120):
         return 0
 
 def sync_expired_jobs():
-    """Automatically deletes postings older than 3 days (72 hours) and auto-cleans empty requirement groups."""
-    now = timezone.now()
-    deleted_count, _ = JobPosting.objects.filter(deadline__lte=now).delete()
-    cleanup_empty_groups()
-    if deleted_count > 0:
-        cache.clear()
+    """Throttled expiration runner (executes at most once every 10 minutes) to keep queries lightning fast."""
+    lock_key = 'sync_expired_jobs_throttled_lock'
+    if cache.get(lock_key):
+        return
+    cache.set(lock_key, True, 600)  # 10 minute throttle
+
+    try:
+        now = timezone.now()
+        deleted_count, _ = JobPosting.objects.filter(deadline__lte=now).delete()
+        if deleted_count > 0:
+            cleanup_empty_groups()
+            cache.clear()
+    except Exception:
+        pass
 
 def _safe_bg_jobdexo_import(limit=15):
     """Safely executes background Jobdexo ingestion with proper DB connection cleanup."""
@@ -998,23 +1006,33 @@ def api_owner_parse_and_post(request):
             return JsonResponse({'error': str(e)}, status=400)
 
 def api_stats(request):
-    sync_expired_jobs()
+    cached_stats = cache.get('api_stats_cache')
+    if cached_stats:
+        return JsonResponse(cached_stats)
+
     now = timezone.now()
     active_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
     companies_count = JobPosting.objects.values('company_name').distinct().count()
 
-    return JsonResponse({
+    stats_data = {
         'active_jobs': active_jobs,
         'companies_count': companies_count,
-    })
+    }
+    cache.set('api_stats_cache', stats_data, 300)
+    return JsonResponse(stats_data)
 
 def api_categories(request):
+    cached_cats = cache.get('api_categories_cache')
+    if cached_cats:
+        return JsonResponse(cached_cats)
+
     try:
-        sync_expired_jobs()
         categories = list(Category.objects.annotate(
             active_count=Count('job_postings', filter=Q(job_postings__status='ACTIVE'))
         ).values('id', 'name', 'slug', 'icon', 'description', 'active_count'))
-        return JsonResponse({'categories': categories})
+        cat_data = {'categories': categories}
+        cache.set('api_categories_cache', cat_data, 300)
+        return JsonResponse(cat_data)
     except Exception as e:
         categories = list(Category.objects.all().values('id', 'name', 'slug', 'icon', 'description'))
         return JsonResponse({'categories': categories, 'fallback': True})
@@ -1410,8 +1428,10 @@ def api_jobs(request):
             'has_previous': page_int > 1,
         }
 
-        cache.set(cache_key, response_data, 60)
-        return JsonResponse(response_data)
+        cache.set(cache_key, response_data, 300)
+        response = JsonResponse(response_data)
+        response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=120'
+        return response
 
     elif request.method == 'POST':
         is_auth, owner_user = is_authenticated_owner(request)
