@@ -83,10 +83,12 @@ ASGI_APPLICATION = 'reqpulse.asgi.application'
 if os.environ.get("DATABASE_URL"):
     try:
         import dj_database_url
+        is_pooled = any(p in os.environ.get("DATABASE_URL", "") for p in ["pooler", "render", "vercel-storage", "neon.tech"])
         db_config = dj_database_url.config(
             default=os.environ["DATABASE_URL"],
-            conn_max_age=0 if ("pooler" in os.environ.get("DATABASE_URL", "") or "render" in os.environ.get("DATABASE_URL", "")) else 300,
+            conn_max_age=0 if is_pooled else 300,
             conn_health_checks=True,
+            ssl_require=True if "sslmode=require" in os.environ.get("DATABASE_URL", "") or "neon.tech" in os.environ.get("DATABASE_URL", "") or "vercel-storage" in os.environ.get("DATABASE_URL", "") else False,
         )
         # PostgreSQL Connection Resiliency & Keepalive options
         db_config.setdefault("OPTIONS", {})
@@ -97,7 +99,7 @@ if os.environ.get("DATABASE_URL"):
             "keepalives_interval": 10,
             "keepalives_count": 5,
         })
-        if "pooler.supabase.com" in os.environ.get("DATABASE_URL", ""):
+        if "pooler" in os.environ.get("DATABASE_URL", "") or "neon.tech" in os.environ.get("DATABASE_URL", ""):
             db_config["DISABLE_SERVER_SIDE_CURSORS"] = True
         DATABASES = {"default": db_config}
     except Exception:

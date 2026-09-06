@@ -6,6 +6,7 @@ import html
 import time
 import random
 import threading
+import logging
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -17,6 +18,8 @@ from django.core.cache import cache
 from django.db.models import Q
 from .models import Category, JobPosting, JobGroup
 from .company_resolver import resolve_company_name
+
+logger = logging.getLogger(__name__)
 
 # SSL context for secure scraping
 SSL_CONTEXT = ssl._create_unverified_context()
