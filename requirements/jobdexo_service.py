@@ -625,20 +625,32 @@ def resolve_all_jobdexo_company_names():
 
 def get_or_create_standard_categories():
     """Ensures primary categories (Software Engineering & Non IT) exist and returns them in a dict keyed by slug."""
+    from django.db import close_old_connections, connection
+    close_old_connections()
     categories_def = [
         ('software-engineering', 'Software Engineering', 'code', 'Software Engineering, Full Stack, Backend, Frontend, Cloud, DevOps, QA Automation, Data, AI & Tech Internships.'),
         ('non-it', 'Non IT', 'phone', 'Customer Support, International/Domestic Voice Process, Telecaller, BPO, HR, Sales, BCom/BBA Walk-in Drives & Operations.'),
     ]
     cat_map = {}
     for slug, name, icon, desc in categories_def:
-        obj, _ = Category.objects.get_or_create(
-            slug=slug,
-            defaults={'name': name, 'icon': icon, 'description': desc}
-        )
-        if obj.name != name:
-            obj.name = name
-            obj.save(update_fields=['name'])
-        cat_map[slug] = obj
+        try:
+            obj, _ = Category.objects.get_or_create(
+                slug=slug,
+                defaults={'name': name, 'icon': icon, 'description': desc}
+            )
+            if obj.name != name:
+                obj.name = name
+                obj.save(update_fields=['name'])
+            cat_map[slug] = obj
+        except Exception as e:
+            logger.warning(f"Warning creating/getting category {slug}: {e}")
+            close_old_connections()
+            try:
+                obj = Category.objects.filter(slug=slug).first()
+                if obj:
+                    cat_map[slug] = obj
+            except Exception:
+                pass
     return cat_map
 
 

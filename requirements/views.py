@@ -205,11 +205,26 @@ importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
 
 
 def index_view(request):
-    sync_expired_jobs()
+    try:
+        sync_expired_jobs()
+    except Exception:
+        pass
+    
     videos = get_cached_youtube_videos()
-    initial_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:9]
-    from blog.models import BlogPost
-    recent_posts = BlogPost.objects.filter(is_published=True).select_related('category').order_by('-published_at')[:3]
+    initial_jobs = []
+    recent_posts = []
+
+    try:
+        initial_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:9])
+    except Exception as e:
+        logger.warning(f"Error fetching initial_jobs: {e}")
+
+    try:
+        from blog.models import BlogPost
+        recent_posts = list(BlogPost.objects.filter(is_published=True).select_related('category').order_by('-published_at')[:3])
+    except Exception as e:
+        logger.warning(f"Error fetching recent_posts: {e}")
+
     return render(request, 'content/home.html', {
         'youtube_videos': videos,
         'initial_jobs': initial_jobs,
@@ -1010,9 +1025,14 @@ def api_stats(request):
     if cached_stats:
         return JsonResponse(cached_stats)
 
-    now = timezone.now()
-    active_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
-    companies_count = JobPosting.objects.values('company_name').distinct().count()
+    try:
+        now = timezone.now()
+        active_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
+        companies_count = JobPosting.objects.values('company_name').distinct().count()
+    except Exception as e:
+        logger.warning(f"Error querying DB in api_stats: {e}")
+        active_jobs = 0
+        companies_count = 0
 
     stats_data = {
         'active_jobs': active_jobs,
@@ -1034,8 +1054,12 @@ def api_categories(request):
         cache.set('api_categories_cache', cat_data, 300)
         return JsonResponse(cat_data)
     except Exception as e:
-        categories = list(Category.objects.all().values('id', 'name', 'slug', 'icon', 'description'))
-        return JsonResponse({'categories': categories, 'fallback': True})
+        logger.warning(f"Error querying DB in api_categories: {e}")
+        try:
+            categories = list(Category.objects.all().values('id', 'name', 'slug', 'icon', 'description'))
+            return JsonResponse({'categories': categories, 'fallback': True})
+        except Exception:
+            return JsonResponse({'categories': [], 'fallback': True})
 
 @csrf_exempt
 def api_owner_categories(request):
@@ -1292,146 +1316,159 @@ def api_jobs(request):
     sync_expired_jobs()
 
     if request.method == 'GET':
-        query = request.GET.get('q', '').strip()
-        category_slug = request.GET.get('category', '').strip()
-        job_type = request.GET.get('job_type', '').strip()
-        status_filter = request.GET.get('status', '').strip()
-        filter_today = request.GET.get('today', '').strip()
-        filter_yesterday = request.GET.get('yesterday', '').strip()
-        filter_previous = request.GET.get('previous', '').strip()
-        sort = request.GET.get('sort', 'newest')
-        page = request.GET.get('page', '1')
-        page_size = request.GET.get('page_size', '9')
+        try:
+            query = request.GET.get('q', '').strip()
+            category_slug = request.GET.get('category', '').strip()
+            job_type = request.GET.get('job_type', '').strip()
+            status_filter = request.GET.get('status', '').strip()
+            filter_today = request.GET.get('today', '').strip()
+            filter_yesterday = request.GET.get('yesterday', '').strip()
+            filter_previous = request.GET.get('previous', '').strip()
+            sort = request.GET.get('sort', 'newest')
+            page = request.GET.get('page', '1')
+            page_size = request.GET.get('page_size', '9')
 
-        # Cache key including all filter dimensions
-        raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
-        cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
-        
-        # Don't use stale cache if searching with query
-        if not query:
-            cached_response = cache.get(cache_key)
-            if cached_response:
-                return JsonResponse(cached_response)
+            # Cache key including all filter dimensions
+            raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
+            cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
+            
+            # Don't use stale cache if searching with query
+            if not query:
+                cached_response = cache.get(cache_key)
+                if cached_response:
+                    return JsonResponse(cached_response)
 
-        # STRICT NEWEST-FIRST SORTING (-created_at)
-        qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
+            # STRICT NEWEST-FIRST SORTING (-created_at)
+            qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
 
-        if filter_yesterday == 'true' or filter_yesterday == '1':
-            today_date = timezone.localtime(timezone.now()).date()
-            yesterday_date = today_date - timedelta(days=1)
-            yesterday_qs = qs.filter(posted_date=yesterday_date)
-            if yesterday_qs.exists():
-                qs = yesterday_qs
-            else:
-                # Fallback to last 4 days if exact yesterday has no postings
+            if filter_yesterday == 'true' or filter_yesterday == '1':
+                today_date = timezone.localtime(timezone.now()).date()
+                yesterday_date = today_date - timedelta(days=1)
+                yesterday_qs = qs.filter(posted_date=yesterday_date)
+                if yesterday_qs.exists():
+                    qs = yesterday_qs
+                else:
+                    # Fallback to last 4 days if exact yesterday has no postings
+                    four_days_ago = today_date - timedelta(days=4)
+                    qs = qs.filter(posted_date__gte=four_days_ago)
+            elif filter_today == 'true' or filter_today == '1':
+                today_date = timezone.localtime(timezone.now()).date()
+                today_qs = qs.filter(posted_date=today_date)
+                if today_qs.exists():
+                    qs = today_qs
+                else:
+                    # Fallback to recent postings from the last 4 days if today has no postings
+                    four_days_ago = today_date - timedelta(days=4)
+                    qs = qs.filter(posted_date__gte=four_days_ago)
+            elif filter_previous == 'true' or filter_previous == '1':
+                today_date = timezone.localtime(timezone.now()).date()
                 four_days_ago = today_date - timedelta(days=4)
                 qs = qs.filter(posted_date__gte=four_days_ago)
-        elif filter_today == 'true' or filter_today == '1':
-            today_date = timezone.localtime(timezone.now()).date()
-            today_qs = qs.filter(posted_date=today_date)
-            if today_qs.exists():
-                qs = today_qs
-            else:
-                # Fallback to recent postings from the last 4 days if today has no postings
-                four_days_ago = today_date - timedelta(days=4)
-                qs = qs.filter(posted_date__gte=four_days_ago)
-        elif filter_previous == 'true' or filter_previous == '1':
-            today_date = timezone.localtime(timezone.now()).date()
-            four_days_ago = today_date - timedelta(days=4)
-            qs = qs.filter(posted_date__gte=four_days_ago)
 
-        if query:
-            qs = qs.filter(
-                Q(title__icontains=query) | 
-                Q(company_name__icontains=query) | 
-                Q(skills_required__icontains=query) |
-                Q(description__icontains=query) |
-                Q(location__icontains=query)
-            )
+            if query:
+                qs = qs.filter(
+                    Q(title__icontains=query) | 
+                    Q(company_name__icontains=query) | 
+                    Q(skills_required__icontains=query) |
+                    Q(description__icontains=query) |
+                    Q(location__icontains=query)
+                )
 
-        status_filter = request.GET.get('status', '').strip()
-        if status_filter and status_filter != 'ALL':
-            qs = qs.filter(status=status_filter)
+            status_filter = request.GET.get('status', '').strip()
+            if status_filter and status_filter != 'ALL':
+                qs = qs.filter(status=status_filter)
 
-        if category_slug and category_slug != 'all':
-            qs = qs.filter(category__slug=category_slug)
+            if category_slug and category_slug != 'all':
+                qs = qs.filter(category__slug=category_slug)
 
-        if job_type and job_type != 'all':
-            qs = qs.filter(job_type=job_type)
+            if job_type and job_type != 'all':
+                qs = qs.filter(job_type=job_type)
 
-        if sort == 'deadline':
-            qs = qs.order_by('deadline')
+            if sort == 'deadline':
+                qs = qs.order_by('deadline')
 
-        try:
-            page_int = int(page)
-        except ValueError:
-            page_int = 1
+            try:
+                page_int = int(page)
+            except ValueError:
+                page_int = 1
 
-        try:
-            page_size_int = int(page_size)
-        except ValueError:
-            page_size_int = 10
+            try:
+                page_size_int = int(page_size)
+            except ValueError:
+                page_size_int = 10
 
-        total_count = qs.count()
-        total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
-        page_int = min(max(1, page_int), total_pages)
+            total_count = qs.count()
+            total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
+            page_int = min(max(1, page_int), total_pages)
 
-        start_idx = (page_int - 1) * page_size_int
-        end_idx = start_idx + page_size_int
-        paginated_qs = qs[start_idx:end_idx]
+            start_idx = (page_int - 1) * page_size_int
+            end_idx = start_idx + page_size_int
+            paginated_qs = qs[start_idx:end_idx]
 
-        results = []
-        now = timezone.now()
-        for j in paginated_qs:
-            time_left_seconds = max(0, int((j.deadline - now).total_seconds()))
-            posted_date_display = j.get_posted_date_display()
+            results = []
+            now = timezone.now()
+            for j in paginated_qs:
+                time_left_seconds = max(0, int((j.deadline - now).total_seconds()))
+                posted_date_display = j.get_posted_date_display()
 
-            results.append({
-                'id': j.id,
-                'uuid': str(j.uuid),
-                'share_url': f"/category/{j.category.slug}/job/{j.uuid}/",
-                'title': j.title,
-                'company_name': j.company_name,
-                'company_logo_icon': j.company_logo_icon,
-                'category_name': j.category.name,
-                'category_slug': j.category.slug,
-                'job_type': j.job_type,
-                'job_type_display': j.get_job_type_display(),
-                'stipend_salary': j.stipend_salary,
-                'location': j.location,
-                'is_remote': j.is_remote,
-                'skills_required': j.skills_required,
-                'skills_list': j.get_skills_list(),
-                'apply_url': j.apply_url,
-                'allow_direct_apply': j.allow_direct_apply,
-                'description': j.description,
-                'eligibility': j.eligibility,
-                'posted_by': j.posted_by,
-                'status': j.status,
-                'status_display': j.get_status_display(),
-                'views_count': j.views_count,
-                'is_featured': j.is_featured,
-                'deadline': j.deadline.isoformat(),
-                'time_left_seconds': time_left_seconds,
-                'created_at': j.created_at.isoformat(),
-                'posted_date': j.posted_date.isoformat(),
-                'posted_date_display': posted_date_display,
+                results.append({
+                    'id': j.id,
+                    'uuid': str(j.uuid),
+                    'share_url': f"/category/{j.category.slug}/job/{j.uuid}/",
+                    'title': j.title,
+                    'company_name': j.company_name,
+                    'company_logo_icon': j.company_logo_icon,
+                    'category_name': j.category.name,
+                    'category_slug': j.category.slug,
+                    'job_type': j.job_type,
+                    'job_type_display': j.get_job_type_display(),
+                    'stipend_salary': j.stipend_salary,
+                    'location': j.location,
+                    'is_remote': j.is_remote,
+                    'skills_required': j.skills_required,
+                    'skills_list': j.get_skills_list(),
+                    'apply_url': j.apply_url,
+                    'allow_direct_apply': j.allow_direct_apply,
+                    'description': j.description,
+                    'eligibility': j.eligibility,
+                    'posted_by': j.posted_by,
+                    'status': j.status,
+                    'status_display': j.get_status_display(),
+                    'views_count': j.views_count,
+                    'is_featured': j.is_featured,
+                    'deadline': j.deadline.isoformat(),
+                    'time_left_seconds': time_left_seconds,
+                    'created_at': j.created_at.isoformat(),
+                    'posted_date': j.posted_date.isoformat(),
+                    'posted_date_display': posted_date_display,
+                })
+
+            response_data = {
+                'jobs': results,
+                'total_count': total_count,
+                'total_pages': total_pages,
+                'current_page': page_int,
+                'page_size': page_size_int,
+                'has_next': page_int < total_pages,
+                'has_previous': page_int > 1,
+            }
+
+            cache.set(cache_key, response_data, 300)
+            response = JsonResponse(response_data)
+            response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=120'
+            return response
+        except Exception as e:
+            logger.warning(f"Error querying DB in api_jobs: {e}")
+            return JsonResponse({
+                'jobs': [],
+                'total_count': 0,
+                'total_pages': 1,
+                'current_page': 1,
+                'page_size': 10,
+                'has_next': False,
+                'has_previous': False,
+                'fallback': True,
             })
-
-        response_data = {
-            'jobs': results,
-            'total_count': total_count,
-            'total_pages': total_pages,
-            'current_page': page_int,
-            'page_size': page_size_int,
-            'has_next': page_int < total_pages,
-            'has_previous': page_int > 1,
-        }
-
-        cache.set(cache_key, response_data, 300)
-        response = JsonResponse(response_data)
-        response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=120'
-        return response
 
     elif request.method == 'POST':
         is_auth, owner_user = is_authenticated_owner(request)

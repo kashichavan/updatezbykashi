@@ -83,15 +83,23 @@ ASGI_APPLICATION = 'reqpulse.asgi.application'
 if os.environ.get("DATABASE_URL"):
     try:
         import dj_database_url
-        DATABASES = {
-            "default": dj_database_url.config(
-                default=os.environ["DATABASE_URL"],
-                conn_max_age=0 if "pooler" in os.environ.get("DATABASE_URL", "") else 600,
-                conn_health_checks=True,
-            )
-        }
+        db_config = dj_database_url.config(
+            default=os.environ["DATABASE_URL"],
+            conn_max_age=0 if ("pooler" in os.environ.get("DATABASE_URL", "") or "render" in os.environ.get("DATABASE_URL", "")) else 300,
+            conn_health_checks=True,
+        )
+        # PostgreSQL Connection Resiliency & Keepalive options
+        db_config.setdefault("OPTIONS", {})
+        db_config["OPTIONS"].update({
+            "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 5,
+        })
         if "pooler.supabase.com" in os.environ.get("DATABASE_URL", ""):
-            DATABASES["default"]["DISABLE_SERVER_SIDE_CURSORS"] = True
+            db_config["DISABLE_SERVER_SIDE_CURSORS"] = True
+        DATABASES = {"default": db_config}
     except Exception:
         DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
 elif os.environ.get("DB_ENGINE"):
