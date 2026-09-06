@@ -176,15 +176,15 @@ class VisitorAnalyticsMiddleware:
         response = self.get_response(request)
 
         # Only track GET HTML / public page responses
-        path = request.path
-        if request.method == 'GET' and response.status_code == 200:
-            if not any(path.startswith(prefix) for prefix in self.EXCLUDED_PREFIXES):
-                # Don't track logged-in staff/admin traffic to keep student data clean
-                if not (request.user.is_authenticated and request.user.is_staff and path.startswith('/owner')):
-                    try:
+        try:
+            path = request.path
+            if request.method == 'GET' and response.status_code == 200:
+                if not any(path.startswith(prefix) for prefix in self.EXCLUDED_PREFIXES):
+                    # Don't track logged-in staff/admin traffic to keep student data clean
+                    if not (hasattr(request, 'user') and request.user.is_authenticated and request.user.is_staff and path.startswith('/owner')):
                         self.log_visit(request, path)
-                    except Exception as err:
-                        pass
+        except Exception:
+            pass
 
         return response
 
