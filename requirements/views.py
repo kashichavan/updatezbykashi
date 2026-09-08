@@ -179,28 +179,14 @@ def api_cron_sync_jobs(request):
     })
 
 def ads_txt_verification_view(request):
-    """Direct plain-text verification view for ad networks."""
-    return HttpResponse("8f373caaa0ca1b604bcf", content_type="text/plain; charset=utf-8")
+    """Direct plain-text verification view."""
+    return HttpResponse("", content_type="text/plain; charset=utf-8")
 
 def ads_txt_view(request):
     """Standard Google AdSense Authorized Digital Sellers (ads.txt) file."""
     content = "google.com, pub-2115508498538506, DIRECT, f08c47fec0942fa0\n"
     response = HttpResponse(content, content_type="text/plain; charset=utf-8")
     response['Cache-Control'] = 'public, max-age=86400'
-    return response
-
-def service_worker_view(request):
-    """Serves Monetag Service Worker script at root /sw.js with full root scope."""
-    content = """self.options = {
-    "domain": "3nbf4.com",
-    "zoneId": 11725134
-};
-self.lary = "";
-importScripts('https://3nbf4.com/act/files/service-worker.min.js?r=sw');
-"""
-    response = HttpResponse(content, content_type="application/javascript; charset=utf-8")
-    response['Service-Worker-Allowed'] = '/'
-    response['Cache-Control'] = 'public, max-age=3600'
     return response
 
 
