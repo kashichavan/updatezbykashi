@@ -198385,6 +198385,42 @@
   }
 },
 {
+  "model": "requirements.sitevisit",
+  "pk": 10452,
+  "fields": {
+    "visitor_hash": "e2ebbe2cafb7f88e8847d0269d3734defec0d25ae0a254c676d5df3edc3a6b30",
+    "path": "/",
+    "page_title": "Homepage (Fresh Job Feeds)",
+    "referrer": "Direct",
+    "referrer_raw": "",
+    "device_type": "Desktop",
+    "browser": "Other",
+    "os": "Other",
+    "user_agent": "Go-http-client/2.0",
+    "ip_address_masked": "34.82.93.xxx",
+    "is_bot": false,
+    "timestamp": "2026-09-14T13:31:01.492Z"
+  }
+},
+{
+  "model": "requirements.sitevisit",
+  "pk": 10453,
+  "fields": {
+    "visitor_hash": "a85551f399986c54aa0308dfb11e12997f62bf0f54da1e4584375d7479c618b4",
+    "path": "/",
+    "page_title": "Homepage (Fresh Job Feeds)",
+    "referrer": "Direct",
+    "referrer_raw": "",
+    "device_type": "Desktop",
+    "browser": "Other",
+    "os": "Other",
+    "user_agent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko); compatible; ChatGPT-User/1.0; +https://openai.com/bot",
+    "ip_address_masked": "9.129.24.xxx",
+    "is_bot": true,
+    "timestamp": "2026-09-14T13:32:04.112Z"
+  }
+},
+{
   "model": "debugger.codesnippet",
   "pk": "991185ce-51de-4cc2-8d13-4f747f7eb28a",
   "fields": {

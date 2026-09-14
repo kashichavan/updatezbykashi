@@ -91,4 +91,5 @@ urlpatterns = [
     path('api/owner/jobdexo/cleanup/', views.api_owner_jobdexo_cleanup_duplicates, name='api_owner_jobdexo_cleanup_duplicates'),
     path('api/owner/analytics/', views.api_owner_analytics, name='api_owner_analytics'),
     path('api/owner/kpi-stats/', views.api_owner_kpi_stats, name='api_owner_kpi_stats'),
+    path('api/owner/backup/trigger/', views.api_owner_trigger_backup, name='api_owner_trigger_backup'),
 ]

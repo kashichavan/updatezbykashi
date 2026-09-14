@@ -2281,3 +2281,20 @@ def api_owner_kpi_stats(request):
 
 
 
+
+
+@csrf_exempt
+def api_owner_trigger_backup(request):
+    """Manually trigger immediate full JSON & CSV database backup."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    from .backup_service import trigger_auto_backup_async
+    trigger_auto_backup_async(force=True)
+
+    return JsonResponse({
+        'success': True,
+        'message': 'Database backup (JSON & CSV) triggered in background successfully.',
+        'timestamp': timezone.now().isoformat(),
+    })
