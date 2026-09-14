@@ -16,378 +16,675 @@
 
 <style>
   /* ==========================================================================
-     MOBILE-FIRST APP SHELL & WEB APP LAYOUT SYSTEM
+     MODERN MOBILE-FIRST & DESKTOP JOB DETAIL UI DESIGN SYSTEM
      ========================================================================== */
 
-  /* Container */
-  .job-detail-wrap {
+  :root {
+    --jd-primary: #2563eb;
+    --jd-primary-hover: #1d4ed8;
+    --jd-primary-glow: rgba(37, 99, 235, 0.25);
+    --jd-accent: #06b6d4;
+    --jd-emerald: #10b981;
+    --jd-card-bg: #ffffff;
+    --jd-card-border: #e2e8f0;
+    --jd-muted-bg: #f8fafc;
+    --jd-text-main: #0f172a;
+    --jd-text-muted: #64748b;
+    --jd-radius-sm: 10px;
+    --jd-radius-md: 16px;
+    --jd-radius-lg: 24px;
+    --jd-shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+    --jd-shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    --jd-shadow-lg: 0 20px 35px -10px rgba(15, 23, 42, 0.1);
+  }
+
+  [data-theme="dark"] {
+    --jd-card-bg: #0f172a;
+    --jd-card-border: #1e293b;
+    --jd-muted-bg: #1e293b;
+    --jd-text-main: #f8fafc;
+    --jd-text-muted: #94a3b8;
+  }
+
+  /* Page Container */
+  .jd-container {
     width: 100%;
-    max-width: 1180px;
-    margin: 20px auto 80px;
-    padding: 0 16px;
+    max-width: 1200px;
+    margin: 16px auto 100px;
+    padding: 0 14px;
+    box-sizing: border-box;
   }
 
   @media (min-width: 768px) {
-    .job-detail-wrap {
-      margin: 32px auto 60px;
+    .jd-container {
+      margin: 28px auto 80px;
       padding: 0 24px;
     }
   }
 
-  /* Web App Grid Layout (2 Columns on Desktop) */
-  .web-app-grid {
+  /* ── 1. MODERN HERO HEADER ────────────────────────────────────────── */
+  .jd-hero-banner {
+    position: relative;
+    border-radius: var(--jd-radius-lg);
+    background: linear-gradient(135deg, #090e17 0%, #0f172a 45%, #1e293b 100%);
+    color: #ffffff;
+    padding: 24px 18px;
+    box-shadow: 0 16px 40px -10px rgba(15, 23, 42, 0.45);
+    overflow: hidden;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  @media (min-width: 768px) {
+    .jd-hero-banner {
+      padding: 36px 32px;
+      border-radius: 28px;
+    }
+  }
+
+  /* Ambient Glow Gradients */
+  .jd-hero-glow-1 {
+    position: absolute;
+    top: -80px;
+    right: -60px;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.35), transparent 70%);
+    pointer-events: none;
+    filter: blur(20px);
+  }
+
+  .jd-hero-glow-2 {
+    position: absolute;
+    bottom: -60px;
+    left: 20%;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.25), transparent 70%);
+    pointer-events: none;
+    filter: blur(25px);
+  }
+
+  /* Breadcrumbs */
+  .jd-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: #94a3b8;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+  }
+
+  .jd-breadcrumb a {
+    color: #cbd5e1;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .jd-breadcrumb a:hover {
+    color: #60a5fa;
+    text-decoration: underline;
+  }
+
+  .jd-breadcrumb-sep {
+    color: #64748b;
+    font-size: 11px;
+  }
+
+  /* Top Badges Row */
+  .jd-hero-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .jd-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 99px;
+    color: #34d399;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .jd-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #34d399;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #34d399;
+    animation: jdPulse 2s infinite;
+  }
+
+  @keyframes jdPulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+  }
+
+  .jd-meta-id-tag {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: #93c5fd;
+    background: rgba(59, 130, 246, 0.15);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(147, 197, 253, 0.25);
+    font-weight: 600;
+  }
+
+  /* Company Branding Row */
+  .jd-company-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .jd-company-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    flex-shrink: 0;
+  }
+
+  .jd-company-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #38bdf8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  /* Job Main Title */
+  .jd-hero-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.3;
+    margin: 0 0 20px;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (min-width: 768px) {
+    .jd-hero-title {
+      font-size: 30px;
+    }
+  }
+
+  /* Modern Glass Meta Strip */
+  .jd-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    position: relative;
+    z-index: 2;
+  }
+
+  @media (min-width: 640px) {
+    .jd-meta-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 992px) {
+    .jd-meta-grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  .jd-meta-cell {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .jd-meta-cell:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .jd-meta-cell-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .jd-meta-cell-val {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #ffffff;
+    word-break: break-word;
+    line-height: 1.35;
+  }
+
+  .jd-val-highlight {
+    color: #38bdf8;
+  }
+
+  .jd-val-salary {
+    color: #34d399;
+  }
+
+  /* ── 2. TWO-COLUMN RESPONSIVE LAYOUT ───────────────────────────────── */
+  .jd-layout-grid {
     display: flex;
     flex-direction: column;
     gap: 24px;
   }
 
   @media (min-width: 992px) {
-    .web-app-grid {
+    .jd-layout-grid {
       display: grid;
       grid-template-columns: 1fr 360px;
       align-items: start;
+      gap: 28px;
     }
   }
 
-  /* Dark Hero Header Banner */
-  .job-hero-card {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-    border-radius: 20px;
-    padding: 24px 20px;
-    color: #ffffff;
-    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.25);
-    margin-bottom: 24px;
-    position: relative;
-    overflow: hidden;
+  /* Modern Content Cards */
+  .jd-card {
+    background: var(--jd-card-bg);
+    border: 1px solid var(--jd-card-border);
+    border-radius: var(--jd-radius-md);
+    padding: 20px 18px;
+    box-shadow: var(--jd-shadow-sm);
+    margin-bottom: 20px;
+    transition: border-color 0.2s ease;
   }
 
   @media (min-width: 768px) {
-    .job-hero-card {
-      border-radius: 28px;
-      padding: 36px 32px;
+    .jd-card {
+      border-radius: var(--jd-radius-lg);
+      padding: 28px;
+      margin-bottom: 24px;
     }
   }
 
-  .job-hero-glow {
-    position: absolute;
-    top: -80px;
-    right: -80px;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.35), transparent 70%);
-    pointer-events: none;
+  .jd-card:hover {
+    border-color: rgba(37, 99, 235, 0.25);
   }
 
-  /* Breadcrumb Navigation */
-  .job-breadcrumb {
+  .jd-card-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #94a3b8;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
   }
 
-  .job-breadcrumb a {
-    color: #93c5fd;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .job-breadcrumb a:hover {
-    color: #ffffff;
-    text-decoration: underline;
-  }
-
-  /* Monospace Code Badge */
-  .job-code-tag {
-    display: inline-block;
-    padding: 4px 10px;
-    background: rgba(37, 99, 235, 0.3);
-    color: #93c5fd;
-    font-size: 11px;
-    font-weight: 800;
-    font-family: 'Consolas', 'JetBrains Mono', monospace;
-    border-radius: 6px;
-    border: 1px solid rgba(147, 197, 253, 0.3);
-    margin-bottom: 12px;
-    letter-spacing: 0.5px;
-  }
-
-  /* Job Title */
-  .job-hero-title {
-    font-family: 'Consolas', 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1.3;
-    color: #ffffff;
-    margin: 0 0 16px;
-    letter-spacing: -0.4px;
-  }
-
-  @media (min-width: 768px) {
-    .job-hero-title {
-      font-size: 32px;
-    }
-  }
-
-  /* Alternative Design: Glassmorphism Meta Strip */
-  .job-meta-strip {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 18px;
-    padding: 18px 20px;
-    margin-top: 20px;
-  }
-
-  @media (min-width: 640px) {
-    .job-meta-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 16px;
-    }
-  }
-
-  .meta-strip-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
-    padding: 6px 8px;
-    background: rgba(255, 255, 255, 0.04);
-    border-radius: 12px;
-  }
-
-  .meta-strip-icon {
-    width: 26px;
-    height: 26px;
+  .jd-card-icon-wrap {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
   }
 
-  .meta-strip-icon img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
-    display: block;
-    filter: brightness(0) invert(1);
+  .jd-card-title {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--jd-text-main);
+    margin: 0;
   }
 
-  .meta-strip-content {
+  /* Skills Pills */
+  .jd-skills-wrap {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  .meta-strip-label {
-    font-size: 11px;
+  .jd-skill-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
     font-weight: 700;
+    padding: 6px 14px;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    border: 1px solid var(--blue-border);
+    border-radius: 99px;
+    transition: var(--transition);
+  }
+
+  .jd-skill-chip:hover {
+    transform: translateY(-2px);
+    background: #dbeafe;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+  }
+
+  /* Eligibility Highlight Box */
+  .jd-eligibility-card {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fde68a;
+    border-radius: var(--jd-radius-md);
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+
+  [data-theme="dark"] .jd-eligibility-card {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  .jd-eligibility-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #94a3b8;
-  }
-
-  .meta-strip-val {
-    font-size: 13px;
-    font-weight: 700;
-    color: #ffffff;
-    word-break: break-word;
-    line-height: 1.3;
-  }
-
-  .meta-val-blue {
-    color: #93c5fd;
-  }
-
-  /* Main Card Details */
-  .job-main-card {
-    background: #ffffff;
-    border: 1px solid var(--subtle-border);
-    border-radius: 20px;
-    padding: 24px 20px;
-    box-shadow: var(--card-shadow);
-  }
-
-  @media (min-width: 768px) {
-    .job-main-card {
-      border-radius: 24px;
-      padding: 32px;
-    }
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    color: var(--muted);
+    color: #b45309;
     margin-bottom: 8px;
   }
 
-  .eligibility-alert-box {
-    background: #fff8f1;
-    border: 1px solid #ffedd5;
-    border-radius: 16px;
-    padding: 16px 18px;
-    margin-bottom: 24px;
+  [data-theme="dark"] .jd-eligibility-title {
+    color: #fbbf24;
   }
 
-  .description-body {
-    color: #334155;
-    line-height: 1.7;
-    white-space: pre-line;
+  .jd-eligibility-text {
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #78350f;
+    margin: 0;
+  }
+
+  [data-theme="dark"] .jd-eligibility-text {
+    color: #fde68a;
+  }
+
+  /* Selection Steps Timeline */
+  .jd-step-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .jd-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--jd-muted-bg);
+    border: 1px solid var(--jd-card-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .jd-step-item:hover {
+    transform: translateX(3px);
+    border-color: #93c5fd;
+  }
+
+  .jd-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: var(--blue-primary);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+
+  .jd-step-text {
     font-size: 14px;
-    background: var(--paper);
-    padding: 20px;
+    font-weight: 600;
+    color: var(--jd-text-main);
+    line-height: 1.5;
+    padding-top: 2px;
+  }
+
+  /* Study Materials Items */
+  .jd-resource-card {
+    background: var(--jd-card-bg);
+    border: 1px solid var(--jd-card-border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: var(--transition);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .jd-resource-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--blue-primary);
+    box-shadow: var(--jd-shadow-md);
+  }
+
+  .jd-resource-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* Description Body */
+  .jd-desc-container {
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: #334155;
+    background: var(--jd-muted-bg);
+    border: 1px solid var(--jd-card-border);
     border-radius: 16px;
-    border: 1px solid var(--subtle-border);
-    margin-bottom: 24px;
+    padding: 20px;
+    white-space: pre-line;
+    word-break: break-word;
+  }
+
+  [data-theme="dark"] .jd-desc-container {
+    color: #cbd5e1;
   }
 
   @media (min-width: 768px) {
-    .description-body {
+    .jd-desc-container {
       font-size: 15px;
       padding: 24px;
     }
   }
 
-  /* Sticky Web App Sidebar on Desktop */
-  .web-app-sidebar {
+  /* ── 3. STICKY SIDEBAR (DESKTOP) ─────────────────────────────────── */
+  .jd-sidebar {
     position: relative;
   }
 
   @media (min-width: 992px) {
-    .web-app-sidebar {
+    .jd-sidebar {
       position: sticky;
-      top: 84px;
+      top: 88px;
     }
   }
 
-  /* Action Box & Buttons */
-  .apply-action-box {
-    text-align: center;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  /* Main Apply Callout Box */
+  .jd-apply-cta-card {
+    background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+    border-radius: var(--jd-radius-lg);
     padding: 24px 20px;
-    border-radius: 20px;
-    border: 1px solid var(--blue-border);
-    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
-    margin-bottom: 24px;
+    color: #ffffff;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: var(--jd-shadow-lg);
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
   }
 
-  .btn-apply-portal {
+  .jd-cta-glow {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.4), transparent 70%);
+    pointer-events: none;
+  }
+
+  .jd-btn-apply-main {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     width: 100%;
-    padding: 14px 24px;
-    background: var(--blue-primary);
+    padding: 15px 24px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff !important;
-    font-size: 15px;
+    font-size: 15.5px;
     font-weight: 800;
-    border-radius: var(--radius-full);
+    border-radius: 99px;
     text-decoration: none;
-    transition: var(--transition);
-    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.4);
     border: none;
     cursor: pointer;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .btn-apply-portal:hover {
-    background: var(--blue-hover);
+  .jd-btn-apply-main:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.5);
+    box-shadow: 0 14px 30px -4px rgba(37, 99, 235, 0.6);
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
   }
 
-  /* Share Action Buttons Grid */
-  .share-action-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+  .jd-btn-apply-main:active {
+    transform: scale(0.98);
+  }
+
+  /* Share Action Buttons */
+  .jd-share-btn-list {
+    display: flex;
+    flex-direction: column;
     gap: 10px;
   }
 
-  .share-pill {
+  .jd-share-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    width: 100%;
     padding: 12px 18px;
-    border-radius: var(--radius-full);
-    font-size: 13px;
+    border-radius: 99px;
+    font-size: 13.5px;
     font-weight: 700;
-    border: 1px solid var(--subtle-border);
-    background: #ffffff;
-    color: var(--ink);
     cursor: pointer;
     text-decoration: none;
     transition: var(--transition);
+    border: 1px solid var(--jd-card-border);
+    background: var(--jd-card-bg);
+    color: var(--jd-text-main);
   }
 
-  .share-pill:hover {
+  .jd-share-btn:hover {
     transform: translateY(-2px);
-    box-shadow: var(--card-shadow);
+    box-shadow: var(--jd-shadow-sm);
   }
 
-  .share-pill-wa {
+  .jd-share-btn-wa {
     background: #25d366;
     color: #ffffff !important;
     border-color: #25d366;
-    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
   }
 
-  .share-pill-wa:hover {
+  .jd-share-btn-wa:hover {
     background: #1ebc57;
   }
 
-  .share-pill-ig {
+  .jd-share-btn-ig {
     background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
     color: #ffffff !important;
     border: none;
-    box-shadow: 0 4px 14px rgba(225, 48, 108, 0.3);
+    box-shadow: 0 4px 14px rgba(225, 48, 108, 0.35);
   }
 
-  /* Sticky Mobile Bottom Apply Bar (Mobile-First 1-Thumb Action) */
-  .mobile-sticky-apply-bar {
+  /* ── 4. STICKY MOBILE BOTTOM BAR ──────────────────────────────────── */
+  .jd-mobile-bar {
     position: fixed;
     bottom: calc(56px + env(safe-area-inset-bottom, 0px));
     left: 0;
     right: 0;
     width: 100%;
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid var(--subtle-border);
-    padding: 8px 14px;
+    padding: 10px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
     z-index: 145;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
     box-sizing: border-box;
-    will-change: transform;
-    transform: translateZ(0);
   }
 
-  [data-theme="dark"] .mobile-sticky-apply-bar,
-  .dark-theme .mobile-sticky-apply-bar {
-    background: rgba(15, 23, 42, 0.98);
-    border-top-color: rgba(51, 65, 85, 0.8);
+  [data-theme="dark"] .jd-mobile-bar {
+    background: rgba(15, 23, 42, 0.96);
+    border-top-color: #334155;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
   }
 
   @media (max-width: 768px) {
-    .job-detail-wrap {
+    .jd-container {
       padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
     }
 
-    /* Lift floating Instagram chat widget cleanly above both sticky apply bar and bottom nav */
     .floating-chat-widget {
       bottom: calc(125px + env(safe-area-inset-bottom, 0px)) !important;
       right: 14px !important;
@@ -395,272 +692,313 @@
       font-size: 11.5px !important;
       z-index: 155 !important;
     }
-
-    .chat-label {
-      font-size: 10.5px !important;
-    }
   }
 
   @media (min-width: 769px) {
-    .mobile-sticky-apply-bar {
+    .jd-mobile-bar {
       display: none !important;
     }
   }
 
-  .mobile-apply-btn {
+  .jd-mobile-apply-btn {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 10px 18px;
-    background: var(--blue-primary);
+    padding: 11px 20px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     color: #ffffff !important;
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 800;
-    border-radius: var(--radius-full);
+    border-radius: 99px;
     text-decoration: none;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
     white-space: nowrap;
-    transition: transform 0.15s ease, background-color 0.15s ease;
+    transition: transform 0.15s ease;
   }
 
-  .mobile-apply-btn:active {
+  .jd-mobile-apply-btn:active {
     transform: scale(0.96);
   }
 
   /* Related Cards Grid */
-  .related-grid {
+  .jd-related-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
-    margin-top: 16px;
+    margin-top: 18px;
   }
 
   @media (min-width: 640px) {
-    .related-grid {
+    .jd-related-grid {
       grid-template-columns: repeat(2, 1fr);
     }
+  }
+
+  .jd-related-card {
+    background: var(--jd-card-bg);
+    border: 1px solid var(--jd-card-border);
+    border-radius: var(--jd-radius-md);
+    padding: 20px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--jd-shadow-sm);
+    transition: var(--transition);
+  }
+
+  .jd-related-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--blue-primary);
+    box-shadow: var(--jd-shadow-md);
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="job-detail-wrap">
+<div class="jd-container">
 
-  <!-- ── 1. HERO HEADER CARD (DARK GRADIENT BANNER) ────────────────── -->
-  <header class="job-hero-card">
-    <div class="job-hero-glow"></div>
+  <!-- ── 1. MODERN HERO BANNER ──────────────────────────────────────── -->
+  <header class="jd-hero-banner">
+    <div class="jd-hero-glow-1"></div>
+    <div class="jd-hero-glow-2"></div>
 
-    <!-- Breadcrumbs -->
-    <nav class="job-breadcrumb">
-      <a href="/">Home Feed</a>
-      <span>›</span>
+    <!-- Breadcrumb -->
+    <nav class="jd-breadcrumb">
+      <a href="/">Home</a>
+      <span class="jd-breadcrumb-sep">›</span>
       <a href="/category/{{ job.category.slug }}/">{{ job.category.name }}</a>
-      <span>›</span>
-      <span style="color: #cbd5e1;">{{ job.company_name }}</span>
+      <span class="jd-breadcrumb-sep">›</span>
+      <span style="color: #94a3b8;">{{ job.company_name }}</span>
     </nav>
 
-    <!-- Code Tag -->
-    <span class="job-code-tag">
-      REQUIREMENT_ID_{{ job.pk }} • 3-DAY_ACTIVE_POLICY
-    </span>
+    <!-- Top Status Badges -->
+    <div class="jd-hero-top-row">
+      <div class="jd-status-badge">
+        <span class="jd-pulse-dot"></span>
+        <span>Actively Hiring • Fresh Drive</span>
+      </div>
+      <span class="jd-meta-id-tag">
+        REQ #{{ job.pk }} • 7-DAY VERIFIED
+      </span>
+    </div>
+
+    <!-- Company Emblem & Title -->
+    <div class="jd-company-row">
+      <div class="jd-company-icon">
+        {{ job.company_name|slice:":1"|upper }}
+      </div>
+      <div>
+        <div class="jd-company-title">{{ job.company_name }}</div>
+        <div style="font-size: 12px; color: #94a3b8; font-weight: 600;">Official Careers Recruitment</div>
+      </div>
+    </div>
 
     <!-- Job Title -->
-    <h1 class="job-hero-title">
+    <h1 class="jd-hero-title">
       {{ job.title }}
     </h1>
 
-    <!-- Glassmorphism Meta Details Strip with Transparent PNG Icons -->
-    <div class="job-meta-strip">
-      <div class="meta-strip-item">
-        <div class="meta-strip-icon">
-          <img src="{% static 'images/icon-company.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Company" loading="eager" decoding="async">
-        </div>
-        <div class="meta-strip-content">
-          <span class="meta-strip-label">Company</span>
-          <span class="meta-strip-val">{{ job.company_name }}</span>
-        </div>
+    <!-- Quick Meta Information Grid -->
+    <div class="jd-meta-grid">
+      <div class="jd-meta-cell">
+        <span class="jd-meta-cell-label">
+          <img src="{% static 'images/icon-company.png' %}" width="14" height="14" style="filter: brightness(0) invert(1);" alt="Company">
+          Company
+        </span>
+        <span class="jd-meta-cell-val">{{ job.company_name }}</span>
       </div>
 
-      <div class="meta-strip-item">
-        <div class="meta-strip-icon">
-          <img src="{% static 'images/icon-type.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Type" loading="eager" decoding="async">
-        </div>
-        <div class="meta-strip-content">
-          <span class="meta-strip-label">Opportunity Type</span>
-          <span class="meta-strip-val meta-val-blue">{{ job.get_job_type_display }}</span>
-        </div>
+      <div class="jd-meta-cell">
+        <span class="jd-meta-cell-label">
+          <img src="{% static 'images/icon-type.png' %}" width="14" height="14" style="filter: brightness(0) invert(1);" alt="Role Type">
+          Job Type
+        </span>
+        <span class="jd-meta-cell-val jd-val-highlight">{{ job.get_job_type_display }}</span>
       </div>
 
-      <div class="meta-strip-item">
-        <div class="meta-strip-icon">
-          <img src="{% static 'images/icon-salary.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Salary" loading="eager" decoding="async">
-        </div>
-        <div class="meta-strip-content">
-          <span class="meta-strip-label">Stipend / Salary</span>
-          <span class="meta-strip-val">{{ job.stipend_salary }}</span>
-        </div>
+      <div class="jd-meta-cell">
+        <span class="jd-meta-cell-label">
+          <img src="{% static 'images/icon-salary.png' %}" width="14" height="14" style="filter: brightness(0) invert(1);" alt="Salary">
+          Stipend / CTC
+        </span>
+        <span class="jd-meta-cell-val jd-val-salary">{{ job.stipend_salary }}</span>
       </div>
 
-      <div class="meta-strip-item">
-        <div class="meta-strip-icon">
-          <img src="{% static 'images/icon-location.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Location" loading="eager" decoding="async">
-        </div>
-        <div class="meta-strip-content">
-          <span class="meta-strip-label">Location</span>
-          <span class="meta-strip-val">{{ job.location }}</span>
-        </div>
+      <div class="jd-meta-cell">
+        <span class="jd-meta-cell-label">
+          <img src="{% static 'images/icon-location.png' %}" width="14" height="14" style="filter: brightness(0) invert(1);" alt="Location">
+          Location
+        </span>
+        <span class="jd-meta-cell-val">{{ job.location }}</span>
       </div>
 
-      <div class="meta-strip-item">
-        <div class="meta-strip-icon">
-          <img src="{% static 'images/icon-date.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Posted Date" loading="eager" decoding="async">
-        </div>
-        <div class="meta-strip-content">
-          <span class="meta-strip-label">Posted Date</span>
-          <span class="meta-strip-val">{{ posted_date_display }}</span>
-        </div>
+      <div class="jd-meta-cell">
+        <span class="jd-meta-cell-label">
+          <img src="{% static 'images/icon-date.png' %}" width="14" height="14" style="filter: brightness(0) invert(1);" alt="Posted Date">
+          Posted Date
+        </span>
+        <span class="jd-meta-cell-val">{{ posted_date_display }}</span>
       </div>
     </div>
   </header>
 
-  <!-- ── 2. WEB APP TWO-COLUMN GRID (MAIN CONTENT + STICKY SIDEBAR) ── -->
-  <div class="web-app-grid">
+  <!-- ── 2. TWO-COLUMN LAYOUT (MAIN DETAILS + SIDEBAR) ──────────────── -->
+  <div class="jd-layout-grid">
 
-    <!-- LEFT COLUMN: REQUIREMENT DETAILS -->
-    <main class="job-main-card">
+    <!-- LEFT COLUMN: MAIN DETAILS -->
+    <main>
 
-      <!-- Required Skills -->
-      <div style="margin-bottom: 20px;">
-        <div class="section-label" style="display:flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Skills"> Required Skills & Tech Stack</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-          {% for skill in skills_list %}
-            <span class="skill-tag" style="font-size: 12px; padding: 5px 12px; background: var(--blue-light); color: var(--blue-dark); border-radius: 8px; border: 1px solid var(--blue-border); font-weight: 700;">
-              {{ skill }}
-            </span>
-          {% empty %}
-            <span style="font-size: 13px; color: var(--muted);">General Student Requirements</span>
-          {% endfor %}
+      <!-- Eligibility Criteria Card -->
+      <div class="jd-eligibility-card">
+        <div class="jd-eligibility-title">
+          <img src="{% static 'images/icon-about.png' %}" width="16" height="16" alt="Eligibility">
+          Candidate Eligibility &amp; Target Batches
         </div>
-      </div>
-
-      <!-- 📚 Free Study Materials Card (Exact Jobdexo Style & Theme Consistent) -->
-      <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
-        <div class="section-label" style="display:flex; align-items:center; gap:8px; margin-bottom: 14px; font-weight: 800;">
-          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="14" height="14" alt="Study Materials"> 📚 Free Study Materials ({{ job.get_study_materials_list|length }})
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          {% for mat in job.get_study_materials_list %}
-          <a href="{{ mat.url }}" target="_blank" rel="noopener" style="text-decoration: none; color: inherit; display: block;">
-            <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 14px; display: flex; align-items: flex-start; gap: 14px; transition: var(--transition);">
-              <div style="font-size: 22px; line-height: 1; flex-shrink: 0; padding-top: 2px;">
-                {{ mat.icon|default:"📖" }}
-              </div>
-              <div style="flex: 1; min-width: 0;">
-                <div style="font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 3px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                  <span>{{ mat.title }}</span>
-                  <span style="font-size: 11.5px; font-weight: 700; color: var(--blue-primary); flex-shrink: 0;">Open Resource ↗</span>
-                </div>
-                <div style="font-size: 12.5px; color: var(--muted); line-height: 1.45;">
-                  {{ mat.desc }}
-                </div>
-              </div>
-            </div>
-          </a>
-          {% endfor %}
-        </div>
-      </div>
-
-      <!-- Eligibility Box (Theme Consistent) -->
-      <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 14px; padding: 16px 18px; margin-bottom: 20px;">
-        <div class="section-label" style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-          <img src="{% static 'images/icon-about.png' %}" class="nav-icon" width="14" height="14" alt="Eligibility"> Eligibility Criteria
-        </div>
-        <p style="color: var(--ink); font-size: 14px; font-weight: 600; margin: 0; line-height: 1.55;">
+        <p class="jd-eligibility-text">
           {{ job.eligibility }}
         </p>
       </div>
 
+      <!-- Required Skills & Tech Stack -->
+      <section class="jd-card">
+        <div class="jd-card-header">
+          <div class="jd-card-icon-wrap">
+            <img src="{% static 'images/icon-type.png' %}" width="16" height="16" alt="Skills">
+          </div>
+          <h2 class="jd-card-title">Required Skills &amp; Tech Stack</h2>
+        </div>
+        <div class="jd-skills-wrap">
+          {% for skill in skills_list %}
+            <span class="jd-skill-chip">
+              ⚡ {{ skill }}
+            </span>
+          {% empty %}
+            <span style="font-size: 13.5px; color: var(--jd-text-muted);">Open for all enthusiastic students and fresh graduates</span>
+          {% endfor %}
+        </div>
+      </section>
+
+      <!-- 📚 Free Study Materials Card -->
+      {% if job.get_study_materials_list %}
+      <section class="jd-card">
+        <div class="jd-card-header">
+          <div class="jd-card-icon-wrap" style="background: #fdf2f8; border-color: #fbcfe8;">
+            <img src="{% static 'images/icon-apply.png' %}" width="16" height="16" alt="Study Materials">
+          </div>
+          <div style="flex: 1;">
+            <h2 class="jd-card-title">Free Curated Study Materials</h2>
+            <div style="font-size: 12px; color: var(--jd-text-muted);">{{ job.get_study_materials_list|length }} Free Resources &amp; Question Banks</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          {% for mat in job.get_study_materials_list %}
+          <a href="{{ mat.url }}" target="_blank" rel="noopener" class="jd-resource-card">
+            <div class="jd-resource-icon">
+              {{ mat.icon|default:"📖" }}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <span style="font-size: 14.5px; font-weight: 700; color: var(--jd-text-main);">{{ mat.title }}</span>
+                <span style="font-size: 12px; font-weight: 800; color: var(--blue-primary); flex-shrink: 0;">Open ↗</span>
+              </div>
+              <p style="font-size: 13px; color: var(--jd-text-muted); margin: 0; line-height: 1.45;">
+                {{ mat.desc }}
+              </p>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
       <!-- Selection & Interview Process Rounds -->
       {% if job.selection_process %}
-      <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-        <div class="section-label" style="display:flex; align-items:center; gap:8px; margin-bottom: 14px; font-weight: 800;">
-          <img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Rounds"> Selection &amp; Interview Process
+      <section class="jd-card">
+        <div class="jd-card-header">
+          <div class="jd-card-icon-wrap">
+            <img src="{% static 'images/icon-type.png' %}" width="16" height="16" alt="Selection Rounds">
+          </div>
+          <h2 class="jd-card-title">Selection &amp; Interview Process</h2>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div class="jd-step-list">
           {% for round in job.get_selection_rounds_list %}
-            <div style="display: flex; align-items: flex-start; gap: 12px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 10px; padding: 12px 14px;">
-              <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; border-radius: 6px; background: var(--blue-light); color: var(--blue-primary); border: 1px solid var(--blue-border); font-size: 11.5px; font-weight: 800; flex-shrink: 0; margin-top: 1px;">
-                {{ forloop.counter }}
-              </span>
-              <div style="font-size: 13.5px; font-weight: 600; color: var(--ink); line-height: 1.5;">
-                {{ round }}
-              </div>
+            <div class="jd-step-item">
+              <div class="jd-step-num">{{ forloop.counter }}</div>
+              <div class="jd-step-text">{{ round }}</div>
             </div>
           {% endfor %}
         </div>
-      </div>
+      </section>
       {% endif %}
 
-      <!-- Description & Responsibilities -->
-      <div style="margin-bottom: 24px;">
-        <div class="section-label" style="display:flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="Description"> Job Description &amp; Key Responsibilities</div>
-        <div class="description-body">
+      <!-- Job Description & Key Responsibilities -->
+      <section class="jd-card">
+        <div class="jd-card-header">
+          <div class="jd-card-icon-wrap">
+            <img src="{% static 'images/icon-feed.png' %}" width="16" height="16" alt="Description">
+          </div>
+          <h2 class="jd-card-title">Job Description &amp; Responsibilities</h2>
+        </div>
+        <div class="jd-desc-container">
 {{ job.description }}
         </div>
-      </div>
+      </section>
 
-      <!-- ── INTERVIEW PREPARATION, PREVIOUSLY ASKED QUESTIONS & LINKS ── -->
+      <!-- ── INTERVIEW PREPARATION & PREVIOUSLY ASKED QUESTIONS ────────── -->
       {% if interview_prep %}
-      <section style="margin-top: 24px; background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 18px; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid var(--subtle-border); padding-bottom: 14px;">
+      <section class="jd-card" style="border: 2px solid rgba(37, 99, 235, 0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; margin-bottom: 20px; border-bottom: 1px solid var(--jd-card-border); padding-bottom: 16px;">
           <div style="flex: 1; min-width: 240px;">
-            <div class="section-label" style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" width="14" height="14" alt="Prep"> Preparation Hub
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 800; color: var(--blue-primary); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px;">
+              ⚡ Free Preparation Hub
             </div>
-            <h3 style="font-size: 18px; font-weight: 800; color: var(--ink); margin: 0 0 4px; line-height: 1.35;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--jd-text-main); margin: 0 0 4px; line-height: 1.35;">
               {{ job.company_name }} — {{ interview_prep.domain }} Interview Guide
             </h3>
-            <p style="font-size: 13px; color: var(--muted); margin: 0; line-height: 1.45;">
-              Previously asked questions, exam syllabus, coding benchmarks &amp; round strategy.
+            <p style="font-size: 13px; color: var(--jd-text-muted); margin: 0; line-height: 1.45;">
+              Previously asked questions, syllabus breakdown &amp; coding benchmarks.
             </p>
           </div>
 
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <a href="/debugger/" class="button" style="font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px;">
+            <a href="/debugger/" class="button" style="font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 99px;">
               ⚡ Code Debugger
             </a>
-            <a href="/learn/{{ interview_prep.practice_lang }}/" class="button button-light" style="font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px;">
+            <a href="/learn/{{ interview_prep.practice_lang }}/" class="button button-light" style="font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 99px;">
               📚 Learn Hub
             </a>
           </div>
         </div>
 
-        <!-- 1. Previously Asked Interview Questions & Exam Pattern Links -->
+        <!-- 1. Previously Asked Interview Questions -->
         <div style="margin-bottom: 22px;">
-          <div class="section-label" style="margin-bottom: 10px; font-size: 11px;">
-            📖 Previously Asked Questions &amp; Preparation Links
+          <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--jd-text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">
+            📖 Previously Asked Questions &amp; Prep Links
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
             {% for item in interview_prep.prep_links %}
             <a href="{{ item.url }}" target="_blank" rel="noopener" style="text-decoration: none; color: inherit; display: block;">
-              <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 14px; transition: var(--transition); height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="background: var(--jd-muted-bg); border: 1px solid var(--jd-card-border); border-radius: 12px; padding: 14px; height: 100%; display: flex; flex-direction: column; justify-content: space-between; transition: var(--transition);">
                 <div>
                   <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                    <span style="font-size: 10px; font-weight: 800; color: var(--blue-primary); background: var(--blue-light); border: 1px solid var(--blue-border); padding: 2px 7px; border-radius: 4px;">
+                    <span style="font-size: 10.5px; font-weight: 800; color: var(--blue-primary); background: var(--blue-light); border: 1px solid var(--blue-border); padding: 2px 8px; border-radius: 99px;">
                       {{ item.tag }}
                     </span>
                     <span style="font-size: 16px;">{{ item.icon|default:"📖" }}</span>
                   </div>
-                  <div style="font-size: 13.5px; font-weight: 700; color: var(--ink); margin-bottom: 4px; line-height: 1.4;">
+                  <div style="font-size: 13.5px; font-weight: 700; color: var(--jd-text-main); margin-bottom: 4px; line-height: 1.4;">
                     {{ item.title }}
                   </div>
-                  <p style="font-size: 12px; color: var(--muted); margin: 0 0 8px; line-height: 1.45;">
+                  <p style="font-size: 12.5px; color: var(--jd-text-muted); margin: 0 0 10px; line-height: 1.45;">
                     {{ item.desc }}
                   </p>
                 </div>
-                <div style="font-size: 12px; font-weight: 700; color: var(--blue-primary); display: flex; align-items: center; gap: 4px;">
+                <div style="font-size: 12px; font-weight: 800; color: var(--blue-primary); display: flex; align-items: center; gap: 4px;">
                   Open Resource ↗
                 </div>
               </div>
@@ -669,23 +1007,23 @@
           </div>
         </div>
 
-        <!-- 2. Previously Asked Coding Challenges -->
+        <!-- 2. Coding Challenges -->
         <div style="margin-bottom: 22px;">
-          <div class="section-label" style="margin-bottom: 10px; font-size: 11px;">
+          <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--jd-text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">
             💻 Previously Asked Coding Challenges
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
             {% for ch in interview_prep.coding_challenges %}
             <a href="{{ ch.url }}" style="text-decoration: none; color: inherit; display: block;">
-              <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 12px 14px; transition: var(--transition);">
+              <div style="background: var(--jd-muted-bg); border: 1px solid var(--jd-card-border); border-radius: 12px; padding: 14px; transition: var(--transition);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span style="font-size: 10.5px; font-weight: 800; color: var(--blue-primary);">{{ ch.difficulty }}</span>
-                  <span style="font-size: 11px; font-weight: 700; color: #10b981;">⚡ Live Debugger</span>
+                  <span style="font-size: 11px; font-weight: 800; color: var(--blue-primary);">{{ ch.difficulty }}</span>
+                  <span style="font-size: 11px; font-weight: 700; color: #10b981;">⚡ Live Practice</span>
                 </div>
-                <div style="font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; line-height: 1.4;">
+                <div style="font-size: 13.5px; font-weight: 700; color: var(--jd-text-main); margin-bottom: 4px; line-height: 1.4;">
                   {{ ch.title }}
                 </div>
-                <div style="font-size: 11.5px; color: var(--muted);">
+                <div style="font-size: 12px; color: var(--jd-text-muted);">
                   {{ ch.frequency }}
                 </div>
               </div>
@@ -694,39 +1032,39 @@
           </div>
         </div>
 
-        <!-- 3. Round-wise Preparation Roadmap -->
+        <!-- 3. Round-Wise Strategy -->
         <div style="margin-bottom: 22px;">
-          <div class="section-label" style="margin-bottom: 10px; font-size: 11px;">
-            🗺️ Round-Wise Strategy
+          <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--jd-text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">
+            🗺️ Round-Wise Strategy &amp; Syllabus
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
             {% for r in interview_prep.rounds_roadmap %}
-            <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 14px;">
+            <div style="background: var(--jd-muted-bg); border: 1px solid var(--jd-card-border); border-radius: 12px; padding: 14px;">
               <div style="font-size: 12px; font-weight: 800; color: var(--blue-primary); margin-bottom: 4px;">{{ r.round }}</div>
-              <div style="font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px;">{{ r.focus }}</div>
-              <div style="font-size: 12px; color: var(--muted); line-height: 1.45;">{{ r.tips }}</div>
+              <div style="font-size: 13.5px; font-weight: 700; color: var(--jd-text-main); margin-bottom: 4px;">{{ r.focus }}</div>
+              <div style="font-size: 12.5px; color: var(--jd-text-muted); line-height: 1.45;">{{ r.tips }}</div>
             </div>
             {% endfor %}
           </div>
         </div>
 
-        <!-- 4. Core Technical Questions & Solutions -->
+        <!-- 4. Core Technical Questions -->
         <div style="margin-bottom: 22px;">
-          <div class="section-label" style="margin-bottom: 10px; font-size: 11px;">
+          <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--jd-text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">
             ❓ Core Technical Questions &amp; Answers
           </div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
             {% for tq in interview_prep.tech_questions %}
-            <details style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 12px 14px; cursor: pointer;">
-              <summary style="font-size: 13.5px; font-weight: 700; color: var(--ink); outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+            <details style="background: var(--jd-muted-bg); border: 1px solid var(--jd-card-border); border-radius: 12px; padding: 14px; cursor: pointer;">
+              <summary style="font-size: 14px; font-weight: 700; color: var(--jd-text-main); outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                 <span>{{ tq.q }}</span>
-                <span style="font-size: 11px; color: var(--blue-primary); font-weight: 700; flex-shrink: 0;">Answer ▼</span>
+                <span style="font-size: 11.5px; color: var(--blue-primary); font-weight: 800; flex-shrink: 0;">Show Answer ▼</span>
               </summary>
-              <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--subtle-border); font-size: 13px; color: var(--muted); line-height: 1.6;">
-                <div style="margin-bottom: 8px;"><strong style="color: var(--ink);">Model Answer:</strong> {{ tq.a }}</div>
+              <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--jd-card-border); font-size: 13.5px; color: var(--jd-text-muted); line-height: 1.6;">
+                <div style="margin-bottom: 10px;"><strong style="color: var(--jd-text-main);">Model Solution:</strong> {{ tq.a }}</div>
                 <div style="display: flex; justify-content: flex-end;">
-                  <a href="{{ tq.debugger_url }}" style="font-size: 12px; font-weight: 700; color: var(--blue-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                    ⚡ Practice &amp; Trace in Code Editor →
+                  <a href="{{ tq.debugger_url }}" style="font-size: 12.5px; font-weight: 800; color: var(--blue-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                    ⚡ Practice in Code Editor →
                   </a>
                 </div>
               </div>
@@ -735,19 +1073,19 @@
           </div>
         </div>
 
-        <!-- 5. Company Behavioral & Culture Questions -->
+        <!-- 5. Behavioral / HR Questions -->
         <div>
-          <div class="section-label" style="margin-bottom: 10px; font-size: 11px;">
+          <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: var(--jd-text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">
             🤝 Behavioral &amp; HR Questions (STAR Method)
           </div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
             {% for bq in interview_prep.behavioral_questions %}
-            <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 12px 14px;">
-              <div style="font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px;">
+            <div style="background: var(--jd-muted-bg); border: 1px solid var(--jd-card-border); border-radius: 12px; padding: 14px;">
+              <div style="font-size: 13.5px; font-weight: 700; color: var(--jd-text-main); margin-bottom: 4px;">
                 {{ bq.q }}
               </div>
-              <div style="font-size: 12px; color: var(--muted); line-height: 1.5;">
-                <strong style="color: var(--ink);">Preparation Tip:</strong> {{ bq.tip }}
+              <div style="font-size: 12.5px; color: var(--jd-text-muted); line-height: 1.5;">
+                <strong style="color: var(--jd-text-main);">Preparation Tip:</strong> {{ bq.tip }}
               </div>
             </div>
             {% endfor %}
@@ -762,88 +1100,103 @@
 
     </main>
 
-    <!-- RIGHT COLUMN: STICKY WEB APP SIDEBAR (APPLY & SHARE ACTIONS) -->
-    <aside class="web-app-sidebar">
+    <!-- RIGHT COLUMN: STICKY SIDEBAR -->
+    <aside class="jd-sidebar">
 
-      <!-- Official Recruiter Application Card -->
+      <!-- Official Application Portal CTA -->
       {% if job.apply_url %}
-      <section class="apply-action-box">
-        <h3 style="font-size: 18px; font-weight: 800; margin: 0 0 6px; color: var(--ink);">Official Application Portal</h3>
-        <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">
-          Submit your application directly via recruiter's official portal:
+      <section class="jd-apply-cta-card">
+        <div class="jd-cta-glow"></div>
+        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 99px; color: #34d399; font-size: 11px; font-weight: 800; margin-bottom: 12px;">
+          ✓ 100% Direct Recruiter Link
+        </div>
+        <h3 style="font-size: 18px; font-weight: 800; margin: 0 0 6px; color: #ffffff;">Official Careers Portal</h3>
+        <p style="font-size: 13px; color: #cbd5e1; margin: 0 0 18px; line-height: 1.45;">
+          Apply directly on {{ job.company_name }}'s official portal without middlemen.
         </p>
-        <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="btn-apply-portal">
-          <img src="{% static 'images/icon-apply.png' %}" width="22" height="22" alt="Apply" loading="eager" decoding="async">
-          Apply via Official Link ↗
+        <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="jd-btn-apply-main">
+          <img src="{% static 'images/icon-apply.png' %}" width="20" height="20" alt="Apply" loading="eager" decoding="async">
+          Apply on Official Site ↗
         </a>
       </section>
       {% endif %}
 
       <!-- Share Requirement Box -->
-      <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 20px; padding: 22px; box-shadow: var(--card-shadow); margin-bottom: 24px;">
-        <div class="section-label" style="margin-bottom: 12px;"><img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Share"> Share This Requirement</div>
-        <div class="share-action-grid">
-          <a id="shareWaBtn" href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}" target="_blank" rel="noopener" class="share-pill share-pill-wa">
-            <img src="{% static 'images/icon-whatsapp.png' %}" width="20" height="20" alt="WhatsApp" loading="eager" decoding="async"> Share on WhatsApp
-          </a>
-          <button type="button" onclick="openIgStoryModal()" class="share-pill share-pill-ig">
-            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram Story" loading="eager" decoding="async"> Share as IG Story
-          </button>
-          <button id="copyUrlBtn" class="share-pill" onclick="copyShareUrl()">
-            <img src="{% static 'images/icon-share.png' %}" width="20" height="20" alt="Share" loading="eager" decoding="async"> Copy Direct Link
-          </button>
+      <section class="jd-card">
+        <div class="jd-card-header">
+          <div class="jd-card-icon-wrap">
+            <img src="{% static 'images/icon-share.png' %}" width="16" height="16" alt="Share">
+          </div>
+          <h3 class="jd-card-title">Share Opportunity</h3>
         </div>
-      </div>
 
-      <!-- Founder & YouTube Hub Banner -->
-      <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 20px; padding: 20px; text-align: center;">
-        <div style="font-size: 11px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">Official Creator Hub</div>
-        <h4 style="font-size: 16px; font-weight: 800; color: var(--ink); margin: 0 0 8px;">Learn Python, Django & Daily Requirements with Kashii</h4>
-        <p style="font-size: 13px; color: var(--muted); margin: 0 0 14px; line-height: 1.5;">Join 10,000+ students learning real-world fullstack development & daily career updates.</p>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="button button-dark" style="background: #dc2626; font-size: 13px; padding: 8px 16px;">
-            <img src="{% static 'images/icon-youtube.png' %}" width="16" height="16" alt="YouTube"> YouTube @pythonkashi
+        <div class="jd-share-btn-list">
+          <a id="shareWaBtn" href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}" target="_blank" rel="noopener" class="jd-share-btn jd-share-btn-wa">
+            <img src="{% static 'images/icon-whatsapp.png' %}" width="18" height="18" alt="WhatsApp"> Share to WhatsApp
           </a>
-          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="button button-light" style="font-size: 13px; padding: 8px 16px;">
-            <img src="{% static 'images/icon-chat.png' %}" width="16" height="16" alt="Instagram"> DM @ikashii_07
+
+          <button type="button" onclick="openIgStoryModal()" class="jd-share-btn jd-share-btn-ig">
+            <img src="{% static 'images/icon-chat.png' %}" width="18" height="18" alt="Instagram"> Share as IG Story
+          </button>
+
+          <button id="copyUrlBtn" type="button" class="jd-share-btn" onclick="copyShareUrl()">
+            <img src="{% static 'images/icon-share.png' %}" width="16" height="16" alt="Copy"> Copy Link
+          </button>
+        </div>
+      </section>
+
+      <!-- Creator & Learning Hub Card -->
+      <section class="jd-card" style="text-align: center;">
+        <div style="font-size: 11px; font-weight: 800; color: #dc2626; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">Official Creator Hub</div>
+        <h4 style="font-size: 15.5px; font-weight: 800; color: var(--jd-text-main); margin: 0 0 6px;">Python Kashi Masterclasses</h4>
+        <p style="font-size: 12.5px; color: var(--jd-text-muted); margin: 0 0 16px; line-height: 1.5;">Join 10,000+ students learning real-world fullstack development & daily drives.</p>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="button button-dark" style="background: #dc2626; font-size: 12.5px; padding: 8px 14px; border-radius: 99px;">
+            <img src="{% static 'images/icon-youtube.png' %}" width="15" height="15" alt="YouTube"> YouTube
+          </a>
+          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="button button-light" style="font-size: 12.5px; padding: 8px 14px; border-radius: 99px;">
+            <img src="{% static 'images/icon-chat.png' %}" width="15" height="15" alt="Instagram"> DM @ikashii_07
           </a>
         </div>
-      </div>
+      </section>
 
     </aside>
 
   </div>
 
-  <!-- ── 3. RELATED FRESH OPPORTUNITIES GRID ──────────────────────── -->
+  <!-- ── 3. RELATED FRESH OPPORTUNITIES ─────────────────────────────── -->
   {% if related_jobs %}
   <section style="margin-top: 48px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h3 style="font: 700 20px var(--font-serif); margin: 0; color: var(--ink);">
-        More Fresh Requirements in {{ job.category.name }}
-      </h3>
-      <a href="/category/{{ job.category.slug }}/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
-        View Category Feed ↗
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 8px;">
+      <div>
+        <h3 style="font: 700 20px var(--font-sans); margin: 0; color: var(--jd-text-main);">
+          More Active Opportunities in {{ job.category.name }}
+        </h3>
+        <p style="font-size: 13px; color: var(--jd-text-muted); margin: 2px 0 0;">Explore more verified drives matching your background</p>
+      </div>
+      <a href="/category/{{ job.category.slug }}/" style="font-size: 13px; font-weight: 800; color: var(--blue-primary); text-decoration: none;">
+        View Category Feed →
       </a>
     </div>
 
-    <div class="related-grid">
+    <div class="jd-related-grid">
       {% for r in related_jobs %}
-      <a href="/category/{{ r.category.slug }}/job/{{ r.uuid }}/" style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 18px; padding: 20px; text-decoration: none; transition: var(--transition); display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--card-shadow);">
+      <a href="/category/{{ r.category.slug }}/job/{{ r.uuid }}/" class="jd-related-card">
         <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span class="company-badge" style="font-size: 12px;">{{ r.company_name }}</span>
-            <span style="font-size: 11px; font-weight: 700; color: var(--blue-primary);">{{ r.get_posted_date_display }}</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span class="company-badge" style="font-size: 11.5px;">{{ r.company_name }}</span>
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--blue-primary);">{{ r.get_posted_date_display }}</span>
           </div>
-          <h4 style="font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 6px; line-height: 1.35;">
+          <h4 style="font-size: 15.5px; font-weight: 700; color: var(--jd-text-main); margin: 0 0 8px; line-height: 1.35;">
             {{ r.title }}
           </h4>
-          <p style="font-size: 13px; color: var(--muted); margin: 0 0 12px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <span style="display:inline-flex;align-items:center;gap:3px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="14" height="14" alt="Location"> {{ r.location }}</span> • 
-            <span style="display:inline-flex;align-items:center;gap:3px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="14" height="14" alt="Salary"> {{ r.stipend_salary }}</span>
+          <p style="font-size: 13px; color: var(--jd-text-muted); margin: 0 0 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-location.png' %}" width="14" height="14" alt="Location"> {{ r.location }}</span> • 
+            <span style="display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-salary.png' %}" width="14" height="14" alt="Salary"> {{ r.stipend_salary }}</span>
           </p>
         </div>
         <span style="font-size: 13px; font-weight: 800; color: var(--blue-primary); display: flex; align-items: center; gap: 4px;">
-          View & Share Requirement ↗
+          View Details &amp; Apply →
         </span>
       </a>
       {% endfor %}
@@ -854,55 +1207,49 @@
 </div>
 
 <!-- ── INSTAGRAM STORY SHARE & CARD CREATOR MODAL ────────────────────── -->
-<div id="igStoryModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 12px; overflow-y: auto;">
-  <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 24px; padding: 18px 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); position: relative; border: 1px solid rgba(225, 48, 108, 0.25); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
+<div id="igStoryModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 14px; overflow-y: auto;">
+  <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 24px; padding: 20px 18px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); position: relative; border: 1px solid rgba(225, 48, 108, 0.25); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
     <button type="button" onclick="closeIgStoryModal()" style="position: absolute; top: 14px; right: 14px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; color: #64748b; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
 
     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-      <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: grid; place-items: center; color: white; flex-shrink: 0;">
-        <img src="{% static 'images/icon-chat.png' %}" width="24" height="24" style="filter: brightness(0) invert(1);" alt="Instagram">
+      <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: grid; place-items: center; color: white; flex-shrink: 0;">
+        <img src="{% static 'images/icon-chat.png' %}" width="22" height="22" style="filter: brightness(0) invert(1);" alt="Instagram">
       </div>
       <div>
-        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a;">Instagram Story Creator</h3>
-        <p style="font-size: 12px; color: #64748b; margin: 0;">Visual 9:16 Story Card + Link Sticker</p>
+        <h3 style="font-size: 17px; font-weight: 800; margin: 0; color: #0f172a;">Instagram Story Creator</h3>
+        <p style="font-size: 12px; color: #64748b; margin: 0;">9:16 Story Card + Link Sticker</p>
       </div>
     </div>
 
     <!-- ── 9:16 VISUAL STORY CARD PREVIEW ────────────────────────── -->
-    <div style="margin-bottom: 20px; text-align: center;">
-      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">🎨 Story Card Preview (9:16 Format):</label>
-      
-      <div id="igStoryCardPreview" style="background: linear-gradient(150deg, #0f172a, #111827, #1e1b4b); border-radius: 22px; padding: 26px 22px; color: #ffffff; text-align: left; position: relative; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-width: 320px; margin: 0 auto;">
+    <div style="margin-bottom: 18px; text-align: center;">
+      <div id="igStoryCardPreview" style="background: linear-gradient(150deg, #0f172a, #111827, #1e1b4b); border-radius: 22px; padding: 24px 20px; color: #ffffff; text-align: left; position: relative; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-width: 320px; margin: 0 auto;">
         
-        <!-- Background Ambient Glow Orbs -->
         <div style="position: absolute; top: -50px; right: -50px; width: 160px; height: 160px; border-radius: 50%; background: rgba(236, 72, 153, 0.3); filter: blur(40px); pointer-events: none;"></div>
         <div style="position: absolute; bottom: -40px; left: -40px; width: 140px; height: 140px; border-radius: 50%; background: rgba(59, 130, 246, 0.3); filter: blur(35px); pointer-events: none;"></div>
 
-        <!-- Header Tag -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; position: relative; z-index: 2;">
-          <span style="font-size: 10px; font-weight: 900; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 5px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.8px; color: #ffffff; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);">🔥 NEW REQUIREMENT</span>
-          <span style="font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 0.3px;">@ikashii_07</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 2;">
+          <span style="font-size: 10px; font-weight: 900; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 5px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.8px; color: #ffffff;">🔥 NEW REQUIREMENT</span>
+          <span style="font-size: 11px; font-weight: 800; color: #94a3b8;">@ikashii_07</span>
         </div>
 
-        <!-- Company & Job Title -->
-        <div style="position: relative; z-index: 2; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #334155;">
+        <div style="position: relative; z-index: 2; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #334155;">
           <div style="font-size: 12px; font-weight: 900; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">{{ job.company_name }}</div>
-          <h2 style="font-size: 20px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ job.title }}</h2>
+          <h2 style="font-size: 18px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff;">{{ job.title }}</h2>
         </div>
 
-        <!-- Classy Details Inset Card with Extended Job Info -->
-        <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px;">
+        <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
           <div style="display: flex; justify-content: space-between; gap: 8px;">
             <div style="flex: 1;">
               <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">STIPEND / SALARY</div>
-              <div style="font-size: 12px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-salary.png' %}" width="14" height="14" alt="Salary"> {{ job.stipend_salary }}
+              <div style="font-size: 11.5px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-salary.png' %}" width="12" height="12" alt="Salary"> {{ job.stipend_salary }}
               </div>
             </div>
             <div style="flex: 1;">
               <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">JOB TYPE</div>
-              <div style="font-size: 12px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-feed.png' %}" width="14" height="14" alt="Type"> {{ job.get_job_type_display }}
+              <div style="font-size: 11.5px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-feed.png' %}" width="12" height="12" alt="Type"> {{ job.get_job_type_display }}
               </div>
             </div>
           </div>
@@ -911,46 +1258,30 @@
             <div style="flex: 1;">
               <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">LOCATION</div>
               <div style="font-size: 11px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-location.png' %}" width="14" height="14" alt="Location"> {{ job.location }}
+                <img src="{% static 'images/icon-location.png' %}" width="12" height="12" alt="Location"> {{ job.location }}
               </div>
             </div>
             <div style="flex: 1;">
               <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">DEADLINE</div>
               <div style="font-size: 11px; font-weight: 700; color: #f43f5e; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-date.png' %}" width="14" height="14" alt="Deadline"> {{ job.deadline|date:"M d, Y" }}
+                <img src="{% static 'images/icon-date.png' %}" width="12" height="12" alt="Deadline"> {{ job.deadline|date:"M d, Y" }}
               </div>
             </div>
           </div>
-
-          {% if job.skills_required %}
-          <div>
-            <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">SKILLS REQUIRED</div>
-            <div style="font-size: 11px; font-weight: 700; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              ⚡ {{ job.skills_required }}
-            </div>
-          </div>
-          {% endif %}
         </div>
 
-        <!-- Animated Blinking Link Sticker Placement Badge -->
-        <div class="ig-blinking-sticker" style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px; animation: pulseGlow 1.5s infinite alternate;">
-          <img src="{% static 'images/icon-apply.png' %}" width="16" height="16" style="filter: brightness(0) invert(1);" alt="Link">
+        <div style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 11px 14px; text-align: center; font-size: 11.5px; font-weight: 900; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <img src="{% static 'images/icon-apply.png' %}" width="14" height="14" style="filter: brightness(0) invert(1);" alt="Link">
           <span>🔗 Link in Bio - Click to Apply ↗</span>
         </div>
-        <div style="font-size: 10px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online</div>
+        <div style="font-size: 9.5px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online</div>
       </div>
-      <style>
-        @keyframes pulseGlow {
-          0% { transform: scale(1); box-shadow: 0 4px 14px rgba(225, 48, 108, 0.4); }
-          100% { transform: scale(1.03); box-shadow: 0 8px 24px rgba(225, 48, 108, 0.8), 0 0 15px rgba(255,255,255,0.6); }
-        }
-      </style>
     </div>
 
     <!-- Story Text Caption Snippet -->
-    <div style="margin-bottom: 16px;">
+    <div style="margin-bottom: 14px;">
       <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Formatted Story Caption:</label>
-      <div id="igStoryCaptionText" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 12px; color: #1e293b; font-family: monospace; white-space: pre-wrap; line-height: 1.5; max-height: 90px; overflow-y: auto;">🔥 {{ job.company_name }} is hiring!
+      <div id="igStoryCaptionText" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 10px 12px; font-size: 11.5px; color: #1e293b; font-family: monospace; white-space: pre-wrap; line-height: 1.5; max-height: 80px; overflow-y: auto;">🔥 {{ job.company_name }} is hiring!
 📌 Role: {{ job.title }}
 💼 Stipend/Salary: {{ job.stipend_salary }}
 📍 Location: {{ job.location }}
@@ -960,44 +1291,40 @@
     </div>
 
     <!-- Action Buttons -->
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-      <button type="button" id="btnDownloadIgVideo" onclick="downloadIgStoryVideo()" class="button" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4); display: flex; align-items: center; gap: 8px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button type="button" id="btnDownloadIgVideo" onclick="downloadIgStoryVideo()" class="button" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 11px; border-radius: 12px; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4); display: flex; align-items: center; gap: 8px;">
         🎥 1. Download Animated Story Video (Reel / Story)
       </button>
 
-      <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); text-decoration: none; display: flex; align-items: center; gap: 8px;">
+      <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 11px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); text-decoration: none; display: flex; align-items: center; gap: 8px;">
         🖼️ 2. Download Static Story HD Image
       </a>
 
-      <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.3);">
+      <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13px; padding: 10px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.3);">
         🔗 3. Copy Apply Link (For IG Link Sticker)
       </button>
 
-      <button type="button" id="btnCopyIgCaption" onclick="copyIgStoryCaption()" class="button" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; justify-content: center; font-weight: 700; font-size: 13px; padding: 10px; border-radius: 12px;">
+      <button type="button" id="btnCopyIgCaption" onclick="copyIgStoryCaption()" class="button" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; justify-content: center; font-weight: 700; font-size: 12.5px; padding: 9px; border-radius: 12px;">
         📋 4. Copy Caption Text
       </button>
-
-      <a href="https://instagram.com" target="_blank" rel="noopener" class="button" style="background: #0f172a; color: #ffffff; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; text-decoration: none;">
-        🚀 4. Open Instagram App / Web ↗
-      </a>
     </div>
   </div>
 </div>
 
-<!-- ── STICKY MOBILE BOTTOM APPLY BAR (MOBILE-FIRST 1-THUMB TAP) ───── -->
+<!-- ── STICKY MOBILE BOTTOM APPLY BAR ───────────────────────────────── -->
 {% if job.apply_url %}
-<div class="mobile-sticky-apply-bar">
+<div class="jd-mobile-bar">
   <div style="flex: 1; min-width: 0;">
-    <div style="font-size: 12px; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <div style="font-size: 12.5px; font-weight: 800; color: var(--jd-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
       {{ job.company_name }}
     </div>
-    <div style="font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+    <div style="font-size: 11.5px; color: var(--jd-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
       {{ job.title }}
     </div>
   </div>
 
-  <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="mobile-apply-btn">
-    <img src="{% static 'images/icon-apply.png' %}" width="20" height="20" alt="Apply" loading="eager" decoding="async"> Apply Now ↗
+  <a href="{{ job.apply_url }}" target="_blank" rel="noopener" class="jd-mobile-apply-btn">
+    <img src="{% static 'images/icon-apply.png' %}" width="18" height="18" alt="Apply" loading="eager" decoding="async"> Apply Now ↗
   </a>
 </div>
 {% endif %}
@@ -1005,8 +1332,6 @@
 <script>
   async function openIgStoryModal() {
     const url = "{{ share_url }}";
-
-    // 1. Auto-copy direct job link for IG Link Sticker
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
@@ -1014,7 +1339,6 @@
       }
     } catch (e) {}
 
-    // 2. Open interactive 9:16 Visual Story Creator Modal (Works on all mobile & desktop devices)
     const modal = document.getElementById('igStoryModal');
     if (modal) {
       modal.style.display = 'flex';
@@ -1022,228 +1346,6 @@
       modal.style.visibility = 'visible';
       modal.classList.add('active');
     }
-  }
-
-  function generateIgStoryImageBlob() {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext('2d');
-
-      // Background Gradient
-      const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
-      grad.addColorStop(0, '#0f172a');
-      grad.addColorStop(0.5, '#1e1b4b');
-      grad.addColorStop(1, '#31103f');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1080, 1920);
-
-      // Glowing Orbs
-      const orb1 = ctx.createRadialGradient(900, 200, 10, 900, 200, 450);
-      orb1.addColorStop(0, 'rgba(236, 72, 153, 0.45)');
-      orb1.addColorStop(1, 'rgba(236, 72, 153, 0)');
-      ctx.fillStyle = orb1;
-      ctx.fillRect(0, 0, 1080, 1920);
-
-      // Card Container
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.roundRect(100, 260, 880, 1380, 48);
-      ctx.fill();
-      ctx.stroke();
-
-      // Header Tag
-      ctx.fillStyle = '#ec4899';
-      ctx.beginPath();
-      ctx.roundRect(160, 320, 360, 70, 35);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 28px sans-serif';
-      ctx.fillText('🔥 NEW REQUIREMENT', 190, 366);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '800 32px sans-serif';
-      ctx.fillText('@ikashii_07', 720, 366);
-
-      // Company & Title
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 38px sans-serif';
-      ctx.fillText("{{ job.company_name }}".toUpperCase(), 160, 470);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 58px sans-serif';
-      const words = "{{ job.title }}".split(' ');
-      let line = '';
-      let y = 560;
-      for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > 760 && n > 0) {
-          ctx.fillText(line, 160, y);
-          line = words[n] + ' ';
-          y += 72;
-        } else { line = testLine; }
-      }
-      ctx.fillText(line, 160, y);
-
-      // Details Inset Box
-      const detY = Math.max(y + 80, 780);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(160, detY, 760, 360, 32);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#34d399';
-      ctx.font = '900 40px sans-serif';
-      ctx.fillText('💼  Stipend: {{ job.stipend_salary }}', 200, detY + 90);
-
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '700 36px sans-serif';
-      ctx.fillText('📍  Location: {{ job.location }}', 200, detY + 180);
-      ctx.fillText('🎓  Batch: All Eligible Students', 200, detY + 270);
-
-      // Link Sticker Badge
-      const btnY = detY + 440;
-      const btnGrad = ctx.createLinearGradient(160, btnY, 920, btnY);
-      btnGrad.addColorStop(0, '#833ab4');
-      btnGrad.addColorStop(0.5, '#fd1d1d');
-      btnGrad.addColorStop(1, '#fcb045');
-      ctx.fillStyle = btnGrad;
-      ctx.beginPath();
-      ctx.roundRect(160, btnY, 760, 110, 55);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 36px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 68);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '700 30px sans-serif';
-      ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
-
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, 'image/png');
-    });
-  }
-
-  function generateIgStoryImageFile() {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext('2d');
-
-      // Background Gradient
-      const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
-      grad.addColorStop(0, '#0f172a');
-      grad.addColorStop(0.5, '#1e1b4b');
-      grad.addColorStop(1, '#31103f');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1080, 1920);
-
-      // Glowing Orbs
-      const orb1 = ctx.createRadialGradient(900, 200, 10, 900, 200, 450);
-      orb1.addColorStop(0, 'rgba(236, 72, 153, 0.45)');
-      orb1.addColorStop(1, 'rgba(236, 72, 153, 0)');
-      ctx.fillStyle = orb1;
-      ctx.fillRect(0, 0, 1080, 1920);
-
-      // Main Card Box
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.roundRect(100, 260, 880, 1380, 48);
-      ctx.fill();
-      ctx.stroke();
-
-      // Header Badge
-      ctx.fillStyle = '#ec4899';
-      ctx.beginPath();
-      ctx.roundRect(160, 320, 360, 70, 35);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 28px sans-serif';
-      ctx.fillText('🔥 NEW REQUIREMENT', 190, 366);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '800 32px sans-serif';
-      ctx.fillText('@ikashii_07', 720, 366);
-
-      // Company & Title
-      ctx.fillStyle = '#38bdf8';
-      ctx.font = '900 38px sans-serif';
-      ctx.fillText("{{ job.company_name }}".toUpperCase(), 160, 470);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 58px sans-serif';
-      const words = "{{ job.title }}".split(' ');
-      let line = '';
-      let y = 560;
-      for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > 760 && n > 0) {
-          ctx.fillText(line, 160, y);
-          line = words[n] + ' ';
-          y += 72;
-        } else { line = testLine; }
-      }
-      ctx.fillText(line, 160, y);
-
-      // Details Box
-      const detY = Math.max(y + 80, 780);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(160, detY, 760, 360, 32);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#34d399';
-      ctx.font = '900 40px sans-serif';
-      ctx.fillText('💼  Stipend: {{ job.stipend_salary }}', 200, detY + 90);
-
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '700 36px sans-serif';
-      ctx.fillText('📍  Location: {{ job.location }}', 200, detY + 180);
-      ctx.fillText('🎓  Batch: All Eligible Students', 200, detY + 270);
-
-      // Link Sticker Badge
-      const btnY = detY + 440;
-      const btnGrad = ctx.createLinearGradient(160, btnY, 920, btnY);
-      btnGrad.addColorStop(0, '#833ab4');
-      btnGrad.addColorStop(0.5, '#fd1d1d');
-      btnGrad.addColorStop(1, '#fcb045');
-      ctx.fillStyle = btnGrad;
-      ctx.beginPath();
-      ctx.roundRect(160, btnY, 760, 110, 55);
-      ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 36px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 68);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '700 30px sans-serif';
-      ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
-
-      canvas.toBlob((blob) => {
-        if (!blob) { resolve(null); return; }
-        const file = new File([blob], `Story_{{ job.company_name }}.png`, { type: 'image/png' });
-        resolve(file);
-      }, 'image/png');
-    });
   }
 
   function closeIgStoryModal() {
@@ -1261,166 +1363,11 @@
     navigator.clipboard.writeText(text).then(() => {
       const btn = document.getElementById('btnCopyIgCaption');
       const orig = btn.innerText;
-      btn.innerText = '✅ Caption & Text Copied!';
+      btn.innerText = '✅ Caption Copied!';
       setTimeout(() => { btn.innerText = orig; }, 2500);
     }).catch(err => {
       alert('Copied Text:\n' + text);
     });
-  }
-
-  function downloadIgStoryCardImage() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 1920;
-    const ctx = canvas.getContext('2d');
-
-    // Canvas roundRect Polyfill for iOS & Android WebViews
-    if (!ctx.roundRect) {
-      ctx.roundRect = function(x, y, w, h, r) {
-        if (typeof r === 'number') r = [r, r, r, r];
-        const [tl, tr, br, bl] = r;
-        this.beginPath();
-        this.moveTo(x + tl, y);
-        this.lineTo(x + w - tr, y);
-        this.quadraticCurveTo(x + w, y, x + w, y + tr);
-        this.lineTo(x + w, y + h - br);
-        this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
-        this.lineTo(x + bl, y + h);
-        this.quadraticCurveTo(x, y + h, x, y + h - bl);
-        this.lineTo(x, y + tl);
-        this.quadraticCurveTo(x, y, x + tl, y);
-        this.closePath();
-        return this;
-      };
-    }
-
-    // Background Gradient (Dark Glassmorphism Theme)
-    const grad = ctx.createLinearGradient(0, 0, 1080, 1920);
-    grad.addColorStop(0, '#0f172a');
-    grad.addColorStop(0.5, '#1e1b4b');
-    grad.addColorStop(1, '#31103f');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1080, 1920);
-
-    // Decorative Glowing Orbs
-    const orb1 = ctx.createRadialGradient(900, 200, 10, 900, 200, 450);
-    orb1.addColorStop(0, 'rgba(236, 72, 153, 0.45)');
-    orb1.addColorStop(1, 'rgba(236, 72, 153, 0)');
-    ctx.fillStyle = orb1;
-    ctx.fillRect(0, 0, 1080, 1920);
-
-    const orb2 = ctx.createRadialGradient(200, 1700, 10, 200, 1700, 400);
-    orb2.addColorStop(0, 'rgba(99, 102, 241, 0.4)');
-    orb2.addColorStop(1, 'rgba(99, 102, 241, 0)');
-    ctx.fillStyle = orb2;
-    ctx.fillRect(0, 0, 1080, 1920);
-
-    // Main Card Container (Glass Box)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.roundRect(100, 260, 880, 1380, 48);
-    ctx.fill();
-    ctx.stroke();
-
-    // Top Badge Header
-    ctx.fillStyle = '#ec4899';
-    ctx.beginPath();
-    ctx.roundRect(160, 320, 360, 70, 35);
-    ctx.fill();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 28px sans-serif';
-    ctx.fillText('🔥 NEW REQUIREMENT', 190, 366);
-
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '800 32px sans-serif';
-    ctx.fillText('@ikashii_07', 720, 366);
-
-    // Company Name & Role
-    ctx.fillStyle = '#38bdf8';
-    ctx.font = '900 38px sans-serif';
-    const compName = "{{ job.company_name }}".toUpperCase();
-    ctx.fillText(compName, 160, 470);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 58px sans-serif';
-    const titleText = "{{ job.title }}";
-    
-    // Word wrap title if long
-    const words = titleText.split(' ');
-    let line = '';
-    let y = 560;
-    for (let n = 0; n < words.length; n++) {
-      let testLine = line + words[n] + ' ';
-      let metrics = ctx.measureText(testLine);
-      if (metrics.width > 760 && n > 0) {
-        ctx.fillText(line, 160, y);
-        line = words[n] + ' ';
-        y += 72;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line, 160, y);
-
-    // Inner Details Box
-    const detY = Math.max(y + 80, 780);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.roundRect(160, detY, 760, 360, 32);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = '#34d399';
-    ctx.font = '900 40px sans-serif';
-    ctx.fillText('💼  Stipend: {{ job.stipend_salary }}', 200, detY + 90);
-
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = '700 36px sans-serif';
-    ctx.fillText('📍  Location: {{ job.location }}', 200, detY + 180);
-    ctx.fillText('🎓  Batch: All Eligible Students', 200, detY + 270);
-
-    // Link Sticker Banner Badge
-    const btnY = detY + 440;
-    const btnGrad = ctx.createLinearGradient(160, btnY, 920, btnY);
-    btnGrad.addColorStop(0, '#833ab4');
-    btnGrad.addColorStop(0.5, '#fd1d1d');
-    btnGrad.addColorStop(1, '#fcb045');
-    ctx.fillStyle = btnGrad;
-    ctx.beginPath();
-    ctx.roundRect(160, btnY, 760, 110, 55);
-    ctx.fill();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 36px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🔗 Tap Link Sticker Below to Apply ↗', 540, btnY + 68);
-
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '700 30px sans-serif';
-    ctx.fillText('kashiiupdatez.online', 540, btnY + 160);
-
-    // Export exact canvas visual rendering as PNG for download
-    try {
-      const dataUrl = canvas.toDataURL('image/png', 1.0);
-      const link = document.createElement('a');
-      link.download = `IG_Story_{{ job.company_name }}.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (e) {
-      window.open("/api/jobs/{{ job.id }}/ig-story-image/", "_blank");
-    }
-
-    const btn = document.getElementById('btnDownloadIgCard');
-    const orig = btn.innerText;
-    btn.innerText = '✅ HD Story Image Downloaded!';
-    setTimeout(() => { btn.innerText = orig; }, 3000);
   }
 
   function downloadIgStoryVideo() {
@@ -1429,13 +1376,11 @@
     btn.innerText = '🎬 Generating Animated Video (5s)...';
     btn.disabled = true;
 
-    // 4K Ultra HD Resolution Canvas (2160 x 3840 9:16 Vertical UHD)
     const canvas = document.createElement('canvas');
     canvas.width = 2160;
     canvas.height = 3840;
     const ctx = canvas.getContext('2d');
 
-    // roundRect polyfill
     if (!ctx.roundRect) {
       ctx.roundRect = function(x, y, w, h, r) {
         if (typeof r === 'number') r = [r, r, r, r];
@@ -1459,12 +1404,10 @@
     const titleText = "{{ job.title }}";
     const stipend = "{{ job.stipend_salary }}";
     const location = "{{ job.location }}";
-
     const jobType = "{{ job.get_job_type_display }}";
     const deadline = "{{ job.deadline|date:'M d, Y' }}";
     const skills = "{{ job.skills_required|default:'' }}";
 
-    // Setup 4K 60FPS Stream with 32 Mbps High Bitrate Video Encoder
     const stream = canvas.captureStream(60);
     let mimeType = 'video/mp4;codecs=avc1';
     if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp9';
@@ -1499,7 +1442,6 @@
 
     mediaRecorder.start();
 
-    // 5-Second 60 FPS 4K HDR Animation Loop
     let startTime = performance.now();
     const duration = 5000;
 
@@ -1507,7 +1449,6 @@
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1.0);
 
-      // 1. Rich HDR Background Gradient (#090d16 -> #1e3a5f -> #090d16)
       const bgGrad = ctx.createLinearGradient(0, 0, 2160, 3840);
       bgGrad.addColorStop(0, '#090d16');
       bgGrad.addColorStop(0.5, '#1e3a5f');
@@ -1515,7 +1456,6 @@
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, 2160, 3840);
 
-      // 2. High-Dynamic-Range Ambient Cyan Glow Orb
       const glowScale = 1.0 + Math.sin(now / 500) * 0.08;
       const orb1 = ctx.createRadialGradient(1800, 500, 20, 1800, 500, 1000 * glowScale);
       orb1.addColorStop(0, 'rgba(0, 240, 255, 0.4)');
@@ -1523,9 +1463,8 @@
       ctx.fillStyle = orb1;
       ctx.fillRect(0, 0, 2160, 3840);
 
-      // 3. Main 4K Outer Glass Card Box
       ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
-      ctx.strokeStyle = '#00f0ff'; // Vibrant HDR Cyan Border
+      ctx.strokeStyle = '#00f0ff';
       ctx.lineWidth = 8;
       ctx.beginPath();
       ctx.roundRect(180, 440, 1800, 2960, 96);
@@ -1535,20 +1474,16 @@
       ctx.textBaseline = 'top';
       ctx.textAlign = 'left';
 
-      // 4. Header Tag Badge & Multi-Layer Dynamic Fire Animation
-      ctx.fillStyle = '#ff0077'; // HDR Neon Pink
+      ctx.fillStyle = '#ff0077';
       ctx.beginPath();
       ctx.roundRect(300, 540, 720, 130, 64);
       ctx.fill();
 
-      // Dynamic Flame & Rising Embers Particle Simulation (DeepakKV Inspired)
       for (let i = 0; i < 24; i++) {
         const fireX = 350 + (i % 6) * 16 + Math.sin(now / 120 + i) * 20;
         const speed = (i % 4) + 1;
         const fireY = 600 - ((now / 10 * speed + i * 25) % 80);
         const fireRadius = Math.max(0, 18 - ((now / 10 * speed + i * 25) % 80) / 4);
-        
-        // HDR Flame Colors (Red -> Orange -> Yellow Core)
         const gVal = Math.min(255, Math.floor(80 + ((600 - fireY) * 2.5)));
         ctx.fillStyle = `rgba(255, ${gVal}, 0, ${0.9 - ((600 - fireY) / 90)})`;
         ctx.beginPath();
@@ -1566,7 +1501,6 @@
       ctx.fillText('@ikashii_07', 1860, 580);
       ctx.textAlign = 'left';
 
-      // 5. Horizontal Divider
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 4;
       ctx.beginPath();
@@ -1574,12 +1508,10 @@
       ctx.lineTo(1860, 730);
       ctx.stroke();
 
-      // 6. Company Header
-      ctx.fillStyle = '#00f0ff'; // HDR Electric Cyan
+      ctx.fillStyle = '#00f0ff';
       ctx.font = '900 64px Consolas, "Courier New", monospace';
       ctx.fillText('Company : ' + companyName + ' is hiring!', 300, 810);
 
-      // 7. Multiline Job Title - TYPEWRITER ANIMATION WITH BLINKING CURSOR
       const charCount = Math.floor(titleText.length * Math.min(progress * 2.2, 1.0));
       const isTyping = progress < 0.9 && charCount < titleText.length;
       const blinkingCursor = (isTyping && Math.floor(now / 300) % 2 === 0) ? '▌' : '';
@@ -1587,10 +1519,9 @@
       
       const words = currentTitleText.split(' ');
       let line = '';
-      let y = 1000; // Positioned directly above details box
+      let y = 1000;
 
       ctx.font = '900 96px Consolas, "Courier New", monospace';
-
       const titleBlinkAlpha = 0.18 + Math.sin(now / 180) * 0.10;
       const textHeight = Math.ceil(words.length / 2) * 116 + 40;
 
@@ -1602,7 +1533,7 @@
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = '#ffffff'; // Vivid Pure White
+      ctx.fillStyle = '#ffffff';
       for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + ' ';
         if (ctx.measureText(testLine).width > 1500 && n > 0) {
@@ -1615,7 +1546,6 @@
       }
       ctx.fillText(line, 320, y + 20);
 
-      // 8. 4K Extended Details Container (Directly Below Title)
       const detY = Math.max(y + 120, 1420);
       ctx.fillStyle = '#1e293b';
       ctx.strokeStyle = '#475569';
@@ -1625,24 +1555,21 @@
       ctx.fill();
       ctx.stroke();
 
-      // Item 1: Stipend / Salary
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 36px Consolas, "Courier New", monospace';
       ctx.fillText('STIPEND / SALARY', 380, detY + 50);
-      ctx.fillStyle = '#00ff9d'; // HDR Emerald Green
+      ctx.fillStyle = '#00ff9d';
       ctx.font = '900 52px Consolas, "Courier New", monospace';
       const dispStipend = stipend.length > 38 ? stipend.substring(0, 38) + '...' : stipend;
       ctx.fillText('💰  ' + dispStipend, 380, detY + 104);
 
-      // Item 2: Job Type
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 36px Consolas, "Courier New", monospace';
       ctx.fillText('JOB TYPE', 380, detY + 230);
-      ctx.fillStyle = '#00f0ff'; // HDR Cyan
+      ctx.fillStyle = '#00f0ff';
       ctx.font = '900 52px Consolas, "Courier New", monospace';
       ctx.fillText('⚡  ' + jobType, 380, detY + 284);
 
-      // Item 3: Location
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 36px Consolas, "Courier New", monospace';
       ctx.fillText('LOCATION', 380, detY + 410);
@@ -1651,15 +1578,13 @@
       const dispLoc = location.length > 38 ? location.substring(0, 38) + '...' : location;
       ctx.fillText('📍  ' + dispLoc, 380, detY + 464);
 
-      // Item 4: Deadline
       ctx.fillStyle = '#94a3b8';
       ctx.font = '900 36px Consolas, "Courier New", monospace';
       ctx.fillText('APPLICATION DEADLINE', 380, detY + 590);
-      ctx.fillStyle = '#ff0055'; // HDR Coral Pink
+      ctx.fillStyle = '#ff0055';
       ctx.font = '700 52px Consolas, "Courier New", monospace';
       ctx.fillText('⏳  ' + deadline, 380, detY + 644);
 
-      // Item 5: Skills Required
       if (skills) {
         ctx.fillStyle = '#94a3b8';
         ctx.font = '900 36px Consolas, "Courier New", monospace';
@@ -1677,7 +1602,6 @@
         ctx.fillText('🎓  All Eligible Batches / Students', 380, detY + 824);
       }
 
-      // 9. 4K High-Visibility Pulsing Link Sticker CTA
       const stickerPulse = 1.0 + Math.sin(now / 150) * 0.04;
       const stickerAlpha = 0.85 + Math.sin(now / 150) * 0.15;
       const btnY = detY + 1020;
@@ -1709,8 +1633,6 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillText('kashiiupdatez.online', 1080, btnY + 250);
-
-      ctx.restore(); // Restore main card transform
 
       if (elapsed < duration) {
         requestAnimationFrame(renderFrame);
@@ -1750,6 +1672,7 @@
       const btn = document.getElementById('copyUrlBtn');
       const orig = btn.innerText;
       btn.innerText = '✅ Link Copied!';
+      if (window.showToast) window.showToast("✅ Link copied to clipboard!", "success");
       setTimeout(() => { btn.innerText = orig; }, 2500);
     }).catch(err => {
       alert('Share URL: ' + url);
