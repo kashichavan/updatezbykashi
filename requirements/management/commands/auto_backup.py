@@ -9,7 +9,7 @@ from django.conf import settings
 from requirements.models import JobPosting, Category, JobGroup, StudentApplication, ContactInquiry
 
 class Command(BaseCommand):
-    help = "Exports database data into timestamped JSON and CSV backup files and rotates old backups."
+    help = "Exports core business database data into clean, compact JSON and CSV backup files."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -25,6 +25,11 @@ class Command(BaseCommand):
             choices=['all', 'json', 'csv'],
             help='Backup format to export: json, csv, or all (default: all).'
         )
+        parser.add_argument(
+            '--include-logs',
+            action='store_true',
+            help='Include ephemeral visitor analytics logs (SiteVisit) in dump.'
+        )
 
     def handle(self, *args, **options):
         backup_dir = Path(settings.BASE_DIR) / 'backups'
@@ -33,13 +38,20 @@ class Command(BaseCommand):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         fmt = options['format']
         keep_days = options['keep_days']
+        include_logs = options.get('include_logs', False)
 
-        self.stdout.write(self.style.NOTICE(f"Starting automatic database backup (format: {fmt}) to {backup_dir}..."))
+        self.stdout.write(self.style.NOTICE(f"Starting optimized database backup (format: {fmt}) to {backup_dir}..."))
 
-        # ── 1. EXPORT FULL DATABASE JSON FIXTURE ────────────────────────
+        # ── 1. EXPORT CLEAN FULL DATABASE JSON FIXTURE ──────────────────
         if fmt in ['all', 'json']:
             json_filename = f"kashii_backup_{timestamp}.json"
             json_filepath = backup_dir / json_filename
+            
+            # Exclude ephemeral logs & sessions to keep backup ultra-fast and lightweight
+            excludes = ['contenttypes', 'auth.Permission', 'sessions.session', 'debugger.debugsession', 'debugger.executiontracestep']
+            if not include_logs:
+                excludes.append('requirements.sitevisit')
+
             try:
                 with open(json_filepath, 'w', encoding='utf-8') as f:
                     call_command(
@@ -47,12 +59,12 @@ class Command(BaseCommand):
                         '--natural-foreign',
                         '--natural-primary',
                         '--indent', '2',
-                        exclude=['contenttypes', 'auth.Permission'],
+                        exclude=excludes,
                         stdout=f
                     )
                 json_size_kb = json_filepath.stat().st_size / 1024
                 self.stdout.write(
-                    self.style.SUCCESS(f"✓ JSON backup created: {json_filename} ({json_size_kb:.2f} KB)")
+                    self.style.SUCCESS(f"✓ Clean JSON backup created: {json_filename} ({json_size_kb:.2f} KB / {json_size_kb/1024:.2f} MB)")
                 )
                 
                 # Update latest snapshot
@@ -143,6 +155,3 @@ class Command(BaseCommand):
                     old_file.unlink()
                     pruned_count += 1
                     self.stdout.write(self.style.WARNING(f"Pruned old backup: {old_file.name}"))
-        
-        if pruned_count == 0:
-            self.stdout.write(self.style.NOTICE(f"No expired backups to prune (retention: {keep_days} days)."))
