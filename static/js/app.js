@@ -208,16 +208,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (drawerCategoryNav) {
-        const catIcons = {
-          'software-engineering': '💻',
-          'non-it': '📞',
-        };
         drawerCategoryNav.innerHTML = data.categories.map(c => {
-          const icon = catIcons[c.slug] || (c.slug.includes('non') ? '📞' : '💻');
+          const isTech = !c.slug.includes('non');
+          const svgPath = isTech
+            ? '<path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />'
+            : '<path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />';
           return `
             <a href="/category/${c.slug}/" class="drawer-link" data-slug="${c.slug}">
-              <span>${icon} ${escapeHtml(c.name)}</span>
-              <span class="d-tag">${c.active_count} OPEN</span>
+              <div class="drawer-link-left">
+                <span class="drawer-link-icon drawer-icon-cat">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    ${svgPath}
+                  </svg>
+                </span>
+                <span class="drawer-link-label">${escapeHtml(c.name)}</span>
+              </div>
+              <span class="drawer-badge badge-count">${c.active_count} OPEN</span>
             </a>
           `;
         }).join('');
