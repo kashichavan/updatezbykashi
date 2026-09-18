@@ -1468,38 +1468,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // 4. Checkbox Selection & Bulk Move
+      // 4. Checkbox Selection & Global Multi-Group Bulk Move
+      function updateBulkMoveStates() {
+        const allChecked = Array.from(container.querySelectorAll('.group-job-checkbox:checked'));
+        const totalChecked = allChecked.length;
+
+        // A. Update individual group drawer move buttons
+        const groupMap = {};
+        allChecked.forEach(chk => {
+          const gid = chk.dataset.groupId;
+          groupMap[gid] = (groupMap[gid] || 0) + 1;
+        });
+
+        container.querySelectorAll('.btn-bulk-move-jobs').forEach(bulkBtn => {
+          const gid = bulkBtn.dataset.groupId;
+          const count = groupMap[gid] || 0;
+          if (count > 0) {
+            bulkBtn.style.display = 'inline-flex';
+            const countEl = bulkBtn.querySelector('.selected-count');
+            if (countEl) countEl.textContent = count;
+          } else {
+            bulkBtn.style.display = 'none';
+          }
+        });
+
+        // B. Update global multi-group bulk bar
+        const globalBar = document.getElementById('groupsGlobalBulkBar');
+        const globalText = document.getElementById('groupsGlobalBulkText');
+        const globalMoveBtn = document.getElementById('btnGroupsBulkMoveAll');
+
+        if (globalBar && globalText) {
+          if (totalChecked > 0) {
+            const distinctGroupIds = Object.keys(groupMap);
+            const groupCount = distinctGroupIds.length;
+            const groupWord = groupCount === 1 ? '1 group' : `${groupCount} different groups`;
+            globalText.textContent = `${totalChecked} requirement${totalChecked !== 1 ? 's' : ''} selected across ${groupWord}`;
+            if (globalMoveBtn) {
+              globalMoveBtn.textContent = `⇄ Move Selected (${totalChecked}) to Group`;
+            }
+            globalBar.style.display = 'flex';
+          } else {
+            globalBar.style.display = 'none';
+          }
+        }
+      }
+
       container.querySelectorAll('.select-all-group-jobs').forEach(chkAll => {
         chkAll.addEventListener('change', () => {
           const groupId = chkAll.dataset.groupId;
           const checkboxes = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]`);
           checkboxes.forEach(c => { c.checked = chkAll.checked; });
-          updateBulkMoveButtonState(groupId);
+          updateBulkMoveStates();
         });
       });
 
       container.querySelectorAll('.group-job-checkbox').forEach(chk => {
         chk.addEventListener('change', () => {
           const groupId = chk.dataset.groupId;
-          updateBulkMoveButtonState(groupId);
+          const allInGroup = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]`);
+          const checkedInGroup = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]:checked`);
+          const parentSelectAll = container.querySelector(`.select-all-group-jobs[data-group-id="${groupId}"]`);
+          if (parentSelectAll) {
+            parentSelectAll.checked = (allInGroup.length > 0 && allInGroup.length === checkedInGroup.length);
+          }
+          updateBulkMoveStates();
         });
       });
 
-      function updateBulkMoveButtonState(groupId) {
-        const checked = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]:checked`);
-        const bulkBtn = container.querySelector(`.btn-bulk-move-jobs[data-group-id="${groupId}"]`);
-        if (bulkBtn) {
-          if (checked.length > 0) {
-            bulkBtn.style.display = 'inline-flex';
-            const countEl = bulkBtn.querySelector('.selected-count');
-            if (countEl) countEl.textContent = checked.length;
-          } else {
-            bulkBtn.style.display = 'none';
-          }
-        }
-      }
-
-      // 5. Bulk Move Button Click
+      // 5. Individual Group Drawer Bulk Move Button Click
       container.querySelectorAll('.btn-bulk-move-jobs').forEach(btn => {
         btn.addEventListener('click', () => {
           const groupId = parseInt(btn.dataset.groupId, 10);
@@ -1508,17 +1544,59 @@ document.addEventListener('DOMContentLoaded', () => {
           
           if (checked.length === 0) return;
 
-          const jobIds = checked.map(c => parseInt(c.dataset.jobId, 10));
+          const jobIds = checked.map(c => parseInt(c.dataset.jobId, 10)).filter(n => !isNaN(n));
           const jobTitles = checked.map(c => c.dataset.jobTitle);
 
           openMoveRequirementsModal({
             jobIds: jobIds,
             jobTitles: jobTitles,
             fromGroupId: groupId,
-            fromGroupName: groupName
+            fromGroupName: groupName,
+            fromGroupIds: [groupId],
+            fromGroupNames: [groupName]
           });
         });
       });
+
+      // 5B. Global Cross-Group Bulk Move & Clear Handlers
+      const btnGroupsBulkMoveAll = document.getElementById('btnGroupsBulkMoveAll');
+      if (btnGroupsBulkMoveAll) {
+        btnGroupsBulkMoveAll.onclick = () => {
+          const allChecked = Array.from(container.querySelectorAll('.group-job-checkbox:checked'));
+          if (allChecked.length === 0) {
+            showToast('Please select at least one requirement to move.', 'info');
+            return;
+          }
+
+          const jobIds = allChecked.map(c => parseInt(c.dataset.jobId, 10)).filter(n => !isNaN(n));
+          const jobTitles = allChecked.map(c => c.dataset.jobTitle || '');
+          const fromGroupIds = Array.from(new Set(allChecked.map(c => parseInt(c.dataset.groupId, 10)).filter(n => !isNaN(n))));
+          
+          // Find group names for selected group IDs
+          const fromGroupNames = [];
+          fromGroupIds.forEach(gid => {
+            const gObj = (allGroupsData || []).find(g => g.id === gid);
+            if (gObj) fromGroupNames.push(gObj.name);
+          });
+
+          openMoveRequirementsModal({
+            jobIds: jobIds,
+            jobTitles: jobTitles,
+            fromGroupId: fromGroupIds.length === 1 ? fromGroupIds[0] : null,
+            fromGroupName: fromGroupNames.length === 1 ? fromGroupNames[0] : '',
+            fromGroupIds: fromGroupIds,
+            fromGroupNames: fromGroupNames
+          });
+        };
+      }
+
+      const btnGroupsClearSelection = document.getElementById('btnGroupsClearSelection');
+      if (btnGroupsClearSelection) {
+        btnGroupsClearSelection.onclick = () => {
+          container.querySelectorAll('.group-job-checkbox, .select-all-group-jobs').forEach(c => { c.checked = false; });
+          updateBulkMoveStates();
+        };
+      }
 
       // 6. Broadcast Button
       container.querySelectorAll('.btn-group-broadcast').forEach(btn => {
@@ -1567,9 +1645,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- MOVE REQUIREMENTS MODAL WORKFLOW ---
 
-  async function openMoveRequirementsModal({ jobIds, jobTitles, fromGroupId, fromGroupName }) {
+  async function openMoveRequirementsModal({ jobIds, jobTitles, fromGroupId, fromGroupName, fromGroupIds, fromGroupNames }) {
     const modal = document.getElementById('moveRequirementsModal');
     if (!modal) return;
+
+    // Store global source group IDs for payload submission
+    window._currentMoveFromGroupIds = fromGroupIds || (fromGroupId ? [fromGroupId] : []);
 
     // Show modal immediately with high priority styles and class
     modal.classList.add('active', 'open');
@@ -1590,7 +1671,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (jobIdsInput) jobIdsInput.value = JSON.stringify(validIds);
     if (manualJobIdsInput) manualJobIdsInput.value = validIds.length > 0 ? validIds.join(', ') : '';
-    if (fromGroupIdInput) fromGroupIdInput.value = fromGroupId || '';
+    if (fromGroupIdInput) fromGroupIdInput.value = fromGroupId || (fromGroupIds && fromGroupIds.length === 1 ? fromGroupIds[0] : '');
 
     function updateSummaryFromInput() {
       const raw = manualJobIdsInput ? manualJobIdsInput.value.trim() : '';
@@ -1614,7 +1695,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (sourceGroupText) {
-      sourceGroupText.textContent = fromGroupName ? `From Source Group: ${fromGroupName}` : 'From: Pipeline';
+      if (fromGroupNames && fromGroupNames.length > 1) {
+        sourceGroupText.textContent = `From ${fromGroupNames.length} groups: ${fromGroupNames.join(', ')}`;
+      } else if (fromGroupName) {
+        sourceGroupText.textContent = `From Source Group: ${fromGroupName}`;
+      } else {
+        sourceGroupText.textContent = 'From: Pipeline / Current Groups';
+      }
     }
 
     if (filterInput) filterInput.value = '';
@@ -1626,7 +1713,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!targetSelect) return;
       const lowerFilter = filterText.toLowerCase().trim();
       const filteredGroups = (allGroupsData || []).filter(g => {
-        if (fromGroupId && g.id === fromGroupId) return false;
         if (!lowerFilter) return true;
         return g.name.toLowerCase().includes(lowerFilter) || (g.slug && g.slug.toLowerCase().includes(lowerFilter));
       });
@@ -1772,6 +1858,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = {
           job_ids: jobIds,
           from_group_id: fromGroupId ? parseInt(fromGroupId, 10) : null,
+          from_group_ids: window._currentMoveFromGroupIds || [],
           action: actionType
         };
 

@@ -1914,14 +1914,27 @@ def api_owner_groups_move_jobs(request):
 
         to_group_id = data.get('to_group_id')
         from_group_id = data.get('from_group_id')
+        from_group_ids = data.get('from_group_ids', [])
         action = data.get('action', 'move')
         new_group_name = data.get('new_group_name', '').strip()
 
-        if isinstance(from_group_id, str):
-            if from_group_id.isdigit():
-                from_group_id = int(from_group_id)
-            else:
-                from_group_id = None
+        # Parse explicit from_group_ids
+        explicit_from_ids = set()
+        if from_group_id is not None:
+            if isinstance(from_group_id, (list, tuple)):
+                for fid in from_group_id:
+                    if str(fid).isdigit():
+                        explicit_from_ids.add(int(fid))
+            elif str(from_group_id).isdigit():
+                explicit_from_ids.add(int(from_group_id))
+
+        if from_group_ids:
+            if isinstance(from_group_ids, (list, tuple)):
+                for fid in from_group_ids:
+                    if str(fid).isdigit():
+                        explicit_from_ids.add(int(fid))
+            elif str(from_group_ids).isdigit():
+                explicit_from_ids.add(int(from_group_ids))
 
         if str(to_group_id).upper() == 'NEW' or (not to_group_id and new_group_name):
             if not new_group_name:
@@ -1955,22 +1968,33 @@ def api_owner_groups_move_jobs(request):
 
         count = len(jobs_to_move)
 
-        from_group = None
-        source_label = ""
-        if from_group_id and action == 'move':
-            from_group = JobGroup.objects.filter(pk=from_group_id).first()
-            if from_group and from_group.id != to_group.id:
-                from_group.jobs.remove(*jobs_to_move)
-                source_label = f" from '{from_group.name}'"
-                # Auto-delete source group if it now has zero requirements
-                if from_group.jobs.count() == 0:
-                    deleted_name = from_group.name
-                    from_group.delete()
-                    source_label += f" (Empty group '{deleted_name}' auto-deleted)"
+        # Handle removing jobs from source group(s) when action == 'move'
+        source_labels = []
+        if action == 'move':
+            if explicit_from_ids:
+                source_groups_qs = JobGroup.objects.filter(id__in=explicit_from_ids).exclude(id=to_group.id)
+            else:
+                # Find all existing groups that contain any of the selected jobs (excluding target group)
+                source_groups_qs = JobGroup.objects.filter(jobs__in=jobs_to_move).exclude(id=to_group.id).distinct()
 
+            for sg in list(source_groups_qs):
+                sg_name = sg.name
+                sg.jobs.remove(*jobs_to_move)
+                remaining_count = sg.jobs.count()
+                if remaining_count == 0:
+                    sg.delete()
+                    source_labels.append(f"'{sg_name}' (auto-deleted empty)")
+                else:
+                    source_labels.append(f"'{sg_name}'")
+
+        # Add jobs to destination group
         to_group.jobs.add(*jobs_to_move)
 
-        msg = f"Successfully moved {count} requirement{'s' if count != 1 else ''}{source_label} to '{to_group.name}'!"
+        source_info = ""
+        if source_labels:
+            source_info = f" from {', '.join(source_labels)}"
+
+        msg = f"Successfully moved {count} requirement{'s' if count != 1 else ''}{source_info} to '{to_group.name}'!"
 
         # Global cleanup of any other zero-job groups
         cleanup_empty_groups()
