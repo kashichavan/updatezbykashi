@@ -31,24 +31,14 @@ USER_AGENTS = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15',
 ]
 
-# Distinct Jobdexo Discovery Sections, Pagination, and Search Endpoints
+# Streamlined Jobdexo Discovery Sections (High-Yield, Low-Memory)
 JOBDEXO_SOURCE_ENDPOINTS = [
     'https://jobdexo.com/',
     'https://jobdexo.com/?page=2',
-    'https://jobdexo.com/?page=3',
-    'https://jobdexo.com/?page=4',
-    'https://jobdexo.com/?page=5',
     'https://jobdexo.com/?type=fulltime',
     'https://jobdexo.com/?type=internship',
     'https://jobdexo.com/?type=remote',
-    'https://jobdexo.com/?type=wfh',
     'https://jobdexo.com/?q=developer',
-    'https://jobdexo.com/?q=software',
-    'https://jobdexo.com/?q=engineer',
-    'https://jobdexo.com/?q=trainee',
-    'https://jobdexo.com/?q=python',
-    'https://jobdexo.com/?q=react',
-    'https://jobdexo.com/?q=graduate',
 ]
 
 
@@ -423,9 +413,9 @@ def fetch_multi_section_jobdexo_urls(limit=50):
         except Exception:
             return None
 
-    # Fetch discovery endpoints concurrently
+    # Fetch discovery endpoints concurrently with lean thread pool (max 2 workers)
     endpoint_htmls = []
-    with ThreadPoolExecutor(max_workers=6) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         future_map = {executor.submit(_scrape_endpoint, ep): ep for ep in JOBDEXO_SOURCE_ENDPOINTS}
         for future in as_completed(future_map):
             page_html = future.result()
@@ -714,10 +704,10 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         if u_clean and u_clean not in valid_candidate_urls:
             valid_candidate_urls.append(u_clean)
 
-    # Fetch details concurrently using ThreadPoolExecutor
+    # Fetch details concurrently using ThreadPoolExecutor (throttled to 2 workers to prevent memory spikes)
     extracted_jobs = []
     if valid_candidate_urls:
-        max_workers = min(6, len(valid_candidate_urls))
+        max_workers = min(2, len(valid_candidate_urls))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_url = {executor.submit(extract_jobdexo_detail, u): u for u in valid_candidate_urls}
             for future in as_completed(future_to_url):
@@ -846,16 +836,17 @@ def _try_acquire_process_lock():
 
 
 def _background_hourly_sync_loop():
-    """Background worker thread that runs on startup and periodically every 20 minutes."""
+    """Background worker thread that runs periodically every 30 minutes with graceful initial warm-up."""
     global _SYNC_WORKER_RUNNING
     print("🚀 [Jobdexo Auto-Sync] Background sync daemon initialized (single-worker process).")
     
-    # 1. Brief warm-up delay to allow database connections to settle
-    time.sleep(10)
+    # 1. Warm-up delay to allow server boot and initial traffic to settle
+    time.sleep(45)
     
     while _SYNC_WORKER_RUNNING:
         try:
-            from django.db import close_old_connections
+            from django.db import close_old_connections, reset_queries
+            reset_queries()
             close_old_connections()
             print("⚡ [Jobdexo Auto-Sync] Running automated discovery crawl across all sections...")
             result = auto_import_from_jobdexo(limit=10)
@@ -867,15 +858,16 @@ def _background_hourly_sync_loop():
             print(f"ℹ️ [Jobdexo Auto-Sync] Cycle notice: {e}")
         finally:
             try:
-                from django.db import close_old_connections
+                from django.db import close_old_connections, reset_queries
+                reset_queries()
                 close_old_connections()
                 import gc
                 gc.collect()
             except Exception:
                 pass
 
-        # Sleep for 20 minutes before next recurring sync
-        time.sleep(1200 + random.randint(10, 30))
+        # Sleep for 30 minutes before next recurring sync
+        time.sleep(1800 + random.randint(15, 60))
 
 
 def start_hourly_sync_daemon():
