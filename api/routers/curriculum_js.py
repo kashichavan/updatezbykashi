@@ -1,6 +1,5 @@
 from ninja import Router, Query
-from django.shortcuts import get_object_or_404
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from debugger.curriculum_js import JS_TOPICS
 from debugger.javascript_tracer import JavaScriptExecutionTracer
 from api.schemas import (

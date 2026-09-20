@@ -1,12 +1,10 @@
-import os
 import csv
-import glob
 from datetime import datetime, timedelta
 from pathlib import Path
 from django.core.management.base import BaseCommand
 from django.core.management import call_command
 from django.conf import settings
-from requirements.models import JobPosting, Category, JobGroup, StudentApplication, ContactInquiry
+from requirements.models import JobPosting, Category, JobGroup, StudentApplication
 
 class Command(BaseCommand):
     help = "Exports core business database data into clean, compact JSON and CSV backup files."

@@ -1,8 +1,8 @@
 import json
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import CodeSnippet, DebugSession, ExecutionTraceStep
+from .models import CodeSnippet, DebugSession
 from .python_tracer import PythonExecutionTracer
 from .javascript_tracer import JavaScriptExecutionTracer
 from .java_tracer import JavaExecutionTracer

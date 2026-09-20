@@ -1,8 +1,6 @@
 import os
 import json
 import re
-import urllib.request
-import ssl
 import hashlib
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
@@ -12,7 +10,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.db.models import Q, Count
-from django.db import transaction
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache

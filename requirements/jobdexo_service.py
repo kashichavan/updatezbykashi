@@ -618,7 +618,7 @@ def resolve_all_jobdexo_company_names():
 
 def get_or_create_standard_categories():
     """Ensures primary categories (Software Engineering & Non IT) exist and returns them in a dict keyed by slug."""
-    from django.db import close_old_connections, connection
+    from django.db import close_old_connections
     close_old_connections()
     categories_def = [
         ('software-engineering', 'Software Engineering', 'code', 'Software Engineering, Full Stack, Backend, Frontend, Cloud, DevOps, QA Automation, Data, AI & Tech Internships.'),

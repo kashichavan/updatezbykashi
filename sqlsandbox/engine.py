@@ -1,7 +1,6 @@
 import sqlite3
 import time
 import re
-import threading
 
 DATASETS = {
     'scott_tiger': {

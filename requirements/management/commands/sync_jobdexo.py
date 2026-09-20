@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from requirements.jobdexo_service import auto_import_from_jobdexo, resolve_all_jobdexo_apply_urls, resolve_all_jobdexo_company_names
 
 

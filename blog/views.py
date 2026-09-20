@@ -92,7 +92,6 @@ def blog_detail_view(request, slug):
     return render(request, 'blog/detail.html', context)
 
 
-from django.contrib.auth.decorators import user_passes_test, login_required
 from django.shortcuts import redirect
 from django.contrib import messages
 from django.http import JsonResponse

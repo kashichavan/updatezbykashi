@@ -1,6 +1,5 @@
 import re
 import html
-import urllib.parse
 
 # 1. Comprehensive Master Directory of Corporate Tech Employers & Brands
 KNOWN_COMPANIES_MAP = {

@@ -1,6 +1,5 @@
 import hashlib
 import time
-import re
 from django.utils import timezone
 from django.core.cache import cache
 from django.http import JsonResponse, HttpResponse

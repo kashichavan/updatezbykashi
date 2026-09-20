@@ -7,7 +7,6 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 from requirements.views import (
-    custom_404_view,
     ads_txt_verification_view,
     ads_txt_view,
     api_ping,
