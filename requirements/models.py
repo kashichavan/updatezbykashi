@@ -377,6 +377,7 @@ class SiteVisit(models.Model):
     class Meta:
         ordering = ['-timestamp']
         indexes = [
+            models.Index(fields=['is_bot', 'timestamp']),
             models.Index(fields=['timestamp', 'is_bot']),
             models.Index(fields=['visitor_hash', 'timestamp']),
             models.Index(fields=['path', 'timestamp']),

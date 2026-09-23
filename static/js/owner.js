@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (text) text.textContent = 'Updating...';
       btnRefreshAnalytics.disabled = true;
 
-      loadAnalyticsData().finally(() => {
+      loadAnalyticsData(true).finally(() => {
         setTimeout(() => {
           if (icon) icon.classList.remove('spin-animation');
           if (text) text.textContent = 'Refresh Data';
@@ -1966,9 +1966,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- REAL-TIME WEBSITE TRAFFIC & VISITOR ANALYTICS ---
-  async function loadAnalyticsData() {
+  async function loadAnalyticsData(forceRefresh = false) {
     try {
-      const res = await authFetch('/api/owner/analytics/', {
+      const url = forceRefresh ? '/api/owner/analytics/?refresh=1' : '/api/owner/analytics/';
+      const res = await authFetch(url, {
         headers: { 'Accept': 'application/json' }
       });
       const data = await res.json();

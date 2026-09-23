@@ -157,10 +157,13 @@ class VisitorAnalyticsMiddleware:
         '/ads.txt',
         '/app-ads.txt',
         '/sitemap.xml',
-        '/api/ping',
-        '/api/stats',
-        '/api/owner/analytics',
+        '/rss.xml',
+        '/feed.xml',
+        '/feed/',
+        '/api/',
         '/admin/',
+        '/owner/',
+        '/healthz',
     )
 
     BOT_KEYWORDS = (

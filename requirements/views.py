@@ -2144,25 +2144,38 @@ def custom_404_view(request, exception=None):
 def api_owner_analytics(request):
     """
     Real-time Website Traffic & Visitor Analytics API for the Owner Dashboard.
-    Provides complete free-tier analytics without third-party subscriptions.
+    Optimized with SQL TruncDate aggregation, scoped metrics, and 60-second caching.
     """
     is_auth, owner_user = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
+    force_refresh = request.GET.get('refresh') in ('1', 'true', 'yes')
+    cache_key = 'kashii_owner_analytics_payload'
+
+    if not force_refresh:
+        cached_data = cache.get(cache_key)
+        if cached_data:
+            return JsonResponse(cached_data)
+
     from django.db.models import Count
+    from django.db.models.functions import TruncDate
     from .models import SiteVisit
 
     now = timezone.now()
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     seven_days_ago = today_start - timedelta(days=6)
+    fourteen_days_ago = today_start - timedelta(days=13)
     thirty_days_ago = today_start - timedelta(days=29)
 
     # Base queryset excluding bots
     human_visits = SiteVisit.objects.filter(is_bot=False)
 
     total_page_views = human_visits.count()
-    total_unique_visitors = human_visits.values('visitor_hash').distinct().count()
+
+    # Scoped active traffic window (last 30 days) for fast aggregations
+    month_visits = human_visits.filter(timestamp__gte=thirty_days_ago)
+    month_unique_visitors = month_visits.values('visitor_hash').distinct().count()
 
     today_visits = human_visits.filter(timestamp__gte=today_start)
     today_page_views = today_visits.count()
@@ -2171,35 +2184,39 @@ def api_owner_analytics(request):
     week_visits = human_visits.filter(timestamp__gte=seven_days_ago)
     week_unique_visitors = week_visits.values('visitor_hash').distinct().count()
 
-    month_visits = human_visits.filter(timestamp__gte=thirty_days_ago)
-    month_unique_visitors = month_visits.values('visitor_hash').distinct().count()
+    total_unique_visitors = month_unique_visitors
 
-    # Daily traffic trend for last 14 days
+    # Daily traffic trend for last 14 days (Executed in ONE high-speed SQL TruncDate query)
+    daily_map = {
+        row['date'].strftime('%Y-%m-%d'): row
+        for row in SiteVisit.objects.filter(is_bot=False, timestamp__gte=fourteen_days_ago)
+            .annotate(date=TruncDate('timestamp'))
+            .values('date')
+            .annotate(views=Count('id'), unique_visitors=Count('visitor_hash', distinct=True))
+            .order_by('date')
+    }
+
     daily_traffic = []
     for i in range(13, -1, -1):
         day_date = (today_start - timedelta(days=i)).date()
-        day_start = timezone.make_aware(timezone.datetime.combine(day_date, timezone.datetime.min.time()))
-        day_end = timezone.make_aware(timezone.datetime.combine(day_date, timezone.datetime.max.time()))
-
-        day_qs = human_visits.filter(timestamp__range=(day_start, day_end))
-        d_views = day_qs.count()
-        d_unique = day_qs.values('visitor_hash').distinct().count()
+        day_str = day_date.strftime('%Y-%m-%d')
+        day_row = daily_map.get(day_str)
         daily_traffic.append({
             'date': day_date.strftime('%b %d'),
-            'full_date': day_date.strftime('%Y-%m-%d'),
-            'views': d_views,
-            'unique_visitors': d_unique,
+            'full_date': day_str,
+            'views': day_row['views'] if day_row else 0,
+            'unique_visitors': day_row['unique_visitors'] if day_row else 0,
         })
 
-    # Top 10 Pages
-    top_pages_data = human_visits.values('path', 'page_title').annotate(
+    # Top 10 Pages (last 30 days)
+    top_pages_data = month_visits.values('path', 'page_title').annotate(
         views=Count('id'),
         unique_visitors=Count('visitor_hash', distinct=True)
     ).order_by('-views')[:10]
     top_pages = list(top_pages_data)
 
     # Traffic Referrers
-    referrer_data = human_visits.values('referrer').annotate(
+    referrer_data = month_visits.values('referrer').annotate(
         count=Count('id')
     ).order_by('-count')[:8]
     referrers = []
@@ -2212,7 +2229,7 @@ def api_owner_analytics(request):
         })
 
     # Device Distribution
-    device_data = human_visits.values('device_type').annotate(
+    device_data = month_visits.values('device_type').annotate(
         count=Count('id')
     ).order_by('-count')
     devices = {
@@ -2233,10 +2250,10 @@ def api_owner_analytics(request):
         devices['tablet_pct'] = round((devices['tablet'] / total_page_views * 100), 1)
 
     # Browser Breakdown
-    browsers = list(human_visits.values('browser').annotate(count=Count('id')).order_by('-count')[:6])
+    browsers = list(month_visits.values('browser').annotate(count=Count('id')).order_by('-count')[:6])
 
     # OS Breakdown
-    operating_systems = list(human_visits.values('os').annotate(count=Count('id')).order_by('-count')[:6])
+    operating_systems = list(month_visits.values('os').annotate(count=Count('id')).order_by('-count')[:6])
 
     # Recent 20 Real-Time Visitors
     recent_visits_qs = human_visits.order_by('-timestamp')[:20]
@@ -2255,7 +2272,7 @@ def api_owner_analytics(request):
         for v in recent_visits_qs
     ]
 
-    return JsonResponse({
+    payload = {
         'success': True,
         'summary': {
             'total_page_views': total_page_views,
@@ -2273,7 +2290,12 @@ def api_owner_analytics(request):
         'operating_systems': operating_systems,
         'recent_visits': recent_visits,
         'timestamp': timezone.now().isoformat(),
-    })
+    }
+
+    # Cache for 60 seconds
+    cache.set(cache_key, payload, timeout=60)
+
+    return JsonResponse(payload)
 
 
 @csrf_exempt
