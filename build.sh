@@ -24,7 +24,7 @@ from django.core.management import call_command
 if JobPosting.objects.count() == 0:
     print('==> Fresh database detected! Restoring latest full snapshot backup (442 objects)...')
     try:
-        call_command('loaddata', 'backups/kashii_full_snapshot_latest.json')
+        call_command('restore_snapshot')
         print('==> Full backup snapshot restored successfully into new database!')
     except Exception as e:
         print('==> Snapshot restore notice:', e)
@@ -38,6 +38,10 @@ python manage.py seed_deep_blogs || true
 # Auto-clean legacy database duplicates & normalize company names
 python manage.py shell -c "import requirements.jobdexo_service as j; j.cleanup_all_database_duplicates()" || true
 
+# Enforce strict monthly DB quota limits (Neon 512MB & compute protection)
+python manage.py cleanup_db_quota || true
+
 # Auto-sync newest verified off-campus opportunities from Jobdexo
 python manage.py sync_jobdexo --count 5 || true
+
 

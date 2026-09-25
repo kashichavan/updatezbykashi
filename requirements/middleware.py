@@ -191,13 +191,15 @@ class VisitorAnalyticsMiddleware:
         return response
 
     def log_visit(self, request, path):
-        from .models import SiteVisit
-
         user_agent = request.META.get('HTTP_USER_AGENT', '')[:490]
         ua_lower = user_agent.lower()
 
-        # Check if bot
+        # 1. Drop Bot & Crawler Traffic Completely (Saves 85%+ Neon DB write quota & compute)
         is_bot = any(bot in ua_lower for bot in self.BOT_KEYWORDS)
+        if is_bot:
+            return
+
+        from .models import SiteVisit
 
         # Get IP address
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -209,6 +211,12 @@ class VisitorAnalyticsMiddleware:
         # Anonymized unique visitor hash (SHA-256)
         raw_hash = f"{ip}:{user_agent}:{timezone.now().strftime('%Y-%m-%d')}"
         visitor_hash = hashlib.sha256(raw_hash.encode('utf-8')).hexdigest()
+
+        # Deduplicate rapid consecutive hits from same visitor to save DB IO (1 log per 30s per visitor-path)
+        visit_cache_key = f"v_logged:{visitor_hash}:{hashlib.md5(path.encode()).hexdigest()}"
+        if cache.get(visit_cache_key):
+            return
+        cache.set(visit_cache_key, 1, timeout=30)
 
         # Mask IP (e.g. 192.168.1.xxx)
         ip_parts = ip.split('.')
@@ -301,13 +309,29 @@ class VisitorAnalyticsMiddleware:
             os=os_type,
             user_agent=user_agent,
             ip_address_masked=masked_ip,
-            is_bot=is_bot,
+            is_bot=False,
         )
 
-        # Probabilistic Auto-Pruning: prune records older than 30 days (1 in 200 requests) to keep DB quota lean
+        # Database Quota Guard: Auto-prune older than 14 days and enforce hard 5,000 row limit (1 in 100 requests)
         import random
         from datetime import timedelta
-        if random.random() < 0.005:
-            cutoff = timezone.now() - timedelta(days=30)
-            SiteVisit.objects.filter(timestamp__lt=cutoff).delete()
+        if random.random() < 0.01:
+            try:
+                # 1. Prune visits older than 14 days
+                cutoff = timezone.now() - timedelta(days=14)
+                SiteVisit.objects.filter(timestamp__lt=cutoff).delete()
+
+                # 2. Hard max cap: if > 5000 rows, keep only the latest 4000
+                total_visits = SiteVisit.objects.count()
+                if total_visits > 5000:
+                    old_ids = list(SiteVisit.objects.order_by('-timestamp').values_list('id', flat=True)[4000:])
+                    if old_ids:
+                        SiteVisit.objects.filter(id__in=old_ids).delete()
+
+                # 3. Clean expired django sessions to keep session table tiny
+                from django.contrib.sessions.models import Session
+                Session.objects.filter(expire_date__lt=timezone.now()).delete()
+            except Exception:
+                pass
+
 
