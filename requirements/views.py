@@ -94,8 +94,8 @@ def cleanup_empty_groups(grace_period_minutes=120):
 
 def sync_expired_jobs():
     """
-    Throttled soft-expiration runner (executes at most once every 15 minutes).
-    Marks expired jobs as 'EXPIRED' without deleting any data from the database.
+    Throttled 7-day auto-expiration runner (executes at most once every 15 minutes).
+    Soft-expires requirements older than 7 days to keep DB lean without hard deleting data.
     """
     lock_key = 'sync_expired_jobs_throttled_lock'
     if cache.get(lock_key):
@@ -104,7 +104,6 @@ def sync_expired_jobs():
 
     try:
         now = timezone.now()
-        # Soft-expire jobs: NEVER delete records
         JobPosting.objects.filter(status='ACTIVE', deadline__lte=now).update(status='EXPIRED')
     except Exception:
         pass
@@ -186,7 +185,7 @@ def index_view(request):
         sync_expired_jobs()
     except Exception:
         pass
-    
+
     videos = get_cached_youtube_videos()
     initial_jobs = []
     recent_posts = []
@@ -207,6 +206,8 @@ def index_view(request):
         'initial_jobs': initial_jobs,
         'recent_posts': recent_posts,
     })
+
+
 
 def intro_view(request):
     """Standalone 3D particle morphing intro landing page with automatic redirect."""
@@ -338,7 +339,7 @@ def sitemap_xml_view(request):
         xml_lines.append(f'  </url>')
 
     # Active Jobs
-    for job in JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()):
+    for job in JobPosting.objects.filter(status='ACTIVE'):
         j_mod = job.updated_at.strftime('%Y-%m-%d')
         xml_lines.append(f'  <url>')
         xml_lines.append(f'    <loc>{host}/category/{job.category.slug}/job/{job.uuid}/</loc>')
@@ -358,7 +359,7 @@ def rss_feed_view(request):
     items = []
     
     # Active Jobs
-    for job in JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).order_by('-created_at')[:35]:
+    for job in JobPosting.objects.filter(status='ACTIVE').order_by('-created_at')[:35]:
         pub_date = job.created_at.strftime("%a, %d %b %Y %H:%M:%S GMT")
         cat_name = job.category.name if job.category else "Opportunity"
         items.append(f"""    <item>
@@ -436,13 +437,11 @@ def youtube_view(request):
     return render(request, 'content/youtube.html', {'youtube_videos': videos})
 
 def category_detail_view(request, slug):
-    sync_expired_jobs()
     category = get_object_or_404(Category, slug=slug)
     videos = get_cached_youtube_videos()
     return render(request, 'content/category_detail.html', {'category': category, 'youtube_videos': videos})
 
 def job_detail_view(request, category_slug=None, uuid=None, pk=None):
-    sync_expired_jobs()
     job = None
     if uuid:
         job = JobPosting.objects.filter(uuid=uuid).first()
@@ -461,9 +460,9 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
     job.views_count += 1
 
     related_jobs = JobPosting.objects.filter(
-        status='ACTIVE',
-        deadline__gt=timezone.now()
+        status='ACTIVE'
     ).exclude(pk=job.pk).select_related('category').order_by('-created_at')[:4]
+
 
     videos = get_cached_youtube_videos()
 
@@ -582,10 +581,11 @@ def owner_view(request):
             jobs_qs = jobs_qs.filter(status=selected_status)
 
         total_jobs_count = JobPosting.objects.count()
-        active_jobs_count = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
-        expired_jobs_count = JobPosting.objects.filter(Q(status='EXPIRED') | Q(deadline__lte=now)).count()
+        active_jobs_count = JobPosting.objects.filter(status='ACTIVE').count()
+        expired_jobs_count = JobPosting.objects.filter(status='EXPIRED').count()
         total_groups_count = JobGroup.objects.count()
         categories = list(Category.objects.all())
+
 
         paginator = Paginator(jobs_qs, page_size)
         page_obj = paginator.get_page(page_number)
@@ -2022,17 +2022,15 @@ def api_owner_groups_auto_organize(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed.'}, status=405)
 
-    sync_expired_jobs()
     now_local = timezone.localtime(timezone.now())
 
-    active_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at'))
+    active_jobs = list(JobPosting.objects.filter(status='ACTIVE').select_related('category').order_by('-created_at'))
     
     if not active_jobs:
-        deleted_empty = cleanup_empty_groups()
         cache.delete('api_owner_groups_json')
         return JsonResponse({
             'success': True,
-            'message': f'No active requirements found to organize. Auto-deleted {deleted_empty} empty group(s).'
+            'message': 'No active requirements found to organize.'
         })
 
     master_name = now_local.strftime("🔥 Master Tech Hiring Drive — %d %b %Y")
@@ -2044,7 +2042,7 @@ def api_owner_groups_auto_organize(request):
             'banner_tag': '🔥 MASTER TECH & OFF-CAMPUS HIRING DRIVE',
             'description': 'Curated verified active requirements for tech roles, freshers, and experienced engineering talent.',
             'posted_date': now_local.date(),
-            'deadline': timezone.now() + timedelta(days=7),
+            'deadline': timezone.now() + timedelta(days=3650),
             'is_active': True,
         }
     )
@@ -2052,16 +2050,15 @@ def api_owner_groups_auto_organize(request):
     master_group.jobs.add(*active_jobs)
     moved_count = len(active_jobs)
 
-    deleted_empty = cleanup_empty_groups()
     cache.delete('api_owner_groups_json')
 
     return JsonResponse({
         'success': True,
-        'message': f"Auto-moved {moved_count} requirement(s) into '{master_group.name}'! Auto-deleted {deleted_empty} empty group(s).",
+        'message': f"Auto-moved {moved_count} requirement(s) into '{master_group.name}'!",
         'master_group_id': master_group.id,
         'master_group_name': master_group.name,
         'moved_count': moved_count,
-        'deleted_empty_groups': deleted_empty
+        'deleted_empty_groups': 0
     })
 
 @csrf_exempt
@@ -2305,10 +2302,9 @@ def api_owner_kpi_stats(request):
     if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
 
-    now = timezone.now()
     total_jobs = JobPosting.objects.count()
-    active_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).count()
-    expired_jobs = JobPosting.objects.filter(Q(status='EXPIRED') | Q(deadline__lte=now)).count()
+    active_jobs = JobPosting.objects.filter(status='ACTIVE').count()
+    expired_jobs = JobPosting.objects.filter(status='EXPIRED').count()
     total_groups = JobGroup.objects.count()
     total_categories = Category.objects.count()
 
@@ -2320,6 +2316,7 @@ def api_owner_kpi_stats(request):
         'total_groups': total_groups,
         'total_categories': total_categories,
     })
+
 
 
 

@@ -9,31 +9,15 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = "Enforces strict database quota limits (Neon 512MB / Compute Protection)"
+    help = "Database maintenance (cleans expired sessions without deleting traffic or visit data)"
 
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE("🔍 Running Database Quota Enforcement..."))
+        self.stdout.write(self.style.NOTICE("🔍 Running Database Maintenance..."))
 
-        # 1. Purge all Bot visits
-        bot_deleted, _ = SiteVisit.objects.filter(is_bot=True).delete()
-        self.stdout.write(f"  - Deleted {bot_deleted} bot visit logs.")
-
-        # 2. Purge visits older than 14 days
-        cutoff = timezone.now() - timedelta(days=14)
-        old_deleted, _ = SiteVisit.objects.filter(timestamp__lt=cutoff).delete()
-        self.stdout.write(f"  - Deleted {old_deleted} visit logs older than 14 days.")
-
-        # 3. Hard ceiling: Max 5,000 analytics records
-        total_visits = SiteVisit.objects.count()
-        if total_visits > 5000:
-            excess_ids = list(SiteVisit.objects.order_by('-timestamp').values_list('id', flat=True)[4000:])
-            if excess_ids:
-                capped_deleted, _ = SiteVisit.objects.filter(id__in=excess_ids).delete()
-                self.stdout.write(f"  - Capped table: removed {capped_deleted} oldest visits beyond limit.")
-
-        # 4. Purge expired Django sessions
+        # Purge expired Django sessions only (standard maintenance)
         expired_sessions, _ = Session.objects.filter(expire_date__lt=timezone.now()).delete()
         self.stdout.write(f"  - Purged {expired_sessions} expired Django sessions.")
 
-        remaining_visits = SiteVisit.objects.count()
-        self.stdout.write(self.style.SUCCESS(f"✅ Quota Enforcement complete. Total visits retained: {remaining_visits} (under 1 MB)."))
+        total_visits = SiteVisit.objects.count()
+        self.stdout.write(self.style.SUCCESS(f"✅ Maintenance complete. All {total_visits} traffic visits preserved."))
+

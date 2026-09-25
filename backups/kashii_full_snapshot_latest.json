@@ -19,7 +19,7 @@
 {
   "model": "auth.user",
   "fields": {
-    "password": "pbkdf2_sha256$1500000$OsXL6hs8WgzJPeEEwgVM3N$c2lIeAzf8C87yE8NG42mWs+akjgmSfEKWdx8mQrBqWY=",
+    "password": "pbkdf2_sha256$1500000$bc1hkwNWjtIALvKKgWGEMJ$UAClzHt9okj8d3h6JLJPaJgn30aaT2DnK45e2Xhlru4=",
     "last_login": "2026-08-05T08:34:47.593Z",
     "is_superuser": true,
     "username": "kashichavan7777",
@@ -133,7 +133,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T00:59:58.887Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:55.092Z"
   }
 },
@@ -185,12 +185,12 @@
     "posted_by": "Kashii Updatez Admin",
     "poster_email": "admin@kashiiupdatez.com",
     "status": "ACTIVE",
-    "views_count": 0,
+    "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.131Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:55.653Z"
   }
 },
@@ -247,7 +247,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.365Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:56.214Z"
   }
 },
@@ -299,12 +299,12 @@
     "posted_by": "Kashii Updatez Admin",
     "poster_email": "admin@kashiiupdatez.com",
     "status": "ACTIVE",
-    "views_count": 0,
+    "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.599Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:56.830Z"
   }
 },
@@ -356,12 +356,12 @@
     "posted_by": "Kashii Updatez Admin",
     "poster_email": "admin@kashiiupdatez.com",
     "status": "ACTIVE",
-    "views_count": 0,
+    "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.833Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:57.360Z"
   }
 },
@@ -418,7 +418,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:41.503Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:57.886Z"
   }
 },
@@ -475,7 +475,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:41.995Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:58.485Z"
   }
 },
@@ -532,7 +532,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.213Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:59.009Z"
   }
 },
@@ -589,7 +589,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.431Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:26:59.537Z"
   }
 },
@@ -646,7 +646,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.648Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:00.207Z"
   }
 },
@@ -703,7 +703,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.866Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:00.739Z"
   }
 },
@@ -760,7 +760,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:43.085Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:01.260Z"
   }
 },
@@ -817,7 +817,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:43.307Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:01.801Z"
   }
 },
@@ -874,7 +874,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:43.524Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:02.324Z"
   }
 },
@@ -931,7 +931,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:21.677Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:02.848Z"
   }
 },
@@ -988,7 +988,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:21.889Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:03.483Z"
   }
 },
@@ -1045,7 +1045,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:22.102Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:04.051Z"
   }
 },
@@ -1102,7 +1102,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:22.313Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:04.611Z"
   }
 },
@@ -1159,7 +1159,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:22.526Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:05.225Z"
   }
 },
@@ -1216,7 +1216,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:47.460Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:05.942Z"
   }
 },
@@ -1273,7 +1273,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:49.741Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:06.658Z"
   }
 },
@@ -1330,7 +1330,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:50.762Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:07.182Z"
   }
 },
@@ -1340,7 +1340,7 @@
   "fields": {
     "uuid": "f89bb5c0-3cce-4703-bafe-7e917ad6cff7",
     "title": "QA Test Engineering Intern",
-    "company_name": "Job",
+    "company_name": "JOB",
     "company_logo_icon": "building",
     "category": 8,
     "job_type": "INTERNSHIP",
@@ -1387,7 +1387,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:51.811Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:07.705Z"
   }
 },
@@ -1444,7 +1444,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:52.859Z",
     "posted_date": "2026-09-21",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:08.356Z"
   }
 },
@@ -1496,12 +1496,12 @@
     "posted_by": "Kashii Updatez Admin",
     "poster_email": "admin@kashiiupdatez.com",
     "status": "ACTIVE",
-    "views_count": 0,
+    "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
     "created_at": "2026-09-25T01:06:53.908Z",
     "posted_date": "2026-09-21",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:08.890Z"
   }
 },
@@ -1553,12 +1553,12 @@
     "posted_by": "Kashii Updatez Admin",
     "poster_email": "admin@kashiiupdatez.com",
     "status": "ACTIVE",
-    "views_count": 0,
+    "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
     "created_at": "2026-09-25T01:06:54.956Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:09.413Z"
   }
 },
@@ -1615,7 +1615,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:56.367Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:10.036Z"
   }
 },
@@ -1625,7 +1625,7 @@
   "fields": {
     "uuid": "fff6f9b7-f7bc-44d8-84de-745d9ccea537",
     "title": "Software Engineer – Python AI Apprentice",
-    "company_name": "Cgi",
+    "company_name": "CGI",
     "company_logo_icon": "building",
     "category": 8,
     "job_type": "INTERNSHIP",
@@ -1672,7 +1672,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:57.378Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:10.608Z"
   }
 },
@@ -1729,7 +1729,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:10.308Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:11.333Z"
   }
 },
@@ -1786,7 +1786,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:10.576Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:11.983Z"
   }
 },
@@ -1843,7 +1843,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:10.790Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:12.596Z"
   }
 },
@@ -1900,7 +1900,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:11.005Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:27:13.265Z"
   }
 },
@@ -1932,7 +1932,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-06",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -1964,7 +1964,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -1996,7 +1996,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2028,7 +2028,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2060,7 +2060,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2092,7 +2092,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-06",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2124,7 +2124,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2156,7 +2156,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2188,39 +2188,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
-    "updated_at": "2026-09-25T01:30:30.096Z"
-  }
-},
-{
-  "model": "requirements.jobposting",
-  "pk": 1193,
-  "fields": {
-    "uuid": "6262fbde-c8cb-4aa2-b2c6-70f38053fbf9",
-    "title": "QA Test Engineering Intern",
-    "company_name": "JOB",
-    "company_logo_icon": "building",
-    "category": 1,
-    "job_type": "INTERNSHIP",
-    "stipend_salary": "Rs 15,000 per month",
-    "location": "Hyderabad (Remote)",
-    "is_remote": true,
-    "skills_required": "Manual testing, Test case design, Defect tracking, Basic Java, Basic JavaScript, SQL, Agile/Scrum, Communication, Problem solving, Learning automation tools",
-    "apply_url": "https://job-boards.greenhouse.io/mfsgtechnologiesindia/jobs/5396939008",
-    "allow_direct_apply": true,
-    "description": "MFSG Technologies (India) Private Limited is a fast‑growing technology services firm that specializes in building enterprise‑grade solutions for the financial services sector. With a strong focus on responsible innovation, MFSG adheres to ethical AI guidelines and data‑governance practices, ensuring that its products are secure, fair, and transparent. The company operates out of multiple Indian cities and serves global banking, insurance, and fintech clients, offering a blend of cutting‑edge cloud, AI, and automation capabilities.\r\n\r\nThe Quality Engineering team at MFSG is expanding its talent pool by inviting enthusiastic fresh graduates to join as QA Test Engineering Interns. This role is designed to give candidates hands‑on exposure to the entire software testing lifecycle, from manual test case design to automation script development, within a real‑world financial services environment. Interns will work closely with seasoned Test Leads, developers, and business analysts, participating in Agile ceremonies and contributing to the delivery of high‑quality, compliant software.\r\n\r\n**Key Responsibilities**\r\n1. Prepare, review, and execute manual test cases derived from functional and business specifications.\r\n2. Perform functional, regression, integration, and smoke testing across web and API layers.\r\n3. Log, track, and verify defects using the company’s defect‑management tool, ensuring clear communication with developers.\r\n4. Assist in building and maintaining automation scripts using Java/JavaScript and BDD frameworks such as Cucumber.\r\n5. Contribute to test data creation, test environment setup, and validation of test beds.\r\n6. Participate actively in sprint planning, daily stand‑ups, sprint reviews, and retrospectives.\r\n7. Collaborate with developers, business analysts, and senior QA engineers to clarify requirements and quality expectations.\r\n8. Gain exposure to CI/CD pipelines, GitHub workflows, and version‑control best practices.\r\n9. Leverage AI‑assisted tools like GitHub Copilot and Claude to accelerate test script generation and reduce repetitive tasks.\r\n10. Document test plans, test results, and defect reports in a clear, concise manner.\r\n\r\n**Tech Stack & Tools**: Java, JavaScript, Selenium / Playwright / Cypress (exposure), Cucumber (BDD), SQL, Postman (API testing), Git/GitHub, CI/CD (Jenkins/GitHub Actions), Agile/Scrum, AI‑assisted coding assistants.\r\n\r\n**Growth Path**: Successful interns may be offered a full‑time QA Engineer position, with a clear trajectory toward Senior QA Engineer, QA Lead, or Test Automation Architect roles. MFSG encourages continuous learning through internal workshops, certifications, and mentorship programs.\r\n\r\n**Why Join MFSG?** The internship offers a rare blend of enterprise‑scale project exposure, mentorship from industry experts, and the chance to work on regulated financial applications—experience that is highly valued in the market. Additionally, MFSG’s commitment to ethical AI and responsible data use provides a purpose‑driven work environment where interns can see the real impact of their contributions.",
-    "eligibility": "Pursuing or recently completed Bachelor’s/Master’s degree in Computer Science, Information Technology, Electronics, or related engineering discipline; Minimum CGPA/percentage 6.5/65%; No active backlogs at the time of joining; Expected or completed graduation year 2024‑2026; Open to candidates from any batch as long as they meet the academic criteria.",
-    "selection_process": "Round 1: Online aptitude & logical reasoning test → Round 2: Technical interview covering testing fundamentals, basic programming, and SQL → Round 3: HR interview focusing on motivation, cultural fit, and internship expectations",
-    "study_materials": [],
-    "posted_by": "Kashii Updatez Admin",
-    "poster_email": "admin@kashiiupdatez.com",
-    "status": "ACTIVE",
-    "views_count": 12,
-    "applications_count": 0,
-    "is_featured": true,
-    "created_at": "2026-09-25T01:30:30.096Z",
-    "posted_date": "2026-09-03",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2252,7 +2220,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-02",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2284,7 +2252,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2316,7 +2284,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2348,7 +2316,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2380,39 +2348,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
-    "updated_at": "2026-09-25T01:30:30.096Z"
-  }
-},
-{
-  "model": "requirements.jobposting",
-  "pk": 1199,
-  "fields": {
-    "uuid": "624587e0-5fac-4875-be8d-b48c8a8409b3",
-    "title": "Process Executive (Fresher) - Gurgaon",
-    "company_name": "Cognizant",
-    "company_logo_icon": "building",
-    "category": 1,
-    "job_type": "INTERNSHIP",
-    "stipend_salary": "₹4.5 LPA",
-    "location": "Gurgaon, India",
-    "is_remote": false,
-    "skills_required": "Basic accounting, Accounts Payable, Accounts Receivable, MS Office, Typing, Verbal communication, Written communication, Attention to detail, Problem solving, Visual Basic, Macro scripting",
-    "apply_url": "https://careers.cognizant.com/india-en/jobs/00070001601/pe-accounting?fbclid=PAT01DUAUMeElwZG9mAmV4dG4DYWVtAjEwAHNydGMGYXBwX2lkDzU2NzA2NzM0MzM1MjQyNwABp5fseYx9tyzGy4dh_O6CK4zAEyWAHCGpun-hCohr6js3Rey2IIUskwSF8rf5_aem_kfuAEtuQcE9wJisqeqp_tg",
-    "allow_direct_apply": true,
-    "description": "Cognizant is a global leader in digital, technology, consulting and operations services. With a presence in over 40 countries, the company helps enterprises transform their business models by leveraging AI, cloud, analytics and automation. Cognizant’s culture is built around continuous learning, collaborative problem‑solving and a strong emphasis on employee growth. The firm consistently ranks among the top employers in India for its inclusive policies, flexible work arrangements and robust learning platforms.\r\n\r\nThe Process Executive (PE) – Accounting role is an entry‑level opportunity designed for fresh graduates who want to start their career in finance and accounting within a technology‑driven environment. As a PE, you will be part of Cognizant’s Finance & Accounting (F&A) delivery team, handling end‑to‑end invoice processing, payment execution and period‑close activities for global clients. The position offers exposure to industry‑standard accounting tools, automation platforms and the chance to work across multiple time zones, including US night shifts.\r\n\r\n**Key Responsibilities**\r\n1. Capture and process client invoices in the designated application.\r\n2. Verify invoice details for accuracy, tax compliance and contractual terms.\r\n3. Identify, investigate and resolve unprocessable or parked invoices.\r\n4. Ensure high quality and error‑free output through systematic checks.\r\n5. Execute payment runs as per client schedules and guidelines.\r\n6. Perform period‑close reconciliation and support month‑end reporting.\r\n7. Maintain documentation and audit trails for all transactions.\r\n8. Participate in continuous improvement initiatives, suggesting automation or workflow enhancements.\r\n9. Assist senior analysts with ad‑hoc financial analysis and reporting.\r\n10. Adhere to shift timings, including US night shift, and take on additional responsibilities as required.\r\n\r\n**Tech Stack & Tools**: Basic accounting principles, Accounts Payable/Receivable concepts, MS Office (Excel, Word, PowerPoint), familiarity with Visual Basic or macro scripting is a plus, and exposure to enterprise accounting software (e.g., SAP, Oracle) is beneficial.\r\n\r\n**Growth Path**: Successful PEs can progress to Analyst, Senior Analyst, and eventually to Finance Consultant or Manager roles, with opportunities to specialize in automation, data analytics, or client relationship management. Cognizant’s internal learning portals and certification programs support rapid skill acquisition.\r\n\r\n**Why Join Cognizant?**: The company offers a structured onboarding program, mentorship from experienced finance professionals, and a clear career ladder. Freshers gain hands‑on experience with global clients, develop a strong foundation in accounting processes, and benefit from a supportive, inclusive work environment that values innovation and work‑life balance.",
-    "eligibility": "Degree: B.Com, M.Com or MBA (Fresher only). Minimum aggregate: 60% (or equivalent CGPA). Batch: 2025‑2027. No active backlogs at the time of joining. Must be willing to work US night shift and take additional responsibilities.",
-    "selection_process": "Round 1: Online aptitude test (quantitative, logical reasoning, English) → Round 2: Technical interview (accounting concepts, MS Excel, scenario‑based questions) → Round 3: HR interview (fitment, communication, shift availability).",
-    "study_materials": [],
-    "posted_by": "Kashii Updatez Admin",
-    "poster_email": "admin@kashiiupdatez.com",
-    "status": "ACTIVE",
-    "views_count": 12,
-    "applications_count": 0,
-    "is_featured": true,
-    "created_at": "2026-09-25T01:30:30.096Z",
-    "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2444,7 +2380,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2476,7 +2412,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2508,7 +2444,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2540,7 +2476,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2572,7 +2508,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2604,7 +2540,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2636,7 +2572,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2668,7 +2604,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2700,7 +2636,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2732,7 +2668,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2764,7 +2700,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2796,7 +2732,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2828,7 +2764,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2860,7 +2796,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2892,7 +2828,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2924,7 +2860,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2956,7 +2892,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -2988,7 +2924,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3020,7 +2956,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3052,7 +2988,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3084,7 +3020,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3116,7 +3052,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3148,7 +3084,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3180,7 +3116,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3212,7 +3148,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3244,7 +3180,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3276,7 +3212,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3308,7 +3244,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3340,7 +3276,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3372,7 +3308,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3404,7 +3340,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3436,7 +3372,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3468,7 +3404,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3500,7 +3436,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3532,7 +3468,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3564,7 +3500,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3596,7 +3532,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3628,7 +3564,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3660,7 +3596,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3692,7 +3628,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3724,7 +3660,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3756,7 +3692,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-03",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3788,7 +3724,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3820,7 +3756,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3852,7 +3788,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3884,7 +3820,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3916,7 +3852,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3948,7 +3884,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -3980,7 +3916,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4012,7 +3948,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4044,7 +3980,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4076,7 +4012,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4108,7 +4044,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4140,7 +4076,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4172,7 +4108,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4204,7 +4140,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4236,7 +4172,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4268,7 +4204,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4300,7 +4236,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4332,7 +4268,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4364,7 +4300,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4396,7 +4332,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4428,7 +4364,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4460,7 +4396,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4492,7 +4428,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4524,7 +4460,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4556,7 +4492,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4588,7 +4524,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4620,7 +4556,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4652,7 +4588,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4684,7 +4620,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4716,7 +4652,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4748,7 +4684,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4780,7 +4716,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4812,7 +4748,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4844,7 +4780,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4876,7 +4812,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4908,7 +4844,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4940,7 +4876,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -4972,7 +4908,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5004,7 +4940,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5036,7 +4972,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5068,7 +5004,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5100,39 +5036,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
-    "updated_at": "2026-09-25T01:30:30.096Z"
-  }
-},
-{
-  "model": "requirements.jobposting",
-  "pk": 1286,
-  "fields": {
-    "uuid": "bbfc9b3a-ad9f-43bd-8516-64a25cfd4c3a",
-    "title": "Quality Auditing New Associate",
-    "company_name": "Accenture",
-    "company_logo_icon": "building",
-    "category": 1,
-    "job_type": "INTERNSHIP",
-    "stipend_salary": "4-5 LPA",
-    "location": "Pan India",
-    "is_remote": false,
-    "skills_required": "Automotive Supply Chain, Quality Auditing, Supply Chain Management, Procurement, Distribution, Data Analysis, Excel, SAP, PowerBI, Problem Solving, Communication",
-    "apply_url": "https://www.accenture.com/in-en/careers/jobdetails?id=AIOC-S01664837_en&amp%3Bfbclid=PAVERFWAUR_cdwZG9mAmZkaWQWUOTcPcOzKE0A0ZLiIVDbNv6G0cMh4mV4dG4DYWVtAjEwAHNydGMGYXBwX2lkDzEyNDAyNDU3NDI4NzQxNAABpx-4RVsD94BnevT9PJkXyBmGS5mVQ6oTtL5kOC-wsP3NPdUaNwJL2XPLQ825_aem_TIAX4-oYgscC4R24uug9Og",
-    "allow_direct_apply": true,
-    "description": "Accenture is a global professional services powerhouse with deep expertise in digital, cloud, security and operations. With more than 784,000 employees across 120+ countries, the firm helps clients transform their businesses through innovative technology and industry‑specific solutions. In India, Accenture operates major delivery centres in cities such as Bangalore, Hyderabad, Pune, and Gurgaon, offering a vibrant ecosystem for fresh talent to work on cutting‑edge projects for Fortune 500 clients.\r\n\r\nThe company’s culture blends high performance with a strong emphasis on learning, inclusion and sustainability. Employees enjoy access to world‑class training platforms, mentorship programmes and a clear career ladder that rewards both technical depth and leadership potential. Accenture’s commitment to up‑skilling its workforce makes it an attractive destination for graduates looking to build a long‑term career in consulting and technology.\r\n\r\nThe role of **Quality Auditing New Associate – Automotive Supply Chain** is positioned within the Supply Chain Management practice. As a fresh graduate, you will support the end‑to‑end automotive supply chain, ensuring that procurement, planning, distribution and aftermarket services meet the highest quality standards. You will work closely with senior consultants and client teams to analyse data, identify waste, and recommend digitised solutions that improve efficiency and resilience.\r\n\r\n**Key Responsibilities**\r\n1. Assist in managing planning, procurement and distribution activities for automotive clients.\r\n2. Conduct quality audits on supplier processes and logistics operations.\r\n3. Gather and analyse supply‑chain data using Excel, PowerBI or SAP to uncover improvement opportunities.\r\n4. Support the creation of digital dashboards that track key performance indicators.\r\n5. Participate in root‑cause analysis and develop corrective action plans.\r\n6. Collaborate with cross‑functional teams to streamline the flow of goods from raw material to finished product.\r\n7. Prepare documentation and reports for internal stakeholders and client audits.\r\n8. Contribute to continuous‑improvement initiatives that aim for a 5:1 return on service spend.\r\n9. Follow standard operating procedures and adhere to safety and compliance guidelines.\r\n10. Work in rotational shifts as required to ensure 24x7 supply‑chain coverage.\r\n\r\n**Tech Stack**: SAP MM/WM, Oracle SCM, Microsoft Excel, PowerBI, basic Python/R for data analysis, and familiarity with cloud‑based supply‑chain platforms.\r\n\r\n**Growth Path**: Starting as an Analyst, high performers can progress to Senior Analyst, then to Manager, and eventually to Consultant or Specialist roles within the Supply Chain practice. Accenture’s internal mobility program also allows lateral moves into related domains such as Digital Operations or Strategy.\r\n\r\n**Why Join Accenture?** You will gain exposure to global automotive brands, work on digitisation projects that shape the future of supply chains, and benefit from a structured learning environment that includes certifications, mentorship and a supportive community. The blend of real‑world impact and continuous up‑skilling makes this role an ideal launchpad for a rewarding career in supply‑chain analytics and quality management.",
-    "eligibility": "Graduates with BE/BTech/BSc in Engineering, Science, Supply Chain, Logistics or related streams; minimum 60% aggregate (or CGPA 6.0/10); no active backlogs; 0‑1 years of experience; batch year 2023‑2025 preferred; strong analytical and communication skills.",
-    "selection_process": "Round 1: Online Assessment (aptitude & logical reasoning) → Round 2: Technical Interview (supply‑chain concepts, case studies) → Round 3: HR Interview (fit, motivation, behavioural questions)",
-    "study_materials": [],
-    "posted_by": "Kashii Updatez Admin",
-    "poster_email": "admin@kashiiupdatez.com",
-    "status": "ACTIVE",
-    "views_count": 8,
-    "applications_count": 0,
-    "is_featured": true,
-    "created_at": "2026-09-25T01:30:30.096Z",
-    "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5164,7 +5068,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5196,7 +5100,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5228,7 +5132,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5260,7 +5164,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5292,7 +5196,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5324,7 +5228,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5356,7 +5260,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5388,7 +5292,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5420,7 +5324,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5452,7 +5356,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5484,7 +5388,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5516,7 +5420,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5548,7 +5452,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5580,7 +5484,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5612,7 +5516,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5644,7 +5548,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5676,7 +5580,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5708,7 +5612,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5740,7 +5644,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5772,7 +5676,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5804,7 +5708,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5836,7 +5740,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5868,7 +5772,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5900,7 +5804,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5932,7 +5836,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5964,7 +5868,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -5996,7 +5900,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6028,7 +5932,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6060,7 +5964,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6092,7 +5996,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6124,7 +6028,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6156,7 +6060,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6188,7 +6092,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6220,7 +6124,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6252,7 +6156,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6284,7 +6188,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6316,7 +6220,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6348,7 +6252,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6380,7 +6284,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6412,7 +6316,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6444,7 +6348,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6476,7 +6380,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6508,7 +6412,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6540,7 +6444,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
@@ -6597,7 +6501,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:25:24.446Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:25:24.446Z"
   }
 },
@@ -6654,7 +6558,7 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:25:25.582Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:25:25.582Z"
   }
 },
@@ -6676,7 +6580,7 @@
     "pdf_file_name": "ADVANCED PYTHON BY KASHINATH.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:14.964Z",
-    "updated_at": "2026-09-25T01:26:00.543Z"
+    "updated_at": "2026-09-25T01:38:42.369Z"
   }
 },
 {
@@ -6697,7 +6601,7 @@
     "pdf_file_name": "BASIC PROGRAMS & Programs-1-3.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:15.286Z",
-    "updated_at": "2026-09-25T01:26:00.740Z"
+    "updated_at": "2026-09-25T01:38:42.564Z"
   }
 },
 {
@@ -6718,7 +6622,7 @@
     "pdf_file_name": "Pytest Notes & Guides.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:15.603Z",
-    "updated_at": "2026-09-25T01:26:00.935Z"
+    "updated_at": "2026-09-25T01:38:42.761Z"
   }
 },
 {
@@ -6739,7 +6643,7 @@
     "pdf_file_name": "1.1 MultiThreading.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:15.920Z",
-    "updated_at": "2026-09-25T01:26:01.132Z"
+    "updated_at": "2026-09-25T01:38:42.956Z"
   }
 },
 {
@@ -6760,7 +6664,7 @@
     "pdf_file_name": "Java Collections Framework.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:16.237Z",
-    "updated_at": "2026-09-25T01:26:01.327Z"
+    "updated_at": "2026-09-25T01:38:43.152Z"
   }
 },
 {
@@ -6781,7 +6685,7 @@
     "pdf_file_name": "1.1 Static Final & Core Java Notes.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:16.555Z",
-    "updated_at": "2026-09-25T01:26:01.522Z"
+    "updated_at": "2026-09-25T01:38:43.347Z"
   }
 },
 {
@@ -6802,7 +6706,7 @@
     "pdf_file_name": "ADVANCED PYTHON BY KASHINATH.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:16.872Z",
-    "updated_at": "2026-09-25T01:26:01.717Z"
+    "updated_at": "2026-09-25T01:38:43.542Z"
   }
 },
 {
@@ -6823,7 +6727,7 @@
     "pdf_file_name": "Py Notes By kashi.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:17.190Z",
-    "updated_at": "2026-09-25T01:26:01.913Z"
+    "updated_at": "2026-09-25T01:38:43.737Z"
   }
 },
 {
@@ -6844,7 +6748,7 @@
     "pdf_file_name": "ADVANCED PYTHON BY KASHINATH.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:17.507Z",
-    "updated_at": "2026-09-25T01:26:02.109Z"
+    "updated_at": "2026-09-25T01:38:43.932Z"
   }
 },
 {
@@ -6865,7 +6769,7 @@
     "pdf_file_name": "Python Notes & Resume Guide.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:17.824Z",
-    "updated_at": "2026-09-25T01:26:02.304Z"
+    "updated_at": "2026-09-25T01:38:44.128Z"
   }
 },
 {
@@ -6886,7 +6790,7 @@
     "pdf_file_name": "Py Notes By kashi.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:18.141Z",
-    "updated_at": "2026-09-25T01:26:02.499Z"
+    "updated_at": "2026-09-25T01:38:44.323Z"
   }
 },
 {
@@ -6907,7 +6811,7 @@
     "pdf_file_name": "BASIC PROGRAMS.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:18.457Z",
-    "updated_at": "2026-09-25T01:26:02.694Z"
+    "updated_at": "2026-09-25T01:38:44.519Z"
   }
 },
 {
@@ -6928,7 +6832,7 @@
     "pdf_file_name": "Python Expert Colaboratory Guide.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:18.775Z",
-    "updated_at": "2026-09-25T01:26:02.889Z"
+    "updated_at": "2026-09-25T01:38:44.714Z"
   }
 },
 {
@@ -6949,7 +6853,7 @@
     "pdf_file_name": "Official Notion Learning Path & Masterclass Workspace (Click to Open)",
     "views_count": 0,
     "created_at": "2026-08-20T15:04:34.388Z",
-    "updated_at": "2026-09-25T01:26:03.083Z"
+    "updated_at": "2026-09-25T01:38:44.910Z"
   }
 },
 {
@@ -6970,7 +6874,7 @@
     "pdf_file_name": "",
     "views_count": 0,
     "created_at": "2026-08-20T15:12:58.883Z",
-    "updated_at": "2026-09-25T01:26:03.278Z"
+    "updated_at": "2026-09-25T01:38:45.106Z"
   }
 },
 {
@@ -6997,7 +6901,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T00:59:59.894Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T00:59:59.894Z",
     "jobs": [
       19,
@@ -7028,7 +6932,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:01:43.580Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:01:43.581Z",
     "jobs": [
       9,
@@ -7063,7 +6967,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:05:22.580Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:05:22.580Z",
     "jobs": [
       1028,
@@ -7093,7 +6997,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7121,7 +7025,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7157,7 +7061,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7193,7 +7097,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7229,7 +7133,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7265,7 +7169,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7301,7 +7205,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7337,7 +7241,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7373,7 +7277,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7407,7 +7311,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7439,7 +7343,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7469,7 +7373,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7497,7 +7401,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7525,7 +7429,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7561,7 +7465,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7597,7 +7501,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7633,7 +7537,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7669,7 +7573,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7705,7 +7609,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7741,7 +7645,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7777,7 +7681,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7811,7 +7715,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7843,7 +7747,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7873,7 +7777,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7901,7 +7805,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7929,7 +7833,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7965,7 +7869,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8001,7 +7905,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8037,7 +7941,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8073,7 +7977,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8109,7 +8013,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8145,7 +8049,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8181,7 +8085,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8215,7 +8119,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8247,7 +8151,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8277,7 +8181,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8305,7 +8209,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8333,7 +8237,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8369,7 +8273,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8405,7 +8309,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8441,7 +8345,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8477,7 +8381,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8513,7 +8417,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8549,7 +8453,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8585,7 +8489,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8619,7 +8523,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8651,7 +8555,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8681,7 +8585,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8709,7 +8613,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8737,7 +8641,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8773,7 +8677,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8809,7 +8713,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8845,7 +8749,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8881,7 +8785,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8917,7 +8821,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8953,7 +8857,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8989,7 +8893,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9023,7 +8927,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9055,7 +8959,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9085,7 +8989,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9113,7 +9017,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9141,7 +9045,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9177,7 +9081,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9203,7 +9107,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9229,7 +9133,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       17,
@@ -9255,7 +9159,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9281,7 +9185,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9307,7 +9211,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9333,7 +9237,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9359,7 +9263,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9385,7 +9289,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9411,7 +9315,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9437,7 +9341,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9463,7 +9367,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9489,7 +9393,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9515,7 +9419,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9541,7 +9445,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       17,
@@ -9567,7 +9471,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9593,7 +9497,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9619,7 +9523,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9645,7 +9549,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9671,7 +9575,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9697,7 +9601,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9723,7 +9627,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9749,7 +9653,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9775,7 +9679,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:06:57.762Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:06:57.762Z",
     "jobs": [
       1028,
@@ -9802,7 +9706,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:07:11.061Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:29:38.321Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:07:11.061Z",
     "jobs": [
       1028,
@@ -9830,9 +9734,20 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:25:26.303Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:25:10.480Z",
+    "deadline": "2036-09-22T01:44:40.814Z",
     "updated_at": "2026-09-25T01:25:26.304Z",
-    "jobs": []
+    "jobs": [
+      9,
+      1028,
+      19,
+      18,
+      17,
+      16,
+      15,
+      14,
+      13,
+      12
+    ]
   }
 },
 {
@@ -11224,7 +11139,7 @@
     "is_featured": true,
     "published_at": "2026-09-25T00:58:27.371Z",
     "created_at": "2026-09-25T00:58:27.431Z",
-    "updated_at": "2026-09-25T01:26:03.475Z",
+    "updated_at": "2026-09-25T01:38:45.304Z",
     "seo_title": "Advanced Python Handbook by Kashinath: Internals, Concurrency & Meta-Programming",
     "seo_description": "A masterclass in advanced Python architecture: deep dive into generator pipelines, custom context managers, metaclasses, descriptors, asyncio event loops, and memory profiling.",
     "canonical_url": null,
@@ -11258,7 +11173,7 @@
     "is_featured": true,
     "published_at": "2026-09-24T00:58:30.139Z",
     "created_at": "2026-09-25T00:58:30.199Z",
-    "updated_at": "2026-09-25T01:26:04.754Z",
+    "updated_at": "2026-09-25T01:38:46.572Z",
     "seo_title": "Python Practice Programs & Logic Building: 100+ Essential Coding Exercises",
     "seo_description": "Master coding round interviews with 100+ solved logic problems: Palindromes, Fibonacci series, Matrix transformations, Armstrong numbers, and recursive tree traversals.",
     "canonical_url": null,
@@ -11292,7 +11207,7 @@
     "is_featured": true,
     "published_at": "2026-09-23T00:58:32.708Z",
     "created_at": "2026-09-25T00:58:32.767Z",
-    "updated_at": "2026-09-25T01:26:23.516Z",
+    "updated_at": "2026-09-25T01:39:05.359Z",
     "seo_title": "Mastering Pytest: Automated Testing, Fixtures & Parametrization for Python",
     "seo_description": "Learn professional unit testing with Pytest: test fixtures, dependency injection, parametrization, mocking external APIs, and test coverage reporting.",
     "canonical_url": null,
@@ -11424,7 +11339,7 @@
     "is_featured": true,
     "published_at": "2026-09-19T00:58:41.444Z",
     "created_at": "2026-09-25T00:58:41.504Z",
-    "updated_at": "2026-09-25T01:26:10.514Z",
+    "updated_at": "2026-09-25T01:38:52.343Z",
     "seo_title": "Top 30 Python Interview Questions & In-Depth Code Solutions (2026 Edition)",
     "seo_description": "Master the most frequently asked Python technical interview questions for junior to mid-level software engineering roles with executable code examples, memory models, and interviewer expectations.",
     "canonical_url": null,
@@ -11458,7 +11373,7 @@
     "is_featured": false,
     "published_at": "2026-09-18T00:58:43.836Z",
     "created_at": "2026-09-25T00:58:43.896Z",
-    "updated_at": "2026-09-25T01:26:11.780Z",
+    "updated_at": "2026-09-25T01:38:53.620Z",
     "seo_title": "Complete Python & Django Full-Stack Developer Roadmap for Freshers (2026)",
     "seo_description": "A comprehensive step-by-step career guide for college students and fresh graduates to transition from zero coding knowledge to a hired Full-Stack Python Django Software Engineer.",
     "canonical_url": null,
@@ -11491,7 +11406,7 @@
     "is_featured": false,
     "published_at": "2026-09-17T00:58:45.830Z",
     "created_at": "2026-09-25T00:58:45.889Z",
-    "updated_at": "2026-09-25T01:26:12.863Z",
+    "updated_at": "2026-09-25T01:38:54.697Z",
     "seo_title": "Mastering Python Object-Oriented Programming (OOP) with Practical Examples",
     "seo_description": "Deep dive into OOP in Python: understand classes, inheritance, encapsulation, polymorphism, abstract base classes, and dunder methods with clean production code.",
     "canonical_url": null,
@@ -11523,7 +11438,7 @@
     "is_featured": false,
     "published_at": "2026-09-16T00:58:47.406Z",
     "created_at": "2026-09-25T00:58:47.465Z",
-    "updated_at": "2026-09-25T01:26:06.020Z",
+    "updated_at": "2026-09-25T01:38:47.857Z",
     "seo_title": "How to Crack Off-Campus IT & Software Engineering Placement Drives (2026)",
     "seo_description": "Proven strategies for college students and fresh graduates to secure high-paying tech jobs through off-campus recruitment drives, cold outreach, ATS resume design, and technical preparation.",
     "canonical_url": null,
@@ -11556,7 +11471,7 @@
     "is_featured": false,
     "published_at": "2026-08-19T16:53:03.254Z",
     "created_at": "2026-08-22T16:53:03.254Z",
-    "updated_at": "2026-09-25T01:26:07.098Z",
+    "updated_at": "2026-09-25T01:38:48.930Z",
     "seo_title": "Java Multi-Threading & Concurrency Deep Dive: Thread Lifecycle & Synchronization",
     "seo_description": "Master Java concurrency: Thread states, Runnable vs Callable, synchronized blocks, volatile keywords, deadlock prevention, and ExecutorService thread pools.",
     "canonical_url": null,
@@ -11589,7 +11504,7 @@
     "is_featured": false,
     "published_at": "2026-08-18T16:53:03.260Z",
     "created_at": "2026-08-22T16:53:03.260Z",
-    "updated_at": "2026-09-25T01:26:08.174Z",
+    "updated_at": "2026-09-25T01:38:50.004Z",
     "seo_title": "Java Collections Framework Mastery: ArrayList, HashMap & Queue Implementations",
     "seo_description": "Under the hood of the Java Collections Framework: HashMap collision handling with red-black trees, ArrayList dynamic capacity doubling, and ConcurrentHashMap locks.",
     "canonical_url": null,
@@ -11617,13 +11532,13 @@
     "author_avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
     "category": 9,
     "read_time_minutes": 1,
-    "views_count": 365,
+    "views_count": 366,
     "likes_count": 82,
     "is_published": true,
     "is_featured": false,
     "published_at": "2026-08-17T16:53:03.265Z",
     "created_at": "2026-08-22T16:53:03.265Z",
-    "updated_at": "2026-09-25T01:26:09.441Z",
+    "updated_at": "2026-09-25T01:38:51.272Z",
     "seo_title": "Core Java & JVM Memory Architecture: Static, Final, Heap & Stack Models",
     "seo_description": "Understand JVM internal runtime data areas: ClassLoader subsystem, Heap memory generations, Stack frames, Method Area, and exact Static vs Final behavior.",
     "canonical_url": null,
@@ -11656,7 +11571,7 @@
     "is_featured": false,
     "published_at": "2026-09-12T00:58:55.704Z",
     "created_at": "2026-09-25T00:58:55.763Z",
-    "updated_at": "2026-09-25T01:26:18.035Z",
+    "updated_at": "2026-09-25T01:38:59.873Z",
     "seo_title": "Git & GitHub Complete Learning Path: Zero to Production Masterclass (2026)",
     "seo_description": "A complete, step-by-step masterclass on Git version control and GitHub collaboration: working tree vs staging area, branching workflows, merge vs rebase, conflict resolution, cherry-pick, stashing, pull requests, and CI/CD pipelines.",
     "canonical_url": null,
@@ -11691,7 +11606,7 @@
     "is_featured": false,
     "published_at": "2026-09-11T00:58:58.858Z",
     "created_at": "2026-09-25T00:58:58.917Z",
-    "updated_at": "2026-09-25T01:26:19.495Z",
+    "updated_at": "2026-09-25T01:39:01.339Z",
     "seo_title": "Mastering SQL for Technical Interviews: Complete Zero-to-Advanced Interview Preparation Handbook (2026)",
     "seo_description": "The definitive SQL technical interview masterclass: query execution order, advanced window functions, recursive CTEs, indexing internals (B-Tree/Hash), ACID isolation levels, query optimization with EXPLAIN ANALYZE, and top 15 solved FAANG interview ",
     "canonical_url": null,
@@ -11728,7 +11643,7 @@
     "is_featured": true,
     "published_at": "2026-09-10T00:59:02.643Z",
     "created_at": "2026-09-25T00:59:02.702Z",
-    "updated_at": "2026-09-25T01:26:21.350Z",
+    "updated_at": "2026-09-25T01:39:03.204Z",
     "seo_title": "Deep Dive into V8 Engine: How Ignition and TurboFan Execute JavaScript at Light Speed",
     "seo_description": "Explore the inner workings of Google Chrome's V8 engine: Abstract Syntax Trees (AST), Ignition bytecode generation, hidden classes, and TurboFan JIT machine code compilation.",
     "canonical_url": null,
@@ -11762,7 +11677,7 @@
     "is_featured": false,
     "published_at": "2026-09-09T00:59:04.973Z",
     "created_at": "2026-09-25T00:59:05.032Z",
-    "updated_at": "2026-09-25T01:26:13.740Z",
+    "updated_at": "2026-09-25T01:38:55.575Z",
     "seo_title": "Django Ninja vs FastAPI: Building Type-Safe High-Concurrency APIs in Python",
     "seo_description": "A hands-on architectural comparison between Django Ninja and FastAPI for modern SaaS backends. Learn how Pydantic v2 and async ORM enable blazing-fast API development.",
     "canonical_url": null,
@@ -11795,7 +11710,7 @@
     "is_featured": false,
     "published_at": "2026-08-12T16:53:03.284Z",
     "created_at": "2026-08-22T16:53:03.284Z",
-    "updated_at": "2026-09-25T01:26:14.813Z",
+    "updated_at": "2026-09-25T01:38:56.648Z",
     "seo_title": "Django REST Framework (DRF) & API Architecture: Complete Beginner Guide",
     "seo_description": "Learn how to architect, serialize, secure, and document scalable RESTful APIs with Django REST Framework, SimpleJWT authentication, and pagination.",
     "canonical_url": null,
@@ -11828,7 +11743,7 @@
     "is_featured": false,
     "published_at": "2026-08-11T16:53:03.288Z",
     "created_at": "2026-08-22T16:53:03.288Z",
-    "updated_at": "2026-09-25T01:26:15.886Z",
+    "updated_at": "2026-09-25T01:38:57.723Z",
     "seo_title": "Essential Data Structures in Python: Complexity, Use Cases & Code Patterns",
     "seo_description": "Master the core data structures in Python with time complexity breakdowns (Big-O), memory footprints, and practical coding patterns for technical interviews.",
     "canonical_url": null,
@@ -11855,13 +11770,13 @@
     "author_avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
     "category": 8,
     "read_time_minutes": 1,
-    "views_count": 624,
+    "views_count": 625,
     "likes_count": 138,
     "is_published": true,
     "is_featured": false,
     "published_at": "2026-08-10T16:53:03.292Z",
     "created_at": "2026-08-22T16:53:03.292Z",
-    "updated_at": "2026-09-25T01:26:16.961Z",
+    "updated_at": "2026-09-25T01:38:58.799Z",
     "seo_title": "Visual Code Debugging: How AST Tracing & Memory Diagrams Help Master Algorithms",
     "seo_description": "Discover how interactive visual debuggers, Abstract Syntax Tree (AST) instrumentation, call stack inspection, and heap memory diagrams accelerate programming mastery.",
     "canonical_url": null,
@@ -11892,9 +11807,9 @@
     "likes_count": 693,
     "is_published": true,
     "is_featured": true,
-    "published_at": "2026-09-22T01:26:27.980Z",
+    "published_at": "2026-09-22T01:39:10.065Z",
     "created_at": "2026-09-25T00:59:25.468Z",
-    "updated_at": "2026-09-25T01:26:28.078Z",
+    "updated_at": "2026-09-25T01:39:10.172Z",
     "seo_title": "System Design Interview: Designing Twitter Feed, WhatsApp & YouTube Architecture",
     "seo_description": "Step-by-step system design walkthroughs for FAANG interviews. Learn how to design scalable distributed systems for Twitter's news feed, WhatsApp's messaging, and YouTube's video pipeline with CAP theorem, consistent hashing, and sharding explained.",
     "canonical_url": null,
@@ -11926,9 +11841,9 @@
     "likes_count": 512,
     "is_published": true,
     "is_featured": true,
-    "published_at": "2026-09-24T01:26:25.539Z",
+    "published_at": "2026-09-24T01:39:07.390Z",
     "created_at": "2026-08-22T17:09:30.857Z",
-    "updated_at": "2026-09-25T01:26:25.637Z",
+    "updated_at": "2026-09-25T01:39:07.497Z",
     "seo_title": "TypeScript 5.x Deep Dive: Satisfies Operator, Const Type Params, Variadic Tuple Types",
     "seo_description": "A deep dive into TypeScript 5.x advanced features including the satisfies operator, const type parameters, and variadic tuple types. Learn how to write highly robust and type-safe enterprise applications.",
     "canonical_url": null,
@@ -11961,9 +11876,9 @@
     "likes_count": 487,
     "is_published": true,
     "is_featured": true,
-    "published_at": "2026-09-23T01:26:26.760Z",
+    "published_at": "2026-09-23T01:39:08.726Z",
     "created_at": "2026-08-22T17:11:35.642Z",
-    "updated_at": "2026-09-25T01:26:26.858Z",
+    "updated_at": "2026-09-25T01:39:08.832Z",
     "seo_title": "Docker & Docker Compose Deep Dive: Multi-Stage Builds, Layer Caching & Production Optimization",
     "seo_description": "Master Docker for production with multi-stage builds, aggressive layer caching, and optimized Compose configurations. Reduce your image sizes by 90% and speed up deployments.",
     "canonical_url": null,
@@ -11995,9 +11910,9 @@
     "likes_count": 362,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-19T01:26:32.025Z",
+    "published_at": "2026-09-19T01:39:14.490Z",
     "created_at": "2026-09-25T00:59:32.102Z",
-    "updated_at": "2026-09-25T01:26:32.123Z",
+    "updated_at": "2026-09-25T01:39:14.597Z",
     "seo_title": "PostgreSQL Advanced Patterns: JSONB Queries, Partial Indexes & Full-Text Search",
     "seo_description": "PostgreSQL JSONB with GIN indexes delivers MongoDB-level document flexibility inside a relational database. Learn partial indexes, expression indexes, covering indexes, and full-text search with tsvector — the patterns used by Shopify and GitLab at s",
     "canonical_url": null,
@@ -12029,9 +11944,9 @@
     "likes_count": 398,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-21T01:26:29.199Z",
+    "published_at": "2026-09-21T01:39:11.396Z",
     "created_at": "2026-08-22T17:11:35.651Z",
-    "updated_at": "2026-09-25T01:26:29.297Z",
+    "updated_at": "2026-09-25T01:39:11.502Z",
     "seo_title": "Python Asyncio Masterclass: Building a High-Concurrency Web Scraper with aiohttp",
     "seo_description": "Stop using thread pools for I/O bound tasks. Learn how Python's event loop works under the hood and build a blisteringly fast web scraper using asyncio and aiohttp.",
     "canonical_url": null,
@@ -12063,9 +11978,9 @@
     "likes_count": 445,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-20T01:26:30.612Z",
+    "published_at": "2026-09-20T01:39:12.943Z",
     "created_at": "2026-08-22T17:11:35.655Z",
-    "updated_at": "2026-09-25T01:26:30.709Z",
+    "updated_at": "2026-09-25T01:39:13.050Z",
     "seo_title": "React 19 Deep Dive: Actions, useOptimistic, useFormStatus, and Concurrent Rendering",
     "seo_description": "React 19 changes everything. Bid farewell to complex state management for forms and mutations. Embrace Server Actions and native optimistic UI updates.",
     "canonical_url": null,
@@ -12098,9 +12013,9 @@
     "likes_count": 438,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-16T01:26:36.266Z",
+    "published_at": "2026-09-16T01:39:19.131Z",
     "created_at": "2026-08-22T17:11:35.667Z",
-    "updated_at": "2026-09-25T01:26:36.367Z",
+    "updated_at": "2026-09-25T01:39:19.237Z",
     "seo_title": "Building a SaaS Stripe Payment Integration: Subscriptions, Webhooks & Proration in Django",
     "seo_description": "A complete guide to integrating Stripe Subscriptions in a Django SaaS. Handle checkout sessions, secure webhooks, customer portals, and seamless plan upgrades.",
     "canonical_url": null,
@@ -12132,9 +12047,9 @@
     "likes_count": 408,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-18T01:26:33.442Z",
+    "published_at": "2026-09-18T01:39:16.033Z",
     "created_at": "2026-08-22T17:11:35.660Z",
-    "updated_at": "2026-09-25T01:26:33.539Z",
+    "updated_at": "2026-09-25T01:39:16.152Z",
     "seo_title": "Kubernetes for Developers: Pods, Services, Deployments and Helm Charts Explained",
     "seo_description": "Demystifying Kubernetes for software engineers. Learn the core primitives (Pods, Deployments, Services) and how to package your apps with Helm.",
     "canonical_url": null,
@@ -12166,9 +12081,9 @@
     "likes_count": 621,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-17T01:26:34.853Z",
+    "published_at": "2026-09-17T01:39:17.589Z",
     "created_at": "2026-09-25T01:07:47.466Z",
-    "updated_at": "2026-09-25T01:26:34.951Z",
+    "updated_at": "2026-09-25T01:39:17.695Z",
     "seo_title": "LeetCode 75: Solving Two Pointers, Sliding Window & Binary Search with Pattern Recognition",
     "seo_description": "Stop memorizing solutions and start recognizing patterns. Master the core algorithmic patterns needed to ace coding interviews at top tech companies.",
     "canonical_url": null,
@@ -12201,9 +12116,9 @@
     "likes_count": 347,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-15T01:26:37.680Z",
+    "published_at": "2026-09-15T01:39:20.704Z",
     "created_at": "2026-09-25T01:07:49.557Z",
-    "updated_at": "2026-09-25T01:26:37.777Z",
+    "updated_at": "2026-09-25T01:39:20.810Z",
     "seo_title": "Git Advanced Workflows: Rebase vs Merge, Interactive Rebase, Cherry-Pick & Bisect",
     "seo_description": "Move beyond git pull and git push. Master Git internals, clean up messy histories with interactive rebase, and hunt down bugs efficiently using git bisect.",
     "canonical_url": null,
@@ -12503,11 +12418,17 @@
     "is_featured": true,
     "published_at": "2026-09-09T01:23:10.759Z",
     "created_at": "2026-09-25T01:23:10.814Z",
-    "updated_at": "2026-09-25T01:26:22.424Z",
+    "updated_at": "2026-09-25T01:39:04.282Z",
     "seo_title": "Django Ninja vs FastAPI: Building Type-Safe High-Concurrency APIs in Python",
     "seo_description": "A hands-on architectural comparison between Django Ninja and FastAPI for modern SaaS backends. Learn how Pydantic v2 and async ORM enable blazing-fast API development.",
     "canonical_url": null,
-    "tags": []
+    "tags": [
+      71,
+      31,
+      70,
+      1,
+      72
+    ]
   }
 }
 ]

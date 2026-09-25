@@ -88,7 +88,7 @@ class JobPosting(models.Model):
         ]
 
     def save(self, *args, **kwargs):
-        # Auto-set 7-day deadline upon creation if not explicitly set
+        # 7-Day Auto-Expiry Policy to keep DB fresh & lean
         if not self.deadline:
             self.deadline = timezone.now() + timedelta(days=7)
         # Auto-set posted_date from today in Indian Standard Time if not set
@@ -97,7 +97,9 @@ class JobPosting(models.Model):
         super().save(*args, **kwargs)
 
     def is_expired(self):
-        return timezone.now() > self.deadline
+        return timezone.now() > self.deadline or self.status in ['CLOSED', 'EXPIRED']
+
+
 
     def get_skills_list(self):
         return [s.strip() for s in self.skills_required.split(',') if s.strip()]
@@ -269,6 +271,7 @@ class JobGroup(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        # 7-Day Auto-Expiry Policy for Hiring Drives
         if not self.deadline:
             self.deadline = timezone.now() + timedelta(days=7)
         if not self.posted_date:
@@ -277,8 +280,8 @@ class JobGroup(models.Model):
 
     def is_expired(self):
         if not self.deadline:
-            return False
-        return timezone.now() > self.deadline
+            return not self.is_active
+        return timezone.now() > self.deadline or not self.is_active
 
     def get_time_left_seconds(self):
         if not self.deadline:
@@ -299,6 +302,8 @@ class JobGroup(models.Model):
 
     def get_active_jobs(self):
         return self.jobs.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')
+
+
 
     def get_whatsapp_broadcast_text(self, host_url="https://kashiiupdatez.online"):
         lines = []
