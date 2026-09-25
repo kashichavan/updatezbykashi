@@ -303,3 +303,11 @@ class VisitorAnalyticsMiddleware:
             ip_address_masked=masked_ip,
             is_bot=is_bot,
         )
+
+        # Probabilistic Auto-Pruning: prune records older than 30 days (1 in 200 requests) to keep DB quota lean
+        import random
+        from datetime import timedelta
+        if random.random() < 0.005:
+            cutoff = timezone.now() - timedelta(days=30)
+            SiteVisit.objects.filter(timestamp__lt=cutoff).delete()
+
