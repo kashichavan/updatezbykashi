@@ -89,32 +89,26 @@ import logging
 logger = logging.getLogger(__name__)
 
 def cleanup_empty_groups(grace_period_minutes=120):
-    """Automatically deletes empty groups older than grace period (default 2 hours)."""
-    try:
-        from django.db.models import Count
-        threshold = timezone.now() - timedelta(minutes=grace_period_minutes)
-        empty_qs = JobGroup.objects.annotate(job_count=Count('jobs')).filter(job_count=0, created_at__lte=threshold)
-        deleted_count, _ = empty_qs.delete()
-        return deleted_count
-    except Exception as e:
-        logger.error(f"Error cleaning empty groups: {e}")
-        return 0
+    """Safe no-op to preserve historical groups and prevent data loss."""
+    return 0
 
 def sync_expired_jobs():
-    """Throttled expiration runner (executes at most once every 10 minutes) to keep queries lightning fast."""
+    """
+    Throttled soft-expiration runner (executes at most once every 15 minutes).
+    Marks expired jobs as 'EXPIRED' without deleting any data from the database.
+    """
     lock_key = 'sync_expired_jobs_throttled_lock'
     if cache.get(lock_key):
         return
-    cache.set(lock_key, True, 600)  # 10 minute throttle
+    cache.set(lock_key, True, 900)  # 15 minute throttle
 
     try:
         now = timezone.now()
-        deleted_count, _ = JobPosting.objects.filter(deadline__lte=now).delete()
-        if deleted_count > 0:
-            cleanup_empty_groups()
-            cache.clear()
+        # Soft-expire jobs: NEVER delete records
+        JobPosting.objects.filter(status='ACTIVE', deadline__lte=now).update(status='EXPIRED')
     except Exception:
         pass
+
 
 def _safe_bg_jobdexo_import(limit=15):
     """Safely executes background Jobdexo ingestion with proper DB connection cleanup."""
@@ -1688,11 +1682,13 @@ def api_job_ig_story_image(request, pk):
 
 def group_detail_view(request, slug):
     """Public web page displaying a curated collection/drive of multiple job requirements."""
-    sync_expired_jobs()
-    group = get_object_or_404(JobGroup, slug=slug, is_active=True)
+    group = get_object_or_404(JobGroup, slug=slug)
     group.views_count += 1
     group.save(update_fields=['views_count'])
     jobs = list(group.get_active_jobs())
+    if not jobs:
+        # Fallback to all associated jobs in the group if all are past deadline
+        jobs = list(group.jobs.all().select_related('category').order_by('-created_at'))
     host_url = request.build_absolute_uri('/')[:-1]
     return render(request, 'content/group_detail.html', {
         'group': group,
@@ -1704,21 +1700,24 @@ def group_detail_view(request, slug):
         'share_telegram_text': group.get_telegram_broadcast_text(host_url),
     })
 
+
 def api_groups(request):
-    """Public JSON API returning active requirement groups (active for 7 days)."""
-    sync_expired_jobs()
+    """Public JSON API returning requirement groups with active and recent drives."""
     now = timezone.now()
-    groups = JobGroup.objects.filter(is_active=True, deadline__gt=now).prefetch_related('jobs')
+    groups = list(JobGroup.objects.filter(is_active=True, deadline__gt=now).prefetch_related('jobs'))
+    if not groups:
+        groups = list(JobGroup.objects.all().prefetch_related('jobs').order_by('-created_at')[:20])
     host_url = request.build_absolute_uri('/')[:-1]
     res = []
     for g in groups:
+        active_count = g.get_active_jobs().count()
         res.append({
             'id': g.id,
             'name': g.name,
             'slug': g.slug,
             'banner_tag': g.banner_tag,
             'description': g.description,
-            'jobs_count': g.get_active_jobs().count(),
+            'jobs_count': active_count if active_count > 0 else g.jobs.count(),
             'time_left_seconds': g.get_time_left_seconds(),
             'time_left_display': g.get_time_left_display(),
             'url': f"/group/{g.slug}/",
@@ -1726,6 +1725,7 @@ def api_groups(request):
             'created_at': g.created_at.isoformat(),
         })
     return JsonResponse({'groups': res})
+
 
 @csrf_exempt
 def api_owner_groups(request):
