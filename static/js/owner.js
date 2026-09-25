@@ -1786,9 +1786,30 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCloseMoveModal) btnCloseMoveModal.addEventListener('click', closeMoveRequirementsModal);
   if (btnCancelMove) btnCancelMove.addEventListener('click', closeMoveRequirementsModal);
 
-  // Quick Action Buttons for Move by Job ID
-  const btnOpenMoveByIdPipeline = document.getElementById('btnOpenMoveByIdPipeline');
-  const btnOpenMoveByIdGroups = document.getElementById('btnOpenMoveByIdGroups');
+  // Quick Action Button for Link Health Verification
+  const btnVerifyJobLinks = document.getElementById('btnVerifyJobLinks');
+  if (btnVerifyJobLinks) {
+    btnVerifyJobLinks.addEventListener('click', async () => {
+      if (!confirm('Scan active requirements and automatically soft-expire dead, 404, closed, or redirected links?')) return;
+      btnVerifyJobLinks.disabled = true;
+      btnVerifyJobLinks.textContent = '⏳ Verifying Links...';
+      try {
+        const res = await authFetch('/api/owner/verify-links/?limit=40');
+        const data = await res.json();
+        if (data.success && data.result) {
+          alert(`Link Health Verification Complete!\n\n• Checked: ${data.result.checked}\n• Active & Verified: ${data.result.active}\n• Expired/Closed: ${data.result.expired}`);
+          window.location.reload();
+        } else {
+          alert('Verification failed: ' + (data.error || 'Server error'));
+        }
+      } catch (err) {
+        alert('Verification error: ' + err.message);
+      } finally {
+        btnVerifyJobLinks.disabled = false;
+        btnVerifyJobLinks.textContent = '🛡️ Verify Links';
+      }
+    });
+  }
 
   if (btnOpenMoveByIdPipeline) {
     btnOpenMoveByIdPipeline.addEventListener('click', () => {
@@ -1800,6 +1821,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
 
   if (btnOpenMoveByIdGroups) {
     btnOpenMoveByIdGroups.addEventListener('click', () => {

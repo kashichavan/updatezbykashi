@@ -854,6 +854,16 @@ def _background_hourly_sync_loop():
                 print(f"✅ [Jobdexo Auto-Sync] Ingested {result['imported_count']} fresh jobs! Group: {result.get('group_name')}")
             else:
                 print("ℹ️ [Jobdexo Auto-Sync] All sections checked: No new opportunities found at this moment.")
+
+            # Periodic Live Job Link Health & Expiration Check
+            try:
+                from .job_link_verifier import verify_active_job_links
+                link_res = verify_active_job_links(limit=25, auto_expire=True)
+                if link_res.get('expired', 0) > 0:
+                    print(f"🚫 [Link Health Guard] Automatically soft-expired {link_res['expired']} dead/closed requirement links.")
+            except Exception as e:
+                print(f"ℹ️ [Link Health Guard] Notice: {e}")
+
         except Exception as e:
             print(f"ℹ️ [Jobdexo Auto-Sync] Cycle notice: {e}")
         finally:

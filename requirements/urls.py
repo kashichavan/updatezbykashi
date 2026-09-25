@@ -44,6 +44,8 @@ urlpatterns = [
     path('category/<slug:slug>/', views.category_detail_view, name='category_detail'),
     path('category/<slug:category_slug>/job/<uuid:uuid>/', views.job_detail_view, name='category_job_detail'),
     path('job/<uuid:uuid>/', views.job_detail_view, name='job_detail'),
+    path('job/<uuid:uuid>/apply/', views.job_apply_redirect_view, name='job_apply_redirect'),
+    path('apply/<uuid:uuid>/', views.job_apply_redirect_view, name='direct_apply_redirect'),
     path('job/<int:pk>/', views.job_detail_view, name='job_detail_pk'),
     path('group/<slug:slug>/', views.group_detail_view, name='group_detail'),
     path('groups/<slug:slug>/', views.group_detail_view, name='group_detail_alias'),
@@ -91,5 +93,7 @@ urlpatterns = [
     path('api/owner/jobdexo/cleanup/', views.api_owner_jobdexo_cleanup_duplicates, name='api_owner_jobdexo_cleanup_duplicates'),
     path('api/owner/analytics/', views.api_owner_analytics, name='api_owner_analytics'),
     path('api/owner/kpi-stats/', views.api_owner_kpi_stats, name='api_owner_kpi_stats'),
+    path('api/owner/verify-links/', views.api_owner_verify_links, name='api_owner_verify_links'),
     path('api/owner/backup/trigger/', views.api_owner_trigger_backup, name='api_owner_trigger_backup'),
 ]
+

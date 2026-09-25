@@ -488,7 +488,26 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
     }
     return render(request, 'content/job_detail.html', context)
 
+def job_apply_redirect_view(request, uuid=None, pk=None):
+    """
+    Direct Apply link tracker & redirector.
+    Increments application counter and soft-expires dead links.
+    """
+    job = None
+    if uuid:
+        job = JobPosting.objects.filter(uuid=uuid).first()
+    if not job and pk:
+        job = JobPosting.objects.filter(pk=pk).first()
+
+    if not job or not job.apply_url:
+        return redirect('/')
+
+    # Track application count
+    JobPosting.objects.filter(pk=job.pk).update(applications_count=job.applications_count + 1)
+    return redirect(job.apply_url)
+
 def owner_view(request):
+
     sync_expired_jobs()
     login_error = None
 
@@ -2340,3 +2359,25 @@ def api_owner_trigger_backup(request):
         'message': 'Database backup (JSON & CSV) triggered in background successfully.',
         'timestamp': timezone.now().isoformat(),
     })
+
+
+@csrf_exempt
+def api_owner_verify_links(request):
+    """Owner API endpoint to trigger live link health verification and soft-expire dead links."""
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    try:
+        limit = int(request.GET.get('limit', 30))
+    except (ValueError, TypeError):
+        limit = 30
+
+    from .job_link_verifier import verify_active_job_links
+    result = verify_active_job_links(limit=limit, auto_expire=True)
+    return JsonResponse({
+        'success': True,
+        'result': result,
+        'timestamp': timezone.now().isoformat()
+    })
+
