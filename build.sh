@@ -17,6 +17,19 @@ for i in {1..5}; do
   fi
 done
 
+# Auto-restore full snapshot if fresh empty database
+python manage.py shell -c "
+from requirements.models import JobPosting
+from django.core.management import call_command
+if JobPosting.objects.count() == 0:
+    print('==> Fresh database detected! Restoring latest full snapshot backup (442 objects)...')
+    try:
+        call_command('loaddata', 'backups/kashii_full_snapshot_latest.json')
+        print('==> Full backup snapshot restored successfully into new database!')
+    except Exception as e:
+        print('==> Snapshot restore notice:', e)
+" || true
+
 # Auto-create production owner account, Software & Tech category, and seed guide articles & blog
 python requirements/seed_prod.py || true
 python manage.py seed_blog || true
