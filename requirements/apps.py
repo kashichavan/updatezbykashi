@@ -10,7 +10,7 @@ class RequirementsConfig(AppConfig):
         # Exclude one-off management commands from spawning persistent background threads
         excluded_commands = {
             'migrate', 'makemigrations', 'collectstatic', 'test',
-            'createsuperuser', 'check', 'shell', 'dbshell', 'inspectdb', 'auto_backup'
+            'createsuperuser', 'check', 'shell', 'dbshell', 'inspectdb', 'auto_backup', 'restore_snapshot'
         }
         is_mgmt_cmd = any(cmd in sys.argv for cmd in excluded_commands)
 
