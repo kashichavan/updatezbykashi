@@ -19,7 +19,7 @@
 {
   "model": "auth.user",
   "fields": {
-    "password": "pbkdf2_sha256$1200000$XYfakxA9l4YwXf9rkM2AdL$ubIyPKobE82iq+MNbysQMcTtCX9nUy7GuB2SdCJhlzw=",
+    "password": "pbkdf2_sha256$1500000$OsXL6hs8WgzJPeEEwgVM3N$c2lIeAzf8C87yE8NG42mWs+akjgmSfEKWdx8mQrBqWY=",
     "last_login": "2026-08-05T08:34:47.593Z",
     "is_superuser": true,
     "username": "kashichavan7777",
@@ -62,7 +62,7 @@
 },
 {
   "model": "requirements.category",
-  "pk": 4,
+  "pk": 8,
   "fields": {
     "name": "Software Engineering",
     "slug": "software-engineering",
@@ -72,7 +72,7 @@
 },
 {
   "model": "requirements.category",
-  "pk": 5,
+  "pk": 9,
   "fields": {
     "name": "Non IT",
     "slug": "non-it",
@@ -128,13 +128,13 @@
     "posted_by": "Kashii Updatez Admin",
     "poster_email": "admin@kashiiupdatez.com",
     "status": "ACTIVE",
-    "views_count": 0,
+    "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
     "created_at": "2026-09-25T00:59:58.887Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T00:59:58.886Z",
-    "updated_at": "2026-09-25T00:59:58.887Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:55.092Z"
   }
 },
 {
@@ -190,8 +190,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.131Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T00:59:59.131Z",
-    "updated_at": "2026-09-25T00:59:59.131Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:55.653Z"
   }
 },
 {
@@ -242,13 +242,13 @@
     "posted_by": "Kashii Updatez Admin",
     "poster_email": "admin@kashiiupdatez.com",
     "status": "ACTIVE",
-    "views_count": 0,
+    "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.365Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T00:59:59.365Z",
-    "updated_at": "2026-09-25T00:59:59.365Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:56.214Z"
   }
 },
 {
@@ -304,8 +304,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.599Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T00:59:59.599Z",
-    "updated_at": "2026-09-25T00:59:59.599Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:56.830Z"
   }
 },
 {
@@ -361,8 +361,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T00:59:59.833Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T00:59:59.833Z",
-    "updated_at": "2026-09-25T00:59:59.833Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:57.360Z"
   }
 },
 {
@@ -418,8 +418,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:41.503Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:41.501Z",
-    "updated_at": "2026-09-25T01:01:41.503Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:57.886Z"
   }
 },
 {
@@ -475,8 +475,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:41.995Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:41.994Z",
-    "updated_at": "2026-09-25T01:01:41.995Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:58.485Z"
   }
 },
 {
@@ -532,8 +532,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.213Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:01:42.212Z",
-    "updated_at": "2026-09-25T01:01:42.213Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:59.009Z"
   }
 },
 {
@@ -589,8 +589,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.431Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:42.430Z",
-    "updated_at": "2026-09-25T01:01:42.431Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:26:59.537Z"
   }
 },
 {
@@ -646,8 +646,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.648Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:42.648Z",
-    "updated_at": "2026-09-25T01:01:42.648Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:00.207Z"
   }
 },
 {
@@ -703,8 +703,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:42.866Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:42.866Z",
-    "updated_at": "2026-09-25T01:01:42.866Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:00.739Z"
   }
 },
 {
@@ -760,8 +760,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:43.085Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:43.084Z",
-    "updated_at": "2026-09-25T01:01:43.085Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:01.260Z"
   }
 },
 {
@@ -817,8 +817,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:43.307Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:43.306Z",
-    "updated_at": "2026-09-25T01:01:43.307Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:01.801Z"
   }
 },
 {
@@ -874,8 +874,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:01:43.524Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:01:43.524Z",
-    "updated_at": "2026-09-25T01:01:43.524Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:02.324Z"
   }
 },
 {
@@ -886,7 +886,7 @@
     "title": "Analyst – Data Scientist",
     "company_name": "United Airlines",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "FULL_TIME",
     "stipend_salary": "(approx. 15-20 LPA)",
     "location": "Gurugram, Haryana",
@@ -931,8 +931,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:21.677Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:05:21.676Z",
-    "updated_at": "2026-09-25T01:05:21.677Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:02.848Z"
   }
 },
 {
@@ -943,7 +943,7 @@
     "title": "Design Thinking with Artificial Intelligence Internship (6‑Week) – Oct",
     "company_name": "IBM",
     "company_logo_icon": "building",
-    "category": 5,
+    "category": 9,
     "job_type": "INTERNSHIP",
     "stipend_salary": "Unpaid (no stipend)",
     "location": "Pan India (Remote)",
@@ -988,8 +988,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:21.889Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:05:21.889Z",
-    "updated_at": "2026-09-25T01:05:21.889Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:03.483Z"
   }
 },
 {
@@ -1000,7 +1000,7 @@
     "title": "SDE Intern",
     "company_name": "Google",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "₹35,000 per month",
     "location": "Gurgaon, Haryana, India",
@@ -1045,8 +1045,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:22.102Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:05:22.102Z",
-    "updated_at": "2026-09-25T01:05:22.102Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:04.051Z"
   }
 },
 {
@@ -1057,7 +1057,7 @@
     "title": "Process Executive (Fresher) -Gurgaon",
     "company_name": "Cognizant",
     "company_logo_icon": "building",
-    "category": 5,
+    "category": 9,
     "job_type": "FULL_TIME",
     "stipend_salary": "3.5 LPA",
     "location": "Gurgaon, India",
@@ -1102,8 +1102,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:22.313Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:05:22.313Z",
-    "updated_at": "2026-09-25T01:05:22.313Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:04.611Z"
   }
 },
 {
@@ -1114,7 +1114,7 @@
     "title": "Software Engineer Intern",
     "company_name": "Red Hat",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "6.0 to 10.0 LPA",
     "location": "Bangalore, India",
@@ -1159,8 +1159,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:05:22.526Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:05:22.526Z",
-    "updated_at": "2026-09-25T01:05:22.526Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:05.225Z"
   }
 },
 {
@@ -1171,7 +1171,7 @@
     "title": "Systems Development Engineer Intern (SysDE Intern)",
     "company_name": "Amazon",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "₹60,000 – ₹1,10,000 / Month (Pre‑Placement Offer CTC ₹18 – 32 LPA)",
     "location": "Bangalore / Hyderabad / Chennai, India",
@@ -1216,8 +1216,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:47.460Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:06:47.459Z",
-    "updated_at": "2026-09-25T01:06:47.460Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:05.942Z"
   }
 },
 {
@@ -1228,7 +1228,7 @@
     "title": "Software Engineering Intern",
     "company_name": "Abstrabit Technologies",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "₹20,000 – ₹30,000 per month",
     "location": "Bangalore, Karnataka, India",
@@ -1273,8 +1273,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:49.741Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:06:49.741Z",
-    "updated_at": "2026-09-25T01:06:49.741Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:06.658Z"
   }
 },
 {
@@ -1285,7 +1285,7 @@
     "title": "Intern – Software Development and Testing",
     "company_name": "Siemens",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "Rs 15,000/month",
     "location": "Bangalore, Karnataka",
@@ -1330,8 +1330,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:50.762Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:06:50.762Z",
-    "updated_at": "2026-09-25T01:06:50.762Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:07.182Z"
   }
 },
 {
@@ -1342,7 +1342,7 @@
     "title": "QA Test Engineering Intern",
     "company_name": "Job",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "Rs 15,000 per month",
     "location": "Hyderabad (Remote)",
@@ -1387,8 +1387,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:51.811Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:06:51.810Z",
-    "updated_at": "2026-09-25T01:06:51.811Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:07.705Z"
   }
 },
 {
@@ -1399,7 +1399,7 @@
     "title": "Dentsu Tech Hackathon",
     "company_name": "Hackerearth",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "Rs 15,000 per month",
     "location": "Mumbai/Pune, India",
@@ -1444,8 +1444,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:52.859Z",
     "posted_date": "2026-09-21",
-    "deadline": "2026-10-02T01:06:52.859Z",
-    "updated_at": "2026-09-25T01:06:52.859Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:08.356Z"
   }
 },
 {
@@ -1456,7 +1456,7 @@
     "title": "Data Analyst Internship",
     "company_name": "Codeatrix",
     "company_logo_icon": "building",
-    "category": 5,
+    "category": 9,
     "job_type": "INTERNSHIP",
     "stipend_salary": "Rs 15,000 per month",
     "location": "Remote",
@@ -1501,8 +1501,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:53.908Z",
     "posted_date": "2026-09-21",
-    "deadline": "2026-10-02T01:06:53.908Z",
-    "updated_at": "2026-09-25T01:06:53.908Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:08.890Z"
   }
 },
 {
@@ -1513,7 +1513,7 @@
     "title": "Software Development Engineer – I",
     "company_name": "Jiostar",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "FULL_TIME",
     "stipend_salary": "₹25 LPA – ₹30 LPA",
     "location": "Bengaluru, Karnataka, India",
@@ -1558,8 +1558,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:54.956Z",
     "posted_date": "2026-09-24",
-    "deadline": "2026-10-02T01:06:54.956Z",
-    "updated_at": "2026-09-25T01:06:54.956Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:09.413Z"
   }
 },
 {
@@ -1570,7 +1570,7 @@
     "title": "Technical Business Analyst",
     "company_name": "Google",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "3.5 LPA",
     "location": "Chennai, Tamil Nadu",
@@ -1615,8 +1615,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:56.367Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:06:56.367Z",
-    "updated_at": "2026-09-25T01:06:56.367Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:10.036Z"
   }
 },
 {
@@ -1627,7 +1627,7 @@
     "title": "Software Engineer – Python AI Apprentice",
     "company_name": "Cgi",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "6-8 LPA",
     "location": "Hyderabad (verify on official page)",
@@ -1672,8 +1672,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:06:57.378Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:06:57.378Z",
-    "updated_at": "2026-09-25T01:06:57.378Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:10.608Z"
   }
 },
 {
@@ -1684,7 +1684,7 @@
     "title": "Developer (React.js)",
     "company_name": "Dentsuaegis",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "₹5 LPA – ₹18 LPA",
     "location": "Pune, Maharashtra, India",
@@ -1729,8 +1729,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:10.308Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:07:10.306Z",
-    "updated_at": "2026-09-25T01:07:10.308Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:11.333Z"
   }
 },
 {
@@ -1741,7 +1741,7 @@
     "title": "AI/ML Computational Science Associate",
     "company_name": "Accenture",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "6-8 LPA",
     "location": "Bengaluru",
@@ -1786,8 +1786,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:10.576Z",
     "posted_date": "2026-09-23",
-    "deadline": "2026-10-02T01:07:10.576Z",
-    "updated_at": "2026-09-25T01:07:10.576Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:11.983Z"
   }
 },
 {
@@ -1798,7 +1798,7 @@
     "title": "Software Engineer",
     "company_name": "Appinventiv",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "FULL_TIME",
     "stipend_salary": "3.5 - 8 LPA Approx",
     "location": "Pan India",
@@ -1843,8 +1843,8 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:10.790Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:07:10.789Z",
-    "updated_at": "2026-09-25T01:07:10.790Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:12.596Z"
   }
 },
 {
@@ -1855,7 +1855,7 @@
     "title": "AI-Native Java Engineer – Graduate Trainee",
     "company_name": "zycus",
     "company_logo_icon": "building",
-    "category": 4,
+    "category": 8,
     "job_type": "INTERNSHIP",
     "stipend_salary": "3.2 - 10 LPA",
     "location": "Bangalore",
@@ -1900,15 +1900,15 @@
     "is_featured": true,
     "created_at": "2026-09-25T01:07:11.005Z",
     "posted_date": "2026-09-22",
-    "deadline": "2026-10-02T01:07:11.004Z",
-    "updated_at": "2026-09-25T01:07:11.005Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:27:13.265Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1184,
   "fields": {
-    "uuid": "bed19d49-a6eb-44c1-9fd3-482ce7369123",
+    "uuid": "0008da2e-68d6-4412-b956-2f97976932c5",
     "title": "Data Analyst – AI Consulting",
     "company_name": "Hirecrap",
     "company_logo_icon": "building",
@@ -1930,17 +1930,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-06",
-    "deadline": "2026-09-14T15:03:37.099Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1185,
   "fields": {
-    "uuid": "ee0af680-f3f7-480d-960d-667ebfd90329",
+    "uuid": "e414cb3f-033c-4086-bb8c-0273bf258535",
     "title": "Software Engineer I",
     "company_name": "Mastercard",
     "company_logo_icon": "building",
@@ -1962,17 +1962,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T16:33:02.174Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1186,
   "fields": {
-    "uuid": "87b36b53-7a8d-4675-a41d-5503dea06755",
+    "uuid": "98bc395d-883c-495e-9e58-2faf5419adcd",
     "title": "Software Engineer Intern",
     "company_name": "Featured Tech Partner",
     "company_logo_icon": "building",
@@ -1994,17 +1994,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T16:33:02.398Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1187,
   "fields": {
-    "uuid": "1323f7cf-66ea-457b-a295-ac84cf9dc222",
+    "uuid": "019c48ec-7051-4f46-9921-6ceef2aa9a8f",
     "title": "Software Development Engineer (SDE)",
     "company_name": "Swiggy",
     "company_logo_icon": "building",
@@ -2026,17 +2026,17 @@
     "views_count": 10,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T18:47:42.160Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1188,
   "fields": {
-    "uuid": "d3e2339b-5de5-4a9b-9fa8-a045e75b5359",
+    "uuid": "6557d303-6448-44eb-8d7e-b6ea4d887cd2",
     "title": "BI Engineering Associate",
     "company_name": "Accenture",
     "company_logo_icon": "building",
@@ -2058,17 +2058,17 @@
     "views_count": 10,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T19:32:16.504Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1189,
   "fields": {
-    "uuid": "b031f580-8b99-4e4f-8c32-815ecdee9c71",
+    "uuid": "34023a28-ed67-43db-8530-0f35d5a5cdd9",
     "title": "Associate Demand Management",
     "company_name": "Myntra",
     "company_logo_icon": "building",
@@ -2090,17 +2090,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-06",
-    "deadline": "2026-09-14T21:25:30.982Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1190,
   "fields": {
-    "uuid": "d8d4825b-cca3-4dac-b04b-e61c33bfcedb",
+    "uuid": "b749c91f-9917-468d-9dad-abc7d971b527",
     "title": "DATA ANALYST - JUNIOR EXECUTIVE",
     "company_name": "Sansera",
     "company_logo_icon": "building",
@@ -2122,17 +2122,17 @@
     "views_count": 17,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-14T22:56:29.563Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1191,
   "fields": {
-    "uuid": "d4d019d3-06f8-491c-a6d8-2613f17f17bf",
+    "uuid": "004b1f26-3f24-466b-b97c-51feb2c1b289",
     "title": "Customer Support Executive - Work From Home",
     "company_name": "NoBroker",
     "company_logo_icon": "building",
@@ -2154,17 +2154,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T23:19:22.982Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1192,
   "fields": {
-    "uuid": "ac21b8ac-d9f9-4478-bebf-97c4b25e699d",
+    "uuid": "af38a1ff-6411-4ccb-9319-da6d37e4ced5",
     "title": "Associate Data Analyst - Global Procurement & Planning COE",
     "company_name": "Tevvity",
     "company_logo_icon": "building",
@@ -2186,17 +2186,17 @@
     "views_count": 12,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T00:49:38.043Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1193,
   "fields": {
-    "uuid": "79c4ae25-1727-47a9-bc17-eacb9fadaa8f",
+    "uuid": "6262fbde-c8cb-4aa2-b2c6-70f38053fbf9",
     "title": "QA Test Engineering Intern",
     "company_name": "JOB",
     "company_logo_icon": "building",
@@ -2218,17 +2218,17 @@
     "views_count": 12,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-03",
-    "deadline": "2026-09-15T03:03:34.614Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1194,
   "fields": {
-    "uuid": "dc407e5a-17ca-45bf-b9dd-41effcb5e13d",
+    "uuid": "0e086b26-df2b-4d43-82ca-43ed4286ba24",
     "title": "Customer Support Representative (Remote, Project Based)",
     "company_name": "Frontier",
     "company_logo_icon": "building",
@@ -2250,17 +2250,17 @@
     "views_count": 21,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-02",
-    "deadline": "2026-09-15T03:03:34.832Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1195,
   "fields": {
-    "uuid": "77d74ddc-f72d-4077-854e-842b94aa953a",
+    "uuid": "da34a0f7-1614-4b02-a37c-d97abe9b10a6",
     "title": "Data Analyst – Business Finance",
     "company_name": "Jobera",
     "company_logo_icon": "building",
@@ -2282,17 +2282,17 @@
     "views_count": 21,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T06:48:06.812Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1196,
   "fields": {
-    "uuid": "8dd3cf96-9b82-4995-a5c8-37dfe8d07242",
+    "uuid": "f117846e-af09-478e-a9c9-608925429c96",
     "title": "Customer Service Representative",
     "company_name": "Wipro",
     "company_logo_icon": "building",
@@ -2314,17 +2314,17 @@
     "views_count": 10,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T06:48:07.202Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1197,
   "fields": {
-    "uuid": "c849bb53-c391-49b1-a921-557f6a62d33a",
+    "uuid": "cd323738-e990-4b23-8ba3-fd600788d090",
     "title": "Analyst – Business Data Services 5B",
     "company_name": "Genpact",
     "company_logo_icon": "building",
@@ -2346,17 +2346,17 @@
     "views_count": 17,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T06:48:07.398Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1198,
   "fields": {
-    "uuid": "96c82835-3db3-4204-acfc-a8d7c2a2220b",
+    "uuid": "bdc4c1fa-3a5a-4289-a438-8bcdeb6d4414",
     "title": "Software Engineer II (Fullstack)",
     "company_name": "JOB",
     "company_logo_icon": "building",
@@ -2378,17 +2378,17 @@
     "views_count": 10,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T07:10:42.648Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1199,
   "fields": {
-    "uuid": "0e39333e-ed08-4389-8f13-0d02e33930c8",
+    "uuid": "624587e0-5fac-4875-be8d-b48c8a8409b3",
     "title": "Process Executive (Fresher) - Gurgaon",
     "company_name": "Cognizant",
     "company_logo_icon": "building",
@@ -2410,17 +2410,17 @@
     "views_count": 12,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T07:55:53.495Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1200,
   "fields": {
-    "uuid": "dc027bf1-fb65-44fe-8308-f253ebb40dba",
+    "uuid": "d996d7be-769e-401c-bbb4-efc2de4159a6",
     "title": "Associate Software Engineer",
     "company_name": "Franklin Templeton",
     "company_logo_icon": "building",
@@ -2442,17 +2442,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T08:34:33.426Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1201,
   "fields": {
-    "uuid": "a4ab66dd-1efc-48e6-ad11-051b9dddfc7f",
+    "uuid": "c6c27774-4131-48b3-9e4f-2d9bafb6d983",
     "title": "Business Analyst - Enterprise Programs",
     "company_name": "Genpact",
     "company_logo_icon": "building",
@@ -2474,17 +2474,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T08:34:33.677Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1202,
   "fields": {
-    "uuid": "3e4e6153-c75d-4ddd-9dd6-331cdd892d80",
+    "uuid": "8fdb559c-4d73-4e30-9de1-928483a5cae9",
     "title": "Front-End Engineer Intern",
     "company_name": "Amazon",
     "company_logo_icon": "building",
@@ -2506,17 +2506,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T10:04:40.641Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1203,
   "fields": {
-    "uuid": "73f13983-4bb5-4411-9a76-ba8f87be2b93",
+    "uuid": "8fd01124-40a2-44e9-a454-d9e6aaacb49b",
     "title": "International Voice Process - Walkin",
     "company_name": "Tech Mahindra",
     "company_logo_icon": "building",
@@ -2538,17 +2538,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T10:50:07.518Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1204,
   "fields": {
-    "uuid": "9c8878c9-999f-4cc2-9674-c61fc29eb4c3",
+    "uuid": "01d87ba7-e07a-4555-ba5a-f71f21a0e0a9",
     "title": "Associate Analyst | Automation Testing | Bengaluru | Engineering | Quality Engineering",
     "company_name": "Deloitte",
     "company_logo_icon": "building",
@@ -2570,17 +2570,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T10:50:07.716Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1205,
   "fields": {
-    "uuid": "c6bf527c-c283-4610-9c0f-e3a9e5e1a646",
+    "uuid": "4864b482-e558-4ef4-b8ae-68ac8194cdc7",
     "title": "HCLTech Mega Walk-In Drive for Freshers - US Shift",
     "company_name": "HCLTech",
     "company_logo_icon": "building",
@@ -2602,17 +2602,17 @@
     "views_count": 13,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T11:35:15.963Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1206,
   "fields": {
-    "uuid": "ffc12337-b94d-4b73-95b4-41dc0d5ee4fc",
+    "uuid": "cc16ba97-cca8-43d7-97b1-adccd2f4c222",
     "title": "Associate Analyst",
     "company_name": "GlobalLogic",
     "company_logo_icon": "building",
@@ -2634,17 +2634,17 @@
     "views_count": 11,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T11:35:16.257Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1207,
   "fields": {
-    "uuid": "3ed0ef28-94f0-47d9-be6c-3c27f5b41da6",
+    "uuid": "e3fc688f-e8b4-43dc-b755-dfd65dd5a403",
     "title": "Customer Success Associate",
     "company_name": "Tech Mahindra",
     "company_logo_icon": "building",
@@ -2666,17 +2666,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T12:20:02.709Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1208,
   "fields": {
-    "uuid": "8ad9e090-0b02-495e-9880-df2be0ee296b",
+    "uuid": "b080c735-223e-46f4-9b91-74a611cf6eac",
     "title": "QA Analyst",
     "company_name": "Barclays",
     "company_logo_icon": "building",
@@ -2698,17 +2698,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T12:20:03.237Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1209,
   "fields": {
-    "uuid": "44cd223b-378d-4f67-bf67-a1e786f28b5a",
+    "uuid": "4afe0a95-2aab-4bea-812f-95a91001f624",
     "title": "Trade Operations Analyst",
     "company_name": "zanskar",
     "company_logo_icon": "building",
@@ -2730,17 +2730,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T18:18:41.165Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1210,
   "fields": {
-    "uuid": "194c94fd-9db4-4f32-9575-4ac2e74b84f9",
+    "uuid": "842c31ec-85b8-421d-8b9a-a01f2c2a239e",
     "title": "GRADUATE ENGINEER TRAINEE",
     "company_name": "NIIT",
     "company_logo_icon": "building",
@@ -2762,17 +2762,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T18:18:41.362Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1211,
   "fields": {
-    "uuid": "3f87aa56-7ab4-4385-b76b-cf9f29547269",
+    "uuid": "6c84587f-e1f6-42e7-9642-ee387b4c3cae",
     "title": "Data Analyst",
     "company_name": "Wipro",
     "company_logo_icon": "building",
@@ -2794,17 +2794,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-15T19:48:46.182Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1212,
   "fields": {
-    "uuid": "794e50db-9f41-44b9-9330-572c05730470",
+    "uuid": "dcffd63d-3390-4f8c-8e2a-0f6ba35278c6",
     "title": "TCS iON National Qualifier Test",
     "company_name": "Tcsion",
     "company_logo_icon": "building",
@@ -2826,17 +2826,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-15T19:48:46.396Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1213,
   "fields": {
-    "uuid": "dd03b90a-5c52-40a5-a911-f2de613d0f7d",
+    "uuid": "e997a65d-6d42-40f3-a338-87922a095b76",
     "title": "Junior Python Developer",
     "company_name": "Cuculus",
     "company_logo_icon": "building",
@@ -2858,17 +2858,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T19:48:46.610Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1214,
   "fields": {
-    "uuid": "3d0e2a0b-adf6-482b-a5c3-106142d6b242",
+    "uuid": "ec1242ab-33ac-424d-ba72-56c2a74cf83b",
     "title": "Associate Salesforce Developer",
     "company_name": "Labcorp",
     "company_logo_icon": "building",
@@ -2890,17 +2890,17 @@
     "views_count": 13,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T20:11:14.488Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1215,
   "fields": {
-    "uuid": "1f4a3454-8104-4e3a-934f-771a8e6a7800",
+    "uuid": "6cfaa93e-1099-471b-8839-68c3607987ff",
     "title": "Software Engr I",
     "company_name": "Honeywell Aerospace",
     "company_logo_icon": "building",
@@ -2922,49 +2922,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T20:34:03.600Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
-  }
-},
-{
-  "model": "requirements.jobposting",
-  "pk": 1216,
-  "fields": {
-    "uuid": "65d9de68-4154-4c47-a202-25fa9cf0a2bd",
-    "title": "Trainee",
-    "company_name": "Wipro",
-    "company_logo_icon": "building",
-    "category": 1,
-    "job_type": "INTERNSHIP",
-    "stipend_salary": "Year 1: Rs 16,500 + 1,374 SA = Rs 17,874 per month; Year 2: Rs 17,350 + 1,445 SA = Rs 18,795 per mon",
-    "location": "Mysore, Karnataka, India",
-    "is_remote": false,
-    "skills_required": "Core Mathematics, Analytical Thinking, Problem Solving, Communication Skills, Basic Programming (C/C++, Java), Knowledge of Engineering concepts, Teamwork, Adaptability",
-    "apply_url": "https://app.joinsuperset.com/join",
-    "allow_direct_apply": true,
-    "description": "Wipro Limited, a global leader in information technology, consulting and business process services, has a legacy of over seven decades in delivering innovative solutions across industries. Headquartered in Bengaluru, Wipro operates in more than 50 countries, serving Fortune 500 clients with a focus on digital transformation, cloud, AI, and cybersecurity. The company’s culture emphasizes continuous learning, sustainability, and a commitment to creating value for customers, employees, and society.\r\n\r\nThe Work Integrated Learning Program (WILP) – WE B.ET 2025 & 2026 is a pioneering initiative that blends full‑time employment with a sponsored B.Tech degree from an Institute of Eminence (IoE) university. As a Scholar Trainee, you will join Wipro’s engineering teams while simultaneously pursuing your undergraduate studies, gaining hands‑on experience on live projects, mentorship from senior engineers, and exposure to cutting‑edge technologies.\r\n\r\n**Key Responsibilities**\r\n1. Participate in real‑time project assignments under the guidance of senior engineers.\r\n2. Develop, test, and maintain software modules using industry‑standard tools and frameworks.\r\n3. Assist in requirement gathering, documentation, and solution design.\r\n4. Perform unit testing, debugging, and code reviews to ensure quality deliverables.\r\n5. Contribute to automation scripts and DevOps pipelines where applicable.\r\n6. Attend regular technical workshops, webinars, and campus‑level training sessions.\r\n7. Collaborate with cross‑functional teams including QA, product, and support.\r\n8. Prepare progress reports and present findings to project leads.\r\n9. Uphold Wipro’s code of conduct, security policies, and ethical standards.\r\n10. Balance academic commitments with work responsibilities, meeting both timelines effectively.\r\n\r\n**Tech Stack**: Java, Python, C/C++, SQL, HTML/CSS, JavaScript, Angular/React, Cloud platforms (AWS, Azure), Docker, Kubernetes, and Agile tools like JIRA.\r\n\r\n**Growth Path**: Successful trainees can transition to full‑time Engineer roles post‑graduation, with clear promotion tracks to Senior Engineer, Lead, and Manager positions. Wipro’s internal mobility program also enables lateral moves across domains such as data analytics, AI, and cybersecurity.\r\n\r\n**Why Join Wipro?**\r\n- A globally recognized brand with a strong focus on employee development.\r\n- Guaranteed sponsorship for a B.Tech degree, eliminating tuition burden.\r\n- Exposure to large‑scale, enterprise‑level projects from day one.\r\n- Structured mentorship, continuous learning platforms, and a vibrant community of innovators.\r\n- Competitive stipend, comprehensive benefits, and a 48‑month training agreement that secures your career trajectory.\r\n\r\nThis program is ideal for diploma holders eager to upscale their technical expertise while earning a respectable stipend and a world‑class degree.",
-    "eligibility": "10th Standard: Pass; 12th Standard: Pass; Diploma: Minimum 50% or 5.3 CGPA (or equivalent) in Automobile, Mechanical, Electrical, Civil, or Production engineering; Year of passing: 2025 or 2026; Must have studied Core Mathematics as a subject during Diploma (Business Maths & Applied Maths not accepted); One backlog allowed at the time of Online Assessment (must be cleared by 8th semester); Maximum 3 years gap allowed between 10th and start of Diploma; No gaps allowed during Diploma period; Must be an Indian citizen, PIO, OCI, or Bhutan/Nepal national with citizenship certificate; Candidates below 18 can register but onboarding after turning 18; Candidates pursuing a bachelor's must provide discontinuation certificate; Open school or distance education allowed only for 10th & 12th.",
-    "selection_process": "Round 1: Online Assessment → Round 2: Voice Assessment → Round 3: Business discussion → Background Verification and Letter of Intent issuance",
-    "study_materials": [],
-    "posted_by": "Kashii Updatez Admin",
-    "poster_email": "admin@kashiiupdatez.com",
-    "status": "ACTIVE",
-    "views_count": 6,
-    "applications_count": 0,
-    "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
-    "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T20:56:34.133Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1217,
   "fields": {
-    "uuid": "98b4c565-f93f-4b7e-90b5-a3a04cb0e327",
+    "uuid": "3d2e7f5d-fc83-40e7-93ea-2a90645141f9",
     "title": "Telesales Executive - Hindi",
     "company_name": "Workable",
     "company_logo_icon": "building",
@@ -2986,17 +2954,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T21:19:29.323Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1218,
   "fields": {
-    "uuid": "efd99aa1-d022-420a-8f7c-9fba7d19022d",
+    "uuid": "fbd5cea4-f502-48b7-891c-5b740eaec13d",
     "title": "Student Engineering Intern",
     "company_name": "winsenlabs",
     "company_logo_icon": "building",
@@ -3018,17 +2986,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-15T21:41:43.650Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1219,
   "fields": {
-    "uuid": "ed9c7574-8e05-4e30-903d-c21f1a171885",
+    "uuid": "5a7ced09-2ccc-4e04-89f2-f0e4b38c8fc8",
     "title": "Associate Provisioning Analyst",
     "company_name": "Logicmonitor",
     "company_logo_icon": "building",
@@ -3050,17 +3018,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-16T00:42:24.757Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1220,
   "fields": {
-    "uuid": "f34eac8f-8d7c-449e-a8a2-b93a808d5ed6",
+    "uuid": "c851196d-8490-400d-9d1f-f6bf13bc87e9",
     "title": "Business Technology Solutions Associate",
     "company_name": "ZS Associates",
     "company_logo_icon": "building",
@@ -3082,17 +3050,17 @@
     "views_count": 13,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T08:34:29.854Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1221,
   "fields": {
-    "uuid": "6fb578c5-1b14-42b7-85de-450eb521fe4b",
+    "uuid": "fb7c39de-824a-4bfa-8702-be197306f21f",
     "title": "Data Analyst Intern",
     "company_name": "Bebee",
     "company_logo_icon": "building",
@@ -3114,17 +3082,17 @@
     "views_count": 3,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-16T10:50:03.496Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1222,
   "fields": {
-    "uuid": "994e76e0-42d3-4b08-ae24-f5afe7994f77",
+    "uuid": "871271fa-b3e4-46cb-8fc3-b3fb461cd558",
     "title": "Data Analyst",
     "company_name": "Hubli Analytics",
     "company_logo_icon": "building",
@@ -3146,17 +3114,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-16T10:50:03.785Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1223,
   "fields": {
-    "uuid": "fad108e1-3b7f-4b5e-97f1-7d2c4dd916cf",
+    "uuid": "5414a3c6-8aa0-4ac8-86bb-e0c176064ae8",
     "title": "Fullstack Engineer",
     "company_name": "Barclays",
     "company_logo_icon": "building",
@@ -3178,17 +3146,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T11:34:56.669Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1224,
   "fields": {
-    "uuid": "200ec090-4330-4f7d-bfc7-a000c43d672e",
+    "uuid": "23303aa5-7400-420d-9369-4f415673cfaa",
     "title": "Process Executive",
     "company_name": "Infosys",
     "company_logo_icon": "building",
@@ -3210,17 +3178,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T11:57:25.788Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1225,
   "fields": {
-    "uuid": "72fe3c76-0b4a-4810-bb1f-4fe0574ec36b",
+    "uuid": "4ac84357-5dc2-4756-8c35-97d08ea070af",
     "title": "Application Support Engineer",
     "company_name": "Accenture",
     "company_logo_icon": "building",
@@ -3242,17 +3210,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T12:20:04.140Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1226,
   "fields": {
-    "uuid": "e2149722-9b63-4e49-917e-cc21365223a9",
+    "uuid": "f4b82db9-8a7f-47f6-b1a2-b83c00ec0cdd",
     "title": "Customer Support Executive Voice Process",
     "company_name": "Startek",
     "company_logo_icon": "building",
@@ -3274,17 +3242,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T12:20:04.383Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1227,
   "fields": {
-    "uuid": "b0b6dd07-ead3-4d68-babf-ea786365b84f",
+    "uuid": "6a4f5cd4-076b-496e-a45f-0bf3c1847b61",
     "title": "Systems Engineer (Intern)",
     "company_name": "Vecmocon",
     "company_logo_icon": "building",
@@ -3306,17 +3274,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T12:20:04.626Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1228,
   "fields": {
-    "uuid": "118e5590-abc1-4b49-8614-41f536ada943",
+    "uuid": "8dd729da-fd48-405c-95f4-b161901b40ab",
     "title": "PDF Annotation & Transcription Experts – Telugu",
     "company_name": "Mercor",
     "company_logo_icon": "building",
@@ -3338,17 +3306,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-16T12:42:16.706Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1229,
   "fields": {
-    "uuid": "8a123110-9141-499a-9c16-13c39b3cb99b",
+    "uuid": "7ae9522f-2232-41b3-adba-0489334831de",
     "title": "Product Intern",
     "company_name": "Rapido",
     "company_logo_icon": "building",
@@ -3370,17 +3338,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-16T13:50:04.663Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1230,
   "fields": {
-    "uuid": "fe0f590d-eaa8-4c93-bd10-cd5aaed37974",
+    "uuid": "b14eba69-0f0f-4a60-a3d8-51656df53839",
     "title": "Systems Development Engineer",
     "company_name": "Google",
     "company_logo_icon": "building",
@@ -3402,17 +3370,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-16T17:58:42.768Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1231,
   "fields": {
-    "uuid": "a8728f26-13b9-403d-9bda-961efbf340fc",
+    "uuid": "a9e006b1-2355-4f4f-90e0-bfb58154b021",
     "title": "Talent Acquisition Trainee",
     "company_name": "Deloitte",
     "company_logo_icon": "building",
@@ -3434,17 +3402,17 @@
     "views_count": 3,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T18:43:38.847Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1232,
   "fields": {
-    "uuid": "3b02b3d0-ccd3-4e3e-8180-2f98858ad47b",
+    "uuid": "62423fae-44d1-4c0a-970c-0525ae0b1dda",
     "title": "Backend/Data Engineer",
     "company_name": "BrightEdge",
     "company_logo_icon": "building",
@@ -3466,17 +3434,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T18:43:39.062Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1233,
   "fields": {
-    "uuid": "4c9ad02a-2546-49dd-93f4-0afcde45f8a7",
+    "uuid": "6e7633c1-21fc-4328-a55a-9d088e2a89e6",
     "title": "Associate Engineer – Digital Technology",
     "company_name": "United",
     "company_logo_icon": "building",
@@ -3498,17 +3466,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T18:43:39.275Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1234,
   "fields": {
-    "uuid": "8dca2890-aae0-4877-92e3-ac4de58eb4be",
+    "uuid": "398fb564-f2af-4f48-888c-9c47f5955d4a",
     "title": "Campus-Trainee",
     "company_name": "HCLTech",
     "company_logo_icon": "building",
@@ -3530,17 +3498,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T18:43:39.488Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1235,
   "fields": {
-    "uuid": "bc7daedc-c6db-40e5-a08d-18e9dfe70335",
+    "uuid": "9cb226f6-1619-4064-ad92-f50b93bbe3de",
     "title": "MRE Intern",
     "company_name": "Sprinto",
     "company_logo_icon": "building",
@@ -3562,17 +3530,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T19:06:19.877Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1236,
   "fields": {
-    "uuid": "470ba3c9-f148-4f68-9e32-41929bf46085",
+    "uuid": "51165507-9802-4486-81d8-98feae2614de",
     "title": "Barclays Full Stack Developer",
     "company_name": "Barclays",
     "company_logo_icon": "building",
@@ -3594,17 +3562,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T20:13:13.781Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1237,
   "fields": {
-    "uuid": "074fde6f-0cea-4b9e-bf13-5c3d06f53f68",
+    "uuid": "3483cce4-27a4-4e94-8031-ab2e59b806db",
     "title": "Data Analyst",
     "company_name": "Seternitysolutions",
     "company_logo_icon": "building",
@@ -3626,17 +3594,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T20:13:14.052Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1238,
   "fields": {
-    "uuid": "48952c5e-37f0-4c6c-a12e-72abddfde712",
+    "uuid": "19fe1b6d-acc4-4518-bd83-f4de56f90b30",
     "title": "Associate Data Analyst",
     "company_name": "Ecolab",
     "company_logo_icon": "building",
@@ -3658,17 +3626,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T20:13:14.270Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1239,
   "fields": {
-    "uuid": "16db68a9-3972-4085-a355-cc0ac98697c3",
+    "uuid": "90e9c450-de51-47a5-a2a1-0068d327017e",
     "title": "Associate / Sr. Associate - Refferal",
     "company_name": "Sutherlandglobal",
     "company_logo_icon": "building",
@@ -3690,17 +3658,17 @@
     "views_count": 12,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T20:13:14.488Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1240,
   "fields": {
-    "uuid": "4f88cea0-237f-412f-a022-8e2d51324ac7",
+    "uuid": "a85e2a25-879f-4bb7-a1bb-2c1b5ba299bb",
     "title": "Analyst",
     "company_name": "Northern Trust",
     "company_logo_icon": "building",
@@ -3722,17 +3690,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-16T20:58:30.618Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1241,
   "fields": {
-    "uuid": "5a4eb020-2cfc-4c2a-9dba-9e1b5d9aff02",
+    "uuid": "cf071680-f0ad-49ef-ba75-b8936d7c2415",
     "title": "Data Analyst – Power BI, SQL, SAP",
     "company_name": "Hitachi",
     "company_logo_icon": "building",
@@ -3754,17 +3722,17 @@
     "views_count": 12,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T23:14:57.661Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1242,
   "fields": {
-    "uuid": "9614049e-d827-49fe-8321-540347e3eaa4",
+    "uuid": "897d63fc-56dc-4f28-9ee9-40ac89ab85c2",
     "title": "Tata Imagination Challenge",
     "company_name": "Tata Group",
     "company_logo_icon": "building",
@@ -3786,17 +3754,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-03",
-    "deadline": "2026-09-17T04:50:57.829Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1243,
   "fields": {
-    "uuid": "c8daf8b0-a9c9-4fbb-8e07-cff0150acf4d",
+    "uuid": "834f571a-faf7-42e0-ab09-b39b35c85716",
     "title": "Developer-Enterprise Apps",
     "company_name": "Birlasoft",
     "company_logo_icon": "building",
@@ -3818,17 +3786,17 @@
     "views_count": 11,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T07:28:02.792Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1244,
   "fields": {
-    "uuid": "79a1b651-87e9-48d9-8fc6-714e9cb54143",
+    "uuid": "4bdf0f8f-d83c-4c06-b770-609dad032db5",
     "title": "Software Engineer II, Google Cloud",
     "company_name": "Google",
     "company_logo_icon": "building",
@@ -3850,17 +3818,17 @@
     "views_count": 16,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T07:28:03.026Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1245,
   "fields": {
-    "uuid": "57abc6f4-f919-4236-a792-59009aa57b6b",
+    "uuid": "c0dfae04-85e5-4917-9da5-f299d3598c40",
     "title": "Software Engineer I",
     "company_name": "American Express",
     "company_logo_icon": "building",
@@ -3882,49 +3850,17 @@
     "views_count": 15,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T07:28:03.259Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
-  }
-},
-{
-  "model": "requirements.jobposting",
-  "pk": 1246,
-  "fields": {
-    "uuid": "91a230da-1973-406b-bd53-5e60ff4a3324",
-    "title": "Software Engineer I – Salesforce Support",
-    "company_name": "zoominfo",
-    "company_logo_icon": "building",
-    "category": 1,
-    "job_type": "FULL_TIME",
-    "stipend_salary": "16 - 21 LPA",
-    "location": "Bengaluru, Karnataka",
-    "is_remote": false,
-    "skills_required": "Salesforce configuration, Salesforce Data Loader, Workbench, Import Wizard, API testing, Postman, database fundamentals, SQL, troubleshooting, root‑cause analysis, communication, business analysis, QA (smoke &amp; regression testing), SDLC knowledge",
-    "apply_url": "https://www.zoominfo.com/careers/jr108079/software-engineer-i-salesforce-support?amp%3Bgh_jid=8759684002",
-    "allow_direct_apply": true,
-    "description": "ZoomInfo is a leading global B2B data and intelligence platform that helps enterprises discover, engage, and grow their customer base. With a presence in over 100 countries, the company leverages advanced analytics, AI, and a vast data ecosystem to power sales, marketing, and product teams worldwide. In India, ZoomInfo has rapidly expanded its engineering footprint, focusing on delivering high‑quality, scalable solutions to a diverse set of clients.\r\n\r\nThe Software Engineer I – Salesforce Support role is an entry‑level position designed for fresh graduates or early‑career professionals with 0–2 years of experience in business analysis, systems analysis, quality assurance, or related technology roles. As a Tier 1 Support Specialist for Salesforce Platform Operations, you will be the first line of defense for day‑to‑day Salesforce support, handling tickets, monitoring platform performance, troubleshooting user issues, and maintaining data integrity.\r\n\r\nKey responsibilities include:\r\n1. Managing and resolving daily Salesforce support tickets.\r\n2. Monitoring platform performance and logging incidents.\r\n3. Performing basic Salesforce troubleshooting and diagnostics.\r\n4. Escalating complex issues to senior engineers.\r\n5. Importing, updating, exporting, and upserting data using Data Loader, Workbench, and Import Wizard.\r\n6. Conducting data integrity checks and cleanup.\r\n7. Supporting user permissions and basic configuration changes.\r\n8. Assisting QA teams with smoke and regression testing.\r\n9. Participating in story refinement and requirement‑gathering sessions.\r\n10. Documenting resolution workflows and process improvements.\r\n\r\nTech stack and tools: Salesforce Lightning, Salesforce Data Loader, Workbench, Import Wizard, Postman, basic SQL, and standard SDLC practices.\r\n\r\nGrowth path: Starting as a Tier 1 support engineer, you can progress to Tier 2/3 support, Salesforce Administrator, or even a Software Engineer role focusing on platform development, depending on performance and skill development.\r\n\r\nWhy join ZoomInfo? The company offers a collaborative, fast‑paced environment where you can work with cross‑functional teams, gain exposure to cutting‑edge data technologies, and contribute directly to client success. With a strong emphasis on learning and career progression, you’ll have ample opportunities to grow your technical and business acumen.",
-    "eligibility": "Bachelor’s degree in Computer Science, Electronics, or a similar technical discipline from a government‑approved university. 0–2 years of relevant experience in business analysis, systems analysis, quality assurance, or related technology roles. No CGPA or percentage requirement specified. No backlog policy mentioned.",
-    "selection_process": "Round 1: Technical interview – Salesforce fundamentals, data loading, API testing → Round 2: Technical interview – troubleshooting, QA, business analysis → Round 3: HR interview",
-    "study_materials": [],
-    "posted_by": "Kashii Updatez Admin",
-    "poster_email": "admin@kashiiupdatez.com",
-    "status": "ACTIVE",
-    "views_count": 11,
-    "applications_count": 0,
-    "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
-    "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T08:13:09.770Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1247,
   "fields": {
-    "uuid": "c94398ea-70e6-4585-b555-3f89636789b0",
+    "uuid": "cd90b1ca-f9f4-415b-834d-98904b7a6f69",
     "title": "Associate - D&A",
     "company_name": "PwC",
     "company_logo_icon": "building",
@@ -3946,17 +3882,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T10:28:28.419Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1248,
   "fields": {
-    "uuid": "f4c52fac-a96e-4ea5-b674-200ef7ec8bf8",
+    "uuid": "60ae3855-6246-4617-9cd5-a6fe65001730",
     "title": "Typing Jobs for Computer Operators (Remote Part-Time Job)",
     "company_name": "The Elite Job",
     "company_logo_icon": "building",
@@ -3978,17 +3914,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T10:28:28.749Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1249,
   "fields": {
-    "uuid": "994670ff-20c2-4928-bf73-9760ce78b580",
+    "uuid": "076a3a89-8221-47d4-8fc0-72236dfaefa5",
     "title": "Search Engine Optimization (SEO) Executive",
     "company_name": "Infoskaters",
     "company_logo_icon": "building",
@@ -4010,17 +3946,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T13:27:29.754Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1250,
   "fields": {
-    "uuid": "cf5e6445-c39d-423c-a1bd-9d526ff17011",
+    "uuid": "3258d97c-b78d-4d30-9de1-c3aa857a387a",
     "title": "Software Engineer Intern",
     "company_name": "IQVIA",
     "company_logo_icon": "building",
@@ -4042,17 +3978,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T13:27:30.514Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1251,
   "fields": {
-    "uuid": "a788457a-05e2-44d8-895c-5056d5267d14",
+    "uuid": "d5374c58-9902-4be0-bcf2-e28a238041bf",
     "title": "C/C++ Developer – Research Engineer",
     "company_name": "Hiremee",
     "company_logo_icon": "building",
@@ -4074,17 +4010,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T14:12:46.981Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1252,
   "fields": {
-    "uuid": "79b09e17-5d65-4948-8377-68678f659445",
+    "uuid": "c98e2eee-0a2c-4fa3-952d-e9bb9f43f3e7",
     "title": "Software Engineer I",
     "company_name": "LG Ad Solutions",
     "company_logo_icon": "building",
@@ -4106,17 +4042,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-17T14:35:48.535Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1253,
   "fields": {
-    "uuid": "459ffcf3-bd78-4e8c-932b-f3d456d62c74",
+    "uuid": "6cb67d9e-a355-49fb-ad24-754acacff2dd",
     "title": "Software Development Engineer - Backend",
     "company_name": "Joinus",
     "company_logo_icon": "building",
@@ -4138,17 +4074,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T18:21:38.797Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1254,
   "fields": {
-    "uuid": "a35b31b3-627f-4529-87a7-38aa6386436e",
+    "uuid": "fac91390-82f4-4afc-bf3a-c1b3983ad989",
     "title": "Software Engineer - I",
     "company_name": "H1",
     "company_logo_icon": "building",
@@ -4170,17 +4106,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T18:21:39.064Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1255,
   "fields": {
-    "uuid": "73f892ba-a992-4c60-b37e-5beecc4a48c8",
+    "uuid": "db76792a-f6da-4181-be8b-a8b6662fa4ea",
     "title": "Junior Developer – Remote (India)",
     "company_name": "Confidential",
     "company_logo_icon": "building",
@@ -4202,17 +4138,17 @@
     "views_count": 18,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-17T20:59:25.732Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1256,
   "fields": {
-    "uuid": "843a92b6-9432-45a3-89b3-0bdca82533ba",
+    "uuid": "4c60ee64-da61-4351-af27-fe5430b4470f",
     "title": "Service Associate – Global Data Management – Data Validation",
     "company_name": "Deloitte",
     "company_logo_icon": "building",
@@ -4234,17 +4170,17 @@
     "views_count": 17,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T20:59:25.977Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1257,
   "fields": {
-    "uuid": "1cb28dfc-6f63-4783-8e6f-95dc0da729a1",
+    "uuid": "643f96dd-3f22-47c3-9d9d-4c00c094bfa0",
     "title": "Analyst – Data Science",
     "company_name": "American Express",
     "company_logo_icon": "building",
@@ -4266,17 +4202,17 @@
     "views_count": 22,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T20:59:26.223Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1258,
   "fields": {
-    "uuid": "4e5fbaac-3915-4f94-a185-4791e589d704",
+    "uuid": "69024a32-fffb-41c5-b79b-0d2416f54005",
     "title": "Product Designer",
     "company_name": "Microsoft",
     "company_logo_icon": "building",
@@ -4298,17 +4234,17 @@
     "views_count": 11,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T00:43:31.019Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1259,
   "fields": {
-    "uuid": "410f9e5e-2182-414e-a3ba-3e6717a93157",
+    "uuid": "7b54b806-daa6-4ea8-b2ae-7d2f5012e358",
     "title": "DevOps Intern",
     "company_name": "CouldRaft",
     "company_logo_icon": "building",
@@ -4330,17 +4266,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T01:28:17.643Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1260,
   "fields": {
-    "uuid": "f7ca9f93-3262-4822-b129-cf662d358a4e",
+    "uuid": "70f7a382-3c0e-4a7d-ba8a-e1e37638a645",
     "title": "SEO Content Intern",
     "company_name": "Apply",
     "company_logo_icon": "building",
@@ -4362,17 +4298,17 @@
     "views_count": 11,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T01:28:17.853Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1261,
   "fields": {
-    "uuid": "69e636c2-7204-48e4-9385-e0c9f5ae2675",
+    "uuid": "899b6008-a6af-4d14-8ff5-4d2d9a492a26",
     "title": "Software Engineer / Product Role",
     "company_name": "Proarch",
     "company_logo_icon": "building",
@@ -4394,17 +4330,17 @@
     "views_count": 17,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T03:19:59.277Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1262,
   "fields": {
-    "uuid": "99d901d9-bfe2-4b41-91ef-f9253204d29f",
+    "uuid": "10619648-e13c-449e-8fa7-ad93b89c18ad",
     "title": "Graduate Engineer Trainee",
     "company_name": "Wipro",
     "company_logo_icon": "building",
@@ -4426,17 +4362,17 @@
     "views_count": 25,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T07:04:07.409Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1263,
   "fields": {
-    "uuid": "1b626b1b-8283-4644-8c47-f7bb94f939ee",
+    "uuid": "880f978c-f6eb-4b8d-852e-af3dc0f09d3d",
     "title": "Software Engineer – SDET",
     "company_name": "Applied Materials",
     "company_logo_icon": "building",
@@ -4458,17 +4394,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T14:32:21.176Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1264,
   "fields": {
-    "uuid": "623795e5-d615-4b84-bf3f-99810acdfb3f",
+    "uuid": "da010df2-84e5-43ee-80d5-93d785335191",
     "title": "Computer Vision Engineer II – Vision Model Development & Automation",
     "company_name": "HCLTech",
     "company_logo_icon": "building",
@@ -4490,17 +4426,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T15:16:55.523Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1265,
   "fields": {
-    "uuid": "731154d1-1c40-4aca-ac8d-8ddcbb7d74f6",
+    "uuid": "46566b71-28e1-4d47-be0a-264cf893cc82",
     "title": "Associate",
     "company_name": "Wipro",
     "company_logo_icon": "building",
@@ -4522,17 +4458,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T15:16:55.794Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1266,
   "fields": {
-    "uuid": "aa708b01-76e0-4bf4-b8c1-44a7841672bf",
+    "uuid": "3ad8e6cb-d625-47b4-b981-1f041f3a35b5",
     "title": "Data Analyst Intern",
     "company_name": "Portcast",
     "company_logo_icon": "building",
@@ -4554,17 +4490,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:22:51.644Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1267,
   "fields": {
-    "uuid": "6bcf1cff-e9db-4b6b-b55f-b128935913fa",
+    "uuid": "22104d79-4ed1-450c-8f3f-bf8a44b5e410",
     "title": "AI Facial Data Collection Associate",
     "company_name": "jobs.micro1.ai",
     "company_logo_icon": "building",
@@ -4586,17 +4522,17 @@
     "views_count": 3,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:22:51.843Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1268,
   "fields": {
-    "uuid": "a18d9f16-675e-4b20-adc5-7bff14db8fdc",
+    "uuid": "5c597dd2-61c0-418b-a8d9-a7e494feca54",
     "title": "Representative, Operations",
     "company_name": "CNX",
     "company_logo_icon": "building",
@@ -4618,17 +4554,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:44:50.529Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1269,
   "fields": {
-    "uuid": "fa5bcf6e-b160-49ea-9d3f-3ee3beb9a665",
+    "uuid": "b43ee0fd-62c5-48f4-92da-2c99769a2e6d",
     "title": "Associate - Bangalore- Technology Consulting",
     "company_name": "PwC",
     "company_logo_icon": "building",
@@ -4650,17 +4586,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:44:50.727Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1270,
   "fields": {
-    "uuid": "e4acd33f-1b76-4133-961d-a443b6ea6cf2",
+    "uuid": "19df0ca2-9f20-4c9f-9d2d-66f8998d4d18",
     "title": "Reporting Analyst",
     "company_name": "Cognizant",
     "company_logo_icon": "building",
@@ -4682,17 +4618,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:44:50.925Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1271,
   "fields": {
-    "uuid": "1ed8ed80-9664-4e39-b5a9-7369462b455d",
+    "uuid": "a16cfe97-34e3-4fa1-a0fd-83ae4cb680db",
     "title": "Mainframes Trained Grads",
     "company_name": "CGI",
     "company_logo_icon": "building",
@@ -4714,17 +4650,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:44:51.122Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1272,
   "fields": {
-    "uuid": "400acb74-0a6f-422f-923f-91c670b32797",
+    "uuid": "0f1cba21-0304-42c4-a0c0-b54cf49252d8",
     "title": "Service Desk Associate",
     "company_name": "Accenture",
     "company_logo_icon": "building",
@@ -4746,17 +4682,17 @@
     "views_count": 9,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:44:51.367Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1273,
   "fields": {
-    "uuid": "37db4bc3-3e8b-4ab8-89f6-f9e8469bdbd3",
+    "uuid": "1ad88538-2027-4d22-92df-ec50f3a96f52",
     "title": "Data Analyst",
     "company_name": "Capgemini",
     "company_logo_icon": "building",
@@ -4778,17 +4714,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T20:07:14.942Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1274,
   "fields": {
-    "uuid": "d73282a2-8518-42b9-9e53-b2238c01385c",
+    "uuid": "ef4e5f9b-ceeb-4d50-a474-d292dd9727b0",
     "title": "QA Engineer",
     "company_name": "jobs.micro1.ai",
     "company_logo_icon": "building",
@@ -4810,17 +4746,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T21:37:10.889Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1275,
   "fields": {
-    "uuid": "8e128280-65ed-4f58-bd46-150739dc84a3",
+    "uuid": "e1c96bee-80e6-4d75-88a3-0a102c0634bf",
     "title": "Opportunities with HCLTech - Python - (Fresher)",
     "company_name": "HCLTech",
     "company_logo_icon": "building",
@@ -4842,17 +4778,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T22:44:13.597Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1276,
   "fields": {
-    "uuid": "4c900037-c867-4f70-879d-2db883c7aaf2",
+    "uuid": "4d56b75d-3483-4d27-93bd-3cf613adb285",
     "title": "Data Analyst",
     "company_name": "jobs.micro1.ai",
     "company_logo_icon": "building",
@@ -4874,17 +4810,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-19T04:44:23.776Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1277,
   "fields": {
-    "uuid": "dc7ee44d-451d-4ad4-a973-253733160fe4",
+    "uuid": "6330847b-bd9f-455d-a822-9368a3a0409b",
     "title": "Associate Software Engineer",
     "company_name": "Tranetechnologies",
     "company_logo_icon": "building",
@@ -4906,17 +4842,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T05:52:09.224Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1278,
   "fields": {
-    "uuid": "649b5fde-9ca2-4c74-a47e-f3eeeee9350b",
+    "uuid": "0755c0c2-f181-45cd-9691-58303cf50ea4",
     "title": "Backend Engineer, AS",
     "company_name": "Deutsche Bank",
     "company_logo_icon": "building",
@@ -4938,17 +4874,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T06:37:21.412Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1279,
   "fields": {
-    "uuid": "a9a6fad3-ba48-476f-9c31-e3158c43ec35",
+    "uuid": "611a5c08-0f1f-487f-966a-d502b75e1f1f",
     "title": "Data Analyst",
     "company_name": "JPMorgan Chase",
     "company_logo_icon": "building",
@@ -4970,17 +4906,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T06:37:21.652Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1280,
   "fields": {
-    "uuid": "209b98be-e318-40c6-a46a-3a349b806397",
+    "uuid": "425a8c27-1e2e-497a-a93e-d2048c17c6db",
     "title": "Data Analyst Fresher – Data Analytics",
     "company_name": "Jobleads",
     "company_logo_icon": "building",
@@ -5002,17 +4938,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T06:37:21.890Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1281,
   "fields": {
-    "uuid": "d7bb257f-db4e-4e50-a3e0-4038c678d94a",
+    "uuid": "c09c6f00-746e-48a0-b826-79da19c82816",
     "title": "Graduate Trainee Engineer",
     "company_name": "Siemens",
     "company_logo_icon": "building",
@@ -5034,17 +4970,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T06:59:46.622Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1282,
   "fields": {
-    "uuid": "e0ac9752-8c9b-4697-a401-3abbeac43f72",
+    "uuid": "735414b4-7e78-46b6-8230-cdf9b9dc6903",
     "title": "Software Engineer Apprentice",
     "company_name": "F5",
     "company_logo_icon": "building",
@@ -5066,17 +5002,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-19T09:36:50.137Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1283,
   "fields": {
-    "uuid": "975f2845-4a5f-4462-9f52-1a108412b063",
+    "uuid": "f12da44f-7317-439a-8632-b12eaff710b8",
     "title": "Data & AI Engineering Intern",
     "company_name": "EA",
     "company_logo_icon": "building",
@@ -5098,17 +5034,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-19T09:59:06.060Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1284,
   "fields": {
-    "uuid": "fbc4b9cd-9c08-4867-8ccd-da361619de52",
+    "uuid": "1b0dcbda-2b3f-42a5-b09d-485c3fc6e391",
     "title": "App Development",
     "company_name": "Standardchartered",
     "company_logo_icon": "building",
@@ -5130,17 +5066,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T11:06:55.837Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1285,
   "fields": {
-    "uuid": "327df365-527a-4756-aa2b-d7362338d0cc",
+    "uuid": "76a1f7e6-93b1-4e36-95a2-4ecfc687fa0d",
     "title": "Data Engineer-Data Platforms",
     "company_name": "IBM",
     "company_logo_icon": "building",
@@ -5162,17 +5098,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T11:06:56.057Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1286,
   "fields": {
-    "uuid": "66773559-6dd6-4c16-b885-c58efbba9f65",
+    "uuid": "bbfc9b3a-ad9f-43bd-8516-64a25cfd4c3a",
     "title": "Quality Auditing New Associate",
     "company_name": "Accenture",
     "company_logo_icon": "building",
@@ -5194,17 +5130,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T11:06:56.330Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1287,
   "fields": {
-    "uuid": "748566c6-399d-40cf-bb90-e654f30649af",
+    "uuid": "93bb87d7-530a-4f73-9e1f-3ebf465005d6",
     "title": "Testing-BCM-Off campus",
     "company_name": "EY (Ernst & Young)",
     "company_logo_icon": "building",
@@ -5226,17 +5162,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T11:06:56.550Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1288,
   "fields": {
-    "uuid": "18bfde2e-a5d7-4b07-b4dd-3f1a8310d7e3",
+    "uuid": "10ab9157-347f-4028-85e9-d1218c38ad18",
     "title": "Mainframe Apprentice",
     "company_name": "CGI",
     "company_logo_icon": "building",
@@ -5258,17 +5194,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T15:14:52.378Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1289,
   "fields": {
-    "uuid": "a3d5ea99-edb5-45bd-b1df-80649143b5b8",
+    "uuid": "899ac06b-baf8-4a58-b07f-a58680ba9c04",
     "title": "Data Analyst",
     "company_name": "Navi Technologies",
     "company_logo_icon": "building",
@@ -5290,17 +5226,17 @@
     "views_count": 8,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T15:14:52.592Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1290,
   "fields": {
-    "uuid": "a2a2171e-7768-4ce0-92fe-0bd17e8ec1c5",
+    "uuid": "a3506e3f-e883-4ea8-a822-c751ab79a54d",
     "title": "Data Analyst/Engineer",
     "company_name": "Black Box",
     "company_logo_icon": "building",
@@ -5322,17 +5258,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T17:30:30.896Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1291,
   "fields": {
-    "uuid": "f770960e-31be-4ec9-915a-dbdcd09aa0b0",
+    "uuid": "84dfa5a7-4ff3-4d41-84cb-62a31488b4da",
     "title": "Apprentice Software Engineer",
     "company_name": "SymphonyAI",
     "company_logo_icon": "building",
@@ -5354,17 +5290,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-19T17:53:19.440Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1292,
   "fields": {
-    "uuid": "3d0ba244-9e45-42bb-ba17-697515c7568e",
+    "uuid": "ad9deaa5-4346-45aa-aaec-39e8c190479e",
     "title": "Data Analyst/Scientist",
     "company_name": "Kotak Mahindra Bank",
     "company_logo_icon": "building",
@@ -5386,17 +5322,17 @@
     "views_count": 11,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T18:38:19.086Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1293,
   "fields": {
-    "uuid": "cdaaea04-5edb-4081-9158-6803cc8b2d20",
+    "uuid": "f60191d6-81bd-46a1-b44c-b54dd5af42bb",
     "title": "Software Developer",
     "company_name": "Jasmin Infotech",
     "company_logo_icon": "building",
@@ -5418,17 +5354,17 @@
     "views_count": 10,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T20:07:58.657Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1294,
   "fields": {
-    "uuid": "c3152baa-ad4f-4f1b-8e8a-e3eaf8720fe6",
+    "uuid": "96afabb9-ec0a-466f-a403-0cd7ebb2a26a",
     "title": "Advanced Data Analyst",
     "company_name": "Ibqbjb",
     "company_logo_icon": "building",
@@ -5450,17 +5386,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T23:53:19.719Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1295,
   "fields": {
-    "uuid": "5815df07-fd06-4e4f-948e-ee9ffd9ecd83",
+    "uuid": "a6e2f744-59f6-48cd-b656-b65e949f532d",
     "title": "Software Engineer",
     "company_name": "Franklin Templeton",
     "company_logo_icon": "building",
@@ -5482,17 +5418,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T07:45:07.687Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1296,
   "fields": {
-    "uuid": "dd24dc90-d12c-453e-b266-6977de5eb93e",
+    "uuid": "da539e18-55ba-4bea-9c4d-8599725b514c",
     "title": "Graduate Trainee – Mechanical/Electrical Engineering",
     "company_name": "Tech Mahindra",
     "company_logo_icon": "building",
@@ -5514,17 +5450,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T08:07:18.522Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1297,
   "fields": {
-    "uuid": "fd46ec84-b1a2-4f45-81f6-df568e0189fa",
+    "uuid": "d146cba9-9b64-4d39-a6e7-90c4c7942610",
     "title": "Software Development Engineer",
     "company_name": "Siemens",
     "company_logo_icon": "building",
@@ -5546,17 +5482,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T08:07:18.735Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1298,
   "fields": {
-    "uuid": "f3d944e4-5f14-484b-95ac-a90a09ba361c",
+    "uuid": "01702220-a5f1-4713-921b-834537497ffb",
     "title": "Machine Learning Data Associate, Journey Management",
     "company_name": "Amazon",
     "company_logo_icon": "building",
@@ -5578,17 +5514,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T08:07:18.947Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1299,
   "fields": {
-    "uuid": "f23fd8b1-dab6-4b10-9d50-ffd9449ffe7e",
+    "uuid": "25444efb-f6bc-45eb-84cd-abdb733dd5e3",
     "title": "Database Administrator / PLSQL Developer",
     "company_name": "Gevernova",
     "company_logo_icon": "building",
@@ -5610,17 +5546,17 @@
     "views_count": 3,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-20T10:22:11.828Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1300,
   "fields": {
-    "uuid": "f234a190-737c-447b-bf28-26ee1a67abdb",
+    "uuid": "28b8e6ad-7c14-4b01-89e0-aeb709b4a143",
     "title": "Graduate Engineer – Technology",
     "company_name": "irissoftware",
     "company_logo_icon": "building",
@@ -5642,17 +5578,17 @@
     "views_count": 2,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-20T11:29:41.098Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1301,
   "fields": {
-    "uuid": "4b3c5cd9-b762-45c2-8644-5150d89ab3ac",
+    "uuid": "398ef21d-4c49-498b-860a-c8ab1cee5d2f",
     "title": "Order Processing & Data Entry Specialist",
     "company_name": "BruntWork",
     "company_logo_icon": "building",
@@ -5674,17 +5610,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T14:29:59.040Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1302,
   "fields": {
-    "uuid": "c6e9574d-cc3c-47bd-82ed-2f7efda3ff08",
+    "uuid": "c709c2a2-6b27-44a9-b9c3-9aa378f8c8cb",
     "title": "SDE-1",
     "company_name": "Google",
     "company_logo_icon": "building",
@@ -5706,17 +5642,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T14:29:59.284Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1303,
   "fields": {
-    "uuid": "b34c9aaf-405b-4f81-9d1d-0e99f659fed3",
+    "uuid": "c7cdcc40-54cc-4dcc-ba2d-0ffac9a911d2",
     "title": "Digital Content Associate, Audible",
     "company_name": "Amazon",
     "company_logo_icon": "building",
@@ -5738,17 +5674,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T14:52:53.779Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1304,
   "fields": {
-    "uuid": "bffceb7f-b832-4937-983e-d91a569609b7",
+    "uuid": "1b263866-116c-4004-b895-7c3fccd40a15",
     "title": "Software Engineer",
     "company_name": "IS&Digital",
     "company_logo_icon": "building",
@@ -5770,17 +5706,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T15:37:44.952Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1305,
   "fields": {
-    "uuid": "b879d639-7ff4-4819-8f05-bf07e3e076a9",
+    "uuid": "d91721f1-6e3d-4a44-a6d0-2ca13738c029",
     "title": "Data and Reporting Analyst: Hyderabad",
     "company_name": "Deloitte",
     "company_logo_icon": "building",
@@ -5802,17 +5738,17 @@
     "views_count": 7,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T17:53:45.377Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1306,
   "fields": {
-    "uuid": "91f2eaf7-d2fc-4088-8abd-b8e97f4a8577",
+    "uuid": "dd39fec1-5737-43e7-987d-2015af98eba3",
     "title": "Graduate Apprentice trainee",
     "company_name": "Volvogroup",
     "company_logo_icon": "building",
@@ -5834,17 +5770,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T17:53:45.665Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1307,
   "fields": {
-    "uuid": "b3f3a0e1-46fc-44f3-9bc2-6b15bf54febd",
+    "uuid": "56eb9b76-c925-4774-9895-a2378dfa5aba",
     "title": "Concentrix Direct HiringRegistration",
     "company_name": "Concentrix",
     "company_logo_icon": "building",
@@ -5866,17 +5802,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T18:39:09.580Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1308,
   "fields": {
-    "uuid": "c56519a5-3107-4ce4-9964-7152844bef7c",
+    "uuid": "73243a67-8aac-4b00-a9bc-c5cf52353f2c",
     "title": "Associate Software Engineer",
     "company_name": "Sandisk",
     "company_logo_icon": "building",
@@ -5898,17 +5834,17 @@
     "views_count": 6,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-20T20:09:26.129Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1309,
   "fields": {
-    "uuid": "d357fe21-d5c5-4a91-9ae6-6a429a774f51",
+    "uuid": "3e39396d-7436-43c6-922a-c721ed725b22",
     "title": "Talent Acquisition Trainee",
     "company_name": "Meesho",
     "company_logo_icon": "building",
@@ -5930,17 +5866,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-20T20:09:26.714Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1310,
   "fields": {
-    "uuid": "39e60316-3841-433e-8f36-36097ff9dca8",
+    "uuid": "d26b725a-6827-4b47-9a98-32093069c67a",
     "title": "Web Accessibility Engineer",
     "company_name": "Apple",
     "company_logo_icon": "building",
@@ -5962,17 +5898,17 @@
     "views_count": 5,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-20T21:17:27.345Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1311,
   "fields": {
-    "uuid": "c0138ab9-1fb9-44e0-bf96-93cae9688aed",
+    "uuid": "e285569b-d9df-4338-a963-198d6501f45a",
     "title": "Software Engineer",
     "company_name": "Zyntrixsoftware",
     "company_logo_icon": "building",
@@ -5994,17 +5930,17 @@
     "views_count": 3,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T07:07:23.424Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1312,
   "fields": {
-    "uuid": "1e8fad7d-47a5-48c5-8afb-3a108ca81dd7",
+    "uuid": "7db344e9-d3d5-4dcc-8244-900b505472da",
     "title": "Analyst III Infrastructure services",
     "company_name": "DXC",
     "company_logo_icon": "building",
@@ -6026,17 +5962,17 @@
     "views_count": 3,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T07:07:23.637Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1313,
   "fields": {
-    "uuid": "f96c3895-a4bd-42ca-aeeb-24a385de4305",
+    "uuid": "335c67af-bec3-4b7a-8f3c-d473f9078c6f",
     "title": "Test Analyst",
     "company_name": "Cognizant",
     "company_logo_icon": "building",
@@ -6058,17 +5994,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T07:07:23.952Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1314,
   "fields": {
-    "uuid": "5aa72ad8-c669-46dc-a57b-1d567fbd92fa",
+    "uuid": "32b27a6b-3a62-4f6b-8252-edb8c86333c8",
     "title": "Data Analyst",
     "company_name": "OLTOWNS",
     "company_logo_icon": "building",
@@ -6090,17 +6026,17 @@
     "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T10:11:00.561Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1315,
   "fields": {
-    "uuid": "f7c8a80b-3a45-4788-af1f-ae4c7b36440a",
+    "uuid": "ad04649c-3804-4d81-a2f2-3b3086e337f4",
     "title": "Entry Level Software Engineer",
     "company_name": "Medpace",
     "company_logo_icon": "building",
@@ -6122,17 +6058,17 @@
     "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T10:11:00.778Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1316,
   "fields": {
-    "uuid": "4f0ab2ce-c195-49e2-a2b8-db36b0a283c0",
+    "uuid": "64fa9bcb-3884-4110-a1f5-c591573aec4c",
     "title": "Data Analyst / Business Analyst Intern",
     "company_name": "Tradefluxs",
     "company_logo_icon": "building",
@@ -6154,17 +6090,17 @@
     "views_count": 2,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T10:11:00.994Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1317,
   "fields": {
-    "uuid": "d6b6ee71-e043-4040-a9e9-3ce22c973b84",
+    "uuid": "3a21544c-38d4-412a-91b2-4c61924e108e",
     "title": "Data Analyst",
     "company_name": "StepChange",
     "company_logo_icon": "building",
@@ -6186,17 +6122,17 @@
     "views_count": 2,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T10:11:01.211Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1318,
   "fields": {
-    "uuid": "2997a42e-36f1-408f-85d6-e9100d4a74c3",
+    "uuid": "088f48ac-e92b-4bb1-96e8-d9ae935c97bf",
     "title": "Associate Software Engineer",
     "company_name": "Gartner",
     "company_logo_icon": "building",
@@ -6218,17 +6154,17 @@
     "views_count": 2,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T10:11:01.428Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1319,
   "fields": {
-    "uuid": "c28fe5a9-3d30-43d8-a063-2b79b5e079bf",
+    "uuid": "350610e1-c0d8-4f90-80f8-a58ee81d145c",
     "title": "Zowork - Associate Software Engineer",
     "company_name": "Forms",
     "company_logo_icon": "building",
@@ -6250,17 +6186,17 @@
     "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T12:28:57.817Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1320,
   "fields": {
-    "uuid": "130fa758-821b-42d5-b6a3-6291bb18054c",
+    "uuid": "4c9fb62b-be00-4f95-a208-7562ed50ba76",
     "title": "Application Engineering Intern, Winter",
     "company_name": "Google",
     "company_logo_icon": "building",
@@ -6282,17 +6218,17 @@
     "views_count": 4,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T12:28:58.248Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1321,
   "fields": {
-    "uuid": "90318a2d-b01b-4026-9263-f3366101d5c7",
+    "uuid": "74e2231e-545d-40dc-8c98-c0d4ebfa9384",
     "title": "Data Analyst Freshers",
     "company_name": "ShrinQ Consulting Group",
     "company_logo_icon": "building",
@@ -6314,17 +6250,17 @@
     "views_count": 1,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:14:51.734Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1322,
   "fields": {
-    "uuid": "09db1de7-c80a-41b4-bb07-17f7bfd39c6f",
+    "uuid": "b4a919f8-e576-4bf6-b10e-f73a1755c6e4",
     "title": "AI Tutor - Software Engineering",
     "company_name": "JOB",
     "company_logo_icon": "building",
@@ -6346,17 +6282,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:28:39.975Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1323,
   "fields": {
-    "uuid": "6072ac93-34a0-49af-9d4b-0fa4b492c812",
+    "uuid": "64f43bc0-bf73-42d2-8977-972b8e8ee9cc",
     "title": "Data Engineer",
     "company_name": "TCS (Tata Consultancy Services)",
     "company_logo_icon": "building",
@@ -6378,17 +6314,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:28:41.767Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1324,
   "fields": {
-    "uuid": "6dc4ac79-e746-467c-a10c-fd3185ecd937",
+    "uuid": "eec5537c-14f3-4cfc-9c50-75cca6ebd7d8",
     "title": "Sutherland Assessment based recruitment",
     "company_name": "Sutherland",
     "company_logo_icon": "building",
@@ -6410,17 +6346,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:29:00.454Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1325,
   "fields": {
-    "uuid": "6f0247a7-3cb4-45ca-b7ed-c10a299cac31",
+    "uuid": "25d3bcf2-e41b-4e75-b873-782ca8c4994c",
     "title": "Software Engineer - Winter Intern",
     "company_name": "Rubrik",
     "company_logo_icon": "building",
@@ -6442,17 +6378,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:29:05.370Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1326,
   "fields": {
-    "uuid": "4ea98e48-1351-488e-a9db-c550237a7fff",
+    "uuid": "801d1755-48cf-4f73-a71d-f2c4d76df353",
     "title": "Business Analyst 4A",
     "company_name": "Genpact",
     "company_logo_icon": "building",
@@ -6474,17 +6410,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-21T13:29:09.300Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1327,
   "fields": {
-    "uuid": "22082520-a608-45b2-8c56-2f5cff28fccd",
+    "uuid": "79e2ce41-1acb-4f38-86cb-4772f48ab4b2",
     "title": "Insurance Advisory - (Telugu, English)",
     "company_name": "Ditto",
     "company_logo_icon": "building",
@@ -6506,17 +6442,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:32:43.525Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1328,
   "fields": {
-    "uuid": "9ecf874f-cc8a-4f70-a49a-fe8827d80617",
+    "uuid": "60bd0197-b1cd-48a1-aae9-4a38a99fc59c",
     "title": "Application Engr I",
     "company_name": "Honeywell Technologies",
     "company_logo_icon": "building",
@@ -6538,17 +6474,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:32:44.563Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1329,
   "fields": {
-    "uuid": "fb12dee3-f3a2-4037-8746-977429560748",
+    "uuid": "9b739c5f-2347-48a9-9ae5-e0bc819fb9fc",
     "title": "Software Test Engineer",
     "company_name": "Siemens",
     "company_logo_icon": "building",
@@ -6570,17 +6506,17 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:32:45.564Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
   }
 },
 {
   "model": "requirements.jobposting",
   "pk": 1330,
   "fields": {
-    "uuid": "e0bfebb7-7d61-4517-add7-849551a66942",
+    "uuid": "08a7650b-b385-494b-8fe7-3522987be720",
     "title": "Data Analyst",
     "company_name": "HBSPL",
     "company_logo_icon": "building",
@@ -6602,10 +6538,124 @@
     "views_count": 0,
     "applications_count": 0,
     "is_featured": true,
-    "created_at": "2026-09-25T01:18:54.826Z",
+    "created_at": "2026-09-25T01:30:30.096Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:33:06.625Z",
-    "updated_at": "2026-09-25T01:18:54.827Z"
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:30:30.096Z"
+  }
+},
+{
+  "model": "requirements.jobposting",
+  "pk": 1331,
+  "fields": {
+    "uuid": "c6760adf-6610-4118-8b4e-42e63a1308d1",
+    "title": "Software Engineer I – Salesforce Support",
+    "company_name": "zoominfo",
+    "company_logo_icon": "building",
+    "category": 1,
+    "job_type": "FULL_TIME",
+    "stipend_salary": "16 - 21 LPA",
+    "location": "Bengaluru, Karnataka",
+    "is_remote": false,
+    "skills_required": "Salesforce configuration, Salesforce Data Loader, Workbench, Import Wizard, API testing, Postman, database fundamentals, SQL, troubleshooting, root‑cause analysis, communication, business analysis, QA (smoke &amp; regression testing), SDLC knowledge",
+    "apply_url": "https://www.zoominfo.com/careers/jr108079/software-engineer-i-salesforce-support?amp%3Bgh_jid=8759684002",
+    "allow_direct_apply": true,
+    "description": "ZoomInfo is a leading global B2B data and intelligence platform that helps enterprises discover, engage, and grow their customer base. With a presence in over 100 countries, the company leverages advanced analytics, AI, and a vast data ecosystem to power sales, marketing, and product teams worldwide. In India, ZoomInfo has rapidly expanded its engineering footprint, focusing on delivering high‑quality, scalable solutions to a diverse set of clients.\r\n\r\nThe Software Engineer I – Salesforce Support role is an entry‑level position designed for fresh graduates or early‑career professionals with 0–2 years of experience in business analysis, systems analysis, quality assurance, or related technology roles. As a Tier 1 Support Specialist for Salesforce Platform Operations, you will be the first line of defense for day‑to‑day Salesforce support, handling tickets, monitoring platform performance, troubleshooting user issues, and maintaining data integrity.\r\n\r\nKey responsibilities include:\r\n1. Managing and resolving daily Salesforce support tickets.\r\n2. Monitoring platform performance and logging incidents.\r\n3. Performing basic Salesforce troubleshooting and diagnostics.\r\n4. Escalating complex issues to senior engineers.\r\n5. Importing, updating, exporting, and upserting data using Data Loader, Workbench, and Import Wizard.\r\n6. Conducting data integrity checks and cleanup.\r\n7. Supporting user permissions and basic configuration changes.\r\n8. Assisting QA teams with smoke and regression testing.\r\n9. Participating in story refinement and requirement‑gathering sessions.\r\n10. Documenting resolution workflows and process improvements.\r\n\r\nTech stack and tools: Salesforce Lightning, Salesforce Data Loader, Workbench, Import Wizard, Postman, basic SQL, and standard SDLC practices.\r\n\r\nGrowth path: Starting as a Tier 1 support engineer, you can progress to Tier 2/3 support, Salesforce Administrator, or even a Software Engineer role focusing on platform development, depending on performance and skill development.\r\n\r\nWhy join ZoomInfo? The company offers a collaborative, fast‑paced environment where you can work with cross‑functional teams, gain exposure to cutting‑edge data technologies, and contribute directly to client success. With a strong emphasis on learning and career progression, you’ll have ample opportunities to grow your technical and business acumen.",
+    "eligibility": "Bachelor’s degree in Computer Science, Electronics, or a similar technical discipline from a government‑approved university. 0–2 years of relevant experience in business analysis, systems analysis, quality assurance, or related technology roles. No CGPA or percentage requirement specified. No backlog policy mentioned.",
+    "selection_process": "Round 1: Technical interview – Salesforce fundamentals, data loading, API testing → Round 2: Technical interview – troubleshooting, QA, business analysis → Round 3: HR interview",
+    "study_materials": [
+      {
+        "url": "https://www.indiabix.com/aptitude/questions-and-answers/",
+        "desc": "Helps you sharpen quantitative and logical reasoning skills required for the initial screening test.",
+        "icon": "📖",
+        "title": "Aptitude Practice Questions"
+      },
+      {
+        "url": "https://www.geeksforgeeks.org/company-interview-corner/",
+        "desc": "Provides insights into common interview patterns and sample questions asked by tech firms like ZoomInfo.",
+        "icon": "📖",
+        "title": "Company Interview Preparation Guide"
+      },
+      {
+        "url": "https://prepinsta.com/",
+        "desc": "Covers a wide range of topics from data structures to system design, useful for technical rounds.",
+        "icon": "📖",
+        "title": "Comprehensive Interview Prep Resources"
+      },
+      {
+        "url": "https://leetcode.com/problemset/",
+        "desc": "Offers a large set of coding challenges to improve problem‑solving speed for technical assessments.",
+        "icon": "📖",
+        "title": "Algorithm Practice Problems"
+      }
+    ],
+    "posted_by": "Kashii Updatez Admin",
+    "poster_email": "admin@kashiiupdatez.com",
+    "status": "ACTIVE",
+    "views_count": 0,
+    "applications_count": 0,
+    "is_featured": true,
+    "created_at": "2026-09-25T01:25:24.446Z",
+    "posted_date": "2026-09-10",
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:25:24.446Z"
+  }
+},
+{
+  "model": "requirements.jobposting",
+  "pk": 1332,
+  "fields": {
+    "uuid": "b8bc174d-7dcd-40fd-867b-ddd18b788c17",
+    "title": "Trainee",
+    "company_name": "Wipro",
+    "company_logo_icon": "building",
+    "category": 1,
+    "job_type": "INTERNSHIP",
+    "stipend_salary": "Year 1: Rs 16,500 + 1,374 SA = Rs 17,874 per month; Year 2: Rs 17,350 + 1,445 SA = Rs 18,795 per mon",
+    "location": "Mysore, Karnataka, India",
+    "is_remote": false,
+    "skills_required": "Core Mathematics, Analytical Thinking, Problem Solving, Communication Skills, Basic Programming (C/C++, Java), Knowledge of Engineering concepts, Teamwork, Adaptability",
+    "apply_url": "https://app.joinsuperset.com/join",
+    "allow_direct_apply": true,
+    "description": "Wipro Limited, a global leader in information technology, consulting and business process services, has a legacy of over seven decades in delivering innovative solutions across industries. Headquartered in Bengaluru, Wipro operates in more than 50 countries, serving Fortune 500 clients with a focus on digital transformation, cloud, AI, and cybersecurity. The company’s culture emphasizes continuous learning, sustainability, and a commitment to creating value for customers, employees, and society.\r\n\r\nThe Work Integrated Learning Program (WILP) – WE B.ET 2025 & 2026 is a pioneering initiative that blends full‑time employment with a sponsored B.Tech degree from an Institute of Eminence (IoE) university. As a Scholar Trainee, you will join Wipro’s engineering teams while simultaneously pursuing your undergraduate studies, gaining hands‑on experience on live projects, mentorship from senior engineers, and exposure to cutting‑edge technologies.\r\n\r\n**Key Responsibilities**\r\n1. Participate in real‑time project assignments under the guidance of senior engineers.\r\n2. Develop, test, and maintain software modules using industry‑standard tools and frameworks.\r\n3. Assist in requirement gathering, documentation, and solution design.\r\n4. Perform unit testing, debugging, and code reviews to ensure quality deliverables.\r\n5. Contribute to automation scripts and DevOps pipelines where applicable.\r\n6. Attend regular technical workshops, webinars, and campus‑level training sessions.\r\n7. Collaborate with cross‑functional teams including QA, product, and support.\r\n8. Prepare progress reports and present findings to project leads.\r\n9. Uphold Wipro’s code of conduct, security policies, and ethical standards.\r\n10. Balance academic commitments with work responsibilities, meeting both timelines effectively.\r\n\r\n**Tech Stack**: Java, Python, C/C++, SQL, HTML/CSS, JavaScript, Angular/React, Cloud platforms (AWS, Azure), Docker, Kubernetes, and Agile tools like JIRA.\r\n\r\n**Growth Path**: Successful trainees can transition to full‑time Engineer roles post‑graduation, with clear promotion tracks to Senior Engineer, Lead, and Manager positions. Wipro’s internal mobility program also enables lateral moves across domains such as data analytics, AI, and cybersecurity.\r\n\r\n**Why Join Wipro?**\r\n- A globally recognized brand with a strong focus on employee development.\r\n- Guaranteed sponsorship for a B.Tech degree, eliminating tuition burden.\r\n- Exposure to large‑scale, enterprise‑level projects from day one.\r\n- Structured mentorship, continuous learning platforms, and a vibrant community of innovators.\r\n- Competitive stipend, comprehensive benefits, and a 48‑month training agreement that secures your career trajectory.\r\n\r\nThis program is ideal for diploma holders eager to upscale their technical expertise while earning a respectable stipend and a world‑class degree.",
+    "eligibility": "10th Standard: Pass; 12th Standard: Pass; Diploma: Minimum 50% or 5.3 CGPA (or equivalent) in Automobile, Mechanical, Electrical, Civil, or Production engineering; Year of passing: 2025 or 2026; Must have studied Core Mathematics as a subject during Diploma (Business Maths & Applied Maths not accepted); One backlog allowed at the time of Online Assessment (must be cleared by 8th semester); Maximum 3 years gap allowed between 10th and start of Diploma; No gaps allowed during Diploma period; Must be an Indian citizen, PIO, OCI, or Bhutan/Nepal national with citizenship certificate; Candidates below 18 can register but onboarding after turning 18; Candidates pursuing a bachelor's must provide discontinuation certificate; Open school or distance education allowed only for 10th & 12th.",
+    "selection_process": "Round 1: Online Assessment → Round 2: Voice Assessment → Round 3: Business discussion → Background Verification and Letter of Intent issuance",
+    "study_materials": [
+      {
+        "url": "https://www.indiabix.com/aptitude/questions-and-answers/",
+        "desc": "Helps sharpen problem solving skills for internship interviews.",
+        "icon": "📖",
+        "title": "Aptitude Practice Questions"
+      },
+      {
+        "url": "https://www.geeksforgeeks.org/company-interview-corner/",
+        "desc": "Provides insights into common technical questions and interview strategies.",
+        "icon": "📖",
+        "title": "Technical Interview Preparation"
+      },
+      {
+        "url": "https://prepinsta.com/",
+        "desc": "Offers coding challenges to improve algorithmic thinking for technical rounds.",
+        "icon": "📖",
+        "title": "Coding Practice"
+      },
+      {
+        "url": "https://leetcode.com/problemset/",
+        "desc": "Enhances analytical skills required for engineering problem solving.",
+        "icon": "📖",
+        "title": "Problem Solving Exercises"
+      }
+    ],
+    "posted_by": "Kashii Updatez Admin",
+    "poster_email": "admin@kashiiupdatez.com",
+    "status": "ACTIVE",
+    "views_count": 0,
+    "applications_count": 0,
+    "is_featured": true,
+    "created_at": "2026-09-25T01:25:25.582Z",
+    "posted_date": "2026-09-08",
+    "deadline": "2026-10-02T01:29:38.321Z",
+    "updated_at": "2026-09-25T01:25:25.582Z"
   }
 },
 {
@@ -6626,7 +6676,7 @@
     "pdf_file_name": "ADVANCED PYTHON BY KASHINATH.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:14.964Z",
-    "updated_at": "2026-09-25T01:04:26.683Z"
+    "updated_at": "2026-09-25T01:26:00.543Z"
   }
 },
 {
@@ -6647,7 +6697,7 @@
     "pdf_file_name": "BASIC PROGRAMS & Programs-1-3.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:15.286Z",
-    "updated_at": "2026-09-25T01:04:26.875Z"
+    "updated_at": "2026-09-25T01:26:00.740Z"
   }
 },
 {
@@ -6668,7 +6718,7 @@
     "pdf_file_name": "Pytest Notes & Guides.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:15.603Z",
-    "updated_at": "2026-09-25T01:04:27.066Z"
+    "updated_at": "2026-09-25T01:26:00.935Z"
   }
 },
 {
@@ -6689,7 +6739,7 @@
     "pdf_file_name": "1.1 MultiThreading.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:15.920Z",
-    "updated_at": "2026-09-25T01:04:27.258Z"
+    "updated_at": "2026-09-25T01:26:01.132Z"
   }
 },
 {
@@ -6710,7 +6760,7 @@
     "pdf_file_name": "Java Collections Framework.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:16.237Z",
-    "updated_at": "2026-09-25T01:04:27.451Z"
+    "updated_at": "2026-09-25T01:26:01.327Z"
   }
 },
 {
@@ -6731,7 +6781,7 @@
     "pdf_file_name": "1.1 Static Final & Core Java Notes.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:16.555Z",
-    "updated_at": "2026-09-25T01:04:27.642Z"
+    "updated_at": "2026-09-25T01:26:01.522Z"
   }
 },
 {
@@ -6752,7 +6802,7 @@
     "pdf_file_name": "ADVANCED PYTHON BY KASHINATH.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:16.872Z",
-    "updated_at": "2026-09-25T01:04:27.834Z"
+    "updated_at": "2026-09-25T01:26:01.717Z"
   }
 },
 {
@@ -6773,7 +6823,7 @@
     "pdf_file_name": "Py Notes By kashi.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:17.190Z",
-    "updated_at": "2026-09-25T01:04:28.026Z"
+    "updated_at": "2026-09-25T01:26:01.913Z"
   }
 },
 {
@@ -6794,7 +6844,7 @@
     "pdf_file_name": "ADVANCED PYTHON BY KASHINATH.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:17.507Z",
-    "updated_at": "2026-09-25T01:04:28.217Z"
+    "updated_at": "2026-09-25T01:26:02.109Z"
   }
 },
 {
@@ -6815,7 +6865,7 @@
     "pdf_file_name": "Python Notes & Resume Guide.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:17.824Z",
-    "updated_at": "2026-09-25T01:04:28.410Z"
+    "updated_at": "2026-09-25T01:26:02.304Z"
   }
 },
 {
@@ -6836,7 +6886,7 @@
     "pdf_file_name": "Py Notes By kashi.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:18.141Z",
-    "updated_at": "2026-09-25T01:04:28.601Z"
+    "updated_at": "2026-09-25T01:26:02.499Z"
   }
 },
 {
@@ -6857,7 +6907,7 @@
     "pdf_file_name": "BASIC PROGRAMS.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:18.457Z",
-    "updated_at": "2026-09-25T01:04:28.793Z"
+    "updated_at": "2026-09-25T01:26:02.694Z"
   }
 },
 {
@@ -6878,7 +6928,7 @@
     "pdf_file_name": "Python Expert Colaboratory Guide.pdf",
     "views_count": 0,
     "created_at": "2026-09-25T00:58:18.775Z",
-    "updated_at": "2026-09-25T01:04:28.985Z"
+    "updated_at": "2026-09-25T01:26:02.889Z"
   }
 },
 {
@@ -6899,7 +6949,7 @@
     "pdf_file_name": "Official Notion Learning Path & Masterclass Workspace (Click to Open)",
     "views_count": 0,
     "created_at": "2026-08-20T15:04:34.388Z",
-    "updated_at": "2026-09-25T01:08:38.482Z"
+    "updated_at": "2026-09-25T01:26:03.083Z"
   }
 },
 {
@@ -6920,7 +6970,7 @@
     "pdf_file_name": "",
     "views_count": 0,
     "created_at": "2026-08-20T15:12:58.883Z",
-    "updated_at": "2026-09-25T01:08:39.823Z"
+    "updated_at": "2026-09-25T01:26:03.278Z"
   }
 },
 {
@@ -6947,7 +6997,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T00:59:59.894Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T00:59:46.348Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T00:59:59.894Z",
     "jobs": [
       19,
@@ -6978,7 +7028,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:01:43.580Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:01:28.265Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:01:43.581Z",
     "jobs": [
       9,
@@ -7013,7 +7063,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:05:22.580Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:05:08.588Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:05:22.580Z",
     "jobs": [
       1028,
@@ -7043,7 +7093,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T15:01:34.968Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7071,7 +7121,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T16:31:14.727Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7107,7 +7157,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T18:45:45.533Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7143,7 +7193,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T19:30:12.094Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7179,7 +7229,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T21:23:28.858Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7215,7 +7265,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T22:54:14.928Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7251,7 +7301,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-07",
-    "deadline": "2026-09-14T23:17:05.048Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7287,7 +7337,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T00:47:44.137Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7323,7 +7373,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T03:01:58.425Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7357,7 +7407,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T06:45:56.595Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7389,7 +7439,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T07:08:39.722Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7419,7 +7469,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T07:53:49.131Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7447,7 +7497,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T08:32:30.022Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7475,7 +7525,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T10:02:19.883Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7511,7 +7561,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T10:47:45.009Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7547,7 +7597,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T11:33:13.455Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7583,7 +7633,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T12:18:18.079Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7619,7 +7669,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T18:16:48.576Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7655,7 +7705,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T19:46:38.043Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7691,7 +7741,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T20:09:07.176Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7727,7 +7777,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T20:31:51.664Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7761,7 +7811,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T20:54:33.232Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7793,7 +7843,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T21:17:09.644Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7823,7 +7873,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-08",
-    "deadline": "2026-09-15T21:39:52.590Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7851,7 +7901,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T00:40:18.238Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -7879,7 +7929,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T08:32:30.794Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7915,7 +7965,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T10:48:07.983Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7951,7 +8001,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T11:32:51.743Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -7987,7 +8037,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T11:55:18.234Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8023,7 +8073,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T12:17:57.649Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8059,7 +8109,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T12:40:23.115Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8095,7 +8145,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T13:47:56.844Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8131,7 +8181,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T17:56:35.001Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8165,7 +8215,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T18:41:35.843Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8197,7 +8247,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T19:04:11.515Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8227,7 +8277,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T20:11:14.430Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8255,7 +8305,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T20:56:26.888Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8283,7 +8333,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-09",
-    "deadline": "2026-09-16T23:12:51.158Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8319,7 +8369,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T04:49:06.627Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8355,7 +8405,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T07:26:03.650Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8391,7 +8441,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T08:11:09.803Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8427,7 +8477,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T10:26:34.870Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8463,7 +8513,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T13:25:02.810Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8499,7 +8549,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T14:10:17.512Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8535,7 +8585,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T14:33:20.613Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8569,7 +8619,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-10",
-    "deadline": "2026-09-17T18:19:48.237Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8601,7 +8651,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T01:26:28.123Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8631,7 +8681,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T07:02:08.516Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8659,7 +8709,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T15:15:05.845Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8687,7 +8737,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:20:54.797Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8723,7 +8773,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T19:43:13.451Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8759,7 +8809,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T20:05:19.174Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -8795,7 +8845,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T21:35:10.895Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8831,7 +8881,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-11",
-    "deadline": "2026-09-18T22:42:08.350Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8867,7 +8917,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T04:42:16.088Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8903,7 +8953,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T05:49:58.906Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8939,7 +8989,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T06:35:14.200Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -8973,7 +9023,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T06:57:40.752Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9005,7 +9055,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T09:35:00.027Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9035,7 +9085,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T09:57:22.266Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9063,7 +9113,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T11:04:50.116Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9091,7 +9141,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T15:12:41.358Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9127,7 +9177,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T17:28:25.497Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9153,7 +9203,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T17:51:02.576Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9179,7 +9229,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T18:36:26.499Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       17,
@@ -9205,7 +9255,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T20:05:55.814Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9231,7 +9281,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-12",
-    "deadline": "2026-09-19T23:51:18.382Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9257,7 +9307,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T07:42:48.270Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9283,7 +9333,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T08:05:32.881Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9309,7 +9359,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T10:20:09.682Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9335,7 +9385,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T11:27:23.146Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9361,7 +9411,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T12:12:21.236Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9387,7 +9437,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T14:27:37.473Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9413,7 +9463,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T14:50:32.997Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9439,7 +9489,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T15:36:01.483Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9465,7 +9515,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T17:51:22.644Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       9,
@@ -9491,7 +9541,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T18:36:55.991Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       17,
@@ -9517,7 +9567,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T20:07:34.561Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9543,7 +9593,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-13",
-    "deadline": "2026-09-20T21:15:00.835Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9569,7 +9619,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T07:04:48.045Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9595,7 +9645,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T10:08:54.563Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       19,
@@ -9621,7 +9671,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T12:26:21.344Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9647,7 +9697,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:12:14.152Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9673,7 +9723,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:28:09.602Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9699,7 +9749,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:14:19.768Z",
     "posted_date": "2026-09-14",
-    "deadline": "2026-09-21T13:32:21.449Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:14:19.769Z",
     "jobs": [
       1028,
@@ -9725,7 +9775,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:06:57.762Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:06:30.234Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:06:57.762Z",
     "jobs": [
       1028,
@@ -9752,7 +9802,7 @@
     "views_count": 0,
     "created_at": "2026-09-25T01:07:11.061Z",
     "posted_date": "2026-09-25",
-    "deadline": "2026-10-02T01:06:56.439Z",
+    "deadline": "2026-10-02T01:29:38.321Z",
     "updated_at": "2026-09-25T01:07:11.061Z",
     "jobs": [
       1028,
@@ -9766,6 +9816,23 @@
       1027,
       1026
     ]
+  }
+},
+{
+  "model": "requirements.jobgroup",
+  "pk": 1006,
+  "fields": {
+    "name": "🔥 Top Off-Campus Tech Drives — 25 Sep 2026",
+    "slug": "top-off-campus-tech-drives-25-sep-2026-20260925065526",
+    "banner_tag": "🔥 KASHIIUPDATEZ TECH DRIVE",
+    "description": "Curated collection of 2 fresh verified off-campus opportunities by Kashii Updatez.",
+    "is_active": true,
+    "views_count": 0,
+    "created_at": "2026-09-25T01:25:26.303Z",
+    "posted_date": "2026-09-25",
+    "deadline": "2026-10-02T01:25:10.480Z",
+    "updated_at": "2026-09-25T01:25:26.304Z",
+    "jobs": []
   }
 },
 {
@@ -11157,7 +11224,7 @@
     "is_featured": true,
     "published_at": "2026-09-25T00:58:27.371Z",
     "created_at": "2026-09-25T00:58:27.431Z",
-    "updated_at": "2026-09-25T01:10:21.588Z",
+    "updated_at": "2026-09-25T01:26:03.475Z",
     "seo_title": "Advanced Python Handbook by Kashinath: Internals, Concurrency & Meta-Programming",
     "seo_description": "A masterclass in advanced Python architecture: deep dive into generator pipelines, custom context managers, metaclasses, descriptors, asyncio event loops, and memory profiling.",
     "canonical_url": null,
@@ -11191,7 +11258,7 @@
     "is_featured": true,
     "published_at": "2026-09-24T00:58:30.139Z",
     "created_at": "2026-09-25T00:58:30.199Z",
-    "updated_at": "2026-09-25T01:10:23.347Z",
+    "updated_at": "2026-09-25T01:26:04.754Z",
     "seo_title": "Python Practice Programs & Logic Building: 100+ Essential Coding Exercises",
     "seo_description": "Master coding round interviews with 100+ solved logic problems: Palindromes, Fibonacci series, Matrix transformations, Armstrong numbers, and recursive tree traversals.",
     "canonical_url": null,
@@ -11225,7 +11292,7 @@
     "is_featured": true,
     "published_at": "2026-09-23T00:58:32.708Z",
     "created_at": "2026-09-25T00:58:32.767Z",
-    "updated_at": "2026-09-25T01:10:12.028Z",
+    "updated_at": "2026-09-25T01:26:23.516Z",
     "seo_title": "Mastering Pytest: Automated Testing, Fixtures & Parametrization for Python",
     "seo_description": "Learn professional unit testing with Pytest: test fixtures, dependency injection, parametrization, mocking external APIs, and test coverage reporting.",
     "canonical_url": null,
@@ -11357,7 +11424,7 @@
     "is_featured": true,
     "published_at": "2026-09-19T00:58:41.444Z",
     "created_at": "2026-09-25T00:58:41.504Z",
-    "updated_at": "2026-09-25T01:10:34.179Z",
+    "updated_at": "2026-09-25T01:26:10.514Z",
     "seo_title": "Top 30 Python Interview Questions & In-Depth Code Solutions (2026 Edition)",
     "seo_description": "Master the most frequently asked Python technical interview questions for junior to mid-level software engineering roles with executable code examples, memory models, and interviewer expectations.",
     "canonical_url": null,
@@ -11391,7 +11458,7 @@
     "is_featured": false,
     "published_at": "2026-09-18T00:58:43.836Z",
     "created_at": "2026-09-25T00:58:43.896Z",
-    "updated_at": "2026-09-25T01:10:35.716Z",
+    "updated_at": "2026-09-25T01:26:11.780Z",
     "seo_title": "Complete Python & Django Full-Stack Developer Roadmap for Freshers (2026)",
     "seo_description": "A comprehensive step-by-step career guide for college students and fresh graduates to transition from zero coding knowledge to a hired Full-Stack Python Django Software Engineer.",
     "canonical_url": null,
@@ -11424,7 +11491,7 @@
     "is_featured": false,
     "published_at": "2026-09-17T00:58:45.830Z",
     "created_at": "2026-09-25T00:58:45.889Z",
-    "updated_at": "2026-09-25T01:10:37.024Z",
+    "updated_at": "2026-09-25T01:26:12.863Z",
     "seo_title": "Mastering Python Object-Oriented Programming (OOP) with Practical Examples",
     "seo_description": "Deep dive into OOP in Python: understand classes, inheritance, encapsulation, polymorphism, abstract base classes, and dunder methods with clean production code.",
     "canonical_url": null,
@@ -11456,7 +11523,7 @@
     "is_featured": false,
     "published_at": "2026-09-16T00:58:47.406Z",
     "created_at": "2026-09-25T00:58:47.465Z",
-    "updated_at": "2026-09-25T01:10:25.206Z",
+    "updated_at": "2026-09-25T01:26:06.020Z",
     "seo_title": "How to Crack Off-Campus IT & Software Engineering Placement Drives (2026)",
     "seo_description": "Proven strategies for college students and fresh graduates to secure high-paying tech jobs through off-campus recruitment drives, cold outreach, ATS resume design, and technical preparation.",
     "canonical_url": null,
@@ -11489,7 +11556,7 @@
     "is_featured": false,
     "published_at": "2026-08-19T16:53:03.254Z",
     "created_at": "2026-08-22T16:53:03.254Z",
-    "updated_at": "2026-09-25T01:10:27.085Z",
+    "updated_at": "2026-09-25T01:26:07.098Z",
     "seo_title": "Java Multi-Threading & Concurrency Deep Dive: Thread Lifecycle & Synchronization",
     "seo_description": "Master Java concurrency: Thread states, Runnable vs Callable, synchronized blocks, volatile keywords, deadlock prevention, and ExecutorService thread pools.",
     "canonical_url": null,
@@ -11522,7 +11589,7 @@
     "is_featured": false,
     "published_at": "2026-08-18T16:53:03.260Z",
     "created_at": "2026-08-22T16:53:03.260Z",
-    "updated_at": "2026-09-25T01:10:28.806Z",
+    "updated_at": "2026-09-25T01:26:08.174Z",
     "seo_title": "Java Collections Framework Mastery: ArrayList, HashMap & Queue Implementations",
     "seo_description": "Under the hood of the Java Collections Framework: HashMap collision handling with red-black trees, ArrayList dynamic capacity doubling, and ConcurrentHashMap locks.",
     "canonical_url": null,
@@ -11556,7 +11623,7 @@
     "is_featured": false,
     "published_at": "2026-08-17T16:53:03.265Z",
     "created_at": "2026-08-22T16:53:03.265Z",
-    "updated_at": "2026-09-25T01:10:30.535Z",
+    "updated_at": "2026-09-25T01:26:09.441Z",
     "seo_title": "Core Java & JVM Memory Architecture: Static, Final, Heap & Stack Models",
     "seo_description": "Understand JVM internal runtime data areas: ClassLoader subsystem, Heap memory generations, Stack frames, Method Area, and exact Static vs Final behavior.",
     "canonical_url": null,
@@ -11589,7 +11656,7 @@
     "is_featured": false,
     "published_at": "2026-09-12T00:58:55.704Z",
     "created_at": "2026-09-25T00:58:55.763Z",
-    "updated_at": "2026-09-25T01:10:49.849Z",
+    "updated_at": "2026-09-25T01:26:18.035Z",
     "seo_title": "Git & GitHub Complete Learning Path: Zero to Production Masterclass (2026)",
     "seo_description": "A complete, step-by-step masterclass on Git version control and GitHub collaboration: working tree vs staging area, branching workflows, merge vs rebase, conflict resolution, cherry-pick, stashing, pull requests, and CI/CD pipelines.",
     "canonical_url": null,
@@ -11624,7 +11691,7 @@
     "is_featured": false,
     "published_at": "2026-09-11T00:58:58.858Z",
     "created_at": "2026-09-25T00:58:58.917Z",
-    "updated_at": "2026-09-25T01:10:20.411Z",
+    "updated_at": "2026-09-25T01:26:19.495Z",
     "seo_title": "Mastering SQL for Technical Interviews: Complete Zero-to-Advanced Interview Preparation Handbook (2026)",
     "seo_description": "The definitive SQL technical interview masterclass: query execution order, advanced window functions, recursive CTEs, indexing internals (B-Tree/Hash), ACID isolation levels, query optimization with EXPLAIN ANALYZE, and top 15 solved FAANG interview ",
     "canonical_url": null,
@@ -11661,7 +11728,7 @@
     "is_featured": true,
     "published_at": "2026-09-10T00:59:02.643Z",
     "created_at": "2026-09-25T00:59:02.702Z",
-    "updated_at": "2026-09-25T01:10:07.835Z",
+    "updated_at": "2026-09-25T01:26:21.350Z",
     "seo_title": "Deep Dive into V8 Engine: How Ignition and TurboFan Execute JavaScript at Light Speed",
     "seo_description": "Explore the inner workings of Google Chrome's V8 engine: Abstract Syntax Trees (AST), Ignition bytecode generation, hidden classes, and TurboFan JIT machine code compilation.",
     "canonical_url": null,
@@ -11695,7 +11762,7 @@
     "is_featured": false,
     "published_at": "2026-09-09T00:59:04.973Z",
     "created_at": "2026-09-25T00:59:05.032Z",
-    "updated_at": "2026-09-25T01:10:39.704Z",
+    "updated_at": "2026-09-25T01:26:13.740Z",
     "seo_title": "Django Ninja vs FastAPI: Building Type-Safe High-Concurrency APIs in Python",
     "seo_description": "A hands-on architectural comparison between Django Ninja and FastAPI for modern SaaS backends. Learn how Pydantic v2 and async ORM enable blazing-fast API development.",
     "canonical_url": null,
@@ -11728,7 +11795,7 @@
     "is_featured": false,
     "published_at": "2026-08-12T16:53:03.284Z",
     "created_at": "2026-08-22T16:53:03.284Z",
-    "updated_at": "2026-09-25T01:10:41.553Z",
+    "updated_at": "2026-09-25T01:26:14.813Z",
     "seo_title": "Django REST Framework (DRF) & API Architecture: Complete Beginner Guide",
     "seo_description": "Learn how to architect, serialize, secure, and document scalable RESTful APIs with Django REST Framework, SimpleJWT authentication, and pagination.",
     "canonical_url": null,
@@ -11761,7 +11828,7 @@
     "is_featured": false,
     "published_at": "2026-08-11T16:53:03.288Z",
     "created_at": "2026-08-22T16:53:03.288Z",
-    "updated_at": "2026-09-25T01:10:44.827Z",
+    "updated_at": "2026-09-25T01:26:15.886Z",
     "seo_title": "Essential Data Structures in Python: Complexity, Use Cases & Code Patterns",
     "seo_description": "Master the core data structures in Python with time complexity breakdowns (Big-O), memory footprints, and practical coding patterns for technical interviews.",
     "canonical_url": null,
@@ -11794,7 +11861,7 @@
     "is_featured": false,
     "published_at": "2026-08-10T16:53:03.292Z",
     "created_at": "2026-08-22T16:53:03.292Z",
-    "updated_at": "2026-09-25T01:10:47.043Z",
+    "updated_at": "2026-09-25T01:26:16.961Z",
     "seo_title": "Visual Code Debugging: How AST Tracing & Memory Diagrams Help Master Algorithms",
     "seo_description": "Discover how interactive visual debuggers, Abstract Syntax Tree (AST) instrumentation, call stack inspection, and heap memory diagrams accelerate programming mastery.",
     "canonical_url": null,
@@ -11825,9 +11892,9 @@
     "likes_count": 693,
     "is_published": true,
     "is_featured": true,
-    "published_at": "2026-09-22T01:04:53.546Z",
+    "published_at": "2026-09-22T01:26:27.980Z",
     "created_at": "2026-09-25T00:59:25.468Z",
-    "updated_at": "2026-09-25T01:10:58.789Z",
+    "updated_at": "2026-09-25T01:26:28.078Z",
     "seo_title": "System Design Interview: Designing Twitter Feed, WhatsApp & YouTube Architecture",
     "seo_description": "Step-by-step system design walkthroughs for FAANG interviews. Learn how to design scalable distributed systems for Twitter's news feed, WhatsApp's messaging, and YouTube's video pipeline with CAP theorem, consistent hashing, and sharding explained.",
     "canonical_url": null,
@@ -11859,9 +11926,9 @@
     "likes_count": 512,
     "is_published": true,
     "is_featured": true,
-    "published_at": "2026-08-21T17:30:43.198Z",
+    "published_at": "2026-09-24T01:26:25.539Z",
     "created_at": "2026-08-22T17:09:30.857Z",
-    "updated_at": "2026-09-25T01:10:52.470Z",
+    "updated_at": "2026-09-25T01:26:25.637Z",
     "seo_title": "TypeScript 5.x Deep Dive: Satisfies Operator, Const Type Params, Variadic Tuple Types",
     "seo_description": "A deep dive into TypeScript 5.x advanced features including the satisfies operator, const type parameters, and variadic tuple types. Learn how to write highly robust and type-safe enterprise applications.",
     "canonical_url": null,
@@ -11894,9 +11961,9 @@
     "likes_count": 487,
     "is_published": true,
     "is_featured": true,
-    "published_at": "2026-08-20T17:30:43.203Z",
+    "published_at": "2026-09-23T01:26:26.760Z",
     "created_at": "2026-08-22T17:11:35.642Z",
-    "updated_at": "2026-09-25T01:10:54.567Z",
+    "updated_at": "2026-09-25T01:26:26.858Z",
     "seo_title": "Docker & Docker Compose Deep Dive: Multi-Stage Builds, Layer Caching & Production Optimization",
     "seo_description": "Master Docker for production with multi-stage builds, aggressive layer caching, and optimized Compose configurations. Reduce your image sizes by 90% and speed up deployments.",
     "canonical_url": null,
@@ -11928,9 +11995,9 @@
     "likes_count": 362,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-09-19T01:04:57.512Z",
+    "published_at": "2026-09-19T01:26:32.025Z",
     "created_at": "2026-09-25T00:59:32.102Z",
-    "updated_at": "2026-09-25T01:11:04.983Z",
+    "updated_at": "2026-09-25T01:26:32.123Z",
     "seo_title": "PostgreSQL Advanced Patterns: JSONB Queries, Partial Indexes & Full-Text Search",
     "seo_description": "PostgreSQL JSONB with GIN indexes delivers MongoDB-level document flexibility inside a relational database. Learn partial indexes, expression indexes, covering indexes, and full-text search with tsvector — the patterns used by Shopify and GitLab at s",
     "canonical_url": null,
@@ -11962,9 +12029,9 @@
     "likes_count": 398,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-08-18T17:30:43.210Z",
+    "published_at": "2026-09-21T01:26:29.199Z",
     "created_at": "2026-08-22T17:11:35.651Z",
-    "updated_at": "2026-09-25T01:11:00.788Z",
+    "updated_at": "2026-09-25T01:26:29.297Z",
     "seo_title": "Python Asyncio Masterclass: Building a High-Concurrency Web Scraper with aiohttp",
     "seo_description": "Stop using thread pools for I/O bound tasks. Learn how Python's event loop works under the hood and build a blisteringly fast web scraper using asyncio and aiohttp.",
     "canonical_url": null,
@@ -11996,9 +12063,9 @@
     "likes_count": 445,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-08-17T17:30:43.214Z",
+    "published_at": "2026-09-20T01:26:30.612Z",
     "created_at": "2026-08-22T17:11:35.655Z",
-    "updated_at": "2026-09-25T01:11:02.955Z",
+    "updated_at": "2026-09-25T01:26:30.709Z",
     "seo_title": "React 19 Deep Dive: Actions, useOptimistic, useFormStatus, and Concurrent Rendering",
     "seo_description": "React 19 changes everything. Bid farewell to complex state management for forms and mutations. Embrace Server Actions and native optimistic UI updates.",
     "canonical_url": null,
@@ -12031,9 +12098,9 @@
     "likes_count": 438,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-08-13T17:30:43.228Z",
+    "published_at": "2026-09-16T01:26:36.266Z",
     "created_at": "2026-08-22T17:11:35.667Z",
-    "updated_at": "2026-09-25T01:11:09.995Z",
+    "updated_at": "2026-09-25T01:26:36.367Z",
     "seo_title": "Building a SaaS Stripe Payment Integration: Subscriptions, Webhooks & Proration in Django",
     "seo_description": "A complete guide to integrating Stripe Subscriptions in a Django SaaS. Handle checkout sessions, secure webhooks, customer portals, and seamless plan upgrades.",
     "canonical_url": null,
@@ -12065,9 +12132,9 @@
     "likes_count": 408,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-08-15T17:30:43.221Z",
+    "published_at": "2026-09-18T01:26:33.442Z",
     "created_at": "2026-08-22T17:11:35.660Z",
-    "updated_at": "2026-09-25T01:11:06.337Z",
+    "updated_at": "2026-09-25T01:26:33.539Z",
     "seo_title": "Kubernetes for Developers: Pods, Services, Deployments and Helm Charts Explained",
     "seo_description": "Demystifying Kubernetes for software engineers. Learn the core primitives (Pods, Deployments, Services) and how to package your apps with Helm.",
     "canonical_url": null,
@@ -12099,9 +12166,9 @@
     "likes_count": 621,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-08-14T17:30:43.224Z",
+    "published_at": "2026-09-17T01:26:34.853Z",
     "created_at": "2026-09-25T01:07:47.466Z",
-    "updated_at": "2026-09-25T01:11:08.281Z",
+    "updated_at": "2026-09-25T01:26:34.951Z",
     "seo_title": "LeetCode 75: Solving Two Pointers, Sliding Window & Binary Search with Pattern Recognition",
     "seo_description": "Stop memorizing solutions and start recognizing patterns. Master the core algorithmic patterns needed to ace coding interviews at top tech companies.",
     "canonical_url": null,
@@ -12134,9 +12201,9 @@
     "likes_count": 347,
     "is_published": true,
     "is_featured": false,
-    "published_at": "2026-08-12T17:30:43.232Z",
+    "published_at": "2026-09-15T01:26:37.680Z",
     "created_at": "2026-09-25T01:07:49.557Z",
-    "updated_at": "2026-09-25T01:11:11.870Z",
+    "updated_at": "2026-09-25T01:26:37.777Z",
     "seo_title": "Git Advanced Workflows: Rebase vs Merge, Interactive Rebase, Cherry-Pick & Bisect",
     "seo_description": "Move beyond git pull and git push. Master Git internals, clean up messy histories with interactive rebase, and hunt down bugs efficiently using git bisect.",
     "canonical_url": null,
@@ -12414,6 +12481,33 @@
       59,
       57
     ]
+  }
+},
+{
+  "model": "blog.blogpost",
+  "pk": 40,
+  "fields": {
+    "title": "Django Ninja vs FastAPI: Building Type-Safe High-Concurrency APIs in Python",
+    "slug": "django-ninja-vs-fastapi-high-concurrency-python-apis",
+    "excerpt": "A hands-on architectural comparison between Django Ninja and FastAPI for modern SaaS backends. Learn how Pydantic v2 and async ORM enable blazing-fast API development.",
+    "content": "<h2>Why Django Ninja is Revolutionizing Python SaaS</h2>\n<p>Django Ninja combines the speed and ergonomics of FastAPI with the battle-tested ORM, admin portal, and authentication of Django.</p>\n\n<hr/>\n\n<h3>Defining High-Performance Endpoints with Django Ninja</h3>\n<pre><code class=\"language-python\">from ninja import NinjaAPI, Schema\nfrom typing import List\n\napi = NinjaAPI(title=\"SaaS Core API\", version=\"1.0.0\")\n\nclass ProductOut(Schema):\n    id: int\n    name: str\n    price: float\n\n@api.get(\"/products\", response=List[ProductOut])\ndef list_products(request):\n    return list(Product.objects.filter(is_active=True)[:50])\n</code></pre>",
+    "cover_image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200",
+    "author_name": "Kashinath Chavan",
+    "author_title": "Founder & Software Architect",
+    "author_avatar_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    "category": 7,
+    "read_time_minutes": 1,
+    "views_count": 772,
+    "likes_count": 170,
+    "is_published": true,
+    "is_featured": true,
+    "published_at": "2026-09-09T01:23:10.759Z",
+    "created_at": "2026-09-25T01:23:10.814Z",
+    "updated_at": "2026-09-25T01:26:22.424Z",
+    "seo_title": "Django Ninja vs FastAPI: Building Type-Safe High-Concurrency APIs in Python",
+    "seo_description": "A hands-on architectural comparison between Django Ninja and FastAPI for modern SaaS backends. Learn how Pydantic v2 and async ORM enable blazing-fast API development.",
+    "canonical_url": null,
+    "tags": []
   }
 }
 ]

@@ -34,8 +34,8 @@ sw_cat, _ = Category.objects.get_or_create(
     }
 )
 
-JobPosting.objects.all().update(category=sw_cat)
-Category.objects.exclude(id=sw_cat.id).delete()
+JobPosting.objects.filter(category__isnull=True).update(category=sw_cat)
+
 
 # 3. Comprehensive High-Value Guide Library with Downloadable PDFs from User Drive
 PYTHON_DRIVE_FOLDER = "https://drive.google.com/drive/folders/1tULDwty-7eXsHh2jAAKCM2OK7YxYSuyp?usp=drive_link"
