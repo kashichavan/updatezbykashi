@@ -338,8 +338,8 @@ def sitemap_xml_view(request):
         xml_lines.append(f'    <priority>0.8</priority>')
         xml_lines.append(f'  </url>')
 
-    # Active Jobs
-    for job in JobPosting.objects.filter(status='ACTIVE'):
+    # Active Jobs (7-Day Fresh Window)
+    for job in JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()):
         j_mod = job.updated_at.strftime('%Y-%m-%d')
         xml_lines.append(f'  <url>')
         xml_lines.append(f'    <loc>{host}/category/{job.category.slug}/job/{job.uuid}/</loc>')
@@ -358,8 +358,8 @@ def rss_feed_view(request):
     
     items = []
     
-    # Active Jobs
-    for job in JobPosting.objects.filter(status='ACTIVE').order_by('-created_at')[:35]:
+    # Active Jobs (7-Day Fresh Window)
+    for job in JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).order_by('-created_at')[:35]:
         pub_date = job.created_at.strftime("%a, %d %b %Y %H:%M:%S GMT")
         cat_name = job.category.name if job.category else "Opportunity"
         items.append(f"""    <item>
@@ -460,8 +460,10 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
     job.views_count += 1
 
     related_jobs = JobPosting.objects.filter(
-        status='ACTIVE'
+        status='ACTIVE',
+        deadline__gt=timezone.now()
     ).exclude(pk=job.pk).select_related('category').order_by('-created_at')[:4]
+
 
 
     videos = get_cached_youtube_videos()
