@@ -93,12 +93,12 @@
           <h3>{{ job.title }}</h3>
           
           <div class="vp-salary-row">
-            <span style="display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> {{ job.stipend_salary }}</span>
-            <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> {{ job.location }}</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;"><i data-lucide="badge-dollar-sign" class="nav-icon" style="width: 15px; height: 15px;"></i> {{ job.stipend_salary }}</span>
+            <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><i data-lucide="map-pin" class="nav-icon" style="width: 15px; height: 15px;"></i> {{ job.location }}</span>
           </div>
 
           <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px;">
-            <img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">{{ job.get_posted_date_display }}</strong>
+            <i data-lucide="calendar" class="nav-icon" style="width: 14px; height: 14px;"></i> Posted: <strong style="color:var(--ink);">{{ job.get_posted_date_display }}</strong>
           </div>
 
           {% if job.eligibility %}
@@ -117,7 +117,7 @@
 
           <div class="vp-price-row">
             <div class="timer-tag" data-timer="{{ job.id }}" data-seconds="{{ job.get_time_left_seconds }}">
-              ⏱️ <span>Auto-Expires in 7 Days</span>
+              <i data-lucide="clock" style="width: 13px; height: 13px;"></i> <span>Auto-Expires in 7 Days</span>
             </div>
           </div>
 
@@ -126,19 +126,19 @@
             <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
                class="external-apply-btn"
                onclick="event.stopPropagation();">
-              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
+              <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Apply Now ↗
             </a>
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
                class="detail-page-btn"
                onclick="event.stopPropagation();">
-              <img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
+              <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> Detail Page
             </a>
             {% else %}
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
                class="external-apply-btn"
                onclick="event.stopPropagation();"
                style="grid-column: 1 / -1;">
-              <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
+              <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i> View Requirement Page ↗
             </a>
             {% endif %}
           </div>

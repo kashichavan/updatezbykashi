@@ -97,19 +97,19 @@
 <!-- Mobile Bottom Navigation Bar (Mobile First) -->
 <nav class="mobile-bottom-nav">
   <a href="/" class="mobile-nav-item {% if request.path == '/' %}active{% endif %}">
-    <img src="{% static 'images/icon-feed.png' %}" class="mobile-nav-icon" alt="Feed" width="22" height="22" decoding="async">
+    <i data-lucide="briefcase" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
     <span>Feed</span>
   </a>
   <a href="/about/" class="mobile-nav-item {% if request.path == '/about/' %}active{% endif %}">
-    <img src="{% static 'images/icon-about.png' %}" class="mobile-nav-icon" alt="About" width="22" height="22" decoding="async">
+    <i data-lucide="user" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
     <span>About</span>
   </a>
   <a href="/youtube/" class="mobile-nav-item {% if request.path == '/youtube/' %}active{% endif %}">
-    <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" alt="YouTube" width="22" height="22" decoding="async">
+    <i data-lucide="youtube" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
     <span>YouTube</span>
   </a>
   <a href="/debugger/" class="mobile-nav-item {% if '/debugger' in request.path %}active{% endif %}">
-    <img src="{% static 'images/icon-apply.png' %}" class="mobile-nav-icon" alt="Debugger" width="22" height="22" decoding="async">
+    <i data-lucide="terminal" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
     <span>Debugger</span>
   </a>
 </nav>
