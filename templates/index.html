@@ -155,31 +155,31 @@
 
       <nav class="nav-links">
         <a href="/?today=true" class="nav-pill-today {% if request.GET.today %}active{% endif %}">
-          <span>🔥</span>
+          <i data-lucide="flame" class="nav-icon" style="width: 16px; height: 16px;"></i>
           Today's Requirements
         </a>
         <a href="/" class="{% if not request.GET.today %}active{% endif %}">
-          <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed">
+          <i data-lucide="briefcase" class="nav-icon" style="width: 16px; height: 16px;"></i>
           Feed
         </a>
         <a href="/debugger/" style="color: #2563eb; font-weight: 800;">
-          <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger">
+          <i data-lucide="terminal" class="nav-icon" style="width: 16px; height: 16px;"></i>
           Code Debugger
         </a>
         <a href="/sql/" style="color: #0284c7; font-weight: 800;">
-          <img src="{% static 'images/icon-company.png' %}" class="nav-icon" alt="SQL">
+          <i data-lucide="database" class="nav-icon" style="width: 16px; height: 16px;"></i>
           SQL Studio
         </a>
         <a href="/blog/">
-          <span>📰</span>
+          <i data-lucide="newspaper" class="nav-icon" style="width: 16px; height: 16px;"></i>
           Tech Blog
         </a>
         <a href="#about-creator">
-          <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About">
+          <i data-lucide="user" class="nav-icon" style="width: 16px; height: 16px;"></i>
           About Kashii
         </a>
         <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 700;">
-          <img src="{% static 'images/icon-youtube.png' %}" class="nav-icon" alt="YouTube">
+          <i data-lucide="youtube" class="nav-icon" style="width: 16px; height: 16px;"></i>
           Python Kashi
         </a>
         <a href="/owner/" target="_blank">Owner Portal ↗</a>
@@ -501,23 +501,23 @@
   <!-- 8. Mobile Bottom Navigation Bar (Mobile First) -->
   <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
     <a href="/" class="mobile-nav-item active">
-      <img src="{% static 'images/icon-feed.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Feed">
+      <i data-lucide="briefcase" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
       <span>Feed</span>
     </a>
     <a href="/debugger/" class="mobile-nav-item">
-      <img src="{% static 'images/icon-apply.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Debugger">
+      <i data-lucide="terminal" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
       <span>Debugger</span>
     </a>
     <a href="#about-creator" class="mobile-nav-item">
-      <img src="{% static 'images/icon-about.png' %}" class="mobile-nav-icon" width="22" height="22" alt="About">
+      <i data-lucide="user" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
       <span>About</span>
     </a>
     <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="mobile-nav-item">
-      <img src="{% static 'images/icon-youtube.png' %}" class="mobile-nav-icon" width="22" height="22" alt="YouTube">
+      <i data-lucide="youtube" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
       <span>YouTube</span>
     </a>
     <a href="#" id="mobileToggleDrawer" class="mobile-nav-item" onclick="document.getElementById('drawerOverlay').classList.add('is-open'); return false;">
-      <img src="{% static 'images/icon-type.png' %}" class="mobile-nav-icon" width="22" height="22" alt="Categories">
+      <i data-lucide="layout-grid" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
       <span>Categories</span>
     </a>
   </nav>
@@ -577,6 +577,9 @@
 
   <!-- Lucide Modern Vector Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Interactive Spider-Man / VS Code Background Particle Web -->
+  <script src="{% static 'js/spider_mesh.js' %}?v=202609270120"></script>
 
   <script src="{% static 'js/app.js' %}?v=202608072314"></script>
   <script>

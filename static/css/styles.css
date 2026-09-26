@@ -56,15 +56,33 @@ html, body {
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--paper);
+  background-color: #f8fafc;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.035) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(99, 102, 241, 0.03) 0px, transparent 50%);
+    radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(14, 165, 233, 0.04) 0%, transparent 45%),
+    linear-gradient(rgba(226, 232, 240, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226, 232, 240, 0.35) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
   background-attachment: fixed;
   color: var(--ink);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   padding-bottom: 80px; /* Space for mobile bottom nav */
+}
+
+#spiderWebCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.site-header, .vp-hero, .vp-filter-bar, main, .yt-section, .vp-drawer-overlay, .modal-overlay, .mobile-bottom-nav, footer {
+  position: relative;
+  z-index: 1;
 }
 
 a {
