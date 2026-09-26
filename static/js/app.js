@@ -366,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3><a href="${escapeHtml(shareUrl)}" style="color:inherit;text-decoration:none;">${escapeHtml(j.title)}</a></h3>
             
             <div class="vp-salary-row">
-              <span style="display:inline-flex;align-items:center;gap:4px;"><i data-lucide="badge-dollar-sign" class="nav-icon" style="width: 15px; height: 15px;"></i> ${escapeHtml(j.stipend_salary)}</span>
-              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><i data-lucide="map-pin" class="nav-icon" style="width: 15px; height: 15px;"></i> ${escapeHtml(j.location)}</span>
+              <span style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-salary.png" class="nav-icon" width="16" height="16" alt="Salary"> ${escapeHtml(j.stipend_salary)}</span>
+              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> ${escapeHtml(j.location)}</span>
             </div>
 
             <p>${escapeHtml(j.description)}</p>
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="vp-price-row">
               <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">
-                <i data-lucide="clock" style="width: 13px; height: 13px;"></i> <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
+                ⏱️ <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
               </div>
             </div>
 
@@ -386,15 +386,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener"
                    class="external-apply-btn"
                    onclick="event.stopPropagation();">
-                  <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Apply Now ↗
+                  <img src="/static/images/icon-apply.png" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
                 </a>
                 <a href="${escapeHtml(shareUrl)}"
                    class="detail-page-btn"
                    onclick="event.stopPropagation();">
-                  <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> Detail Page
+                  <img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
                 </a>
               ` : isDeactivated ? `
-                <div style="grid-column: 1 / -1; display:flex;align-items:center;justify-content:center;height:38px;background:rgba(255,255,255,0.05);color:#94a3b8;font-size:12px;font-weight:700;border-radius:var(--radius-sm, 6px);border:1px solid rgba(255,255,255,0.08);">
+                <div style="grid-column: 1 / -1; display:flex;align-items:center;justify-content:center;height:38px;background:#f1f5f9;color:#94a3b8;font-size:12px;font-weight:700;border-radius:var(--radius-sm, 6px);border:1px solid #e2e8f0;">
                   ⛔ Closed Opportunity
                 </div>
               ` : `
@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
                    class="external-apply-btn"
                    onclick="event.stopPropagation();"
                    style="grid-column: 1 / -1;">
-                  <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i> View Requirement Page ↗
+                  <img src="/static/images/icon-feed.png" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
                 </a>
               `}
             </div>
