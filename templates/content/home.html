@@ -183,12 +183,11 @@
             </div>
           </div>
 
-          <div style="margin-top:12px; display:flex; gap:8px;">
+          <div class="card-action-grid">
             {% if job.apply_url %}
             <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
                class="external-apply-btn"
-               onclick="event.stopPropagation();"
-               style="flex:1;">
+               onclick="event.stopPropagation();">
               <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
             </a>
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
@@ -200,7 +199,7 @@
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
                class="external-apply-btn"
                onclick="event.stopPropagation();"
-               style="width:100%;">
+               style="grid-column: 1 / -1;">
               <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
             </a>
             {% endif %}
