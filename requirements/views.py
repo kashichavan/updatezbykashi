@@ -191,7 +191,7 @@ def index_view(request):
     recent_posts = []
 
     try:
-        initial_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at')[:9])
+        initial_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-posted_date', '-created_at')[:9])
     except Exception as e:
         logger.warning(f"Error fetching initial_jobs: {e}")
 
@@ -1336,8 +1336,8 @@ def api_jobs(request):
                 if cached_response:
                     return JsonResponse(cached_response)
 
-            # STRICT NEWEST-FIRST SORTING (-created_at)
-            qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
+            # STRICT NEWEST-FIRST SORTING (-posted_date, -created_at)
+            qs = JobPosting.objects.all().select_related('category').order_by('-posted_date', '-created_at')
 
             if filter_yesterday == 'true' or filter_yesterday == '1':
                 today_date = timezone.localtime(timezone.now()).date()
@@ -1725,9 +1725,9 @@ def group_detail_view(request, slug):
 def api_groups(request):
     """Public JSON API returning requirement groups with active and recent drives."""
     now = timezone.now()
-    groups = list(JobGroup.objects.filter(is_active=True, deadline__gt=now).prefetch_related('jobs'))
+    groups = list(JobGroup.objects.filter(is_active=True, deadline__gt=now).prefetch_related('jobs').order_by('-posted_date', '-id'))
     if not groups:
-        groups = list(JobGroup.objects.all().prefetch_related('jobs').order_by('-created_at')[:20])
+        groups = list(JobGroup.objects.all().prefetch_related('jobs').order_by('-posted_date', '-id')[:20])
     host_url = request.build_absolute_uri('/')[:-1]
     res = []
     for g in groups:
@@ -1771,7 +1771,7 @@ def api_owner_groups(request):
             groups_qs = JobGroup.objects.annotate(
                 active_count=Count('jobs', filter=Q(jobs__status='ACTIVE', jobs__deadline__gt=now), distinct=True),
                 total_count=Count('jobs', distinct=True)
-            ).values('id', 'name', 'slug', 'banner_tag', 'active_count', 'total_count').order_by('-created_at')
+            ).values('id', 'name', 'slug', 'banner_tag', 'active_count', 'total_count').order_by('-posted_date', '-id')
 
             res = [
                 {
@@ -1796,8 +1796,8 @@ def api_owner_groups(request):
             Prefetch('jobs', queryset=JobPosting.objects.only(
                 'id', 'title', 'company_name', 'location', 'stipend_salary',
                 'status', 'posted_date', 'created_at', 'apply_url', 'deadline'
-            ).order_by('-created_at'))
-        ).order_by('-created_at')
+            ).order_by('-posted_date', '-created_at'))
+        ).order_by('-posted_date', '-id')
 
         res = []
         host_url = request.build_absolute_uri('/')[:-1]
