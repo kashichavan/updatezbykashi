@@ -121,23 +121,23 @@
             </div>
           </div>
 
-          <div style="margin-top:12px; display:flex; gap:8px;">
+          <div class="card-action-grid">
             {% if job.apply_url %}
             <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
                class="external-apply-btn"
-               onclick="event.stopPropagation();"
-               style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:none;cursor:pointer;transition:background 0.2s,transform 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);">
-              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="16" height="16" alt="Apply"> Apply Now ↗
+               onclick="event.stopPropagation();">
+              <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
             </a>
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
-               onclick="event.stopPropagation();"
-               style="padding:11px 14px;background:var(--blue-light);color:var(--blue-primary);font-size:13px;font-weight:800;border-radius:10px;text-decoration:none;border:1px solid var(--blue-border);display:flex;align-items:center;justify-content:center;">
+               class="detail-page-btn"
+               onclick="event.stopPropagation();">
               <img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
             </a>
             {% else %}
             <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+               class="external-apply-btn"
                onclick="event.stopPropagation();"
-               style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 0;background:var(--blue-primary);color:#fff;font-size:14px;font-weight:800;border-radius:10px;text-decoration:none;">
+               style="grid-column: 1 / -1;">
               <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
             </a>
             {% endif %}
