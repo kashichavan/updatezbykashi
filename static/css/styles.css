@@ -420,9 +420,9 @@ a {
   padding: 8px 14px;
   border-radius: var(--radius-full);
   font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  transition: var(--transition);
+  font-weight: 700;
+  color: var(--ink-secondary);
+  transition: var(--transition-spring);
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -433,15 +433,15 @@ a {
 .nav-links a:hover {
   color: var(--blue-primary);
   background: var(--blue-light);
-  border-color: rgba(191, 219, 254, 0.6);
+  border-color: rgba(191, 219, 254, 0.8);
   transform: translateY(-1px);
 }
 
 .nav-links a.active {
-  color: #ffffff;
-  background: var(--brand-gradient);
-  border-color: transparent;
-  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.4);
+  color: #ffffff !important;
+  background: var(--blue-primary) !important;
+  border-color: var(--blue-primary) !important;
+  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
 }
 
 .nav-pill-today {

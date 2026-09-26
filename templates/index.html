@@ -154,13 +154,25 @@
       </div>
 
       <nav class="nav-links">
-        <a href="/" class="active">
+        <a href="/?today=true" class="nav-pill-today {% if request.GET.today %}active{% endif %}">
+          <span>🔥</span>
+          Today's Requirements
+        </a>
+        <a href="/" class="{% if not request.GET.today %}active{% endif %}">
           <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed">
-          Student Feed
+          Feed
         </a>
         <a href="/debugger/" style="color: #2563eb; font-weight: 800;">
           <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger">
           Code Debugger
+        </a>
+        <a href="/sql/" style="color: #0284c7; font-weight: 800;">
+          <img src="{% static 'images/icon-company.png' %}" class="nav-icon" alt="SQL">
+          SQL Studio
+        </a>
+        <a href="/blog/">
+          <span>📰</span>
+          Tech Blog
         </a>
         <a href="#about-creator">
           <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About">
