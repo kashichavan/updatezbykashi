@@ -211,11 +211,19 @@
   <!-- Toast Notification Container -->
   <div id="toastContainer" class="toast-container"></div>
 
+  <!-- Lucide Modern Vector Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
   <!-- Core App Scripts -->
   <script src="{% static 'js/app.js' %}?v=202608281200"></script>
   {% block entry_scripts %}
     <script src="{% static 'js/entry_experience.js' %}?v=202608281420"></script>
   {% endblock %}
   {% block extra_js %}{% endblock %}
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
 </body>
 </html>

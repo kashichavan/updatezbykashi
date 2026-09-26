@@ -575,8 +575,14 @@
     </div>
   </div>
 
-  <div id="toastContainer" class="toast-container"></div>
+  <!-- Lucide Modern Vector Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
   <script src="{% static 'js/app.js' %}?v=202608072314"></script>
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
 </body>
 </html>

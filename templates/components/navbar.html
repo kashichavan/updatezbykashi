@@ -20,42 +20,42 @@
     <!-- Desktop / Tablet Navigation Links -->
     <nav class="nav-links" aria-label="Primary Navigation">
       <a href="/?today=true" class="nav-pill-today {% if request.GET.today %}active{% endif %}">
-        <span>🔥</span>
+        <i data-lucide="flame" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span class="nav-label-long">Today's Requirements</span>
         <span class="nav-label-short">Today</span>
       </a>
       
       <a href="/" class="{% if request.path == '/' and not request.GET.today %}active{% endif %}">
-        <img src="{% static 'images/icon-feed.png' %}" class="nav-icon" alt="Feed" width="16" height="16" decoding="async">
+        <i data-lucide="briefcase" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span>Feed</span>
       </a>
 
       <a href="/blog/" class="{% if '/blog' in request.path %}active{% endif %}">
-        <span>📰</span>
+        <i data-lucide="newspaper" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span class="nav-label-long">Tech Blog</span>
         <span class="nav-label-short">Blog</span>
       </a>
 
       <a href="/learn/" class="{% if '/learn' in request.path %}active{% endif %}">
-        <span>⚡</span>
+        <i data-lucide="graduation-cap" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span class="nav-label-long">Learn Python/Java/JS</span>
         <span class="nav-label-short">Learn</span>
       </a>
       
       <a href="/debugger/" class="{% if '/debugger' in request.path %}active{% endif %}">
-        <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" alt="Debugger" width="16" height="16" decoding="async">
+        <i data-lucide="terminal" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span class="nav-label-long">Code Debugger</span>
         <span class="nav-label-short">Debugger</span>
       </a>
 
       <a href="/sql/" class="{% if '/sql' in request.path %}active{% endif %}">
-        <img src="{% static 'images/icon-company.png' %}" class="nav-icon" alt="SQL Debugger" width="16" height="16" decoding="async">
+        <i data-lucide="database" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span class="nav-label-long">SQL Debugger</span>
         <span class="nav-label-short">SQL</span>
       </a>
       
       <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
-        <img src="{% static 'images/icon-about.png' %}" class="nav-icon" alt="About" width="16" height="16" decoding="async">
+        <i data-lucide="user" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span>About</span>
       </a>
     </nav>

@@ -412,6 +412,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
 
     bindCardClicks();
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      try { window.lucide.createIcons(); } catch(e){}
+    }
   }
 
   // --- RENDER PAGINATION CONTROLS ---
