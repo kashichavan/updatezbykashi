@@ -51,8 +51,8 @@
         this.vy = (Math.random() - 0.5) * 0.55;
         this.radius = Math.random() * 1.5 + 1;
         this.baseAlpha = Math.random() * 0.35 + 0.25;
-        // Cobalt royal theme accent vs electric cyan
-        this.color = Math.random() > 0.3 ? '37, 99, 235' : '14, 165, 233';
+        // Muted luxury palette: warm dusty rose vs muted mauve-gray
+        this.color = Math.random() > 0.4 ? '183, 157, 155' : '114, 103, 111';
       }
 
       update() {
@@ -108,7 +108,7 @@
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
-            ctx.strokeStyle = `rgba(37, 99, 235, ${alpha})`;
+            ctx.strokeStyle = `rgba(114, 103, 111, ${alpha})`;
             ctx.lineWidth = 0.75;
             ctx.stroke();
           }
@@ -126,7 +126,7 @@
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(mouse.x, mouse.y);
-            ctx.strokeStyle = `rgba(14, 165, 233, ${alpha})`;
+            ctx.strokeStyle = `rgba(183, 157, 155, ${alpha})`;
             ctx.lineWidth = 1.1;
             ctx.stroke();
           }
