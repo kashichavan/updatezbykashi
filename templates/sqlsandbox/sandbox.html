@@ -715,6 +715,9 @@
         <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
         {% endfor %}
       </select>
+      <a href="/debugger/" class="dataset-select-compact" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px; color:#ffffff; background:#1e293b; border-color:#334155;">
+        <span>💻</span> Code Debugger ↗
+      </a>
     </div>
 
     <!-- Playback Controls -->

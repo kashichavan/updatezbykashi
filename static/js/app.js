@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="company-badge" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
             <div class="vp-badge-cluster">
               <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;">${catIcon} ${escapeHtml(j.category_name || catLabel)}</span>
-              ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;">NEW</span>' : ''}
+              ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:4px;"><span class="badge-live-pulse"></span>NEW</span>' : ''}
               <span class="type-badge">${j.job_type_display}</span>
             </div>
           </div>

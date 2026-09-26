@@ -16,175 +16,299 @@
 
 {% block content %}
 <style>
-  /* ── Desktop Recommended Mobile Blocker Overlay ── */
+  /* ── Elite Craft UI Mobile Studio Experience ── */
   .mobile-blocker-overlay {
     display: none;
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: 999999;
-    background: rgba(4, 9, 20, 0.94);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: rgba(4, 9, 20, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 16px;
     box-sizing: border-box;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   @media (max-width: 900px) {
-    .mobile-blocker-overlay {
+    .mobile-blocker-overlay:not(.dismissed) {
       display: flex !important;
     }
   }
 
   .mobile-blocker-card {
-    background: linear-gradient(145deg, #0f172a, #1e293b);
-    border: 1px solid rgba(56, 189, 248, 0.35);
+    background: radial-gradient(120% 120% at 50% 0%, #1e293b 0%, #0f172a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 24px;
-    padding: 30px 24px 26px;
-    max-width: 380px;
+    padding: 28px 22px 24px;
+    max-width: 420px;
     width: 100%;
     text-align: center;
     position: relative;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.2);
+    box-shadow: 
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 25px 50px -12px rgba(0, 0, 0, 0.9),
+      0 0 30px rgba(37, 99, 235, 0.25);
     box-sizing: border-box;
+    animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes modalPop {
+    from { opacity: 0; transform: scale(0.94) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
   }
 
   .mobile-blocker-x {
     position: absolute;
     top: 14px; right: 14px;
-    width: 38px; height: 38px;
+    width: 36px; height: 36px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     color: #ffffff;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 800;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     outline: none;
-    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .mobile-blocker-x:active {
-    background: rgba(239, 68, 68, 0.4);
+  .mobile-blocker-x:hover, .mobile-blocker-x:active {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
     transform: scale(0.95);
   }
 
-  .mobile-blocker-btn {
-    background: linear-gradient(135deg, #2563eb, #0284c7);
+  .mobile-blocker-btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff;
-    border: none;
-    border-radius: 14px;
-    padding: 14px 18px;
-    font-size: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 13px 18px;
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-blocker-btn-primary:active {
+    transform: scale(0.97);
+  }
+
+  .mobile-blocker-btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-size: 12.5px;
     font-weight: 700;
     cursor: pointer;
     width: 100%;
-    margin-top: 16px;
-    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5);
-    -webkit-tap-highlight-color: transparent;
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
   }
 
-  .mobile-blocker-btn:active {
-    transform: scale(0.98);
+  .mobile-blocker-btn-secondary:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  /* ── Mobile View Toggle Tabs (Sticky Mobile Toolbar) ── */
+  .mobile-ide-switcher {
+    display: none;
+    gap: 6px;
+    margin-bottom: 12px;
+    background: var(--bg-surface);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  @media (max-width: 900px) {
+    .mobile-ide-switcher {
+      display: flex !important;
+    }
+  }
+
+  .mobile-ide-tab {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 800;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+  }
+
+  .mobile-ide-tab.active {
+    background: var(--primary);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
   }
 </style>
 
 <script>
-  function goBackToHome(evt) {
-    if (evt) {
-      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
-    }
-    window.location.href = '/';
-  }
-
-  function forceCloseMobileBlocker(evt) {
+  function closeMobileStudioNotice(evt) {
     if (evt) {
       try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
     }
     var overlay = document.getElementById('mobileBlockerOverlay');
     if (overlay) {
+      overlay.classList.add('dismissed');
       overlay.style.setProperty('display', 'none', 'important');
     }
+    try { sessionStorage.setItem('kashii_mobile_studio_active', '1'); } catch(e){}
+    // Trigger Monaco Editor layout recalculation
+    if (window.editor && typeof window.editor.layout === 'function') {
+      setTimeout(function(){ window.editor.layout(); }, 150);
+    }
   }
+
+  function switchMobileIdeView(tabName) {
+    document.querySelectorAll('.mobile-ide-tab').forEach(function(t){ t.classList.remove('active'); });
+    var btn = document.getElementById('mobTab_' + tabName);
+    if (btn) btn.classList.add('active');
+
+    var editorBox = document.querySelector('.editor-card-box');
+    var varsBox = document.querySelector('.card-vars');
+    var stackBox = document.querySelector('.card-stack');
+    var termBox = document.querySelector('.card-term');
+
+    if (window.innerWidth <= 900) {
+      if (tabName === 'code') {
+        if (editorBox) editorBox.style.display = 'flex';
+        if (varsBox) varsBox.style.display = 'none';
+        if (stackBox) stackBox.style.display = 'none';
+        if (termBox) termBox.style.display = 'none';
+        if (window.editor && typeof window.editor.layout === 'function') {
+          setTimeout(function(){ window.editor.layout(); }, 100);
+        }
+      } else if (tabName === 'vars') {
+        if (editorBox) editorBox.style.display = 'none';
+        if (varsBox) varsBox.style.display = 'block';
+        if (stackBox) stackBox.style.display = 'block';
+        if (termBox) termBox.style.display = 'none';
+      } else if (tabName === 'term') {
+        if (editorBox) editorBox.style.display = 'none';
+        if (varsBox) varsBox.style.display = 'none';
+        if (stackBox) stackBox.style.display = 'none';
+        if (termBox) termBox.style.display = 'block';
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    try {
+      if (sessionStorage.getItem('kashii_mobile_studio_active') === '1') {
+        var overlay = document.getElementById('mobileBlockerOverlay');
+        if (overlay) overlay.classList.add('dismissed');
+      }
+    } catch(e){}
+  });
 </script>
 
-<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)">
-  <div class="mobile-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
-    <button class="mobile-blocker-x" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)" title="Go back to home">✕</button>
-    <div style="font-size:46px; margin-bottom:12px;">🖥️</div>
-    <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 8px;">Desktop / Laptop Recommended</h2>
-    <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 16px;">
-      The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> is a professional Monaco editor workspace optimized for desktop and laptop screens.
+<!-- ── CRAFT UI MOBILE STUDIO OVERLAY ── -->
+<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="closeMobileStudioNotice(event)">
+  <div class="mobile-blocker-card" onclick="event.stopPropagation()">
+    <button class="mobile-blocker-x" onclick="closeMobileStudioNotice(event)" title="Close and continue">✕</button>
+    <div style="font-size:42px; margin-bottom:10px;">⚡</div>
+    <h2 style="font-size:19px; font-weight:800; color:#ffffff; margin:0 0 6px; font-family:var(--font-serif);">
+      Visual Code Execution IDE
+    </h2>
+    <p style="color:#94a3b8; font-size:12.5px; line-height:1.55; margin:0 0 16px;">
+      Watch Python, JavaScript &amp; Java code execute step-by-step with live memory visualization. Best experienced on laptops and desktops, or launch the compact mobile IDE below.
     </p>
 
-    <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🌐 Chrome</div>
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🦊 Firefox</div>
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🧭 Safari</div>
-      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🔷 Edge</div>
+    <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-bottom:16px;">
+      <span style="background:rgba(37,99,235,0.15); border:1px solid rgba(37,99,235,0.3); border-radius:8px; padding:5px 9px; color:#60a5fa; font-size:11px; font-weight:800;">🐍 Python 3</span>
+      <span style="background:rgba(234,179,8,0.15); border:1px solid rgba(234,179,8,0.3); border-radius:8px; padding:5px 9px; color:#facc15; font-size:11px; font-weight:800;">⚡ JavaScript</span>
+      <span style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:5px 9px; color:#f87171; font-size:11px; font-weight:800;">☕ Java 17</span>
     </div>
 
-    <div style="color:#94a3b8; font-size:11px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:10px 12px; line-height:1.5;">
-      📋 Open <strong style="color:#38bdf8;">kashiiupdatez.online/debugger/</strong> on your PC or Laptop for the full visual trace experience.
-    </div>
-
-    <button class="mobile-blocker-btn" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)">
-      Continue on Mobile Anyway →
+    <button class="mobile-blocker-btn-primary" onclick="closeMobileStudioNotice(event)">
+      ⚡ Launch Mobile Code Studio →
     </button>
+    
+    <a href="/sql/" class="mobile-blocker-btn-secondary">
+      🗄️ Open SQL Database Studio ↗
+    </a>
+    <a href="/" class="mobile-blocker-btn-secondary" style="border:none; margin-top:2px;">
+      🏠 Return to Job Feed
+    </a>
   </div>
 </div>
 
 <div class="debugger-app-wrap">
 
-  <!-- ── 0. TOP RESTRICTION NOTICE BANNER (THEME ADAPTIVE) ── -->
-  <div style="background:var(--badge-bg); border:1px solid var(--badge-border); border-radius:10px; padding:10px 16px; margin-bottom:12px; color:var(--text-main); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+  <!-- ── 0. TOP RESTRICTION NOTICE BANNER ── -->
+  <div style="background:var(--badge-bg); border:1px solid var(--badge-border); border-radius:10px; padding:8px 14px; margin-bottom:10px; color:var(--text-main); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
     <span style="display:inline-flex; align-items:center; gap:8px;">
-      <span style="font-size:15px;">ℹ️</span>
-      <span><strong>Sandbox Notice:</strong> Dynamic runtime input (e.g. <code>input()</code> in Python or <code>Scanner</code> in Java) is <strong>not directly supported</strong> in web sandbox mode.</span>
+      <span style="font-size:14px;">ℹ️</span>
+      <span><strong>Live Visual Execution Tracer:</strong> Set breakpoints on line numbers → click <strong>"Start Debugging"</strong> to inspect stack frames and heap allocations!</span>
     </span>
     <span style="font-size:10px; background:var(--badge-border); color:var(--header-text); padding:3px 10px; border-radius:6px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase;">
-      Sandbox Mode
+      Interactive Sandbox
     </span>
   </div>
 
-  <!-- ── 1. HERO TOP STRIP ── -->
-  <div class="debugger-hero-strip" style="padding:10px 18px; margin-bottom:10px;">
-    <div style="display:flex; align-items:center; gap:12px; flex:1;">
+  <!-- ── 1. UNIFIED STUDIO COMMAND HEADER ── -->
+  <div class="debugger-hero-strip" style="padding:10px 16px; margin-bottom:10px;">
+    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:260px;">
       <span class="brand-badge">
         <img src="{% static 'images/icon-apply.png' %}" class="nav-icon"
              style="filter:brightness(0) invert(1);" width="14" height="14" alt="Debugger">
-        VISUAL DEBUGGER
+        VISUAL IDE
       </span>
       <div>
-        <h1 style="font:800 20px var(--font-serif); margin:0; color:var(--text-main);">
+        <h1 style="font:800 18px var(--font-serif); margin:0; color:var(--text-main);">
           Interactive Code Execution &amp; Memory Debugger
         </h1>
-        <p style="color:var(--text-muted); font-size:12px; margin:2px 0 0;">
+        <p style="color:var(--text-muted); font-size:11.5px; margin:1px 0 0;">
           Step through Python, JavaScript &amp; Java line-by-line — watch memory allocation live
         </p>
       </div>
     </div>
 
-    <!-- Language Tabs + Theme Selector -->
-    <div style="display:flex; gap:10px; flex-shrink:0; align-items:center; flex-wrap:wrap;">
-      <div style="display:flex; gap:8px;">
+    <!-- Multi-Language Tabs + SQL Studio Link + Theme Selector -->
+    <div style="display:flex; gap:8px; flex-shrink:0; align-items:center; flex-wrap:wrap;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
         <button id="langPython" class="lang-tab-btn active" onclick="switchLanguage('python')">
-          <img src="{% static 'images/icon-feed.png' %}" class="tab-png-icon" width="16" height="16" alt="Python">
+          <img src="{% static 'images/icon-feed.png' %}" class="tab-png-icon" width="15" height="15" alt="Python">
           Python 3
         </button>
-        <button id="langJS"     class="lang-tab-btn"        onclick="switchLanguage('javascript')">
-          <img src="{% static 'images/icon-apply.png' %}" class="tab-png-icon" width="16" height="16" alt="JavaScript">
+        <button id="langJS" class="lang-tab-btn" onclick="switchLanguage('javascript')">
+          <img src="{% static 'images/icon-apply.png' %}" class="tab-png-icon" width="15" height="15" alt="JavaScript">
           JavaScript
         </button>
-        <button id="langJava"   class="lang-tab-btn"        onclick="switchLanguage('java')">
-          <img src="{% static 'images/icon-company.png' %}" class="tab-png-icon" width="16" height="16" alt="Java">
+        <button id="langJava" class="lang-tab-btn" onclick="switchLanguage('java')">
+          <img src="{% static 'images/icon-company.png' %}" class="tab-png-icon" width="15" height="15" alt="Java">
           Java 17
         </button>
+        <a href="/sql/" class="lang-tab-btn" style="text-decoration:none; background:rgba(2,132,199,0.12); color:#0284c7; border-color:rgba(2,132,199,0.3);">
+          🗄️ SQL Studio ↗
+        </a>
       </div>
 
       <!-- Theme Selector Dropdown -->
@@ -214,7 +338,7 @@
   </div>
 
   <!-- ── 1b. ACTIVE INTERVIEW PROBLEM / QUESTION BANNER ── -->
-  <div id="activeProblemBanner" style="display:none; background:var(--card-bg, #ffffff); border:1px solid var(--border-color, #e2e8f0); border-radius:14px; padding:16px 20px; margin-bottom:12px; position:relative; box-shadow:0 4px 18px rgba(0,0,0,0.04);">
+  <div id="activeProblemBanner" style="display:none; background:var(--card-bg, #ffffff); border:1px solid var(--border-color, #e2e8f0); border-radius:14px; padding:14px 18px; margin-bottom:10px; position:relative; box-shadow:0 4px 18px rgba(0,0,0,0.04);">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;">
       <div style="flex:1; min-width:260px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap;">
@@ -225,44 +349,44 @@
             Live Code Debugger
           </span>
         </div>
-        <h2 id="activeProblemTitle" style="font-size:16px; font-weight:800; color:var(--text-main, #0f172a); margin:0 0 4px; line-height:1.4;">
+        <h2 id="activeProblemTitle" style="font-size:15px; font-weight:800; color:var(--text-main, #0f172a); margin:0 0 4px; line-height:1.4;">
           Interview Question
         </h2>
-        <p id="activeProblemDesc" style="font-size:12.5px; color:var(--text-muted, #64748b); margin:0; line-height:1.55;">
+        <p id="activeProblemDesc" style="font-size:12px; color:var(--text-muted, #64748b); margin:0; line-height:1.5;">
           Question instructions and description.
         </p>
       </div>
 
       <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-        <button onclick="startDebugging()" class="btn-start-debug" style="font-size:12px; padding:8px 14px; border-radius:8px;">
+        <button onclick="startDebugging()" class="btn-start-debug" style="font-size:12px; padding:7px 13px; border-radius:8px;">
           ▶ Start Debugging
         </button>
-        <button onclick="document.getElementById('activeProblemBanner').style.display='none'" class="dbg-step-btn" style="font-size:12px; padding:8px 12px; border-radius:8px;" title="Hide problem banner">
+        <button onclick="document.getElementById('activeProblemBanner').style.display='none'" class="dbg-step-btn" style="font-size:12px; padding:7px 11px; border-radius:8px;" title="Hide problem banner">
           ✕ Dismiss
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ── 2. PLAYBACK CONTROLS BAR ── -->
+  <!-- ── 2. STEP PLAYBACK CONTROLS STRIP ── -->
   <div id="playbackBarPlaceholder" style="display:none;"></div>
   <div class="playback-bar">
-    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-      <button id="btnStart"    class="btn-start-debug" onclick="startDebugging()">Start Debugging</button>
+    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+      <button id="btnStart"    class="btn-start-debug" onclick="startDebugging()">▶ Start Debugging</button>
       <button id="btnFirst"    class="dbg-step-btn"    onclick="firstStep()"      disabled>⏮ First</button>
       <button id="btnPrev"     class="dbg-step-btn"    onclick="prevStep()"       disabled>◀ Back</button>
       <button id="btnNext"     class="dbg-step-btn"    onclick="nextStep()"       disabled>Next ▶</button>
       <button id="btnLast"     class="dbg-step-btn"    onclick="lastStep()"       disabled>Last ⏭</button>
-      <button id="btnAutoPlay" class="dbg-step-btn"    onclick="toggleAutoPlay()" disabled>▶ Auto Play</button>
+      <button id="btnAutoPlay" class="dbg-step-btn"    onclick="toggleAutoPlay()" disabled>⚡ Auto Play</button>
     </div>
 
     <!-- Timeline Slider & Step Badge -->
-    <div style="display:flex; align-items:center; gap:10px; flex:1; max-width:320px;">
-      <span style="font-size:11px; font-weight:800; color:#94a3b8; white-space:nowrap;">Timeline:</span>
+    <div style="display:flex; align-items:center; gap:10px; flex:1; max-width:340px; min-width:200px;">
+      <span style="font-size:11px; font-weight:800; color:var(--text-muted); white-space:nowrap;">Timeline:</span>
       <input type="range" id="timelineSlider" min="0" max="0" value="0"
              style="flex:1; cursor:pointer;" oninput="goToStep(parseInt(this.value))" disabled>
       <span id="stepBadge"
-            style="font-size:12px; font-weight:800; color:#38bdf8; font-family:monospace; white-space:nowrap;">
+            style="font-size:11.5px; font-weight:800; color:#38bdf8; font-family:monospace; white-space:nowrap; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); padding:2px 8px; border-radius:6px;">
         Step 0 / 0
       </span>
     </div>
@@ -271,14 +395,26 @@
   <!-- ── 3. AI STEP STORY BANNER ── -->
   <div id="aiExplainBanner" class="step-story-banner">
     <div style="display:flex; align-items:center; justify-content:space-between; width:100%; gap:10px;">
-      <span id="aiExplainBannerText">
-        💡 <strong>Beginner Guide:</strong> Select a language above → set breakpoints by clicking on
-        line numbers → click <strong>"Start Debugging"</strong>!
+      <span id="aiExplainBannerText" style="font-size:12.5px;">
+        💡 <strong>Quick Start:</strong> Select a language above → set breakpoints by clicking line numbers → click <strong>"Start Debugging"</strong>!
       </span>
       <button class="section-maximize-btn" id="btnMaximizeWorkspace" onclick="toggleFullWorkspaceMaximize()" title="Maximize Full IDE Workspace" style="flex-shrink:0;">
-        ⛶ Maximize IDE
+        ⛶ Maximize Fullscreen
       </button>
     </div>
+  </div>
+
+  <!-- ── MOBILE PANEL SWITCHER (<= 900px) ── -->
+  <div class="mobile-ide-switcher">
+    <button id="mobTab_code" class="mobile-ide-tab active" onclick="switchMobileIdeView('code')">
+      💻 Code Editor
+    </button>
+    <button id="mobTab_vars" class="mobile-ide-tab" onclick="switchMobileIdeView('vars')">
+      📊 Memory &amp; Vars
+    </button>
+    <button id="mobTab_term" class="mobile-ide-tab" onclick="switchMobileIdeView('term')">
+      📟 Terminal Output
+    </button>
   </div>
 
   <!-- ── 4. SPLIT IDE GRID ── -->
@@ -317,7 +453,7 @@
             Variables &amp; Memory Inspector
           </span>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-size:11px; color:#94a3b8;">Live Variables &amp; Objects</span>
+            <span style="font-size:11px; color:#94a3b8;">Live Heap Objects</span>
             <button class="section-maximize-btn" onclick="toggleSectionMaximize(this.closest('.visual-card'))" title="Maximize Variables Panel">
               ⛶ Maximize
             </button>
