@@ -6,21 +6,21 @@
 {% block extra_css %}
 <style>
   :root {
-    --studio-bg: #070b14;
-    --studio-card: #0d1527;
-    --studio-border: rgba(56, 189, 248, 0.2);
-    --studio-accent: #38bdf8;
+    --studio-bg: #f8fafc;
+    --studio-card: #ffffff;
+    --studio-border: #e2e8f0;
+    --studio-accent: #2563eb;
   }
 
   body {
     background-color: var(--studio-bg);
-    color: #f1f5f9;
+    color: #0f172a;
   }
 
   .studio-container {
     max-width: 1280px;
-    margin: 20px auto 80px;
-    padding: 0 16px;
+    margin: 24px auto 80px;
+    padding: 0 18px;
   }
 
   .studio-header {
@@ -31,7 +31,7 @@
     gap: 16px;
     margin-bottom: 24px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid #e2e8f0;
   }
 
   .studio-grid {
@@ -49,9 +49,9 @@
   .studio-panel {
     background: var(--studio-card);
     border: 1px solid var(--studio-border);
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   }
 
   .studio-input-group {
@@ -60,35 +60,36 @@
 
   .studio-label {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #94a3b8;
+    color: #475569;
     margin-bottom: 6px;
   }
 
   .studio-input, .studio-textarea, .studio-select {
     width: 100%;
-    background: #080e1a;
-    border: 1px solid #233554;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 13px;
-    color: #ffffff;
+    padding: 11px 13px;
+    font-size: 14px;
+    color: #0f172a;
     outline: none;
-    transition: border-color 0.15s;
+    transition: all 0.15s;
     box-sizing: border-box;
   }
 
   .studio-input:focus, .studio-textarea:focus, .studio-select:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    background: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   }
 
   .studio-textarea {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
     min-height: 380px;
     resize: vertical;
@@ -96,30 +97,31 @@
 
   /* Live Preview Box */
   .preview-card {
-    background: #080e1a;
-    border: 1px solid #1e293b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
-    padding: 16px;
+    padding: 18px;
     max-height: 380px;
     overflow-y: auto;
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.6;
-    color: #cbd5e1;
+    color: #334155;
   }
 
   .preview-card h1, .preview-card h2, .preview-card h3 {
-    color: #ffffff;
+    color: #0f172a;
     margin-top: 12px;
     margin-bottom: 6px;
+    font-weight: 800;
   }
 
   .preview-card pre {
-    background: #0d1527;
+    background: #0f172a;
     border: 1px solid #1e293b;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 12px;
+    border-radius: 8px;
     font-family: monospace;
-    color: #38bdf8;
+    color: #f8fafc;
     overflow-x: auto;
   }
 
@@ -127,23 +129,23 @@
     width: 100%;
     height: 160px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 10px;
     margin-top: 8px;
-    border: 1px solid #1e293b;
-    background: #080e1a;
+    border: 1px solid #e2e8f0;
+    background: #f1f5f9;
   }
 
   .publish-btn {
     width: 100%;
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     color: #ffffff;
     font-weight: 800;
-    font-size: 13px;
+    font-size: 14px;
     border: none;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 10px;
+    padding: 13px;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
     transition: all 0.15s;
     display: flex;
     align-items: center;
@@ -151,32 +153,36 @@
     gap: 8px;
   }
   .publish-btn:hover {
-    background: #0284c7;
+    background: #1d4ed8;
     transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
   }
 
   /* SERP snippet preview */
   .serp-card {
-    background: #090f1d;
-    border: 1px solid #1e293b;
-    border-radius: 8px;
-    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
     font-family: Arial, sans-serif;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   }
   .serp-url {
-    color: #38bdf8;
-    font-size: 11px;
+    color: #202124;
+    font-size: 12px;
     margin-bottom: 2px;
   }
   .serp-title {
-    color: #93c5fd;
-    font-size: 14px;
-    font-weight: bold;
+    color: #1a0dab;
+    font-size: 16px;
+    font-weight: 600;
     margin-bottom: 4px;
+    text-decoration: underline;
+    cursor: pointer;
   }
   .serp-desc {
-    color: #94a3b8;
-    font-size: 11px;
+    color: #4d5156;
+    font-size: 13px;
     line-height: 1.4;
   }
 </style>
@@ -190,18 +196,18 @@
     <div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 20px;">⚡</span>
-        <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; margin: 0;">Blog Publishing Studio</h1>
+        <h1 style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 0;">Blog Publishing Studio</h1>
       </div>
-      <p style="color: #94a3b8; font-size: 12px; margin: 4px 0 0;">
+      <p style="color: #64748b; font-size: 13px; margin: 4px 0 0;">
         Write, preview, and deploy high-converting engineering articles &amp; masterclasses.
       </p>
     </div>
 
     <div style="display: flex; gap: 10px;">
-      <a href="/admin/blog/blogpost/" target="_blank" class="dbg-btn-compact" style="background: #17233d; color: #38bdf8; border: 1px solid #233554; padding: 6px 12px; border-radius: 6px; font-size: 11px; text-decoration: none; font-weight: 700;">
+      <a href="/admin/blog/blogpost/" target="_blank" class="dbg-btn-compact" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 7px 14px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 700;">
         ⚙️ Django Admin Table
       </a>
-      <a href="/blog/" class="dbg-btn-compact" style="background: #0d1527; color: #94a3b8; border: 1px solid #1e293b; padding: 6px 12px; border-radius: 6px; font-size: 11px; text-decoration: none;">
+      <a href="/blog/" class="dbg-btn-compact" style="background: #ffffff; color: #475569; border: 1px solid #cbd5e1; padding: 7px 14px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: 600;">
         &larr; View Blog
       </a>
     </div>
@@ -210,7 +216,7 @@
   {% if messages %}
   <div style="margin-bottom: 20px;">
     {% for message in messages %}
-    <div style="background: {% if message.tags == 'error' %}rgba(239, 68, 68, 0.2){% else %}rgba(16, 185, 129, 0.2){% endif %}; border: 1px solid {% if message.tags == 'error' %}#ef4444{% else %}#10b981{% endif %}; color: #ffffff; padding: 10px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 8px;">
+    <div style="background: {% if message.tags == 'error' %}#fef2f2{% else %}#f0fdf4{% endif %}; border: 1px solid {% if message.tags == 'error' %}#fca5a5{% else %}#86efac{% endif %}; color: {% if message.tags == 'error' %}#991b1b{% else %}#166534{% endif %}; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 8px; font-weight: 600;">
       {{ message }}
     </div>
     {% endfor %}
@@ -244,7 +250,7 @@
         <div class="studio-input-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
             <label class="studio-label" style="margin-bottom: 0;">Article Body (Markdown or HTML) *</label>
-            <span id="readTimeBadge" style="font-size: 11px; color: #38bdf8; font-weight: 700;">⏱️ ~1 min read (0 words)</span>
+            <span id="readTimeBadge" style="font-size: 12px; color: #2563eb; font-weight: 700;">⏱️ ~1 min read (0 words)</span>
           </div>
           <textarea id="postContent" name="content" required placeholder="## 1. Introduction
 
@@ -271,16 +277,16 @@ console.log(count);
 
         <!-- Publish Box -->
         <div class="studio-panel">
-          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px; display: flex; align-items: center; gap: 6px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 14px; display: flex; align-items: center; gap: 6px;">
             <span>🚀</span> Publication Status
           </h3>
 
           <div style="display: flex; gap: 16px; margin-bottom: 16px;">
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #ffffff; cursor: pointer;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #0f172a; cursor: pointer; font-weight: 600;">
               <input type="checkbox" name="is_published" checked style="accent-color: #10b981;">
               <span>Publish Live</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #ffffff; cursor: pointer;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #0f172a; cursor: pointer; font-weight: 600;">
               <input type="checkbox" name="is_featured" style="accent-color: #f59e0b;">
               <span>⭐ Featured Hero</span>
             </label>
@@ -293,7 +299,7 @@ console.log(count);
 
         <!-- Taxonomy & Category -->
         <div class="studio-panel">
-          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 14px;">
             📂 Category &amp; Tags
           </h3>
 
@@ -315,7 +321,7 @@ console.log(count);
 
         <!-- Cover Image & Media -->
         <div class="studio-panel">
-          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 14px;">
             🖼️ Media &amp; Cover Image
           </h3>
 
@@ -328,7 +334,7 @@ console.log(count);
 
         <!-- Author Information -->
         <div class="studio-panel">
-          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 14px;">
             👤 Author Profile
           </h3>
 
@@ -345,7 +351,7 @@ console.log(count);
 
         <!-- Google SERP Snippet Preview -->
         <div class="studio-panel">
-          <h3 style="font-size: 14px; font-weight: 800; color: #ffffff; margin: 0 0 14px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 14px;">
             🔍 Google Search Snippet Preview
           </h3>
           <div class="serp-card">
@@ -386,13 +392,13 @@ console.log(count);
 
     // Light Markdown parser for preview
     let html = content
-      .replace(/^### (.*$)/gim, '<h3 style="color:#38bdf8;">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 style="color:#ffffff;">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 style="color:#ffffff;">$1</h1>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+      .replace(/^### (.*$)/gim, '<h3 style="color:#1e40af; font-size:18px; margin:16px 0 8px;">$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2 style="color:#0f172a; font-size:22px; margin:20px 0 10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1 style="color:#0f172a; font-size:24px; margin:24px 0 12px;">$1</h1>')
+      .replace(/\*\*(.*)\*\*/gim, '<strong style="color:#0f172a;">$1</strong>')
       .replace(/\*(.*)\*/gim, '<em>$1</em>')
-      .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
-      .replace(/`([^`]+)`/gim, '<code style="background:#17233d; color:#38bdf8; padding:2px 4px; border-radius:4px;">$1</code>')
+      .replace(/```([\s\S]*?)```/gim, '<pre style="background:#0f172a; color:#f8fafc; padding:12px; border-radius:8px;"><code>$1</code></pre>')
+      .replace(/`([^`]+)`/gim, '<code style="background:#eff6ff; color:#1d4ed8; padding:2px 6px; border-radius:4px; font-size:13px; border:1px solid #dbeafe;">$1</code>')
       .replace(/\n/gim, '<br>');
 
     document.getElementById('liveMarkdownPreview').innerHTML = html || '<em>Type in the editor above to see live preview...</em>';
