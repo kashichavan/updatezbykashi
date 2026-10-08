@@ -193,7 +193,8 @@ class VisitorAnalyticsMiddleware:
     def log_visit(self, request, path):
         user_agent = request.META.get('HTTP_USER_AGENT', '')[:490]
         ua_lower = user_agent.lower()
-        is_bot = any(bot in ua_lower for bot in self.BOT_KEYWORDS)
+        if any(bot in ua_lower for bot in self.BOT_KEYWORDS):
+            return
 
         from .models import SiteVisit
 
@@ -299,7 +300,7 @@ class VisitorAnalyticsMiddleware:
             os=os_type,
             user_agent=user_agent,
             ip_address_masked=masked_ip,
-            is_bot=is_bot,
+            is_bot=False,
         )
 
 

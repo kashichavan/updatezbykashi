@@ -142,7 +142,6 @@ def trigger_async_jobdexo_refresh(force=False, limit=15):
 
 def api_ping(request):
     """Ultra-fast Keep-Alive Heartbeat endpoint for UptimeRobot auto pings."""
-    trigger_async_jobdexo_refresh()
     return JsonResponse({
         'status': 'ok',
         'app': 'Kashii Updatez',

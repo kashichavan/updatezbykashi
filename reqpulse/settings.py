@@ -170,8 +170,8 @@ else:
         },
     }
 
-# Immediate Static Asset Expiration (Prevents stale browser caching of JS/CSS)
-WHITENOISE_MAX_AGE = 0
+# WhiteNoise High-Performance Static Caching (1 year cache for production immutable assets)
+WHITENOISE_MAX_AGE = 31536000 if not DEBUG else 0
 WHITENOISE_KEEP_ONLY_HASHED_FILES = False
 WHITENOISE_ROOT = BASE_DIR / 'static'
 
