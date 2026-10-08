@@ -257,16 +257,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- SHIMMER SKELETON RENDERER ---
+  function renderShimmerSkeletons(count = 6) {
+    if (!jobsGrid) return;
+    const cardHtml = `
+      <div class="vp-product-card vp-shimmer-card">
+        <div class="vp-card-header" style="margin-bottom: 16px;">
+          <div class="shimmer-placeholder" style="width: 100px; height: 22px; border-radius: 9999px;"></div>
+          <div class="shimmer-placeholder" style="width: 75px; height: 22px; border-radius: 9999px;"></div>
+        </div>
+        <div class="vp-card-content">
+          <div class="shimmer-placeholder" style="width: 85%; height: 20px; margin-bottom: 12px; border-radius: 6px;"></div>
+          <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+            <div class="shimmer-placeholder" style="width: 90px; height: 16px; border-radius: 4px;"></div>
+            <div class="shimmer-placeholder" style="width: 70px; height: 16px; border-radius: 4px;"></div>
+          </div>
+          <div class="shimmer-placeholder" style="width: 110px; height: 14px; margin-bottom: 12px; border-radius: 4px;"></div>
+          <div class="shimmer-placeholder" style="width: 100%; height: 13px; margin-bottom: 6px; border-radius: 4px;"></div>
+          <div class="shimmer-placeholder" style="width: 70%; height: 13px; margin-bottom: 16px; border-radius: 4px;"></div>
+          <div class="skills-wrapper" style="display: flex; gap: 6px; margin-bottom: 18px;">
+            <div class="shimmer-placeholder" style="width: 55px; height: 22px; border-radius: 6px;"></div>
+            <div class="shimmer-placeholder" style="width: 65px; height: 22px; border-radius: 6px;"></div>
+            <div class="shimmer-placeholder" style="width: 50px; height: 22px; border-radius: 6px;"></div>
+          </div>
+          <div class="shimmer-placeholder" style="width: 140px; height: 18px; margin-bottom: 16px; border-radius: 6px;"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;">
+            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
+            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    jobsGrid.innerHTML = cardHtml.repeat(count);
+  }
+
   // --- PAGINATED JOBS ENGINE (NEWEST FIRST) ---
 
   async function loadJobs() {
     if (!jobsGrid) return;
 
     try {
-      jobsGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-          <div style="font-size: 14px; font-weight: 700; color: var(--blue-primary);">Syncing latest student requirements...</div>
-        </div>`;
+      renderShimmerSkeletons(state.pageSize || 6);
 
       const params = new URLSearchParams({
         q: state.searchQuery,
