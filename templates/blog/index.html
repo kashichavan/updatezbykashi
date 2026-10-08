@@ -1154,36 +1154,52 @@
         </div>
 
         <div class="radar-repo-list">
-          <a href="https://github.com/kdeldycke/awesome-falsehood" target="_blank" rel="noopener" class="radar-repo-item">
+          <a href="/blog/shadcn-ui-architecture-revolution/" class="radar-repo-item">
             <div class="radar-repo-name">
-              <span>kdeldycke/awesome-falsehood</span>
-              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 31k+</span>
+              <span>shadcn-ui/ui</span>
+              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 85.2k</span>
             </div>
-            <p class="radar-repo-desc">Falsehoods programmers believe in about time, dates, names, networks.</p>
+            <p class="radar-repo-desc">Copy-paste component architecture with Radix UI and Tailwind CSS.</p>
           </a>
 
-          <a href="https://github.com/kdeldycke/meta-package-manager" target="_blank" rel="noopener" class="radar-repo-item">
+          <a href="/blog/inside-fastapi-asgi-architecture-pydantic-v2/" class="radar-repo-item">
             <div class="radar-repo-name">
-              <span>kdeldycke/meta-package-manager</span>
-              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 2.1k</span>
+              <span>tiangolo/fastapi</span>
+              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 82.0k</span>
             </div>
-            <p class="radar-repo-desc">Unified CLI to snapshot and sync dependencies across ecosystems.</p>
+            <p class="radar-repo-desc">High-performance ASGI framework with Pydantic v2 Rust core.</p>
           </a>
 
-          <a href="https://github.com/kdeldycke/awesome-engineering-team-management" target="_blank" rel="noopener" class="radar-repo-item">
+          <a href="/blog/textual-rich-terminal-ui-architecture/" class="radar-repo-item">
             <div class="radar-repo-name">
-              <span>kdeldycke/awesome-engineering...</span>
-              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 4.5k</span>
+              <span>Textualize/rich</span>
+              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 51.2k</span>
             </div>
-            <p class="radar-repo-desc">Staff Engineer transition, RFC documents, and engineering leadership.</p>
+            <p class="radar-repo-desc">Rich terminal formatting and modern Python CSS terminal UIs.</p>
           </a>
 
-          <a href="https://github.com/astral-sh/uv" target="_blank" rel="noopener" class="radar-repo-item">
+          <a href="/blog/modern-python-tooling-packaging-2026/" class="radar-repo-item">
             <div class="radar-repo-name">
               <span>astral-sh/uv</span>
-              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 46k+</span>
+              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 46.2k</span>
             </div>
-            <p class="radar-repo-desc">Extremely fast Python package installer and resolver written in Rust.</p>
+            <p class="radar-repo-desc">Fast Rust-powered Python package installer &amp; resolver.</p>
+          </a>
+
+          <a href="/blog/vllm-pagedattention-architecture-deep-dive/" class="radar-repo-item">
+            <div class="radar-repo-name">
+              <span>vllm-project/vllm</span>
+              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 40.1k</span>
+            </div>
+            <p class="radar-repo-desc">PagedAttention GPU memory virtualization for LLM inference.</p>
+          </a>
+
+          <a href="/blog/falsehoods-programmers-believe-in/" class="radar-repo-item">
+            <div class="radar-repo-name">
+              <span>kdeldycke/awesome-falsehood</span>
+              <span style="font-size: 11px; color: #d97706; font-weight: 800;">⭐ 31.4k</span>
+            </div>
+            <p class="radar-repo-desc">Curated falsehoods programmers believe about time, names, networks.</p>
           </a>
         </div>
 
@@ -1240,15 +1256,88 @@
 </div>
 
 <script>
-  // Curated GitHub Repositories for Interactive Terminal View
+  // Curated Top-Starred GitHub Repositories with In-Depth Breakdown Masterclasses
   const CODEX_REPOS = [
+    {
+      name: "shadcn-ui/ui",
+      url: "https://github.com/shadcn-ui/ui",
+      desc: "Beautifully designed copy-paste components built with Radix UI and Tailwind CSS. 85k+ stars.",
+      lang: "TypeScript",
+      stars: "85.2k",
+      forks: "7.8k",
+      article_slug: "shadcn-ui-architecture-revolution"
+    },
+    {
+      name: "tiangolo/fastapi",
+      url: "https://github.com/tiangolo/fastapi",
+      desc: "High-performance async web framework powered by Starlette ASGI and Pydantic v2 Rust core. 82k+ stars.",
+      lang: "Python",
+      stars: "82.0k",
+      forks: "6.7k",
+      article_slug: "inside-fastapi-asgi-architecture-pydantic-v2"
+    },
+    {
+      name: "Textualize/rich",
+      url: "https://github.com/Textualize/rich",
+      desc: "Python library for rich text and terminal formatting: tables, syntax highlighting, and progress bars. 51k+ stars.",
+      lang: "Python",
+      stars: "51.2k",
+      forks: "2.1k",
+      article_slug: "textual-rich-terminal-ui-architecture"
+    },
+    {
+      name: "astral-sh/uv",
+      url: "https://github.com/astral-sh/uv",
+      desc: "Extremely fast Python package installer and resolver written in Rust. Drop-in replacement for pip. 46k+ stars.",
+      lang: "Rust",
+      stars: "46.2k",
+      forks: "1.4k",
+      article_slug: "modern-python-tooling-packaging-2026"
+    },
+    {
+      name: "vllm-project/vllm",
+      url: "https://github.com/vllm-project/vllm",
+      desc: "High-throughput and memory-efficient LLM serving engine using PagedAttention virtual memory. 40k+ stars.",
+      lang: "Python / C++",
+      stars: "40.1k",
+      forks: "5.4k",
+      article_slug: "vllm-pagedattention-architecture-deep-dive"
+    },
     {
       name: "kdeldycke/awesome-falsehood",
       url: "https://github.com/kdeldycke/awesome-falsehood",
-      desc: "Curated list of falsehoods programmers believe in about time, dates, names, networks, and distributed systems.",
+      desc: "Curated list of falsehoods programmers believe in about time, dates, names, networks, and distributed systems. 31k+ stars.",
       lang: "Markdown",
       stars: "31.4k",
-      forks: "1.8k"
+      forks: "1.8k",
+      article_slug: "falsehoods-programmers-believe-in"
+    },
+    {
+      name: "pallets/click",
+      url: "https://github.com/pallets/click",
+      desc: "Python composable command line utility creation kit with clean decorator API and auto-help generation. 16k+ stars.",
+      lang: "Python",
+      stars: "16.1k",
+      forks: "1.5k",
+      article_slug: "building-production-python-cli-tools"
+    },
+    {
+      name: "sqlfluff/sqlfluff",
+      url: "https://github.com/sqlfluff/sqlfluff",
+      desc: "Dialect-flexible SQL linter and auto-formatter with recursive AST parsing and rule engines. 10k+ stars.",
+      lang: "Python",
+      stars: "10.0k",
+      forks: "720",
+      article_slug: "sqlfluff-ast-parser-architecture"
+    },
+    {
+      name: "kdeldycke/awesome-engineering-team-management",
+      url: "https://github.com/kdeldycke/awesome-engineering-team-management",
+      desc: "Resources for software engineers transitioning into leadership, RFCs, and Staff Architect roles. 4.5k stars.",
+      lang: "Markdown",
+      stars: "4.5k",
+      forks: "320",
+      article_slug: "engineering-leadership-staff-engineer-playbook"
     },
     {
       name: "kdeldycke/meta-package-manager",
@@ -1256,39 +1345,8 @@
       desc: "Unified CLI tool to snapshot, sync, and update packages across Homebrew, APT, Pip, NPM, and Cargo.",
       lang: "Python",
       stars: "2.1k",
-      forks: "140"
-    },
-    {
-      name: "kdeldycke/awesome-engineering-team-management",
-      url: "https://github.com/kdeldycke/awesome-engineering-team-management",
-      desc: "Resources for software engineers transitioning into leadership, RFCs, and Staff Architect roles.",
-      lang: "Markdown",
-      stars: "4.5k",
-      forks: "320"
-    },
-    {
-      name: "astral-sh/uv",
-      url: "https://github.com/astral-sh/uv",
-      desc: "Extremely fast Python package installer and resolver written in Rust. Drop-in replacement for pip.",
-      lang: "Rust",
-      stars: "46.2k",
-      forks: "1.4k"
-    },
-    {
-      name: "pallets/click",
-      url: "https://github.com/pallets/click",
-      desc: "Python composable command line utility creation kit with clean decorator API and auto-help generation.",
-      lang: "Python",
-      stars: "16.1k",
-      forks: "1.5k"
-    },
-    {
-      name: "Textualize/rich",
-      url: "https://github.com/Textualize/rich",
-      desc: "Rich terminal formatting for Python: tables, syntax highlighting, markdown, and progress bars.",
-      lang: "Python",
-      stars: "51.2k",
-      forks: "2.1k"
+      forks: "140",
+      article_slug: "modern-python-tooling-packaging-2026"
     }
   ];
 
@@ -1309,7 +1367,7 @@
       articlesView.style.display = 'none';
       termView.style.display = 'block';
       topicsStrip.style.display = 'none';
-      searchInput.placeholder = 'Search terminal repos (e.g. kdeldycke, uv, falsehood)...';
+      searchInput.placeholder = 'Search starred repos (e.g. shadcn, fastapi, vllm, kdeldycke)...';
       renderTerminalRepos(CODEX_REPOS);
     } else {
       btnTerm.classList.remove('active');
@@ -1327,7 +1385,7 @@
 
     container.innerHTML = repos.map(r => `
       <div class="term-repo-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 6px;">
           <a href="${r.url}" target="_blank" rel="noopener" class="term-repo-title">
             <span style="color: #64748b;">$</span> ${r.name} ↗
           </a>
@@ -1336,9 +1394,16 @@
         <p class="term-repo-desc">${r.desc}</p>
         <div class="term-repo-meta">
           <span>⭐ ${r.stars} Stars &bull; 🍴 ${r.forks} Forks</span>
-          <button onclick="navigator.clipboard.writeText('git clone ${r.url}.git'); alert('git clone command copied!');" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--b-font-code); font-weight: 700;">
-            git clone
-          </button>
+          <div style="display: flex; gap: 8px;">
+            ${r.article_slug ? `
+              <a href="/blog/${r.article_slug}/" style="background: #2563eb; color: #ffffff; padding: 4px 12px; border-radius: 6px; font-size: 11px; text-decoration: none; font-family: var(--b-font-code); font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                📖 Read Masterclass
+              </a>
+            ` : ''}
+            <button onclick="navigator.clipboard.writeText('git clone ${r.url}.git'); alert('git clone command copied!');" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-family: var(--b-font-code); font-weight: 700;">
+              git clone
+            </button>
+          </div>
         </div>
       </div>
     `).join('');

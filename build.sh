@@ -35,6 +35,7 @@ python requirements/seed_prod.py || true
 python manage.py seed_blog || true
 python manage.py seed_deep_blogs || true
 python manage.py seed_kdeldycke_blogs || true
+python manage.py seed_starred_repo_blogs || true
 
 # Auto-clean legacy database duplicates & normalize company names
 python manage.py shell -c "import requirements.jobdexo_service as j; j.cleanup_all_database_duplicates()" || true
