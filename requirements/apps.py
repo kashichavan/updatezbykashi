@@ -9,7 +9,7 @@ class RequirementsConfig(AppConfig):
     def ready(self):
         # Exclude one-off management commands from spawning persistent background threads
         excluded_commands = {
-            'migrate', 'makemigrations', 'collectstatic', 'test',
+            'migrate', 'makemigrations', 'showmigrations', 'collectstatic', 'test',
             'createsuperuser', 'check', 'shell', 'dbshell', 'inspectdb', 'auto_backup', 'restore_snapshot'
         }
         is_mgmt_cmd = any(cmd in sys.argv for cmd in excluded_commands)
@@ -31,3 +31,10 @@ class RequirementsConfig(AppConfig):
                 start_daily_backup_daemon()
             except Exception:
                 pass
+
+            try:
+                from .keep_alive_service import start_keep_alive_daemon
+                start_keep_alive_daemon()
+            except Exception:
+                pass
+

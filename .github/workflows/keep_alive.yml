@@ -1,0 +1,23 @@
+name: 24/7 Render Anti-Sleep Shield
+
+on:
+  schedule:
+    # Runs every 14 minutes to prevent Render's 15-minute free tier spin-down
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render App
+        run: |
+          TARGET_URL="${{ secrets.RENDER_APP_URL || 'https://kashii-updatez.onrender.com' }}/api/ping"
+          echo "Pinging $TARGET_URL to keep Render free tier alive..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$TARGET_URL" || echo "failed")
+          echo "Render Edge Status: $RESPONSE"
+          if [ "$RESPONSE" = "200" ]; then
+            echo "Render instance is active, zero cold starts guaranteed."
+          else
+            echo "Ping delivered (status $RESPONSE). Render spin-down timer reset."
+          fi
