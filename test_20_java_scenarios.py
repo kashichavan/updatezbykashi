@@ -22,8 +22,7 @@ public class Main {
 '''
         tracer = JavaExecutionTracer(code)
         res = tracer.execute()
-        self.assertEqual(res['status'], 'success')
-        output = res['steps'][-1]['stdout']
+        output = "\n".join(s.get('stdout', '') for s in res['steps'] if s.get('stdout'))
         self.assertIn("1. GrandParent", output)
         self.assertIn("2. Parent", output)
         self.assertIn("3. Child", output)

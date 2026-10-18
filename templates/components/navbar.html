@@ -53,6 +53,12 @@
         <span class="nav-label-long">SQL Debugger</span>
         <span class="nav-label-short">SQL</span>
       </a>
+
+      <a href="/resume/" class="{% if '/resume' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="file-badge" class="nav-icon" style="width: 16px; height: 16px; color: #34d399;"></i>
+        <span class="nav-label-long">ATS Resume <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">90+</span></span>
+        <span class="nav-label-short">Resume</span>
+      </a>
       
       <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
         <i data-lucide="user" class="nav-icon" style="width: 16px; height: 16px;"></i>
@@ -177,6 +183,18 @@
               <span class="drawer-link-label">Learn Python, Java &amp; JS</span>
             </div>
             <span class="drawer-badge badge-academy">ACADEMY</span>
+          </a>
+
+          <a href="/resume/" class="drawer-link {% if '/resume' in request.path %}active{% endif %}">
+            <div class="drawer-link-left">
+              <span class="drawer-link-icon" style="color: #34d399;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </span>
+              <span class="drawer-link-label">ATS Resume Generator</span>
+            </div>
+            <span class="drawer-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">90+</span>
           </a>
 
           <a href="/blog/" class="drawer-link {% if '/blog' in request.path %}active{% endif %}">

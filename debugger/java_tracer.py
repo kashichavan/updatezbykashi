@@ -1762,57 +1762,41 @@ class JavaExecutionTracer:
             # If node has an anonymous body attached (e.g. new Greeting() { public void sayHello() { ... } })
             if getattr(node, 'body', None):
                 obj._anon_methods = {m.name: m for m in node.body if isinstance(m, javalang.tree.MethodDeclaration)}
-            ctor = self._find_constructor(cname, len(args))
-            if ctor:
-                cscope = {}
-                self._declare(cscope, 'this', cname, obj, changed=False)
-                for p, a in zip(ctor.parameters, args):
-                    self._declare(cscope, p.name, p.type, a)
-                frame_label = f"{cname}.<init>({', '.join(_display(a) for a in args)})"
-                call_stack.append(frame_label)
-                self._emit(self._lineno(ctor), self._line_text(ctor, f"{cname} constructor"), 'call', call_stack, cscope, [], fn_name=f"{cname}.<init>")
-                # If class does not extend another class, run its instance initializer blocks here before constructor body
-                cnode = self.classes.get(cname)
-                if cnode and not cnode.extends:
-                    for member in cnode.body:
-                        if isinstance(member, list) and not self._is_static_block(member):
-                            init_scope = {}
-                            self._declare(init_scope, 'this', cname, obj, changed=False)
-                            call_stack.append(f"{cname}.<init-block>")
-                            self._emit(0, f"instance initializer block for {cname}", 'call', call_stack, init_scope, [], fn_name=f"{cname}.<init-block>")
-                            try:
-                                self._exec_block(member, init_scope, call_stack, cname)
-                            except ReturnSignal:
-                                pass
-                            finally:
-                                call_stack.pop()
-                                self._emit(0, f"end of instance initializer for {cname}", 'return', call_stack, scope, [], fn_name=f"{cname}.<init-block>")
-                try:
-                    self._exec_block(ctor.body, cscope, call_stack, cname)
-                except ReturnSignal:
-                    pass
-                finally:
-                    call_stack.pop()
-                    self._emit(self._lineno(node), f"end of {cname}.<init>", 'return', call_stack, scope, [], fn_name=f"{cname}.<init>")
-            else:
-                # Default implicit constructor chaining when subclass defines no explicit constructor
-                cnode = self.classes.get(cname)
-                super_name = cnode.extends.name if (cnode and cnode.extends) else None
-                if super_name:
-                    parent_ctor = self._find_constructor(super_name, 0)
-                    if parent_ctor:
-                        pscope = {}
-                        self._declare(pscope, 'this', super_name, obj, changed=False)
-                        frame_label = f"{super_name}.<init>()"
-                        call_stack.append(frame_label)
-                        self._emit(self._lineno(parent_ctor), self._line_text(parent_ctor, f"{super_name} constructor"), 'call', call_stack, pscope, [], fn_name=f"{super_name}.<init>")
-                        try:
-                            self._exec_block(parent_ctor.body, pscope, call_stack, super_name)
-                        except ReturnSignal:
-                            pass
-                        finally:
-                            call_stack.pop()
-                            self._emit(0, f"end of {super_name}.<init>", 'return', call_stack, scope, [], fn_name=f"{super_name}.<init>")
+            def _run_ctor(target_cls, c_args):
+                c_node = self.classes.get(target_cls)
+                s_name = c_node.extends.name if (c_node and getattr(c_node, 'extends', None)) else None
+                c_ctor = self._find_constructor(target_cls, len(c_args))
+                
+                has_exp_super = False
+                if c_ctor and c_ctor.body:
+                    first = c_ctor.body[0]
+                    stype = type(first).__name__
+                    if stype in ('SuperConstructorInvocation', 'ExplicitConstructorInvocation'):
+                        has_exp_super = True
+                    elif isinstance(first, StatementExpression) and getattr(first, 'expression', None):
+                        if type(first.expression).__name__ in ('SuperConstructorInvocation', 'ExplicitConstructorInvocation'):
+                            has_exp_super = True
+
+                if not has_exp_super and s_name:
+                    _run_ctor(s_name, [])
+
+                if c_ctor:
+                    cscope = {}
+                    self._declare(cscope, 'this', target_cls, obj, changed=False)
+                    for p, a in zip(c_ctor.parameters, c_args):
+                        self._declare(cscope, p.name, p.type, a)
+                    frame_label = f"{target_cls}.<init>({', '.join(_display(a) for a in c_args)})"
+                    call_stack.append(frame_label)
+                    self._emit(self._lineno(c_ctor), self._line_text(c_ctor, f"{target_cls} constructor"), 'call', call_stack, cscope, [], fn_name=f"{target_cls}.<init>")
+                    try:
+                        self._exec_block(c_ctor.body, cscope, call_stack, target_cls)
+                    except ReturnSignal:
+                        pass
+                    finally:
+                        call_stack.pop()
+                        self._emit(self._lineno(node), f"end of {target_cls}.<init>", 'return', call_stack, scope, [], fn_name=f"{target_cls}.<init>")
+
+            _run_ctor(cname, args)
             return obj
 
         addr = self._new_obj_addr(cname)

@@ -2380,3 +2380,98 @@ def api_owner_verify_links(request):
         'timestamp': timezone.now().isoformat()
     })
 
+
+def resume_builder_view(request):
+    """
+    ATS 90+ Score Resume Generator with Enterprise Projects & Role-Specific Tailoring.
+    Generates single-column ATS compliant resumes engineered to pass Workday, Taleo, Greenhouse, and Lever.
+    """
+    from .resume_engine import RESUME_ROLES, calculate_ats_score
+
+    selected_role_id = request.GET.get('role', 'python-backend')
+    role_data = RESUME_ROLES.get(selected_role_id, RESUME_ROLES['python-backend'])
+
+    initial_resume = {
+        'name': 'Kashinath Chavan',
+        'contact': {
+            'email': 'kashinath@example.com',
+            'phone': '+91 98765 43210',
+            'location': 'Bangalore, India',
+            'linkedin': 'linkedin.com/in/kashinath-chavan',
+            'github': 'github.com/kashichavan',
+            'portfolio': 'kashiiupdatez.online'
+        },
+        'summary': role_data['summary'],
+        'skills': role_data['technical_skills'],
+        'projects': role_data['enterprise_projects'],
+        'education': role_data['education'],
+        'certifications': role_data['certifications']
+    }
+
+    ats_eval = calculate_ats_score(initial_resume, selected_role_id)
+
+    context = {
+        'roles': RESUME_ROLES,
+        'selected_role': role_data,
+        'selected_role_id': selected_role_id,
+        'initial_resume': initial_resume,
+        'initial_resume_json': json.dumps(initial_resume),
+        'ats_eval': ats_eval,
+        'page_title': '⚡ 90+ ATS Score Resume Generator — Kashii Updatez',
+        'meta_description': 'Free ATS-compliant resume builder for engineering freshers. Auto-generate enterprise projects, quantified XYZ metrics, and pass Workday, Greenhouse, and Lever filters.',
+    }
+    return render(request, 'resume_builder.html', context)
+
+
+def api_resume_template(request, role):
+    """API endpoint to fetch structured JSON for any role template."""
+    from .resume_engine import RESUME_ROLES, calculate_ats_score
+
+    role_data = RESUME_ROLES.get(role)
+    if not role_data:
+        return JsonResponse({'error': 'Role not found'}, status=404)
+
+    default_resume = {
+        'name': 'Kashinath Chavan',
+        'contact': {
+            'email': 'kashinath@example.com',
+            'phone': '+91 98765 43210',
+            'location': 'Bangalore, India',
+            'linkedin': 'linkedin.com/in/kashinath-chavan',
+            'github': 'github.com/kashichavan',
+            'portfolio': 'kashiiupdatez.online'
+        },
+        'summary': role_data['summary'],
+        'skills': role_data['technical_skills'],
+        'projects': role_data['enterprise_projects'],
+        'education': role_data['education'],
+        'certifications': role_data['certifications']
+    }
+
+    ats_eval = calculate_ats_score(default_resume, role)
+
+    return JsonResponse({
+        'role': role_data,
+        'resume': default_resume,
+        'ats_eval': ats_eval
+    })
+
+
+@csrf_exempt
+def api_ats_score_eval(request):
+    """Recalculate ATS score on custom user resume JSON payload."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .resume_engine import calculate_ats_score
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        role = body.get('role', 'python-backend')
+        resume_data = body.get('resume', {})
+        result = calculate_ats_score(resume_data, role)
+        return JsonResponse(result)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+

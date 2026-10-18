@@ -19,6 +19,12 @@ urlpatterns = [
     path('guides/<slug:slug>/', views.guide_detail_view, name='guide_detail'),
     path('tutorials/', views.guides_list_view, name='tutorials_list'),
 
+    # ATS 90+ Score Resume Generator & Enterprise Project Matcher
+    path('resume/', views.resume_builder_view, name='resume_builder'),
+    path('resume-builder/', views.resume_builder_view, name='resume_builder_alias'),
+    path('api/resume/template/<slug:role>/', views.api_resume_template, name='api_resume_template'),
+    path('api/resume/evaluate/', views.api_ats_score_eval, name='api_ats_score_eval'),
+
     # Mandatory Legal & Compliance Pages (AdSense Policy Requirements)
     path('privacy-policy/', views.privacy_policy_view, name='privacy_policy'),
     path('privacy/', views.privacy_policy_view, name='privacy_policy_alias'),
