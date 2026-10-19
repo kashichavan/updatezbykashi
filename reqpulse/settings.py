@@ -87,18 +87,18 @@ TEMPLATES = [
 WSGI_APPLICATION = 'reqpulse.wsgi.application'
 ASGI_APPLICATION = 'reqpulse.asgi.application'
 
-# Render & Production PostgreSQL Database Engine
-if os.environ.get("DATABASE_URL"):
+# Database Configuration: PostgreSQL on Render or Local/Internal SQLite3
+_db_url = os.environ.get("DATABASE_URL", "").strip()
+if _db_url.startswith(("postgres://", "postgresql://")):
     try:
         import dj_database_url
-        is_pooled = any(p in os.environ.get("DATABASE_URL", "") for p in ["pooler", "render", "vercel-storage", "neon.tech"])
+        is_pooled = any(p in _db_url for p in ["pooler", "render", "vercel-storage", "neon.tech"])
         db_config = dj_database_url.config(
-            default=os.environ["DATABASE_URL"],
+            default=_db_url,
             conn_max_age=0 if is_pooled else 300,
             conn_health_checks=True,
-            ssl_require=True if "sslmode=require" in os.environ.get("DATABASE_URL", "") or "neon.tech" in os.environ.get("DATABASE_URL", "") or "vercel-storage" in os.environ.get("DATABASE_URL", "") else False,
+            ssl_require=True if "sslmode=require" in _db_url or "neon.tech" in _db_url or "vercel-storage" in _db_url else False,
         )
-        # PostgreSQL Connection Resiliency & Keepalive options
         db_config.setdefault("OPTIONS", {})
         db_config["OPTIONS"].update({
             "connect_timeout": 10,
@@ -107,11 +107,17 @@ if os.environ.get("DATABASE_URL"):
             "keepalives_interval": 10,
             "keepalives_count": 5,
         })
-        if "pooler" in os.environ.get("DATABASE_URL", "") or "neon.tech" in os.environ.get("DATABASE_URL", ""):
+        if "pooler" in _db_url or "neon.tech" in _db_url:
             db_config["DISABLE_SERVER_SIDE_CURSORS"] = True
         DATABASES = {"default": db_config}
     except Exception:
-        DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+                "OPTIONS": {"timeout": 30},
+            }
+        }
 elif os.environ.get("DB_ENGINE"):
     DATABASES = {"default": {
         "ENGINE": os.environ["DB_ENGINE"],
