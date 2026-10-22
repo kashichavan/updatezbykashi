@@ -1,17 +1,71 @@
 """
-High-Precision Single-Page ATS Resume PDF Generator using ReportLab.
+High-Precision Single & Multi-Page ATS Resume PDF Generator using ReportLab.
 Produces 100% vector, machine-readable, ATS-compliant PDF resumes with zero rasterization.
 Compatible with Workday, Taleo, Greenhouse, Lever, and iCIMS parsers.
+Supports dynamic multi-page flow with running headers/footers and orphan prevention.
 """
 
 import io
 import re
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle, KeepTogether, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from reportlab.pdfgen import canvas
 
 PAGE_W, PAGE_H = A4
+
+
+class NumberedCanvas(canvas.Canvas):
+    """
+    Two-pass canvas that determines total page count dynamically.
+    For multi-page resumes (pages >= 2), prints a discreet ATS running footer:
+    'CANDIDATE NAME | Page X of Y'.
+    For single-page resumes, leaves footer clean and minimal.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
+        self.candidate_name = ""
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            if num_pages > 1:
+                self.draw_page_number(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_page_number(self, page_count):
+        self.saveState()
+        self.setFont("Helvetica", 8)
+        self.setFillColor(colors.HexColor("#64748b"))
+        
+        footer_y = 22
+        page_str = f"Page {self._pageNumber} of {page_count}"
+        self.drawRightString(PAGE_W - 36, footer_y, page_str)
+        
+        if getattr(self, 'candidate_name', None):
+            self.drawString(36, footer_y, self.candidate_name.upper())
+
+        # Subtle hairline separator
+        self.setStrokeColor(colors.HexColor("#e2e8f0"))
+        self.setLineWidth(0.5)
+        self.line(36, footer_y + 10, PAGE_W - 36, footer_y + 10)
+        self.restoreState()
+
+
+def make_numbered_canvas(candidate_name=""):
+    class CustomNumberedCanvas(NumberedCanvas):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.candidate_name = candidate_name
+    return CustomNumberedCanvas
 
 
 def sanitize_text(val):
@@ -92,46 +146,50 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
     if certs:
         total_lines += len(certs) * 1.1
 
-    # Optimal scaling to ensure full-page A4 balance without overflowing
-    if total_lines <= 23:
-        # Standard fresher / 2-project profile (fills 92-95% of A4 page beautifully)
-        top_margin = 34
-        bottom_margin = 34
-        side_margin = 36
-        name_size = 22.0
-        sec_title_size = 11.5
-        body_size = 9.8
-        body_leading = 14.2
-        bullet_size = 9.5
-        bullet_leading = 14.0
-        spacer_gap = 10.5
-        bullet_gap = 4.0
-    elif total_lines <= 28:
-        # Intermediate density (3 projects or 1 exp + 2 projects)
-        top_margin = 28
-        bottom_margin = 28
-        side_margin = 36
-        name_size = 20.0
-        sec_title_size = 11.0
-        body_size = 9.1
-        body_leading = 12.8
-        bullet_size = 8.8
-        bullet_leading = 12.4
-        spacer_gap = 7.0
-        bullet_gap = 3.0
+    page_mode = str(data.get('page_mode') or 'auto').lower()
+
+    # Optimal scaling to ensure full-page A4 balance or clean multi-page pagination
+    is_multi_target = (page_mode == 'multi') or (page_mode == 'auto' and total_lines > 25)
+
+    if not is_multi_target:
+        # Standard Single-Page A4 Budget
+        if total_lines <= 20:
+            top_margin = 36
+            bottom_margin = 36
+            side_margin = 36
+            name_size = 22.0
+            sec_title_size = 11.5
+            body_size = 9.8
+            body_leading = 14.2
+            bullet_size = 9.5
+            bullet_leading = 14.0
+            spacer_gap = 10.5
+            bullet_gap = 4.0
+        else:
+            top_margin = 25
+            bottom_margin = 25
+            side_margin = 34
+            name_size = 19.5
+            sec_title_size = 10.8
+            body_size = 8.8
+            body_leading = 12.2
+            bullet_size = 8.5
+            bullet_leading = 11.8
+            spacer_gap = 6.0
+            bullet_gap = 2.5
     else:
-        # Dense profile (multi-project + experience)
-        top_margin = 22
-        bottom_margin = 22
-        side_margin = 32
-        name_size = 18.5
-        sec_title_size = 10.2
-        body_size = 8.4
-        body_leading = 11.4
-        bullet_size = 8.2
-        bullet_leading = 11.0
-        spacer_gap = 4.5
-        bullet_gap = 2.0
+        # Multi-Page A4 Budget (Executive readability across 2+ A4 sheets)
+        top_margin = 34
+        bottom_margin = 38
+        side_margin = 36
+        name_size = 21.0
+        sec_title_size = 11.5
+        body_size = 9.6
+        body_leading = 13.8
+        bullet_size = 9.2
+        bullet_leading = 13.4
+        spacer_gap = 9.5
+        bullet_gap = 3.6
 
     printable_w = PAGE_W - (side_margin * 2)
 
@@ -264,6 +322,30 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
             spaceAfter=spacer_gap * 0.55
         ))
 
+    # Helper for Two-Column Split Headers (Pixel-aligned to margins)
+    def create_split_header(left_html, right_html=None, is_date=True):
+        if not right_html:
+            return Paragraph(left_html, body_style)
+
+        r_style = right_align_style if is_date else right_role_style
+        right_w = 110 if is_date else 170
+        left_w = printable_w - right_w
+        table = Table(
+            [[
+                Paragraph(left_html, body_style),
+                Paragraph(right_html, r_style)
+            ]],
+            colWidths=[left_w, right_w]
+        )
+        table.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 0),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 1)
+        ]))
+        return table
+
     # 3. Professional Summary
     if summary and str(summary).strip():
         add_section_header('PROFESSIONAL SUMMARY')
@@ -286,44 +368,20 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
             story.append(Paragraph(sanitize_text(skills), body_style))
         story.append(Spacer(1, spacer_gap * 0.7))
 
-    # Helper for Two-Column Split Headers (Pixel-aligned to margins)
-    def render_split_header(left_html, right_html=None, is_date=True):
-        if not right_html:
-            story.append(Paragraph(left_html, body_style))
-            return
-
-        r_style = right_align_style if is_date else right_role_style
-        right_w = 110 if is_date else 170
-        left_w = printable_w - right_w
-        table = Table(
-            [[
-                Paragraph(left_html, body_style),
-                Paragraph(right_html, r_style)
-            ]],
-            colWidths=[left_w, right_w]
-        )
-        table.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'TOP'),
-            ('LEFTPADDING', (0,0), (-1,-1), 0),
-            ('RIGHTPADDING', (0,0), (-1,-1), 0),
-            ('TOPPADDING', (0,0), (-1,-1), 0),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 1)
-        ]))
-        story.append(table)
-
     # 5. Professional Work Experience (if any)
     if exp_list:
         add_section_header('PROFESSIONAL WORK EXPERIENCE')
         for exp in exp_list:
             if not isinstance(exp, dict):
                 continue
+            exp_flowables = []
             company = sanitize_text(exp.get('company', ''))
             role = sanitize_text(exp.get('role', ''))
             duration = sanitize_text(exp.get('period') or exp.get('duration') or '')
             location = sanitize_text(exp.get('location', ''))
 
             # Line 1: Company (Left) | Duration (Right)
-            render_split_header(f'<b>{company}</b>', duration, is_date=True)
+            exp_flowables.append(create_split_header(f'<b>{company}</b>', duration, is_date=True))
 
             # Line 2: Role • Location
             sub_line_parts = []
@@ -332,21 +390,24 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
             if location:
                 sub_line_parts.append(f'<font color="#64748b">{location}</font>')
             if sub_line_parts:
-                story.append(Paragraph(' &bull; '.join(sub_line_parts), tech_style))
+                exp_flowables.append(Paragraph(' &bull; '.join(sub_line_parts), tech_style))
 
             tech_stack = sanitize_text(exp.get('tech_stack', ''))
             if tech_stack:
-                story.append(Paragraph(f'<b>Core Stack:</b> {tech_stack}', tech_style))
-                story.append(Spacer(1, 1.8))
+                exp_flowables.append(Paragraph(f'<b>Core Stack:</b> {tech_stack}', tech_style))
+                exp_flowables.append(Spacer(1, 1.8))
 
             bullets = exp.get('bullets', [])
             if isinstance(bullets, str):
                 bullets = [bullets]
             for b in bullets:
                 if b and str(b).strip():
-                    story.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
-                    story.append(Spacer(1, bullet_gap))
-            story.append(Spacer(1, spacer_gap * 0.6))
+                    exp_flowables.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
+                    exp_flowables.append(Spacer(1, bullet_gap))
+            exp_flowables.append(Spacer(1, spacer_gap * 0.6))
+
+            # Keep individual experience entry cohesive on a single page
+            story.append(KeepTogether(exp_flowables))
 
     # 6. Enterprise / Flagship Software Projects
     if proj_list:
@@ -355,6 +416,7 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
         for proj in proj_list:
             if not isinstance(proj, dict):
                 continue
+            proj_flowables = []
             title = sanitize_text(proj.get('title', ''))
             role = sanitize_text(proj.get('role', ''))
             duration = sanitize_text(proj.get('period') or proj.get('duration') or '')
@@ -362,29 +424,33 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
 
             # Left: Project Title (Bold), Right: Role (Italics) or Date
             if duration:
-                render_split_header(f'<b>{title}</b> &nbsp;|&nbsp; <i>{role}</i>' if role else f'<b>{title}</b>', duration, is_date=True)
+                proj_flowables.append(create_split_header(f'<b>{title}</b> &nbsp;|&nbsp; <i>{role}</i>' if role else f'<b>{title}</b>', duration, is_date=True))
             elif role:
-                render_split_header(f'<b>{title}</b>', f'<i>{role}</i>', is_date=False)
+                proj_flowables.append(create_split_header(f'<b>{title}</b>', f'<i>{role}</i>', is_date=False))
             else:
-                story.append(Paragraph(f'<b>{title}</b>', body_style))
+                proj_flowables.append(Paragraph(f'<b>{title}</b>', body_style))
 
             if tech_stack:
-                story.append(Paragraph(f'<b>Technologies:</b> {tech_stack}', tech_style))
-                story.append(Spacer(1, 1.8))
+                proj_flowables.append(Paragraph(f'<b>Technologies:</b> {tech_stack}', tech_style))
+                proj_flowables.append(Spacer(1, 1.8))
 
             bullets = proj.get('bullets', [])
             if isinstance(bullets, str):
                 bullets = [bullets]
             for b in bullets:
                 if b and str(b).strip():
-                    story.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
-                    story.append(Spacer(1, bullet_gap))
-            story.append(Spacer(1, spacer_gap * 0.6))
+                    proj_flowables.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
+                    proj_flowables.append(Spacer(1, bullet_gap))
+            proj_flowables.append(Spacer(1, spacer_gap * 0.6))
+
+            # Keep individual project entry cohesive on a single page
+            story.append(KeepTogether(proj_flowables))
 
     # 7. Education
     if education_raw:
         add_section_header('EDUCATION')
         edu_items = education_raw if isinstance(education_raw, list) else [education_raw]
+        edu_flowables = []
         for edu in edu_items:
             if isinstance(edu, dict):
                 degree = sanitize_text(edu.get('degree', ''))
@@ -393,7 +459,7 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
                 gpa = sanitize_text(edu.get('gpa', ''))
                 coursework = sanitize_text(edu.get('coursework', ''))
 
-                render_split_header(f'<b>{degree}</b>', year, is_date=True)
+                edu_flowables.append(create_split_header(f'<b>{degree}</b>', year, is_date=True))
 
                 sub_parts = []
                 if institution:
@@ -401,22 +467,25 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
                 if gpa:
                     sub_parts.append(f'<b>CGPA: {gpa}</b>')
                 if sub_parts:
-                    story.append(Paragraph(' &bull; '.join(sub_parts), body_style))
+                    edu_flowables.append(Paragraph(' &bull; '.join(sub_parts), body_style))
 
                 if coursework:
-                    story.append(Paragraph(f'<b>Core Coursework:</b> {coursework}', tech_style))
-                story.append(Spacer(1, 3.0))
+                    edu_flowables.append(Paragraph(f'<b>Core Coursework:</b> {coursework}', tech_style))
+                edu_flowables.append(Spacer(1, 3.0))
             elif isinstance(edu, str) and edu.strip():
-                story.append(Paragraph(sanitize_text(edu), body_style))
-        story.append(Spacer(1, spacer_gap * 0.7))
+                edu_flowables.append(Paragraph(sanitize_text(edu), body_style))
+        edu_flowables.append(Spacer(1, spacer_gap * 0.7))
+        story.append(KeepTogether(edu_flowables))
 
     # 8. Certifications & Achievements
     if certs:
         add_section_header('CERTIFICATIONS & ACHIEVEMENTS')
+        cert_flowables = []
         for cert in certs:
             if cert and str(cert).strip():
-                story.append(Paragraph(sanitize_text(cert), bullet_style, bulletText='•'))
-                story.append(Spacer(1, bullet_gap))
+                cert_flowables.append(Paragraph(sanitize_text(cert), bullet_style, bulletText='•'))
+                cert_flowables.append(Spacer(1, bullet_gap))
+        story.append(KeepTogether(cert_flowables))
 
-    doc.build(story)
+    doc.build(story, canvasmaker=make_numbered_canvas(raw_name))
     return buffer.getvalue()

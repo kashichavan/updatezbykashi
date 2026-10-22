@@ -2825,8 +2825,13 @@ def api_download_resume_pdf(request):
             try:
                 body = json.loads(request.body.decode('utf-8'))
                 resume_data = body.get('resume') or body
+                if 'page_mode' in body and 'page_mode' not in resume_data:
+                    resume_data['page_mode'] = body['page_mode']
             except Exception:
                 resume_data = {}
+
+        if request.GET.get('page_mode') and 'page_mode' not in resume_data:
+            resume_data['page_mode'] = request.GET.get('page_mode')
 
         if not resume_data:
             role = request.GET.get('role', 'python-backend')
