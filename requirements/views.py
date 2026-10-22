@@ -3098,6 +3098,271 @@ def api_resume_github_discovery_direct(request):
     })
 
 
+# ── INDIA-WIDE JOB AGGREGATION & LAST-HOUR DISCOVERY APIS ─────────
+
+def api_jobs_list(request):
+    """
+    Search and filter India-wide aggregated jobs with last-hour tracking.
+    Query parameters:
+    - domain: TECHNICAL or NON_TECHNICAL
+    - city: e.g. Bengaluru, Hyderabad, Pune, Mumbai, Delhi NCR, Remote
+    - experience: INTERNSHIP, FRESHER, EARLY_CAREER, MID_LEVEL, SENIOR_LEVEL
+    - source: Jobdexo, Greenhouse, Ashby, PublicFeeds
+    - time_window: 1h, 6h, 24h, 7d
+    - q: search query string
+    - page: page number (default 1)
+    - page_size: items per page (default 20, max 50)
+    """
+    from .models import JobPosting
+    from django.core.paginator import Paginator
+    from datetime import timedelta
+    from django.db.models import Q
+
+    now = timezone.now()
+    qs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=now).select_related('category')
+
+    # Domain filter (Technical vs Non-Technical)
+    domain = request.GET.get('domain')
+    if domain in ['TECHNICAL', 'NON_TECHNICAL']:
+        qs = qs.filter(industry_domain=domain)
+
+    # City / Location filter
+    city = request.GET.get('city')
+    if city:
+        if city.lower() == 'remote':
+            qs = qs.filter(Q(is_remote=True) | Q(normalized_city='Remote'))
+        else:
+            qs = qs.filter(normalized_city__iexact=city)
+
+    # Experience tier filter
+    experience = request.GET.get('experience')
+    if experience in ['INTERNSHIP', 'FRESHER', 'EARLY_CAREER', 'MID_LEVEL', 'SENIOR_LEVEL']:
+        qs = qs.filter(experience_tier=experience)
+
+    # Source filter
+    source = request.GET.get('source')
+    if source:
+        qs = qs.filter(source_name__iexact=source)
+
+    # Time Window filter (1h, 6h, 24h, 7d)
+    time_window = request.GET.get('time_window')
+    if time_window == '1h':
+        cutoff = now - timedelta(hours=1)
+        qs = qs.filter(Q(source_published_at__gte=cutoff) | Q(first_seen_at__gte=cutoff))
+    elif time_window == '6h':
+        cutoff = now - timedelta(hours=6)
+        qs = qs.filter(Q(source_published_at__gte=cutoff) | Q(first_seen_at__gte=cutoff))
+    elif time_window == '24h':
+        cutoff = now - timedelta(hours=24)
+        qs = qs.filter(Q(source_published_at__gte=cutoff) | Q(first_seen_at__gte=cutoff))
+    elif time_window == '7d':
+        cutoff = now - timedelta(days=7)
+        qs = qs.filter(Q(source_published_at__gte=cutoff) | Q(first_seen_at__gte=cutoff))
+
+    # Keyword search
+    q = request.GET.get('q', '').strip()
+    if q:
+        qs = qs.filter(
+            Q(title__icontains=q) |
+            Q(company_name__icontains=q) |
+            Q(skills_required__icontains=q)
+        )
+
+    # Sort: newest first
+    qs = qs.order_by('-first_seen_at', '-posted_date', '-created_at')
+
+    # Pagination
+    page_num = int(request.GET.get('page', 1))
+    page_size = min(int(request.GET.get('page_size', 20)), 50)
+    paginator = Paginator(qs, page_size)
+    page_obj = paginator.get_page(page_num)
+
+    job_items = []
+    for job in page_obj:
+        job_items.append({
+            'id': job.id,
+            'uuid': str(job.uuid),
+            'title': job.title,
+            'company_name': job.company_name,
+            'category': job.category.name if job.category else 'General',
+            'category_slug': job.category.slug if job.category else 'tech',
+            'location': job.location,
+            'normalized_city': job.normalized_city,
+            'is_remote': job.is_remote,
+            'job_type': job.job_type,
+            'job_type_display': job.get_job_type_display(),
+            'stipend_salary': job.stipend_salary,
+            'skills': job.get_skills_list()[:6],
+            'apply_url': job.apply_url,
+            'detail_url': f"/category/{job.category.slug}/job/{job.uuid}/" if job.category else f"/job/{job.uuid}/",
+            'source_name': job.source_name,
+            'source_published_at': job.source_published_at.isoformat() if job.source_published_at else None,
+            'timestamp_precision': job.timestamp_precision,
+            'ist_published_time': job.get_ist_published_time(),
+            'relative_time': job.get_relative_time_display(),
+            'freshness_badge': job.get_freshness_badge(),
+            'industry_domain': job.industry_domain,
+            'experience_tier': job.experience_tier,
+        })
+
+    return JsonResponse({
+        'success': True,
+        'count': paginator.count,
+        'page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'has_next': page_obj.has_next(),
+        'has_previous': page_obj.has_previous(),
+        'jobs': job_items
+    })
+
+
+def api_jobs_last_hour(request):
+    """
+    Dedicated endpoint returning jobs published or discovered in the last 60 minutes.
+    """
+    from .models import JobPosting
+    from datetime import timedelta
+    from django.db.models import Q
+
+    now = timezone.now()
+    cutoff = now - timedelta(hours=1)
+
+    qs = JobPosting.objects.filter(
+        status='ACTIVE',
+        deadline__gt=now
+    ).filter(
+        Q(source_published_at__gte=cutoff) | Q(first_seen_at__gte=cutoff)
+    ).select_related('category').order_by('-first_seen_at', '-source_published_at')[:30]
+
+    items = []
+    source_counts = {}
+
+    for job in qs:
+        src = job.source_name or 'Aggregator'
+        source_counts[src] = source_counts.get(src, 0) + 1
+        items.append({
+            'id': job.id,
+            'uuid': str(job.uuid),
+            'title': job.title,
+            'company_name': job.company_name,
+            'location': job.location,
+            'normalized_city': job.normalized_city,
+            'is_remote': job.is_remote,
+            'apply_url': job.apply_url,
+            'detail_url': f"/category/{job.category.slug}/job/{job.uuid}/" if job.category else f"/job/{job.uuid}/",
+            'source_name': job.source_name,
+            'relative_time': job.get_relative_time_display(),
+            'ist_published_time': job.get_ist_published_time(),
+            'timestamp_precision': job.timestamp_precision,
+            'freshness_badge': job.get_freshness_badge(),
+            'industry_domain': job.industry_domain,
+            'experience_tier': job.experience_tier,
+        })
+
+    return JsonResponse({
+        'success': True,
+        'last_hour_count': len(items),
+        'window': 'Last 60 Minutes',
+        'timezone': 'Asia/Kolkata (IST)',
+        'source_breakdown': source_counts,
+        'freshness_notice': 'Jobs discovered or published within the last hour. Timezone-aware UTC evaluation.',
+        'jobs': items
+    })
+
+
+@csrf_exempt
+def api_jobs_ingest_trigger(request):
+    """
+    Admin-triggered manual ingestion endpoint across specified or all active sources.
+    """
+    from .job_aggregator.orchestrator import orchestrator
+    import threading
+
+    limit = int(request.GET.get('limit') or request.POST.get('limit') or 10)
+    sources = request.GET.getlist('sources') or request.POST.getlist('sources') or None
+    last_hours = request.GET.get('last_hours') or request.POST.get('last_hours')
+    last_hours = int(last_hours) if last_hours else None
+    run_async = request.GET.get('async', 'false').lower() == 'true'
+
+    if run_async:
+        def _bg_run():
+            try:
+                orchestrator.run_aggregation(sources=sources, limit_per_source=limit, last_hours=last_hours)
+            except Exception as e:
+                logger.error(f"Background ingestion failed: {e}")
+
+        t = threading.Thread(target=_bg_run, daemon=True)
+        t.start()
+        return JsonResponse({
+            'success': True,
+            'status': 'STARTED',
+            'message': f'Ingestion started in background for sources: {sources or "All enabled"}'
+        })
+
+    # Synchronous execution
+    try:
+        result = orchestrator.run_aggregation(
+            sources=sources,
+            limit_per_source=limit,
+            last_hours=last_hours
+        )
+        return JsonResponse(result)
+    except Exception as e:
+        logger.exception("Error executing manual ingestion:")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def api_jobs_ingestion_status(request):
+    """
+    Returns recent ingestion history, health of registered source adapters,
+    and coverage metrics.
+    """
+    from .models import JobIngestionRun, JobPosting
+    from .job_aggregator.orchestrator import orchestrator
+    from datetime import timedelta
+
+    now = timezone.now()
+    recent_runs = JobIngestionRun.objects.all().order_by('-started_at')[:15]
+    runs_data = []
+
+    for r in recent_runs:
+        runs_data.append({
+            'batch_id': r.batch_id,
+            'source_name': r.source_name,
+            'status': r.status,
+            'discovered': r.jobs_discovered,
+            'imported': r.jobs_imported,
+            'duplicates': r.duplicates_skipped,
+            'duration_seconds': r.duration_seconds,
+            'started_at': r.started_at.isoformat(),
+            'error_message': r.error_message,
+        })
+
+    # Coverage statistics
+    total_active = JobPosting.objects.filter(status='ACTIVE').count()
+    last_1h = JobPosting.objects.filter(
+        status='ACTIVE',
+        first_seen_at__gte=now - timedelta(hours=1)
+    ).count()
+    last_24h = JobPosting.objects.filter(
+        status='ACTIVE',
+        first_seen_at__gte=now - timedelta(hours=24)
+    ).count()
+
+    return JsonResponse({
+        'success': True,
+        'active_sources': orchestrator.get_registered_sources(),
+        'recent_runs': runs_data,
+        'metrics': {
+            'total_active_jobs': total_active,
+            'last_hour_discoveries': last_1h,
+            'last_24_hours_discoveries': last_24h,
+            'coverage_region': 'India-Wide & Remote Hubs',
+        }
+    })
+
+
+
 
 
 

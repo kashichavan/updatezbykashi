@@ -65,6 +65,38 @@ class JobPosting(models.Model):
     applications_count = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
     
+    # ── India-Wide Multi-Source Aggregation & Last-Hour Discovery Fields ──
+    PRECISION_CHOICES = [
+        ('EXACT_TIMESTAMP', 'Exact Timestamp (Hour & Minute)'),
+        ('APPROXIMATE_TIME', 'Approximate Timestamp (Relative)'),
+        ('DATE_ONLY', 'Date Only (Day Level)'),
+        ('UNKNOWN', 'Unknown / Not Provided'),
+    ]
+    DOMAIN_CHOICES = [
+        ('TECHNICAL', 'Technical / Software / Data / Cloud / AI'),
+        ('NON_TECHNICAL', 'Non-Technical / Business / Marketing / HR / Operations'),
+    ]
+    EXP_TIER_CHOICES = [
+        ('INTERNSHIP', 'Internship / Student'),
+        ('FRESHER', 'Fresher / 0–1 Years'),
+        ('EARLY_CAREER', '1–3 Years Experience'),
+        ('MID_LEVEL', '3–5 Years Experience'),
+        ('SENIOR_LEVEL', '5+ Years / Senior Roles'),
+    ]
+
+    source_name = models.CharField(max_length=100, default='Jobdexo', db_index=True, help_text="e.g. Jobdexo, Greenhouse, Lever, Ashby, PublicFeeds")
+    source_job_id = models.CharField(max_length=200, blank=True, default='', db_index=True)
+    source_url = models.URLField(max_length=500, blank=True, default='', help_text="Original source portal link")
+    source_published_at = models.DateTimeField(null=True, blank=True, db_index=True, help_text="Original publication timestamp in UTC")
+    source_updated_at = models.DateTimeField(null=True, blank=True, help_text="Original update timestamp in UTC")
+    first_seen_at = models.DateTimeField(default=timezone.now, db_index=True, help_text="Timestamp when first discovered")
+    last_seen_at = models.DateTimeField(default=timezone.now, db_index=True, help_text="Timestamp when most recently verified active")
+    timestamp_precision = models.CharField(max_length=30, choices=PRECISION_CHOICES, default='DATE_ONLY', db_index=True)
+    industry_domain = models.CharField(max_length=30, choices=DOMAIN_CHOICES, default='TECHNICAL', db_index=True)
+    experience_tier = models.CharField(max_length=30, choices=EXP_TIER_CHOICES, default='FRESHER', db_index=True)
+    normalized_city = models.CharField(max_length=100, default='Bengaluru', db_index=True, help_text="Normalized city e.g. Bengaluru, Hyderabad, Pune, Mumbai, Delhi NCR, Remote")
+    ingestion_batch_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
+
     # 7-Day Auto Expiration Policy
     created_at = models.DateTimeField(auto_now_add=True)
     posted_date = models.DateField(
@@ -85,6 +117,10 @@ class JobPosting(models.Model):
             models.Index(fields=['posted_date']),
             models.Index(fields=['company_name']),
             models.Index(fields=['status', 'deadline']),
+            models.Index(fields=['industry_domain', 'status', '-source_published_at']),
+            models.Index(fields=['normalized_city', 'status', '-source_published_at']),
+            models.Index(fields=['source_name', 'source_job_id']),
+            models.Index(fields=['-first_seen_at']),
         ]
 
     def save(self, *args, **kwargs):
@@ -155,6 +191,80 @@ class JobPosting(models.Model):
         elif self.posted_date == yesterday:
             return 'Yesterday'
         return self.posted_date.strftime('%b %d, %Y')
+
+    def is_last_hour(self):
+        """Returns True if this job was published or discovered within the last 60 minutes."""
+        from datetime import timedelta
+        cutoff = timezone.now() - timedelta(hours=1)
+        if self.source_published_at and self.timestamp_precision == 'EXACT_TIMESTAMP':
+            return self.source_published_at >= cutoff
+        return self.first_seen_at >= cutoff
+
+    def is_within_hours(self, hours=1):
+        """Returns True if published or discovered within N hours."""
+        from datetime import timedelta
+        cutoff = timezone.now() - timedelta(hours=hours)
+        if self.source_published_at and self.timestamp_precision == 'EXACT_TIMESTAMP':
+            return self.source_published_at >= cutoff
+        return self.first_seen_at >= cutoff
+
+    def get_ist_published_time(self):
+        """Returns publication time formatted in Asia/Kolkata timezone with precision indication."""
+        from zoneinfo import ZoneInfo
+        ist = ZoneInfo("Asia/Kolkata")
+        target_dt = self.source_published_at or self.first_seen_at
+        if not target_dt:
+            return "Today"
+        ist_dt = target_dt.astimezone(ist)
+        if self.timestamp_precision == 'EXACT_TIMESTAMP':
+            return ist_dt.strftime('%I:%M %p, %d %b')
+        return ist_dt.strftime('%d %b %Y')
+
+    def get_relative_time_display(self):
+        """Returns humanized relative time (e.g., '14m ago', '2h ago', '1d ago')."""
+        now = timezone.now()
+        ref_time = self.source_published_at if (self.source_published_at and self.timestamp_precision == 'EXACT_TIMESTAMP') else self.first_seen_at
+        if not ref_time:
+            return "Recently"
+        diff = now - ref_time
+        total_sec = max(int(diff.total_seconds()), 0)
+        if total_sec < 60:
+            return "Just now"
+        elif total_sec < 3600:
+            return f"{total_sec // 60}m ago"
+        elif total_sec < 86400:
+            return f"{total_sec // 3600}h ago"
+        else:
+            return f"{total_sec // 86400}d ago"
+
+    def get_freshness_badge(self):
+        """Returns structured metadata badge for frontends and mobile cards."""
+        if self.is_last_hour():
+            return {
+                'is_last_hour': True,
+                'label': '⚡ Last 1 Hour',
+                'bg': 'rgba(16, 185, 129, 0.15)',
+                'border': 'rgba(16, 185, 129, 0.4)',
+                'color': '#34d399',
+                'title': f"Published/Discovered {self.get_relative_time_display()}"
+            }
+        elif self.is_within_hours(6):
+            return {
+                'is_last_hour': False,
+                'label': '🔥 Fresh Today',
+                'bg': 'rgba(56, 189, 248, 0.15)',
+                'border': 'rgba(56, 189, 248, 0.35)',
+                'color': '#38bdf8',
+                'title': f"Published {self.get_relative_time_display()}"
+            }
+        return {
+            'is_last_hour': False,
+            'label': 'Active Drive',
+            'bg': 'rgba(255, 255, 255, 0.05)',
+            'border': 'rgba(255, 255, 255, 0.12)',
+            'color': '#cbd5e1',
+            'title': self.get_posted_date_display()
+        }
 
     def __str__(self):
         return f"{self.title} at {self.company_name} ({self.status})"
@@ -480,6 +590,41 @@ class DiscoveredProject(models.Model):
 
     def __str__(self):
         return f"{self.repo_name} (Score: {self.relevance_score:.1f}) for Job {self.generation_job.uuid}"
+
+
+class JobIngestionRun(models.Model):
+    """
+    Tracks periodic ingestion metrics, per-source execution history,
+    failure isolation, and health diagnostics for India-wide job scraping.
+    """
+    STATUS_CHOICES = [
+        ('RUNNING', 'Running Ingestion'),
+        ('SUCCESS', 'Success'),
+        ('PARTIAL', 'Partial with Warnings'),
+        ('FAILED', 'Failed with Errors'),
+    ]
+
+    batch_id = models.CharField(max_length=64, unique=True, db_index=True)
+    source_name = models.CharField(max_length=100, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='RUNNING')
+    jobs_discovered = models.PositiveIntegerField(default=0)
+    jobs_imported = models.PositiveIntegerField(default=0)
+    duplicates_skipped = models.PositiveIntegerField(default=0)
+    error_message = models.TextField(blank=True, default='')
+    started_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.FloatField(default=0.0)
+
+    class Meta:
+        ordering = ['-started_at']
+        indexes = [
+            models.Index(fields=['source_name', '-started_at']),
+            models.Index(fields=['status', '-started_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.source_name} ({self.status}) - {self.jobs_imported} imported at {self.started_at}"
+
 
 
 

@@ -10,7 +10,8 @@ class RequirementsConfig(AppConfig):
         # Exclude one-off management commands from spawning persistent background threads
         excluded_commands = {
             'migrate', 'makemigrations', 'showmigrations', 'collectstatic', 'test',
-            'createsuperuser', 'check', 'shell', 'dbshell', 'inspectdb', 'auto_backup', 'restore_snapshot'
+            'createsuperuser', 'check', 'shell', 'dbshell', 'inspectdb', 'auto_backup',
+            'restore_snapshot', 'ingest_india_jobs'
         }
         is_mgmt_cmd = any(cmd in sys.argv for cmd in excluded_commands)
 
@@ -18,6 +19,12 @@ class RequirementsConfig(AppConfig):
             # If running runserver locally, ensure daemon only starts in the main reloader child
             if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') != 'true':
                 return
+
+            try:
+                from .job_aggregator.scheduler import start_job_aggregation_daemon
+                start_job_aggregation_daemon()
+            except Exception:
+                pass
 
             try:
                 from .jobdexo_service import start_hourly_sync_daemon

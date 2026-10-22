@@ -36,6 +36,12 @@ urlpatterns = [
     path('api/resume/generations/<uuid:job_uuid>/generate/', views.api_resume_generation_finalize, name='api_resume_generation_finalize'),
     path('api/resume/github-discovery/', views.api_resume_github_discovery_direct, name='api_resume_github_discovery_direct'),
 
+    # India-Wide Multi-Source Job Aggregation & Last-Hour Discovery Endpoints
+    path('api/jobs/', views.api_jobs_list, name='api_jobs_list'),
+    path('api/jobs/last-hour/', views.api_jobs_last_hour, name='api_jobs_last_hour'),
+    path('api/jobs/ingest/', views.api_jobs_ingest_trigger, name='api_jobs_ingest_trigger'),
+    path('api/jobs/ingestion-status/', views.api_jobs_ingestion_status, name='api_jobs_ingestion_status'),
+
     # AI Job Description Generator & Career Suite
     path('tools/job-description-generator/', views.job_description_generator_view, name='job_description_generator'),
     path('jd-generator/', views.job_description_generator_view, name='jd_generator_alias'),
