@@ -267,52 +267,28 @@
   </main>
 
   <!-- Featured Tech & Coding Blog Section -->
-  {% if recent_posts %}
+  <!-- ATS Resume Studio Showcase -->
   <section style="margin-top: 56px; border-top: 1px solid var(--subtle-border); padding-top: 40px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
-      <div>
-        <span style="font-size: 11px; font-weight: 800; color: var(--blue-primary); font-family: monospace; letter-spacing: 0.6px; text-transform: uppercase;">
-          TECH BLOG &amp; MASTERCLASSES
+    <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 20px; padding: 32px; box-shadow: var(--card-shadow); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
+      <div style="max-width: 620px;">
+        <span style="font-size: 11px; font-weight: 800; color: var(--blue-primary); font-family: monospace; letter-spacing: 0.6px; text-transform: uppercase; background: var(--blue-light); padding: 4px 10px; border-radius: 99px; border: 1px solid var(--blue-border);">
+          STUDENT &amp; FRESHER RESUME STUDIO
         </span>
-        <h2 style="font: 700 24px var(--font-serif); margin: 4px 0 0; color: var(--ink);">
-          Featured Engineering Articles &amp; Coding Handbooks
+        <h2 style="font: 700 26px var(--font-serif); margin: 12px 0 8px; color: var(--ink);">
+          Build an ATS 90+ Score Resume in <em>Minutes</em>
         </h2>
+        <p style="font-size: 14.5px; color: #475569; line-height: 1.6; margin: 0;">
+          Directly edit live on a single-page A4 sheet. Match target enterprise keywords, quantify bullets with Google XYZ metrics, and download a 100% vector PDF approved for Workday, Taleo, and top recruiters.
+        </p>
       </div>
-      <a href="/blog/" style="font-size: 14px; font-weight: 800; color: var(--blue-primary); text-decoration: none;">
-        View All Articles (18+) &rarr;
-      </a>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
-      {% for post in recent_posts %}
-      <article style="background: #ffffff; border-radius: 16px; border: 1px solid var(--subtle-border); padding: 22px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--card-shadow);">
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span style="font-size: 11px; font-weight: 800; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 4px; font-family: monospace;">
-              {{ post.category.name|default:'Tech' }}
-            </span>
-            <span style="font-size: 12px; color: var(--muted);">⏱️ {{ post.read_time_minutes }} min read</span>
-          </div>
-          <h3 style="font: 700 17px var(--font-serif); color: var(--ink); margin: 0 0 8px; line-height: 1.35;">
-            <a href="/blog/{{ post.slug }}/" style="color: inherit; text-decoration: none;">
-              {{ post.title }}
-            </a>
-          </h3>
-          <p style="font-size: 13px; color: #64748b; line-height: 1.6; margin: 0 0 14px;">
-            {{ post.excerpt|truncatewords:22 }}
-          </p>
-        </div>
-        <div style="border-top: 1px solid var(--subtle-border); padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 12px; color: var(--muted); font-weight: 600;">✍️ {{ post.author_name }}</span>
-          <a href="/blog/{{ post.slug }}/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
-            Read Story &rarr;
-          </a>
-        </div>
-      </article>
-      {% endfor %}
+      <div>
+        <a href="/resume/" class="button" style="font-size: 14px; font-weight: 700; padding: 12px 24px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; background: var(--blue-primary); color: #ffffff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);">
+          <span>Launch Resume Studio</span>
+          <span>&rarr;</span>
+        </a>
+      </div>
     </div>
   </section>
-  {% endif %}
 
   <!-- High-RPM Multiplex Discovery Ad Grid -->
   {% include 'components/adsense_unit.html' with ad_type='multiplex' margin_y='40px' %}

@@ -10,25 +10,25 @@
   <!-- Studio Hero Header -->
   <div class="studio-hero">
     <div class="studio-badge">
-      <span class="studio-beacon"></span>
-      <span>ATS 95+ RESUME STUDIO 2.0 &bull; VERIFIED FOR WORKDAY, TALEO &amp; GREENHOUSE</span>
+      <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #2563eb;"></i>
+      <span>ATS 90+ RESUME STUDIO &bull; OPTIMIZED FOR WORKDAY, TALEO &amp; RECRUITERS</span>
     </div>
     <h1 class="studio-title">
-      Architect Your <span class="studio-title-gradient">Dream ATS Resume</span>
+      ATS 90+ Score Resume <em>Builder</em>
     </h1>
     <p class="studio-subtitle">
-      Directly edit any line on the live A4 sheet. Quantify bullets with Google XYZ metrics, match target keywords, and export a 100% vector single-page PDF.
+      Directly edit any section on the live A4 sheet. Quantify bullets with Google XYZ metrics and export a clean, 100% vector single-page PDF.
     </p>
   </div>
 
-  <!-- Unified Studio Command Deck (Heads-Up Display) -->
+  <!-- Unified Studio Command Deck -->
   <div class="studio-command-deck">
     <!-- Zone 1: Role Selector & Experience Level -->
     <div class="deck-zone deck-zone-config">
       <div class="deck-select-wrap">
-        <label for="roleSelectorSelect" class="deck-tag">ROLE</label>
+        <label for="roleSelectorSelect" class="deck-tag">TARGET ROLE</label>
         <div class="deck-select-inner">
-          <i data-lucide="layers" class="deck-icon" style="color: #38bdf8;"></i>
+          <i data-lucide="layers" class="deck-icon" style="color: #2563eb; width: 15px; height: 15px;"></i>
           <select id="roleSelectorSelect" onchange="switchRole(this.value)" class="deck-select-input">
             {% for r_id, r in roles.items %}
               <option value="{{ r_id }}" {% if r_id == selected_role_id %}selected{% endif %}>{{ r.badge }}</option>
@@ -51,17 +51,16 @@
 
     <!-- Zone 2: Live ATS Pulse Meter Widget -->
     <div class="deck-zone deck-zone-pulse">
-      <button type="button" onclick="openAtsDiagnosticModal()" class="ats-pulse-card" title="Click to view full ATS Score Breakdown &amp; Audit">
+      <button type="button" onclick="openAtsDiagnosticModal()" class="ats-pulse-card" title="Click to view ATS Score Breakdown &amp; Audit">
         <div class="ats-pulse-gauge">
-          <span class="pulse-beacon-radar"></span>
           <span id="atsScoreValue" class="ats-gauge-num">{{ ats_eval.score }}</span>
         </div>
         <div class="ats-pulse-text">
           <div class="ats-pulse-top">
-            <span class="ats-pulse-label">ATS AUDIT</span>
+            <span class="ats-pulse-label">ATS SCORE</span>
             <span id="atsGradeText" class="ats-pulse-grade">{{ ats_eval.grade }}</span>
           </div>
-          <div class="ats-pulse-sub" id="atsPassRateText">{{ ats_eval.pass_rate }} &bull; Click to Audit ↗</div>
+          <div class="ats-pulse-sub" id="atsPassRateText">{{ ats_eval.pass_rate }} &bull; Click to Audit &rarr;</div>
         </div>
       </button>
     </div>
@@ -83,7 +82,7 @@
       <!-- 1-Click AI Boost -->
       <button type="button" id="btnOneClickAiBoost" onclick="runOneClickAiBoost()" class="studio-btn studio-btn-magic" title="AI automatically quantifies metrics and matches keywords">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-        <span>1-Click AI Boost</span>
+        <span>AI Metrics Boost</span>
       </button>
 
       <!-- Download Vector PDF -->
@@ -138,8 +137,8 @@
       <div class="inspector-section">
         <div class="inspector-header">
           <div class="inspector-title">
-            <i data-lucide="terminal" style="width: 15px; height: 15px; color: #38bdf8;"></i>
-            <span>Project Vault</span>
+            <i data-lucide="layers" style="width: 15px; height: 15px; color: #2563eb;"></i>
+            <span>Resume Projects</span>
           </div>
           <span class="inspector-pill-counter" id="projectCount">2</span>
         </div>
@@ -148,7 +147,7 @@
         <div id="controlsProjectList" class="inspector-project-list"></div>
 
         <button type="button" onclick="openUnifiedAddProjectModal()" class="inspector-action-full">
-          <i data-lucide="plus-circle" style="width: 15px; height: 15px;"></i>
+          <i data-lucide="plus" style="width: 15px; height: 15px;"></i>
           <span>+ Add Enterprise Project</span>
         </button>
       </div>
@@ -156,7 +155,7 @@
       <!-- Work Experience Manager (in Experienced Mode) -->
       <div id="controlsExperienceSection" style="display: none;" class="inspector-section inspector-exp-box">
         <div class="inspector-header">
-          <div class="inspector-title" style="color: #34d399;">
+          <div class="inspector-title" style="color: #2563eb;">
             <i data-lucide="briefcase" style="width: 15px; height: 15px;"></i>
             <span>Experience (<span id="experienceCount">0</span>)</span>
           </div>
@@ -180,8 +179,8 @@
       <!-- ATS Compliance Checklist -->
       <div class="inspector-section inspector-checklist-section">
         <div class="checklist-header">
-          <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #34d399;"></i>
-          <span>ATS COMPLIANCE MATRIX</span>
+          <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #16a34a;"></i>
+          <span>ATS AUDIT MATRIX</span>
         </div>
         <ul id="atsChecklist" class="inspector-checklist">
           {% for chk in ats_eval.checks %}
@@ -216,7 +215,7 @@
           <span><strong>Interactive A4 Canvas</strong> &bull; Click any text on the sheet to edit directly</span>
         </div>
         <div class="canvas-status-right">
-          <span class="canvas-badge">A4 Standard &bull; 100% Vector</span>
+          <span class="canvas-badge">Standard A4 Format</span>
           <button type="button" onclick="downloadResumeAsPdf()" class="canvas-quick-btn" title="Download PDF">
             <i data-lucide="download" style="width: 13px; height: 13px;"></i>
             <span>Export</span>
@@ -334,76 +333,59 @@
   .studio-hero {
     text-align: center;
     max-width: 820px;
-    margin: 0 auto 24px;
+    margin: 0 auto 28px;
   }
 
   .studio-badge {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    box-shadow: 0 0 20px -3px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    padding: 6px 16px;
+    gap: 7px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 6px 14px;
     border-radius: 9999px;
-    font-size: 11.5px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 750;
     letter-spacing: 0.04em;
-    color: #38bdf8;
+    color: #1d4ed8;
     margin-bottom: 12px;
   }
 
-  .studio-beacon {
-    width: 7px;
-    height: 7px;
-    border-radius: 9999px;
-    background: #38bdf8;
-    box-shadow: 0 0 8px #38bdf8;
-    animation: beaconPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  @keyframes beaconPulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
-  }
-
   .studio-title {
-    font-size: clamp(28px, 4.2vw, 42px);
-    font-weight: 850;
-    letter-spacing: -0.035em;
-    line-height: 1.15;
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
     margin: 0 0 10px;
-    color: #f8fafc;
+    color: #0f172a;
+    font-family: var(--font-sans);
   }
 
-  .studio-title-gradient {
-    background: linear-gradient(135deg, #60a5fa 0%, #a855f7 50%, #ec4899 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .studio-title em {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    color: #2563eb;
   }
 
   .studio-subtitle {
-    font-size: 14.5px;
-    color: #94a3b8;
+    font-size: 15px;
+    color: #475569;
     margin: 0 auto;
     max-width: 660px;
     line-height: 1.55;
   }
 
-  /* ── 2. THE FLOATING COMMAND DECK (HUD) ──────────────────────────────────── */
+  /* ── 2. STUDIO COMMAND TOOLBAR ────────────────────────────────────────────── */
   .studio-command-deck {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 14px;
-    background: rgba(15, 23, 42, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      0 20px 40px -15px rgba(0, 0, 0, 0.6);
-    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.03);
+    border-radius: 16px;
     padding: 12px 18px;
     margin-bottom: 24px;
     flex-wrap: wrap;
@@ -418,7 +400,7 @@
   .deck-zone-config {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
   }
 
@@ -426,15 +408,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
     padding: 4px 10px 4px 12px;
   }
 
   .deck-tag {
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 800;
     color: #64748b;
     letter-spacing: 0.06em;
   }
@@ -448,23 +430,24 @@
   .deck-select-input {
     background: transparent;
     border: none;
-    color: #f8fafc;
-    font-size: 12.5px;
+    color: #0f172a;
+    font-size: 13px;
     font-weight: 700;
     outline: none;
     cursor: pointer;
     padding-right: 4px;
+    font-family: inherit;
   }
   .deck-select-input option {
-    background: #0f172a;
-    color: #f8fafc;
+    background: #ffffff;
+    color: #0f172a;
   }
 
   .deck-level-toggle {
     display: inline-flex;
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
     padding: 3px;
     gap: 3px;
   }
@@ -474,71 +457,58 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    border-radius: 9px;
-    font-size: 11.5px;
-    font-weight: 700;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 650;
     border: none;
     background: transparent;
-    color: #94a3b8;
+    color: #64748b;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.15s ease;
   }
   .level-pill-btn:hover {
-    color: #f8fafc;
+    color: #0f172a;
   }
   .level-pill-btn.active {
-    background: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.3);
+    background: #ffffff;
+    color: #0f172a;
+    font-weight: 750;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   }
 
-  /* Zone 2: Pulse Meter */
+  /* Zone 2: ATS Score Pill */
   .ats-pulse-card {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(16, 185, 129, 0.08);
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
     padding: 6px 14px;
-    border-radius: 14px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .ats-pulse-card:hover {
     transform: translateY(-1px);
-    border-color: rgba(16, 185, 129, 0.5);
-    background: rgba(16, 185, 129, 0.12);
+    border-color: #86efac;
+    box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
   }
 
   .ats-pulse-gauge {
     position: relative;
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     border-radius: 9999px;
-    background: rgba(16, 185, 129, 0.18);
-    border: 1.5px solid #10b981;
+    background: #dcfce7;
+    border: 1.5px solid #22c55e;
     display: grid;
     place-items: center;
-  }
-
-  .pulse-beacon-radar {
-    position: absolute;
-    inset: -2px;
-    border-radius: 9999px;
-    border: 1.5px solid #10b981;
-    animation: radarRipple 2.2s cubic-bezier(0.1, 0.7, 0.1, 1) infinite;
-  }
-
-  @keyframes radarRipple {
-    0% { transform: scale(0.9); opacity: 0.8; }
-    100% { transform: scale(1.4); opacity: 0; }
   }
 
   .ats-gauge-num {
     font-size: 13.5px;
     font-weight: 850;
-    color: #34d399;
+    color: #15803d;
   }
 
   .ats-pulse-text {
@@ -552,19 +522,19 @@
   }
   .ats-pulse-label {
     font-size: 10px;
-    font-weight: 850;
-    color: #64748b;
-    letter-spacing: 0.06em;
+    font-weight: 800;
+    color: #15803d;
+    letter-spacing: 0.05em;
   }
   .ats-pulse-grade {
     font-size: 11px;
     font-weight: 800;
-    color: #6ee7b7;
+    color: #16a34a;
   }
   .ats-pulse-sub {
-    font-size: 10.5px;
-    color: #94a3b8;
-    margin-top: 2px;
+    font-size: 11px;
+    color: #475569;
+    margin-top: 1px;
   }
 
   /* Zone 3: Pro Action Cluster */
@@ -579,75 +549,75 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    border-radius: 12px;
+    gap: 6px;
+    border-radius: 10px;
     font-size: 12.5px;
-    font-weight: 800;
-    padding: 10px 15px;
+    font-weight: 700;
+    padding: 8px 14px;
     cursor: pointer;
-    border: none;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid transparent;
+    transition: all 0.18s ease;
+    font-family: inherit;
   }
   .studio-btn:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 
   .studio-btn-primary {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: #2563eb;
     color: #ffffff;
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 4px 16px rgba(16, 185, 129, 0.35);
+    border-color: #2563eb;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
   }
   .studio-btn-primary:hover {
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 8px 24px rgba(16, 185, 129, 0.5);
+    background: #1d4ed8;
+    border-color: #1d4ed8;
     transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32);
   }
 
   .studio-btn-magic {
-    background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);
-    color: #ffffff;
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 4px 16px rgba(168, 85, 247, 0.35);
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
   }
   .studio-btn-magic:hover {
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.4),
-      0 8px 24px rgba(168, 85, 247, 0.5);
+    background: #ede9fe;
+    color: #5b21b6;
+    border-color: #c4b5fd;
     transform: translateY(-1px);
   }
 
   .studio-btn-subtle {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #f8fafc;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   .studio-btn-subtle:hover {
-    background: rgba(51, 65, 85, 0.9);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: #f8fafc;
+    border-color: #94a3b8;
     transform: translateY(-1px);
   }
 
   .studio-btn-ghost {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
   }
   .studio-btn-ghost:hover {
-    background: rgba(30, 41, 59, 0.8);
-    color: #ffffff;
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #cbd5e1;
   }
 
   /* ── 3. TARGET JOB ACTIVE BANNER ─────────────────────────────────────────── */
   .target-job-banner {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
-    border: 1px solid rgba(168, 85, 247, 0.4);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 12px 30px -10px rgba(0, 0, 0, 0.5);
-    border-radius: 16px;
-    padding: 14px 18px;
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.08);
+    border-radius: 14px;
+    padding: 12px 18px;
     margin-bottom: 24px;
     display: flex;
     flex-wrap: wrap;
@@ -657,22 +627,23 @@
   }
 
   .target-badge {
-    background: linear-gradient(135deg, #a855f7, #6366f1);
-    color: #fff;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
     font-size: 10px;
-    font-weight: 850;
+    font-weight: 800;
     padding: 2px 8px;
     border-radius: 99px;
     letter-spacing: 0.06em;
   }
 
   .target-skill-pill {
-    background: rgba(56, 189, 248, 0.12);
-    border: 1px solid rgba(56, 189, 248, 0.28);
-    color: #38bdf8;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #334155;
     font-size: 11px;
-    font-weight: 700;
-    padding: 2px 7px;
+    font-weight: 650;
+    padding: 2px 8px;
     border-radius: 6px;
   }
 
@@ -680,19 +651,15 @@
   .resume-workspace {
     display: grid;
     grid-template-columns: 330px 1fr;
-    gap: 28px;
+    gap: 24px;
     align-items: start;
   }
 
   .studio-inspector {
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 20px 40px -10px rgba(0, 0, 0, 0.5);
-    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+    border-radius: 16px;
     padding: 18px;
     position: sticky;
     top: 84px;
@@ -712,10 +679,10 @@
   }
 
   .inspector-title {
-    font-size: 12px;
-    font-weight: 850;
-    letter-spacing: 0.06em;
-    color: #38bdf8;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: #0f172a;
     text-transform: uppercase;
     display: flex;
     align-items: center;
@@ -723,11 +690,11 @@
   }
 
   .inspector-pill-counter {
-    background: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-    border: 1px solid rgba(56, 189, 248, 0.3);
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
     font-size: 10.5px;
-    font-weight: 850;
+    font-weight: 800;
     padding: 1px 8px;
     border-radius: 99px;
   }
@@ -735,23 +702,24 @@
   .inspector-action-full {
     width: 100%;
     margin-top: 10px;
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    color: #fbbf24;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    color: #2563eb;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 750;
     padding: 9px 12px;
     border-radius: 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 7px;
+    gap: 6px;
     transition: all 0.15s ease;
   }
   .inspector-action-full:hover {
-    background: rgba(245, 158, 11, 0.2);
-    border-color: rgba(245, 158, 11, 0.5);
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
   }
 
   .inspector-project-list {
@@ -761,16 +729,16 @@
   }
 
   .inspector-exp-box {
-    background: rgba(16, 185, 129, 0.06);
-    border: 1px solid rgba(16, 185, 129, 0.2);
-    border-radius: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     padding: 12px;
   }
 
   .inspector-link-btn {
     background: none;
     border: none;
-    color: #60a5fa;
+    color: #2563eb;
     font-size: 11.5px;
     font-weight: 700;
     cursor: pointer;
@@ -780,42 +748,50 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid #f1f5f9;
     padding-top: 16px;
   }
 
   .inspector-util-btn {
     width: 100%;
-    padding: 10px 14px;
-    border-radius: 10px;
+    padding: 9px 14px;
+    border-radius: 9px;
     font-size: 12px;
-    font-weight: 750;
+    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 7px;
-    border: none;
-    transition: transform 0.15s ease;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
   }
   .inspector-util-btn:active {
     transform: scale(0.98);
   }
 
   .util-btn-download {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: #2563eb;
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+  }
+  .util-btn-download:hover {
+    background: #1d4ed8;
   }
 
   .util-btn-copy {
-    background: rgba(30, 41, 59, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    color: #cbd5e1;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+  }
+  .util-btn-copy:hover {
+    background: #f8fafc;
+    color: #0f172a;
+    border-color: #94a3b8;
   }
 
   .inspector-checklist-section {
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid #f1f5f9;
     padding-top: 14px;
   }
 
@@ -824,9 +800,9 @@
     align-items: center;
     gap: 6px;
     font-size: 11px;
-    font-weight: 850;
-    color: #94a3b8;
-    letter-spacing: 0.06em;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 0.05em;
     margin-bottom: 8px;
   }
 
@@ -844,14 +820,14 @@
     display: flex;
     align-items: flex-start;
     gap: 7px;
-    color: #cbd5e1;
+    color: #334155;
     line-height: 1.4;
   }
 
   .chk-badge {
     flex-shrink: 0;
-    width: 15px;
-    height: 15px;
+    width: 16px;
+    height: 16px;
     border-radius: 4px;
     display: grid;
     place-items: center;
@@ -861,14 +837,14 @@
   }
 
   .checklist-item.passed .chk-badge {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.35);
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
   }
   .checklist-item.failed .chk-badge {
-    background: rgba(239, 68, 68, 0.15);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.35);
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
   }
 
   /* ── 5. RIGHT CANVAS STAGE & PRESTIGE A4 SHEET ───────────────────────────── */
@@ -885,11 +861,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(15, 23, 42, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 8px 14px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+    border-radius: 10px;
+    padding: 7px 14px;
     margin-bottom: 14px;
   }
 
@@ -898,15 +874,14 @@
     align-items: center;
     gap: 7px;
     font-size: 12px;
-    color: #94a3b8;
+    color: #475569;
   }
 
   .canvas-beacon-dot {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     border-radius: 9999px;
-    background: #10b981;
-    box-shadow: 0 0 8px #10b981;
+    background: #22c55e;
   }
 
   .canvas-status-right {
@@ -919,23 +894,27 @@
     font-size: 11px;
     font-weight: 700;
     color: #64748b;
-    background: rgba(30, 41, 59, 0.6);
-    padding: 2px 7px;
+    background: #f1f5f9;
+    padding: 2px 8px;
     border-radius: 5px;
   }
 
   .canvas-quick-btn {
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #34d399;
-    padding: 3px 9px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+    padding: 3px 10px;
     border-radius: 6px;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 750;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    transition: background 0.15s ease;
+  }
+  .canvas-quick-btn:hover {
+    background: #dbeafe;
   }
 
   /* Single Column A4 ATS Resume Sheet */
@@ -947,22 +926,23 @@
     min-height: 1130px;
     aspect-ratio: 210 / 297;
     padding: 48px 52px;
-    border-radius: 4px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
     box-shadow: 
-      0 30px 70px -15px rgba(0, 0, 0, 0.7),
-      0 0 0 1px rgba(255, 255, 255, 0.08),
-      0 1px 3px rgba(0, 0, 0, 0.1);
+      0 12px 36px -4px rgba(15, 23, 42, 0.08),
+      0 2px 8px -1px rgba(15, 23, 42, 0.04);
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     line-height: 1.45;
     font-size: 13px;
     outline: none;
     box-sizing: border-box;
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, outline 0.2s ease;
   }
   .ats-resume-sheet:focus-within {
     box-shadow: 
-      0 35px 80px -15px rgba(0, 0, 0, 0.8),
-      0 0 0 2px rgba(56, 189, 248, 0.5);
+      0 16px 44px -4px rgba(37, 99, 235, 0.12),
+      0 4px 12px -1px rgba(15, 23, 42, 0.05);
+    outline: 2px solid #bfdbfe;
   }
 
   .ats-header {
@@ -1566,29 +1546,30 @@
     let html = '';
     (currentResumeData.projects || []).forEach((p, idx) => {
       const atsEval = evaluateProjectAts(p);
-      const badgeColor = atsEval.score >= 85 ? '#34d399' : (atsEval.score >= 70 ? '#fbbf24' : '#f87171');
-      const badgeBg = atsEval.score >= 85 ? 'rgba(52, 211, 153, 0.15)' : (atsEval.score >= 70 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(239, 68, 68, 0.15)');
+      const badgeColor = atsEval.score >= 85 ? '#15803d' : (atsEval.score >= 70 ? '#b45309' : '#b91c1c');
+      const badgeBg = atsEval.score >= 85 ? '#dcfce7' : (atsEval.score >= 70 ? '#fef3c7' : '#fee2e2');
+      const badgeBorder = atsEval.score >= 85 ? '#86efac' : (atsEval.score >= 70 ? '#fde68a' : '#fca5a5');
 
       html += `
-        <div class="project-control-card" style="background: rgba(30, 41, 59, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 11px 13px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; transition: all 0.2s ease;">
+        <div class="project-control-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; transition: all 0.15s ease;">
           <div style="flex: 1; min-width: 0;">
             <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 3px;">
-              <span style="font-size: 12px; font-weight: 750; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              <span style="font-size: 12.5px; font-weight: 750; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                 ${p.title}
               </span>
-              <button type="button" onclick="openProjectAtsModal(${idx})" title="Click to view reverse-engineered ATS score breakdown" style="background: ${badgeBg}; border: 1px solid ${badgeColor}; color: ${badgeColor}; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 850; cursor: pointer; flex-shrink: 0; line-height: 1.3;">
+              <button type="button" onclick="openProjectAtsModal(${idx})" title="Click to view ATS score breakdown" style="background: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; padding: 1px 6px; border-radius: 5px; font-size: 10px; font-weight: 800; cursor: pointer; flex-shrink: 0; line-height: 1.3;">
                 ${atsEval.badge}
               </button>
             </div>
-            <div style="font-size: 11px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               ${p.tech_stack}
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
-            <button type="button" onclick="quickPolishProjectBullet(${idx})" title="Polish bullets with Google XYZ" style="background: rgba(168, 85, 247, 0.18); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; font-size: 12px; transition: transform 0.15s ease;">
+            <button type="button" onclick="quickPolishProjectBullet(${idx})" title="Polish bullets with Google XYZ" style="background: #f5f3ff; border: 1px solid #ddd6fe; color: #7c3aed; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
               ✨
             </button>
-            <button type="button" onclick="deleteProject(${idx})" title="Remove project" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; font-size: 12px; transition: transform 0.15s ease;">
+            <button type="button" onclick="deleteProject(${idx})" title="Remove project" style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
               ✕
             </button>
           </div>
@@ -1692,16 +1673,16 @@
     let html = '';
     currentResumeData.experience.forEach((e, idx) => {
       html += `
-        <div class="experience-control-card" style="background: rgba(30, 41, 59, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 11px 13px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; transition: all 0.2s ease;">
+        <div class="experience-control-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; transition: all 0.15s ease;">
           <div style="flex: 1; min-width: 0;">
-            <div style="font-size: 12px; font-weight: 750; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 12.5px; font-weight: 750; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               ${e.company}
             </div>
-            <div style="font-size: 11px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+            <div style="font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
               ${e.role} &bull; ${e.period}
             </div>
           </div>
-          <button type="button" onclick="deleteExperience(${idx})" title="Remove experience" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; font-size: 12px; flex-shrink: 0;">
+          <button type="button" onclick="deleteExperience(${idx})" title="Remove experience" style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; flex-shrink: 0;">
             ✕
           </button>
         </div>
