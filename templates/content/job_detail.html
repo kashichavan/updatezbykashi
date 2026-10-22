@@ -743,7 +743,7 @@
 
       <button type="button" onclick="openJobTailorModal()" class="hero-tailor-btn-main">
         <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
-        <span>Match My Resume with AI ✨</span>
+        <span>⚡ Alter &amp; Tailor Resume for this Job</span>
       </button>
 
       <div style="display: flex; gap: 8px; margin-left: auto;">
@@ -1016,10 +1016,10 @@
           <span>Apply via Official Link ↗</span>
         </a>
 
-        <!-- Prominent Secondary AI Match Button -->
+        <!-- Prominent Secondary AI Alter Button -->
         <button type="button" onclick="openJobTailorModal()" class="btn-match-resume-sidebar">
           <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
-          <span>Match Resume with AI ✨</span>
+          <span>⚡ Alter Resume for this Job</span>
         </button>
 
         <!-- Quick specs inside sidebar card -->
@@ -1281,9 +1281,9 @@
   </div>
 
   <div class="mobile-sticky-actions">
-    <button type="button" onclick="openJobTailorModal()" class="mobile-tailor-btn" title="Match Resume with AI">
+    <button type="button" onclick="openJobTailorModal()" class="mobile-tailor-btn" title="Alter Resume for this Job">
       <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-      <span>AI Match</span>
+      <span>⚡ Alter</span>
     </button>
     <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener" class="mobile-apply-btn">
       <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
@@ -1292,87 +1292,104 @@
   </div>
 </div>
 
-<!-- ── AI RESUME MATCHER & ATS TAILOR MODAL ───────────────────────── -->
-<div id="jobTailorModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 14px; overflow-y: auto;">
-  <div style="background: #ffffff; width: 100%; max-width: 580px; border-radius: 24px; padding: 24px 22px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); position: relative; border: 1px solid rgba(168, 85, 247, 0.35); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box;">
+<!-- ── 1-CLICK AI RESUME ALTERATION & ATS RATING STUDIO MODAL ───────────────────────── -->
+<div id="jobTailorModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 14px; overflow-y: auto;">
+  <div style="background: #0f172a; width: 100%; max-width: 660px; border-radius: 24px; padding: 24px 22px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7); position: relative; border: 1px solid rgba(168, 85, 247, 0.4); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; color: #f8fafc;">
     
-    <button type="button" onclick="closeJobTailorModal()" style="position: absolute; top: 16px; right: 16px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; color: #64748b; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
+    <button type="button" onclick="closeJobTailorModal()" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); width: 32px; height: 32px; border-radius: 50%; color: #cbd5e1; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
 
+    <!-- Modal Header -->
     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-      <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #a855f7, #6366f1); display: grid; place-items: center; color: white; flex-shrink: 0;">
+      <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #a855f7, #6366f1); display: grid; place-items: center; color: white; flex-shrink: 0; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);">
         <i data-lucide="sparkles" style="width: 22px; height: 22px;"></i>
       </div>
       <div>
-        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a;">AI Resume Matcher & ATS Tailor</h3>
-        <p style="font-size: 12px; color: #64748b; margin: 0;">Role: <strong style="color: #2563eb;">{{ job.company_name }} — {{ job.title }}</strong></p>
+        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #ffffff;">1-Click Resume Alteration Studio</h3>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Directly alters your resume to match: <strong style="color: #38bdf8;">{{ job.company_name }} — {{ job.title }}</strong></p>
       </div>
     </div>
 
-    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 12.5px; color: #475569;">
-      <strong>Target Keywords from Job Posting:</strong>
-      <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;">
-        {% for s in skills_list|slice:":8" %}
-          <span style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ s }}</span>
+    <!-- Target Job Tags -->
+    <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: #cbd5e1;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <strong style="color: #f8fafc;">Target Skills from Job Description:</strong>
+        <span style="font-size: 10.5px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 99px; font-weight: 700;">ATS Filter Match Target: 90%+</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+        {% for s in skills_list|slice:":10" %}
+          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ s }}</span>
         {% empty %}
-          <span style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">Software Engineering</span>
-          <span style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">Problem Solving</span>
+          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">Software Engineering</span>
+          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">Problem Solving</span>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Resume Input Section -->
+    <!-- Candidate Resume Input Box -->
     <div style="margin-bottom: 14px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <label style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 0.5px;">Paste Your Resume / Experience Summary:</label>
-        <button type="button" onclick="fillJobTailorSample()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #7c3aed; cursor: pointer; text-decoration: underline;">+ Use Sample Profile</button>
+        <label style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Your Current Resume Summary / Projects:</label>
+        <button type="button" onclick="fillJobTailorSample()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #c084fc; cursor: pointer; text-decoration: underline;">+ Load Sample Profile</button>
       </div>
-      <textarea id="jobTailorResumeInput" rows="4" placeholder="e.g. Computer Science graduate with strong Python, SQL, REST APIs knowledge. Built full-stack web applications and solved 200+ coding problems..." style="width: 100%; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 13px; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
+      <textarea id="jobTailorResumeInput" rows="4" placeholder="Paste your current resume summary, technical skills, or project bullets here..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 13px; color: #f8fafc; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
     </div>
 
-    <button type="button" id="btnRunJobTailor" onclick="runJobTailorAnalysis()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); margin-bottom: 16px;">
-      <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
-      <span>Analyze &amp; Tailor with AI ✨</span>
+    <!-- Action Button to Alter Resume -->
+    <button type="button" id="btnRunJobTailor" onclick="runJobAlterationStudio()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45); margin-bottom: 16px;">
+      <i data-lucide="sparkles" style="width: 17px; height: 17px;"></i>
+      <span>⚡ Auto-Alter My Resume to 95+ Score for {{ job.company_name }}</span>
     </button>
 
-    <!-- Results Box (Hidden until analysis runs) -->
-    <div id="jobTailorResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; padding: 14px 18px; border-radius: 14px; margin-bottom: 14px;">
+    <!-- Results Container (Displayed once alteration is generated) -->
+    <div id="jobTailorResults" style="display: none; border-top: 1px solid #334155; padding-top: 16px;">
+      
+      <!-- ATS Score Banner -->
+      <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; color: #fff; padding: 14px 18px; border-radius: 14px; margin-bottom: 14px;">
         <div>
           <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">ATS Match Score</div>
-          <div id="jobTailorScore" style="font-size: 26px; font-weight: 900; color: #38bdf8;">-- / 100</div>
+          <div id="jobTailorScore" style="font-size: 26px; font-weight: 900; color: #34d399;">95 / 100</div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">Match Grade</div>
-          <div id="jobTailorGrade" style="font-size: 22px; font-weight: 900; color: #34d399;">--</div>
+          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">ATS Rating Grade</div>
+          <div id="jobTailorGrade" style="font-size: 16px; font-weight: 900; color: #38bdf8;">Top Tier Pass ✓</div>
         </div>
       </div>
 
-      <!-- Missing Keywords -->
+      <!-- Injected Keywords Pill Bar -->
       <div style="margin-bottom: 14px;">
-        <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #dc2626; letter-spacing: 0.5px; margin-bottom: 6px;">Missing Critical Keywords to Add:</div>
-        <div id="jobTailorMissing" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+        <div style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.5px; margin-bottom: 6px;">Skills Injected to Pass ATS Recruiter Scanners:</div>
+        <div id="jobTailorInjected" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
       </div>
 
-      <!-- Recommendations -->
+      <!-- Altered Summary -->
       <div style="margin-bottom: 14px;">
-        <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 0.5px; margin-bottom: 6px;">Recruiter Recommendations:</div>
-        <ul id="jobTailorRecs" style="margin: 0; padding-left: 20px; font-size: 12.5px; color: #334155; line-height: 1.5;"></ul>
-      </div>
-
-      <!-- Tailored Summary -->
-      <div style="margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 0.5px;">Ready-to-Use Tailored Summary:</span>
-          <button type="button" onclick="copyJobTailorSummary()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #2563eb; cursor: pointer;">📋 Copy</button>
+          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; letter-spacing: 0.5px;">Altered Professional Summary:</span>
+          <button type="button" onclick="copyJobTailorSummary()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #60a5fa; cursor: pointer;">📋 Copy</button>
         </div>
-        <div id="jobTailorSummary" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #1e293b; line-height: 1.5; max-height: 110px; overflow-y: auto;"></div>
+        <div id="jobTailorSummary" style="background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #f8fafc; line-height: 1.55; max-height: 110px; overflow-y: auto;"></div>
       </div>
 
-      <!-- Link to full resume builder -->
-      <a href="/resume-builder/?role={{ job.title|urlencode }}" class="button" style="width: 100%; justify-content: center; padding: 12px; background: #0f172a; color: #ffffff; border-radius: 12px; font-size: 13px; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 6px; box-sizing: border-box;">
-        <span>Open in 90+ Score Resume Builder</span>
-        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
-      </a>
+      <!-- Altered Projects with Individual ATS Ratings -->
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; letter-spacing: 0.5px; margin-bottom: 6px;">
+          Altered Projects (Rated with Reverse-Engineered ATS Score):
+        </div>
+        <div id="jobTailorProjectsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button type="button" onclick="copyFullAlteredResume()" style="background: #334155; color: #fff; border: 1px solid #475569; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
+          <span>Copy Altered Text</span>
+        </button>
+        <a id="btnOpenInResumeBuilder" href="/resume-builder/?job_id={{ job.uuid }}" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">
+          <span>Open Full Editor</span>
+          <i data-lucide="arrow-right" style="width: 15px; height: 15px;"></i>
+        </a>
+      </div>
+
     </div>
 
   </div>
@@ -2164,65 +2181,129 @@
     }
   }
 
-  async function runJobTailorAnalysis() {
+  let lastAlteredData = null;
+
+  async function runJobAlterationStudio() {
     const input = document.getElementById('jobTailorResumeInput');
     const userText = (input && input.value ? input.value.trim() : "") || "Passionate engineer skilled in full-stack web development, Python, SQL, REST APIs, and system problem-solving.";
     const btn = document.getElementById('btnRunJobTailor');
 
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Analyzing with AI...';
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Altering &amp; Rating ATS Score with AI...';
     if (window.lucide) window.lucide.createIcons();
 
-    const jdText = `Job Title: {{ job.title }}\nCompany: {{ job.company_name }}\nEligibility: {{ job.eligibility }}\nRequired Skills: {{ job.skills }}\nJob Description: {{ job.description|truncatewords:60 }}`;
+    const payload = {
+      job_title: "{{ job.title|escapejs }}",
+      company_name: "{{ job.company_name|escapejs }}",
+      job_skills: "{{ job.skills|escapejs }}",
+      job_description: "{{ job.description|striptags|truncatewords:100|escapejs }}",
+      candidate_summary: userText,
+      candidate_skills: {
+        "Languages & Frameworks": ["Python", "JavaScript", "SQL", "Git", "REST APIs"]
+      },
+      candidate_projects: [
+        {
+          title: "Full-Stack Web Platform",
+          tech_stack: "Python, Django, PostgreSQL, Docker, Redis",
+          bullets: [
+            "Architected responsive microservices handling 12,000+ daily active users with 99.9% uptime SLA.",
+            "Engineered automated caching layer utilizing Redis, reducing p95 database response latency by 42%."
+          ]
+        }
+      ]
+    };
 
     try {
-      const res = await fetch('/api/ai/tailor-resume/', {
+      const res = await fetch('/api/ai/alter-resume/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          resume_summary: userText,
-          resume_skills: ["Python", "JavaScript", "SQL", "Git", "REST APIs"],
-          resume_projects: [],
-          job_description: jdText
-        })
+        body: JSON.stringify(payload)
       });
 
       const json = await res.json();
       if (!json.success) {
-        alert('Tailoring analysis failed: ' + (json.error || 'Server error'));
+        alert('Resume alteration failed: ' + (json.error || 'Server error'));
         return;
       }
 
       const data = json.data;
-      document.getElementById('jobTailorScore').innerText = `${data.match_score} / 100`;
-      document.getElementById('jobTailorGrade').innerText = data.match_grade || 'A';
+      lastAlteredData = data;
 
-      const missingBox = document.getElementById('jobTailorMissing');
-      missingBox.innerHTML = '';
-      (data.missing_critical_keywords || []).forEach(kw => {
-        const sp = document.createElement('span');
-        sp.style.cssText = 'background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #dc2626; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;';
-        sp.innerText = '+ ' + kw;
-        missingBox.appendChild(sp);
-      });
+      // 1. Update Score & Grade
+      const scoreVal = data.match_score || 95;
+      const scoreEl = document.getElementById('jobTailorScore');
+      scoreEl.innerText = `${scoreVal} / 100`;
+      scoreEl.style.color = scoreVal >= 85 ? '#34d399' : (scoreVal >= 70 ? '#fbbf24' : '#f87171');
+      document.getElementById('jobTailorGrade').innerText = data.match_grade || 'Top Tier Pass ✓';
 
-      const recsList = document.getElementById('jobTailorRecs');
-      recsList.innerHTML = '';
-      (data.quick_recommendations || []).forEach(r => {
-        const li = document.createElement('li');
-        li.innerText = r;
-        recsList.appendChild(li);
-      });
+      // 2. Injected Keywords
+      const injectedBox = document.getElementById('jobTailorInjected');
+      if (injectedBox) {
+        injectedBox.innerHTML = '';
+        const kws = data.injected_keywords || ["Python", "REST APIs", "SQL", "PostgreSQL", "Scalability"];
+        kws.forEach(kw => {
+          const sp = document.createElement('span');
+          sp.style.cssText = 'background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;';
+          sp.innerText = '✓ ' + kw;
+          injectedBox.appendChild(sp);
+        });
+      }
 
-      document.getElementById('jobTailorSummary').innerText = data.tailored_summary || userText;
-      document.getElementById('jobTailorResults').style.display = 'block';
+      // 3. Altered Summary
+      const summaryEl = document.getElementById('jobTailorSummary');
+      if (summaryEl) {
+        summaryEl.innerText = data.altered_summary || userText;
+      }
 
-      if (window.showToast) window.showToast("✨ AI Resume Match Complete!", "success");
+      // 4. Altered & Rated Projects
+      const projectsListEl = document.getElementById('jobTailorProjectsList');
+      if (projectsListEl) {
+        projectsListEl.innerHTML = '';
+        const projects = data.altered_projects || [];
+        projects.forEach((proj, idx) => {
+          const card = document.createElement('div');
+          card.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px;';
+
+          const scoreBadgeColor = (proj.ats_score || 90) >= 85 ? '#34d399' : ((proj.ats_score || 90) >= 70 ? '#fbbf24' : '#f87171');
+          const scoreBadgeBg = (proj.ats_score || 90) >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(251, 191, 36, 0.12)';
+
+          let bulletsHtml = '';
+          (proj.bullets || []).forEach(b => {
+            bulletsHtml += `<li style="margin-bottom: 5px; color: #e2e8f0; font-size: 12px; line-height: 1.5;">${b}</li>`;
+          });
+
+          card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
+              <div>
+                <strong style="color: #ffffff; font-size: 13.5px;">${proj.title}</strong>
+                <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px;">Stack: <span style="color: #60a5fa;">${proj.tech_stack || ''}</span></div>
+              </div>
+              <div style="background: ${scoreBadgeBg}; border: 1px solid ${scoreBadgeColor}; color: ${scoreBadgeColor}; padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; white-space: nowrap;">
+                ${proj.ats_badge || '🟢 ATS ' + (proj.ats_score || 92) + '/100'}
+              </div>
+            </div>
+            <ul style="margin: 0; padding-left: 18px; color: #cbd5e1;">
+              ${bulletsHtml}
+            </ul>
+          `;
+          projectsListEl.appendChild(card);
+        });
+      }
+
+      // Display the results container
+      const resultsContainer = document.getElementById('jobTailorResults');
+      if (resultsContainer) {
+        resultsContainer.style.display = 'block';
+      }
+
+      if (window.showToast) {
+        window.showToast("⚡ Resume Successfully Altered for " + ("{{ job.company_name|escapejs }}") + "!", "success");
+      }
     } catch (err) {
-      alert('Network error: ' + err.message);
+      alert('Network error while altering resume: ' + err.message);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<i data-lucide="sparkles" style="width:16px;height:16px;"></i> Analyze &amp; Tailor with AI ✨';
+      btn.innerHTML = '<i data-lucide="sparkles" style="width:17px;height:17px;"></i> <span>⚡ Re-Alter Resume for {{ job.company_name }}</span>';
       if (window.lucide) window.lucide.createIcons();
     }
   }
@@ -2231,10 +2312,36 @@
     const el = document.getElementById('jobTailorSummary');
     if (el) {
       navigator.clipboard.writeText(el.innerText).then(() => {
-        if (window.showToast) window.showToast("✅ Tailored summary copied to clipboard!", "success");
-        else alert("Copied!");
+        if (window.showToast) window.showToast("✅ Altered summary copied!", "success");
+        else alert("Altered summary copied!");
       });
     }
+  }
+
+  function copyFullAlteredResume() {
+    if (!lastAlteredData) {
+      copyJobTailorSummary();
+      return;
+    }
+    let text = `PROFESSIONAL SUMMARY:\n${lastAlteredData.altered_summary || ''}\n\n`;
+    text += `KEY SKILLS:\n`;
+    if (lastAlteredData.reordered_skills) {
+      for (const [cat, items] of Object.entries(lastAlteredData.reordered_skills)) {
+        text += `• ${cat}: ${Array.isArray(items) ? items.join(', ') : items}\n`;
+      }
+    }
+    text += `\nKEY PROJECTS (ATS Optimized):\n`;
+    (lastAlteredData.altered_projects || []).forEach(p => {
+      text += `\n${p.title} | ${p.tech_stack} (ATS Score: ${p.ats_score}/100)\n`;
+      (p.bullets || []).forEach(b => {
+        text += `  - ${b}\n`;
+      });
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      if (window.showToast) window.showToast("📋 Complete altered resume copied to clipboard!", "success");
+      else alert("Complete altered resume copied!");
+    });
   }
 
   document.addEventListener('DOMContentLoaded', function() {

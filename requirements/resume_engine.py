@@ -380,6 +380,121 @@ def calculate_ats_score(resume_data, role_key='python-backend'):
     }
 
 
+def score_project_ats(project: dict, target_skills: list = None) -> dict:
+    """
+    Reverse-engineered ATS Project Scoring Engine (inspired by Resume Worded & Jobscan).
+    Evaluates individual projects across 5 key dimensions:
+    1. Strong Action Verbs (25 pts)
+    2. Google XYZ Formula (25 pts)
+    3. Quantified Numerical Metrics (20 pts)
+    4. Target Tech Stack Relevance (20 pts)
+    5. Architecture & System Depth (10 pts)
+    """
+    import re
+
+    action_verbs = {
+        'architected', 'engineered', 'developed', 'optimized', 'built', 'spearheaded',
+        'designed', 'implemented', 'constructed', 'deployed', 'automated', 'integrated',
+        'refactored', 'orchestrated', 'streamlined', 'benchmarked', 'scaled', 'accelerated'
+    }
+
+    weak_verbs = {'helped', 'worked on', 'assisted', 'handled', 'was responsible for', 'tried', 'participated in'}
+
+    bullets = project.get('bullets', [])
+    if not bullets:
+        return {
+            'score': 20,
+            'grade': 'Needs Bullets',
+            'badge': '🔴 20/100',
+            'feedback': 'Add at least 3 accomplishment bullets to pass ATS parsing.'
+        }
+
+    # 1. Action Verbs (25 pts)
+    verb_score = 0
+    strong_count = 0
+    weak_count = 0
+    for b in bullets:
+        first_word = b.strip().lower().split(' ')[0] if b.strip() else ''
+        if first_word in action_verbs:
+            strong_count += 1
+        elif any(b.strip().lower().startswith(wv) for wv in weak_verbs):
+            weak_count += 1
+
+    verb_score = min(25, int((strong_count / max(1, len(bullets))) * 25))
+    if weak_count > 0:
+        verb_score = max(5, verb_score - (weak_count * 5))
+
+    # 2. Google XYZ Formula (Accomplished [X] by doing [Z], measured by [Y]) (25 pts)
+    xyz_count = 0
+    outcome_indicators = ['reducing', 'slashing', 'increasing', 'improving', 'cutting', 'preventing', 'delivering', 'achieving', 'generating', 'saving', 'by', 'utilizing', 'via', 'through']
+    for b in bullets:
+        b_lower = b.lower()
+        has_action = any(b_lower.startswith(v) for v in action_verbs)
+        has_outcome = any(ind in b_lower for ind in outcome_indicators)
+        has_measure = bool(re.search(r'\d+', b))
+        if has_action and (has_outcome or has_measure):
+            xyz_count += 1
+
+    xyz_score = min(25, int((xyz_count / max(1, len(bullets))) * 25))
+
+    # 3. Quantified Numerical Metrics (20 pts)
+    metric_regex = re.compile(r'(\d+[\.,]?\d*\s*(%|ms|kb|mb|gb|tb|req|k|x|skus|cve|users|tps|sec|min|hr|lpa|cr))|\b(\d{2,})\b|[₹$]\d+', re.IGNORECASE)
+    bullets_with_metrics = sum(1 for b in bullets if metric_regex.search(b))
+    metric_score = min(20, int((bullets_with_metrics / max(1, len(bullets))) * 20))
+
+    # 4. Target Tech Stack Relevance (20 pts)
+    tech_stack = project.get('tech_stack', '').lower()
+    all_text = (project.get('title', '') + ' ' + tech_stack + ' ' + ' '.join(bullets)).lower()
+
+    relevance_score = 15
+    if target_skills:
+        matched = sum(1 for s in target_skills if s.lower() in all_text)
+        relevance_score = min(20, int((matched / max(1, len(target_skills))) * 20) + 5)
+    elif len(tech_stack) > 10:
+        relevance_score = 20
+
+    # 5. Architecture & System Depth (10 pts)
+    arch_keywords = [
+        'concurrency', 'distributed', 'redis', 'cache', 'queue', 'kafka', 'lock', 'index',
+        'async', 'celery', 'docker', 'ci/cd', 'jwt', 'rbac', 'microservice', 'query',
+        'latency', 'throughput', 'sharding', 'replica', 'api', 'postgres', 'nosql', 'load'
+    ]
+    arch_matches = sum(1 for kw in arch_keywords if kw in all_text)
+    arch_score = min(10, arch_matches * 3)
+
+    total = verb_score + xyz_score + metric_score + relevance_score + arch_score
+    final_score = min(100, max(20, total))
+
+    if final_score >= 85:
+        grade = "Strong ATS Pass"
+        badge = f"🟢 {final_score}/100"
+    elif final_score >= 65:
+        grade = "Moderate ATS Pass"
+        badge = f"🟡 {final_score}/100"
+    else:
+        grade = "Needs Quantified Metrics"
+        badge = f"🔴 {final_score}/100"
+
+    return {
+        'score': final_score,
+        'grade': grade,
+        'badge': badge,
+        'breakdown': {
+            'action_verbs': {'score': verb_score, 'max': 25, 'strong_count': strong_count},
+            'google_xyz': {'score': xyz_score, 'max': 25, 'compliant_count': xyz_count},
+            'metrics': {'score': metric_score, 'max': 20, 'bullets_with_metrics': bullets_with_metrics},
+            'tech_relevance': {'score': relevance_score, 'max': 20},
+            'system_depth': {'score': arch_score, 'max': 10}
+        },
+        'suggestions': [s for s in [
+            "Add verifiable metrics (% latency reduction, req/sec throughput, scale)" if metric_score < 15 else None,
+            "Start every bullet with strong action verbs (Architected, Engineered, Optimized)" if verb_score < 20 else None,
+            "Apply Google XYZ: 'Accomplished [X] measured by [Y] by doing [Z]'" if xyz_score < 20 else None
+        ] if s is not None]
+    }
+
+
+
 # ==============================================================================
 # BENGALURU STARTUP PROJECTS CATALOG
 # Real-world Indian tech startup company architectures with Google XYZ metrics

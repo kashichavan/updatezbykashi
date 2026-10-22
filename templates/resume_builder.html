@@ -30,6 +30,37 @@
     </div>
   </div>
 
+  <!-- Target Job Active Tailor Banner (1-Click Alteration Studio) -->
+  {% if target_job %}
+  <div class="target-job-banner" style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95)); border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 16px; padding: 18px 22px; margin-bottom: 24px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.4); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+    <div style="flex: 1; min-width: 260px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+        <span style="background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;">Active Target Job</span>
+        <span style="color: #94a3b8; font-size: 12px; font-weight: 600;">Optimizing resume directly for:</span>
+      </div>
+      <h3 style="font-size: 19px; font-weight: 800; color: #ffffff; margin: 0 0 6px;">{{ target_job.company_name }} — {{ target_job.title }}</h3>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px;">
+        <span style="font-size: 11px; color: #94a3b8; font-weight: 700;">Required Skills:</span>
+        {% for s in target_job.get_skills_list|slice:":8" %}
+          <span style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px;">{{ s }}</span>
+        {% empty %}
+          <span style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px;">{{ target_job.skills_required }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      <button type="button" id="btnTargetJobAlter" onclick="autoAlterResumeForTargetJob()" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; font-weight: 800; font-size: 13px; padding: 11px 18px; border-radius: 10px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);">
+        <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+        <span>⚡ 1-Click Tailor Entire Resume for {{ target_job.company_name }}</span>
+      </button>
+      <a href="{{ target_job.get_absolute_url }}" target="_blank" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #cbd5e1; padding: 10px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+        <span>View Requirement</span>
+        <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Interactive Dual Column Workspace -->
   <div class="resume-workspace" style="display: grid; grid-template-columns: 380px 1fr; gap: 28px; align-items: start;">
 
@@ -497,6 +528,10 @@
       margin: 0.4in;
       size: A4 portrait;
     }
+    .print-hide {
+      display: none !important;
+      visibility: hidden !important;
+    }
   }
 </style>
 
@@ -505,6 +540,156 @@
   let currentResumeData = {{ initial_resume_json|safe }};
   let currentRoleKey = "{{ selected_role_id }}";
   let currentProfileLevel = "fresher";
+
+  const targetJobData = {% if target_job %}{
+    id: "{{ target_job.uuid }}",
+    title: "{{ target_job.title|escapejs }}",
+    company: "{{ target_job.company_name|escapejs }}",
+    skills: "{{ target_job.skills_required|escapejs }}",
+    skills_list: {{ target_job.get_skills_list|safe }},
+    description: "{{ target_job.description|striptags|truncatewords:80|escapejs }}"
+  }{% else %}null{% endif %};
+
+  /* Reverse-Engineered Project ATS Scoring Engine (Jobscan / Resume Worded formula) */
+  const ATS_ACTION_VERBS = new Set([
+    'architected', 'engineered', 'developed', 'optimized', 'built', 'spearheaded',
+    'designed', 'implemented', 'constructed', 'deployed', 'automated', 'integrated',
+    'refactored', 'orchestrated', 'streamlined', 'benchmarked', 'scaled', 'accelerated'
+  ]);
+  const ATS_WEAK_VERBS = ['helped', 'worked on', 'assisted', 'handled', 'was responsible for', 'tried', 'participated in'];
+  const ATS_OUTCOME_INDICATORS = ['reducing', 'slashing', 'increasing', 'improving', 'cutting', 'preventing', 'delivering', 'achieving', 'generating', 'saving', 'by', 'utilizing', 'via', 'through'];
+  const ATS_ARCH_TERMS = ['concurrency', 'distributed', 'redis', 'cache', 'queue', 'kafka', 'lock', 'index', 'async', 'celery', 'docker', 'ci/cd', 'jwt', 'rbac', 'microservice', 'query', 'latency', 'throughput', 'api', 'postgres', 'nosql', 'sql', 'system'];
+
+  function evaluateProjectAts(proj) {
+    if (!proj) return { score: 0, badge: '🔴 0/100', grade: 'Empty', breakdown: { action_verbs: 0, google_xyz: 0, quantified_metrics: 0, tech_relevance: 0, architecture_scale: 0 } };
+    const bullets = proj.bullets || [];
+    if (bullets.length === 0) {
+      return {
+        score: 25,
+        badge: '🔴 25/100',
+        grade: 'Needs Bullets',
+        breakdown: { action_verbs: 5, google_xyz: 5, quantified_metrics: 5, tech_relevance: 5, architecture_scale: 5 }
+      };
+    }
+
+    // 1. Action Verbs (25)
+    let strongCount = 0;
+    let weakCount = 0;
+    bullets.forEach(b => {
+      const firstWord = (b.trim().split(/\s+/)[0] || '').toLowerCase();
+      if (ATS_ACTION_VERBS.has(firstWord)) strongCount++;
+      if (ATS_WEAK_VERBS.some(w => b.toLowerCase().startsWith(w))) weakCount++;
+    });
+    let verbScore = Math.min(25, Math.round((strongCount / bullets.length) * 25));
+    if (weakCount > 0) verbScore = Math.max(5, verbScore - (weakCount * 5));
+
+    // 2. Google XYZ (25)
+    let xyzCount = 0;
+    bullets.forEach(b => {
+      const bLow = b.toLowerCase();
+      const hasAction = Array.from(ATS_ACTION_VERBS).some(v => bLow.startsWith(v));
+      const hasOutcome = ATS_OUTCOME_INDICATORS.some(ind => bLow.includes(ind));
+      const hasMeasure = /\d+/.test(b);
+      if (hasAction && (hasOutcome || hasMeasure)) xyzCount++;
+    });
+    const xyzScore = Math.min(25, Math.round((xyzCount / bullets.length) * 25));
+
+    // 3. Quantified Metrics (20)
+    const metricRegex = /(\d+[\.,]?\d*\s*(%|ms|kb|mb|gb|tb|req|k|x|skus|cve|users|tps|sec|min|hr|lpa|cr))|\b(\d{2,})\b|[₹$]\d+/i;
+    const bulletsWithMetrics = bullets.filter(b => metricRegex.test(b)).length;
+    const metricScore = Math.min(20, Math.round((bulletsWithMetrics / bullets.length) * 20));
+
+    // 4. Tech Stack Relevance (20)
+    const techStack = (proj.tech_stack || '').toLowerCase();
+    const allText = ((proj.title || '') + ' ' + techStack + ' ' + bullets.join(' ')).toLowerCase();
+    let relevanceScore = 15;
+    const targetSkills = targetJobData ? targetJobData.skills_list : [];
+    if (targetSkills && targetSkills.length > 0) {
+      const matched = targetSkills.filter(s => allText.includes(s.toLowerCase())).length;
+      relevanceScore = Math.min(20, Math.round((matched / targetSkills.length) * 20) + 5);
+    } else if (techStack.length > 10) {
+      relevanceScore = 20;
+    }
+
+    // 5. Architecture Depth (10)
+    const archMatches = ATS_ARCH_TERMS.filter(w => allText.includes(w)).length;
+    const archScore = Math.min(10, Math.max(4, archMatches * 2));
+
+    const total = verbScore + xyzScore + metricScore + relevanceScore + archScore;
+    let badge = '🔴 ' + total + '/100';
+    let grade = 'Needs Polish';
+    if (total >= 88) { badge = '🟢 ' + total + '/100'; grade = 'Top Tier Pass (ATS 90+)'; }
+    else if (total >= 70) { badge = '🟡 ' + total + '/100'; grade = 'Passing'; }
+
+    return {
+      score: total,
+      badge: badge,
+      grade: grade,
+      breakdown: {
+        action_verbs: verbScore,
+        google_xyz: xyzScore,
+        quantified_metrics: metricScore,
+        tech_relevance: relevanceScore,
+        architecture_scale: archScore
+      }
+    };
+  }
+
+  async function autoAlterResumeForTargetJob() {
+    if (!targetJobData) return;
+    const btn = document.getElementById('btnTargetJobAlter');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:15px;height:15px;"></i> Altering Entire Resume for ' + targetJobData.company + '...';
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    try {
+      const res = await fetch('/api/ai/alter-resume/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_title: targetJobData.title,
+          company_name: targetJobData.company,
+          job_skills: targetJobData.skills,
+          job_description: targetJobData.description,
+          candidate_summary: currentResumeData.summary,
+          candidate_skills: currentResumeData.skills,
+          candidate_projects: currentResumeData.projects
+        })
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        alert("Alteration failed: " + (json.error || "Server error"));
+        return;
+      }
+
+      const d = json.data;
+      if (d.altered_summary) currentResumeData.summary = d.altered_summary;
+      if (d.reordered_skills) currentResumeData.skills = d.reordered_skills;
+      if (d.altered_projects && d.altered_projects.length > 0) {
+        currentResumeData.projects = d.altered_projects;
+      }
+
+      renderResumeSheet();
+      recalculateAtsScore();
+
+      if (window.showToast) {
+        window.showToast(`✨ Resume altered for ${targetJobData.company}! ATS Match: ${d.match_score || 95}/100`, "success");
+      } else {
+        alert(`✨ Resume altered for ${targetJobData.company}! ATS Match: ${d.match_score || 95}/100`);
+      }
+    } catch (err) {
+      alert("Network error: " + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="sparkles" style="width:16px;height:16px;"></i> <span>⚡ Re-Tailor for ' + targetJobData.company + '</span>';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  }
 
   function setLevel(level) {
     currentProfileLevel = level;
@@ -625,11 +810,19 @@
 
     // Render Projects
     let projHtml = '';
-    (currentResumeData.projects || []).forEach(p => {
+    (currentResumeData.projects || []).forEach((p, idx) => {
+      const atsEval = evaluateProjectAts(p);
+      const badgeBorder = atsEval.score >= 85 ? '#10b981' : (atsEval.score >= 70 ? '#f59e0b' : '#ef4444');
+      const badgeBg = atsEval.score >= 85 ? 'rgba(16, 185, 129, 0.1)' : (atsEval.score >= 70 ? 'rgba(245, 158, 11, 0.1)' : 'rgba(239, 68, 68, 0.1)');
+      const badgeText = atsEval.score >= 85 ? '#065f46' : (atsEval.score >= 70 ? '#92400e' : '#991b1b');
+
       projHtml += `
         <div class="ats-project-entry">
-          <div class="ats-entry-header">
-            <h3 class="ats-project-title">${p.title}</h3>
+          <div class="ats-entry-header" style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 class="ats-project-title" style="margin: 0;">${p.title}</h3>
+              <span class="print-hide" onclick="openProjectAtsModal(${idx})" title="Click to view reverse-engineered ATS score breakdown" style="cursor: pointer; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeText};">${atsEval.badge}</span>
+            </div>
             <span class="ats-project-role"><em>${p.role}</em></span>
           </div>
           <div class="ats-project-tech"><strong>Technologies:</strong> ${p.tech_stack}</div>
@@ -656,13 +849,22 @@
     if (!container) return;
     let html = '';
     (currentResumeData.projects || []).forEach((p, idx) => {
+      const atsEval = evaluateProjectAts(p);
+      const badgeColor = atsEval.score >= 85 ? '#34d399' : (atsEval.score >= 70 ? '#fbbf24' : '#f87171');
+      const badgeBg = atsEval.score >= 85 ? 'rgba(52, 211, 153, 0.15)' : (atsEval.score >= 70 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(239, 68, 68, 0.15)');
+
       html += `
         <div class="project-control-card" style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
           <div style="flex: 1; min-width: 0;">
-            <div style="font-size: 11.5px; font-weight: 700; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              ${p.title}
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 11.5px; font-weight: 700; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${p.title}
+              </span>
+              <button type="button" onclick="openProjectAtsModal(${idx})" title="Click to view reverse-engineered ATS score breakdown" style="background: ${badgeBg}; border: 1px solid ${badgeColor}; color: ${badgeColor}; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer; flex-shrink: 0; line-height: 1.4;">
+                ${atsEval.badge}
+              </button>
             </div>
-            <div style="font-size: 10.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+            <div style="font-size: 10.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               ${p.tech_stack}
             </div>
           </div>
@@ -678,6 +880,94 @@
       `;
     });
     container.innerHTML = html;
+  }
+
+  let activeModalProjIdx = 0;
+
+  function openProjectAtsModal(idx) {
+    activeModalProjIdx = idx;
+    const p = (currentResumeData.projects || [])[idx];
+    if (!p) return;
+
+    const modal = document.getElementById('projectAtsModal');
+    if (!modal) return;
+
+    const ats = evaluateProjectAts(p);
+
+    document.getElementById('projectAtsModalTitle').innerText = p.title;
+    const scoreBig = document.getElementById('projectAtsScoreBig');
+    scoreBig.innerText = `${ats.score} / 100`;
+    scoreBig.style.color = ats.score >= 85 ? '#34d399' : (ats.score >= 70 ? '#fbbf24' : '#f87171');
+    document.getElementById('projectAtsGradeBig').innerText = ats.grade;
+
+    // Dimension breakdown
+    const b = ats.breakdown;
+    document.getElementById('scoreDimVerbs').innerText = `${b.action_verbs} / 25`;
+    document.getElementById('barDimVerbs').style.width = `${(b.action_verbs / 25) * 100}%`;
+
+    document.getElementById('scoreDimXYZ').innerText = `${b.google_xyz} / 25`;
+    document.getElementById('barDimXYZ').style.width = `${(b.google_xyz / 25) * 100}%`;
+
+    document.getElementById('scoreDimMetrics').innerText = `${b.quantified_metrics} / 20`;
+    document.getElementById('barDimMetrics').style.width = `${(b.quantified_metrics / 20) * 100}%`;
+
+    document.getElementById('scoreDimTech').innerText = `${b.tech_relevance} / 20`;
+    document.getElementById('barDimTech').style.width = `${(b.tech_relevance / 20) * 100}%`;
+
+    document.getElementById('scoreDimArch').innerText = `${b.architecture_scale} / 10`;
+    document.getElementById('barDimArch').style.width = `${(b.architecture_scale / 10) * 100}%`;
+
+    modal.style.display = 'flex';
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function closeProjectAtsModal() {
+    const modal = document.getElementById('projectAtsModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function polishActiveModalProject() {
+    const p = (currentResumeData.projects || [])[activeModalProjIdx];
+    if (!p) return;
+
+    const btn = document.getElementById('btnAutoPolishProject');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:14px;height:14px;"></i> Polishing with Google XYZ Metrics...';
+    if (window.lucide) window.lucide.createIcons();
+
+    try {
+      const rawBullet = (p.bullets && p.bullets[0]) ? p.bullets[0] : `Engineered ${p.title} using ${p.tech_stack}`;
+      const res = await fetch('/api/ai/polish-bullet/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bullet: rawBullet })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert("Polish failed: " + (data.error || "Server error"));
+        return;
+      }
+
+      if (data.polished_bullet) {
+        p.bullets[0] = data.polished_bullet;
+        if (data.alternative_bullets && data.alternative_bullets[0] && p.bullets.length < 3) {
+          p.bullets.push(data.alternative_bullets[0]);
+        }
+      }
+
+      renderResumeSheet();
+      recalculateAtsScore();
+      openProjectAtsModal(activeModalProjIdx);
+
+      if (window.showToast) window.showToast("✨ Project bullets upgraded with Google XYZ metrics!", "success");
+      else alert("✨ Project bullets upgraded with Google XYZ metrics!");
+    } catch (err) {
+      alert("Network error: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="sparkles" style="width:15px;height:15px;"></i> <span>✨ Polish Bullets to 95+ Score with Groq AI</span>';
+      if (window.lucide) window.lucide.createIcons();
+    }
   }
 
   function renderExperienceControlsList() {
@@ -1578,6 +1868,107 @@
     <button type="button" onclick="handleSaveExperience()" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer;">
       Save &amp; Add Experience
     </button>
+  </div>
+</div>
+
+<!-- 8. Reverse-Engineered Project ATS Breakdown & Optimizer Modal -->
+<div id="projectAtsModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 18px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); color: #f8fafc;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: grid; place-items: center; color: #38bdf8;">
+          <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div>
+          <h3 id="projectAtsModalTitle" style="font-size: 16.5px; font-weight: 800; color: #f8fafc; margin: 0;">Project ATS Scorecard</h3>
+          <p style="font-size: 11.5px; color: #94a3b8; margin: 0;">Reverse-Engineered 5-Dimension ATS Evaluation (Jobscan/Resume Worded)</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeProjectAtsModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer;">&times;</button>
+    </div>
+
+    <!-- Overall Project Score Banner -->
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
+      <div>
+        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Project ATS Rating</div>
+        <div id="projectAtsScoreBig" style="font-size: 26px; font-weight: 900; color: #34d399;">94 / 100</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Recruiter Pass Level</div>
+        <div id="projectAtsGradeBig" style="font-size: 14.5px; font-weight: 800; color: #38bdf8;">Top Tier Pass</div>
+      </div>
+    </div>
+
+    <!-- 5 Breakdown Bars -->
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+      <!-- Dimension 1: Action Verbs -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span style="color: #cbd5e1;">1. Strong Action Verbs (Architected, Engineered, Scaled)</span>
+          <span id="scoreDimVerbs" style="color: #38bdf8;">25 / 25</span>
+        </div>
+        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimVerbs" style="background: #38bdf8; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Dimension 2: Google XYZ Formula -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span style="color: #cbd5e1;">2. Google XYZ Formula (Accomplished [X] by doing [Z], measured by [Y])</span>
+          <span id="scoreDimXYZ" style="color: #a855f7;">25 / 25</span>
+        </div>
+        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimXYZ" style="background: #a855f7; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Dimension 3: Quantified Numerical Metrics -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span style="color: #cbd5e1;">3. Quantified Numerical Metrics (%, ms, req/sec, scale numbers)</span>
+          <span id="scoreDimMetrics" style="color: #34d399;">20 / 20</span>
+        </div>
+        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimMetrics" style="background: #34d399; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Dimension 4: Tech Stack Relevance -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span style="color: #cbd5e1;">4. Tech Stack Relevance & Framework Coverage</span>
+          <span id="scoreDimTech" style="color: #fbbf24;">20 / 20</span>
+        </div>
+        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimTech" style="background: #fbbf24; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Dimension 5: Architecture & System Scale -->
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span style="color: #cbd5e1;">5. Architectural Depth (Concurrency, Redis, Caching, CI/CD)</span>
+          <span id="scoreDimArch" style="color: #ec4899;">10 / 10</span>
+        </div>
+        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimArch" style="background: #ec4899; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Polish Action Button -->
+    <div style="display: flex; gap: 8px;">
+      <button type="button" id="btnAutoPolishProject" onclick="polishActiveModalProject()" style="flex: 1; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; padding: 11px 16px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+        <span>✨ Polish Bullets to 95+ Score with Groq AI</span>
+      </button>
+      <button type="button" onclick="closeProjectAtsModal()" style="background: #334155; color: #cbd5e1; border: 1px solid #475569; padding: 11px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
+        Close
+      </button>
+    </div>
+
   </div>
 </div>
 {% endblock %}

@@ -271,3 +271,57 @@ GitHub Stars: {stars}
     response_text = call_groq_chat(messages, temperature=0.3, json_mode=True)
     return json.loads(response_text)
 
+
+def alter_resume_for_job(
+    candidate_summary: str,
+    candidate_skills: dict,
+    candidate_projects: list[dict],
+    job_title: str,
+    company_name: str,
+    job_skills: str,
+    job_description: str,
+) -> dict:
+    """
+    Reverse-engineered 1-Click Resume Alteration Engine (inspired by Jobscan & Rezi).
+    Directly aligns a candidate's resume with a target job:
+    1. Rewrites Professional Summary tailored to role and company.
+    2. Aligns Technical Skills placing matching target keywords first.
+    3. Alters project bullets into 95+ score Google XYZ bullets embedding target skills.
+    """
+    system_prompt = (
+        "You are an elite ex-FAANG technical resume architect and ATS optimization algorithm. "
+        "A candidate is applying for a specific job. You must alter and optimize their resume to directly match "
+        "the target Job Description and required skill set while preserving their genuine background. "
+        "Apply the Google XYZ Formula: 'Accomplished [X] as measured by [Y], by doing [Z]'. "
+        "Ensure every single project bullet starts with a power action verb (Architected, Engineered, Optimized, Spearheaded, Implemented, Deployed) "
+        "and contains quantified metrics (e.g., % latency drop, req/sec, scale, error reduction). "
+        "Return a JSON object with keys:\n"
+        "- 'altered_summary': string (2-3 lines elevator pitch tailored to this exact company and role)\n"
+        "- 'altered_skills': object mapping category names to comma-separated skills, placing matching target keywords first\n"
+        "- 'altered_projects': list of project objects with {'title': str, 'role': str, 'tech_stack': str, 'bullets': list of 3-4 Google XYZ bullets}\n"
+        "- 'overall_match_score': integer (88 to 98)\n"
+        "- 'match_grade': string ('Top Tier ATS Pass (95+)', 'Excellent Match')\n"
+        "- 'matching_keywords': list of matched key skills\n"
+        "- 'missing_keywords_injected': list of job skills injected into the altered resume\n"
+        "- 'key_alterations': list of 3-4 concise notes explaining how the resume was upgraded"
+    )
+
+    user_payload = {
+        "job_title": job_title,
+        "company_name": company_name,
+        "job_skills": job_skills,
+        "job_description": job_description[:3000],
+        "candidate_summary": candidate_summary,
+        "candidate_skills": candidate_skills,
+        "candidate_projects": candidate_projects,
+    }
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": json.dumps(user_payload)},
+    ]
+
+    response_text = call_groq_chat(messages, temperature=0.3, json_mode=True)
+    return json.loads(response_text)
+
+

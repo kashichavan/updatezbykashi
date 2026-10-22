@@ -2387,9 +2387,22 @@ def resume_builder_view(request):
     Generates single-column ATS compliant resumes engineered to pass Workday, Taleo, Greenhouse, and Lever.
     """
     from .resume_engine import RESUME_ROLES, calculate_ats_score
+    from .models import JobPosting
+    import uuid
 
     selected_role_id = request.GET.get('role', 'python-backend')
     role_data = RESUME_ROLES.get(selected_role_id, RESUME_ROLES['python-backend'])
+
+    # Optional target job parameter (?job_id=<uuid>)
+    job_id = request.GET.get('job_id') or request.GET.get('job')
+    target_job = None
+    if job_id:
+        try:
+            val_uuid = uuid.UUID(job_id)
+            target_job = JobPosting.objects.filter(uuid=val_uuid).first()
+        except (ValueError, AttributeError):
+            if str(job_id).isdigit():
+                target_job = JobPosting.objects.filter(pk=int(job_id)).first()
 
     initial_resume = {
         'name': 'Kashinath Chavan',
@@ -2414,6 +2427,7 @@ def resume_builder_view(request):
         'roles': RESUME_ROLES,
         'selected_role': role_data,
         'selected_role_id': selected_role_id,
+        'target_job': target_job,
         'initial_resume': initial_resume,
         'initial_resume_json': json.dumps(initial_resume),
         'ats_eval': ats_eval,
@@ -2675,6 +2689,79 @@ def api_ai_generate_summary(request):
         return JsonResponse({'success': True, 'data': data})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_score_project_ats(request):
+    """Reverse-engineered ATS Project Scoring API."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .resume_engine import score_project_ats
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        project = body.get('project', {})
+        target_skills = body.get('target_skills', [])
+        evaluation = score_project_ats(project, target_skills)
+        return JsonResponse({'success': True, 'evaluation': evaluation})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_ai_alter_resume(request):
+    """1-Click AI Resume Alteration for a specific Job Description and Tech Stack."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .ai_engine import alter_resume_for_job
+    from .resume_engine import score_project_ats
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        job_title = body.get('job_title', '')
+        company_name = body.get('company_name', '')
+        job_skills = body.get('job_skills', '')
+        job_description = body.get('job_description', '')
+
+        if not job_description and not job_skills:
+            return JsonResponse({'success': False, 'error': 'Job Description or skills are required.'}, status=400)
+
+        result = alter_resume_for_job(
+            candidate_summary=body.get('candidate_summary', ''),
+            candidate_skills=body.get('candidate_skills', {}),
+            candidate_projects=body.get('candidate_projects', []),
+            job_title=job_title,
+            company_name=company_name,
+            job_skills=job_skills,
+            job_description=job_description,
+        )
+
+        # Standardize field names for frontends
+        if 'match_score' not in result or result['match_score'] is None:
+            result['match_score'] = result.get('overall_match_score') or 95
+        if 'injected_keywords' not in result or result['injected_keywords'] is None:
+            result['injected_keywords'] = result.get('missing_keywords_injected') or result.get('matching_keywords') or []
+        if 'reordered_skills' not in result or result['reordered_skills'] is None:
+            result['reordered_skills'] = result.get('altered_skills') or {}
+
+        # Rate each altered project with reverse-engineered ATS score
+        target_skills_list = [s.strip() for s in job_skills.split(',') if s.strip()] if isinstance(job_skills, str) else job_skills
+        scored_projects = []
+        for p in result.get('altered_projects', []):
+            eval_data = score_project_ats(p, target_skills_list)
+            p['ats_score'] = eval_data['score']
+            p['ats_badge'] = eval_data['badge']
+            p['ats_grade'] = eval_data['grade']
+            p['breakdown'] = eval_data['breakdown']
+            scored_projects.append(p)
+
+        result['altered_projects'] = scored_projects
+        return JsonResponse({'success': True, 'data': result})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 
 
