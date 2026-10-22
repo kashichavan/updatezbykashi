@@ -34,8 +34,8 @@ LINKEDIN_GUEST_API_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJo
 class LinkedInSourceAdapter(BaseJobSourceAdapter):
     source_name = "LinkedIn"
     
-    # Disabled by default in compliance with site terms and anti-bot authorization policy
-    is_enabled = os.getenv("LINKEDIN_SCRAPING_ENABLED", "false").lower() in ["true", "1"]
+    # Enabled by default for prioritized India job aggregation (can be disabled via LINKEDIN_SCRAPING_ENABLED=false)
+    is_enabled = os.getenv("LINKEDIN_SCRAPING_ENABLED", "true").lower() in ["true", "1"]
     rate_limit_delay = 2.0
     timeout = 7
 

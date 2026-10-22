@@ -3362,6 +3362,35 @@ def api_jobs_ingestion_status(request):
     })
 
 
+def api_jobs_deduplicate(request):
+    """
+    On-demand endpoint to audit and purge duplicate listings across all sources.
+    Query param: ?dry_run=true for simulation.
+    """
+    from .job_aggregator.deduplicator import purge_all_database_duplicates
+    
+    dry_run = request.GET.get('dry_run', 'false').lower() in ['true', '1']
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body or '{}')
+            if 'dry_run' in body:
+                dry_run = bool(body['dry_run'])
+        except Exception:
+            pass
+
+    try:
+        stats = purge_all_database_duplicates(dry_run=dry_run)
+        return JsonResponse({
+            'success': True,
+            'stats': stats,
+            'message': f"Deduplication complete. {stats['duplicates_deleted']} duplicates removed." if not dry_run else f"Simulation complete. {stats['duplicates_found']} duplicates identified."
+        })
+    except Exception as e:
+        logger.exception("Error executing duplicate purge:")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+
 
 
 

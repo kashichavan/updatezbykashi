@@ -16,15 +16,22 @@ from requirements.job_aggregator.normalizer import (
 from requirements.job_aggregator.deduplicator import (
     find_existing_job_duplicate,
     merge_or_create_job,
-    calculate_token_similarity
+    calculate_token_similarity,
+    clean_canonical_job_url,
+    normalize_company_name,
+    normalize_job_title,
+    purge_all_database_duplicates,
 )
 from requirements.job_aggregator.adapters import (
+    NaukriSourceAdapter,
+    LinkedInSourceAdapter,
     GreenhousePublicSourceAdapter,
     AshbyPublicSourceAdapter,
     PublicFeedsSourceAdapter,
-    LinkedInSourceAdapter
 )
+from requirements.job_aggregator.adapters.naukri_adapter import generate_naukri_token
 from requirements.job_aggregator.orchestrator import orchestrator
+from django.core.management import call_command
 
 
 class LocationAndTaxonomyTests(TestCase):
@@ -204,11 +211,19 @@ class SourceAdaptersAndOrchestratorTests(TestCase):
         self.assertEqual(first["normalized_city"], "Bengaluru")
         self.assertEqual(first["industry_domain"], "TECHNICAL")
 
-    def test_linkedin_disabled_by_default(self):
-        adapter = LinkedInSourceAdapter()
-        self.assertFalse(adapter.is_enabled)
-        jobs = adapter.fetch_jobs(limit=10)
-        self.assertEqual(jobs, [])
+    def test_linkedin_toggle_via_env(self):
+        import os
+        from unittest.mock import patch
+        with patch.dict(os.environ, {"LINKEDIN_SCRAPING_ENABLED": "false"}):
+            # When disabled via environment
+            with patch.object(LinkedInSourceAdapter, 'is_enabled', False):
+                adapter = LinkedInSourceAdapter()
+                jobs = adapter.fetch_jobs(limit=10)
+                self.assertEqual(jobs, [])
+
+        # By default, LinkedIn is enabled for priority scraping
+        adapter_default = LinkedInSourceAdapter()
+        self.assertTrue(adapter_default.is_enabled)
 
     def test_linkedin_guest_parser_mocked(self):
         sample_html = """
@@ -340,3 +355,187 @@ class JobAggregationAPITests(TestCase):
         self.assertTrue(data["success"])
         self.assertIn("active_sources", data)
         self.assertIn("metrics", data)
+
+
+class NaukriAndLinkedInAdapterTests(TestCase):
+    def test_naukri_token_generation(self):
+        token = generate_naukri_token("srp")
+        self.assertIsInstance(token, str)
+        self.assertTrue(len(token) > 20)
+
+    def test_naukri_job_details_parser(self):
+        adapter = NaukriSourceAdapter()
+        raw_items = [
+            {
+                "title": "Senior Python Developer",
+                "companyName": "Infosys Limited",
+                "jobId": "987654321",
+                "jdURL": "/job-listings-python-dev-987654321",
+                "tagsAndSkills": "Python, Django, AWS, Docker",
+                "placeholders": [
+                    {"type": "experience", "label": "2-5 Yrs"},
+                    {"type": "salary", "label": "12-18 Lacs PA"},
+                    {"type": "location", "label": "Bengaluru"}
+                ],
+                "jobDescription": "<p>Looking for a talented <b>Python Developer</b> with Django experience.</p>",
+                "createdDate": 1792582319136,
+                "footerPlaceholderLabel": "Just Now",
+            }
+        ]
+        parsed = adapter.parse_naukri_job_details(raw_items)
+        self.assertEqual(len(parsed), 1)
+        job = parsed[0]
+        self.assertEqual(job["source_name"], "Naukri")
+        self.assertEqual(job["source_job_id"], "987654321")
+        self.assertEqual(job["title"], "Senior Python Developer")
+        self.assertEqual(job["company_name"], "Infosys Limited")
+        self.assertEqual(job["normalized_city"], "Bengaluru")
+        self.assertEqual(job["apply_url"], "https://www.naukri.com/job-listings-python-dev-987654321")
+        self.assertEqual(job["stipend_salary"], "12-18 Lacs PA")
+        self.assertEqual(job["timestamp_precision"], "EXACT_TIMESTAMP")
+        self.assertIn("Python", job["skills_required"])
+
+    def test_linkedin_adapter_enabled_state(self):
+        adapter = LinkedInSourceAdapter()
+        self.assertTrue(adapter.is_enabled)
+        self.assertEqual(adapter.source_name, "LinkedIn")
+
+
+class CrossSourceDeduplicationAndPurgeTests(TestCase):
+    def setUp(self):
+        self.cat = Category.objects.create(name="Engineering", slug="eng")
+
+    def test_url_cleaning_and_normalization(self):
+        raw_url = "https://www.naukri.com/job-listings-12345?utm_source=google&utm_medium=cpc&ref=homepage#section"
+        clean = clean_canonical_job_url(raw_url)
+        self.assertEqual(clean, "https://www.naukri.com/job-listings-12345")
+
+        self.assertEqual(normalize_company_name("Infosys Technologies Pvt. Ltd."), "infosys")
+        self.assertEqual(normalize_company_name("Tata Consultancy Services Ltd"), "tcs")
+        self.assertEqual(normalize_company_name("Swiggy India Private Limited"), "swiggy")
+
+        self.assertEqual(
+            normalize_job_title("Python Developer (Immediate Joiner / Urgent Requirement)"),
+            "python developer"
+        )
+
+    def test_cross_source_pre_insertion_deduplication(self):
+        # 1. First insert from LinkedIn
+        job_data_linkedin = {
+            'source_name': 'LinkedIn',
+            'source_job_id': 'li_101',
+            'apply_url': 'https://careers.swiggy.com/job/101?utm_source=linkedin',
+            'title': 'Senior Backend Engineer',
+            'company_name': 'Swiggy',
+            'normalized_city': 'Bengaluru',
+            'description': 'Building microservices at scale using Go and Python.',
+            'skills_required': 'Python, Go, Redis',
+        }
+        job1, created1 = merge_or_create_job(job_data_linkedin)
+        self.assertTrue(created1)
+
+        # 2. Ingest duplicate from Naukri with corporate suffix and tracking params
+        job_data_naukri = {
+            'source_name': 'Naukri',
+            'source_job_id': 'nk_202',
+            'apply_url': 'https://careers.swiggy.com/job/101?utm_source=naukri&tracking=email',
+            'title': 'Senior Backend Engineer',
+            'company_name': 'Swiggy Private Limited',
+            'normalized_city': 'Bengaluru',
+            'description': 'Building microservices at scale using Go and Python with comprehensive unit test coverage and high throughput.',
+            'skills_required': 'Python, Go, Redis, Kafka, Kubernetes',
+        }
+        job2, created2 = merge_or_create_job(job_data_naukri)
+        # Should be detected as duplicate!
+        self.assertFalse(created2)
+        self.assertEqual(job1.id, job2.id)
+
+        # Verify metadata upgrade on job1
+        job1.refresh_from_db()
+        self.assertIn("Kafka", job1.skills_required)
+
+    def test_purge_all_database_duplicates(self):
+        now = timezone.now()
+        # Create 3 duplicate entries across different sources and variations
+        j1 = JobPosting.objects.create(
+            title="Full Stack Software Engineer",
+            company_name="Razorpay Software Pvt Ltd",
+            category=self.cat,
+            apply_url="https://jobs.razorpay.com/fs-dev?utm_source=board1",
+            location="Bengaluru, Karnataka",
+            normalized_city="Bengaluru",
+            description="Short snippet description.",
+            skills_required="React, Node.js",
+            status='ACTIVE',
+            source_name="Jobdexo"
+        )
+
+        j2 = JobPosting.objects.create(
+            title="Full Stack Software Engineer",
+            company_name="Razorpay",
+            category=self.cat,
+            apply_url="https://jobs.razorpay.com/fs-dev?utm_source=board2",
+            location="Bengaluru, India",
+            normalized_city="Bengaluru",
+            description="Comprehensive rich job description detailing full stack responsibilities and architecture.",
+            skills_required="React, Node.js, Python, PostgreSQL, AWS",
+            status='ACTIVE',
+            source_name="Naukri"
+        )
+
+        j3 = JobPosting.objects.create(
+            title="Full Stack Software Engineer (Hiring / Immediate)",
+            company_name="Razorpay Technologies",
+            category=self.cat,
+            apply_url="https://jobs.razorpay.com/fs-dev",
+            location="Bengaluru, Karnataka",
+            normalized_city="Bengaluru",
+            description="Medium description.",
+            skills_required="React, Node.js, TypeScript",
+            status='ACTIVE',
+            source_name="LinkedIn"
+        )
+
+        self.assertEqual(JobPosting.objects.filter(status='ACTIVE').count(), 3)
+
+        # Dry run audit first
+        dry_stats = purge_all_database_duplicates(dry_run=True)
+        self.assertEqual(dry_stats['duplicate_clusters'], 1)
+        self.assertEqual(dry_stats['duplicates_found'], 2)
+        self.assertEqual(dry_stats['duplicates_deleted'], 0)
+        self.assertEqual(JobPosting.objects.filter(status='ACTIVE').count(), 3)
+
+        # Real purge execution
+        real_stats = purge_all_database_duplicates(dry_run=False)
+        self.assertEqual(real_stats['duplicate_clusters'], 1)
+        self.assertEqual(real_stats['duplicates_deleted'], 2)
+        self.assertEqual(JobPosting.objects.filter(status='ACTIVE').count(), 1)
+
+        # Winner should have preserved the richest description
+        survivor = JobPosting.objects.filter(status='ACTIVE').first()
+        self.assertIn("Comprehensive rich job description", survivor.description)
+
+    def test_deduplicate_jobs_cli_command(self):
+        from io import StringIO
+        out = StringIO()
+        call_command('deduplicate_jobs', '--dry-run', stdout=out)
+        output = out.getvalue()
+        self.assertIn("Starting comprehensive cross-source job deduplication sweep", output)
+        self.assertIn("Deduplication scan finished", output)
+
+    def test_deduplicate_api_endpoint(self):
+        # GET dry_run simulation
+        res = self.client.get("/api/jobs/deduplicate/?dry_run=true")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertTrue(data["success"])
+        self.assertIn("stats", data)
+        self.assertTrue(data["stats"]["dry_run"])
+
+        # POST execution
+        res_post = self.client.post("/api/jobs/deduplicate/", json.dumps({"dry_run": False}), content_type="application/json")
+        self.assertEqual(res_post.status_code, 200)
+        data_post = res_post.json()
+        self.assertTrue(data_post["success"])
+        self.assertFalse(data_post["stats"]["dry_run"])
+

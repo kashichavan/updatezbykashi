@@ -41,6 +41,7 @@ urlpatterns = [
     path('api/jobs/last-hour/', views.api_jobs_last_hour, name='api_jobs_last_hour'),
     path('api/jobs/ingest/', views.api_jobs_ingest_trigger, name='api_jobs_ingest_trigger'),
     path('api/jobs/ingestion-status/', views.api_jobs_ingestion_status, name='api_jobs_ingestion_status'),
+    path('api/jobs/deduplicate/', views.api_jobs_deduplicate, name='api_jobs_deduplicate'),
 
     # AI Job Description Generator & Career Suite
     path('tools/job-description-generator/', views.job_description_generator_view, name='job_description_generator'),

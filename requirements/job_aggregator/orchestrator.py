@@ -14,13 +14,14 @@ from django.core.cache import cache
 
 from requirements.models import JobPosting, JobGroup, JobIngestionRun
 from .adapters import (
+    NaukriSourceAdapter,
+    LinkedInSourceAdapter,
     JobdexoSourceAdapter,
     GreenhousePublicSourceAdapter,
     AshbyPublicSourceAdapter,
     PublicFeedsSourceAdapter,
-    LinkedInSourceAdapter,
 )
-from .deduplicator import merge_or_create_job
+from .deduplicator import merge_or_create_job, purge_all_database_duplicates
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +31,14 @@ class JobAggregationOrchestrator:
     Master coordinator for India-wide job scraping and aggregation.
     """
     def __init__(self):
+        # Prioritize Naukri and LinkedIn as primary India job sources
         self.adapters = [
+            NaukriSourceAdapter(),
+            LinkedInSourceAdapter(),
             JobdexoSourceAdapter(),
             GreenhousePublicSourceAdapter(),
             AshbyPublicSourceAdapter(),
             PublicFeedsSourceAdapter(),
-            LinkedInSourceAdapter(),
         ]
 
     def get_registered_sources(self) -> List[Dict[str, Any]]:
@@ -142,8 +145,18 @@ class JobAggregationOrchestrator:
                     'error': str(e)
                 }
 
+        # Run cross-source database duplicate sweep and purge
+        purge_stats = {}
+        try:
+            purge_stats = purge_all_database_duplicates(dry_run=False)
+            logger.info(f"Ingestion auto-purge complete: {purge_stats.get('duplicates_deleted', 0)} duplicates removed.")
+        except Exception as e:
+            logger.warning(f"Notice running auto-deduplication purge: {e}")
+
         # If fresh jobs were imported, bundle them into a JobGroup for easy browsing
-        if newly_created_instances:
+        # Filter newly_created_instances to only those that survived deduplication
+        surviving_instances = [j for j in newly_created_instances if JobPosting.objects.filter(id=j.id).exists()]
+        if surviving_instances:
             try:
                 now_local = timezone.localtime(timezone.now())
                 group_name = now_local.strftime("⚡ Fresh India Tech & Off-Campus Drives — %d %b %Y")
@@ -153,12 +166,12 @@ class JobAggregationOrchestrator:
                     name=group_name,
                     slug=base_slug,
                     banner_tag="⚡ ALL-INDIA VERIFIED JOBS",
-                    description=f"Curated feed of {len(newly_created_instances)} fresh opportunities across tech, data, cloud, and core industries.",
+                    description=f"Curated feed of {len(surviving_instances)} fresh opportunities across tech, data, cloud, and core industries.",
                     posted_date=now_local.date(),
                     deadline=now_local + timezone.timedelta(days=7),
                     is_active=True
                 )
-                group.jobs.set(newly_created_instances)
+                group.jobs.set(surviving_instances)
             except Exception as e:
                 logger.warning(f"Notice creating JobGroup: {e}")
 
@@ -171,9 +184,10 @@ class JobAggregationOrchestrator:
             "total_discovered": total_discovered,
             "total_imported": total_imported,
             "total_duplicates": total_duplicates,
+            "duplicates_purged": purge_stats.get("duplicates_deleted", 0),
             "duration_seconds": round(time.time() - overall_start, 2),
             "sources": source_summaries,
-            "imported_jobs_count": len(newly_created_instances),
+            "imported_jobs_count": len(surviving_instances),
         }
 
 
