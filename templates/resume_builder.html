@@ -54,7 +54,7 @@
       </div>
 
       <!-- Action Buttons -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
         <button type="button" onclick="window.print()" class="btn-action-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border: none; padding: 12px 14px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);">
           <i data-lucide="printer" style="width: 16px; height: 16px;"></i>
           <span>Save PDF</span>
@@ -63,6 +63,30 @@
           <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
           <span>Copy Text</span>
         </button>
+      </div>
+
+      <!-- AI Suite Action Buttons -->
+      <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 22px;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: #c084fc; text-transform: uppercase;">
+          <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+          <span>AI Optimization Tools</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" onclick="openTailorModal()" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);">
+            <i data-lucide="target" style="width: 15px; height: 15px;"></i>
+            <span>Tailor Resume to Target JD</span>
+          </button>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button type="button" onclick="openBulletPolishModal()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #475569; padding: 8px 10px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="wand-2" style="width: 13px; height: 13px; color: #a855f7;"></i>
+              <span>XYZ Polisher</span>
+            </button>
+            <button type="button" onclick="openSummaryModal()" style="background: #1e293b; color: #e2e8f0; border: 1px solid #475569; padding: 8px 10px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <i data-lucide="file-edit" style="width: 13px; height: 13px; color: #60a5fa;"></i>
+              <span>AI Summary</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Live Customizer Form -->
@@ -520,6 +544,399 @@
       console.error("Copy failed:", err);
     });
   }
+
+  /* ==========================================================
+     AI CAREER SUITE: MODAL HANDLERS & API INTEGRATION
+     ========================================================== */
+
+  let lastTailoredResult = null;
+  let lastPolishedResult = null;
+
+  function openTailorModal() {
+    document.getElementById('tailorModal').style.display = 'flex';
+    document.getElementById('tailorResults').style.display = 'none';
+    if (window.lucide) window.lucide.createIcons();
+  }
+  function closeTailorModal() {
+    document.getElementById('tailorModal').style.display = 'none';
+  }
+
+  function openBulletPolishModal() {
+    document.getElementById('bulletPolishModal').style.display = 'flex';
+    document.getElementById('bulletResults').style.display = 'none';
+    if (window.lucide) window.lucide.createIcons();
+  }
+  function closeBulletPolishModal() {
+    document.getElementById('bulletPolishModal').style.display = 'none';
+  }
+
+  function openSummaryModal() {
+    document.getElementById('summaryModal').style.display = 'flex';
+    document.getElementById('summaryResults').style.display = 'none';
+    if (window.lucide) window.lucide.createIcons();
+  }
+  function closeSummaryModal() {
+    document.getElementById('summaryModal').style.display = 'none';
+  }
+
+  // AI Tailor to Target Job Description
+  async function handleRunTailor() {
+    const jdText = document.getElementById('targetJdInput').value.trim();
+    if (!jdText) {
+      alert('Please paste a job description first.');
+      return;
+    }
+
+    const btn = document.getElementById('runTailorBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:14px;height:14px;"></i> Analyzing via Groq AI...';
+    if (window.lucide) window.lucide.createIcons();
+
+    // Flatten skills from object
+    let skillList = [];
+    if (currentResumeData && currentResumeData.skills) {
+      Object.values(currentResumeData.skills).forEach(val => {
+        val.split(',').forEach(s => skillList.push(s.trim()));
+      });
+    }
+
+    try {
+      const res = await fetch('/api/ai/tailor-resume/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resume_summary: currentResumeData.summary,
+          resume_skills: skillList,
+          resume_projects: currentResumeData.projects,
+          job_description: jdText
+        })
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        alert('Tailoring failed: ' + (json.error || 'Server error'));
+        return;
+      }
+
+      lastTailoredResult = json.data;
+      renderTailorResults(json.data);
+    } catch (err) {
+      alert('Network error: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="sparkles" style="width:14px;height:14px;"></i> Tailor Resume with AI';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  function renderTailorResults(data) {
+    document.getElementById('tailorScoreVal').innerText = `${data.match_score} / 100`;
+    document.getElementById('tailorGradeVal').innerText = data.match_grade;
+
+    // Missing keywords
+    const missingBox = document.getElementById('tailorMissingKeywords');
+    missingBox.innerHTML = '';
+    (data.missing_critical_keywords || []).forEach(kw => {
+      const sp = document.createElement('span');
+      sp.style.cssText = 'background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;';
+      sp.innerText = '+ ' + kw;
+      missingBox.appendChild(sp);
+    });
+
+    // Recommendations
+    const recList = document.getElementById('tailorRecList');
+    recList.innerHTML = '';
+    (data.quick_recommendations || []).forEach(r => {
+      const li = document.createElement('li');
+      li.innerText = r;
+      recList.appendChild(li);
+    });
+
+    // Summary preview
+    document.getElementById('tailorSummaryPreview').innerText = data.tailored_summary;
+
+    document.getElementById('tailorResults').style.display = 'block';
+  }
+
+  function applyTailoredData() {
+    if (!lastTailoredResult) return;
+
+    if (lastTailoredResult.tailored_summary) {
+      currentResumeData.summary = lastTailoredResult.tailored_summary;
+    }
+
+    // Append top missing keywords into Skills
+    if (lastTailoredResult.missing_critical_keywords && lastTailoredResult.missing_critical_keywords.length > 0) {
+      if (!currentResumeData.skills['Targeted Skills']) {
+        currentResumeData.skills['Targeted Skills'] = lastTailoredResult.missing_critical_keywords.join(', ');
+      }
+    }
+
+    renderResumeSheet();
+    closeTailorModal();
+    alert('✅ Resume tailored! Your summary and skills have been updated to match the job requirements.');
+  }
+
+  // Google XYZ Bullet Polisher
+  async function handleRunPolish() {
+    const raw = document.getElementById('rawBulletInput').value.trim();
+    if (!raw) {
+      alert('Please enter a bullet point first.');
+      return;
+    }
+
+    const btn = document.getElementById('runPolishBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:14px;height:14px;"></i> Polishing...';
+    if (window.lucide) window.lucide.createIcons();
+
+    try {
+      const res = await fetch('/api/ai/polish-bullet/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bullet: raw,
+          role: document.querySelector('.btn-role-tab.active')?.getAttribute('data-role') || 'Software Engineer'
+        })
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        alert('Polishing failed: ' + (json.error || 'Server error'));
+        return;
+      }
+
+      lastPolishedResult = json.data;
+      renderPolishedBullets(json.data);
+    } catch (err) {
+      alert('Network error: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="wand-2" style="width:14px;height:14px;"></i> Transform to Google XYZ';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  function renderPolishedBullets(data) {
+    const list = document.getElementById('polishedChoicesList');
+    list.innerHTML = '';
+
+    const choices = [
+      { title: 'Primary (Quantified Metric)', text: data.polished },
+      { title: 'Alternative 1 (Scalability & Architecture)', text: data.alternative_1 },
+      { title: 'Alternative 2 (Speed & Optimization)', text: data.alternative_2 }
+    ];
+
+    choices.forEach((c, idx) => {
+      if (!c.text) return;
+      const div = document.createElement('div');
+      div.style.cssText = 'background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px;';
+      div.innerHTML = `
+        <div style="flex: 1;">
+          <div style="font-size: 11px; font-weight: 700; color: #a855f7; text-transform: uppercase; margin-bottom: 4px;">${c.title}</div>
+          <p style="font-size: 13px; color: #f8fafc; line-height: 1.5; margin: 0;">${c.text}</p>
+        </div>
+        <button type="button" onclick="insertPolishedBullet('${encodeURIComponent(c.text)}')" style="background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+          Insert
+        </button>
+      `;
+      list.appendChild(div);
+    });
+
+    document.getElementById('bulletResults').style.display = 'block';
+  }
+
+  function insertPolishedBullet(encodedText) {
+    const text = decodeURIComponent(encodedText);
+    if (currentResumeData.projects && currentResumeData.projects.length > 0) {
+      currentResumeData.projects[0].bullets.unshift(text);
+      renderResumeSheet();
+      closeBulletPolishModal();
+      alert('✅ Polished bullet inserted into your primary enterprise project!');
+    }
+  }
+
+  // AI Summary Generator
+  async function handleRunSummary() {
+    const btn = document.getElementById('runSummaryBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:14px;height:14px;"></i> Generating...';
+    if (window.lucide) window.lucide.createIcons();
+
+    const roleName = document.querySelector('.btn-role-tab.active')?.innerText || 'Software Engineer';
+
+    try {
+      const res = await fetch('/api/ai/generate-summary/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: roleName,
+          experience_level: '0-2 years',
+          key_skills: 'Python, SQL, Modern Frameworks, Cloud'
+        })
+      });
+
+      const json = await res.json();
+      if (!json.success) {
+        alert('Summary generation failed: ' + (json.error || 'Server error'));
+        return;
+      }
+
+      renderSummaryChoices(json.data);
+    } catch (err) {
+      alert('Network error: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="sparkles" style="width:14px;height:14px;"></i> Generate Summaries';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  function renderSummaryChoices(data) {
+    const list = document.getElementById('summaryChoicesList');
+    list.innerHTML = '';
+
+    const choices = [
+      { title: 'Impact-Focused (Recommended for Tech Drives)', text: data.impact_focused },
+      { title: 'Technical Specialist (Deep Frameworks & Code)', text: data.technical_specialist },
+      { title: 'Ambitious Fresher (High-Potential Graduate)', text: data.fresher_ambitious }
+    ];
+
+    choices.forEach(c => {
+      if (!c.text) return;
+      const div = document.createElement('div');
+      div.style.cssText = 'background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; margin-bottom: 12px;';
+      div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; font-weight: 700; color: #60a5fa; text-transform: uppercase;">${c.title}</span>
+          <button type="button" onclick="applySummaryText('${encodeURIComponent(c.text)}')" style="background: #10b981; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+            Apply
+          </button>
+        </div>
+        <p style="font-size: 13px; color: #e2e8f0; line-height: 1.6; margin: 0;">${c.text}</p>
+      `;
+      list.appendChild(div);
+    });
+
+    document.getElementById('summaryResults').style.display = 'block';
+  }
+
+  function applySummaryText(encodedText) {
+    const text = decodeURIComponent(encodedText);
+    currentResumeData.summary = text;
+    renderResumeSheet();
+    closeSummaryModal();
+    alert('✅ Professional summary updated on your resume!');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  });
+</script>
+
+<!-- ==========================================================
+     MODALS: AI TAILOR, BULLET POLISHER & SUMMARY GENERATOR
+     ========================================================== -->
+
+<!-- 1. Tailor Resume Modal -->
+<div id="tailorModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 16px; max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 26px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+      <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="target" style="width: 18px; height: 18px; color: #a855f7;"></i>
+        <span>AI Resume Tailor & Matcher</span>
+      </h3>
+      <button type="button" onclick="closeTailorModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+    </div>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;">
+      Paste the target Job Description below. Groq AI will evaluate your keyword gap, calculate a real ATS match score, and tailor your bullet points to match.
+    </p>
+    <textarea id="targetJdInput" rows="5" placeholder="Paste full Job Description or requirements here..." style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; line-height: 1.5; outline: none; margin-bottom: 14px; resize: vertical;"></textarea>
+    <button type="button" id="runTailorBtn" onclick="handleRunTailor()" style="width: 100%; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
+      <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+      <span>Tailor Resume with AI</span>
+    </button>
+
+    <!-- Results Area -->
+    <div id="tailorResults" style="display: none; border-top: 1px solid #334155; padding-top: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px;">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Match Score</span>
+          <div id="tailorScoreVal" style="font-size: 22px; font-weight: 800; color: #34d399;"></div>
+        </div>
+        <div id="tailorGradeVal" style="font-size: 13px; font-weight: 700; color: #60a5fa;"></div>
+      </div>
+      <div style="margin-bottom: 14px;">
+        <span style="font-size: 12px; font-weight: 700; color: #f87171; text-transform: uppercase; display: block; margin-bottom: 6px;">Missing Critical Keywords:</span>
+        <div id="tailorMissingKeywords" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+      </div>
+      <div style="margin-bottom: 14px;">
+        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 6px;">Actionable Recommendations:</span>
+        <ul id="tailorRecList" style="padding-left: 18px; font-size: 12px; color: #cbd5e1; line-height: 1.6; margin: 0;"></ul>
+      </div>
+      <div style="margin-bottom: 16px;">
+        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 6px;">Tailored Professional Summary:</span>
+        <p id="tailorSummaryPreview" style="font-size: 13px; color: #e2e8f0; line-height: 1.6; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; margin: 0;"></p>
+      </div>
+      <button type="button" onclick="applyTailoredData()" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
+        Apply Tailored Enhancements to Resume
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. Bullet Polish Modal -->
+<div id="bulletPolishModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 16px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="wand-2" style="width: 18px; height: 18px; color: #a855f7;"></i>
+        <span>Google XYZ Bullet Polisher</span>
+      </h3>
+      <button type="button" onclick="closeBulletPolishModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+    </div>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;">
+      Enter a simple sentence describing your work. AI will rewrite it into quantified Google XYZ format: <em>"Accomplished [X] as measured by [Y], by doing [Z]"</em>.
+    </p>
+    <textarea id="rawBulletInput" rows="3" placeholder="e.g. I worked on testing APIs with Postman and finding bugs in Jira" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; color: #f8fafc; font-size: 13px; outline: none; margin-bottom: 12px;"></textarea>
+    <button type="button" id="runPolishBtn" onclick="handleRunPolish()" style="width: 100%; background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+      <i data-lucide="wand-2" style="width: 14px; height: 14px;"></i>
+      <span>Transform to Google XYZ</span>
+    </button>
+
+    <div id="bulletResults" style="display: none; border-top: 1px solid #334155; padding-top: 14px;">
+      <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 10px;">Select Polished Bullet:</span>
+      <div id="polishedChoicesList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. Summary Generator Modal -->
+<div id="summaryModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 16px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="file-edit" style="width: 18px; height: 18px; color: #60a5fa;"></i>
+        <span>AI Summary Pitch Generator</span>
+      </h3>
+      <button type="button" onclick="closeSummaryModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+    </div>
+    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;">
+      Generate 3 distinct elevator pitch summaries tailored to your active role.
+    </p>
+    <button type="button" id="runSummaryBtn" onclick="handleRunSummary()" style="width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+      <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+      <span>Generate Summaries</span>
+    </button>
+
+    <div id="summaryResults" style="display: none; border-top: 1px solid #334155; padding-top: 14px;">
+      <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 10px;">Pick a Summary Variation:</span>
+      <div id="summaryChoicesList"></div>
+    </div>
+  </div>
+</div>
 
   document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide) {

@@ -2475,3 +2475,108 @@ def api_ats_score_eval(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+def job_description_generator_view(request):
+    """AI Job Description Generator Hub."""
+    context = {
+        'page_title': '⚡ AI Job Description Generator & Recruiter Suite — Kashii Updatez',
+        'meta_description': 'Generate high-converting, ATS-optimized tech job descriptions in seconds using AI. Formatted for LinkedIn, Instagram Stories, and job boards.',
+    }
+    return render(request, 'job_description_generator.html', context)
+
+
+@csrf_exempt
+def api_ai_generate_jd(request):
+    """AJAX endpoint for generating job descriptions via Groq AI."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .ai_engine import generate_job_description
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        data = generate_job_description(
+            title=body.get('title', ''),
+            company=body.get('company', ''),
+            experience=body.get('experience', '0-2 years'),
+            location=body.get('location', 'Remote / Bangalore'),
+            work_mode=body.get('work_mode', 'Full-time'),
+            skills=body.get('skills', ''),
+            additional_notes=body.get('additional_notes', ''),
+        )
+        return JsonResponse({'success': True, 'data': data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_ai_polish_bullet(request):
+    """AJAX endpoint for Google XYZ metric bullet polishing."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .ai_engine import polish_resume_bullet
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        bullet = body.get('bullet', '')
+        if not bullet:
+            return JsonResponse({'success': False, 'error': 'Bullet text is required'}, status=400)
+
+        data = polish_resume_bullet(
+            bullet=bullet,
+            role=body.get('role', ''),
+            tech_stack=body.get('tech_stack', ''),
+        )
+        return JsonResponse({'success': True, 'data': data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_ai_tailor_resume(request):
+    """AJAX endpoint for tailoring resume against target Job Description."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .ai_engine import tailor_resume_to_job
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        jd = body.get('job_description', '')
+        if not jd:
+            return JsonResponse({'success': False, 'error': 'Job description is required'}, status=400)
+
+        data = tailor_resume_to_job(
+            resume_summary=body.get('resume_summary', ''),
+            resume_skills=body.get('resume_skills', []),
+            resume_projects=body.get('resume_projects', []),
+            job_description=jd,
+        )
+        return JsonResponse({'success': True, 'data': data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_ai_generate_summary(request):
+    """AJAX endpoint for generating professional elevator pitches."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .ai_engine import generate_professional_summary
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        role = body.get('role', 'Software Engineer')
+        data = generate_professional_summary(
+            role=role,
+            experience_level=body.get('experience_level', 'fresher'),
+            key_skills=body.get('key_skills', ''),
+            target_company_type=body.get('target_company_type', 'Product Startup'),
+        )
+        return JsonResponse({'success': True, 'data': data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+

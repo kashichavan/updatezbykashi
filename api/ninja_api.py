@@ -2,6 +2,7 @@ from ninja import NinjaAPI
 from api.routers.blog import router as blog_router
 from api.routers.curriculum_js import router as curriculum_js_router
 from api.routers.overview import router as overview_router
+from api.routers.ai import router as ai_router
 
 # Initialize production-grade Django Ninja OpenAPI instance
 api = NinjaAPI(
@@ -30,3 +31,4 @@ Powered by **Django Ninja & Pydantic v2**, this OpenAPI suite provides type-safe
 api.add_router("/blog", blog_router)
 api.add_router("/curriculum/javascript", curriculum_js_router)
 api.add_router("/curriculum", overview_router)
+api.add_router("/ai", ai_router)
