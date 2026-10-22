@@ -1328,10 +1328,17 @@
     <!-- Candidate Resume Input Box -->
     <div style="margin-bottom: 14px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <label style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Your Current Resume Summary / Projects:</label>
-        <button type="button" onclick="fillJobTailorSample()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #c084fc; cursor: pointer; text-decoration: underline;">+ Load Sample Profile</button>
+        <label style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Your Resume Summary / File:</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" onclick="triggerJobTailorDocUpload()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+            <i data-lucide="upload-cloud" style="width: 12px; height: 12px;"></i>
+            <span>Upload PDF / DOCX</span>
+          </button>
+          <button type="button" onclick="fillJobTailorSample()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #c084fc; cursor: pointer; text-decoration: underline;">+ Sample</button>
+        </div>
       </div>
-      <textarea id="jobTailorResumeInput" rows="4" placeholder="Paste your current resume summary, technical skills, or project bullets here..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 13px; color: #f8fafc; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
+      <input type="file" id="jobTailorDocInput" accept=".pdf,.docx,.doc" style="display: none;" onchange="handleJobTailorDocSelect(event)">
+      <textarea id="jobTailorResumeInput" rows="4" placeholder="Upload a PDF/Word resume above or paste your resume text here..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 13px; color: #f8fafc; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
     </div>
 
     <!-- Action Button to Alter Resume -->
@@ -2178,6 +2185,56 @@
     const input = document.getElementById('jobTailorResumeInput');
     if (input) {
       input.value = "Computer Science graduate with strong foundation in full-stack web development, Python, SQL, REST APIs, and modern engineering practices. Built responsive applications serving thousands of users with 99.9% uptime. Proactive problem solver with 250+ DSA questions solved and strong collaborative team skills.";
+    }
+  }
+
+  function triggerJobTailorDocUpload() {
+    const input = document.getElementById('jobTailorDocInput');
+    if (input) input.click();
+  }
+
+  async function handleJobTailorDocSelect(e) {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    const btn = document.getElementById('btnRunJobTailor');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Uploading &amp; Parsing ${file.name}...`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    const formData = new FormData();
+    formData.append('resume_file', file);
+    formData.append('job_id', "{{ job.uuid }}");
+    formData.append('job_skills', "{{ job.skills|escapejs }}");
+
+    try {
+      const res = await fetch('/api/resume/upload/', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert("Upload parsing failed: " + (data.error || "Server error"));
+        return;
+      }
+
+      const parsed = data.parsed_resume;
+      let resumeText = (parsed.summary || "");
+      if (parsed.skills) {
+        resumeText += "\n\nSkills: " + (typeof parsed.skills === 'object' ? Object.values(parsed.skills).join(', ') : parsed.skills);
+      }
+      const input = document.getElementById('jobTailorResumeInput');
+      if (input) input.value = resumeText;
+
+      if (window.showToast) window.showToast(`✅ ${file.name} parsed! Altering for {{ job.company_name }}...`, "success");
+
+      // Auto-run alteration
+      runJobAlterationStudio();
+    } catch (err) {
+      alert("Error uploading file: " + err.message);
+    } finally {
+      e.target.value = '';
     }
   }
 

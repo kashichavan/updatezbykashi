@@ -28,6 +28,48 @@
         </button>
       {% endfor %}
     </div>
+
+    <!-- Mobile-First Resume Upload Card (PDF & Word DOCX) -->
+    <div class="resume-upload-zone-wrapper" style="max-width: 680px; margin: 24px auto 0;">
+      <div id="resumeDropZone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)" onclick="triggerFileInput()" style="background: rgba(15, 23, 42, 0.75); border: 2px dashed rgba(168, 85, 247, 0.45); border-radius: 16px; padding: 22px 20px; text-align: center; cursor: pointer; transition: all 0.25s ease; position: relative; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);">
+        
+        <input type="file" id="resumeFileInput" accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display: none;" onchange="handleFileSelect(event)">
+        
+        <div id="dropZoneContentNormal" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(59, 130, 246, 0.2)); border: 1px solid rgba(168, 85, 247, 0.4); display: grid; place-items: center; color: #c084fc; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.2);">
+            <i data-lucide="upload-cloud" style="width: 24px; height: 24px;"></i>
+          </div>
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: #f8fafc; margin-bottom: 3px;">
+              Upload Existing Resume <span style="color: #c084fc;">(.PDF or .DOCX)</span> to Check ATS Score
+            </div>
+            <div style="font-size: 12.5px; color: #94a3b8;">
+              Drag &amp; drop your resume here, or <span style="color: #60a5fa; text-decoration: underline; font-weight: 700;">tap to browse file</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+            <span style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">PDF</span>
+            <span style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">Word DOCX</span>
+            <span style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.3); color: #4ade80; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">6-Pillar ATS Breakdown</span>
+            <span style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px;">Live In-Place Edit</span>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="dropZoneContentLoading" style="display: none; flex-direction: column; align-items: center; gap: 10px; padding: 10px 0;">
+          <div class="spin-icon" style="color: #c084fc;">
+            <i data-lucide="loader" style="width: 32px; height: 32px;"></i>
+          </div>
+          <div style="font-size: 14.5px; font-weight: 800; color: #ffffff;" id="uploadLoadingTitle">
+            Extracting text &amp; reverse-engineering ATS score...
+          </div>
+          <div style="font-size: 12px; color: #94a3b8;">
+            Analyzing action verbs, Google XYZ metrics, and ATS parseability with AI...
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 
   <!-- Target Job Active Tailor Banner (1-Click Alteration Studio) -->
@@ -115,6 +157,10 @@
           <span>AI Optimization Tools</span>
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" onclick="triggerFileInput()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; border: none; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+            <i data-lucide="upload-cloud" style="width: 15px; height: 15px;"></i>
+            <span>Upload PDF / Word to Check ATS</span>
+          </button>
           <button type="button" onclick="openTailorModal()" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.25);">
             <i data-lucide="target" style="width: 15px; height: 15px;"></i>
             <span>Tailor Resume to Target JD</span>
@@ -1059,6 +1105,246 @@
   }
 
   /* ==========================================================
+     RESUME FILE UPLOAD & REVERSE-ENGINEERED ATS SCANNER
+     ========================================================== */
+
+  let lastUploadedData = null;
+
+  function triggerFileInput() {
+    const input = document.getElementById('resumeFileInput');
+    if (input) input.click();
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const zone = document.getElementById('resumeDropZone');
+    if (zone) {
+      zone.style.borderColor = '#c084fc';
+      zone.style.background = 'rgba(168, 85, 247, 0.12)';
+    }
+  }
+
+  function handleDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const zone = document.getElementById('resumeDropZone');
+    if (zone) {
+      zone.style.borderColor = 'rgba(168, 85, 247, 0.45)';
+      zone.style.background = 'rgba(15, 23, 42, 0.75)';
+    }
+  }
+
+  function handleFileDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleDragLeave(e);
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      uploadResumeFile(e.dataTransfer.files[0]);
+    }
+  }
+
+  function handleFileSelect(e) {
+    if (e.target.files && e.target.files.length > 0) {
+      uploadResumeFile(e.target.files[0]);
+    }
+  }
+
+  async function uploadResumeFile(file) {
+    if (!file) return;
+
+    const validExtensions = ['.pdf', '.docx', '.doc'];
+    const fileName = file.name.toLowerCase();
+    const isValid = validExtensions.some(ext => fileName.endsWith(ext));
+    if (!isValid) {
+      alert("Please upload a PDF (.pdf) or Word (.docx) document.");
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert("File size exceeds 8MB limit. Please upload a smaller file.");
+      return;
+    }
+
+    // Toggle loading state on dropzone
+    const norm = document.getElementById('dropZoneContentNormal');
+    const load = document.getElementById('dropZoneContentLoading');
+    if (norm && load) {
+      norm.style.display = 'none';
+      load.style.display = 'flex';
+      const title = document.getElementById('uploadLoadingTitle');
+      if (title) title.innerText = `Analyzing ${file.name} with AI ATS engine...`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    const formData = new FormData();
+    formData.append('resume_file', file);
+    if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.id) {
+      formData.append('job_id', targetJobData.id);
+    }
+
+    try {
+      const res = await fetch('/api/resume/upload/', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        alert("Upload failed: " + (data.error || "Server error"));
+        return;
+      }
+
+      lastUploadedData = data;
+      renderUploadScoreModal(data);
+    } catch (err) {
+      alert("Network error while uploading resume: " + err.message);
+    } finally {
+      if (norm && load) {
+        norm.style.display = 'flex';
+        load.style.display = 'none';
+      }
+      // Reset input so same file can be re-selected if desired
+      const fileInput = document.getElementById('resumeFileInput');
+      if (fileInput) fileInput.value = '';
+    }
+  }
+
+  function renderUploadScoreModal(data) {
+    const modal = document.getElementById('uploadScoreModal');
+    if (!modal) return;
+
+    const ats = data.ats_eval;
+    const parsed = data.parsed_resume;
+
+    // Header info
+    document.getElementById('uploadScoreFilename').innerText = data.filename || 'Uploaded Resume';
+    document.getElementById('uploadScoreCandName').innerText = parsed.name || 'Candidate';
+
+    // Score & Grade
+    const scoreVal = ats.overall_score || 85;
+    const scoreEl = document.getElementById('uploadScoreBig');
+    scoreEl.innerText = `${scoreVal} / 100`;
+    scoreEl.style.color = scoreVal >= 88 ? '#34d399' : (scoreVal >= 70 ? '#fbbf24' : '#f87171');
+
+    document.getElementById('uploadScoreGrade').innerText = ats.grade || 'Evaluated';
+    document.getElementById('uploadScorePassRate').innerText = ats.pass_rate || '';
+
+    // Render 6 Pillars
+    const pillarsContainer = document.getElementById('uploadScorePillars');
+    if (pillarsContainer) {
+      let pHtml = '';
+      (ats.pillars || []).forEach(p => {
+        const pct = Math.min(100, Math.round((p.score / p.max_score) * 100));
+        const barColor = pct >= 80 ? '#34d399' : (pct >= 55 ? '#fbbf24' : '#f87171');
+        pHtml += `
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+              <span style="color: #cbd5e1;">${p.name}</span>
+              <span style="color: ${barColor};">${p.score} / ${p.max_score}</span>
+            </div>
+            <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden; margin-bottom: 6px;">
+              <div style="background: ${barColor}; height: 100%; width: ${pct}%; transition: width 0.3s ease;"></div>
+            </div>
+            <div style="font-size: 11px; color: #94a3b8;">${p.detail}</div>
+          </div>
+        `;
+      });
+      pillarsContainer.innerHTML = pHtml;
+    }
+
+    // Render Actionable Improvements
+    const recsContainer = document.getElementById('uploadScoreImprovements');
+    if (recsContainer) {
+      let rHtml = '';
+      (ats.improvements || []).forEach(imp => {
+        rHtml += `
+          <li style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #e2e8f0; line-height: 1.45;">
+            <span style="color: #f59e0b; font-weight: 800;">⚡</span>
+            <span>${imp}</span>
+          </li>
+        `;
+      });
+      recsContainer.innerHTML = rHtml;
+    }
+
+    modal.style.display = 'flex';
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function closeUploadScoreModal() {
+    const modal = document.getElementById('uploadScoreModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function applyUploadedResumeToEditor() {
+    if (!lastUploadedData || !lastUploadedData.parsed_resume) return;
+
+    const parsed = lastUploadedData.parsed_resume;
+    const ats = lastUploadedData.ats_eval;
+
+    // 1. Update form inputs
+    const inName = document.getElementById('inputName');
+    if (inName && parsed.name) inName.value = parsed.name;
+
+    const inEmail = document.getElementById('inputEmail');
+    if (inEmail && parsed.contact && parsed.contact.email) inEmail.value = parsed.contact.email;
+
+    const inPhone = document.getElementById('inputPhone');
+    if (inPhone && parsed.contact && parsed.contact.phone) inPhone.value = parsed.contact.phone;
+
+    const inLinkedin = document.getElementById('inputLinkedin');
+    if (inLinkedin && parsed.contact && parsed.contact.linkedin) inLinkedin.value = parsed.contact.linkedin;
+
+    const inGithub = document.getElementById('inputGithub');
+    if (inGithub && parsed.contact && parsed.contact.github) inGithub.value = parsed.contact.github;
+
+    // 2. Set currentResumeData
+    currentResumeData = {
+      name: parsed.name || currentResumeData.name,
+      contact: {
+        email: (parsed.contact && parsed.contact.email) || currentResumeData.contact.email,
+        phone: (parsed.contact && parsed.contact.phone) || currentResumeData.contact.phone,
+        location: (parsed.contact && parsed.contact.location) || currentResumeData.contact.location,
+        linkedin: (parsed.contact && parsed.contact.linkedin) || currentResumeData.contact.linkedin,
+        github: (parsed.contact && parsed.contact.github) || currentResumeData.contact.github,
+        portfolio: (parsed.contact && parsed.contact.portfolio) || currentResumeData.contact.portfolio
+      },
+      summary: parsed.summary || currentResumeData.summary,
+      skills: (parsed.skills && Object.keys(parsed.skills).length > 0) ? parsed.skills : currentResumeData.skills,
+      projects: (parsed.projects && parsed.projects.length > 0) ? parsed.projects : currentResumeData.projects,
+      experience: parsed.experience || [],
+      education: (parsed.education && parsed.education.length > 0) ? parsed.education : currentResumeData.education,
+      certifications: parsed.certifications || currentResumeData.certifications
+    };
+
+    // Auto-detect profile level
+    if (parsed.experience && parsed.experience.length > 0) {
+      currentProfileLevel = "experienced";
+      const btnFresher = document.getElementById('btnLevelFresher');
+      const btnExp = document.getElementById('btnLevelExp');
+      if (btnFresher) btnFresher.classList.remove('active');
+      if (btnExp) btnExp.classList.add('active');
+    }
+
+    renderResumeSheet();
+    recalculateAtsScore();
+    closeUploadScoreModal();
+
+    // Smooth scroll down to workspace
+    const workspace = document.querySelector('.resume-workspace');
+    if (workspace) {
+      workspace.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    if (window.showToast) {
+      window.showToast(`🎉 ${parsed.name}'s resume loaded into Live Editor! Edit in-place to reach ATS 95+.`, "success");
+    } else {
+      alert(`🎉 Resume loaded into Live Editor! You can edit any line directly on the resume.`);
+    }
+  }
+
+  /* ==========================================================
      AI CAREER SUITE: MODAL HANDLERS & API INTEGRATION
      ========================================================== */
 
@@ -1966,6 +2252,72 @@
       </button>
       <button type="button" onclick="closeProjectAtsModal()" style="background: #334155; color: #cbd5e1; border: 1px solid #475569; padding: 11px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
         Close
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- 9. Uploaded Resume ATS Scorecard & Live Editor Loader Modal -->
+<div id="uploadScoreModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #1e293b; border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 20px; max-width: 640px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 24px 22px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); color: #f8fafc; box-sizing: border-box;">
+    
+    <!-- Modal Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #a855f7, #6366f1); display: grid; place-items: center; color: #ffffff; flex-shrink: 0; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);">
+          <i data-lucide="file-check-2" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div>
+          <h3 style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0;">ATS Diagnostic Scorecard</h3>
+          <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">
+            <span id="uploadScoreCandName" style="color: #38bdf8; font-weight: 700;">Candidate</span> &bull; 
+            <span id="uploadScoreFilename" style="color: #cbd5e1;">resume.pdf</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" onclick="closeUploadScoreModal()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); width: 32px; height: 32px; border-radius: 50%; color: #cbd5e1; font-size: 16px; cursor: pointer; display: grid; place-items: center;">&times;</button>
+    </div>
+
+    <!-- Overall ATS Match Score Card -->
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 16px 20px; margin-bottom: 16px;">
+      <div>
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.6px;">Calculated ATS Score</div>
+        <div id="uploadScoreBig" style="font-size: 30px; font-weight: 900; color: #34d399; line-height: 1.15; margin-top: 2px;">88 / 100</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.6px;">Scanner Pass Status</div>
+        <div id="uploadScoreGrade" style="font-size: 15px; font-weight: 800; color: #38bdf8; margin-top: 2px;">Strong Competitive Pass</div>
+        <div id="uploadScorePassRate" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">82% Pass Rate on Enterprise Scanners</div>
+      </div>
+    </div>
+
+    <!-- 6 Core Diagnostic Pillars Breakdown -->
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #c084fc; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+        <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
+        <span>6 Reverse-Engineered ATS Pillars:</span>
+      </div>
+      <div id="uploadScorePillars" style="display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+
+    <!-- Key Recommendations Box -->
+    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
+      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #fbbf24; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+        <i data-lucide="alert-circle" style="width: 14px; height: 14px;"></i>
+        <span>High-Priority ATS Fixes (Live Editable):</span>
+      </div>
+      <ul id="uploadScoreImprovements" style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px;"></ul>
+    </div>
+
+    <!-- Dual Action Buttons: Load into Live Editor -->
+    <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px;">
+      <button type="button" onclick="applyUploadedResumeToEditor()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 13px 18px; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);">
+        <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+        <span>⚡ Load into Live Editor &amp; Edit</span>
+      </button>
+      <button type="button" onclick="closeUploadScoreModal()" style="background: #334155; color: #cbd5e1; border: 1px solid #475569; padding: 13px 16px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer;">
+        Close &amp; Review
       </button>
     </div>
 

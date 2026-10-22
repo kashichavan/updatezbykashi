@@ -2763,5 +2763,69 @@ def api_ai_alter_resume(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
+@csrf_exempt
+def api_resume_upload(request):
+    """
+    Upload and parse PDF / Word (.docx) resume.
+    Returns structured resume data + reverse-engineered ATS score breakdown.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    resume_file = request.FILES.get('resume_file') or request.FILES.get('file')
+    if not resume_file:
+        return JsonResponse({'success': False, 'error': 'No resume file uploaded.'}, status=400)
+
+    # Check file size (max 8MB)
+    if resume_file.size > 8 * 1024 * 1024:
+        return JsonResponse({'success': False, 'error': 'File size exceeds 8MB limit.'}, status=400)
+
+    from .resume_parser import extract_text_from_file_bytes, parse_resume_into_structured_json, evaluate_uploaded_resume_ats
+
+    try:
+        file_bytes = resume_file.read()
+        raw_text = extract_text_from_file_bytes(file_bytes, resume_file.name)
+        if not raw_text or len(raw_text.strip()) < 30:
+            return JsonResponse({
+                'success': False,
+                'error': 'Could not extract readable text from document. Please ensure it is a text-based PDF or Word document.'
+            }, status=400)
+
+        # Parse into structured resume
+        parsed_resume = parse_resume_into_structured_json(raw_text)
+
+        # Check for target job or target skills
+        job_skills = request.POST.get('job_skills', '')
+        job_id = request.POST.get('job_id', '')
+        target_skills_list = []
+        if job_skills:
+            target_skills_list = [s.strip() for s in job_skills.split(',') if s.strip()]
+        elif job_id:
+            from .models import JobPosting
+            import uuid
+            try:
+                job = JobPosting.objects.filter(uuid=uuid.UUID(job_id)).first()
+                if job:
+                    target_skills_list = job.get_skills_list()
+            except Exception:
+                pass
+
+        # Evaluate ATS Scorecard
+        ats_eval = evaluate_uploaded_resume_ats(parsed_resume, target_skills_list)
+
+        return JsonResponse({
+            'success': True,
+            'filename': resume_file.name,
+            'file_size': resume_file.size,
+            'parsed_resume': parsed_resume,
+            'ats_eval': ats_eval,
+            'raw_text_length': len(raw_text)
+        })
+    except Exception as e:
+        logger.exception("Error processing uploaded resume:")
+        return JsonResponse({'success': False, 'error': f'Failed to parse resume: {str(e)}'}, status=500)
+
+
+
 
 
