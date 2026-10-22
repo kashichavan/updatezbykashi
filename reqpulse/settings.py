@@ -187,6 +187,7 @@ else:
 # WhiteNoise High-Performance Static Caching (1 year cache for production immutable assets)
 WHITENOISE_MAX_AGE = 31536000 if not DEBUG else 0
 WHITENOISE_KEEP_ONLY_HASHED_FILES = False
+WHITENOISE_MANIFEST_STRICT = False
 WHITENOISE_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
