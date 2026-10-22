@@ -2809,6 +2809,59 @@ def api_ats_score_eval(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@csrf_exempt
+def api_download_resume_pdf(request):
+    """
+    High-Performance Vector ATS Resume PDF Download Endpoint.
+    Accepts JSON resume payload via POST, or role fallback via GET.
+    Generates a true 100% vector, machine-readable ATS PDF with zero rasterization.
+    """
+    from .resume_pdf import generate_ats_resume_pdf
+    from .resume_engine import RESUME_ROLES
+
+    try:
+        resume_data = {}
+        if request.method == 'POST':
+            try:
+                body = json.loads(request.body.decode('utf-8'))
+                resume_data = body.get('resume') or body
+            except Exception:
+                resume_data = {}
+
+        if not resume_data:
+            role = request.GET.get('role', 'python-backend')
+            role_data = RESUME_ROLES.get(role, RESUME_ROLES['python-backend'])
+            resume_data = {
+                'name': 'Kashinath Chavan',
+                'contact': {
+                    'email': 'kashinath@example.com',
+                    'phone': '+91 98765 43210',
+                    'location': 'Bangalore, India',
+                    'linkedin': 'linkedin.com/in/kashinath-chavan',
+                    'github': 'github.com/kashichavan',
+                },
+                'summary': role_data.get('summary', ''),
+                'skills': role_data.get('technical_skills', {}),
+                'projects': role_data.get('enterprise_projects', []),
+                'education': role_data.get('education', {}),
+                'certifications': role_data.get('certifications', []),
+            }
+
+        pdf_bytes = generate_ats_resume_pdf(resume_data)
+
+        # Determine clean filename
+        raw_name = resume_data.get('name') or 'Candidate'
+        clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', raw_name).strip('_') or 'Candidate'
+        filename = f"{clean_name}_ATS_Resume.pdf"
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Length'] = len(pdf_bytes)
+        return response
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
 def job_description_generator_view(request):
     """AI Job Description Generator Hub."""
     context = {

@@ -1123,7 +1123,7 @@
   async function downloadResumeAsPdf() {
     const btnText = document.getElementById('downloadPdfBtnText');
     const origText = btnText ? btnText.innerText : '4. Download PDF';
-    if (btnText) btnText.innerText = '⏳ Generating PDF...';
+    if (btnText) btnText.innerText = '⏳ Generating Vector PDF...';
 
     const sheet = document.getElementById('resumeSheet');
     if (!sheet) {
@@ -1133,34 +1133,84 @@
     }
 
     // Determine candidate name for clean filename
-    const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : '';
+    const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : (currentResumeData?.name || 'Candidate');
     const cleanName = (rawName || 'Candidate').trim().replace(/[^a-zA-Z0-9_-]/g, '_') || 'Resume';
     const filename = `${cleanName}_ATS_Resume.pdf`;
 
-    // 1. Try html2pdf direct file download
-    if (typeof html2pdf !== 'undefined') {
-      if (document.activeElement && typeof document.activeElement.blur === 'function') {
-        document.activeElement.blur();
+    // 1. Primary: Direct High-Fidelity Vector ATS PDF from ReportLab backend
+    try {
+      // Sync latest live DOM values to currentResumeData copy
+      const resumePayload = JSON.parse(JSON.stringify(currentResumeData || {}));
+      if (rawName) resumePayload.name = rawName.trim();
+      
+      const pEmail = document.getElementById('previewEmail')?.innerText?.trim();
+      const pPhone = document.getElementById('previewPhone')?.innerText?.trim();
+      const pLoc = document.getElementById('previewLocation')?.innerText?.trim();
+      const pLink = document.getElementById('previewLinkedin')?.innerText?.trim();
+      const pGit = document.getElementById('previewGithub')?.innerText?.trim();
+
+      if (!resumePayload.contact) resumePayload.contact = {};
+      if (pEmail) resumePayload.contact.email = pEmail;
+      if (pPhone) resumePayload.contact.phone = pPhone;
+      if (pLoc) resumePayload.contact.location = pLoc;
+      if (pLink) resumePayload.contact.linkedin = pLink;
+      if (pGit) resumePayload.contact.github = pGit;
+
+      const pSummary = document.getElementById('previewSummary')?.innerText?.trim();
+      if (pSummary) resumePayload.summary = pSummary;
+
+      const res = await fetch('/api/resume/download-pdf/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ resume: resumePayload })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
       }
 
-      sheet.classList.add('ats-exporting');
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const downloadLink = document.createElement('a');
+      downloadLink.style.display = 'none';
+      downloadLink.href = blobUrl;
+      downloadLink.download = filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
 
-      const opt = {
-        margin:       [10, 12, 10, 12],
-        filename:     filename,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          letterRendering: true,
-          scrollY: 0,
-          scrollX: 0
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-      };
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+        downloadLink.remove();
+      }, 3000);
 
+      if (btnText) btnText.innerText = '✅ PDF Downloaded!';
+      if (window.showToast) window.showToast(`Saved 100% vector ${filename} to your device!`, 'success');
+      setTimeout(() => {
+        if (btnText) btnText.innerText = origText;
+      }, 3000);
+      return;
+    } catch (err) {
+      console.warn('Backend vector PDF download error, attempting fallback:', err);
+    }
+
+    // 2. Client-side fallback if backend endpoint was unreachable
+    if (typeof html2pdf !== 'undefined') {
       try {
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
+        sheet.classList.add('ats-exporting');
+        const opt = {
+          margin:       [10, 12, 10, 12],
+          filename:     filename,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0 },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
         await html2pdf().set(opt).from(sheet).save();
         if (btnText) btnText.innerText = '✅ PDF Downloaded!';
         if (window.showToast) window.showToast(`Saved ${filename} directly to your device!`, 'success');
@@ -1168,14 +1218,14 @@
           if (btnText) btnText.innerText = origText;
         }, 3000);
         return;
-      } catch (err) {
-        console.warn('html2pdf render failed, falling back to print dialog:', err);
+      } catch (clientErr) {
+        console.warn('html2pdf render failed:', clientErr);
       } finally {
         sheet.classList.remove('ats-exporting');
       }
     }
 
-    // 2. Fallback to clean window.print()
+    // 3. Fallback to clean window.print()
     if (btnText) btnText.innerText = origText;
     window.print();
   }
