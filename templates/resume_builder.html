@@ -2661,7 +2661,7 @@
   });
 
   // Export clean Microsoft Word document
-  function downloadResumeAsDocx() {
+  async function downloadResumeAsDocx() {
     const sheet = document.getElementById('resumeSheet');
     if (!sheet) {
       alert("Resume sheet not found");
@@ -2671,6 +2671,62 @@
     const titleInput = document.getElementById('wordDocTitle');
     let docTitle = (titleInput && titleInput.value.trim()) ? titleInput.value.trim() : 'ATS_Resume';
     docTitle = docTitle.replace(/\.[^/.]+$/, ""); // Strip existing extension
+    const filename = `${docTitle}.docx`;
+
+    // 1. Primary: Direct Native .docx from python-docx backend
+    try {
+      const resumePayload = JSON.parse(JSON.stringify(currentResumeData || {}));
+      const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : (currentResumeData?.name || 'Candidate');
+      if (rawName) resumePayload.name = rawName.trim();
+
+      const pEmail = document.getElementById('previewEmail')?.innerText?.trim();
+      const pPhone = document.getElementById('previewPhone')?.innerText?.trim();
+      const pLoc = document.getElementById('previewLocation')?.innerText?.trim();
+      const pLink = document.getElementById('previewLinkedin')?.innerText?.trim();
+      const pGit = document.getElementById('previewGithub')?.innerText?.trim();
+
+      if (!resumePayload.contact) resumePayload.contact = {};
+      if (pEmail) resumePayload.contact.email = pEmail;
+      if (pPhone) resumePayload.contact.phone = pPhone;
+      if (pLoc) resumePayload.contact.location = pLoc;
+      if (pLink) resumePayload.contact.linkedin = pLink;
+      if (pGit) resumePayload.contact.github = pGit;
+
+      const pSummary = document.getElementById('previewSummary')?.innerText?.trim();
+      if (pSummary) resumePayload.summary = pSummary;
+
+      const res = await fetch('/api/resume/download-docx/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ resume: resumePayload })
+      });
+
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+
+      const blob = await res.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const downloadLink = document.createElement('a');
+      downloadLink.style.display = 'none';
+      downloadLink.href = blobUrl;
+      downloadLink.download = filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(blobUrl);
+        downloadLink.remove();
+      }, 3000);
+
+      if (window.showToast) window.showToast(`Saved native Microsoft Word ${filename}!`, 'success');
+      return;
+    } catch (err) {
+      console.warn('Backend DOCX download error, attempting fallback:', err);
+    }
+
+    // 2. Client-side fallback to HTML .doc if backend was unreachable
 
     const sheetClone = sheet.cloneNode(true);
     sheetClone.querySelectorAll('.print-hide').forEach(el => el.remove());
@@ -3606,6 +3662,39 @@
   function closeUnifiedAddProjectModal() {
     const modal = document.getElementById('unifiedAddProjectModal');
     if (modal) modal.style.display = 'none';
+  }
+
+  function switchProjectModalTab(tabId) {
+    document.querySelectorAll('.proj-tab-btn').forEach(btn => {
+      const active = btn.getAttribute('data-tab') === tabId;
+      btn.style.background = active ? 'linear-gradient(135deg, #a855f7, #6366f1)' : '#1e293b';
+      btn.style.color = active ? '#ffffff' : '#94a3b8';
+      btn.style.border = active ? '1px solid transparent' : '1px solid #334155';
+    });
+    const tabBengaluru = document.getElementById('tabContentBengaluru');
+    const tabGithub = document.getElementById('tabContentGithub');
+    const tabCustom = document.getElementById('tabContentCustom');
+    if (tabBengaluru) tabBengaluru.style.display = tabId === 'bengaluru' ? 'block' : 'none';
+    if (tabGithub) tabGithub.style.display = tabId === 'github' ? 'block' : 'none';
+    if (tabCustom) tabCustom.style.display = tabId === 'custom' ? 'block' : 'none';
+
+    if (tabId === 'github') {
+      const inputEl = document.getElementById('ghSearchKeywords');
+      const grid = document.getElementById('ghSearchResultsGrid');
+      if (inputEl && !inputEl.value) {
+        if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills_list && targetJobData.skills_list.length > 0) {
+          inputEl.value = targetJobData.skills_list.slice(0, 3).join(' ');
+        } else if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills) {
+          inputEl.value = targetJobData.skills.split(',').slice(0, 3).map(s => s.trim()).join(' ');
+        } else {
+          inputEl.value = 'Python Django REST API';
+        }
+      }
+      if (grid && (!grid.children || grid.children.length === 0)) {
+        handleSearchPublicGitHub();
+      }
+    }
+    if (window.lucide) window.lucide.createIcons();
   }
 
   function filterIndianDemoProjects() {

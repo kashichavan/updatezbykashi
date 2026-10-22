@@ -3068,6 +3068,61 @@ def api_download_resume_pdf(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
+@csrf_exempt
+def api_download_resume_docx(request):
+    """
+    High-Performance Native Microsoft Word .docx ATS Resume Download Endpoint.
+    Accepts JSON resume payload via POST or GET fallback.
+    Returns 100% genuine .docx binary document.
+    """
+    from .resume_docx import generate_ats_resume_docx
+    from .resume_engine import RESUME_ROLES
+
+    try:
+        resume_data = {}
+        if request.method == 'POST':
+            try:
+                body = json.loads(request.body.decode('utf-8'))
+                resume_data = body.get('resume') or body
+            except Exception:
+                resume_data = {}
+
+        if not resume_data:
+            role = request.GET.get('role', 'python-backend')
+            role_data = RESUME_ROLES.get(role, RESUME_ROLES['python-backend'])
+            resume_data = {
+                'name': 'Kashinath Chavan',
+                'contact': {
+                    'email': 'kashinath@example.com',
+                    'phone': '+91 98765 43210',
+                    'location': 'Bangalore, India',
+                    'linkedin': 'linkedin.com/in/kashinath-chavan',
+                    'github': 'github.com/kashichavan',
+                },
+                'summary': role_data.get('summary', ''),
+                'skills': role_data.get('technical_skills', {}),
+                'projects': role_data.get('enterprise_projects', []),
+                'education': role_data.get('education', {}),
+                'certifications': role_data.get('certifications', []),
+            }
+
+        docx_bytes = generate_ats_resume_docx(resume_data)
+
+        raw_name = resume_data.get('name') or 'Candidate'
+        clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', raw_name).strip('_') or 'Candidate'
+        filename = f"{clean_name}_ATS_Resume.docx"
+
+        response = HttpResponse(
+            docx_bytes,
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['Content-Length'] = len(docx_bytes)
+        return response
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
 def job_description_generator_view(request):
     """AI Job Description Generator Hub."""
     context = {

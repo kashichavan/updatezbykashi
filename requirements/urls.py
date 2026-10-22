@@ -23,6 +23,7 @@ urlpatterns = [
     path('resume/', views.resume_builder_view, name='resume_builder'),
     path('resume-builder/', views.resume_builder_view, name='resume_builder_alias'),
     path('api/resume/download-pdf/', views.api_download_resume_pdf, name='api_download_resume_pdf'),
+    path('api/resume/download-docx/', views.api_download_resume_docx, name='api_download_resume_docx'),
     path('api/resume/template/<slug:role>/', views.api_resume_template, name='api_resume_template'),
     path('api/resume/evaluate/', views.api_ats_score_eval, name='api_ats_score_eval'),
     path('api/resume/score-project/', views.api_score_project_ats, name='api_score_project_ats'),
