@@ -476,6 +476,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 </a>
               `}
             </div>
+
+            <!-- Instagram Story Copy Button -->
+            <button type="button" class="card-story-copy-btn"
+                    onclick="copyCardStoryDirect(event, this)"
+                    data-company="${escapeHtml(j.company_name || '')}"
+                    data-title="${escapeHtml(j.title || '')}"
+                    data-exp="${escapeHtml(j.experience_display || 'Fresher / All Levels')}"
+                    data-salary="${escapeHtml(j.stipend_salary || '')}"
+                    data-location="${escapeHtml(j.normalized_city || j.location || '')}"
+                    data-skills="${escapeHtml(Array.isArray(j.skills) ? j.skills.join(', ') : (j.skills_required || ''))}"
+                    data-eligibility="${escapeHtml(j.eligibility || '')}"
+                    data-contact="${escapeHtml(j.contact_phone || '')}"
+                    data-share-url="${escapeHtml(shareUrl)}"
+                    data-story="${escapeHtml(j.insta_story_text || '')}"
+                    title="Copy formatted Instagram Story text for this requirement">
+              <span>📸 Copy Insta Story</span>
+            </button>
           </div>
         </div>
       `;
@@ -743,6 +760,105 @@ document.addEventListener('DOMContentLoaded', () => {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
     });
   }
+
+  // --- INSTAGRAM STORY COPY ENGINE ---
+  window.copyCardStoryDirect = function(event, btn) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (!btn) return;
+
+    let storyText = btn.getAttribute('data-story') || '';
+    if (!storyText || storyText.trim().length === 0) {
+      const company = btn.getAttribute('data-company') || 'Hiring Company';
+      const title = btn.getAttribute('data-title') || 'Software Professional';
+      const exp = btn.getAttribute('data-exp') || 'Fresher / All Levels';
+      const salary = btn.getAttribute('data-salary') || 'Competitive Package (Best in Industry)';
+      const location = btn.getAttribute('data-location') || 'Pan India / Remote';
+      const skills = btn.getAttribute('data-skills') || 'Software Engineering, Problem Solving';
+      let eligibility = btn.getAttribute('data-eligibility') || '';
+      if (!eligibility || eligibility.length < 5 || eligibility.toLowerCase().includes('open to eligible')) {
+        eligibility = 'Any Graduate / BE / B.Tech / MCA / All Batches';
+      }
+      const contact = btn.getAttribute('data-contact') || '';
+      let shareUrl = btn.getAttribute('data-share-url') || '';
+      if (shareUrl.startsWith('/')) {
+        shareUrl = window.location.origin + shareUrl;
+      }
+
+      const isFresher = /fresher|0-|0 yr|intern|entry/i.test(exp);
+      const expLine = isFresher
+        ? `🎯 Experience: ${exp} 🚀 (Freshers Eligible!)`
+        : `🎯 Experience: ${exp} ⚠️ (Experience Required)`;
+
+      const lines = [
+        '🚨 URGENT HIRING ALERT! 🚨',
+        '',
+        `🏢 Company: ${company}`,
+        `📌 Role: ${title}`,
+        expLine,
+        `💰 Salary / CTC: ${salary}`,
+        `📍 Location: ${location}`,
+        `⚡ Key Skills: ${skills}`,
+        `🎓 Eligibility: ${eligibility}`,
+      ];
+      if (contact) {
+        lines.push(`📞 HR Contact: ${contact}`);
+      }
+      lines.push(
+        '',
+        '🔗 DIRECT APPLY LINK:',
+        `👉 ${shareUrl}`,
+        '',
+        '👆 Tap link sticker or open link to apply directly!',
+        '#HiringAlert #TechJobs #FreshersHiring #JobUpdatez #Career'
+      );
+      storyText = lines.join('\n');
+    }
+
+    const origHtml = btn.innerHTML;
+    function markCopied() {
+      btn.innerHTML = '<span>✅ Story Text Copied!</span>';
+      btn.style.background = '#059669';
+      btn.style.color = '#ffffff';
+      btn.style.borderColor = '#059669';
+      showToast('Instagram Story text copied! Ready to paste into Instagram Story.', 'success');
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2500);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(storyText).then(markCopied).catch(() => {
+        fallbackCopyText(storyText, markCopied);
+      });
+    } else {
+      fallbackCopyText(storyText, markCopied);
+    }
+  };
+
+  function fallbackCopyText(text, callback) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (callback) callback();
+    } catch (err) {
+      alert('Instagram Story Text:\n\n' + text);
+    }
+    document.body.removeChild(ta);
+  }
+
+  window.showToast = showToast;
 
 });
 

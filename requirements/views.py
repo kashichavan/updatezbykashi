@@ -506,6 +506,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
     videos = get_cached_youtube_videos()
 
     full_share_url = request.build_absolute_uri(f"/category/{job.category.slug}/job/{job.uuid}/")
+    insta_story_text = job.get_insta_story_text(share_url=full_share_url)
     from .interview_prep import generate_interview_prep
     interview_prep = generate_interview_prep(
         title=job.title,
@@ -521,6 +522,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
         'related_jobs': related_jobs,
         'youtube_videos': videos,
         'share_url': full_share_url,
+        'insta_story_text': insta_story_text,
         'interview_prep': interview_prep,
     }
     return render(request, 'content/job_detail.html', context)
@@ -1581,6 +1583,7 @@ def api_jobs(request):
                     'freshness_badge': j.get_freshness_badge(),
                     'experience_display': j.get_experience_display(),
                     'experience_tier': j.experience_tier,
+                    'insta_story_text': j.get_insta_story_text(share_url=request.build_absolute_uri(share_url)),
                 })
 
             response_data = {
@@ -3446,6 +3449,7 @@ def api_jobs_list(request):
             'industry_domain': job.industry_domain,
             'experience_tier': job.experience_tier,
             'experience_display': job.get_experience_display(),
+            'insta_story_text': job.get_insta_story_text(share_url=request.build_absolute_uri(share_url)),
         })
 
     return JsonResponse({
@@ -3485,6 +3489,7 @@ def api_jobs_last_hour(request):
     for job in qs:
         src = job.source_name or 'Aggregator'
         source_counts[src] = source_counts.get(src, 0) + 1
+        detail_url = f"/category/{job.category.slug}/job/{job.uuid}/" if job.category else f"/job/{job.uuid}/"
         items.append({
             'id': job.id,
             'uuid': str(job.uuid),
@@ -3494,7 +3499,8 @@ def api_jobs_last_hour(request):
             'normalized_city': job.normalized_city,
             'is_remote': job.is_remote,
             'apply_url': job.apply_url,
-            'detail_url': f"/category/{job.category.slug}/job/{job.uuid}/" if job.category else f"/job/{job.uuid}/",
+            'detail_url': detail_url,
+            'share_url': detail_url,
             'source_name': job.source_name,
             'relative_time': job.get_relative_time_display(),
             'ist_published_time': job.get_ist_published_time(),
@@ -3503,6 +3509,7 @@ def api_jobs_last_hour(request):
             'industry_domain': job.industry_domain,
             'experience_tier': job.experience_tier,
             'experience_display': job.get_experience_display(),
+            'insta_story_text': job.get_insta_story_text(share_url=request.build_absolute_uri(detail_url)),
         })
 
     return JsonResponse({

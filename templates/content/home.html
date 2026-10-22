@@ -226,6 +226,22 @@
             </a>
             {% endif %}
           </div>
+
+          <!-- Quick 1-Click Instagram Story Copy Button -->
+          <button type="button" class="card-story-copy-btn"
+                  onclick="copyCardStoryDirect(event, this)"
+                  data-company="{{ job.company_name }}"
+                  data-title="{{ job.title }}"
+                  data-exp="{{ job.get_experience_display }}"
+                  data-salary="{{ job.stipend_salary }}"
+                  data-location="{{ job.location }}"
+                  data-skills="{{ job.skills_required }}"
+                  data-eligibility="{{ job.eligibility|default:'' }}"
+                  data-contact="{{ job.contact_phone|default:'' }}"
+                  data-share-url="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+                  title="Copy formatted Instagram Story text for this requirement">
+            <span>📸 Copy Insta Story</span>
+          </button>
         </div>
       </div>
       {% empty %}

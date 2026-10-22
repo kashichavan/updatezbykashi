@@ -310,6 +310,66 @@ class JobPosting(models.Model):
     def contact_phone(self):
         return self.get_contact_phone()
 
+    def get_insta_story_text(self, share_url=None, base_url="https://kashiiupdatez.online"):
+        """
+        Generates an aesthetic, viral, ready-to-paste Instagram Story text formatted
+        specifically for Indian job seekers, highlighting Experience, Company, Salary,
+        Skills, and Direct Redirect Link.
+        """
+        url = share_url
+        if not url:
+            if self.category and self.uuid:
+                url = f"{base_url}/category/{self.category.slug}/job/{self.uuid}/"
+            elif self.uuid:
+                url = f"{base_url}/job/{self.uuid}/"
+            else:
+                url = base_url
+
+        exp_str = self.get_experience_display()
+        is_fresher = any(k in exp_str.lower() for k in ['fresher', '0-', '0 yr', 'intern', 'entry'])
+        if is_fresher:
+            exp_line = f"🎯 Experience: {exp_str} 🚀 (Freshers Eligible!)"
+        else:
+            exp_line = f"🎯 Experience: {exp_str} ⚠️ (Experience Required)"
+
+        skills_list = self.get_skills_list()
+        if skills_list:
+            skills_str = ", ".join(skills_list[:5])
+        elif self.skills_required:
+            skills_str = self.skills_required.strip()
+        else:
+            skills_str = "Software Engineering, Problem Solving"
+
+        eligibility_str = (self.eligibility or "").strip()
+        if not eligibility_str or len(eligibility_str) < 5 or 'open to eligible' in eligibility_str.lower():
+            eligibility_str = "Any Graduate / BE / B.Tech / MCA / All Batches"
+
+        lines = [
+            "🚨 URGENT HIRING ALERT! 🚨",
+            "",
+            f"🏢 Company: {self.company_name}",
+            f"📌 Role: {self.title}",
+            exp_line,
+            f"💰 Salary / CTC: {self.stipend_salary or 'Best in Industry / Competitive'}",
+            f"📍 Location: {self.location or 'Pan India / Remote'}",
+            f"⚡ Key Skills: {skills_str}",
+            f"🎓 Eligibility: {eligibility_str}",
+        ]
+
+        if self.contact_phone:
+            lines.append(f"📞 HR Contact: {self.contact_phone}")
+
+        lines.extend([
+            "",
+            "🔗 DIRECT APPLY LINK:",
+            f"👉 {url}",
+            "",
+            "👆 Tap link sticker or open link to apply directly!",
+            "#HiringAlert #TechJobs #FreshersHiring #JobUpdatez #Career"
+        ])
+
+        return "\n".join(lines)
+
     def get_freshness_badge(self):
         """Returns structured metadata badge for frontends and mobile cards."""
         if self.is_last_hour():

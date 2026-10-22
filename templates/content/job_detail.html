@@ -768,7 +768,17 @@
         <span>Upload Resume &amp; Tailor It</span>
       </button>
 
+      <!-- Prominent 1-Click Instagram Story Copy Button -->
+      <button type="button" onclick="copyFormattedIgStory()" id="btnHeroCopyStory" class="hero-tailor-btn-main" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045) !important; color: #ffffff !important; box-shadow: 0 4px 15px rgba(225, 48, 108, 0.4) !important; border: none !important; cursor: pointer;">
+        <i data-lucide="instagram" style="width: 16px; height: 16px;"></i>
+        <span id="heroCopyStoryText">📸 Copy Insta Story</span>
+      </button>
+
       <div style="display: flex; gap: 8px; margin-left: auto;">
+        <button type="button" onclick="copyFormattedIgStory()" id="btnHeaderCopyStory" class="share-pill share-pill-ig" style="padding: 10px 16px; font-size: 12px; border-radius: 12px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" title="Copy Instagram Story Text">
+          <i data-lucide="instagram" style="width: 15px; height: 15px;"></i>
+          <span id="headerCopyStoryBtnText">Story</span>
+        </button>
         <a href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply:%20{{ share_url }}" target="_blank" rel="noopener" class="share-pill share-pill-wa" style="padding: 10px 16px; font-size: 12px; border-radius: 12px;" title="Share on WhatsApp">
           <img src="{% static 'images/icon-whatsapp.png' %}" width="16" height="16" alt="WhatsApp" loading="eager" decoding="async">
           <span>WhatsApp</span>
@@ -1099,13 +1109,18 @@
       <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 20px; padding: 22px; box-shadow: var(--card-shadow); margin-bottom: 24px;">
         <div class="section-label" style="margin-bottom: 12px;"><img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Share"> Share This Requirement</div>
         <div class="share-action-grid">
+          <!-- Standout 1-Click Instagram Story Copy Button -->
+          <button type="button" onclick="copyFormattedIgStory()" id="btnSidebarCopyStory" class="share-pill share-pill-ig" style="grid-column: 1 / -1; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; font-weight: 800; font-size: 13.5px; padding: 13px; justify-content: center; box-shadow: 0 4px 15px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="instagram" style="width: 18px; height: 18px;"></i>
+            <span id="sidebarCopyStoryText">📋 Copy Instagram Story Text</span>
+          </button>
           <a id="shareWaBtn" href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}" target="_blank" rel="noopener" class="share-pill share-pill-wa">
             <img src="{% static 'images/icon-whatsapp.png' %}" width="20" height="20" alt="WhatsApp" loading="eager" decoding="async"> Share on WhatsApp
           </a>
-          <button type="button" onclick="openIgStoryModal()" class="share-pill share-pill-ig">
-            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram Story" loading="eager" decoding="async"> Share as IG Story
+          <button type="button" onclick="openIgStoryModal()" class="share-pill" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #1e293b; font-weight: 700;">
+            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram Story"> Visual Story Card
           </button>
-          <button id="copyUrlBtn" class="share-pill" onclick="copyShareUrl()">
+          <button id="copyUrlBtn" class="share-pill" onclick="copyShareUrl()" style="grid-column: 1 / -1;">
             <img src="{% static 'images/icon-share.png' %}" width="20" height="20" alt="Share" loading="eager" decoding="async"> Copy Direct Link
           </button>
         </div>
@@ -1265,36 +1280,31 @@
 
     <!-- Story Text Caption Snippet -->
     <div style="margin-bottom: 16px;">
-      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Formatted Story Caption:</label>
-      <div id="igStoryCaptionText" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 12px; color: #1e293b; font-family: monospace; white-space: pre-wrap; line-height: 1.5; max-height: 90px; overflow-y: auto;">🔥 {{ job.company_name }} is hiring!
-📌 Role: {{ job.title }}
-💼 Stipend/Salary: {{ job.stipend_salary }}
-📍 Location: {{ job.location }}
-
-👇 Apply Link:
-{{ share_url }}</div>
+      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Formatted Instagram Story Text (Ready to Paste):</label>
+      <div id="igStoryCaptionText" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 12px; color: #1e293b; font-family: monospace; white-space: pre-wrap; line-height: 1.5; max-height: 140px; overflow-y: auto;">{{ insta_story_text|default:job.get_insta_story_text }}</div>
     </div>
 
     <!-- Action Buttons -->
     <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button type="button" id="btnCopyIgCaption" onclick="copyFormattedIgStory()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="instagram" style="width: 17px; height: 17px;"></i>
+        <span id="btnCopyIgCaptionText">📋 1. Copy Complete Story Text (Company, Salary, Exp, Link)</span>
+      </button>
+
       <button type="button" id="btnDownloadIgVideo" onclick="downloadIgStoryVideo()" class="button" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4); display: flex; align-items: center; gap: 8px;">
-        🎥 1. Download Animated Story Video (Reel / Story)
+        🎥 2. Download Animated Story Video (Reel / Story)
       </button>
 
       <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); text-decoration: none; display: flex; align-items: center; gap: 8px;">
-        🖼️ 2. Download Static Story HD Image
+        🖼️ 3. Download Static Story HD Image
       </a>
 
-      <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.3);">
-        🔗 3. Copy Apply Link (For IG Link Sticker)
-      </button>
-
-      <button type="button" id="btnCopyIgCaption" onclick="copyIgStoryCaption()" class="button" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; justify-content: center; font-weight: 700; font-size: 13px; padding: 10px; border-radius: 12px;">
-        📋 4. Copy Caption Text
+      <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; justify-content: center; font-weight: 700; font-size: 13px; padding: 11px; border-radius: 12px;">
+        🔗 4. Copy Apply Link (For IG Link Sticker)
       </button>
 
       <a href="https://instagram.com" target="_blank" rel="noopener" class="button" style="background: #0f172a; color: #ffffff; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; text-decoration: none;">
-        🚀 4. Open Instagram App / Web ↗
+        🚀 5. Open Instagram App / Web ↗
       </a>
     </div>
   </div>
@@ -1308,6 +1318,10 @@
   </div>
 
   <div class="mobile-sticky-actions">
+    <button type="button" onclick="copyFormattedIgStory()" class="mobile-story-btn" title="Copy Instagram Story Text" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; padding: 8px 12px; border-radius: 10px; font-weight: 800; font-size: 11.5px; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+      <i data-lucide="instagram" style="width: 13px; height: 13px;"></i>
+      <span id="mobileStoryBtnText">Story</span>
+    </button>
     <button type="button" onclick="openJobTailorModal('fresher')" class="mobile-tailor-btn" title="⚡ Create Resume for this Job">
       <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
       <span>⚡ Resume</span>
@@ -1778,16 +1792,81 @@
     }
   }
 
+  function copyFormattedIgStory() {
+    const captionEl = document.getElementById('igStoryCaptionText');
+    const rawText = captionEl ? captionEl.innerText : `{{ insta_story_text|escapejs }}`;
+
+    if (!rawText) return;
+
+    function handleStoryCopySuccess() {
+      // 1. Hero Action Button
+      const heroText = document.getElementById('heroCopyStoryText');
+      if (heroText) {
+        const orig = heroText.innerHTML;
+        heroText.innerHTML = '✅ Story Copied!';
+        setTimeout(() => { heroText.innerHTML = orig; }, 2500);
+      }
+      // 2. Header Action Button
+      const headerText = document.getElementById('headerCopyStoryBtnText');
+      if (headerText) {
+        const orig = headerText.innerText;
+        headerText.innerText = '✓ Copied!';
+        setTimeout(() => { headerText.innerText = orig; }, 2500);
+      }
+      // 3. Sidebar Action Button
+      const sideText = document.getElementById('sidebarCopyStoryText');
+      if (sideText) {
+        const orig = sideText.innerText;
+        sideText.innerText = '✅ Story Text Copied!';
+        setTimeout(() => { sideText.innerText = orig; }, 2500);
+      }
+      // 4. Modal Copy Button
+      const modalBtn = document.getElementById('btnCopyIgCaptionText') || document.getElementById('btnCopyIgCaption');
+      if (modalBtn) {
+        const orig = modalBtn.innerText;
+        modalBtn.innerText = '✅ Story Text Copied!';
+        setTimeout(() => { modalBtn.innerText = orig; }, 2500);
+      }
+      // 5. Mobile Sticky Bar Button
+      const mobileText = document.getElementById('mobileStoryBtnText');
+      if (mobileText) {
+        const orig = mobileText.innerText;
+        mobileText.innerText = '✓ Copied';
+        setTimeout(() => { mobileText.innerText = orig; }, 2500);
+      }
+      if (window.showToast) {
+        window.showToast("📋 Complete Instagram Story text copied! Ready to paste into Instagram Story.", "success");
+      }
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(rawText).then(handleStoryCopySuccess).catch(() => {
+        fallbackCopyStoryText(rawText, handleStoryCopySuccess);
+      });
+    } else {
+      fallbackCopyStoryText(rawText, handleStoryCopySuccess);
+    }
+  }
+
+  function fallbackCopyStoryText(text, callback) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      if (callback) callback();
+    } catch (err) {
+      prompt('Copy Instagram Story text below:', text);
+    }
+    document.body.removeChild(ta);
+  }
+
   function copyIgStoryCaption() {
-    const text = document.getElementById('igStoryCaptionText').innerText;
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = document.getElementById('btnCopyIgCaption');
-      const orig = btn.innerText;
-      btn.innerText = '✅ Caption & Text Copied!';
-      setTimeout(() => { btn.innerText = orig; }, 2500);
-    }).catch(err => {
-      alert('Copied Text:\n' + text);
-    });
+    copyFormattedIgStory();
   }
 
   function downloadIgStoryCardImage() {
