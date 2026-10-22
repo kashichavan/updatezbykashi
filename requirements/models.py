@@ -392,4 +392,95 @@ class SiteVisit(models.Model):
         return f"{self.device_type} visit to {self.path} at {self.timestamp}"
 
 
+class ResumeGenerationJob(models.Model):
+    """
+    Persistent background job tracker for Job-Specific AI Resume Generation
+    and GitHub Project Discovery. Supports mobile-first async polling.
+    """
+    MODE_CHOICES = [
+        ('FRESHER_GITHUB', 'Fresher with GitHub Discovery'),
+        ('EXISTING_UPLOAD', 'Existing Resume Tailoring'),
+        ('SCRATCH', 'Start from Scratch'),
+    ]
+
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending Initialization'),
+        ('EXTRACTING_SKILLS', 'Extracting Skills & Requirements'),
+        ('SEARCHING_REPOSITORIES', 'Searching Public GitHub Repositories'),
+        ('RANKING_PROJECTS', 'Ranking Discovered Projects'),
+        ('AWAITING_SELECTION', 'Awaiting Candidate Selection'),
+        ('GENERATING_RESUME', 'Generating Tailored Resume'),
+        ('EVALUATING_ATS', 'Evaluating ATS Score & Metrics'),
+        ('COMPLETED', 'Completed Successfully'),
+        ('FAILED', 'Failed with Error'),
+    ]
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
+    session_key = models.CharField(max_length=64, blank=True, default='', db_index=True)
+    job = models.ForeignKey(JobPosting, on_delete=models.SET_NULL, null=True, blank=True, related_name='resume_generations')
+    mode = models.CharField(max_length=30, choices=MODE_CHOICES, default='FRESHER_GITHUB')
+    status = models.CharField(max_length=40, choices=STATUS_CHOICES, default='PENDING', db_index=True)
+    progress_pct = models.PositiveSmallIntegerField(default=0)
+    stage_message = models.CharField(max_length=255, default='Job initialized...')
+    
+    candidate_data = models.JSONField(default=dict, blank=True)
+    generated_resume = models.JSONField(default=dict, blank=True)
+    ats_evaluation = models.JSONField(default=dict, blank=True)
+    error_message = models.TextField(blank=True, default='')
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', '-created_at']),
+            models.Index(fields=['session_key', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"ResumeGenJob {self.uuid} ({self.mode} - {self.status} {self.progress_pct}%)"
+
+
+class DiscoveredProject(models.Model):
+    """
+    Discovered GitHub public repositories ranked for relevance to target job skills.
+    Maintains ethical boundaries: candidate can select whether they Built, Contributed,
+    or are using it as a Recommended study project.
+    """
+    RELATIONSHIP_CHOICES = [
+        ('BUILT', 'Built / Authored Personally'),
+        ('CONTRIBUTED', 'Contributed / Forked / Enhanced'),
+        ('RECOMMENDED', 'Recommended / Studied Project'),
+    ]
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
+    generation_job = models.ForeignKey(ResumeGenerationJob, on_delete=models.CASCADE, related_name='discovered_projects')
+    repo_name = models.CharField(max_length=200)
+    repo_url = models.URLField(max_length=500)
+    description = models.TextField(blank=True, default='')
+    stars = models.PositiveIntegerField(default=0)
+    language = models.CharField(max_length=100, blank=True, default='')
+    tech_stack = models.JSONField(default=list, blank=True)
+    
+    relevance_score = models.FloatField(default=0.0, help_text="0-100 score based on 5-factor relevance formula")
+    score_breakdown = models.JSONField(default=dict, blank=True)
+    evidence_summary = models.TextField(blank=True, default='')
+    
+    candidate_relationship = models.CharField(max_length=30, choices=RELATIONSHIP_CHOICES, default='RECOMMENDED')
+    is_selected = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-relevance_score', '-stars']
+        indexes = [
+            models.Index(fields=['generation_job', '-relevance_score']),
+            models.Index(fields=['generation_job', 'is_selected']),
+        ]
+
+    def __str__(self):
+        return f"{self.repo_name} (Score: {self.relevance_score:.1f}) for Job {self.generation_job.uuid}"
+
+
+
 

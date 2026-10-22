@@ -27,6 +27,14 @@ urlpatterns = [
     path('api/resume/score-project/', views.api_score_project_ats, name='api_score_project_ats'),
     path('api/resume/bengaluru-projects/', views.api_bengaluru_projects, name='api_bengaluru_projects'),
     path('api/resume/upload/', views.api_resume_upload, name='api_resume_upload'),
+    
+    # Job-Specific AI Resume Generation & GitHub Project Discovery Pipeline
+    path('api/resume/generations/', views.api_resume_generation_create, name='api_resume_generation_create'),
+    path('api/resume/generations/<uuid:job_uuid>/', views.api_resume_generation_status, name='api_resume_generation_status'),
+    path('api/resume/generations/<uuid:job_uuid>/projects/', views.api_resume_generation_projects, name='api_resume_generation_projects'),
+    path('api/resume/generations/<uuid:job_uuid>/projects/select/', views.api_resume_generation_select_projects, name='api_resume_generation_select_projects'),
+    path('api/resume/generations/<uuid:job_uuid>/generate/', views.api_resume_generation_finalize, name='api_resume_generation_finalize'),
+    path('api/resume/github-discovery/', views.api_resume_github_discovery_direct, name='api_resume_github_discovery_direct'),
 
     # AI Job Description Generator & Career Suite
     path('tools/job-description-generator/', views.job_description_generator_view, name='job_description_generator'),

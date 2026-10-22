@@ -741,9 +741,16 @@
         <span>Apply on Official Website ↗</span>
       </a>
 
-      <button type="button" onclick="openJobTailorModal()" class="hero-tailor-btn-main">
+      <!-- Primary Job-Specific Resume CTA -->
+      <button type="button" onclick="openJobTailorModal('fresher')" class="hero-tailor-btn-main" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%) !important; color: #ffffff !important; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;">
         <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
-        <span>⚡ Alter &amp; Tailor Resume for this Job</span>
+        <span>⚡ Create Resume for This Job</span>
+      </button>
+
+      <!-- Optional Secondary Tailor Action -->
+      <button type="button" onclick="openJobTailorModal('upload')" class="hero-tailor-btn-main" style="background: rgba(255, 255, 255, 0.08) !important; color: #cbd5e1 !important; border: 1px solid rgba(255, 255, 255, 0.18) !important;">
+        <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+        <span>Upload Resume &amp; Tailor It</span>
       </button>
 
       <div style="display: flex; gap: 8px; margin-left: auto;">
@@ -1016,10 +1023,15 @@
           <span>Apply via Official Link ↗</span>
         </a>
 
-        <!-- Prominent Secondary AI Alter Button -->
-        <button type="button" onclick="openJobTailorModal()" class="btn-match-resume-sidebar">
+        <!-- Master Implementation CTAs -->
+        <button type="button" onclick="openJobTailorModal('fresher')" class="btn-match-resume-sidebar" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%) !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4) !important;">
           <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
-          <span>⚡ Alter Resume for this Job</span>
+          <span>⚡ Create Resume for This Job</span>
+        </button>
+
+        <button type="button" onclick="openJobTailorModal('upload')" class="btn-match-resume-sidebar" style="background: rgba(255, 255, 255, 0.08) !important; color: #cbd5e1 !important; border: 1px solid rgba(255, 255, 255, 0.2) !important;">
+          <i data-lucide="upload-cloud" style="width: 16px; height: 16px;"></i>
+          <span>Upload Resume &amp; Tailor It</span>
         </button>
 
         <!-- Quick specs inside sidebar card -->
@@ -1281,9 +1293,9 @@
   </div>
 
   <div class="mobile-sticky-actions">
-    <button type="button" onclick="openJobTailorModal()" class="mobile-tailor-btn" title="Alter Resume for this Job">
+    <button type="button" onclick="openJobTailorModal('fresher')" class="mobile-tailor-btn" title="⚡ Create Resume for this Job">
       <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-      <span>⚡ Alter</span>
+      <span>⚡ Resume</span>
     </button>
     <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener" class="mobile-apply-btn">
       <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
@@ -1292,111 +1304,206 @@
   </div>
 </div>
 
-<!-- ── 1-CLICK AI RESUME ALTERATION & ATS RATING STUDIO MODAL ───────────────────────── -->
-<div id="jobTailorModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 14px; overflow-y: auto;">
-  <div style="background: #0f172a; width: 100%; max-width: 660px; border-radius: 24px; padding: 24px 22px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7); position: relative; border: 1px solid rgba(168, 85, 247, 0.4); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; color: #f8fafc;">
+<!-- ── JOB-SPECIFIC AI RESUME STUDIO & GITHUB PROJECT DISCOVERY MODAL ── -->
+<div id="jobTailorModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 14px; overflow-y: auto;">
+  <div style="background: #0f172a; width: 100%; max-width: 680px; border-radius: 24px; padding: 24px 22px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7); position: relative; border: 1px solid rgba(168, 85, 247, 0.45); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; color: #f8fafc;">
     
     <button type="button" onclick="closeJobTailorModal()" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); width: 32px; height: 32px; border-radius: 50%; color: #cbd5e1; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
 
     <!-- Modal Header -->
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #a855f7, #6366f1); display: grid; place-items: center; color: white; flex-shrink: 0; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);">
         <i data-lucide="sparkles" style="width: 22px; height: 22px;"></i>
       </div>
       <div>
-        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #ffffff;">1-Click Resume Alteration Studio</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Directly alters your resume to match: <strong style="color: #38bdf8;">{{ job.company_name }} — {{ job.title }}</strong></p>
+        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #ffffff;">Job-Specific AI Resume Studio</h3>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Tailored for <strong style="color: #38bdf8;">{{ job.company_name }} — {{ job.title }}</strong></p>
       </div>
     </div>
 
-    <!-- Target Job Tags -->
-    <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: #cbd5e1;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <strong style="color: #f8fafc;">Target Skills from Job Description:</strong>
-        <span style="font-size: 10.5px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 99px; font-weight: 700;">ATS Filter Match Target: 90%+</span>
+    <!-- Target Job Tags Banner -->
+    <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: #cbd5e1;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+        <strong style="color: #f8fafc; font-size: 11.5px;">Required Technologies &amp; Keywords:</strong>
+        <span style="font-size: 10.5px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 99px; font-weight: 700;">Pass Workday / Taleo ATS</span>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 4px;">
         {% for s in skills_list|slice:":10" %}
-          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ s }}</span>
+          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ s }}</span>
         {% empty %}
-          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">Software Engineering</span>
-          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">Problem Solving</span>
+          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700;">Software Engineering</span>
+          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700;">Problem Solving</span>
         {% endfor %}
       </div>
     </div>
 
-    <!-- Candidate Resume Input Box -->
-    <div style="margin-bottom: 14px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <label style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Your Resume Summary / File:</label>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" onclick="triggerJobTailorDocUpload()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-            <i data-lucide="upload-cloud" style="width: 12px; height: 12px;"></i>
-            <span>Upload PDF / DOCX</span>
-          </button>
-          <button type="button" onclick="fillJobTailorSample()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #c084fc; cursor: pointer; text-decoration: underline;">+ Sample</button>
-        </div>
-      </div>
-      <input type="file" id="jobTailorDocInput" accept=".pdf,.docx,.doc" style="display: none;" onchange="handleJobTailorDocSelect(event)">
-      <textarea id="jobTailorResumeInput" rows="4" placeholder="Upload a PDF/Word resume above or paste your resume text here..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 13px; color: #f8fafc; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
+    <!-- 3 Segmented Mode Tabs -->
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.8fr; gap: 6px; margin-bottom: 16px; background: #0b1120; padding: 4px; border-radius: 12px; border: 1px solid #334155;">
+      <button type="button" id="tabBtnFresher" onclick="switchJobStudioTab('fresher')" style="padding: 9px 8px; border-radius: 8px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;">
+        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+        <span>⚡ Fresher &amp; GitHub</span>
+      </button>
+      <button type="button" id="tabBtnUpload" onclick="switchJobStudioTab('upload')" style="padding: 9px 8px; border-radius: 8px; font-size: 12px; font-weight: 800; border: 1px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #94a3b8;">
+        <i data-lucide="upload-cloud" style="width: 14px; height: 14px;"></i>
+        <span>📄 Upload Resume</span>
+      </button>
+      <button type="button" id="tabBtnScratch" onclick="switchJobStudioTab('scratch')" style="padding: 9px 8px; border-radius: 8px; font-size: 12px; font-weight: 800; border: 1px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #94a3b8;">
+        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+        <span>✏️ Scratch</span>
+      </button>
     </div>
 
-    <!-- Action Button to Alter Resume -->
-    <button type="button" id="btnRunJobTailor" onclick="runJobAlterationStudio()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45); margin-bottom: 16px;">
-      <i data-lucide="sparkles" style="width: 17px; height: 17px;"></i>
-      <span>⚡ Auto-Alter My Resume to 95+ Score for {{ job.company_name }}</span>
-    </button>
+    <!-- TAB 1: FRESHER BUILDER WITH GITHUB PROJECT DISCOVERY -->
+    <div id="panelJobFresher">
+      <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; color: #e2e8f0; line-height: 1.45;">
+        🎯 <strong>I'm a Fresher Workflow:</strong> Discovers real public GitHub repositories matching {{ job.company_name }}'s exact tech stack, ranks them with a 5-factor transparent score, and creates honest quantified bullets.
+      </div>
 
-    <!-- Results Container (Displayed once alteration is generated) -->
-    <div id="jobTailorResults" style="display: none; border-top: 1px solid #334155; padding-top: 16px;">
-      
-      <!-- ATS Score Banner -->
-      <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; color: #fff; padding: 14px 18px; border-radius: 14px; margin-bottom: 14px;">
+      <!-- Essential Candidate Details -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
         <div>
-          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">ATS Match Score</div>
-          <div id="jobTailorScore" style="font-size: 26px; font-weight: 900; color: #34d399;">95 / 100</div>
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Full Name</label>
+          <input type="text" id="fresherName" value="Kashinath Chavan" placeholder="e.g. Kashinath Chavan" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
         </div>
-        <div style="text-align: right;">
-          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">ATS Rating Grade</div>
-          <div id="jobTailorGrade" style="font-size: 16px; font-weight: 900; color: #38bdf8;">Top Tier Pass ✓</div>
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Degree / Major</label>
+          <input type="text" id="fresherDegree" value="B.Tech in Computer Science" placeholder="e.g. B.Tech in CSE / MCA / BCA" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
         </div>
       </div>
 
-      <!-- Injected Keywords Pill Bar -->
-      <div style="margin-bottom: 14px;">
-        <div style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.5px; margin-bottom: 6px;">Skills Injected to Pass ATS Recruiter Scanners:</div>
-        <div id="jobTailorInjected" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; margin-bottom: 12px;">
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">College / University</label>
+          <input type="text" id="fresherCollege" value="Visvesvaraya Technological University" placeholder="e.g. VTU Bangalore" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">CGPA / Year</label>
+          <input type="text" id="fresherGpaYear" value="8.5 CGPA • 2025" placeholder="e.g. 8.4 CGPA • 2025" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
+        </div>
       </div>
 
-      <!-- Altered Summary -->
+      <!-- Action Button to Discover Repositories -->
+      <button type="button" id="btnStartFresherGen" onclick="triggerFresherDiscoveryPipeline()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 10px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45); margin-bottom: 14px;">
+        <i data-lucide="github" style="width: 16px; height: 16px;"></i>
+        <span>⚡ Discover Matching GitHub Projects for {{ job.company_name }}</span>
+      </button>
+
+      <!-- Async Progress Box -->
+      <div id="fresherProgressBox" style="display: none; background: #0b1120; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span id="fresherStageText" style="font-size: 12px; font-weight: 700; color: #38bdf8;">Searching GitHub repositories...</span>
+          <span id="fresherPctText" style="font-size: 12px; font-weight: 800; color: #a855f7;">40%</span>
+        </div>
+        <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 99px; overflow: hidden;">
+          <div id="fresherProgressBar" style="width: 40%; height: 100%; background: linear-gradient(90deg, #a855f7, #38bdf8); border-radius: 99px; transition: width 0.3s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Discovered Projects Selection Queue -->
+      <div id="fresherProjectsQueue" style="display: none; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.5px;">Discovered GitHub Projects (Ranked):</span>
+          <span style="font-size: 11px; color: #94a3b8;">Choose 1-2 projects</span>
+        </div>
+        <div id="fresherProjectsList" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 4px;"></div>
+        
+        <!-- Synthesize and Open in Editor Button -->
+        <button type="button" id="btnSynthesizeFresher" onclick="finalizeFresherResumeSynthesis()" style="width: 100%; margin-top: 12px; padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; border-radius: 10px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);">
+          <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
+          <span>🚀 Generate Tailored Resume &amp; Open Live Editor</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: UPLOAD & TAILOR EXISTING RESUME -->
+    <div id="panelJobUpload" style="display: none;">
+      <!-- Candidate Resume Input Box -->
       <div style="margin-bottom: 14px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; letter-spacing: 0.5px;">Altered Professional Summary:</span>
-          <button type="button" onclick="copyJobTailorSummary()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #60a5fa; cursor: pointer;">📋 Copy</button>
+          <label style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Your Resume Document / Text:</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" onclick="triggerJobTailorDocUpload()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <i data-lucide="upload-cloud" style="width: 12px; height: 12px;"></i>
+              <span>Upload PDF / DOCX</span>
+            </button>
+            <button type="button" onclick="fillJobTailorSample()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #c084fc; cursor: pointer; text-decoration: underline;">+ Sample</button>
+          </div>
         </div>
-        <div id="jobTailorSummary" style="background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #f8fafc; line-height: 1.55; max-height: 110px; overflow-y: auto;"></div>
+        <input type="file" id="jobTailorDocInput" accept=".pdf,.docx,.doc" style="display: none;" onchange="handleJobTailorDocSelect(event)">
+        <textarea id="jobTailorResumeInput" rows="4" placeholder="Upload a PDF/Word resume above or paste your resume text here..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 13px; color: #f8fafc; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
       </div>
 
-      <!-- Altered Projects with Individual ATS Ratings -->
-      <div style="margin-bottom: 16px;">
-        <div style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; letter-spacing: 0.5px; margin-bottom: 6px;">
-          Altered Projects (Rated with Reverse-Engineered ATS Score):
+      <!-- Action Button to Alter Resume -->
+      <button type="button" id="btnRunJobTailor" onclick="runJobAlterationStudio()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45); margin-bottom: 16px;">
+        <i data-lucide="sparkles" style="width: 17px; height: 17px;"></i>
+        <span>⚡ Auto-Alter My Resume to 95+ Score for {{ job.company_name }}</span>
+      </button>
+
+      <!-- Results Container (Displayed once alteration is generated) -->
+      <div id="jobTailorResults" style="display: none; border-top: 1px solid #334155; padding-top: 16px;">
+        <!-- ATS Score Banner -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; color: #fff; padding: 12px 16px; border-radius: 12px; margin-bottom: 12px;">
+          <div>
+            <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">ATS Match Score</div>
+            <div id="jobTailorScore" style="font-size: 24px; font-weight: 900; color: #34d399;">95 / 100</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">Rating Grade</div>
+            <div id="jobTailorGrade" style="font-size: 15px; font-weight: 900; color: #38bdf8;">Top Tier Pass ✓</div>
+          </div>
         </div>
-        <div id="jobTailorProjectsList" style="display: flex; flex-direction: column; gap: 10px;"></div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <button type="button" onclick="copyFullAlteredResume()" style="background: #334155; color: #fff; border: 1px solid #475569; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-          <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
-          <span>Copy Altered Text</span>
-        </button>
-        <a id="btnOpenInResumeBuilder" href="/resume-builder/?job_id={{ job.uuid }}" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">
-          <span>Open Full Editor</span>
-          <i data-lucide="arrow-right" style="width: 15px; height: 15px;"></i>
-        </a>
-      </div>
+        <!-- Injected Keywords Pill Bar -->
+        <div style="margin-bottom: 12px;">
+          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #38bdf8; margin-bottom: 5px;">Skills Injected to Pass ATS Recruiter Scanners:</div>
+          <div id="jobTailorInjected" style="display: flex; flex-wrap: wrap; gap: 5px;"></div>
+        </div>
 
+        <!-- Altered Summary -->
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #cbd5e1;">Altered Professional Summary:</span>
+            <button type="button" onclick="copyJobTailorSummary()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #60a5fa; cursor: pointer;">📋 Copy</button>
+          </div>
+          <div id="jobTailorSummary" style="background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #f8fafc; line-height: 1.5; max-height: 95px; overflow-y: auto;"></div>
+        </div>
+
+        <!-- Altered Projects with Individual ATS Ratings -->
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; margin-bottom: 5px;">
+            Altered Projects (Rated with Reverse-Engineered ATS Score):
+          </div>
+          <div id="jobTailorProjectsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button type="button" onclick="copyFullAlteredResume()" style="background: #334155; color: #fff; border: 1px solid #475569; padding: 11px; border-radius: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+            <span>Copy Text</span>
+          </button>
+          <a id="btnOpenInResumeBuilder" href="/resume-builder/?job_id={{ job.uuid }}" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; padding: 11px; border-radius: 10px; font-size: 12.5px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">
+            <span>Open Full Editor</span>
+            <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: START FROM SCRATCH -->
+    <div id="panelJobScratch" style="display: none; text-align: center; padding: 20px 10px;">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: grid; place-items: center; margin: 0 auto 12px; color: #38bdf8;">
+        <i data-lucide="file-plus" style="width: 24px; height: 24px;"></i>
+      </div>
+      <h4 style="font-size: 16px; font-weight: 800; margin: 0 0 6px; color: #fff;">Open Live Resume Builder with Target Job Context</h4>
+      <p style="font-size: 12.5px; color: #94a3b8; max-width: 440px; margin: 0 auto 18px; line-height: 1.5;">
+        Launches the single-column ATS live editor with <strong>{{ job.company_name }}</strong>'s required skills loaded in the real-time keyword scanner.
+      </p>
+      <a href="/resume-builder/?job_id={{ job.uuid }}" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);">
+        <span>Open Clean Canvas in Live Editor</span>
+        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+      </a>
     </div>
 
   </div>
@@ -2160,13 +2267,287 @@
   }
 
   /* ── AI RESUME MATCHER & ATS TAILOR MODAL CONTROLS ── */
-  function openJobTailorModal() {
+  let activeGenJobId = null;
+
+  function switchJobStudioTab(tab) {
+    const pFresher = document.getElementById('panelJobFresher');
+    const pUpload = document.getElementById('panelJobUpload');
+    const pScratch = document.getElementById('panelJobScratch');
+    const btnFresher = document.getElementById('tabBtnFresher');
+    const btnUpload = document.getElementById('tabBtnUpload');
+    const btnScratch = document.getElementById('tabBtnScratch');
+
+    // Hide all
+    if (pFresher) pFresher.style.display = 'none';
+    if (pUpload) pUpload.style.display = 'none';
+    if (pScratch) pScratch.style.display = 'none';
+
+    // Reset styles
+    const resetStyle = (btn) => {
+      if (btn) {
+        btn.style.background = 'transparent';
+        btn.style.color = '#94a3b8';
+        btn.style.border = '1px solid transparent';
+      }
+    };
+    resetStyle(btnFresher);
+    resetStyle(btnUpload);
+    resetStyle(btnScratch);
+
+    const activeStyle = (btn) => {
+      if (btn) {
+        btn.style.background = 'linear-gradient(135deg, #a855f7, #6366f1)';
+        btn.style.color = '#fff';
+        btn.style.border = 'none';
+      }
+    };
+
+    if (tab === 'upload') {
+      if (pUpload) pUpload.style.display = 'block';
+      activeStyle(btnUpload);
+    } else if (tab === 'scratch') {
+      if (pScratch) pScratch.style.display = 'block';
+      activeStyle(btnScratch);
+    } else {
+      if (pFresher) pFresher.style.display = 'block';
+      activeStyle(btnFresher);
+    }
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function openJobTailorModal(initialTab = 'fresher') {
     const modal = document.getElementById('jobTailorModal');
     if (modal) {
+      switchJobStudioTab(initialTab);
       modal.style.display = 'flex';
       modal.style.opacity = '1';
       modal.style.visibility = 'visible';
       modal.classList.add('active');
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  /* ── FRESHER GITHUB PROJECT DISCOVERY PIPELINE ── */
+  async function triggerFresherDiscoveryPipeline() {
+    const btn = document.getElementById('btnStartFresherGen');
+    const progBox = document.getElementById('fresherProgressBox');
+    const progBar = document.getElementById('fresherProgressBar');
+    const stageText = document.getElementById('fresherStageText');
+    const pctText = document.getElementById('fresherPctText');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Searching GitHub Repositories...';
+    if (window.lucide) window.lucide.createIcons();
+
+    progBox.style.display = 'block';
+    progBar.style.width = '15%';
+    pctText.innerText = '15%';
+    stageText.innerText = 'Analyzing job requirements & tech stack...';
+
+    const candidatePayload = {
+      name: document.getElementById('fresherName')?.value || 'Candidate',
+      degree: document.getElementById('fresherDegree')?.value || 'B.Tech in Computer Science',
+      institution: document.getElementById('fresherCollege')?.value || 'University Engineering College',
+      gpa: document.getElementById('fresherGpaYear')?.value || '8.5 CGPA • 2025',
+      skills: "{{ job.skills|escapejs }}",
+    };
+
+    try {
+      const res = await fetch('/api/resume/generations/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'FRESHER_GITHUB',
+          job_id: "{{ job.uuid }}",
+          candidate_data: candidatePayload
+        })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to initiate discovery');
+      }
+
+      activeGenJobId = data.job_id;
+      pollFresherPipeline(activeGenJobId);
+
+    } catch (err) {
+      alert('Discovery pipeline error: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="github" style="width:16px;height:16px;"></i> <span>⚡ Discover Matching GitHub Projects</span>';
+      progBox.style.display = 'none';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  function pollFresherPipeline(jobId) {
+    const progBar = document.getElementById('fresherProgressBar');
+    const stageText = document.getElementById('fresherStageText');
+    const pctText = document.getElementById('fresherPctText');
+    const btn = document.getElementById('btnStartFresherGen');
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/resume/generations/${jobId}/`);
+        const data = await res.json();
+
+        if (!data.success) {
+          clearInterval(interval);
+          alert('Error polling status: ' + (data.error || 'Unknown error'));
+          btn.disabled = false;
+          return;
+        }
+
+        const pct = data.progress_pct || 40;
+        progBar.style.width = pct + '%';
+        pctText.innerText = pct + '%';
+        stageText.innerText = data.stage_message || 'Processing...';
+
+        if (data.status === 'AWAITING_SELECTION' || data.status === 'COMPLETED') {
+          clearInterval(interval);
+          progBar.style.width = '100%';
+          pctText.innerText = '100%';
+          stageText.innerText = '✅ Relevant repositories ranked!';
+          
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> <span>Re-Discover Repositories</span>';
+          if (window.lucide) window.lucide.createIcons();
+
+          loadDiscoveredProjects(jobId);
+        } else if (data.status === 'FAILED') {
+          clearInterval(interval);
+          alert('Pipeline error: ' + (data.error_message || 'Failed'));
+          btn.disabled = false;
+        }
+      } catch (e) {
+        clearInterval(interval);
+        console.error('Polling error:', e);
+      }
+    }, 900);
+  }
+
+  async function loadDiscoveredProjects(jobId) {
+    try {
+      const res = await fetch(`/api/resume/generations/${jobId}/projects/`);
+      const data = await res.json();
+      if (!data.success || !data.projects) return;
+
+      const queueBox = document.getElementById('fresherProjectsQueue');
+      const listEl = document.getElementById('fresherProjectsList');
+      listEl.innerHTML = '';
+
+      data.projects.forEach((proj, idx) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px;';
+
+        const scoreColor = proj.relevance_score >= 85 ? '#34d399' : (proj.relevance_score >= 70 ? '#38bdf8' : '#fbbf24');
+        const scoreBg = proj.relevance_score >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(56, 189, 248, 0.12)';
+
+        let techPills = '';
+        (proj.tech_stack || []).slice(0, 4).forEach(t => {
+          techPills += `<span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; font-size: 10px; padding: 1px 6px; border-radius: 4px;">${t}</span>`;
+        });
+
+        item.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" class="proj-check" data-proj-id="${proj.id}" ${proj.is_selected ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #a855f7; cursor: pointer;">
+              <div>
+                <a href="${proj.repo_url}" target="_blank" rel="noopener" style="color: #60a5fa; font-weight: 800; font-size: 13px; text-decoration: none;">
+                  ${proj.repo_name} ↗
+                </a>
+                <span style="font-size: 11px; color: #94a3b8; margin-left: 6px;">⭐ ${proj.stars}</span>
+              </div>
+            </div>
+            <div style="background: ${scoreBg}; border: 1px solid ${scoreColor}; color: ${scoreColor}; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 800; white-space: nowrap;">
+              ${proj.relevance_score.toFixed(1)}% Match
+            </div>
+          </div>
+
+          <p style="font-size: 11.5px; color: #cbd5e1; margin: 0 0 6px; line-height: 1.4;">${proj.description}</p>
+          <div style="font-size: 11px; color: #38bdf8; margin-bottom: 6px;">
+            <strong>Relevance Evidence:</strong> ${proj.evidence_summary}
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 4px;">${techPills}</div>
+            
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <label style="font-size: 10.5px; color: #94a3b8; font-weight: 700;">Attribution:</label>
+              <select class="proj-rel-select" data-proj-id="${proj.id}" style="background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 11px; padding: 2px 6px; border-radius: 6px; outline: none;">
+                <option value="RECOMMENDED" ${proj.candidate_relationship === 'RECOMMENDED' ? 'selected' : ''}>Recommended Study Project (Transparent)</option>
+                <option value="BUILT" ${proj.candidate_relationship === 'BUILT' ? 'selected' : ''}>Personally Developed</option>
+                <option value="CONTRIBUTED" ${proj.candidate_relationship === 'CONTRIBUTED' ? 'selected' : ''}>Contributed / Forked</option>
+              </select>
+            </div>
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+
+      queueBox.style.display = 'block';
+      if (window.lucide) window.lucide.createIcons();
+
+    } catch (e) {
+      console.error('Error loading discovered projects:', e);
+    }
+  }
+
+  async function finalizeFresherResumeSynthesis() {
+    if (!activeGenJobId) {
+      alert('Please discover projects first.');
+      return;
+    }
+
+    const btn = document.getElementById('btnSynthesizeFresher');
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Synthesizing Resume &amp; Scoring ATS...';
+    if (window.lucide) window.lucide.createIcons();
+
+    // Collect project selections & relationships
+    const selections = [];
+    document.querySelectorAll('.proj-check').forEach(chk => {
+      const projId = chk.getAttribute('data-proj-id');
+      const isSelected = chk.checked;
+      const relSelect = document.querySelector(`.proj-rel-select[data-proj-id="${projId}"]`);
+      const relationship = relSelect ? relSelect.value : 'RECOMMENDED';
+      selections.push({
+        project_id: projId,
+        is_selected: isSelected,
+        relationship: relationship
+      });
+    });
+
+    try {
+      // 1. Save project selections
+      await fetch(`/api/resume/generations/${activeGenJobId}/projects/select/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selections: selections })
+      });
+
+      // 2. Synthesize resume
+      const res = await fetch(`/api/resume/generations/${activeGenJobId}/generate/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to synthesize resume');
+      }
+
+      if (window.showToast) window.showToast("🚀 Resume synthesized! Opening Live Editor...", "success");
+
+      // 3. Open in Live Resume Builder with gen_id and target job
+      setTimeout(() => {
+        window.location.href = `/resume-builder/?job_id={{ job.uuid }}&gen_id=${activeGenJobId}`;
+      }, 700);
+
+    } catch (err) {
+      alert('Synthesis error: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="check-circle" style="width:16px;height:16px;"></i> <span>🚀 Generate Tailored Resume &amp; Open Live Editor</span>';
       if (window.lucide) window.lucide.createIcons();
     }
   }

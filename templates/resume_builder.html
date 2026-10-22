@@ -1811,9 +1811,111 @@
 
     renderResumeSheet();
     recalculateAtsScore();
+    closeUnifiedAddProjectModal();
     closeGitHubImportModal();
     if (window.showToast) window.showToast("✅ GitHub project added with Google XYZ bullets!", "success");
     else alert("✅ Project added to resume!");
+  }
+
+  /* Dynamic GitHub Discovery Search for Editor */
+  async function handleSearchPublicGitHub() {
+    const inputEl = document.getElementById('ghSearchKeywords');
+    let query = (inputEl ? inputEl.value.trim() : '');
+    if (!query && targetJobData) {
+      query = targetJobData.skills || targetJobData.title || '';
+      if (inputEl) inputEl.value = query;
+    }
+    if (!query) query = 'Python Django REST API';
+
+    const btn = document.getElementById('btnRunGhSearch');
+    const grid = document.getElementById('ghSearchResultsGrid');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:14px;height:14px;"></i> Searching...';
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    try {
+      const url = `/api/resume/github-discovery/?job_skills=${encodeURIComponent(query)}&job_title=${encodeURIComponent(targetJobData ? targetJobData.title : '')}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.success || !data.projects || data.projects.length === 0) {
+        grid.innerHTML = '<div style="font-size:12px;color:#94a3b8;padding:8px;">No matching repositories found. Try another technology keyword.</div>';
+        grid.style.display = 'flex';
+        return;
+      }
+
+      grid.innerHTML = '';
+      data.projects.forEach(p => {
+        const item = document.createElement('div');
+        item.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;';
+        
+        const scoreColor = p.relevance_score >= 85 ? '#34d399' : '#38bdf8';
+        const scoreBg = p.relevance_score >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(56, 189, 248, 0.12)';
+
+        item.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;">
+            <div>
+              <a href="${p.repo_url}" target="_blank" rel="noopener" style="color: #60a5fa; font-weight: 800; font-size: 13px; text-decoration: none;">
+                ${p.repo_name} ↗
+              </a>
+              <span style="font-size: 11px; color: #94a3b8; margin-left: 6px;">⭐ ${p.stars}</span>
+            </div>
+            <div style="background: ${scoreBg}; border: 1px solid ${scoreColor}; color: ${scoreColor}; padding: 1px 6px; border-radius: 99px; font-size: 10.5px; font-weight: 800;">
+              ${p.relevance_score.toFixed(1)}% Match
+            </div>
+          </div>
+          <div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.35;">${p.description}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 4px;">
+            <span style="font-size: 10.5px; color: #94a3b8;">Stack: <strong style="color: #38bdf8;">${(p.tech_stack || []).slice(0, 3).join(', ')}</strong></span>
+            <button type="button" class="btn-import-disc" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer;">
+              + Add to Resume
+            </button>
+          </div>
+        `;
+
+        item.querySelector('.btn-import-disc').onclick = () => {
+          importDiscoveredRepoToEditor(p);
+        };
+
+        grid.appendChild(item);
+      });
+
+      grid.style.display = 'flex';
+      if (window.lucide) window.lucide.createIcons();
+
+    } catch (e) {
+      alert("Error searching GitHub: " + e.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="search" style="width:14px;height:14px;"></i> Search';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  }
+
+  function importDiscoveredRepoToEditor(p) {
+    if (!currentResumeData.projects) currentResumeData.projects = [];
+    const relTag = '[Recommended Study Project]';
+    
+    currentResumeData.projects.unshift({
+      title: `${p.repo_name} ${relTag}`,
+      role: 'Project Architect',
+      tech_stack: Array.isArray(p.tech_stack) ? p.tech_stack.join(', ') : p.tech_stack,
+      bullets: [
+        `Architected modular application utilizing ${p.language || 'Python'} and modern engineering standards, ensuring high test coverage.`,
+        `Engineered scalable backend endpoints and optimized database indexing, achieving sub-50ms API response latency.`,
+        `Integrated automated CI/CD pipeline and containerization adhering to industry production best practices.`
+      ]
+    });
+
+    renderResumeSheet();
+    recalculateAtsScore();
+    closeUnifiedAddProjectModal();
+    if (window.showToast) window.showToast(`✅ Added ${p.repo_name} to resume!`, "success");
+    else alert(`✅ Added ${p.repo_name} to resume!`);
   }
 
   /* Custom Project Modal Handlers */
@@ -2070,31 +2172,49 @@
       <div id="bengaluruCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 14px;"></div>
     </div>
 
-    <!-- Tab 2: GitHub Repository AI -->
+    <!-- Tab 2: GitHub Repository AI & Public Discovery -->
     <div id="tabContentGithub" style="display: none;">
-      <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;">
-        Paste any public GitHub repo URL or <code>username/repo</code>. AI extracts the tech stack and crafts 3 quantified Google XYZ bullets for your resume.
+      
+      <!-- Sub-section 1: Dynamic Public Repo Search (5-Factor Ranked) -->
+      <div style="background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-size: 11.5px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">⚡ Discover Public GitHub Repositories for Resume:</label>
+          <span style="font-size: 10.5px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 700;">5-Factor Scored</span>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <input type="text" id="ghSearchKeywords" placeholder="Search technologies e.g. Django, FastAPI, React, PostgreSQL..." style="flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+          <button type="button" id="btnRunGhSearch" onclick="handleSearchPublicGitHub()" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+            <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+            <span>Search</span>
+          </button>
+        </div>
+        <div id="ghSearchResultsGrid" style="display: none; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; margin-top: 10px; padding-right: 4px;"></div>
+      </div>
+
+      <!-- Sub-section 2: Direct Single Repo URL Import -->
+      <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px;">
+        Or paste any specific public GitHub repository URL or <code>username/repo</code>:
       </p>
       <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 6px;">GitHub Repo URL / Name:</label>
-        <input type="text" id="ghRepoInput" placeholder="e.g. kashichavan/updatezbykashi or https://github.com/fastapi/fastapi" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 11px 14px; color: #f8fafc; font-size: 13.5px; outline: none; box-sizing: border-box;">
+        <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 5px;">GitHub Repo URL / Name:</label>
+        <input type="text" id="ghRepoInput" placeholder="e.g. kashichavan/updatezbykashi or https://github.com/fastapi/fastapi" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 11px 14px; color: #f8fafc; font-size: 13px; outline: none; box-sizing: border-box;">
       </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;">
         <span style="font-size: 11px; color: #94a3b8;">Try sample:</span>
         <button type="button" onclick="fillSampleGitHub('kashichavan/updatezbykashi')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">updatezbykashi</button>
         <button type="button" onclick="fillSampleGitHub('tiangolo/fastapi')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">fastapi</button>
         <button type="button" onclick="fillSampleGitHub('django/django')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django</button>
       </div>
-      <button type="button" id="btnRunGhImport" onclick="handleRunGitHubImport()" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+      <button type="button" id="btnRunGhImport" onclick="handleRunGitHubImport()" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
         <span>Extract &amp; Craft Google XYZ Bullets with AI</span>
       </button>
-      <div id="ghPreviewBox" style="display: none; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px;">
+      <div id="ghPreviewBox" style="display: none; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px;">
         <div style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 4px;">Crafted Enterprise Project:</div>
-        <h4 id="ghProjTitle" style="font-size: 15px; font-weight: 800; color: #f8fafc; margin: 0 0 4px;"></h4>
+        <h4 id="ghProjTitle" style="font-size: 14.5px; font-weight: 800; color: #f8fafc; margin: 0 0 4px;"></h4>
         <div style="font-size: 12px; color: #94a3b8; margin-bottom: 6px;"><em id="ghProjRole"></em> &bull; <span id="ghProjTech" style="color: #38bdf8;"></span></div>
         <ul id="ghProjBullets" style="margin: 0; padding-left: 18px; font-size: 12px; color: #cbd5e1; line-height: 1.5; display: flex; flex-direction: column; gap: 4px;"></ul>
-        <button type="button" onclick="applyGitHubProjectToResume()" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; margin-top: 14px;">
+        <button type="button" onclick="applyGitHubProjectToResume()" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; margin-top: 12px;">
           Add to My Resume Sheet
         </button>
       </div>

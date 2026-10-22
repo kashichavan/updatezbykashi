@@ -2398,7 +2398,7 @@ def resume_builder_view(request):
     target_job = None
     if job_id:
         try:
-            val_uuid = uuid.UUID(job_id)
+            val_uuid = uuid.UUID(str(job_id))
             target_job = JobPosting.objects.filter(uuid=val_uuid).first()
         except (ValueError, AttributeError):
             if str(job_id).isdigit():
@@ -2421,7 +2421,28 @@ def resume_builder_view(request):
         'certifications': role_data['certifications']
     }
 
-    ats_eval = calculate_ats_score(initial_resume, selected_role_id)
+    # Optional generation pipeline record (?gen_id=<uuid>)
+    gen_id = request.GET.get('gen_id') or request.GET.get('generation_id')
+    ats_eval = None
+    if gen_id:
+        from .models import ResumeGenerationJob
+        try:
+            gen_record = ResumeGenerationJob.objects.filter(uuid=uuid.UUID(str(gen_id))).first()
+            if gen_record and gen_record.generated_resume:
+                initial_resume = gen_record.generated_resume
+                if not target_job and gen_record.job:
+                    target_job = gen_record.job
+                if gen_record.ats_evaluation:
+                    ats_eval = gen_record.ats_evaluation
+        except Exception:
+            pass
+
+    if not ats_eval:
+        if target_job:
+            from .resume_parser import evaluate_uploaded_resume_ats
+            ats_eval = evaluate_uploaded_resume_ats(initial_resume, target_job.get_skills_list())
+        else:
+            ats_eval = calculate_ats_score(initial_resume, selected_role_id)
 
     context = {
         'roles': RESUME_ROLES,
@@ -2824,6 +2845,258 @@ def api_resume_upload(request):
     except Exception as e:
         logger.exception("Error processing uploaded resume:")
         return JsonResponse({'success': False, 'error': f'Failed to parse resume: {str(e)}'}, status=500)
+
+
+@csrf_exempt
+def api_resume_generation_create(request):
+    """
+    Initiate Job-Specific AI Resume Generation & GitHub Project Discovery pipeline.
+    Supports Scenario A (Uploaded resume / existing), Scenario B (Fresher with GitHub Discovery),
+    and Scenario C (Scratch with recommended foundational projects).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .models import ResumeGenerationJob, JobPosting
+    from .resume_generation_service import start_generation_pipeline_async
+    from .resume_parser import extract_text_from_file_bytes, parse_resume_into_structured_json
+    import uuid
+
+    try:
+        # Determine content type: JSON or Multipart Form
+        candidate_data = {}
+        mode = 'FRESHER_GITHUB'
+        job_id = None
+
+        if request.content_type and 'application/json' in request.content_type:
+            payload = json.loads(request.body.decode('utf-8'))
+            mode = payload.get('mode', 'FRESHER_GITHUB')
+            job_id = payload.get('job_id')
+            candidate_data = payload.get('candidate_data', {})
+        else:
+            mode = request.POST.get('mode', 'FRESHER_GITHUB')
+            job_id = request.POST.get('job_id')
+            raw_candidate = request.POST.get('candidate_data')
+            if raw_candidate:
+                try:
+                    candidate_data = json.loads(raw_candidate)
+                except Exception:
+                    candidate_data = {}
+            else:
+                candidate_data = {
+                    'name': request.POST.get('name', 'Candidate'),
+                    'email': request.POST.get('email', ''),
+                    'phone': request.POST.get('phone', ''),
+                    'location': request.POST.get('location', ''),
+                    'degree': request.POST.get('degree', ''),
+                    'institution': request.POST.get('institution', ''),
+                    'year': request.POST.get('year', ''),
+                    'gpa': request.POST.get('gpa', ''),
+                    'skills': request.POST.get('skills', ''),
+                }
+
+        # Resolve target JobPosting
+        target_job = None
+        if job_id:
+            try:
+                target_job = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
+            except Exception:
+                if str(job_id).isdigit():
+                    target_job = JobPosting.objects.filter(pk=int(job_id)).first()
+
+        # Handle attached file if any
+        uploaded_file = request.FILES.get('resume_file') or request.FILES.get('file')
+        if uploaded_file:
+            mode = 'EXISTING_UPLOAD'
+            file_bytes = uploaded_file.read()
+            raw_text = extract_text_from_file_bytes(file_bytes, uploaded_file.name)
+            if raw_text:
+                parsed = parse_resume_into_structured_json(raw_text)
+                for k, v in parsed.items():
+                    if v and not candidate_data.get(k):
+                        candidate_data[k] = v
+
+        # Create persistent job record
+        gen_job = ResumeGenerationJob.objects.create(
+            session_key=request.session.session_key or '',
+            job=target_job,
+            mode=mode,
+            candidate_data=candidate_data,
+            status='PENDING',
+            stage_message='Initializing resume generation pipeline...'
+        )
+
+        # Launch async background thread pipeline
+        start_generation_pipeline_async(str(gen_job.uuid))
+
+        return JsonResponse({
+            'success': True,
+            'job_id': str(gen_job.uuid),
+            'mode': gen_job.mode,
+            'status': gen_job.status,
+            'progress_pct': gen_job.progress_pct,
+            'stage_message': gen_job.stage_message
+        }, status=201)
+
+    except Exception as e:
+        logger.exception("Error initiating resume generation job:")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def api_resume_generation_status(request, job_uuid):
+    """Poll progress status of an active resume generation pipeline."""
+    from .models import ResumeGenerationJob
+    job = ResumeGenerationJob.objects.filter(uuid=job_uuid).first()
+    if not job:
+        return JsonResponse({'success': False, 'error': 'Generation job not found'}, status=404)
+
+    return JsonResponse({
+        'success': True,
+        'job_id': str(job.uuid),
+        'mode': job.mode,
+        'status': job.status,
+        'progress_pct': job.progress_pct,
+        'stage_message': job.stage_message,
+        'generated_resume': job.generated_resume,
+        'ats_evaluation': job.ats_evaluation,
+        'error_message': job.error_message,
+        'created_at': job.created_at.isoformat(),
+        'updated_at': job.updated_at.isoformat()
+    })
+
+
+def api_resume_generation_projects(request, job_uuid):
+    """Fetch discovered GitHub repositories with transparent 5-factor relevance scores."""
+    from .models import ResumeGenerationJob
+    job = ResumeGenerationJob.objects.filter(uuid=job_uuid).first()
+    if not job:
+        return JsonResponse({'success': False, 'error': 'Generation job not found'}, status=404)
+
+    projects = []
+    for dp in job.discovered_projects.all():
+        projects.append({
+            'id': str(dp.uuid),
+            'repo_name': dp.repo_name,
+            'repo_url': dp.repo_url,
+            'description': dp.description,
+            'stars': dp.stars,
+            'language': dp.language,
+            'tech_stack': dp.tech_stack,
+            'relevance_score': dp.relevance_score,
+            'score_breakdown': dp.score_breakdown,
+            'evidence_summary': dp.evidence_summary,
+            'candidate_relationship': dp.candidate_relationship,
+            'is_selected': dp.is_selected,
+        })
+
+    return JsonResponse({
+        'success': True,
+        'job_id': str(job.uuid),
+        'status': job.status,
+        'projects': projects
+    })
+
+
+@csrf_exempt
+def api_resume_generation_select_projects(request, job_uuid):
+    """
+    Select/deselect discovered projects and assign ethical relationship:
+    BUILT (Candidate built), CONTRIBUTED (Candidate contributed), or RECOMMENDED (Studied).
+    """
+    if request.method not in ['POST', 'PATCH']:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .models import ResumeGenerationJob, DiscoveredProject
+    import uuid
+
+    job = ResumeGenerationJob.objects.filter(uuid=job_uuid).first()
+    if not job:
+        return JsonResponse({'success': False, 'error': 'Generation job not found'}, status=404)
+
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+        selections = payload.get('selections', [])
+
+        for item in selections:
+            proj_id = item.get('project_id') or item.get('id')
+            if not proj_id:
+                continue
+            dp = job.discovered_projects.filter(uuid=uuid.UUID(str(proj_id))).first()
+            if dp:
+                if 'is_selected' in item:
+                    dp.is_selected = bool(item['is_selected'])
+                if 'relationship' in item:
+                    rel = item['relationship'].upper()
+                    if rel in ['BUILT', 'CONTRIBUTED', 'RECOMMENDED']:
+                        dp.candidate_relationship = rel
+                dp.save(update_fields=['is_selected', 'candidate_relationship'])
+
+        # Return updated state
+        projects = []
+        for dp in job.discovered_projects.all():
+            projects.append({
+                'id': str(dp.uuid),
+                'repo_name': dp.repo_name,
+                'repo_url': dp.repo_url,
+                'relevance_score': dp.relevance_score,
+                'candidate_relationship': dp.candidate_relationship,
+                'is_selected': dp.is_selected,
+            })
+
+        return JsonResponse({'success': True, 'projects': projects})
+
+    except Exception as e:
+        logger.exception("Error updating selected projects:")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_resume_generation_finalize(request, job_uuid):
+    """
+    Synthesize final job-tailored resume with verified candidate details & selected projects.
+    Calculates genuine ATS scorecard and returns complete resume data.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .resume_generation_service import finalize_resume_synthesis
+    try:
+        result = finalize_resume_synthesis(str(job_uuid))
+        return JsonResponse({
+            'success': True,
+            'job_id': str(job_uuid),
+            'resume': result['resume'],
+            'ats_eval': result['ats_eval']
+        })
+    except Exception as e:
+        logger.exception("Error finalizing resume synthesis:")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_resume_github_discovery_direct(request):
+    """
+    Direct GitHub discovery endpoint for real-time repository search
+    from modal or live editor.
+    """
+    from .github_discovery import search_github_repositories
+    job_title = request.GET.get('job_title') or request.POST.get('job_title', '')
+    job_skills = request.GET.get('job_skills') or request.POST.get('job_skills', '')
+    job_description = request.GET.get('job_description') or request.POST.get('job_description', '')
+    limit = int(request.GET.get('limit') or request.POST.get('limit') or 8)
+
+    repos = search_github_repositories(
+        job_title=job_title,
+        job_skills=job_skills,
+        job_description=job_description,
+        limit=min(limit, 15)
+    )
+
+    return JsonResponse({
+        'success': True,
+        'projects': repos
+    })
+
 
 
 
