@@ -14,7 +14,12 @@ from django.utils import timezone
 from django.db.models import Q
 
 from requirements.models import JobPosting, Category
-from requirements.jobdexo_service import canonical_clean_url, normalize_text, get_or_create_standard_categories
+from requirements.jobdexo_service import (
+    canonical_clean_url,
+    normalize_text,
+    get_or_create_standard_categories,
+    classify_opportunity_category
+)
 
 logger = logging.getLogger(__name__)
 
@@ -287,22 +292,9 @@ def merge_or_create_job(job_data: Dict[str, Any], batch_id: str = "") -> Tuple[J
 
     # Create fresh JobPosting record
     cat_map = get_or_create_standard_categories()
+    category = classify_opportunity_category(job_data, cat_map)
     domain = job_data.get('industry_domain', 'TECHNICAL')
     job_type = job_data.get('job_type', 'FULL_TIME')
-
-    if job_type == 'INTERNSHIP':
-        category = cat_map.get('internships', cat_map.get('software-engineering'))
-    elif domain == 'NON_TECHNICAL':
-        category = cat_map.get('non-it', cat_map.get('software-engineering'))
-    else:
-        # Check for data / AI keywords
-        title_lower = (job_data.get('title') or '').lower()
-        if any(w in title_lower for w in ['data', 'ai', 'ml', 'analytics', 'machine learning']):
-            category = cat_map.get('data-science-ai', cat_map.get('software-engineering'))
-        elif any(w in title_lower for w in ['cloud', 'devops', 'aws', 'security']):
-            category = cat_map.get('cybersecurity', cat_map.get('software-engineering'))
-        else:
-            category = cat_map.get('software-engineering')
 
     deadline = now + timedelta(days=7)
     posted_date = job_data.get('posted_date') or now.date()

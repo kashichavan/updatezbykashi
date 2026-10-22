@@ -617,12 +617,16 @@ def resolve_all_jobdexo_company_names():
 
 
 def get_or_create_standard_categories():
-    """Ensures primary categories (Software Engineering & Non IT) exist and returns them in a dict keyed by slug."""
+    """Ensures standard categories exist and returns them in a dict keyed by slug."""
     from django.db import close_old_connections
     close_old_connections()
     categories_def = [
-        ('software-engineering', 'Software Engineering', 'code', 'Software Engineering, Full Stack, Backend, Frontend, Cloud, DevOps, QA Automation, Data, AI & Tech Internships.'),
-        ('non-it', 'Non IT', 'phone', 'Customer Support, International/Domestic Voice Process, Telecaller, BPO, HR, Sales, BCom/BBA Walk-in Drives & Operations.'),
+        ('software-engineering', 'Software Engineering', 'code', 'Software Engineering, Full Stack, Backend, Frontend, Cloud, DevOps, Data, AI & Tech Internships.'),
+        ('software-tech', 'Software & Tech', 'code', 'All Tech, Web Development, Programming, Cloud, and Software roles.'),
+        ('qa-testing', 'QA & Software Testing', 'check-circle', 'Manual Testing, Automation Testing, SDET, Selenium, Cypress, and Quality Engineering.'),
+        ('hr-recruitment', 'HR & Recruitment', 'users', 'Human Resources, Talent Acquisition, Technical Recruiting, and People Operations.'),
+        ('mba-business', 'MBA & Management', 'briefcase', 'MBA Freshers, Management Trainees, Business Analysts, Strategy, and Operations.'),
+        ('non-it', 'Non IT', 'phone', 'Customer Support, International/Domestic Voice Process, Telecaller, BPO, Sales, BCom/BBA Walk-in Drives & Operations.'),
     ]
     cat_map = {}
     for slug, name, icon, desc in categories_def:
@@ -649,24 +653,45 @@ def get_or_create_standard_categories():
 
 def classify_opportunity_category(job_data, cat_map):
     """
-    Intelligently classifies any job opening into 2 primary categories:
-    1. Non IT (Voice, Non-Voice, Customer Support, Telecaller, BPO, Sales, HR, BCom/BBA Walkins, Operations)
-    2. Software Engineering (Software Engineer, Developer, QA, DevOps, Cloud, AI/ML, Data Analyst, Tech Intern)
+    Intelligently classifies any job opening into verified categories:
+    1. QA & Software Testing (Manual, Automation, SDET, Testing)
+    2. HR & Recruitment (Talent Acquisition, HR Intern, HR Executive, Recruiter)
+    3. MBA & Management (Business Analyst, Management Trainee, MBA, BDA, Strategy)
+    4. Non IT (Customer Support, BPO, Sales, Operations, Telecaller)
+    5. Software Engineering (Software Engineer, Developer, Cloud, DevOps, Full Stack)
     """
     title = (job_data.get('title') or '').lower()
     skills = (job_data.get('skills') or '').lower()
-    desc = (job_data.get('description') or '')[:250].lower()
-    eligibility = (job_data.get('eligibility') or '')[:250].lower()
+    desc = (job_data.get('description') or '')[:300].lower()
+    eligibility = (job_data.get('eligibility') or '')[:300].lower()
     blob = f"{title} {skills} {desc} {eligibility}"
 
+    # 1. QA & Software Testing
+    qa_keywords = ['qa', 'test engineer', 'testing', 'quality assurance', 'automation tester', 'sdet', 'selenium', 'cypress', 'manual tester', 'software tester', 'test lead']
+    if any(k in title for k in qa_keywords) or (any(k in blob for k in qa_keywords) and 'developer' not in title):
+        if 'qa-testing' in cat_map:
+            return cat_map['qa-testing']
+
+    # 2. HR & Recruitment
+    hr_keywords = ['hr intern', 'hr executive', 'recruiter', 'talent acquisition', 'human resources', 'hr trainee', 'technical recruiter', 'people operations', 'hr generalist', 'hr associate']
+    if any(k in title for k in hr_keywords) or any(k in blob for k in hr_keywords):
+        if 'hr-recruitment' in cat_map:
+            return cat_map['hr-recruitment']
+
+    # 3. MBA & Business
+    mba_keywords = ['mba', 'management trainee', 'business analyst', 'product management', 'business development associate', 'bda', 'strategy trainee', 'growth associate', 'operations trainee', 'consulting analyst']
+    if any(k in title for k in mba_keywords) or any(k in blob for k in mba_keywords):
+        if 'mba-business' in cat_map:
+            return cat_map['mba-business']
+
+    # 4. Non IT
     non_it_keywords = [
         'customer support', 'customer service', 'customer care', 'voice process', 'non-voice', 'non voice',
         'domestic voice', 'international voice', 'telecaller', 'tele-caller', 'telesales', 'telemarketing',
         'bpo', 'kpo', 'call center', 'helpdesk', 'service desk technical support', 'service desk',
         'data entry', 'back office', 'back-office', 'operations associate', 'operations executive',
         'bcom', 'bba', 'bbm', 'b.com', 'b.ba', 'walkin drive for fresher bcom',
-        'sales executive', 'business development associate', 'inside sales', 'field sales',
-        'recruiter', 'hr executive', 'talent acquisition', 'human resources', 'transcription',
+        'sales executive', 'inside sales', 'field sales', 'transcription',
         'voice recording', 'voice data collection', 'content moderator', 'accountant', 'accounts executive',
         'collection project'
     ]

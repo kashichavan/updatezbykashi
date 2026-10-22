@@ -17,6 +17,7 @@ from .adapters import (
     JobdexoSourceAdapter,
     NaukriSourceAdapter,
     LinkedInSourceAdapter,
+    IndianStartupSourceAdapter,
 )
 from .deduplicator import merge_or_create_job, purge_all_database_duplicates
 
@@ -34,6 +35,7 @@ class JobAggregationOrchestrator:
             JobdexoSourceAdapter(),
             NaukriSourceAdapter(),
             LinkedInSourceAdapter(),
+            IndianStartupSourceAdapter(),
         ]
 
     def get_registered_sources(self) -> List[Dict[str, Any]]:

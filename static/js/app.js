@@ -377,13 +377,30 @@ document.addEventListener('DOMContentLoaded', () => {
       const postedDate = j.posted_date_display || j.relative_time || 'Today';
       const isNewToday = postedDate === 'Today';
 
-      const isNonIT = j.category_slug === 'non-it' || (j.category_slug || '').includes('non');
-      const catStyle = isNonIT
-        ? 'background:#fef3c7;color:#b45309;border:1px solid #fde68a;'
-        : 'background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;';
-      const catIcon = isNonIT ? '📞' : '💻';
-      const catLabel = isNonIT ? 'Non IT' : 'Software Eng';
-      const srcCode = j.source_code || ((j.source_name || '').toLowerCase().includes('linkedin') ? 'L' : ((j.source_name || '').toLowerCase().includes('naukri') ? 'N' : 'JD'));
+      let catStyle = 'background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;';
+      let catIcon = '💻';
+      let catLabel = j.category_name || 'Software Eng';
+
+      const catSlug = (j.category_slug || '').toLowerCase();
+      const titleLower = (j.title || '').toLowerCase();
+      if (catSlug.includes('qa') || titleLower.includes('test') || titleLower.includes('qa')) {
+        catStyle = 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;';
+        catIcon = '🧪';
+        catLabel = 'QA & Testing';
+      } else if (catSlug.includes('hr') || titleLower.includes('recruiter') || titleLower.includes('talent') || titleLower.includes('hr ')) {
+        catStyle = 'background:#faf5ff;color:#7e22ce;border:1px solid #e9d5ff;';
+        catIcon = '👥';
+        catLabel = 'HR & Hiring';
+      } else if (catSlug.includes('mba') || titleLower.includes('mba') || titleLower.includes('management trainee') || titleLower.includes('business analyst')) {
+        catStyle = 'background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8;';
+        catIcon = '📈';
+        catLabel = 'MBA & Business';
+      } else if (catSlug.includes('non') || j.industry_domain === 'NON_TECHNICAL') {
+        catStyle = 'background:#fef3c7;color:#b45309;border:1px solid #fde68a;';
+        catIcon = '📞';
+        catLabel = 'Non IT';
+      }
+      const srcCode = j.source_code || ((j.source_name || '').toLowerCase().includes('linkedin') ? 'L' : ((j.source_name || '').toLowerCase().includes('naukri') ? 'N' : ((j.source_name || '').toLowerCase().includes('startup') ? 'S' : 'JD')));
 
       const shareUrl = j.share_url || `/category/${j.category_slug}/job/${j.uuid}/`;
       return `

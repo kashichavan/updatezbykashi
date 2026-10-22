@@ -265,12 +265,14 @@ class JobPosting(models.Model):
         return tier_map.get(self.experience_tier, 'Fresher / All Levels')
 
     def get_discreet_source_code(self):
-        """Returns subtle discreet code (L, N, JD) instead of full external brand names."""
+        """Returns subtle discreet code (L, N, JD, S) instead of full external brand names."""
         src = (self.source_name or '').lower()
         if 'linkedin' in src:
             return 'L'
         elif 'naukri' in src:
             return 'N'
+        elif any(k in src for k in ['startup', 'ashby', 'lever', 'greenhouse']):
+            return 'S'
         return 'JD'
 
     def get_contact_phone(self):

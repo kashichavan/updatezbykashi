@@ -128,7 +128,7 @@ def _safe_bg_jobdexo_import(limit=15):
             pass
 
 def trigger_async_india_jobs_refresh(force=False, limit=25):
-    """Triggers non-blocking background auto-import for Naukri, LinkedIn, and Jobdexo."""
+    """Triggers non-blocking background auto-import for Naukri, LinkedIn, Indian Startups, and Jobdexo."""
     last_sync = cache.get('last_auto_india_jobs_sync_ts')
     if force or not last_sync:
         cache.set('last_auto_india_jobs_sync_ts', time.time(), 300)  # 5 min throttle
@@ -137,7 +137,7 @@ def trigger_async_india_jobs_refresh(force=False, limit=25):
                 from .job_aggregator.orchestrator import orchestrator
                 from django.db import close_old_connections
                 close_old_connections()
-                orchestrator.run_aggregation(sources=["Naukri", "LinkedIn", "Jobdexo"], limit_per_source=limit, last_hours=48)
+                orchestrator.run_aggregation(sources=["Naukri", "LinkedIn", "Startup", "Jobdexo"], limit_per_source=limit, last_hours=48)
             except Exception as e:
                 logger.error(f"Background India jobs ingestion failed: {e}")
             finally:
@@ -191,7 +191,7 @@ def api_cron_sync_jobs(request):
     trigger_async_india_jobs_refresh(force=force, limit=limit)
     return JsonResponse({
         'status': 'sync_triggered',
-        'sources': ['Jobdexo', 'Naukri', 'LinkedIn'],
+        'sources': ['Jobdexo', 'Naukri', 'LinkedIn', 'Startup'],
         'limit': limit,
         'force': force,
         'timestamp': timezone.now().isoformat()
@@ -1421,7 +1421,70 @@ def api_jobs(request):
                 qs = qs.filter(status='ACTIVE', deadline__gt=timezone.now())
 
             if category_slug and category_slug != 'all':
-                qs = qs.filter(category__slug=category_slug)
+                cat_lower = category_slug.lower()
+                if cat_lower in ['freshers', 'fresher']:
+                    qs = qs.filter(
+                        Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
+                        Q(job_type='INTERNSHIP') |
+                        Q(title__icontains='fresher') |
+                        Q(title__icontains='intern') |
+                        Q(title__icontains='trainee') |
+                        Q(eligibility__icontains='fresher') |
+                        Q(eligibility__icontains='0-1') |
+                        Q(eligibility__icontains='0-2')
+                    )
+                elif cat_lower == 'qa-testing':
+                    qs = qs.filter(
+                        Q(category__slug='qa-testing') |
+                        Q(title__icontains='qa') |
+                        Q(title__icontains='test') |
+                        Q(skills_required__icontains='selenium') |
+                        Q(skills_required__icontains='testing') |
+                        Q(skills_required__icontains='automation')
+                    )
+                elif cat_lower == 'hr-recruitment':
+                    qs = qs.filter(
+                        Q(category__slug='hr-recruitment') |
+                        Q(title__icontains='hr') |
+                        Q(title__icontains='recruiter') |
+                        Q(title__icontains='talent acquisition') |
+                        Q(title__icontains='human resources')
+                    )
+                elif cat_lower == 'mba-business':
+                    qs = qs.filter(
+                        Q(category__slug='mba-business') |
+                        Q(title__icontains='mba') |
+                        Q(title__icontains='business analyst') |
+                        Q(title__icontains='management trainee') |
+                        Q(title__icontains='bda') |
+                        Q(title__icontains='strategy')
+                    )
+                elif cat_lower in ['software-tech', 'software-engineering']:
+                    qs = qs.filter(
+                        Q(category__slug__in=['software-tech', 'software-engineering']) |
+                        Q(industry_domain='TECHNICAL')
+                    )
+                elif cat_lower == 'non-it':
+                    qs = qs.filter(
+                        Q(category__slug='non-it') |
+                        Q(industry_domain='NON_TECHNICAL')
+                    )
+                else:
+                    qs = qs.filter(category__slug=category_slug)
+
+            # Experience tier filter (e.g. ?experience=FRESHER)
+            exp_filter = request.GET.get('experience', '').strip() or request.GET.get('exp', '').strip()
+            if exp_filter:
+                exp_lower = exp_filter.lower()
+                if exp_lower in ['fresher', '0-1']:
+                    qs = qs.filter(
+                        Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
+                        Q(job_type='INTERNSHIP') |
+                        Q(title__icontains='fresher') |
+                        Q(title__icontains='intern')
+                    )
+                else:
+                    qs = qs.filter(experience_tier__iexact=exp_filter)
 
             if job_type and job_type != 'all':
                 qs = qs.filter(job_type=job_type)

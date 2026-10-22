@@ -58,11 +58,14 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
             return []
 
         search_terms = [keywords] if keywords else [
-            "Software Engineer",
-            "Python Developer",
-            "Full Stack Developer",
-            "React Developer",
-            "Data Analyst"
+            "Startup Software Engineer Bengaluru",
+            "Software Testing Fresher",
+            "QA Automation Tester",
+            "HR Recruiter Intern",
+            "MBA Management Trainee",
+            "Python Developer Pune",
+            "Full Stack Developer Hyderabad",
+            "Data Analyst Fresher",
         ]
         search_loc = location or "India"
 
@@ -171,6 +174,21 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
                 domain = classify_industry_domain(raw_title, "", "")
                 exp_tier = classify_experience_tier(raw_title, "", "")
 
+                skills_str = f"{domain.capitalize()}, Problem Solving"
+                tl = raw_title.lower()
+                if 'test' in tl or 'qa' in tl:
+                    skills_str = "Manual Testing, Automation, Selenium, Test Cases, SDET"
+                elif 'hr' in tl or 'recruiter' in tl:
+                    skills_str = "Talent Acquisition, Candidate Screening, HR Operations, Interview Scheduling"
+                elif 'mba' in tl or 'business analyst' in tl or 'management trainee' in tl:
+                    skills_str = "Business Analysis, Market Research, Strategy, Excel, Stakeholder Communication"
+                elif 'python' in tl:
+                    skills_str = "Python, Django, FastAPI, SQL, REST APIs"
+                elif 'react' in tl or 'frontend' in tl:
+                    skills_str = "React, JavaScript, TypeScript, CSS, Redux"
+                elif 'data' in tl:
+                    skills_str = "Python, SQL, Power BI, Excel, Data Analytics"
+
                 results.append({
                     'source_name': self.source_name,
                     'source_job_id': job_id,
@@ -179,14 +197,14 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
                     'title': raw_title,
                     'company_name': raw_comp,
                     'company_logo_icon': 'building',
-                    'description': f"{raw_title} role at {raw_comp} ({norm_city}). Apply directly on official portal.",
+                    'description': f"{raw_title} requirement at {raw_comp} ({norm_city}). Candidates can review requirements and apply directly via official link.",
                     'location': f"{norm_city}, India" if norm_city != "Remote" else "Remote, India",
                     'normalized_city': norm_city,
                     'is_remote': is_remote,
                     'job_type': 'INTERNSHIP' if exp_tier == 'INTERNSHIP' else 'FULL_TIME',
                     'industry_domain': domain,
                     'experience_tier': exp_tier,
-                    'skills_required': f"{domain.capitalize()}, Problem Solving",
+                    'skills_required': skills_str,
                     'stipend_salary': 'Competitive Package',
                     'eligibility': 'Open to eligible candidates',
                     'source_published_at': pub_dt,
