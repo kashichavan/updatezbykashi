@@ -18,7 +18,10 @@ All applied modifications were surgical, backwards-compatible, and accompanied b
 | **FIX-04** | `sqlsandbox/engine.py` | Runaway recursive CTE query hang | Reliability (P1) | Verified via progress handler test |
 | **FIX-05** | `requirements/views.py` | BUG-001: Application count concurrency race | Data Integrity (P2)| Verified via atomic update test |
 | **FIX-06** | `build.sh` | Missing automated seeding of 36 Indian projects | Deployment (P2) | Verified via bash dry-run |
-| **FIX-07** | `requirements/tests_audit_security_fixes.py` | Automated test coverage for fixes | Quality Assurance | 10/10 automated tests pass |
+| **FIX-07** | `requirements/tests_audit_security_fixes.py` | Automated test coverage for fixes | Quality Assurance | 13/13 automated tests pass |
+| **FIX-08** | `debugger/javascript_tracer.py` | BUG-005: Variable memory address corruption on function call | Visualizer (P2) | Verified via J33, J35 tests |
+| **FIX-09** | `debugger/java_tracer.py` | BUG-006: Method scope id re-allocation causing address instability | Visualizer (P2) | Verified via V22 test |
+| **FIX-10** | `requirements/urls.py` | DUP-001: Redundant shadowed api/ping route removal | Routing (P3) | Verified via test_api_ping |
 
 ---
 
@@ -79,4 +82,21 @@ All applied modifications were surgical, backwards-compatible, and accompanied b
   * Ensures Render build pipeline populates the 36 curated Indian market projects automatically during deployment.
 
 ### FIX-07: `requirements/tests_audit_security_fixes.py`
-- **Created:** 124 lines of automated test assertions verifying each fix against real runtime conditions.
+- **Created:** 175 lines of automated test assertions verifying each fix against real runtime conditions (13 tests total).
+
+### FIX-08: `debugger/javascript_tracer.py`
+- **Lines Modified:** 793–801.
+- **Diff Summary:**
+  * Fixed reference synchronization after function returns. Previously, parameter dictionary assignment `scope[arg_var] = local_scope[param]` wiped out the outer variable's stable `mem_addr`.
+  * Resticted synchronization strictly to mutable objects/arrays (`array`, `object`), preserving primitive immutability and memory stability.
+
+### FIX-09: `debugger/java_tracer.py`
+- **Lines Modified:** 414.
+- **Diff Summary:**
+  * Replaced volatile `id(scope)` keying (`f"{id(scope)}:{name}"`) with stable variable name keying (`key = name`).
+  * Guarantees identical memory address across multiple invocations of static and instance methods.
+
+### FIX-10: `requirements/urls.py`
+- **Lines Modified:** 104–106.
+- **Diff Summary:**
+  * Removed duplicate, shadowed `api/ping` route entries in favor of the root definition in `reqpulse/urls.py`.

@@ -23,9 +23,9 @@ During the audit, two critical (P0) security vulnerabilities and two performance
 | **Total Source Files** | 346 files across Python, HTML, TypeScript, JS, CSS | Audited |
 | **System Integrity** | Django Check: 0 issues; Migrations: 23/23 applied | **HEALTHY** |
 | **Security Issues Resolved** | SEC-001 (Python Tracer Sandbox Escape) & SEC-002 (SQLite ATTACH Leak) | **PATCHED & VERIFIED** |
-| **Bugs Resolved** | BUG-001 (Counter Race Condition) & BUG-002 (Infinite Loop CPU DoS) | **PATCHED & VERIFIED** |
-| **Automated Test Suite** | 72 Django tests executed (10 new regression tests added) | **100% PASS (0 Failures)** |
-| **Language Tracer Harness** | 109 tracer programs tested across Python, Java, and JavaScript | **97.2% PASS (106/109)** |
+| **Bugs Resolved** | BUG-001 (Counter Race), BUG-002 (CPU DoS), BUG-005 (JS Scope), BUG-006 (Java Scope) | **PATCHED & VERIFIED** |
+| **Automated Test Suite** | 75 Django tests executed (13 new regression tests added) | **100% PASS (0 Failures)** |
+| **Language Tracer Harness** | 109 tracer programs tested across Python, Java, and JavaScript | **100% PASS (109/109)** |
 | **Project Library** | 36 curated Indian demo projects across 6 stacks & 15 city hubs | **VERIFIED & SEEDED** |
 | **Cloud Deployment** | Render `render.yaml`, `build.sh`, `Procfile`, WhiteNoise static serving | **OPTIMIZED & VERIFIED** |
 

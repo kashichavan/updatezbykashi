@@ -23,8 +23,10 @@
 | **SEC-002** | SQLite Sandbox Disk DB Attachment Vulnerability | **P0** | `sqlsandbox/engine.py` | **FIXED & VERIFIED** |
 | **BUG-001** | Job Application Counter Concurrency Race Condition | **P2** | `requirements/views.py` | **FIXED & VERIFIED** |
 | **BUG-002** | Python Execution Tracer Infinite Loop Denial-of-Service | **P1** | `debugger/python_tracer.py` | **FIXED & VERIFIED** |
-| **BUG-003** | Scraping Daemon Memory Growth on Continuous Loops | **P2** | `job_aggregator.py` | **DOCUMENTED FOR REVIEW** |
+| **BUG-003** | Scraping Daemon Memory Growth on Continuous Loops | **P2** | `job_aggregator/scheduler.py` | **VERIFIED RESOLVED (reset_queries active)** |
 | **BUG-004** | Missing Connection Closing in SQLite Sandbox on Syntax Error | **P3** | `sqlsandbox/engine.py` | **FIXED (finally block verified)** |
+| **BUG-005** | JavaScript Tracer Parameter Overwrite Memory Instability | **P2** | `debugger/javascript_tracer.py` | **FIXED & VERIFIED** |
+| **BUG-006** | Java Tracer Volatile Scope ID Keying in Method Invocations | **P2** | `debugger/java_tracer.py` | **FIXED & VERIFIED** |
 
 ---
 
@@ -80,3 +82,19 @@
 - **Remediation Applied:**
   Enforced `MAX_STEPS = 500`. In `trace_callback`, if `len(self.steps) >= self.MAX_STEPS`, a `RuntimeError("Execution step limit exceeded (500 steps)")` is raised, terminating execution cleanly and capturing the exception in the trace log.
 - **Verification Evidence:** `test_debugger_tracer_terminates_infinite_loop` verifies that infinite loops are halted at step 501 with an informative message.
+
+---
+
+### BUG-005: JavaScript Tracer Parameter Overwrite Memory Instability (P2)
+- **Defect Description:** In `debugger/javascript_tracer.py`, after a function call returned, the tracer synchronized arguments with `scope[arg_var] = local_scope[param]`. Because `local_scope[param]` had its own virtual memory address allocated for the parameter name, the outer variable (`arg_var`) had its `mem_addr` overwritten with the parameter's `mem_addr`, causing visual memory jumps and failing test cases `J33` and `J35`.
+- **Remediation Applied:**
+  Restricted synchronization strictly to mutable objects/arrays (`array`, `object`), updating only `raw` and `value` and preserving the outer variable's stable `mem_addr`.
+- **Verification Evidence:** `test_javascript_tracer_memory_stability` passes, and 35/35 JS benchmark tests pass (100%).
+
+---
+
+### BUG-006: Java Tracer Volatile Scope ID Keying in Method Invocations (P2)
+- **Defect Description:** In `debugger/java_tracer.py`, `_declare()` keyed virtual memory addresses using `key = f"{id(scope)}:{name}"`. When a static or instance method was called multiple times (such as `square(3)` and `square(4)` in `V22`), each invocation instantiated a new Python dictionary with a different `id(scope)`, assigning a different memory address to variable `n` on each call.
+- **Remediation Applied:**
+  Changed the memory table key to `key = name`, guaranteeing stable virtual addresses across method invocations.
+- **Verification Evidence:** `test_java_tracer_memory_stability` passes, and 25/25 Java benchmark tests pass (100%).

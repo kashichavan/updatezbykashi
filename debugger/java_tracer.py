@@ -411,7 +411,7 @@ class JavaExecutionTracer:
         if tname in ('double', 'float') and isinstance(value, int) and not isinstance(value, bool):
             value = float(value)
         is_prim = self._is_primitive_type(tname.rstrip('[]')) and '[]' not in tname
-        key = f"{id(scope)}:{name}"
+        key = name
         scope[name] = {
             '_value': value,
             'type': tname,

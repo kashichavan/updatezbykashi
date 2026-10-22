@@ -47,13 +47,29 @@ As an independent senior reviewer, this second pass was conducted without relyin
   * Terminated at step 501 with `RuntimeError: Execution step limit exceeded (500 steps)`.
 - **Verdict:** **CONFIRMED RESOLVED (0 Regressions).**
 
+### 2.5 Verification of BUG-005 (JavaScript Memory Stability in Function Calls)
+- **Code Inspected:** `debugger/javascript_tracer.py` lines 793–801.
+- **Physical Test:**
+  * Executed J33 (`inc(a)`) and J35 (full JS default code with `greet(name)`).
+  * Confirmed variable memory addresses remain stable throughout execution.
+  * 35/35 JS benchmark tests now pass.
+- **Verdict:** **CONFIRMED RESOLVED (0 Regressions).**
+
+### 2.6 Verification of BUG-006 (Java Method Invocations Memory Stability)
+- **Code Inspected:** `debugger/java_tracer.py` line 414.
+- **Physical Test:**
+  * Executed V22 (`square(3)` and `square(4)`).
+  * Confirmed variable `n` maintains stable memory address across calls.
+  * 25/25 Java benchmark tests now pass.
+- **Verdict:** **CONFIRMED RESOLVED (0 Regressions).**
+
 ---
 
 ## 3. Regression Analysis & Non-Destructive Invariance
 
 1. **Production Tests:** All 62 original Django tests continue to pass without modification.
-2. **New Tests:** 10 new regression tests in `requirements/tests_audit_security_fixes.py` pass cleanly.
-3. **Tracer Benchmark:** The 40 Python tracer benchmark programs all pass (100% pass rate).
+2. **New Tests:** 13 new regression tests in `requirements/tests_audit_security_fixes.py` pass cleanly (75 total Django tests).
+3. **Tracer Benchmark:** 100% of all 109 tracer programs pass (Python 40/40, JavaScript 35/35, Java 25/25, Advanced Java 9/9).
 4. **Git Tree:** No unrelated user files or commits were modified, deleted, or overwritten.
 
 ---

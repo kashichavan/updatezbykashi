@@ -121,3 +121,54 @@ class AuditSecurityAndBugFixesTestCase(TestCase):
 
         self.job.refresh_from_db()
         self.assertEqual(self.job.applications_count, initial_count + 1)
+
+    # ─────────────────────────────────────────────────────────────
+    # Additional Verification: Healthcheck & Tracer Memory Stability
+    # ─────────────────────────────────────────────────────────────
+    def test_api_ping_healthcheck(self):
+        """Verify centralized /api/ping responds with 200 OK and status."""
+        resp = self.client.get("/api/ping")
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertEqual(data.get("status"), "ok")
+
+    def test_javascript_tracer_memory_stability(self):
+        """Verify JavaScript tracer preserves variable mem_addr across function calls."""
+        from debugger.javascript_tracer import JavaScriptExecutionTracer
+        code = (
+            "function inc(n) {\n"
+            "  let r = n + 1;\n"
+            "  return r;\n"
+            "}\n"
+            "let a = inc(10);\n"
+            "let b = inc(a);\n"
+        )
+        tracer = JavaScriptExecutionTracer(code)
+        res = tracer.execute()
+        self.assertEqual(res['status'], 'success')
+        addrs = [s['variables']['a']['mem_addr'] for s in res['steps'] if 'a' in s['variables']]
+        self.assertTrue(len(addrs) > 0)
+        self.assertTrue(all(addr == addrs[0] for addr in addrs), f"Addresses unstable: {addrs}")
+
+    def test_java_tracer_memory_stability(self):
+        """Verify Java tracer maintains stable variable mem_addr across multiple method invocations."""
+        from debugger.java_tracer import JavaExecutionTracer
+        code = (
+            "public class Main {\n"
+            "    public static void main(String[] args) {\n"
+            "        int a = square(3);\n"
+            "        int b = square(4);\n"
+            "    }\n"
+            "    static int square(int n) {\n"
+            "        int r = n * n;\n"
+            "        return r;\n"
+            "    }\n"
+            "}\n"
+        )
+        tracer = JavaExecutionTracer(code)
+        res = tracer.execute()
+        self.assertEqual(res['status'], 'success')
+        n_addrs = [s['variables']['n']['mem_addr'] for s in res['steps'] if 'n' in s['variables']]
+        self.assertTrue(len(n_addrs) > 0)
+        self.assertTrue(all(addr == n_addrs[0] for addr in n_addrs), f"Java addresses unstable: {n_addrs}")
+

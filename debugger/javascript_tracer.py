@@ -795,8 +795,10 @@ class JavaScriptExecutionTracer:
                         if p_idx < len(args_raw):
                             arg_var = args_raw[p_idx]
                             if arg_var in scope and param in local_scope:
-                                scope[arg_var] = local_scope[param]
-                                scope[arg_var]['is_changed'] = True
+                                if scope[arg_var].get('type') in ('array', 'object'):
+                                    scope[arg_var]['raw'] = local_scope[param]['raw']
+                                    scope[arg_var]['value'] = local_scope[param]['value']
+                                    scope[arg_var]['is_changed'] = True
 
                     call_stack.pop()
                     self._emit(i, stripped, 'return', call_stack, scope, changed_keys, called_fn, ret_value)
