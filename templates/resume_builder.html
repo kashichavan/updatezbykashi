@@ -42,9 +42,9 @@
       </button>
 
       <!-- Button 4: Download PDF -->
-      <button type="button" onclick="window.print()" class="core-action-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 13px 16px; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); transition: transform 0.15s ease;">
+      <button type="button" id="btnDownloadPdf" onclick="downloadResumeAsPdf()" class="core-action-btn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 13px 16px; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); transition: transform 0.15s ease;">
         <i data-lucide="download" style="width: 17px; height: 17px;"></i>
-        <span>4. Download PDF</span>
+        <span id="downloadPdfBtnText">4. Download PDF</span>
       </button>
     </div>
 
@@ -152,6 +152,10 @@
 
       <!-- Quick Action Utilities -->
       <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+        <button type="button" onclick="downloadResumeAsPdf()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 10px 12px; border-radius: 8px; font-weight: 800; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+          <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+          <span>Download Clean A4 PDF</span>
+        </button>
         <button type="button" onclick="copyResumeText()" style="background: #0f172a; color: #cbd5e1; border: 1px solid #334155; padding: 9px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
           <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
           <span>Copy Plain-Text Resume</span>
@@ -435,58 +439,149 @@
 
   /* PRINT MEDIA ENGINE: Generates pixel-perfect single page ATS PDF */
   @media print {
-    body * {
-      visibility: hidden;
-    }
-    .site-header, .site-footer, .resume-hero, .resume-controls-panel, .floating-chat-widget, #kashiiEntry, .site-grain {
-      display: none !important;
-    }
-    .resume-builder-main, .resume-workspace, .resume-preview-wrapper {
-      padding: 0 !important;
+    /* 1. Reset Root and Body */
+    html, body {
+      background: #ffffff !important;
       margin: 0 !important;
+      padding: 0 !important;
+      height: auto !important;
+      min-height: auto !important;
+      overflow: visible !important;
+      color: #000000 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* 2. Hide all non-resume UI components completely from the DOM layout */
+    nav, header.site-header, footer.site-footer, .site-grain, .resume-hero,
+    .core-actions-bar, .core-actions-strip, .quick-settings-bar, .target-job-banner,
+    .resume-controls-panel, .floating-chat-widget, #kashiiEntry, .modal-overlay,
+    #toastContainer, .print-hide, .ai-suggest-popover, button {
+      display: none !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    /* 3. Make all parent wrappers non-obstructive block containers */
+    .site-layout, .resume-builder-main, .resume-workspace, .resume-preview-wrapper {
       display: block !important;
-    }
-    #resumeSheet, #resumeSheet * {
-      visibility: visible;
-    }
-    #resumeSheet {
-      position: absolute;
-      left: 0;
-      top: 0;
       width: 100% !important;
       max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
       box-shadow: none !important;
-      padding: 0.3in 0.4in !important;
-      font-size: 11pt !important;
-      color: #000000 !important;
+      background: #ffffff !important;
+      overflow: visible !important;
     }
+
+    /* 4. Format Resume Sheet cleanly for A4 Page */
+    #resumeSheet {
+      display: block !important;
+      position: static !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+      border-radius: 0 !important;
+      background: #ffffff !important;
+      color: #000000 !important;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
+      font-size: 10.5pt !important;
+      line-height: 1.35 !important;
+    }
+
+    .ats-header {
+      margin-bottom: 8pt !important;
+    }
+
     .ats-name {
       font-size: 20pt !important;
       color: #000000 !important;
+      margin-bottom: 2pt !important;
     }
+
+    .ats-contact-line {
+      font-size: 9.5pt !important;
+      color: #333333 !important;
+    }
+
+    .ats-contact-line a {
+      color: #000000 !important;
+      text-decoration: none !important;
+    }
+
+    .ats-section {
+      margin-bottom: 8pt !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
     .ats-section-title {
       color: #000000 !important;
-      border-bottom: 1pt solid #000000 !important;
+      border-bottom: 1.5pt solid #000000 !important;
       font-size: 11pt !important;
+      margin-bottom: 4pt !important;
+      padding-bottom: 1pt !important;
+      font-weight: bold !important;
     }
-    .ats-bullet-list li {
-      font-size: 10pt !important;
+
+    .ats-summary-text {
+      font-size: 9.5pt !important;
       line-height: 1.35 !important;
-    }
-    a {
-      text-decoration: none !important;
       color: #000000 !important;
     }
-    @page {
-      margin: 0.4in;
-      size: A4 portrait;
+
+    .ats-skill-line {
+      font-size: 9.5pt !important;
+      line-height: 1.3 !important;
+      color: #000000 !important;
     }
-    .print-hide {
-      display: none !important;
-      visibility: hidden !important;
+
+    .ats-project-entry {
+      margin-bottom: 6pt !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
+
+    .ats-project-title {
+      font-size: 10.5pt !important;
+      color: #000000 !important;
+      font-weight: bold !important;
+    }
+
+    .ats-project-tech {
+      font-size: 9.5pt !important;
+      color: #222222 !important;
+      margin-bottom: 2pt !important;
+    }
+
+    .ats-bullet-list li {
+      font-size: 9.5pt !important;
+      line-height: 1.32 !important;
+      color: #000000 !important;
+      margin-bottom: 2pt !important;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 10mm 12mm;
     }
   }
 </style>
+
+<!-- Load html2pdf bundle for client-side direct PDF file generation -->
+<script src="{% static 'js/html2pdf.bundle.min.js' %}"></script>
+<script>
+  if (typeof html2pdf === 'undefined') {
+    document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>');
+  }
+</script>
 
 <!-- Live Reactive Engine Script -->
 <script>
@@ -1012,6 +1107,97 @@
       });
       checkList.innerHTML = checkHtml;
     }
+  }
+
+  async function downloadResumeAsPdf() {
+    const btnText = document.getElementById('downloadPdfBtnText');
+    const origText = btnText ? btnText.innerText : '4. Download PDF';
+    if (btnText) btnText.innerText = '⏳ Generating PDF...';
+
+    const sheet = document.getElementById('resumeSheet');
+    if (!sheet) {
+      if (btnText) btnText.innerText = origText;
+      alert('Resume sheet not found');
+      return;
+    }
+
+    // Determine candidate name for clean filename
+    const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : '';
+    const cleanName = (rawName || 'Candidate').trim().replace(/[^a-zA-Z0-9_-]/g, '_') || 'Resume';
+    const filename = `${cleanName}_ATS_Resume.pdf`;
+
+    // 1. Try html2pdf direct file download
+    if (typeof html2pdf !== 'undefined') {
+      const exportContainer = document.createElement('div');
+      exportContainer.style.position = 'fixed';
+      exportContainer.style.left = '-9999px';
+      exportContainer.style.top = '0';
+      exportContainer.style.width = '794px';
+      exportContainer.style.background = '#ffffff';
+      exportContainer.style.zIndex = '-9999';
+
+      const clone = sheet.cloneNode(true);
+      clone.removeAttribute('contenteditable');
+      clone.style.width = '794px';
+      clone.style.maxWidth = '794px';
+      clone.style.margin = '0';
+      clone.style.padding = '36px 42px';
+      clone.style.boxShadow = 'none';
+      clone.style.border = 'none';
+      clone.style.borderRadius = '0';
+      clone.style.background = '#ffffff';
+      clone.style.color = '#111827';
+      clone.style.fontFamily = "'Calibri', 'Arial', sans-serif";
+
+      clone.querySelectorAll('.print-hide, .ai-suggest-popover, [contenteditable]').forEach(el => {
+        el.removeAttribute('contenteditable');
+        if (el.classList.contains('print-hide')) el.remove();
+      });
+
+      clone.querySelectorAll('a').forEach(a => {
+        a.style.color = '#111827';
+        a.style.textDecoration = 'none';
+      });
+
+      exportContainer.appendChild(clone);
+      document.body.appendChild(exportContainer);
+
+      const opt = {
+        margin:       [8, 8, 8, 8],
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          letterRendering: true,
+          scrollY: 0,
+          scrollX: 0,
+          windowWidth: 794
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      try {
+        await html2pdf().set(opt).from(clone).save();
+        if (btnText) btnText.innerText = '✅ PDF Downloaded!';
+        if (window.showToast) window.showToast(`Saved ${filename} directly to your device!`, 'success');
+        setTimeout(() => {
+          if (btnText) btnText.innerText = origText;
+        }, 3000);
+        document.body.removeChild(exportContainer);
+        return;
+      } catch (err) {
+        console.warn('html2pdf render failed, falling back to print dialog:', err);
+        if (document.body.contains(exportContainer)) {
+          document.body.removeChild(exportContainer);
+        }
+      }
+    }
+
+    // 2. Fallback to clean window.print()
+    if (btnText) btnText.innerText = origText;
+    window.print();
   }
 
   function copyResumeText() {
