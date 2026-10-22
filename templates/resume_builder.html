@@ -437,6 +437,17 @@
     }
   }
 
+  /* Clean styles applied during PDF export */
+  .ats-resume-sheet.ats-exporting {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+  }
+  .ats-exporting .print-hide, .ats-exporting .ai-suggest-popover {
+    display: none !important;
+  }
+
   /* PRINT MEDIA ENGINE: Generates pixel-perfect single page ATS PDF */
   @media print {
     /* 1. Reset Root and Body */
@@ -1128,42 +1139,14 @@
 
     // 1. Try html2pdf direct file download
     if (typeof html2pdf !== 'undefined') {
-      const exportContainer = document.createElement('div');
-      exportContainer.style.position = 'fixed';
-      exportContainer.style.left = '-9999px';
-      exportContainer.style.top = '0';
-      exportContainer.style.width = '794px';
-      exportContainer.style.background = '#ffffff';
-      exportContainer.style.zIndex = '-9999';
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
 
-      const clone = sheet.cloneNode(true);
-      clone.removeAttribute('contenteditable');
-      clone.style.width = '794px';
-      clone.style.maxWidth = '794px';
-      clone.style.margin = '0';
-      clone.style.padding = '36px 42px';
-      clone.style.boxShadow = 'none';
-      clone.style.border = 'none';
-      clone.style.borderRadius = '0';
-      clone.style.background = '#ffffff';
-      clone.style.color = '#111827';
-      clone.style.fontFamily = "'Calibri', 'Arial', sans-serif";
-
-      clone.querySelectorAll('.print-hide, .ai-suggest-popover, [contenteditable]').forEach(el => {
-        el.removeAttribute('contenteditable');
-        if (el.classList.contains('print-hide')) el.remove();
-      });
-
-      clone.querySelectorAll('a').forEach(a => {
-        a.style.color = '#111827';
-        a.style.textDecoration = 'none';
-      });
-
-      exportContainer.appendChild(clone);
-      document.body.appendChild(exportContainer);
+      sheet.classList.add('ats-exporting');
 
       const opt = {
-        margin:       [8, 8, 8, 8],
+        margin:       [10, 12, 10, 12],
         filename:     filename,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { 
@@ -1171,27 +1154,24 @@
           useCORS: true, 
           letterRendering: true,
           scrollY: 0,
-          scrollX: 0,
-          windowWidth: 794
+          scrollX: 0
         },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       try {
-        await html2pdf().set(opt).from(clone).save();
+        await html2pdf().set(opt).from(sheet).save();
         if (btnText) btnText.innerText = '✅ PDF Downloaded!';
         if (window.showToast) window.showToast(`Saved ${filename} directly to your device!`, 'success');
         setTimeout(() => {
           if (btnText) btnText.innerText = origText;
         }, 3000);
-        document.body.removeChild(exportContainer);
         return;
       } catch (err) {
         console.warn('html2pdf render failed, falling back to print dialog:', err);
-        if (document.body.contains(exportContainer)) {
-          document.body.removeChild(exportContainer);
-        }
+      } finally {
+        sheet.classList.remove('ats-exporting');
       }
     }
 
