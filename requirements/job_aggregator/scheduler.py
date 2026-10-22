@@ -9,7 +9,6 @@ import time
 import random
 import threading
 import logging
-from django.utils import timezone
 from .orchestrator import orchestrator
 
 logger = logging.getLogger(__name__)

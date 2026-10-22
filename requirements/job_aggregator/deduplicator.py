@@ -13,10 +13,8 @@ import logging
 from django.utils import timezone
 from django.db.models import Q
 
-from requirements.models import JobPosting, Category
+from requirements.models import JobPosting
 from requirements.jobdexo_service import (
-    canonical_clean_url,
-    normalize_text,
     get_or_create_standard_categories,
     classify_opportunity_category
 )

@@ -15,7 +15,6 @@ import re
 import html
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import timedelta
 from django.utils import timezone
 
 from ..base_adapter import BaseJobSourceAdapter

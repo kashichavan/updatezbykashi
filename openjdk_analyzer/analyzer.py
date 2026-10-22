@@ -5,7 +5,7 @@ Parses Java source code using Tree-Sitter AST parser with regex fallback.
 
 import re
 from pathlib import Path
-from typing import List, Set, Union
+from typing import Set
 from openjdk_analyzer.metadata import JavaFileMetadata
 
 try:

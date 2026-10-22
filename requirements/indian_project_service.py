@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from django.db.models import Q
 from .models import IndianDemoProject, DiscoveredProject, ResumeGenerationJob
 

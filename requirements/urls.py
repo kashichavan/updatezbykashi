@@ -1,7 +1,6 @@
 from django.urls import path
 from django.views.generic import RedirectView
 from . import views
-from debugger.views import learn_topic_view
 
 urlpatterns = [
     path('', views.index_view, name='index'),

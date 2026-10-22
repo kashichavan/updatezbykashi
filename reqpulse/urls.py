@@ -15,7 +15,6 @@ from requirements.views import (
     rss_feed_view,
     indexnow_key_view,
 )
-from debugger.views import learn_topic_view
 from api.ninja_api import api as ninja_api
 
 urlpatterns = [

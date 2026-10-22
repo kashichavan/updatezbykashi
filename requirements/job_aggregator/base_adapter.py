@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 
 import requests
-from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 

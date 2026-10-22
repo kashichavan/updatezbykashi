@@ -10,7 +10,7 @@ import json
 import logging
 import hashlib
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 import requests
 from django.core.cache import cache
