@@ -213,7 +213,7 @@ def parse_resume_into_structured_json(raw_text: str) -> Dict[str, Any]:
         "- Return ONLY valid JSON."
     )
 
-    sample_slice = raw_text[:3500]
+    sample_slice = raw_text[:8000]
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": f"Parse this resume:\n\n{sample_slice}"}
@@ -236,11 +236,36 @@ def parse_resume_into_structured_json(raw_text: str) -> Dict[str, Any]:
             c.setdefault("github", "")
             c.setdefault("portfolio", "")
 
-            # Ensure projects and experience are lists
-            if not isinstance(parsed.get("projects"), list):
-                parsed["projects"] = []
-            if not isinstance(parsed.get("experience"), list):
-                parsed["experience"] = []
+            # Ensure projects and experience are lists of clean dicts
+            clean_projects = []
+            for p in parsed.get("projects", []):
+                if isinstance(p, dict):
+                    # Sanitize bullets to clean strings
+                    raw_b = p.get("bullets", [])
+                    clean_b = []
+                    for b in raw_b:
+                        if isinstance(b, str) and b.strip():
+                            clean_b.append(b.strip())
+                        elif isinstance(b, dict):
+                            clean_b.append(b.get("bullet") or b.get("text") or str(b))
+                    p["bullets"] = clean_b
+                    clean_projects.append(p)
+            parsed["projects"] = clean_projects
+
+            clean_exp = []
+            for e in parsed.get("experience", []):
+                if isinstance(e, dict):
+                    raw_b = e.get("bullets", [])
+                    clean_b = []
+                    for b in raw_b:
+                        if isinstance(b, str) and b.strip():
+                            clean_b.append(b.strip())
+                        elif isinstance(b, dict):
+                            clean_b.append(b.get("bullet") or b.get("text") or str(b))
+                    e["bullets"] = clean_b
+                    clean_exp.append(e)
+            parsed["experience"] = clean_exp
+
             if not isinstance(parsed.get("education"), list):
                 parsed["education"] = []
             if not isinstance(parsed.get("certifications"), list):
@@ -394,14 +419,20 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
     skills_text = json.dumps(parsed_resume.get("skills", {})).lower()
     all_content_text = json.dumps(parsed_resume).lower()
 
+    matched_skills = []
+    missing_skills = []
     if target_skills_list:
-        matched_target = sum(1 for s in target_skills_list if s.lower() in all_content_text)
-        skills_score = min(20, int((matched_target / max(1, len(target_skills_list))) * 20) + 4)
+        for s in target_skills_list:
+            if s.lower() in all_content_text:
+                matched_skills.append(s)
+            else:
+                missing_skills.append(s)
+        skills_score = min(20, int((len(matched_skills) / max(1, len(target_skills_list))) * 20) + 4)
     else:
         # Measure diversity of technical keywords
         core_tech = ['python', 'javascript', 'sql', 'react', 'django', 'docker', 'aws', 'rest', 'git', 'linux', 'node', 'java', 'c++']
-        found_tech = sum(1 for t in core_tech if t in all_content_text)
-        skills_score = min(20, max(8, int((found_tech / len(core_tech)) * 20) + 4))
+        matched_skills = [t for t in core_tech if t in all_content_text]
+        skills_score = min(20, max(8, int((len(matched_skills) / len(core_tech)) * 20) + 4))
 
     total_score += skills_score
     pillars.append({
@@ -458,13 +489,28 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         proj_copy['breakdown'] = eval_data['breakdown']
         scored_projects.append(proj_copy)
 
+    # Build checks array for backwards compatibility with all UI displays
+    checks = []
+    for p in pillars:
+        checks.append({
+            'rule': p['name'],
+            'passed': (p['score'] / max(p['max_score'], 1)) >= 0.7,
+            'points': p['score'],
+            'max_points': p['max_score'],
+            'detail': p['detail']
+        })
+
     return {
+        "score": total_score,
         "overall_score": total_score,
         "grade": grade,
         "pass_rate": pass_rate,
         "pillars": pillars,
+        "checks": checks,
         "scored_projects": scored_projects,
         "improvements": improvements[:4] or ["Your resume has strong fundamentals. Edit live to boost score to 95+."],
+        "matched_skills": matched_skills,
+        "missing_skills": missing_skills,
         "bullet_count": len(all_bullets),
         "bullets_with_metrics": bullets_with_metrics
     }

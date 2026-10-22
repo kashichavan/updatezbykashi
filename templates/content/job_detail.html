@@ -1385,7 +1385,7 @@
       <!-- Action Button to Discover Repositories -->
       <button type="button" id="btnStartFresherGen" onclick="triggerFresherDiscoveryPipeline()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 10px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45); margin-bottom: 14px;">
         <i data-lucide="github" style="width: 16px; height: 16px;"></i>
-        <span>⚡ Discover Matching GitHub Projects for {{ job.company_name }}</span>
+        <span>⚡ Discover Tech Projects for {{ job.title }}</span>
       </button>
 
       <!-- Async Progress Box -->
@@ -2349,7 +2349,8 @@
       degree: document.getElementById('fresherDegree')?.value || 'B.Tech in Computer Science',
       institution: document.getElementById('fresherCollege')?.value || 'University Engineering College',
       gpa: document.getElementById('fresherGpaYear')?.value || '8.5 CGPA • 2025',
-      skills: "{{ job.skills|escapejs }}",
+      skills: "{{ job.skills_required|escapejs }}",
+      job_title: "{{ job.title|escapejs }}",
     };
 
     try {

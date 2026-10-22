@@ -127,6 +127,34 @@ def _safe_bg_jobdexo_import(limit=15):
         except Exception:
             pass
 
+def trigger_async_india_jobs_refresh(force=False, limit=10):
+    """Triggers non-blocking background auto-import for Naukri, LinkedIn, and Jobdexo."""
+    last_sync = cache.get('last_auto_india_jobs_sync_ts')
+    if force or not last_sync:
+        cache.set('last_auto_india_jobs_sync_ts', time.time(), 300)  # 5 min throttle
+        def _bg_run():
+            try:
+                from .job_aggregator.orchestrator import orchestrator
+                from django.db import close_old_connections
+                close_old_connections()
+                orchestrator.run_aggregation(sources=["Naukri", "LinkedIn", "Jobdexo"], limit_per_source=limit, last_hours=48)
+            except Exception as e:
+                logger.error(f"Background India jobs ingestion failed: {e}")
+            finally:
+                try:
+                    from django.db import close_old_connections
+                    close_old_connections()
+                except Exception:
+                    pass
+
+        t = threading.Thread(
+            target=_bg_run,
+            daemon=True,
+            name="AsyncIndiaJobsRefresh"
+        )
+        t.start()
+
+
 def trigger_async_jobdexo_refresh(force=False, limit=15):
     """Triggers non-blocking background auto-import if 5 minutes have elapsed since last crawl."""
     last_sync = cache.get('last_auto_jobdexo_sync_ts')
@@ -150,7 +178,7 @@ def api_ping(request):
 
 def api_cron_sync_jobs(request):
     """
-    Public cron trigger endpoint for automated Jobdexo synchronization.
+    Public cron trigger endpoint for automated Jobdexo, Naukri & LinkedIn synchronization.
     Can be pinged by UptimeRobot, GitHub Actions, or cron-job.org.
     """
     force = request.GET.get('force') == '1' or request.GET.get('force') == 'true'
@@ -160,8 +188,10 @@ def api_cron_sync_jobs(request):
         limit = 10
 
     trigger_async_jobdexo_refresh(force=force, limit=limit)
+    trigger_async_india_jobs_refresh(force=force, limit=limit)
     return JsonResponse({
         'status': 'sync_triggered',
+        'sources': ['Jobdexo', 'Naukri', 'LinkedIn'],
         'limit': limit,
         'force': force,
         'timestamp': timezone.now().isoformat()
@@ -182,6 +212,14 @@ def ads_txt_view(request):
 def index_view(request):
     try:
         sync_expired_jobs()
+    except Exception:
+        pass
+
+    # Ensure India-wide multi-source coverage (Naukri, LinkedIn, Jobdexo)
+    try:
+        active_alt_sources = JobPosting.objects.filter(source_name__in=['Naukri', 'LinkedIn'], status='ACTIVE').count()
+        if active_alt_sources < 5:
+            trigger_async_india_jobs_refresh(force=True, limit=6)
     except Exception:
         pass
 
@@ -2638,17 +2676,70 @@ def api_ai_github_project(request):
 
 @csrf_exempt
 def api_ats_score_eval(request):
-    """Recalculate ATS score on custom user resume JSON payload."""
+    """
+    Recalculate ATS score on custom user resume JSON payload.
+    Supports role-based evaluation as well as exact job description / target skills evaluation.
+    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     from .resume_engine import calculate_ats_score
+    from .resume_parser import evaluate_uploaded_resume_ats
 
     try:
         body = json.loads(request.body.decode('utf-8'))
         role = body.get('role', 'python-backend')
         resume_data = body.get('resume', {})
+        job_id = body.get('job_id')
+        job_skills = body.get('job_skills')
+
+        target_skills = []
+        if job_skills:
+            if isinstance(job_skills, list):
+                target_skills = job_skills
+            elif isinstance(job_skills, str):
+                target_skills = [s.strip() for s in job_skills.split(',') if s.strip()]
+        elif job_id:
+            from .models import JobPosting
+            import uuid
+            try:
+                val_uuid = uuid.UUID(str(job_id))
+                job = JobPosting.objects.filter(uuid=val_uuid).first()
+                if job:
+                    target_skills = job.get_skills_list()
+            except Exception:
+                if str(job_id).isdigit():
+                    job = JobPosting.objects.filter(pk=int(job_id)).first()
+                    if job:
+                        target_skills = job.get_skills_list()
+
+        # If job skills are available, calculate job-specific ATS evaluation
+        if target_skills:
+            eval_res = evaluate_uploaded_resume_ats(resume_data, target_skills)
+            score = eval_res.get('overall_score', 85)
+            # Build checks array for backward compatibility
+            checks = []
+            for p in eval_res.get('pillars', []):
+                checks.append({
+                    'rule': p['name'],
+                    'passed': (p['score'] / max(p['max_score'], 1)) >= 0.7,
+                    'points': p['score'],
+                    'max_points': p['max_score'],
+                    'detail': p['detail']
+                })
+            return JsonResponse({
+                'score': score,
+                'overall_score': score,
+                'grade': eval_res.get('grade', 'Competitive'),
+                'pass_rate': eval_res.get('pass_rate', '82% Enterprise Pass Rate'),
+                'checks': checks,
+                'pillars': eval_res.get('pillars', []),
+                'improvements': eval_res.get('improvements', []),
+                'matched_keywords': eval_res.get('matched_skills', [])
+            })
+
         result = calculate_ats_score(resume_data, role)
+        result['overall_score'] = result.get('score', 85)
         return JsonResponse(result)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
@@ -2871,14 +2962,18 @@ def api_resume_upload(request):
             from .models import JobPosting
             import uuid
             try:
-                job = JobPosting.objects.filter(uuid=uuid.UUID(job_id)).first()
+                job = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
                 if job:
                     target_skills_list = job.get_skills_list()
             except Exception:
-                pass
+                if str(job_id).isdigit():
+                    job = JobPosting.objects.filter(pk=int(job_id)).first()
+                    if job:
+                        target_skills_list = job.get_skills_list()
 
         # Evaluate ATS Scorecard
         ats_eval = evaluate_uploaded_resume_ats(parsed_resume, target_skills_list)
+        ats_eval['score'] = ats_eval.get('overall_score', 85)
 
         return JsonResponse({
             'success': True,

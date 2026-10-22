@@ -388,7 +388,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <div class="vp-product-card" data-id="${j.id}" data-share-url="${escapeHtml(shareUrl)}">
           <div class="vp-card-header">
-            <span class="company-badge" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <span class="company-badge" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
+              <span class="source-tag" style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(2, 132, 199, 0.08);color:#0284c7;border:1px solid rgba(2, 132, 199, 0.25);">${escapeHtml(j.source_name || 'Jobdexo')}</span>
+            </div>
             <div class="vp-badge-cluster">
               <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;">${catIcon} ${escapeHtml(j.category_name || catLabel)}</span>
               ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:4px;"><span class="badge-live-pulse"></span>NEW</span>' : ''}

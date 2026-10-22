@@ -34,9 +34,24 @@ def get_github_headers() -> Dict[str, str]:
     return headers
 
 
+COMPANY_AND_NOISE_TERMS = {
+    'google', 'amazon', 'microsoft', 'apple', 'meta', 'netflix', 'uber',
+    'tcs', 'infosys', 'wipro', 'hcl', 'cognizant', 'accenture', 'swiggy',
+    'zomato', 'razorpay', 'phonepe', 'paytm', 'flipkart', 'jobdexo', 'naukri',
+    'linkedin', 'bengaluru', 'bangalore', 'hyderabad', 'pune', 'chennai',
+    'mumbai', 'delhi', 'noida', 'gurugram', 'remote', 'india', 'fresher',
+    'internship', 'hiring', 'drive', 'urgent', 'experience', 'years', 'lpa',
+    'salary', 'stipend', 'immediate', 'opening', 'walkin', 'technologies',
+    'solutions', 'pvt', 'ltd', 'limited', 'inc', 'corp', 'corporation',
+    'company', 'leading', 'client', 'confidential', 'software', 'engineer',
+    'developer', 'analyst', 'associate', 'trainee', 'senior', 'junior', 'lead'
+}
+
+
 def extract_keywords_from_job(job_title: str = "", job_skills: str = "", job_description: str = "") -> List[str]:
     """
     Extract normalized technology keywords and frameworks from job metadata.
+    Excludes hiring companies, recruiter noise, and non-technical stopwords.
     """
     raw_text = f"{job_title} {job_skills} {job_description}".lower()
     
@@ -46,7 +61,8 @@ def extract_keywords_from_job(job_title: str = "", job_skills: str = "", job_des
         "angular", "node", "nodejs", "express", "java", "spring", "springboot", "c++", "c#", ".net",
         "golang", "go", "rust", "postgresql", "postgres", "mysql", "mongodb", "redis", "docker",
         "kubernetes", "aws", "gcp", "azure", "graphql", "rest", "api", "tailwind", "redux", "kafka",
-        "rabbitmq", "celery", "elasticsearch", "pytorch", "tensorflow", "pandas", "numpy", "scikit-learn"
+        "rabbitmq", "celery", "elasticsearch", "pytorch", "tensorflow", "pandas", "numpy", "scikit-learn",
+        "flutter", "dart", "android", "ios", "swift", "kotlin", "ci/cd", "devops", "linux", "sql"
     ]
     
     found_tech = []
@@ -54,9 +70,10 @@ def extract_keywords_from_job(job_title: str = "", job_skills: str = "", job_des
     if job_skills:
         for s in re.split(r'[,|/\n]', job_skills):
             cleaned = s.strip().lower()
-            if cleaned and cleaned not in found_tech:
-                found_tech.append(cleaned)
-                
+            if cleaned and cleaned not in COMPANY_AND_NOISE_TERMS and len(cleaned) >= 2:
+                if cleaned not in found_tech:
+                    found_tech.append(cleaned)
+                    
     # Search for known technologies in the text
     for tech in known_tech:
         pattern = r'\b' + re.escape(tech) + r'\b'
@@ -69,29 +86,24 @@ def extract_keywords_from_job(job_title: str = "", job_skills: str = "", job_des
 def build_search_queries(job_title: str, detected_tech: List[str]) -> List[str]:
     """
     Generate 2-3 focused search queries for GitHub repository discovery.
+    Strictly focuses on programming languages, frameworks, and engineering concepts.
     """
     queries = []
     
-    # Query 1: Top 2-3 technologies
+    # Query 1: Top 2 technologies
     if len(detected_tech) >= 2:
         queries.append(f"{detected_tech[0]} {detected_tech[1]} stars:>10")
     elif detected_tech:
         queries.append(f"{detected_tech[0]} stars:>10")
         
-    # Query 2: Technology + role term
-    role_terms = ["backend", "frontend", "fullstack", "api", "microservice", "dashboard", "pipeline"]
-    matched_role = next((t for t in role_terms if t in job_title.lower()), "project")
+    # Query 2: Technology + engineering component
+    arch_terms = ["backend", "frontend", "fullstack", "microservice", "api", "dashboard", "pipeline"]
+    matched_arch = next((t for t in arch_terms if t in job_title.lower()), "application")
     
     if detected_tech:
-        queries.append(f"{detected_tech[0]} {matched_role} stars:>15")
+        queries.append(f"{detected_tech[0]} {matched_arch} stars:>15")
     else:
-        # Fallback to job title words
-        clean_title = re.sub(r'[^a-zA-Z0-9\s]', '', job_title)
-        title_words = [w for w in clean_title.split() if len(w) > 3][:2]
-        if title_words:
-            queries.append(f"{' '.join(title_words)} stars:>10")
-        else:
-            queries.append("fullstack web application stars:>50")
+        queries.append("fullstack web application stars:>50")
             
     return queries[:2]
 
@@ -300,10 +312,11 @@ def search_github_repositories(
 
 def get_fallback_curated_projects(detected_tech: List[str]) -> List[Dict[str, Any]]:
     """
-    Curated high-standard open-source projects for fallback when rate-limited.
-    Ensures candidates always receive relevant, high-quality projects.
+    Domain-aware curated open-source projects for fallback when rate-limited.
+    Matches the candidate's exact tech stack (Java, Python, React, Cloud, Mobile, AI/ML).
     """
-    curated = [
+    curated_pool = [
+        # 1. Python & FastAPI / Microservices
         {
             "repo_name": "tiangolo/fastapi",
             "repo_url": "https://github.com/tiangolo/fastapi",
@@ -323,6 +336,7 @@ def get_fallback_curated_projects(detected_tech: List[str]) -> List[Dict[str, An
             "candidate_relationship": "RECOMMENDED",
             "is_selected": False,
         },
+        # 2. Python & Django REST Framework
         {
             "repo_name": "encode/django-rest-framework",
             "repo_url": "https://github.com/encode/django-rest-framework",
@@ -330,7 +344,7 @@ def get_fallback_curated_projects(detected_tech: List[str]) -> List[Dict[str, An
             "stars": 28000,
             "language": "Python",
             "tech_stack": ["Python", "Django", "DRF", "PostgreSQL", "REST"],
-            "relevance_score": 89.5,
+            "relevance_score": 90.0,
             "score_breakdown": {
                 "technology_overlap": 31.0,
                 "responsibility_overlap": 22.5,
@@ -342,6 +356,67 @@ def get_fallback_curated_projects(detected_tech: List[str]) -> List[Dict[str, An
             "candidate_relationship": "RECOMMENDED",
             "is_selected": False,
         },
+        # 3. Java & Spring Boot / Microservices
+        {
+            "repo_name": "macrozheng/mall-swarm",
+            "repo_url": "https://github.com/macrozheng/mall-swarm",
+            "description": "Enterprise microservices system built on Spring Cloud & Spring Boot with Docker, MyBatis, Redis, and Elasticsearch.",
+            "stars": 38000,
+            "language": "Java",
+            "tech_stack": ["Java", "Spring Boot", "Spring Cloud", "Docker", "Elasticsearch", "MySQL"],
+            "relevance_score": 91.5,
+            "score_breakdown": {
+                "technology_overlap": 32.0,
+                "responsibility_overlap": 23.5,
+                "code_structure": 18.5,
+                "documentation": 9.0,
+                "maintenance_recency": 8.5
+            },
+            "evidence_summary": "Enterprise microservices architecture utilizing Spring Cloud Gateway, JWT authentication, and distributed Redis caching.",
+            "candidate_relationship": "RECOMMENDED",
+            "is_selected": False,
+        },
+        # 4. Java PetClinic Reference Implementation
+        {
+            "repo_name": "spring-projects/spring-petclinic",
+            "repo_url": "https://github.com/spring-projects/spring-petclinic",
+            "description": "A Spring Boot sample application showcasing JPA, validation, database integration, and MVC patterns.",
+            "stars": 8200,
+            "language": "Java",
+            "tech_stack": ["Java", "Spring Boot", "Spring Data JPA", "PostgreSQL", "Maven"],
+            "relevance_score": 88.0,
+            "score_breakdown": {
+                "technology_overlap": 30.0,
+                "responsibility_overlap": 22.0,
+                "code_structure": 18.0,
+                "documentation": 9.0,
+                "maintenance_recency": 9.0
+            },
+            "evidence_summary": "Canonical Spring Boot application demonstrating Repository design patterns, Hibernate ORM mappings, and JUnit integration test suites.",
+            "candidate_relationship": "RECOMMENDED",
+            "is_selected": False,
+        },
+        # 5. JavaScript / TypeScript & React / Next.js
+        {
+            "repo_name": "vercel/next.js",
+            "repo_url": "https://github.com/vercel/next.js",
+            "description": "The React Framework for the Web. Hybrid static & server rendering, TypeScript support, smart bundling.",
+            "stars": 125000,
+            "language": "TypeScript",
+            "tech_stack": ["React", "Next.js", "TypeScript", "Node.js", "Tailwind"],
+            "relevance_score": 91.0,
+            "score_breakdown": {
+                "technology_overlap": 31.0,
+                "responsibility_overlap": 23.0,
+                "code_structure": 19.0,
+                "documentation": 9.0,
+                "maintenance_recency": 9.0
+            },
+            "evidence_summary": "Server-side rendering (SSR), dynamic App Router, edge runtime deployment, and responsive UI components.",
+            "candidate_relationship": "RECOMMENDED",
+            "is_selected": False,
+        },
+        # 6. React Core Component Architecture
         {
             "repo_name": "facebook/react",
             "repo_url": "https://github.com/facebook/react",
@@ -349,7 +424,7 @@ def get_fallback_curated_projects(detected_tech: List[str]) -> List[Dict[str, An
             "stars": 225000,
             "language": "JavaScript",
             "tech_stack": ["JavaScript", "TypeScript", "React", "Frontend", "UI"],
-            "relevance_score": 86.0,
+            "relevance_score": 88.0,
             "score_breakdown": {
                 "technology_overlap": 30.0,
                 "responsibility_overlap": 21.0,
@@ -361,24 +436,75 @@ def get_fallback_curated_projects(detected_tech: List[str]) -> List[Dict[str, An
             "candidate_relationship": "RECOMMENDED",
             "is_selected": False,
         },
+        # 7. Data Science & Machine Learning / AI
         {
-            "repo_name": "redis/redis-py",
-            "repo_url": "https://github.com/redis/redis-py",
-            "description": "The Python interface to the Redis in-memory database.",
-            "stars": 13500,
+            "repo_name": "langchain-ai/langchain",
+            "repo_url": "https://github.com/langchain-ai/langchain",
+            "description": "Building applications with LLMs through composability and retrieval-augmented generation (RAG).",
+            "stars": 95000,
             "language": "Python",
-            "tech_stack": ["Python", "Redis", "Caching", "Distributed Systems"],
-            "relevance_score": 84.5,
+            "tech_stack": ["Python", "Machine Learning", "LLMs", "Vector DB", "RAG"],
+            "relevance_score": 90.5,
             "score_breakdown": {
-                "technology_overlap": 28.0,
-                "responsibility_overlap": 22.0,
-                "code_structure": 17.5,
-                "documentation": 8.5,
-                "maintenance_recency": 8.5
+                "technology_overlap": 31.0,
+                "responsibility_overlap": 23.0,
+                "code_structure": 18.5,
+                "documentation": 9.0,
+                "maintenance_recency": 9.0
             },
-            "evidence_summary": "High-throughput in-memory caching layer, pub/sub messaging patterns, rate-limiting tokens, and sub-5ms lookup latency.",
+            "evidence_summary": "RAG architecture with vector embedding storage, semantic retrieval pipelines, and streaming LLM token generation.",
+            "candidate_relationship": "RECOMMENDED",
+            "is_selected": False,
+        },
+        # 8. Cloud / DevOps & Docker / Kubernetes
+        {
+            "repo_name": "moby/moby",
+            "repo_url": "https://github.com/moby/moby",
+            "description": "Moby Project - a collaborative project for the container ecosystem to assemble container-based systems.",
+            "stars": 68000,
+            "language": "Go",
+            "tech_stack": ["Docker", "Kubernetes", "DevOps", "Linux", "Cloud", "Go"],
+            "relevance_score": 87.5,
+            "score_breakdown": {
+                "technology_overlap": 29.0,
+                "responsibility_overlap": 22.0,
+                "code_structure": 18.0,
+                "documentation": 9.0,
+                "maintenance_recency": 9.5
+            },
+            "evidence_summary": "Containerization runtime engine, automated image layer caching, networking bridges, and daemon process management.",
+            "candidate_relationship": "RECOMMENDED",
+            "is_selected": False,
+        },
+        # 9. Mobile / Flutter / Android
+        {
+            "repo_name": "flutter/flutter",
+            "repo_url": "https://github.com/flutter/flutter",
+            "description": "Flutter makes it easy and fast to build beautiful apps for mobile and beyond.",
+            "stars": 165000,
+            "language": "Dart",
+            "tech_stack": ["Flutter", "Dart", "Android", "iOS", "Mobile"],
+            "relevance_score": 89.0,
+            "score_breakdown": {
+                "technology_overlap": 30.0,
+                "responsibility_overlap": 22.5,
+                "code_structure": 18.5,
+                "documentation": 9.0,
+                "maintenance_recency": 9.0
+            },
+            "evidence_summary": "Cross-platform mobile UI framework with declarative widgets, native platform channels, and high-performance skia canvas rendering.",
             "candidate_relationship": "RECOMMENDED",
             "is_selected": False,
         }
     ]
-    return curated
+
+    # Rank pool by matching detected technologies
+    tech_set = {t.lower() for t in detected_tech} if detected_tech else set()
+    if tech_set:
+        def match_score(p):
+            p_stack = {s.lower() for s in p.get("tech_stack", [])} | {p.get("language", "").lower()}
+            common = tech_set.intersection(p_stack)
+            return len(common) * 10.0 + p.get("relevance_score", 80)
+        curated_pool.sort(key=match_score, reverse=True)
+
+    return curated_pool[:6]

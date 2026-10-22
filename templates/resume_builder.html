@@ -24,9 +24,9 @@
     <div class="core-actions-bar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; max-width: 820px; margin: 0 auto 16px;">
       
       <!-- Button 1: Upload Resume -->
-      <button type="button" onclick="triggerFileInput()" class="core-action-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: none; padding: 13px 16px; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); transition: transform 0.15s ease;">
+      <button type="button" id="btnUploadResume" onclick="triggerFileInput()" class="core-action-btn" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: none; padding: 13px 16px; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); transition: transform 0.15s ease;">
         <i data-lucide="upload-cloud" style="width: 17px; height: 17px;"></i>
-        <span>1. Upload Resume</span>
+        <span id="btnUploadResumeText">1. Upload Resume</span>
       </button>
 
       <!-- Button 2: 1-Click AI 95+ Boost -->
@@ -967,13 +967,18 @@
 
   async function recalculateAtsScore() {
     try {
+      const payload = {
+        role: currentRoleKey,
+        resume: currentResumeData
+      };
+      if (typeof targetJobData !== 'undefined' && targetJobData) {
+        if (targetJobData.id) payload.job_id = targetJobData.id;
+        if (targetJobData.skills) payload.job_skills = targetJobData.skills;
+      }
       const res = await fetch('/api/resume/evaluate/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          role: currentRoleKey,
-          resume: currentResumeData
-        })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       updateAtsScoreDisplay(data);
@@ -984,21 +989,29 @@
 
   function updateAtsScoreDisplay(evalData) {
     if (!evalData) return;
-    document.getElementById('atsScoreValue').innerText = `${evalData.score} / 100`;
-    document.getElementById('atsProgressBar').style.width = `${evalData.score}%`;
-    document.getElementById('atsGradeText').innerText = `✓ ${evalData.grade}`;
-    document.getElementById('atsPassRateText').innerText = evalData.pass_rate;
+    const score = evalData.score !== undefined ? evalData.score : (evalData.overall_score || 85);
+    const scoreValEl = document.getElementById('atsScoreValue');
+    if (scoreValEl) scoreValEl.innerText = `${score} / 100`;
+    const barEl = document.getElementById('atsProgressBar');
+    if (barEl) barEl.style.width = `${score}%`;
+    const gradeEl = document.getElementById('atsGradeText');
+    if (gradeEl) gradeEl.innerText = `✓ ${evalData.grade || 'Competitive'}`;
+    const passEl = document.getElementById('atsPassRateText');
+    if (passEl) passEl.innerText = evalData.pass_rate || '';
 
-    let checkHtml = '';
-    evalData.checks.forEach(c => {
-      checkHtml += `
-        <li style="display: flex; align-items: flex-start; gap: 6px;">
-          <span style="color: ${c.passed ? '#34d399' : '#f87171'};">${c.passed ? '✓' : '✗'}</span>
-          <span><strong>${c.rule}</strong>: ${c.detail}</span>
-        </li>
-      `;
-    });
-    document.getElementById('atsChecklist').innerHTML = checkHtml;
+    const checkList = document.getElementById('atsChecklist');
+    if (checkList && Array.isArray(evalData.checks)) {
+      let checkHtml = '';
+      evalData.checks.forEach(c => {
+        checkHtml += `
+          <li style="display: flex; align-items: flex-start; gap: 6px;">
+            <span style="color: ${c.passed ? '#34d399' : '#f87171'};">${c.passed ? '✓' : '✗'}</span>
+            <span><strong>${c.rule}</strong>: ${c.detail}</span>
+          </li>
+        `;
+      });
+      checkList.innerHTML = checkHtml;
+    }
   }
 
   function copyResumeText() {
@@ -1073,21 +1086,23 @@
       return;
     }
 
-    // Toggle loading state on dropzone
-    const norm = document.getElementById('dropZoneContentNormal');
-    const load = document.getElementById('dropZoneContentLoading');
-    if (norm && load) {
-      norm.style.display = 'none';
-      load.style.display = 'flex';
-      const title = document.getElementById('uploadLoadingTitle');
-      if (title) title.innerText = `Analyzing ${file.name} with AI ATS engine...`;
+    const btnUpload = document.getElementById('btnUploadResume');
+    const originalBtnHtml = btnUpload ? btnUpload.innerHTML : '';
+    if (btnUpload) {
+      btnUpload.disabled = true;
+      btnUpload.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> <span>Parsing with AI...</span>';
       if (window.lucide) window.lucide.createIcons();
+    }
+
+    if (window.showToast) {
+      window.showToast(`📄 Uploading ${file.name} & analyzing with AI ATS engine...`, 'info');
     }
 
     const formData = new FormData();
     formData.append('resume_file', file);
-    if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.id) {
-      formData.append('job_id', targetJobData.id);
+    if (typeof targetJobData !== 'undefined' && targetJobData) {
+      if (targetJobData.id) formData.append('job_id', targetJobData.id);
+      if (targetJobData.skills) formData.append('job_skills', targetJobData.skills);
     }
 
     try {
@@ -1103,15 +1118,23 @@
       }
 
       lastUploadedData = data;
+      // 1. Immediately apply parsed data directly into the Live Editor & A4 sheet
+      applyUploadedResumeToEditor();
+      // 2. Open the comprehensive ATS scorecard modal with detailed pillars
       renderUploadScoreModal(data);
-    } catch (err) {
-      alert("Network error while uploading resume: " + err.message);
-    } finally {
-      if (norm && load) {
-        norm.style.display = 'flex';
-        load.style.display = 'none';
+
+      if (window.showToast) {
+        window.showToast(`✅ Resume analyzed! ATS Score: ${data.ats_eval?.overall_score || data.ats_eval?.score || 85}/100`, "success");
       }
-      // Reset input so same file can be re-selected if desired
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Error uploading resume: " + err.message);
+    } finally {
+      if (btnUpload) {
+        btnUpload.disabled = false;
+        btnUpload.innerHTML = originalBtnHtml;
+        if (window.lucide) window.lucide.createIcons();
+      }
       const fileInput = document.getElementById('resumeFileInput');
       if (fileInput) fileInput.value = '';
     }
@@ -1206,23 +1229,42 @@
     const inGithub = document.getElementById('inputGithub');
     if (inGithub && parsed.contact && parsed.contact.github) inGithub.value = parsed.contact.github;
 
+    const prevContact = (currentResumeData && currentResumeData.contact) ? currentResumeData.contact : {};
+    const parsedContact = (parsed && parsed.contact) ? parsed.contact : {};
+
+    // Sanitize project bullets
+    const rawProjects = (parsed.projects && parsed.projects.length > 0) ? parsed.projects : (currentResumeData.projects || []);
+    const cleanProjects = rawProjects.map(p => {
+      const pCopy = Object.assign({}, p);
+      pCopy.bullets = (p.bullets || []).map(b => (typeof b === 'string' ? b : (b.text || b.bullet || JSON.stringify(b))));
+      return pCopy;
+    });
+
+    // Sanitize experience bullets
+    const rawExp = parsed.experience || currentResumeData.experience || [];
+    const cleanExp = rawExp.map(e => {
+      const eCopy = Object.assign({}, e);
+      eCopy.bullets = (e.bullets || []).map(b => (typeof b === 'string' ? b : (b.text || b.bullet || JSON.stringify(b))));
+      return eCopy;
+    });
+
     // 2. Set currentResumeData
     currentResumeData = {
-      name: parsed.name || currentResumeData.name,
+      name: parsed.name || currentResumeData.name || "Candidate",
       contact: {
-        email: (parsed.contact && parsed.contact.email) || currentResumeData.contact.email,
-        phone: (parsed.contact && parsed.contact.phone) || currentResumeData.contact.phone,
-        location: (parsed.contact && parsed.contact.location) || currentResumeData.contact.location,
-        linkedin: (parsed.contact && parsed.contact.linkedin) || currentResumeData.contact.linkedin,
-        github: (parsed.contact && parsed.contact.github) || currentResumeData.contact.github,
-        portfolio: (parsed.contact && parsed.contact.portfolio) || currentResumeData.contact.portfolio
+        email: parsedContact.email || prevContact.email || "",
+        phone: parsedContact.phone || prevContact.phone || "",
+        location: parsedContact.location || prevContact.location || "Bengaluru, India",
+        linkedin: parsedContact.linkedin || prevContact.linkedin || "",
+        github: parsedContact.github || prevContact.github || "",
+        portfolio: parsedContact.portfolio || prevContact.portfolio || ""
       },
-      summary: parsed.summary || currentResumeData.summary,
-      skills: (parsed.skills && Object.keys(parsed.skills).length > 0) ? parsed.skills : currentResumeData.skills,
-      projects: (parsed.projects && parsed.projects.length > 0) ? parsed.projects : currentResumeData.projects,
-      experience: parsed.experience || [],
-      education: (parsed.education && parsed.education.length > 0) ? parsed.education : currentResumeData.education,
-      certifications: parsed.certifications || currentResumeData.certifications
+      summary: parsed.summary || currentResumeData.summary || "",
+      skills: (parsed.skills && Object.keys(parsed.skills).length > 0) ? parsed.skills : (currentResumeData.skills || {}),
+      projects: cleanProjects,
+      experience: cleanExp,
+      education: (parsed.education && parsed.education.length > 0) ? parsed.education : (currentResumeData.education || []),
+      certifications: parsed.certifications || currentResumeData.certifications || []
     };
 
     // Auto-detect profile level
@@ -1655,6 +1697,23 @@
     if (tabBengaluru) tabBengaluru.style.display = tabId === 'bengaluru' ? 'block' : 'none';
     if (tabGithub) tabGithub.style.display = tabId === 'github' ? 'block' : 'none';
     if (tabCustom) tabCustom.style.display = tabId === 'custom' ? 'block' : 'none';
+
+    if (tabId === 'github') {
+      const inputEl = document.getElementById('ghSearchKeywords');
+      const grid = document.getElementById('ghSearchResultsGrid');
+      if (inputEl && !inputEl.value) {
+        if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills_list && targetJobData.skills_list.length > 0) {
+          inputEl.value = targetJobData.skills_list.slice(0, 3).join(' ');
+        } else if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills) {
+          inputEl.value = targetJobData.skills.split(',').slice(0, 3).map(s => s.trim()).join(' ');
+        } else {
+          inputEl.value = 'Python Django REST API';
+        }
+      }
+      if (grid && (!grid.children || grid.children.length === 0)) {
+        handleSearchPublicGitHub();
+      }
+    }
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -1821,8 +1880,14 @@
   async function handleSearchPublicGitHub() {
     const inputEl = document.getElementById('ghSearchKeywords');
     let query = (inputEl ? inputEl.value.trim() : '');
-    if (!query && targetJobData) {
-      query = targetJobData.skills || targetJobData.title || '';
+    if (!query && typeof targetJobData !== 'undefined' && targetJobData) {
+      if (targetJobData.skills_list && targetJobData.skills_list.length > 0) {
+        query = targetJobData.skills_list.slice(0, 3).join(' ');
+      } else if (targetJobData.skills) {
+        query = targetJobData.skills.split(',').slice(0, 3).map(s => s.trim()).join(' ');
+      } else if (targetJobData.title) {
+        query = targetJobData.title.replace(/\bat\b.*$/i, '').replace(/[^a-zA-Z0-9\s]/g, '').trim();
+      }
       if (inputEl) inputEl.value = query;
     }
     if (!query) query = 'Python Django REST API';
