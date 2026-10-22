@@ -127,7 +127,7 @@ def _safe_bg_jobdexo_import(limit=15):
         except Exception:
             pass
 
-def trigger_async_india_jobs_refresh(force=False, limit=10):
+def trigger_async_india_jobs_refresh(force=False, limit=25):
     """Triggers non-blocking background auto-import for Naukri, LinkedIn, and Jobdexo."""
     last_sync = cache.get('last_auto_india_jobs_sync_ts')
     if force or not last_sync:
@@ -183,9 +183,9 @@ def api_cron_sync_jobs(request):
     """
     force = request.GET.get('force') == '1' or request.GET.get('force') == 'true'
     try:
-        limit = min(25, max(1, int(request.GET.get('limit', 10))))
+        limit = min(50, max(1, int(request.GET.get('limit', 25))))
     except ValueError:
-        limit = 10
+        limit = 25
 
     trigger_async_jobdexo_refresh(force=force, limit=limit)
     trigger_async_india_jobs_refresh(force=force, limit=limit)
@@ -218,8 +218,8 @@ def index_view(request):
     # Ensure India-wide multi-source coverage (Naukri, LinkedIn, Jobdexo)
     try:
         active_alt_sources = JobPosting.objects.filter(source_name__in=['Naukri', 'LinkedIn'], status='ACTIVE').count()
-        if active_alt_sources < 5:
-            trigger_async_india_jobs_refresh(force=True, limit=6)
+        if active_alt_sources < 15:
+            trigger_async_india_jobs_refresh(force=True, limit=25)
     except Exception:
         pass
 
@@ -1516,6 +1516,8 @@ def api_jobs(request):
                     'posted_date': j.posted_date.isoformat() if j.posted_date else None,
                     'posted_date_display': posted_date_display,
                     'source_name': j.source_name or 'Direct',
+                    'source_code': j.get_discreet_source_code(),
+                    'contact_phone': j.contact_phone,
                     'relative_time': j.get_relative_time_display(),
                     'freshness_badge': j.get_freshness_badge(),
                     'experience_display': j.get_experience_display(),
@@ -3349,6 +3351,8 @@ def api_jobs_list(request):
             'time_left_seconds': time_left_seconds,
             'posted_date_display': job.get_posted_date_display(),
             'source_name': job.source_name,
+            'source_code': job.get_discreet_source_code(),
+            'contact_phone': job.contact_phone,
             'source_published_at': job.source_published_at.isoformat() if job.source_published_at else None,
             'timestamp_precision': job.timestamp_precision,
             'ist_published_time': job.get_ist_published_time(),

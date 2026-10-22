@@ -672,9 +672,12 @@
     </nav>
 
     <!-- Code Tag -->
-    <span class="job-code-tag">
-      REQUIREMENT_ID_{{ job.pk }} • 3-DAY_ACTIVE_POLICY
-    </span>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <span class="job-code-tag" style="margin-bottom:0;">
+        REQUIREMENT_ID_{{ job.pk }} • 3-DAY_ACTIVE_POLICY
+      </span>
+      <span style="font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.08);color:#cbd5e1;border:1px solid rgba(255,255,255,0.18);letter-spacing:0.5px;" title="Source Reference">{{ job.get_discreet_source_code }}</span>
+    </div>
 
     <!-- Job Title -->
     <h1 class="job-hero-title">
@@ -732,6 +735,18 @@
           <span class="meta-strip-val">{{ posted_date_display }}</span>
         </div>
       </div>
+
+      {% if job.contact_phone %}
+      <div class="meta-strip-item" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(52, 211, 153, 0.35);">
+        <div class="meta-strip-icon">
+          <i data-lucide="phone-call" style="width: 20px; height: 20px; color: #34d399;"></i>
+        </div>
+        <div class="meta-strip-content">
+          <span class="meta-strip-label" style="color: #6ee7b7;">HR Contact Helpline</span>
+          <a href="tel:{{ job.contact_phone }}" class="meta-strip-val" style="color: #a7f3d0; text-decoration: none; font-weight: 800;">{{ job.contact_phone }} 📞</a>
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Hero Fast Action Bar (Prominent Above-the-Fold Buttons) -->

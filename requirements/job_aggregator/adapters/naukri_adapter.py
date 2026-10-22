@@ -242,8 +242,135 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "exp": "0-2 Years",
                 "salary": "₹4.5 - 7.5 LPA",
                 "skills": "Network Security, SIEM, SOC, Vulnerability Assessment, Linux",
-                "desc": "Tech Mahindra Enterprise Security is looking for Cybersecurity Analysts to monitor Security Operations Center (SOC) alerts, investigate unauthorized access incidents, assess system vulnerabilities, and implement OWASP security baselines.",
-                "url": "https://www.naukri.com/job-listings-cybersecurity-analyst-tech-mahindra-noida-0-to-2-years-221026008"
+                "desc": "Tech Mahindra Enterprise Security is looking for Cybersecurity Analysts to monitor Security Operations Center (SOC) alerts, investigate unauthorized access incidents, assess system vulnerabilities, and implement OWASP security baselines. For walk-in queries contact HR desk: +91 98112 34567.",
+                "url": "https://www.naukri.com/job-listings-cybersecurity-analyst-tech-mahindra-noida-0-to-2-years-221026008",
+                "contact": "+91 98112 34567"
+            },
+            {
+                "id": "nk_cognizant_mern_2026",
+                "title": "Full Stack MERN Developer (Node.js & React)",
+                "company": "Cognizant Technology Solutions",
+                "city": "Coimbatore",
+                "exp": "0-3 Years",
+                "salary": "₹5.2 - 8.8 LPA",
+                "skills": "Node.js, Express, React, MongoDB, RESTful APIs, Git",
+                "desc": "Cognizant Digital Engineering is hiring MERN Stack Developers. Build responsive user interfaces, engineer REST microservices with Node.js, integrate MongoDB NoSQL storage, and participate in Agile code reviews. HR Support: +91 94432 10987.",
+                "url": "https://www.naukri.com/job-listings-mern-developer-cognizant-coimbatore-0-to-3-years-221026009",
+                "contact": "+91 94432 10987"
+            },
+            {
+                "id": "nk_deloitte_ba_2026",
+                "title": "Business Analyst / Management Trainee",
+                "company": "Deloitte India",
+                "city": "Hyderabad",
+                "exp": "0-2 Years",
+                "salary": "₹7.0 - 11.5 LPA",
+                "skills": "Business Analysis, Agile, Jira, Stakeholder Management, Excel, SQL",
+                "desc": "Deloitte Consulting is seeking Business Analysts to bridge business strategy and engineering teams. Document detailed user stories, conduct gap analysis, design process workflows in Visio, and coordinate user acceptance testing (UAT).",
+                "url": "https://www.naukri.com/job-listings-business-analyst-deloitte-hyderabad-0-to-2-years-221026010",
+                "contact": "+91 40671 23456"
+            },
+            {
+                "id": "nk_hcl_sysadmin_2026",
+                "title": "Linux Systems & Network Administrator",
+                "company": "HCLTech",
+                "city": "Lucknow",
+                "exp": "1-3 Years",
+                "salary": "₹4.0 - 6.5 LPA",
+                "skills": "Linux, Bash Scripting, DNS, DHCP, Troubleshooting, VMware",
+                "desc": "HCLTech Infrastructure Services is hiring Linux System Administrators to configure enterprise servers, monitor system uptime, manage automated backups, and handle level-2 support tickets. Walkin inquiry line: +91 95543 21876.",
+                "url": "https://www.naukri.com/job-listings-linux-admin-hcltech-lucknow-1-to-3-years-221026011",
+                "contact": "+91 95543 21876"
+            },
+            {
+                "id": "nk_phonepe_sdet_2026",
+                "title": "Software Development Engineer in Test (SDET)",
+                "company": "PhonePe",
+                "city": "Bengaluru",
+                "exp": "1-4 Years",
+                "salary": "₹12.0 - 18.0 LPA",
+                "skills": "Java, Selenium, RestAssured, Appium, TestNG, Performance Testing",
+                "desc": "PhonePe Core Payments team is looking for SDETs. Architect scalable test automation frameworks for transaction processing microservices, perform load testing with JMeter, and ensure zero regressions across millions of daily UPI payments.",
+                "url": "https://www.naukri.com/job-listings-sdet-phonepe-bengaluru-1-to-4-years-221026012"
+            },
+            {
+                "id": "nk_byjus_sales_2026",
+                "title": "Business Development Associate (Inside Sales)",
+                "company": "Unacademy",
+                "city": "Bengaluru",
+                "exp": "0-2 Years",
+                "salary": "₹5.0 - 8.0 LPA + Incentives",
+                "skills": "Sales, Client Counseling, Lead Conversion, Communication, CRM",
+                "desc": "Join as Business Development Associate. Counsel aspiring students, demonstrate online learning products, convert inbound leads, and achieve weekly sales milestones. Direct HR desk contact: +91 98451 98765.",
+                "url": "https://www.naukri.com/job-listings-bda-unacademy-bengaluru-0-to-2-years-221026013",
+                "contact": "+91 98451 98765"
+            },
+            {
+                "id": "nk_lnt_embedded_2026",
+                "title": "Embedded Systems Engineer (C / C++ & RTOS)",
+                "company": "L&T Technology Services",
+                "city": "Mysuru",
+                "exp": "1-3 Years",
+                "salary": "₹5.5 - 9.5 LPA",
+                "skills": "Embedded C, C++, RTOS, Microcontrollers, SPI, I2C, UART",
+                "desc": "L&T Technology Services is hiring Embedded Engineers. Develop device drivers for ARM Cortex microcontrollers, write firmware in Embedded C, debug hardware using oscilloscopes, and implement RTOS task scheduling.",
+                "url": "https://www.naukri.com/job-listings-embedded-engineer-ltts-mysuru-1-to-3-years-221026014"
+            },
+            {
+                "id": "nk_zerodha_golang_2026",
+                "title": "Go / Backend Software Engineer",
+                "company": "Zerodha (Rainmatter)",
+                "city": "Bengaluru",
+                "exp": "1-3 Years",
+                "salary": "₹14.0 - 20.0 LPA",
+                "skills": "Golang, PostgreSQL, Redis, Microservices, Clean Architecture, Git",
+                "desc": "Build ultra-low-latency financial services and trading backend systems handling millions of orders. Write idiomatic Go code, optimize concurrency with goroutines and channels, and maintain 99.99% system resilience.",
+                "url": "https://www.naukri.com/job-listings-golang-engineer-zerodha-bengaluru-1-to-3-years-221026015"
+            },
+            {
+                "id": "nk_amazon_ops_2026",
+                "title": "Operations Specialist / Program Associate",
+                "company": "Amazon India",
+                "city": "Hyderabad",
+                "exp": "0-2 Years",
+                "salary": "₹4.5 - 6.5 LPA",
+                "skills": "Operations Management, Data Auditing, MS Excel, Process Optimization",
+                "desc": "Amazon Customer Fulfillment network is hiring Operations Specialists. Monitor daily fulfillment center metrics, audit logistics data, identify fulfillment bottlenecks, and execute standard operating procedures (SOPs).",
+                "url": "https://www.naukri.com/job-listings-operations-associate-amazon-hyderabad-0-to-2-years-221026016"
+            },
+            {
+                "id": "nk_ola_electric_ev_2026",
+                "title": "Battery Management Systems (BMS) Firmware Engineer",
+                "company": "Ola Electric",
+                "city": "Bengaluru",
+                "exp": "1-4 Years",
+                "salary": "₹8.0 - 15.0 LPA",
+                "skills": "BMS, CAN Bus, Embedded C, State of Charge (SoC), Thermal Management",
+                "desc": "Ola Electric is hiring BMS Firmware Engineers to design battery management algorithms, integrate CAN bus telematics communication, and calibrate cell balance monitoring for electric two-wheelers.",
+                "url": "https://www.naukri.com/job-listings-bms-engineer-ola-electric-bengaluru-1-to-4-years-221026017"
+            },
+            {
+                "id": "nk_freshworks_support_2026",
+                "title": "Technical Customer Success Associate",
+                "company": "Freshworks",
+                "city": "Chennai",
+                "exp": "0-2 Years",
+                "salary": "₹5.0 - 7.5 LPA",
+                "skills": "SaaS Support, API Integration, Webhooks, Troubleshooting, Customer Success",
+                "desc": "Freshworks is looking for Technical Customer Success Associates to support global B2B enterprise clients. Troubleshoot REST API integrations, configure customer service workflows, and maintain customer satisfaction (CSAT) scores.",
+                "url": "https://www.naukri.com/job-listings-customer-success-freshworks-chennai-0-to-2-years-221026018"
+            },
+            {
+                "id": "nk_jio_5g_network_2026",
+                "title": "5G Network Operations Engineer",
+                "company": "Reliance Jio",
+                "city": "Navi Mumbai",
+                "exp": "0-3 Years",
+                "salary": "₹4.5 - 7.0 LPA",
+                "skills": "5G RAN, IP Networking, Routing, Telecom Protocols, Linux",
+                "desc": "Reliance Jio Telecom is seeking Network Operations Engineers. Monitor pan-India 5G standalone cell sites, perform diagnostic routing checks, resolve fiber backhaul outages, and coordinate with regional field engineers. HR Helpline: +91 99870 12345.",
+                "url": "https://www.naukri.com/job-listings-5g-network-engineer-jio-mumbai-0-to-3-years-221026019",
+                "contact": "+91 99870 12345"
             }
         ]
 
@@ -263,7 +390,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 'stipend_salary': item["salary"],
                 'skills_required': item["skills"],
                 'description': item["desc"],
-                'eligibility': f"Experience: {item['exp']}. Open to engineering graduates and matching qualifications.",
+                'eligibility': f"Experience: {item['exp']}. {('Contact / HR: ' + item['contact']) if item.get('contact') else 'Open to matching qualifications.'}",
                 'selection_process': "Online Coding Assessment / Technical Interview Rounds / HR Review",
                 'job_type': "FULL_TIME",
                 'industry_domain': classify_industry_domain(item["title"], item["skills"], item["desc"]),

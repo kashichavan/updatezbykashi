@@ -383,6 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
         : 'background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;';
       const catIcon = isNonIT ? '📞' : '💻';
       const catLabel = isNonIT ? 'Non IT' : 'Software Eng';
+      const srcCode = j.source_code || ((j.source_name || '').toLowerCase().includes('linkedin') ? 'L' : ((j.source_name || '').toLowerCase().includes('naukri') ? 'N' : 'JD'));
 
       const shareUrl = j.share_url || `/category/${j.category_slug}/job/${j.uuid}/`;
       return `
@@ -390,7 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="vp-card-header">
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
               <span class="company-badge" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
-              <span class="source-tag" style="font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:rgba(2, 132, 199, 0.08);color:#0284c7;border:1px solid rgba(2, 132, 199, 0.25);">${escapeHtml(j.source_name || 'Jobdexo')}</span>
+              <span class="source-tag" title="Verified Opportunity" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;letter-spacing:0.3px;">${srcCode}</span>
             </div>
             <div class="vp-badge-cluster">
               <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;">${catIcon} ${escapeHtml(j.category_name || catLabel)}</span>
@@ -415,6 +416,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>💼</span> <span>Exp: ${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
               </div>
             </div>
+
+            ${j.contact_phone ? `
+              <div style="font-size:11.5px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:3px 8px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:5px;">
+                <span>📞 HR Contact:</span> <a href="tel:${escapeHtml(j.contact_phone)}" style="color:#047857;text-decoration:none;font-weight:800;" onclick="event.stopPropagation();">${escapeHtml(j.contact_phone)}</a>
+              </div>
+            ` : ''}
 
             <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(j.description || 'Detailed job description and responsibilities available on the official requirement page.')}</p>
 

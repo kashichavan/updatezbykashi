@@ -1,4 +1,5 @@
 import uuid
+import re
 from django.db import models
 from django.utils import timezone
 from datetime import timedelta
@@ -262,6 +263,50 @@ class JobPosting(models.Model):
             'SENIOR_LEVEL': '5+ Years',
         }
         return tier_map.get(self.experience_tier, 'Fresher / All Levels')
+
+    def get_discreet_source_code(self):
+        """Returns subtle discreet code (L, N, JD) instead of full external brand names."""
+        src = (self.source_name or '').lower()
+        if 'linkedin' in src:
+            return 'L'
+        elif 'naukri' in src:
+            return 'N'
+        return 'JD'
+
+    def get_contact_phone(self):
+        """
+        Extracts contact phone / mobile / WhatsApp / HR helpline number
+        from description, eligibility, or selection process if present.
+        """
+        text = f"{self.description} {self.eligibility} {self.selection_process}"
+        # 1. Standard Indian 10-digit mobile (+91 / 0 / raw 10 digits starting with 6, 7, 8, 9)
+        match = re.search(r'(?:(?:\+91|91|0)[\s\-]?)?([6-9]\d{4}[\s\-]?\d{5})\b', text)
+        if match:
+            raw = re.sub(r'[\s\-]', '', match.group(0))
+            if len(raw) == 10:
+                return f"+91 {raw[:5]} {raw[5:]}"
+            elif len(raw) == 12 and raw.startswith('91'):
+                return f"+{raw[:2]} {raw[2:7]} {raw[7:]}"
+            return match.group(0).strip()
+
+        # 2. Toll-free helpline (1800-xxx-xxxx)
+        match_toll = re.search(r'\b1800[\s\-]?\d{3}[\s\-]?\d{3,4}\b', text)
+        if match_toll:
+            return match_toll.group(0).strip()
+
+        # 3. Explicit "Contact/Phone/WhatsApp/Mobile/HR: XXXXX" pattern
+        match_contact = re.search(r'(?:contact|phone|mobile|whatsapp|hr\s*(?:no|num|contact)?|call)[\s\:\-]*([+]?\d[\d\s\-]{8,15}\d)', text, re.IGNORECASE)
+        if match_contact:
+            cleaned = match_contact.group(1).strip()
+            digits = re.sub(r'\D', '', cleaned)
+            if len(digits) >= 10:
+                return cleaned
+
+        return ""
+
+    @property
+    def contact_phone(self):
+        return self.get_contact_phone()
 
     def get_freshness_badge(self):
         """Returns structured metadata badge for frontends and mobile cards."""

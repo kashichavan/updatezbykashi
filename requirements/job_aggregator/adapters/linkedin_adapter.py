@@ -41,13 +41,14 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
 
     def fetch_jobs(
         self,
-        limit: int = 15,
+        limit: int = 25,
         last_hours: Optional[int] = None,
         keywords: Optional[str] = None,
         location: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Fetch public job postings from LinkedIn's guest search API.
+        Queries multiple technical domains and pagination pages for 20+ fresh jobs.
         """
         if not self.is_enabled:
             logger.info(
@@ -56,22 +57,14 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
             )
             return []
 
-        search_kw = keywords or "Software Engineer"
+        search_terms = [keywords] if keywords else [
+            "Software Engineer",
+            "Python Developer",
+            "Full Stack Developer",
+            "React Developer",
+            "Data Analyst"
+        ]
         search_loc = location or "India"
-
-        params = {
-            "keywords": search_kw,
-            "location": search_loc,
-            "start": 0,
-        }
-
-        # Apply time posted filter if specified
-        if last_hours == 1:
-            params["f_TPR"] = "r3600"  # past 1 hour
-        elif last_hours and last_hours <= 24:
-            params["f_TPR"] = "r86400"  # past 24 hours
-        elif last_hours and last_hours <= 168:
-            params["f_TPR"] = "r604800"  # past 1 week
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -79,12 +72,46 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
             "Accept-Language": "en-US,en;q=0.9",
         }
 
-        res = self.safe_get(LINKEDIN_GUEST_API_URL, params=params, headers=headers)
-        if not res or res.status_code != 200:
-            logger.info(f"[LinkedIn] Guest search returned status {res.status_code if res else 'None'}. Skipping.")
-            return []
+        # Apply freshness filter: default to past 24h / 1h for real-time postings
+        time_filter = "r86400"  # past 24 hours
+        if last_hours == 1:
+            time_filter = "r3600"  # past 1 hour (10-60 min fresh)
+        elif last_hours and last_hours > 24:
+            time_filter = f"r{last_hours * 3600}"
 
-        return self.parse_linkedin_guest_html(res.text, limit=limit)
+        results = []
+        seen_ids = set()
+
+        for kw in search_terms:
+            if len(results) >= limit:
+                break
+
+            # Search page 1 (and page 2 if needed for 20+ jobs)
+            offsets = (0, 25) if limit > 12 else (0,)
+            for start_idx in offsets:
+                if len(results) >= limit:
+                    break
+
+                params = {
+                    "keywords": kw,
+                    "location": search_loc,
+                    "f_TPR": time_filter,
+                    "start": start_idx,
+                }
+
+                res = self.safe_get(LINKEDIN_GUEST_API_URL, params=params, headers=headers)
+                if not res or res.status_code != 200:
+                    break
+
+                batch = self.parse_linkedin_guest_html(res.text, limit=(limit - len(results)))
+                for j in batch:
+                    if j['source_job_id'] not in seen_ids:
+                        seen_ids.add(j['source_job_id'])
+                        results.append(j)
+                        if len(results) >= limit:
+                            break
+
+        return results
 
     def parse_linkedin_guest_html(self, html_text: str, limit: int = 15) -> List[Dict[str, Any]]:
         """
