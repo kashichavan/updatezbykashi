@@ -176,9 +176,17 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
                 f"Configured automated CI/CD validation pipeline and deployment scripts, adhering to modern development practices."
             ]
 
+        clean_title = proj_data.get('title') if (isinstance(proj_data, dict) and proj_data.get('title')) else (dp.repo_name.split('/')[-1].replace('-', ' ').title())
+        if dp.candidate_relationship == 'BUILT':
+            full_title = f"{clean_title} [Personally Developed]"
+        elif dp.candidate_relationship == 'CONTRIBUTED':
+            full_title = f"{clean_title} [Open Source Contribution]"
+        else:
+            full_title = f"{clean_title} [Architecture & Case Study]"
+
         # Rate project ATS score
         proj_dict = {
-            'title': f"{dp.repo_name} [{rel_label}]",
+            'title': full_title,
             'tech_stack': ', '.join(dp.tech_stack) if isinstance(dp.tech_stack, list) else dp.tech_stack,
             'github': dp.repo_url,
             'bullets': bullets

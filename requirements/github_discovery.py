@@ -220,6 +220,28 @@ def calculate_relevance_score(
     }
 
 
+NON_PROJECT_INDICATORS = {
+    'interview', 'interviews', 'exercise', 'exercises', 'question', 'questions',
+    'cheat-sheet', 'cheatsheet', 'awesome', 'roadmap', 'curated-list',
+    'study-plan', 'handbook', 'leetcode', 'qa', 'quiz', 'quizzes', 'prep-guide'
+}
+
+
+def is_interview_or_qa_repo(repo: Dict[str, Any]) -> bool:
+    """Check if repository is an interview question collection rather than a real software project."""
+    name_words = set(re.split(r'[-_/\s.]', (repo.get("name") or "").lower()))
+    full_name_words = set(re.split(r'[-_/\s.]', (repo.get("full_name") or "").lower()))
+    desc_lower = (repo.get("description") or "").lower()
+
+    if name_words.intersection(NON_PROJECT_INDICATORS) or full_name_words.intersection(NON_PROJECT_INDICATORS):
+        return True
+
+    if 'interview question' in desc_lower or 'interview prep' in desc_lower or 'cheatsheet' in desc_lower:
+        return True
+
+    return False
+
+
 def search_github_repositories(
     job_title: str = "",
     job_skills: str = "",
@@ -228,11 +250,12 @@ def search_github_repositories(
 ) -> List[Dict[str, Any]]:
     """
     Search GitHub public repositories matching target job parameters with caching and rate-limit safety.
+    Filters out interview cheat sheets and QA lists to return real software engineering projects.
     """
     detected_tech = extract_keywords_from_job(job_title, job_skills, job_description)
     queries = build_search_queries(job_title, detected_tech)
     
-    cache_key = f"gh_disc_v2_{hashlib.md5(f'{job_title}_{job_skills}_{limit}'.encode()).hexdigest()}"
+    cache_key = f"gh_disc_v3_{hashlib.md5(f'{job_title}_{job_skills}_{limit}'.encode()).hexdigest()}"
     cached = cache.get(cache_key)
     if cached:
         return cached
@@ -240,13 +263,24 @@ def search_github_repositories(
     headers = get_github_headers()
     collected_repos = {}
 
+    # Check if user specified a direct repository path e.g. "jhipster/generator-jhipster"
+    clean_target = (job_skills or '').strip()
+    if '/' in clean_target and len(clean_target.split()) == 1 and not clean_target.startswith(('http://', 'https://')):
+        try:
+            r_single = requests.get(f"https://api.github.com/repos/{clean_target}", headers=headers, timeout=DEFAULT_TIMEOUT)
+            if r_single.status_code == 200:
+                item = r_single.json()
+                collected_repos[item.get("id")] = item
+        except Exception as e:
+            logger.warning(f"Error fetching specific repo {clean_target}: {e}")
+
     for query in queries:
         try:
             params = {
                 "q": query,
                 "sort": "stars",
                 "order": "desc",
-                "per_page": 10,
+                "per_page": 12,
             }
             res = requests.get(GITHUB_API_URL, headers=headers, params=params, timeout=DEFAULT_TIMEOUT)
             
@@ -266,15 +300,13 @@ def search_github_repositories(
             logger.warning(f"Error querying GitHub API for '{query}': {e}")
             continue
 
-    # If no results collected (e.g. rate limit or offline), fall back to curated startup/enterprise projects
-    if not collected_repos:
-        results = get_fallback_curated_projects(detected_tech)
-        cache.set(cache_key, results, 3600)  # cache 1 hour
-        return results
-
-    # Score and rank all collected repositories
+    # Score and rank all collected repositories, filtering out interview QA repos
     scored_list = []
     for repo in collected_repos.values():
+        if is_interview_or_qa_repo(repo):
+            # Skip interview question banks — candidates need real codebases on their resume
+            continue
+
         scoring = calculate_relevance_score(
             repo=repo,
             job_skills=detected_tech,
@@ -301,6 +333,12 @@ def search_github_repositories(
             "candidate_relationship": "RECOMMENDED",
             "is_selected": False,
         })
+
+    # If no results collected (e.g. rate limit or offline), fall back to curated startup/enterprise projects
+    if not scored_list:
+        results = get_fallback_curated_projects(detected_tech)
+        cache.set(cache_key, results, 3600)  # cache 1 hour
+        return results
 
     # Sort descending by relevance score
     scored_list.sort(key=lambda x: (x["relevance_score"], x["stars"]), reverse=True)
@@ -493,6 +531,46 @@ def get_fallback_curated_projects(detected_tech: List[str]) -> List[Dict[str, An
                 "maintenance_recency": 9.0
             },
             "evidence_summary": "Cross-platform mobile UI framework with declarative widgets, native platform channels, and high-performance skia canvas rendering.",
+            "candidate_relationship": "RECOMMENDED",
+            "is_selected": False,
+        },
+        # 10. DevOps / Cloud & Microservices Platform (JHipster)
+        {
+            "repo_name": "jhipster/generator-jhipster",
+            "repo_url": "https://github.com/jhipster/generator-jhipster",
+            "description": "Enterprise microservice platform generating production-ready fullstack architectures with Spring Boot, Angular/React, Docker, and Kubernetes.",
+            "stars": 22500,
+            "language": "TypeScript",
+            "tech_stack": ["Spring Boot", "Kubernetes", "Docker", "DevOps", "Microservices", "Java"],
+            "relevance_score": 93.0,
+            "score_breakdown": {
+                "technology_overlap": 33.0,
+                "responsibility_overlap": 23.5,
+                "code_structure": 19.0,
+                "documentation": 9.0,
+                "maintenance_recency": 8.5
+            },
+            "evidence_summary": "Enterprise microservices and cloud deployment framework with Kubernetes manifests, Docker containerization, and automated CI/CD pipelines.",
+            "candidate_relationship": "RECOMMENDED",
+            "is_selected": False,
+        },
+        # 11. GitOps & Cloud Continuous Delivery (ArgoCD)
+        {
+            "repo_name": "argoproj/argo-cd",
+            "repo_url": "https://github.com/argoproj/argo-cd",
+            "description": "Declarative, GitOps continuous delivery tool for Kubernetes, managing automated deployments and cluster state synchronization.",
+            "stars": 19500,
+            "language": "Go",
+            "tech_stack": ["Kubernetes", "GitOps", "Docker", "CI/CD", "DevOps", "Go"],
+            "relevance_score": 92.0,
+            "score_breakdown": {
+                "technology_overlap": 32.0,
+                "responsibility_overlap": 23.0,
+                "code_structure": 19.0,
+                "documentation": 9.0,
+                "maintenance_recency": 9.0
+            },
+            "evidence_summary": "Kubernetes-native declarative GitOps controller automating progressive syncs, rollback validation, and multi-cluster deployments.",
             "candidate_relationship": "RECOMMENDED",
             "is_selected": False,
         }

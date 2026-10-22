@@ -3362,11 +3362,28 @@ def api_resume_github_discovery_direct(request):
     """
     Direct GitHub discovery endpoint for real-time repository search
     from modal or live editor.
+    If job_uuid is supplied, discovered projects are saved to the ResumeGenerationJob.
     """
     from .github_discovery import search_github_repositories
+    from .models import ResumeGenerationJob, DiscoveredProject
+
+    job_uuid = request.GET.get('job_uuid') or request.POST.get('job_uuid')
+    job = None
+    if job_uuid:
+        try:
+            job = ResumeGenerationJob.objects.filter(uuid=job_uuid).first()
+        except Exception:
+            pass
+
     job_title = request.GET.get('job_title') or request.POST.get('job_title', '')
+    if not job_title and job:
+        job_title = job.target_job_title
     job_skills = request.GET.get('job_skills') or request.POST.get('job_skills', '')
+    if not job_skills and job:
+        job_skills = job.target_skills
     job_description = request.GET.get('job_description') or request.POST.get('job_description', '')
+    if not job_description and job:
+        job_description = job.target_job_description
     limit = int(request.GET.get('limit') or request.POST.get('limit') or 8)
 
     repos = search_github_repositories(
@@ -3375,6 +3392,28 @@ def api_resume_github_discovery_direct(request):
         job_description=job_description,
         limit=min(limit, 15)
     )
+
+    if job:
+        for r in repos:
+            dp, _ = DiscoveredProject.objects.get_or_create(
+                generation_job=job,
+                repo_url=r.get('repo_url'),
+                defaults={
+                    'repo_name': r.get('repo_name') or 'Repository',
+                    'description': r.get('description') or '',
+                    'stars': r.get('stars', 0),
+                    'language': r.get('language') or '',
+                    'tech_stack': r.get('tech_stack', []),
+                    'relevance_score': r.get('relevance_score', 75.0),
+                    'score_breakdown': r.get('score_breakdown', {}),
+                    'evidence_summary': r.get('evidence_summary', ''),
+                    'candidate_relationship': 'BUILT',
+                    'is_selected': True
+                }
+            )
+            r['id'] = str(dp.uuid)
+            r['is_selected'] = dp.is_selected
+            r['candidate_relationship'] = dp.candidate_relationship
 
     return JsonResponse({
         'success': True,
