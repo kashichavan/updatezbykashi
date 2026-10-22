@@ -104,5 +104,9 @@ python manage.py cleanup_db_quota || true
 # 7. Auto-sync newest verified off-campus opportunities from Jobdexo
 python manage.py sync_jobdexo --count 5 || true
 
+# 8. Seed Indian Market Demonstration Projects Library (36 curated projects)
+python manage.py seed_indian_projects || true
+
+
 
 

@@ -487,12 +487,22 @@ INSERT INTO accounts VALUES
     }
 }
 
+def _sandbox_authorizer(action, arg1, arg2, dbname, source):
+    """
+    Strict SQLite Security Authorizer.
+    Blocks ATTACH and DETACH actions to prevent sandbox escape or attaching disk databases.
+    """
+    if action in (sqlite3.SQLITE_ATTACH, sqlite3.SQLITE_DETACH):
+        return sqlite3.SQLITE_DENY
+    return sqlite3.SQLITE_OK
+
 def get_sandboxed_connection(dataset_id='scott_tiger'):
     if dataset_id not in DATASETS:
         dataset_id = 'scott_tiger'
     
     conn = sqlite3.connect(':memory:', check_same_thread=False)
     conn.row_factory = sqlite3.Row
+    conn.set_authorizer(_sandbox_authorizer)
     conn.execute("PRAGMA foreign_keys = ON;")
     
     schema_sql = DATASETS[dataset_id]['schema_sql']
@@ -512,6 +522,15 @@ def execute_sql_sandbox(sql_text, dataset_id='scott_tiger', max_rows=500):
     conn = None
     try:
         conn = get_sandboxed_connection(dataset_id)
+        
+        # Enforce execution timeout via progress handler to prevent infinite CTEs or runaway scans
+        query_start_wall = time.time()
+        def _timeout_progress():
+            if time.time() - query_start_wall > 3.0:
+                return 1  # abort execution
+            return 0
+        conn.set_progress_handler(_timeout_progress, 1000)
+        
         cursor = conn.cursor()
         
         statements = [s.strip() for s in sql_text.strip().split(';') if s.strip()]

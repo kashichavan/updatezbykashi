@@ -22,8 +22,16 @@ class PythonExecutionTracer:
 
     FORBIDDEN_AST_NODES = ()
 
+    MAX_STEPS = 500
+
     FORBIDDEN_FUNCTIONS = {
-        'eval', 'exec', '__import__', 'compile'
+        'eval', 'exec', '__import__', 'compile', 'open', 'breakpoint',
+        'help', 'exit', 'quit', 'globals', 'locals', 'vars'
+    }
+
+    ALLOWED_MODULES = {
+        'math', 'random', 'string', 'itertools', 'collections', 'heapq',
+        'bisect', 're', 'datetime', 'time', 'copy', 'json'
     }
 
     def __init__(self, code_str, breakpoints=None, stdin_input=""):
@@ -46,7 +54,7 @@ class PythonExecutionTracer:
         return self._mem_table[name]
 
     def validate_ast(self):
-        """Validates Python AST for security against dangerous system commands."""
+        """Validates Python AST for security against dangerous system commands, file access, and reflection."""
         try:
             tree = ast.parse(self.code_str)
         except SyntaxError as e:
@@ -56,6 +64,20 @@ class PythonExecutionTracer:
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name) and node.func.id in self.FORBIDDEN_FUNCTIONS:
                     return False, f"Security Restriction: Function '{node.func.id}()' is restricted."
+            elif isinstance(node, ast.Import):
+                for alias in node.names:
+                    root_mod = alias.name.split('.')[0]
+                    if root_mod not in self.ALLOWED_MODULES:
+                        return False, f"Security Restriction: Module '{alias.name}' is restricted."
+            elif isinstance(node, ast.ImportFrom):
+                if node.module:
+                    root_mod = node.module.split('.')[0]
+                    if root_mod not in self.ALLOWED_MODULES:
+                        return False, f"Security Restriction: Module '{node.module}' is restricted."
+            elif isinstance(node, ast.Attribute):
+                if node.attr.startswith('__') and node.attr.endswith('__'):
+                    if node.attr not in ('__name__', '__doc__', '__init__', '__str__', '__repr__', '__len__', '__getitem__', '__setitem__'):
+                        return False, f"Security Restriction: Dunder attribute '{node.attr}' is restricted."
 
         return True, "Valid"
 
@@ -177,6 +199,9 @@ class PythonExecutionTracer:
 
     def trace_callback(self, frame, event, arg):
         """Callback handler invoked by sys.settrace on every execution step."""
+        if len(self.steps) >= self.MAX_STEPS:
+            raise RuntimeError(f"Execution step limit exceeded ({self.MAX_STEPS} steps). Execution stopped.")
+
         self._last_frame = frame
         if frame.f_code.co_filename != '<string>':
             return self.trace_callback
@@ -274,11 +299,27 @@ class PythonExecutionTracer:
         old_input = builtins.input
         builtins.input = _custom_input
 
+        # Strict sandbox builtins: exclude file system and reflection functions
+        safe_builtins = {}
+        for b_name in dir(builtins):
+            if b_name in self.FORBIDDEN_FUNCTIONS or b_name in ('open', '__loader__', '__spec__', '__package__'):
+                continue
+            safe_builtins[b_name] = getattr(builtins, b_name)
+        safe_builtins['input'] = _custom_input
+
+        def _restricted_import(name, globals=None, locals=None, fromlist=(), level=0):
+            root_mod = name.split('.')[0]
+            if root_mod not in self.ALLOWED_MODULES:
+                raise ImportError(f"Importing module '{root_mod}' is restricted in sandbox")
+            return __import__(name, globals, locals, fromlist, level)
+
+        safe_builtins['__import__'] = _restricted_import
+
         start_time = time.time()
         try:
             compiled = compile(self.code_str, '<string>', 'exec')
             sys.settrace(self.trace_callback)
-            exec(compiled, {'__builtins__': builtins})  # nosec controlled sandbox
+            exec(compiled, {'__builtins__': safe_builtins})  # nosec controlled sandbox
         except Exception as e:
             tb = traceback.format_exc()
             err_lineno = 1

@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
@@ -541,8 +541,8 @@ def job_apply_redirect_view(request, uuid=None, pk=None):
     if not job or not job.apply_url:
         return redirect('/')
 
-    # Track application count
-    JobPosting.objects.filter(pk=job.pk).update(applications_count=job.applications_count + 1)
+    # Track application count atomically
+    JobPosting.objects.filter(pk=job.pk).update(applications_count=F('applications_count') + 1)
     return redirect(job.apply_url)
 
 def owner_view(request):
