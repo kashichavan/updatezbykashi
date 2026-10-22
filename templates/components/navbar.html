@@ -30,18 +30,12 @@
         <span>Feed</span>
       </a>
 
-      <a href="/blog/" class="{% if '/blog' in request.path %}active{% endif %}">
-        <i data-lucide="newspaper" class="nav-icon" style="width: 16px; height: 16px;"></i>
-        <span class="nav-label-long">Tech Blog</span>
-        <span class="nav-label-short">Blog</span>
+      <a href="/resume/" class="{% if '/resume' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="file-badge" class="nav-icon" style="width: 16px; height: 16px; color: #34d399;"></i>
+        <span class="nav-label-long">ATS Resume <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">90+</span></span>
+        <span class="nav-label-short">Resume</span>
       </a>
 
-      <a href="/learn/" class="{% if '/learn' in request.path %}active{% endif %}">
-        <i data-lucide="graduation-cap" class="nav-icon" style="width: 16px; height: 16px;"></i>
-        <span class="nav-label-long">Learn Python/Java/JS</span>
-        <span class="nav-label-short">Learn</span>
-      </a>
-      
       <a href="/debugger/" class="{% if '/debugger' in request.path %}active{% endif %}">
         <i data-lucide="terminal" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span class="nav-label-long">Code Debugger</span>
@@ -52,12 +46,6 @@
         <i data-lucide="database" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span class="nav-label-long">SQL Debugger</span>
         <span class="nav-label-short">SQL</span>
-      </a>
-
-      <a href="/resume/" class="{% if '/resume' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i data-lucide="file-badge" class="nav-icon" style="width: 16px; height: 16px; color: #34d399;"></i>
-        <span class="nav-label-long">ATS Resume <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">90+</span></span>
-        <span class="nav-label-short">Resume</span>
       </a>
 
       <a href="/tools/job-description-generator/" class="{% if '/job-description-generator' in request.path or '/jd-generator' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
@@ -178,19 +166,6 @@
             <span class="drawer-badge badge-sql">SQL</span>
           </a>
 
-          <a href="/learn/" class="drawer-link {% if '/learn' in request.path %}active{% endif %}">
-            <div class="drawer-link-left">
-              <span class="drawer-link-icon drawer-icon-learn">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                </svg>
-              </span>
-              <span class="drawer-link-label">Learn Python, Java &amp; JS</span>
-            </div>
-            <span class="drawer-badge badge-academy">ACADEMY</span>
-          </a>
-
           <a href="/resume/" class="drawer-link {% if '/resume' in request.path %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon" style="color: #34d399;">
@@ -198,21 +173,9 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </span>
-              <span class="drawer-link-label">ATS Resume Generator</span>
+              <span class="drawer-link-label">ATS Resume Studio</span>
             </div>
             <span class="drawer-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">90+</span>
-          </a>
-
-          <a href="/blog/" class="drawer-link {% if '/blog' in request.path %}active{% endif %}">
-            <div class="drawer-link-left">
-              <span class="drawer-link-icon drawer-icon-blog">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                </svg>
-              </span>
-              <span class="drawer-link-label">Tech &amp; Coding Blog</span>
-            </div>
-            <span class="drawer-badge badge-blog">NEW</span>
           </a>
         </nav>
       </div>

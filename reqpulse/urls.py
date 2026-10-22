@@ -41,10 +41,9 @@ urlpatterns = [
     path('app-ads.txt/', ads_txt_view, name='app_ads_txt_slash'),
     path('c1a8fc4a2f71995dfc59.txt', ads_txt_verification_view, name='ads_verification_file'),
 
-    # Direct Learning Academy Routes (Python, Java, JavaScript)
-    path('learn/', learn_topic_view, name='learn_root'),
-    path('learn/<slug:lang>/', learn_topic_view, name='learn_lang'),
-    path('learn/<slug:lang>/<slug:topic_slug>/', learn_topic_view, name='learn_topic_detail'),
+    # Direct Learning Academy Routes (Cleanly redirected to home)
+    path('learn/', RedirectView.as_view(url='/', permanent=False), name='learn_root'),
+    path('learn/<path:subpath>/', RedirectView.as_view(url='/', permanent=False)),
 
     # JWT Authentication Endpoints (Admin / User Login)
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -58,7 +57,8 @@ urlpatterns = [
     path('sql/', include(('sqlsandbox.urls', 'sqlsandbox'), namespace='sqlsandbox')),
     path('sql-sandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
     path('sqlsandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
-    path('blog/', include(('blog.urls', 'blog'), namespace='blog')),
+    path('blog/', RedirectView.as_view(url='/', permanent=False)),
+    path('blog/<path:subpath>/', RedirectView.as_view(url='/', permanent=False)),
     path('api/v1/', ninja_api.urls),
     path('', include('requirements.urls')),
 ]

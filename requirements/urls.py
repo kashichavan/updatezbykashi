@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 from . import views
 from debugger.views import learn_topic_view
 
@@ -9,10 +10,9 @@ urlpatterns = [
     path('about/', views.about_view, name='about'),
     path('youtube/', views.youtube_view, name='youtube'),
     
-    # Interactive Developer Academy (Python, Java, JavaScript with Analogies & Live Debugger)
-    path('learn/', learn_topic_view, name='learn_root'),
-    path('learn/<slug:lang>/', learn_topic_view, name='learn_lang'),
-    path('learn/<slug:lang>/<slug:topic_slug>/', learn_topic_view, name='learn_topic_detail'),
+    # Redirect removed academy routes cleanly to home
+    path('learn/', RedirectView.as_view(url='/', permanent=False), name='learn_root'),
+    path('learn/<path:subpath>/', RedirectView.as_view(url='/', permanent=False)),
 
     # Guides & Educational Articles Hub (AdSense High Value Content)
     path('guides/', views.guides_list_view, name='guides_list'),
