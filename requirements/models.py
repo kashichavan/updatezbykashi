@@ -310,11 +310,27 @@ class JobPosting(models.Model):
     def contact_phone(self):
         return self.get_contact_phone()
 
-    def get_insta_story_text(self, share_url=None, base_url="https://kashiiupdatez.online"):
+    @staticmethod
+    def to_unicode_bold(text):
+        """Converts alphanumeric ASCII text to bold sans-serif Unicode glyphs for clean highlight in plain text."""
+        out = []
+        for char in str(text or ''):
+            code = ord(char)
+            if 65 <= code <= 90:
+                out.append(chr(0x1D5D4 + (code - 65)))
+            elif 97 <= code <= 122:
+                out.append(chr(0x1D5EE + (code - 97)))
+            elif 48 <= code <= 57:
+                out.append(chr(0x1D7EC + (code - 48)))
+            else:
+                out.append(char)
+        return "".join(out)
+
+    def get_insta_story_text(self, include_link=False, share_url=None, base_url="https://kashiiupdatez.online"):
         """
-        Generates an aesthetic, viral, ready-to-paste Instagram Story text formatted
-        specifically for Indian job seekers, highlighting Experience, Company, Salary,
-        Skills, and Direct Redirect Link.
+        Generates clean, aesthetic Instagram Story text with highlighted company name,
+        prominent experience requirement, salary, skills, eligibility, and optional contact.
+        Apply link is excluded by default so creators can use native IG Link stickers or custom links.
         """
         url = share_url
         if not url:
@@ -350,10 +366,12 @@ class JobPosting(models.Model):
             else:
                 eligibility_str = "Any Graduate / BE / B.Tech / MCA / All Batches"
 
+        company_highlight = self.to_unicode_bold((self.company_name or 'HIRING COMPANY').strip().upper())
+
         lines = [
             "🚨 URGENT HIRING ALERT! 🚨",
             "",
-            f"🏢 Company: {self.company_name}",
+            f"🏢 Company: {company_highlight}",
             f"📌 Role: {self.title}",
             exp_line,
             f"💰 Salary / CTC: {self.stipend_salary or 'Competitive Package (Best in Industry)'}",
@@ -365,7 +383,7 @@ class JobPosting(models.Model):
         if self.contact_phone:
             lines.append(f"📞 HR Contact: {self.contact_phone}")
 
-        if url:
+        if include_link and url:
             lines.append(f"🔗 Apply Link: {url}")
 
         return "\n".join(lines)

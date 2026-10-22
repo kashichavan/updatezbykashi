@@ -752,9 +752,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!btn) return;
 
+    function toUnicodeBold(text) {
+      if (!text) return '';
+      return String(text).split('').map(ch => {
+        const code = ch.charCodeAt(0);
+        if (code >= 65 && code <= 90) return String.fromCodePoint(0x1D5D4 + (code - 65));
+        if (code >= 97 && code <= 122) return String.fromCodePoint(0x1D5EE + (code - 97));
+        if (code >= 48 && code <= 57) return String.fromCodePoint(0x1D7EC + (code - 48));
+        return ch;
+      }).join('');
+    }
+
     let storyText = btn.getAttribute('data-story') || '';
     if (!storyText || storyText.trim().length === 0) {
       const company = btn.getAttribute('data-company') || 'Hiring Company';
+      const companyHighlight = toUnicodeBold(company.trim().toUpperCase());
       const title = btn.getAttribute('data-title') || 'Software Professional';
       const exp = btn.getAttribute('data-exp') || 'Fresher / All Levels';
       const salary = btn.getAttribute('data-salary') || 'Competitive Package (Best in Industry)';
@@ -772,10 +784,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       const contact = btn.getAttribute('data-contact') || '';
-      let shareUrl = btn.getAttribute('data-share-url') || '';
-      if (shareUrl.startsWith('/')) {
-        shareUrl = window.location.origin + shareUrl;
-      }
 
       const isFresher = /fresher|0-|0 yr|intern|entry/i.test(exp);
       const expLine = isFresher
@@ -785,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const lines = [
         '🚨 URGENT HIRING ALERT! 🚨',
         '',
-        `🏢 Company: ${company}`,
+        `🏢 Company: ${companyHighlight}`,
         `📌 Role: ${title}`,
         expLine,
         `💰 Salary / CTC: ${salary}`,
@@ -795,9 +803,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ];
       if (contact) {
         lines.push(`📞 HR Contact: ${contact}`);
-      }
-      if (shareUrl) {
-        lines.push(`🔗 Apply Link: ${shareUrl}`);
       }
       storyText = lines.join('\n');
     }
