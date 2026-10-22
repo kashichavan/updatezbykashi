@@ -210,6 +210,29 @@ class SourceAdaptersAndOrchestratorTests(TestCase):
         jobs = adapter.fetch_jobs(limit=10)
         self.assertEqual(jobs, [])
 
+    def test_linkedin_guest_parser_mocked(self):
+        sample_html = """
+        <li>
+          <div class="base-card" data-entity-urn="urn:li:jobPosting:3890123456">
+            <h3 class="base-search-card__title">Software Engineer - Backend (Python)</h3>
+            <h4 class="base-search-card__subtitle"><a href="#">PhonePe</a></h4>
+            <span class="job-search-card__location">Bengaluru, Karnataka, India</span>
+            <time class="job-search-card__listdate" datetime="2026-10-22">20 minutes ago</time>
+          </div>
+        </li>
+        """
+        adapter = LinkedInSourceAdapter()
+        parsed = adapter.parse_linkedin_guest_html(sample_html, limit=5)
+        self.assertEqual(len(parsed), 1)
+        job = parsed[0]
+        self.assertEqual(job["source_name"], "LinkedIn")
+        self.assertEqual(job["source_job_id"], "3890123456")
+        self.assertEqual(job["title"], "Software Engineer - Backend (Python)")
+        self.assertEqual(job["company_name"], "PhonePe")
+        self.assertEqual(job["normalized_city"], "Bengaluru")
+        self.assertEqual(job["industry_domain"], "TECHNICAL")
+        self.assertIn("3890123456", job["apply_url"])
+
     @patch.object(GreenhousePublicSourceAdapter, 'fetch_jobs')
     def test_orchestrator_execution(self, mock_gh_fetch):
         now = timezone.now()
