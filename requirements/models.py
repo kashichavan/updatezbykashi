@@ -343,6 +343,12 @@ class JobPosting(models.Model):
         eligibility_str = (self.eligibility or "").strip()
         if not eligibility_str or len(eligibility_str) < 5 or 'open to eligible' in eligibility_str.lower():
             eligibility_str = "Any Graduate / BE / B.Tech / MCA / All Batches"
+        elif len(eligibility_str) > 75:
+            first_sent = eligibility_str.split('.')[0].strip()
+            if 10 < len(first_sent) <= 75:
+                eligibility_str = first_sent
+            else:
+                eligibility_str = "Any Graduate / BE / B.Tech / MCA / All Batches"
 
         lines = [
             "🚨 URGENT HIRING ALERT! 🚨",
@@ -350,7 +356,7 @@ class JobPosting(models.Model):
             f"🏢 Company: {self.company_name}",
             f"📌 Role: {self.title}",
             exp_line,
-            f"💰 Salary / CTC: {self.stipend_salary or 'Best in Industry / Competitive'}",
+            f"💰 Salary / CTC: {self.stipend_salary or 'Competitive Package (Best in Industry)'}",
             f"📍 Location: {self.location or 'Pan India / Remote'}",
             f"⚡ Key Skills: {skills_str}",
             f"🎓 Eligibility: {eligibility_str}",
@@ -359,14 +365,8 @@ class JobPosting(models.Model):
         if self.contact_phone:
             lines.append(f"📞 HR Contact: {self.contact_phone}")
 
-        lines.extend([
-            "",
-            "🔗 DIRECT APPLY LINK:",
-            f"👉 {url}",
-            "",
-            "👆 Tap link sticker or open link to apply directly!",
-            "#HiringAlert #TechJobs #FreshersHiring #JobUpdatez #Career"
-        ])
+        if url:
+            lines.append(f"🔗 Apply Link: {url}")
 
         return "\n".join(lines)
 

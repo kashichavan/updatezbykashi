@@ -768,16 +768,10 @@
         <span>Upload Resume &amp; Tailor It</span>
       </button>
 
-      <!-- Prominent 1-Click Instagram Story Copy Button -->
-      <button type="button" onclick="copyFormattedIgStory()" id="btnHeroCopyStory" class="hero-tailor-btn-main" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045) !important; color: #ffffff !important; box-shadow: 0 4px 15px rgba(225, 48, 108, 0.4) !important; border: none !important; cursor: pointer;">
-        <i data-lucide="instagram" style="width: 16px; height: 16px;"></i>
-        <span id="heroCopyStoryText">📸 Copy Insta Story</span>
-      </button>
-
       <div style="display: flex; gap: 8px; margin-left: auto;">
-        <button type="button" onclick="copyFormattedIgStory()" id="btnHeaderCopyStory" class="share-pill share-pill-ig" style="padding: 10px 16px; font-size: 12px; border-radius: 12px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" title="Copy Instagram Story Text">
-          <i data-lucide="instagram" style="width: 15px; height: 15px;"></i>
-          <span id="headerCopyStoryBtnText">Story</span>
+        <button type="button" onclick="copyFormattedIgStory()" id="btnHeaderCopyStory" class="share-pill share-pill-ig" style="padding: 10px 14px; font-size: 12px; border-radius: 12px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" title="Copy Instagram Story Text">
+          <i data-lucide="instagram" style="width: 14px; height: 14px;"></i>
+          <span id="headerCopyStoryBtnText">📸 Copy Story</span>
         </button>
         <a href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply:%20{{ share_url }}" target="_blank" rel="noopener" class="share-pill share-pill-wa" style="padding: 10px 16px; font-size: 12px; border-radius: 12px;" title="Share on WhatsApp">
           <img src="{% static 'images/icon-whatsapp.png' %}" width="16" height="16" alt="WhatsApp" loading="eager" decoding="async">
@@ -1109,19 +1103,18 @@
       <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 20px; padding: 22px; box-shadow: var(--card-shadow); margin-bottom: 24px;">
         <div class="section-label" style="margin-bottom: 12px;"><img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Share"> Share This Requirement</div>
         <div class="share-action-grid">
-          <!-- Standout 1-Click Instagram Story Copy Button -->
-          <button type="button" onclick="copyFormattedIgStory()" id="btnSidebarCopyStory" class="share-pill share-pill-ig" style="grid-column: 1 / -1; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; font-weight: 800; font-size: 13.5px; padding: 13px; justify-content: center; box-shadow: 0 4px 15px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <i data-lucide="instagram" style="width: 18px; height: 18px;"></i>
-            <span id="sidebarCopyStoryText">📋 Copy Instagram Story Text</span>
+          <button type="button" onclick="copyFormattedIgStory()" id="btnSidebarCopyStory" class="share-pill share-pill-ig" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; font-weight: 700; font-size: 12px; cursor: pointer;">
+            <i data-lucide="instagram" style="width: 15px; height: 15px;"></i>
+            <span id="sidebarCopyStoryText">📸 Copy Story</span>
           </button>
           <a id="shareWaBtn" href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}" target="_blank" rel="noopener" class="share-pill share-pill-wa">
-            <img src="{% static 'images/icon-whatsapp.png' %}" width="20" height="20" alt="WhatsApp" loading="eager" decoding="async"> Share on WhatsApp
+            <img src="{% static 'images/icon-whatsapp.png' %}" width="20" height="20" alt="WhatsApp" loading="eager" decoding="async"> WhatsApp
           </a>
           <button type="button" onclick="openIgStoryModal()" class="share-pill" style="border: 1px solid #cbd5e1; background: #f8fafc; color: #1e293b; font-weight: 700;">
-            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram Story"> Visual Story Card
+            <img src="{% static 'images/icon-chat.png' %}" width="20" height="20" alt="Instagram Story"> Story Card
           </button>
-          <button id="copyUrlBtn" class="share-pill" onclick="copyShareUrl()" style="grid-column: 1 / -1;">
-            <img src="{% static 'images/icon-share.png' %}" width="20" height="20" alt="Share" loading="eager" decoding="async"> Copy Direct Link
+          <button id="copyUrlBtn" class="share-pill" onclick="copyShareUrl()">
+            <img src="{% static 'images/icon-share.png' %}" width="20" height="20" alt="Share" loading="eager" decoding="async"> Copy Link
           </button>
         </div>
       </div>

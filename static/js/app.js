@@ -476,23 +476,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </a>
               `}
             </div>
-
-            <!-- Instagram Story Copy Button -->
-            <button type="button" class="card-story-copy-btn"
-                    onclick="copyCardStoryDirect(event, this)"
-                    data-company="${escapeHtml(j.company_name || '')}"
-                    data-title="${escapeHtml(j.title || '')}"
-                    data-exp="${escapeHtml(j.experience_display || 'Fresher / All Levels')}"
-                    data-salary="${escapeHtml(j.stipend_salary || '')}"
-                    data-location="${escapeHtml(j.normalized_city || j.location || '')}"
-                    data-skills="${escapeHtml(Array.isArray(j.skills) ? j.skills.join(', ') : (j.skills_required || ''))}"
-                    data-eligibility="${escapeHtml(j.eligibility || '')}"
-                    data-contact="${escapeHtml(j.contact_phone || '')}"
-                    data-share-url="${escapeHtml(shareUrl)}"
-                    data-story="${escapeHtml(j.insta_story_text || '')}"
-                    title="Copy formatted Instagram Story text for this requirement">
-              <span>📸 Copy Insta Story</span>
-            </button>
           </div>
         </div>
       `;
@@ -780,6 +763,13 @@ document.addEventListener('DOMContentLoaded', () => {
       let eligibility = btn.getAttribute('data-eligibility') || '';
       if (!eligibility || eligibility.length < 5 || eligibility.toLowerCase().includes('open to eligible')) {
         eligibility = 'Any Graduate / BE / B.Tech / MCA / All Batches';
+      } else if (eligibility.length > 75) {
+        const firstSent = eligibility.split('.')[0].trim();
+        if (firstSent.length > 10 && firstSent.length <= 75) {
+          eligibility = firstSent;
+        } else {
+          eligibility = 'Any Graduate / BE / B.Tech / MCA / All Batches';
+        }
       }
       const contact = btn.getAttribute('data-contact') || '';
       let shareUrl = btn.getAttribute('data-share-url') || '';
@@ -806,14 +796,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (contact) {
         lines.push(`📞 HR Contact: ${contact}`);
       }
-      lines.push(
-        '',
-        '🔗 DIRECT APPLY LINK:',
-        `👉 ${shareUrl}`,
-        '',
-        '👆 Tap link sticker or open link to apply directly!',
-        '#HiringAlert #TechJobs #FreshersHiring #JobUpdatez #Career'
-      );
+      if (shareUrl) {
+        lines.push(`🔗 Apply Link: ${shareUrl}`);
+      }
       storyText = lines.join('\n');
     }
 
