@@ -23,6 +23,7 @@ from requirements.job_aggregator.deduplicator import (
     purge_all_database_duplicates,
 )
 from requirements.job_aggregator.adapters import (
+    JobdexoSourceAdapter,
     NaukriSourceAdapter,
     LinkedInSourceAdapter,
     GreenhousePublicSourceAdapter,
@@ -248,12 +249,12 @@ class SourceAdaptersAndOrchestratorTests(TestCase):
         self.assertEqual(job["industry_domain"], "TECHNICAL")
         self.assertIn("3890123456", job["apply_url"])
 
-    @patch.object(GreenhousePublicSourceAdapter, 'fetch_jobs')
-    def test_orchestrator_execution(self, mock_gh_fetch):
+    @patch.object(JobdexoSourceAdapter, 'fetch_jobs')
+    def test_orchestrator_execution(self, mock_jd_fetch):
         now = timezone.now()
-        mock_gh_fetch.return_value = [
+        mock_jd_fetch.return_value = [
             {
-                "source_name": "Greenhouse",
+                "source_name": "Jobdexo",
                 "source_job_id": "test-mock-01",
                 "source_url": "https://example.com/job/01",
                 "apply_url": "https://example.com/apply/01",
@@ -273,13 +274,13 @@ class SourceAdaptersAndOrchestratorTests(TestCase):
             }
         ]
 
-        result = orchestrator.run_aggregation(sources=["Greenhouse"], limit_per_source=5)
+        result = orchestrator.run_aggregation(sources=["Jobdexo"], limit_per_source=5)
         self.assertTrue(result["success"])
         self.assertEqual(result["total_discovered"], 1)
         self.assertEqual(result["total_imported"], 1)
 
         # Verify JobIngestionRun persisted
-        run = JobIngestionRun.objects.filter(source_name="Greenhouse").first()
+        run = JobIngestionRun.objects.filter(source_name="Jobdexo").first()
         self.assertIsNotNone(run)
         self.assertEqual(run.status, "SUCCESS")
 

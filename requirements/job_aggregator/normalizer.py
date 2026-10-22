@@ -16,15 +16,30 @@ from .constants import (
 )
 
 
+# Strict list of international countries, European / German cities, and foreign hubs
+FOREIGN_EXCLUSIVES = [
+    'germany', 'deutschland', 'berlin', 'munich', 'münchen', 'frankfurt', 'chemnitz',
+    'hamburg', 'cologne', 'köln', 'stuttgart', 'düsseldorf', 'leipzig', 'dortmund',
+    'essen', 'bremen', 'dresden', 'hannover', 'nuremberg', 'nürnberg', 'biberach',
+    'hofheim', 'bad wurzach', 'austria', 'vienna', 'wien', 'switzerland', 'zurich',
+    'zürich', 'geneva', 'united states', 'usa', 'u.s.', 'united kingdom', 'uk', 'london',
+    'canada', 'toronto', 'vancouver', 'australia', 'sydney', 'melbourne', 'singapore',
+    'france', 'paris', 'netherlands', 'amsterdam', 'dubai', 'uae', 'qatar', 'poland',
+    'warsaw', 'ireland', 'dublin', 'spain', 'madrid', 'barcelona', 'italy', 'rome', 'milan',
+    'japan', 'tokyo', 'china', 'beijing', 'shanghai', 'malaysia', 'philippines', 'brazil',
+    'mexico', 'south africa', 'new zealand', 'auckland', 'russia', 'moscow', 'sweden', 'stockholm',
+]
+
+
 def normalize_indian_location(raw_loc: str) -> Tuple[str, bool, bool]:
     """
     Normalizes a raw location string into:
     (normalized_city, is_remote, is_valid_india)
     
-    Returns:
-    - normalized_city: e.g. "Bengaluru", "Hyderabad", "Delhi NCR", "Remote"
-    - is_remote: boolean flag
-    - is_valid_india: boolean validating that the job is based in India or remote-friendly
+    Guarantees pure Indian jobs only:
+    - Rejects foreign locations (e.g. Germany, UK, USA, Singapore, etc.)
+    - Maps recognized Indian metro hubs and cities
+    - Flags remote opportunities if India-friendly
     """
     if not raw_loc or not str(raw_loc).strip():
         return "Bengaluru", False, True  # Default Indian tech capital
@@ -34,9 +49,8 @@ def normalize_indian_location(raw_loc: str) -> Tuple[str, bool, bool]:
     # Remote detection
     is_remote = any(w in clean_loc for w in ['remote', 'wfh', 'work from home', 'virtual', 'anywhere'])
 
-    # Reject explicit foreign locations unless marked remote
-    foreign_exclusives = ['united states', 'usa', 'united kingdom', 'london', 'canada', 'toronto', 'germany', 'berlin', 'australia', 'sydney', 'singapore']
-    if any(f in clean_loc for f in foreign_exclusives) and not is_remote and 'india' not in clean_loc:
+    # Strict rejection of explicit foreign locations
+    if any(f in clean_loc for f in FOREIGN_EXCLUSIVES):
         return "International", False, False
 
     # Check for direct canonical Indian city match
@@ -45,17 +59,14 @@ def normalize_indian_location(raw_loc: str) -> Tuple[str, bool, bool]:
         if re.search(pattern, clean_loc):
             return canonical, is_remote, True
 
+    if 'india' in clean_loc or 'pan india' in clean_loc:
+        return "India (Multiple Cities)", is_remote, True
+
     if is_remote:
         return "Remote", True, True
 
-    if 'india' in clean_loc or 'pan india' in clean_loc:
-        return "India (Multiple Cities)", False, True
-
-    # Clean up punctuation and capitalize if reasonable
-    sanitized = re.sub(r'[^a-zA-Z\s]', '', str(raw_loc)).strip()
-    words = sanitized.split()
-    short_city = " ".join([w.capitalize() for w in words[:2]]) if words else "Bengaluru"
-    return short_city, is_remote, True
+    # If location is unknown and does not mention India or Indian city, reject
+    return "International", False, False
 
 
 def classify_industry_domain(title: str = "", skills: str = "", description: str = "") -> str:

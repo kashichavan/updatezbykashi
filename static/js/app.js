@@ -401,12 +401,21 @@ document.addEventListener('DOMContentLoaded', () => {
             
             <div class="vp-salary-row">
               <span style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-salary.png" class="nav-icon" width="16" height="16" alt="Salary"> ${escapeHtml(j.stipend_salary)}</span>
-              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> ${escapeHtml(j.location)}</span>
+              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> ${escapeHtml(j.normalized_city || j.location)}</span>
             </div>
 
-            <p>${escapeHtml(j.description)}</p>
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+              <div style="display:flex;align-items:center;gap:4px;">
+                <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">${escapeHtml(postedDate)}</strong>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;color:var(--blue-primary);font-weight:700;">
+                <span>💼</span> <span>Exp: ${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
+              </div>
+            </div>
 
-            ${skillsHtml ? `<div class="skills-wrapper">${skillsHtml}</div>` : ''}
+            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(j.description || 'Detailed job description and responsibilities available on the official requirement page.')}</p>
+
+            ${skillsHtml ? `<div class="skills-wrapper" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;">${skillsHtml}</div>` : ''}
 
             <div class="vp-price-row">
               <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">

@@ -1480,6 +1480,8 @@ def api_jobs(request):
                     'source_name': j.source_name or 'Direct',
                     'relative_time': j.get_relative_time_display(),
                     'freshness_badge': j.get_freshness_badge(),
+                    'experience_display': j.get_experience_display(),
+                    'experience_tier': j.experience_tier,
                 })
 
             response_data = {
@@ -3259,6 +3261,7 @@ def api_jobs_list(request):
             'freshness_badge': job.get_freshness_badge(),
             'industry_domain': job.industry_domain,
             'experience_tier': job.experience_tier,
+            'experience_display': job.get_experience_display(),
         })
 
     return JsonResponse({
@@ -3315,6 +3318,7 @@ def api_jobs_last_hour(request):
             'freshness_badge': job.get_freshness_badge(),
             'industry_domain': job.industry_domain,
             'experience_tier': job.experience_tier,
+            'experience_display': job.get_experience_display(),
         })
 
     return JsonResponse({

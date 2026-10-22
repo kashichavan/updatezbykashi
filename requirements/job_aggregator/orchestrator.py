@@ -14,12 +14,9 @@ from django.core.cache import cache
 
 from requirements.models import JobPosting, JobGroup, JobIngestionRun
 from .adapters import (
+    JobdexoSourceAdapter,
     NaukriSourceAdapter,
     LinkedInSourceAdapter,
-    JobdexoSourceAdapter,
-    GreenhousePublicSourceAdapter,
-    AshbyPublicSourceAdapter,
-    PublicFeedsSourceAdapter,
 )
 from .deduplicator import merge_or_create_job, purge_all_database_duplicates
 
@@ -29,16 +26,14 @@ logger = logging.getLogger(__name__)
 class JobAggregationOrchestrator:
     """
     Master coordinator for India-wide job scraping and aggregation.
+    Strictly prioritized across Jobdexo, Naukri, and LinkedIn for pure Indian jobs.
     """
     def __init__(self):
-        # Prioritize Naukri and LinkedIn as primary India job sources
+        # Exclusively prioritize Jobdexo, Naukri, and LinkedIn
         self.adapters = [
+            JobdexoSourceAdapter(),
             NaukriSourceAdapter(),
             LinkedInSourceAdapter(),
-            JobdexoSourceAdapter(),
-            GreenhousePublicSourceAdapter(),
-            AshbyPublicSourceAdapter(),
-            PublicFeedsSourceAdapter(),
         ]
 
     def get_registered_sources(self) -> List[Dict[str, Any]]:

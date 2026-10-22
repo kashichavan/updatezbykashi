@@ -237,6 +237,32 @@ class JobPosting(models.Model):
         else:
             return f"{total_sec // 86400}d ago"
 
+    def get_experience_display(self):
+        """Returns a concise, human-friendly experience requirement string."""
+        import re
+        if self.eligibility:
+            match = re.search(r'(?:experience:?\s*)?(\d+[\s–-]+\d+\s*(?:yrs|years?))', self.eligibility, re.IGNORECASE)
+            if match:
+                return match.group(1).title()
+            match_single = re.search(r'(\d+\+?\s*(?:yrs|years?))', self.eligibility, re.IGNORECASE)
+            if match_single:
+                return match_single.group(1).title()
+        
+        # Check description
+        if self.description:
+            match_desc = re.search(r'(?:experience:?\s*)?(\d+[\s–-]+\d+\s*(?:yrs|years?))', self.description, re.IGNORECASE)
+            if match_desc:
+                return match_desc.group(1).title()
+
+        tier_map = {
+            'INTERNSHIP': 'Internship',
+            'FRESHER': 'Fresher (0-1 Yrs)',
+            'EARLY_CAREER': '1-3 Years',
+            'MID_LEVEL': '3-5 Years',
+            'SENIOR_LEVEL': '5+ Years',
+        }
+        return tier_map.get(self.experience_tier, 'Fresher / All Levels')
+
     def get_freshness_badge(self):
         """Returns structured metadata badge for frontends and mobile cards."""
         if self.is_last_hour():
