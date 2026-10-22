@@ -37,7 +37,8 @@ urlpatterns = [
     path('api/resume/github-discovery/', views.api_resume_github_discovery_direct, name='api_resume_github_discovery_direct'),
 
     # India-Wide Multi-Source Job Aggregation & Last-Hour Discovery Endpoints
-    path('api/jobs/', views.api_jobs_list, name='api_jobs_list'),
+    path('api/jobs/feed/', views.api_jobs_list, name='api_jobs_feed'),
+    path('api/jobs/search/', views.api_jobs_list, name='api_jobs_search'),
     path('api/jobs/last-hour/', views.api_jobs_last_hour, name='api_jobs_last_hour'),
     path('api/jobs/ingest/', views.api_jobs_ingest_trigger, name='api_jobs_ingest_trigger'),
     path('api/jobs/ingestion-status/', views.api_jobs_ingestion_status, name='api_jobs_ingestion_status'),

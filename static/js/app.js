@@ -315,9 +315,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       state.jobs = data.jobs || [];
-      state.totalCount = data.total_count || 0;
-      state.totalPages = data.total_pages || 1;
-      state.page = data.current_page || 1;
+      state.totalCount = (data.total_count !== undefined) ? data.total_count : (data.count || 0);
+      state.totalPages = (data.total_pages !== undefined) ? data.total_pages : 1;
+      state.page = (data.current_page !== undefined) ? data.current_page : (data.page || 1);
 
       renderJobs(state.jobs);
       renderPagination();
@@ -368,10 +368,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     jobsGrid.innerHTML = jobs.map(j => {
-      const formattedTime = formatTimeLeft(j.time_left_seconds);
-      const skillsHtml = (j.skills_list || []).slice(0, 3).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
-      const isDeactivated = j.status === 'EXPIRED' || j.time_left_seconds <= 0;
-      const postedDate = j.posted_date_display || 'Today';
+      const formattedTime = (typeof j.time_left_seconds === 'number' && j.time_left_seconds > 0)
+        ? formatTimeLeft(j.time_left_seconds)
+        : 'Auto-Expires in 7 Days';
+      const rawSkills = j.skills_list || j.skills || [];
+      const skillsHtml = (Array.isArray(rawSkills) ? rawSkills : []).slice(0, 3).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
+      const isDeactivated = j.status === 'EXPIRED';
+      const postedDate = j.posted_date_display || j.relative_time || 'Today';
       const isNewToday = postedDate === 'Today';
 
       const isNonIT = j.category_slug === 'non-it' || (j.category_slug || '').includes('non');

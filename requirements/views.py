@@ -1324,13 +1324,17 @@ def api_jobs(request):
             sort = request.GET.get('sort', 'newest')
             page = request.GET.get('page', '1')
             page_size = request.GET.get('page_size', '9')
+            domain_filter = request.GET.get('domain', '').strip()
+            city_filter = request.GET.get('city', '').strip() or request.GET.get('location', '').strip()
+            source_filter = request.GET.get('source', '').strip()
+            time_window = request.GET.get('time_window', '').strip()
 
             # Cache key including all filter dimensions
-            raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}"
+            raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}_{domain_filter}_{city_filter}_{source_filter}_{time_window}"
             cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
             
-            # Don't use stale cache if searching with query
-            if not query:
+            # Don't use stale cache if searching with query or specific filters
+            if not query and not city_filter and not domain_filter and not time_window:
                 cached_response = cache.get(cache_key)
                 if cached_response:
                     return JsonResponse(cached_response)
@@ -1374,12 +1378,42 @@ def api_jobs(request):
             status_filter = request.GET.get('status', '').strip()
             if status_filter and status_filter != 'ALL':
                 qs = qs.filter(status=status_filter)
+            elif not status_filter:
+                # Default to active opportunities with valid deadlines
+                qs = qs.filter(status='ACTIVE', deadline__gt=timezone.now())
 
             if category_slug and category_slug != 'all':
                 qs = qs.filter(category__slug=category_slug)
 
             if job_type and job_type != 'all':
                 qs = qs.filter(job_type=job_type)
+
+            # India-Wide Aggregation Filter Support
+            domain_filter = request.GET.get('domain', '').strip()
+            if domain_filter in ['TECHNICAL', 'NON_TECHNICAL']:
+                qs = qs.filter(industry_domain=domain_filter)
+
+            city_filter = request.GET.get('city', '').strip() or request.GET.get('location', '').strip()
+            if city_filter:
+                if city_filter.lower() == 'remote':
+                    qs = qs.filter(Q(is_remote=True) | Q(normalized_city='Remote'))
+                else:
+                    qs = qs.filter(Q(normalized_city__iexact=city_filter) | Q(location__icontains=city_filter))
+
+            source_filter = request.GET.get('source', '').strip()
+            if source_filter:
+                qs = qs.filter(source_name__iexact=source_filter)
+
+            # Time window filtering (e.g. '1h', '6h', '24h', '7d')
+            now = timezone.now()
+            if time_window == '1h':
+                qs = qs.filter(Q(source_published_at__gte=now - timedelta(hours=1)) | Q(first_seen_at__gte=now - timedelta(hours=1)))
+            elif time_window == '6h':
+                qs = qs.filter(Q(source_published_at__gte=now - timedelta(hours=6)) | Q(first_seen_at__gte=now - timedelta(hours=6)))
+            elif time_window == '24h':
+                qs = qs.filter(Q(source_published_at__gte=now - timedelta(hours=24)) | Q(first_seen_at__gte=now - timedelta(hours=24)))
+            elif time_window == '7d':
+                qs = qs.filter(Q(source_published_at__gte=now - timedelta(days=7)) | Q(first_seen_at__gte=now - timedelta(days=7)))
 
             if sort == 'deadline':
                 qs = qs.order_by('deadline')
@@ -1392,7 +1426,7 @@ def api_jobs(request):
             try:
                 page_size_int = int(page_size)
             except ValueError:
-                page_size_int = 10
+                page_size_int = 9
 
             total_count = qs.count()
             total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
@@ -1405,25 +1439,30 @@ def api_jobs(request):
             results = []
             now = timezone.now()
             for j in paginated_qs:
-                time_left_seconds = max(0, int((j.deadline - now).total_seconds()))
+                time_left_seconds = max(0, int((j.deadline - now).total_seconds())) if j.deadline else 7 * 86400
                 posted_date_display = j.get_posted_date_display()
+                skills_list = j.get_skills_list()
+                share_url = f"/category/{j.category.slug}/job/{j.uuid}/" if j.category else f"/job/{j.uuid}/"
 
                 results.append({
                     'id': j.id,
                     'uuid': str(j.uuid),
-                    'share_url': f"/category/{j.category.slug}/job/{j.uuid}/",
+                    'share_url': share_url,
+                    'detail_url': share_url,
                     'title': j.title,
                     'company_name': j.company_name,
                     'company_logo_icon': j.company_logo_icon,
-                    'category_name': j.category.name,
-                    'category_slug': j.category.slug,
+                    'category_name': j.category.name if j.category else 'Tech',
+                    'category_slug': j.category.slug if j.category else 'software-tech',
                     'job_type': j.job_type,
                     'job_type_display': j.get_job_type_display(),
                     'stipend_salary': j.stipend_salary,
                     'location': j.location,
+                    'normalized_city': j.normalized_city or j.location,
                     'is_remote': j.is_remote,
                     'skills_required': j.skills_required,
-                    'skills_list': j.get_skills_list(),
+                    'skills_list': skills_list,
+                    'skills': skills_list[:6],
                     'apply_url': j.apply_url,
                     'allow_direct_apply': j.allow_direct_apply,
                     'description': j.description,
@@ -1433,18 +1472,23 @@ def api_jobs(request):
                     'status_display': j.get_status_display(),
                     'views_count': j.views_count,
                     'is_featured': j.is_featured,
-                    'deadline': j.deadline.isoformat(),
+                    'deadline': j.deadline.isoformat() if j.deadline else None,
                     'time_left_seconds': time_left_seconds,
-                    'created_at': j.created_at.isoformat(),
-                    'posted_date': j.posted_date.isoformat(),
+                    'created_at': j.created_at.isoformat() if j.created_at else None,
+                    'posted_date': j.posted_date.isoformat() if j.posted_date else None,
                     'posted_date_display': posted_date_display,
+                    'source_name': j.source_name or 'Direct',
+                    'relative_time': j.get_relative_time_display(),
+                    'freshness_badge': j.get_freshness_badge(),
                 })
 
             response_data = {
                 'jobs': results,
                 'total_count': total_count,
+                'count': total_count,
                 'total_pages': total_pages,
                 'current_page': page_int,
+                'page': page_int,
                 'page_size': page_size_int,
                 'has_next': page_int < total_pages,
                 'has_previous': page_int > 1,
@@ -3179,22 +3223,34 @@ def api_jobs_list(request):
 
     job_items = []
     for job in page_obj:
+        time_left_seconds = max(0, int((job.deadline - now).total_seconds())) if job.deadline else 7 * 86400
+        skills_list = job.get_skills_list()
+        share_url = f"/category/{job.category.slug}/job/{job.uuid}/" if job.category else f"/job/{job.uuid}/"
+
         job_items.append({
             'id': job.id,
             'uuid': str(job.uuid),
+            'share_url': share_url,
+            'detail_url': share_url,
             'title': job.title,
             'company_name': job.company_name,
             'category': job.category.name if job.category else 'General',
+            'category_name': job.category.name if job.category else 'General',
             'category_slug': job.category.slug if job.category else 'tech',
             'location': job.location,
-            'normalized_city': job.normalized_city,
+            'normalized_city': job.normalized_city or job.location,
             'is_remote': job.is_remote,
             'job_type': job.job_type,
             'job_type_display': job.get_job_type_display(),
             'stipend_salary': job.stipend_salary,
-            'skills': job.get_skills_list()[:6],
+            'skills': skills_list[:6],
+            'skills_list': skills_list,
+            'skills_required': job.skills_required,
             'apply_url': job.apply_url,
-            'detail_url': f"/category/{job.category.slug}/job/{job.uuid}/" if job.category else f"/job/{job.uuid}/",
+            'description': job.description,
+            'status': job.status,
+            'time_left_seconds': time_left_seconds,
+            'posted_date_display': job.get_posted_date_display(),
             'source_name': job.source_name,
             'source_published_at': job.source_published_at.isoformat() if job.source_published_at else None,
             'timestamp_precision': job.timestamp_precision,
@@ -3208,7 +3264,9 @@ def api_jobs_list(request):
     return JsonResponse({
         'success': True,
         'count': paginator.count,
+        'total_count': paginator.count,
         'page': page_obj.number,
+        'current_page': page_obj.number,
         'total_pages': paginator.num_pages,
         'has_next': page_obj.has_next(),
         'has_previous': page_obj.has_previous(),
