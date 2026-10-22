@@ -2617,6 +2617,7 @@
       }
 
       const parsed = data.parsed_resume;
+      window._lastUploadedParsedResume = parsed;
       let resumeText = (parsed.summary || "");
       if (parsed.skills) {
         resumeText += "\n\nSkills: " + (typeof parsed.skills === 'object' ? Object.values(parsed.skills).join(', ') : parsed.skills);
@@ -2624,7 +2625,7 @@
       const input = document.getElementById('jobTailorResumeInput');
       if (input) input.value = resumeText;
 
-      if (window.showToast) window.showToast(`✅ ${file.name} parsed! Altering for {{ job.company_name }}...`, "success");
+      if (window.showToast) window.showToast(`✅ ${file.name} parsed! Altering for {{ job.company_name }} with AI...`, "success");
 
       // Auto-run alteration
       runJobAlterationStudio();
@@ -2646,25 +2647,36 @@
     btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Altering &amp; Rating ATS Score with AI...';
     if (window.lucide) window.lucide.createIcons();
 
+    let candSkills = { "Technical Skills": ["Python", "JavaScript", "SQL", "Git", "REST APIs"] };
+    let candProjects = [
+      {
+        title: "Full-Stack Web Platform",
+        tech_stack: "Python, Django, PostgreSQL, Docker, Redis",
+        bullets: [
+          "Architected responsive microservices handling 12,000+ daily active users with 99.9% uptime SLA.",
+          "Engineered automated caching layer utilizing Redis, reducing p95 database response latency by 42%."
+        ]
+      }
+    ];
+
+    if (window._lastUploadedParsedResume) {
+      const p = window._lastUploadedParsedResume;
+      if (p.skills) {
+        candSkills = typeof p.skills === 'object' && !Array.isArray(p.skills) ? p.skills : { "Skills": p.skills };
+      }
+      if (p.projects && p.projects.length) {
+        candProjects = p.projects;
+      }
+    }
+
     const payload = {
       job_title: "{{ job.title|escapejs }}",
       company_name: "{{ job.company_name|escapejs }}",
       job_skills: "{{ job.skills|escapejs }}",
       job_description: "{{ job.description|striptags|truncatewords:100|escapejs }}",
       candidate_summary: userText,
-      candidate_skills: {
-        "Languages & Frameworks": ["Python", "JavaScript", "SQL", "Git", "REST APIs"]
-      },
-      candidate_projects: [
-        {
-          title: "Full-Stack Web Platform",
-          tech_stack: "Python, Django, PostgreSQL, Docker, Redis",
-          bullets: [
-            "Architected responsive microservices handling 12,000+ daily active users with 99.9% uptime SLA.",
-            "Engineered automated caching layer utilizing Redis, reducing p95 database response latency by 42%."
-          ]
-        }
-      ]
+      candidate_skills: candSkills,
+      candidate_projects: candProjects
     };
 
     try {

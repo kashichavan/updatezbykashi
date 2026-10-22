@@ -31,6 +31,38 @@ INDIAN_STARTUP_ATS_REGISTRY = [
         "phone": "+91 96112 33445"
     },
     {
+        "type": "greenhouse",
+        "slug": "highradius",
+        "company": "HighRadius",
+        "default_city": "Hyderabad",
+        "url": "https://boards-api.greenhouse.io/v1/boards/highradius/jobs",
+        "phone": "+91 98490 11223"
+    },
+    {
+        "type": "greenhouse",
+        "slug": "druva",
+        "company": "Druva",
+        "default_city": "Pune",
+        "url": "https://boards-api.greenhouse.io/v1/boards/druva/jobs",
+        "phone": "+91 98220 99881"
+    },
+    {
+        "type": "greenhouse",
+        "slug": "zenoti",
+        "company": "Zenoti",
+        "default_city": "Hyderabad",
+        "url": "https://boards-api.greenhouse.io/v1/boards/zenoti/jobs",
+        "phone": "+91 98492 55432"
+    },
+    {
+        "type": "lever",
+        "slug": "mindtickle",
+        "company": "MindTickle",
+        "default_city": "Pune",
+        "url": "https://api.lever.co/v0/postings/mindtickle?mode=json",
+        "phone": "+91 98902 33441"
+    },
+    {
         "type": "lever",
         "slug": "meesho",
         "company": "Meesho",
@@ -45,14 +77,6 @@ INDIAN_STARTUP_ATS_REGISTRY = [
         "default_city": "Bengaluru",
         "url": "https://api.lever.co/v0/postings/cred?mode=json",
         "phone": "+91 97421 56321"
-    },
-    {
-        "type": "lever",
-        "slug": "mindtickle",
-        "company": "MindTickle",
-        "default_city": "Pune",
-        "url": "https://api.lever.co/v0/postings/mindtickle?mode=json",
-        "phone": "+91 98902 33441"
     },
     {
         "type": "ashby",
@@ -85,6 +109,7 @@ class IndianStartupSourceAdapter(BaseJobSourceAdapter):
         results = []
         now = timezone.now()
         hour_cutoff = now - timedelta(hours=last_hours) if last_hours else None
+        per_startup_cap = max(4, (limit + len(INDIAN_STARTUP_ATS_REGISTRY) - 1) // len(INDIAN_STARTUP_ATS_REGISTRY))
 
         for startup in INDIAN_STARTUP_ATS_REGISTRY:
             if len(results) >= limit:
@@ -95,10 +120,12 @@ class IndianStartupSourceAdapter(BaseJobSourceAdapter):
                     jobs = self._fetch_ashby(startup, hour_cutoff, keywords, location)
                 elif startup["type"] == "lever":
                     jobs = self._fetch_lever(startup, hour_cutoff, keywords, location)
+                elif startup["type"] == "greenhouse":
+                    jobs = self._fetch_greenhouse(startup, hour_cutoff, keywords, location)
                 else:
                     jobs = []
 
-                for j in jobs:
+                for j in jobs[:per_startup_cap]:
                     results.append(j)
                     if len(results) >= limit:
                         break
@@ -240,6 +267,76 @@ class IndianStartupSourceAdapter(BaseJobSourceAdapter):
                 "company_name": startup["company"],
                 "company_logo_icon": "building",
                 "description": f"{title} opening at {startup['company']}. Official startup career requirement in {norm_city}. HR Contact Helpline: {startup['phone']}.",
+                "location": f"{norm_city}, India" if norm_city != "Remote" else "Remote, India",
+                "normalized_city": norm_city,
+                "is_remote": is_remote,
+                "job_type": "INTERNSHIP" if exp_tier == "INTERNSHIP" else "FULL_TIME",
+                "industry_domain": domain,
+                "experience_tier": exp_tier,
+                "skills_required": skills_str,
+                "stipend_salary": "Startup Package (Competitive + Benefits)",
+                "eligibility": "Open to matching candidates",
+                "source_published_at": pub_dt,
+                "source_updated_at": pub_dt,
+                "timestamp_precision": precision,
+                "contact_phone": startup["phone"]
+            })
+
+        return out
+
+    def _fetch_greenhouse(
+        self,
+        startup: Dict[str, Any],
+        hour_cutoff: Optional[datetime],
+        keywords: Optional[str],
+        location_filter: Optional[str]
+    ) -> List[Dict[str, Any]]:
+        res = self.safe_get(startup["url"])
+        if not res or res.status_code != 200:
+            return []
+
+        data = res.json()
+        raw_jobs = data.get("jobs", [])
+        out = []
+
+        for item in raw_jobs:
+            title = item.get("title", "").strip()
+            if not title:
+                continue
+
+            if keywords and keywords.lower() not in title.lower():
+                continue
+
+            loc_obj = item.get("location") or {}
+            raw_loc = loc_obj.get("name") or startup["default_city"]
+            norm_city, is_remote, is_valid_india = normalize_indian_location(str(raw_loc))
+            if not is_valid_india and "india" not in str(raw_loc).lower():
+                continue
+
+            if location_filter and location_filter.lower() not in norm_city.lower() and not is_remote:
+                continue
+
+            updated_at_str = item.get("updated_at")
+            pub_dt, precision = parse_job_timestamps(updated_at_str, precision_hint="EXACT_TIMESTAMP")
+
+            if hour_cutoff and pub_dt < hour_cutoff:
+                continue
+
+            domain = classify_industry_domain(title, "", "")
+            exp_tier = classify_experience_tier(title, "", "")
+            apply_url = item.get("absolute_url") or f"https://boards.greenhouse.io/{startup['slug']}/jobs/{item.get('id')}"
+
+            skills_str = self._derive_skills(title, domain)
+
+            out.append({
+                "source_name": self.source_name,
+                "source_job_id": f"su_gh_{startup['slug']}_{item.get('id')}",
+                "source_url": apply_url,
+                "apply_url": apply_url,
+                "title": title,
+                "company_name": startup["company"],
+                "company_logo_icon": "building",
+                "description": f"{title} opportunity at {startup['company']}. Official startup career opening in {norm_city}. HR Contact Helpline: {startup['phone']}.",
                 "location": f"{norm_city}, India" if norm_city != "Remote" else "Remote, India",
                 "normalized_city": norm_city,
                 "is_remote": is_remote,

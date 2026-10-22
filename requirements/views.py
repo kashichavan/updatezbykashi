@@ -3036,6 +3036,32 @@ def api_resume_upload(request):
         ats_eval = evaluate_uploaded_resume_ats(parsed_resume, target_skills_list)
         ats_eval['score'] = ats_eval.get('overall_score', 85)
 
+        # Generate AI-powered suggestions, score adjustments, and concrete changes
+        try:
+            from .ai_engine import generate_ai_resume_critique_and_suggestions
+            job_obj = locals().get('job')
+            job_desc = job_obj.description if job_obj else ""
+            job_title = job_obj.title if job_obj else ""
+            ai_critique = generate_ai_resume_critique_and_suggestions(
+                parsed_resume=parsed_resume,
+                target_skills=target_skills_list,
+                job_description=job_desc,
+                target_role=job_title
+            )
+            ats_eval['ai_critique'] = ai_critique
+            if ai_critique.get('overall_score'):
+                ats_eval['ai_score'] = ai_critique['overall_score']
+            if ai_critique.get('grade'):
+                ats_eval['ai_grade'] = ai_critique['grade']
+            if ai_critique.get('top_changes_to_make'):
+                ats_eval['ai_changes'] = ai_critique['top_changes_to_make']
+            if ai_critique.get('rewritten_bullets'):
+                ats_eval['ai_rewritten_bullets'] = ai_critique['rewritten_bullets']
+            if ai_critique.get('executive_summary'):
+                ats_eval['ai_summary'] = ai_critique['executive_summary']
+        except Exception as e:
+            logger.warning(f"AI critique generation error: {e}")
+
         return JsonResponse({
             'success': True,
             'filename': resume_file.name,
