@@ -1427,12 +1427,8 @@ def api_jobs(request):
                         Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
                         Q(job_type='INTERNSHIP') |
                         Q(title__icontains='fresher') |
-                        Q(title__icontains='intern') |
-                        Q(title__icontains='trainee') |
-                        Q(eligibility__icontains='fresher') |
-                        Q(eligibility__icontains='0-1') |
-                        Q(eligibility__icontains='0-2')
-                    )
+                        Q(title__icontains='intern')
+                    ).exclude(experience_tier__in=['SENIOR_LEVEL', 'MID_LEVEL'])
                 elif cat_lower == 'qa-testing':
                     qs = qs.filter(
                         Q(category__slug='qa-testing') |

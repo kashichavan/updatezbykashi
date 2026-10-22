@@ -665,22 +665,23 @@ def classify_opportunity_category(job_data, cat_map):
     desc = (job_data.get('description') or '')[:300].lower()
     eligibility = (job_data.get('eligibility') or '')[:300].lower()
     blob = f"{title} {skills} {desc} {eligibility}"
+    is_eng_title = any(w in title for w in ['engineer', 'developer', 'architect', 'programmer', 'software'])
 
     # 1. QA & Software Testing
     qa_keywords = ['qa', 'test engineer', 'testing', 'quality assurance', 'automation tester', 'sdet', 'selenium', 'cypress', 'manual tester', 'software tester', 'test lead']
-    if any(k in title for k in qa_keywords) or (any(k in blob for k in qa_keywords) and 'developer' not in title):
+    if any(k in title for k in qa_keywords):
         if 'qa-testing' in cat_map:
             return cat_map['qa-testing']
 
     # 2. HR & Recruitment
     hr_keywords = ['hr intern', 'hr executive', 'recruiter', 'talent acquisition', 'human resources', 'hr trainee', 'technical recruiter', 'people operations', 'hr generalist', 'hr associate']
-    if any(k in title for k in hr_keywords) or any(k in blob for k in hr_keywords):
+    if any(k in title for k in hr_keywords) or (not is_eng_title and any(k in blob for k in hr_keywords)):
         if 'hr-recruitment' in cat_map:
             return cat_map['hr-recruitment']
 
     # 3. MBA & Business
     mba_keywords = ['mba', 'management trainee', 'business analyst', 'product management', 'business development associate', 'bda', 'strategy trainee', 'growth associate', 'operations trainee', 'consulting analyst']
-    if any(k in title for k in mba_keywords) or any(k in blob for k in mba_keywords):
+    if any(k in title for k in mba_keywords) or (not is_eng_title and any(k in blob for k in mba_keywords)):
         if 'mba-business' in cat_map:
             return cat_map['mba-business']
 

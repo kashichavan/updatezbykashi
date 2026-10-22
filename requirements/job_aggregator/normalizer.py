@@ -98,7 +98,8 @@ def classify_experience_tier(title: str = "", eligibility: str = "", description
     Classify candidate experience requirement:
     INTERNSHIP, FRESHER, EARLY_CAREER, MID_LEVEL, or SENIOR_LEVEL.
     """
-    text = f"{title} {eligibility} {description}".lower()
+    title_lower = (title or '').lower()
+    text = f"{title_lower} {eligibility} {description}".lower()
 
     # 1. Internship check
     for kw in EXPERIENCE_KEYWORDS['INTERNSHIP']:
@@ -106,22 +107,48 @@ def classify_experience_tier(title: str = "", eligibility: str = "", description
             return 'INTERNSHIP'
 
     # 2. Senior / Lead check in title
-    title_lower = (title or '').lower()
     for kw in EXPERIENCE_KEYWORDS['SENIOR_LEVEL']:
         if kw in title_lower:
             return 'SENIOR_LEVEL'
 
-    # 3. Fresher signals
+    # 3. Numeric range check (e.g. 10-13 Yrs, 5-8 Yrs, 0-1 Yrs)
+    range_match = re.search(r'(\d+)\s*(?:-|to|–)\s*(\d+)\s*(?:yrs|years?|year)', text)
+    if range_match:
+        min_yr = int(range_match.group(1))
+        max_yr = int(range_match.group(2))
+        if min_yr >= 5 or max_yr >= 7:
+            return 'SENIOR_LEVEL'
+        elif min_yr >= 3 or max_yr >= 5:
+            return 'MID_LEVEL'
+        elif min_yr >= 1:
+            return 'EARLY_CAREER'
+        elif min_yr == 0 and max_yr <= 2:
+            return 'FRESHER'
+
+    # Single number check (e.g. 8+ Yrs, 5 Yrs)
+    single_match = re.search(r'(\d+)\+?\s*(?:yrs|years?|year)', text)
+    if single_match:
+        val = int(single_match.group(1))
+        if val >= 5:
+            return 'SENIOR_LEVEL'
+        elif val >= 3:
+            return 'MID_LEVEL'
+        elif val >= 1:
+            return 'EARLY_CAREER'
+        elif val == 0:
+            return 'FRESHER'
+
+    # 4. Fresher signals
     for kw in EXPERIENCE_KEYWORDS['FRESHER']:
         if kw in text:
             return 'FRESHER'
 
-    # 4. Mid level signals
+    # 5. Mid level signals
     for kw in EXPERIENCE_KEYWORDS['MID_LEVEL']:
         if kw in text:
             return 'MID_LEVEL'
 
-    # 5. Early career signals
+    # 6. Early career signals
     for kw in EXPERIENCE_KEYWORDS['EARLY_CAREER']:
         if kw in text:
             return 'EARLY_CAREER'
