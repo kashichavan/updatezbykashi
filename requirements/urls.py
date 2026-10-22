@@ -24,6 +24,7 @@ urlpatterns = [
     path('resume-builder/', views.resume_builder_view, name='resume_builder_alias'),
     path('api/resume/template/<slug:role>/', views.api_resume_template, name='api_resume_template'),
     path('api/resume/evaluate/', views.api_ats_score_eval, name='api_ats_score_eval'),
+    path('api/resume/bengaluru-projects/', views.api_bengaluru_projects, name='api_bengaluru_projects'),
 
     # AI Job Description Generator & Career Suite
     path('tools/job-description-generator/', views.job_description_generator_view, name='job_description_generator'),
@@ -33,6 +34,7 @@ urlpatterns = [
     path('api/ai/polish-bullet/', views.api_ai_polish_bullet, name='api_ai_polish_bullet'),
     path('api/ai/tailor-resume/', views.api_ai_tailor_resume, name='api_ai_tailor_resume'),
     path('api/ai/generate-summary/', views.api_ai_generate_summary, name='api_ai_generate_summary'),
+    path('api/ai/github-project/', views.api_ai_github_project, name='api_ai_github_project'),
 
     # Mandatory Legal & Compliance Pages (AdSense Policy Requirements)
     path('privacy-policy/', views.privacy_policy_view, name='privacy_policy'),

@@ -232,3 +232,42 @@ Target Environment: {target_company_type}
 
     response_text = call_groq_chat(messages, temperature=0.4, json_mode=True)
     return json.loads(response_text)
+
+
+def generate_github_project_bullets(
+    repo_name: str,
+    description: str = "",
+    primary_language: str = "",
+    topics: list[str] = None,
+    stars: int = 0,
+) -> dict:
+    """Transform a GitHub project repository into a production-grade enterprise project entry with Google XYZ bullets."""
+    system_prompt = (
+        "You are an elite technical resume coach and ex-FAANG hiring manager. "
+        "Transform a GitHub project repository into a production-grade enterprise project entry for a software engineering resume. "
+        "Use the Google XYZ Formula: 'Accomplished [X], measured by [Y], by doing [Z]'. "
+        "Include realistic metrics (e.g. latency reduction %, throughput req/sec, test coverage %, memory footprint). "
+        "Return a valid JSON object with the following keys:\n"
+        "- 'title': A clean, impressive professional project title\n"
+        "- 'role': e.g. 'Creator & Lead Architect' or 'Full Stack Contributor'\n"
+        "- 'tech_stack': comma-separated list of technologies, frameworks, and databases inferred from the repo\n"
+        "- 'bullets': list of 3 high-impact Google XYZ bullet points (30-45 words each) starting with strong action verbs (Architected, Engineered, Optimized, Implemented, Deployed)"
+    )
+
+    topics_str = ", ".join(topics) if topics else "None"
+    user_prompt = f"""
+Repository Name: {repo_name}
+Description: {description or 'Open-source software application'}
+Primary Language: {primary_language or 'Python / TypeScript'}
+Topics / Tags: {topics_str}
+GitHub Stars: {stars}
+"""
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    response_text = call_groq_chat(messages, temperature=0.3, json_mode=True)
+    return json.loads(response_text)
+

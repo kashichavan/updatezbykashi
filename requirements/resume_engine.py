@@ -313,6 +313,8 @@ def calculate_ats_score(resume_data, role_key='python-backend'):
     bullets = []
     for proj in resume_data.get('projects', []):
         bullets.extend(proj.get('bullets', []))
+    for exp in resume_data.get('experience', []):
+        bullets.extend(exp.get('bullets', []))
 
     action_verb_count = sum(1 for b in bullets if any(b.strip().lower().startswith(v) for v in action_verbs))
     action_pts = 20 if action_verb_count >= 4 else (action_verb_count * 5)
@@ -376,3 +378,209 @@ def calculate_ats_score(resume_data, role_key='python-backend'):
         'grade': 'Excellent (ATS 90+ Top Tier)' if total_score >= 90 else 'Good (ATS 80+)',
         'pass_rate': 'Guaranteed Pass on Greenhouse, Lever, Workday, Taleo, iCIMS' if total_score >= 90 else 'Eligible for review'
     }
+
+
+# ==============================================================================
+# BENGALURU STARTUP PROJECTS CATALOG
+# Real-world Indian tech startup company architectures with Google XYZ metrics
+# ==============================================================================
+
+BENGALURU_STARTUP_PROJECTS = [
+    {
+        'id': 'razorpay-upi-gateway',
+        'company': 'Razorpay / CRED Style (Bengaluru FinTech)',
+        'domain': 'FinTech & Payments Infrastructure',
+        'title': 'High-Throughput UPI Webhook Ingestion & Idempotent Ledger Gateway',
+        'role': 'Backend Systems Engineer',
+        'tech_stack': 'Python, FastAPI, Redis Redlock, PostgreSQL, Docker, AWS SQS',
+        'bullets': [
+            'Architected asynchronous webhook ingestion engine processing ₹25Cr+ simulated daily UPI transaction notifications with 99.99% availability.',
+            'Engineered strict idempotency layer using Redis Redlock distributed locking and PostgreSQL serializable transactions, preventing duplicate debit reconciliations.',
+            'Reduced p99 webhook acknowledgement latency from 420ms to 28ms by decoupling ledger writes via asynchronous Celery/SQS worker pipelines.',
+            'Implemented automated SHA-256 HMAC signature verification and merchant API key rotation defending against replay attacks.'
+        ]
+    },
+    {
+        'id': 'swiggy-hyperlocal-dispatch',
+        'company': 'Swiggy / Zomato Style (Bengaluru Hyperlocal)',
+        'domain': 'Hyperlocal Logistics & Real-Time Telemetry',
+        'title': 'Distributed Real-Time Delivery Partner Dispatcher & Geo-spatial Route Optimizer',
+        'role': 'Full Stack / Systems Engineer',
+        'tech_stack': 'Node.js, TypeScript, Python, Redis GEORADIUS, Apache Kafka, WebSockets',
+        'bullets': [
+            'Engineered real-time geospatial dispatch engine streaming GPS telemetry for 8,000+ active delivery partners with < 35ms WebSocket latency.',
+            'Implemented dynamic batching algorithm utilizing Redis GEORADIUS and Haversine distance heuristics, cutting fleet dead-mileage by 23%.',
+            'Integrated Apache Kafka topic partitioning to handle burst order surges during peak Indian dinner hours (7 PM – 10 PM) with zero message loss.',
+            'Constructed live operations dashboard in React and Tailwind displaying driver density heatmaps and SLA breach predictions.'
+        ]
+    },
+    {
+        'id': 'zerodha-kite-tick-streamer',
+        'company': 'Zerodha / Groww Style (Bengaluru WealthTech)',
+        'domain': 'High-Frequency Financial Data & Trading Systems',
+        'title': 'High-Frequency Stock Market Tick Ingestion & Real-Time Portfolio Ledger',
+        'role': 'Systems Software Engineer',
+        'tech_stack': 'Go (Golang), Python, TimescaleDB, WebSockets, Redis Pub/Sub, Docker',
+        'bullets': [
+            'Built high-performance market feed distributor ingesting 75,000+ NSE/BSE stock ticks/sec via binary WebSockets with sub-10ms broadcast latency.',
+            'Aggregated raw tick data into 1-minute and 5-minute OHLCV candles utilizing TimescaleDB continuous aggregates and compression policies.',
+            'Slashing memory footprint by 58% by implementing Protobuf binary serialization over standard JSON payloads.',
+            'Engineered real-time P&L valuation engine computing portfolio risk exposure across 50,000+ simultaneous simulated trader accounts.'
+        ]
+    },
+    {
+        'id': 'zepto-darkstore-inventory',
+        'company': 'Zepto / Blinkit Style (Bengaluru Quick-Commerce)',
+        'domain': '10-Minute Dark Store & Supply Chain Systems',
+        'title': '10-Minute Dark Store Micro-Fulfillment & Concurrency Inventory Lock Engine',
+        'role': 'Backend / Platform Engineer',
+        'tech_stack': 'Python, Django REST Framework, Redis, MySQL, Celery, Docker',
+        'bullets': [
+            'Engineered dark store warehouse routing algorithm optimizing picker traversal path, reducing item pick times from 180s to 55s per basket.',
+            'Implemented optimistic database locking and two-phase stock reservation eliminating phantom inventory out-of-stock cancellations by 98%.',
+            'Orchestrated multi-store inventory sync processing 15,000+ SKU updates every 30 seconds across 40 simulated Bangalore micro-fulfillment centers.',
+            'Designed automated restocking prediction model utilizing exponential moving averages based on hourly localized consumption velocity.'
+        ]
+    },
+    {
+        'id': 'flipkart-flash-sale-queue',
+        'company': 'Flipkart / Meesho Style (Bengaluru E-Commerce)',
+        'domain': 'E-Commerce Infrastructure & High-Concurrency Sales',
+        'title': 'Flash Sale High-Concurrency Checkout Queue & Anti-Bot Protection Service',
+        'role': 'Distributed Systems Engineer',
+        'tech_stack': 'Java 17, Spring Boot, Apache Kafka, Redis Cluster, PostgreSQL',
+        'bullets': [
+            'Architected distributed token bucket queue managing 120,000+ simultaneous checkout requests during Big Billion Day flash sale simulations.',
+            'Implemented sliding-window rate limiting and device fingerprint validation dropping 94% of malicious bot scalper checkout attempts.',
+            'Maintained strictly ordered cart state checkouts using Kafka partition keys with zero inventory desynchronization across database replicas.',
+            'Benchmarked sustained throughput of 9,200 requests/sec with p95 response time under 45ms using Gatling load testing suites.'
+        ]
+    },
+    {
+        'id': 'sarvam-indic-rag-pipeline',
+        'company': 'Sarvam AI / Krutrim Style (Bengaluru GenAI)',
+        'domain': 'Generative AI & Indian Language Technologies',
+        'title': 'Multilingual Indic Document Semantic Search & RAG Chat Intelligence Engine',
+        'role': 'AI / Machine Learning Engineer',
+        'tech_stack': 'Python, LangChain, Llama-3, ChromaDB / Qdrant, FastAPI, PyTorch',
+        'bullets': [
+            'Engineered retrieval-augmented generation (RAG) system ingesting Hindi, Kannada, Tamil, and English tax invoices and GST compliance filings.',
+            'Achieved 91% factual accuracy by implementing hybrid search combining dense BGE-M3 vector embeddings with BM25 lexical keyword matching.',
+            'Optimized model inference latency by 65% via 4-bit quantization (GGUF/AWQ) on local hardware, maintaining sub-800ms generation response.',
+            'Constructed evaluation test harness with automated hallucination scoring and ground truth verification across 1,000+ test queries.'
+        ]
+    }
+]
+
+
+# ==============================================================================
+# EXPERIENCED PROFILES (1-5+ YOE) DEFAULTS
+# Production Work Experience at Top Indian Bengaluru Startups & Tech Unicorns
+# ==============================================================================
+
+EXPERIENCED_ROLE_DEFAULTS = {
+    'python-backend': {
+        'title': 'Senior Python & Backend Engineer (SDE-2)',
+        'summary': 'Senior Software Engineer with 3+ years of experience architecting distributed backend services, high-throughput RESTful APIs, and scalable database systems at high-growth Bengaluru product startups. Expert in Python, Django, FastAPI, Redis, and event-driven microservices processing millions of daily transactions.',
+        'experience': [
+            {
+                'company': 'Bengaluru FinTech & SaaS Product Startup',
+                'role': 'Software Development Engineer II (Backend)',
+                'location': 'Bengaluru, India',
+                'period': '2023 – Present',
+                'tech_stack': 'Python, Django REST Framework, FastAPI, PostgreSQL, Redis, Celery, Docker, AWS',
+                'bullets': [
+                    'Architected core transactional payment processing microservices handling ₹40Cr+ monthly GMV with 99.98% system availability.',
+                    'Engineered distributed Redis caching and query indexing layer across 18 PostgreSQL tables, slashing p95 API response latency from 320ms to 38ms.',
+                    'Led migration of monolithic services into 4 decoupled containerized microservices orchestrated via Kubernetes and AWS ECS.',
+                    'Mentored 4 junior engineers, conducted 60+ rigorous code reviews, and established automated CI/CD pipelines reducing defect leakages by 40%.'
+                ]
+            },
+            {
+                'company': 'Hyperlocal E-Commerce Unicorn',
+                'role': 'Software Development Engineer I',
+                'location': 'Bengaluru, India',
+                'period': '2021 – 2023',
+                'tech_stack': 'Python, Flask, MySQL, Redis, Celery, Git, Linux',
+                'bullets': [
+                    'Developed asynchronous order lifecycle notification service serving 200,000+ daily push and SMS events with zero queue backlog.',
+                    'Refactored database query execution plans and eliminated N+1 query bottlenecks, reducing database CPU utilization by 35% during peak traffic.',
+                    'Implemented automated unit and integration test suites achieving 88% code coverage and preventing critical regression bugs.'
+                ]
+            }
+        ]
+    },
+    'full-stack': {
+        'title': 'Senior Full-Stack Engineer',
+        'summary': 'Full-Stack Software Engineer with 3+ years of experience designing scalable web platforms and responsive interfaces for top Indian consumer tech startups. Expert in React, Next.js, TypeScript, Node.js/Python, and cloud-native microservices.',
+        'experience': [
+            {
+                'company': 'Bengaluru B2B SaaS Unicorn',
+                'role': 'Full-Stack Software Engineer II',
+                'location': 'Bengaluru, India',
+                'period': '2023 – Present',
+                'tech_stack': 'React, Next.js, TypeScript, Node.js, PostgreSQL, Docker, AWS',
+                'bullets': [
+                    'Architected enterprise customer analytics dashboard used by 12,000+ daily business users, optimizing client-side bundle size by 45%.',
+                    'Built high-performance GraphQL and REST API endpoints supporting 4,500 req/sec with robust JWT-based RBAC security.',
+                    'Pioneered design system component library in React and Tailwind, accelerating frontend feature velocity across 3 engineering squads by 50%.'
+                ]
+            }
+        ]
+    },
+    'java-sde': {
+        'title': 'Senior Java & Spring Cloud Engineer',
+        'summary': 'Java Software Engineer with 3+ years of experience developing mission-critical financial and e-commerce distributed systems. Deep expertise in Java 17/21, Spring Boot, Spring Cloud, Kafka, and relational databases.',
+        'experience': [
+            {
+                'company': 'Tier-1 Bengaluru E-Commerce Platform',
+                'role': 'Software Development Engineer II (Java)',
+                'location': 'Bengaluru, India',
+                'period': '2023 – Present',
+                'tech_stack': 'Java 17, Spring Boot, Spring Cloud, Apache Kafka, PostgreSQL, Docker',
+                'bullets': [
+                    'Engineered distributed inventory reservation engine processing 80,000+ orders during peak flash sales with zero race conditions.',
+                    'Implemented event-driven choreography with Apache Kafka, reducing inter-service HTTP dependency bottlenecks by 65%.',
+                    'Optimized JVM garbage collection and thread pool configuration, sustaining sub-25ms response latencies across 12 microservices.'
+                ]
+            }
+        ]
+    },
+    'data-analyst': {
+        'title': 'Senior Data & ML Systems Engineer',
+        'summary': 'Data Engineer with 3+ years of experience building large-scale data ingestion pipelines, real-time analytics platforms, and machine learning model serving architectures at top Bengaluru data-driven tech firms.',
+        'experience': [
+            {
+                'company': 'Bengaluru Mobility & Logistics Unicorn',
+                'role': 'Data Platform Engineer II',
+                'location': 'Bengaluru, India',
+                'period': '2023 – Present',
+                'tech_stack': 'Python, PySpark, Apache Airflow, Snowflake, PostgreSQL, AWS',
+                'bullets': [
+                    'Constructed daily batch and streaming ETL pipelines ingesting 4TB+ telemetry data, reducing pipeline execution latency by 40%.',
+                    'Designed executive KPI dashboards and predictive rider churn models improving quarterly customer retention by 14%.',
+                    'Automated data quality validation and schema enforcement checks using Great Expectations and Airflow DAGs.'
+                ]
+            }
+        ]
+    },
+    'devops-cloud': {
+        'title': 'Senior DevOps & Cloud Platform Engineer',
+        'summary': 'DevOps & SRE Engineer with 3+ years of experience managing multi-region cloud infrastructure, Kubernetes clusters, and zero-downtime CI/CD deployment pipelines for high-traffic Bengaluru tech platforms.',
+        'experience': [
+            {
+                'company': 'Bengaluru FinTech Platform',
+                'role': 'DevOps & SRE Engineer II',
+                'location': 'Bengaluru, India',
+                'period': '2023 – Present',
+                'tech_stack': 'AWS, Kubernetes (EKS), Terraform, Docker, GitHub Actions, Prometheus',
+                'bullets': [
+                    'Architected multi-region AWS Kubernetes (EKS) infrastructure with Terraform, delivering 99.99% system availability.',
+                    'Automated zero-downtime blue/green deployment workflows in GitHub Actions, slashing release deployment time from 45min to 6min.',
+                    'Optimized cloud computing costs by 32% through spot instance orchestration, Karpenter autoscaling, and S3 lifecycle tiering.'
+                ]
+            }
+        ]
+    }
+}
+

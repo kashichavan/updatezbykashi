@@ -2424,29 +2424,60 @@ def resume_builder_view(request):
 
 
 def api_resume_template(request, role):
-    """API endpoint to fetch structured JSON for any role template."""
-    from .resume_engine import RESUME_ROLES, calculate_ats_score
+    """API endpoint to fetch structured JSON for any role template, supporting fresher & experienced levels."""
+    from .resume_engine import RESUME_ROLES, EXPERIENCED_ROLE_DEFAULTS, calculate_ats_score
 
     role_data = RESUME_ROLES.get(role)
     if not role_data:
         return JsonResponse({'error': 'Role not found'}, status=404)
 
-    default_resume = {
-        'name': 'Kashinath Chavan',
-        'contact': {
-            'email': 'kashinath@example.com',
-            'phone': '+91 98765 43210',
-            'location': 'Bangalore, India',
-            'linkedin': 'linkedin.com/in/kashinath-chavan',
-            'github': 'github.com/kashichavan',
-            'portfolio': 'kashiiupdatez.online'
-        },
-        'summary': role_data['summary'],
-        'skills': role_data['technical_skills'],
-        'projects': role_data['enterprise_projects'],
-        'education': role_data['education'],
-        'certifications': role_data['certifications']
-    }
+    level = request.GET.get('level', 'fresher').lower()
+
+    if level == 'experienced' and role in EXPERIENCED_ROLE_DEFAULTS:
+        exp_data = EXPERIENCED_ROLE_DEFAULTS[role]
+        default_resume = {
+            'name': 'Kashinath Chavan',
+            'profile_level': 'experienced',
+            'contact': {
+                'email': 'kashinath@example.com',
+                'phone': '+91 98765 43210',
+                'location': 'Bengaluru, India',
+                'linkedin': 'linkedin.com/in/kashinath-chavan',
+                'github': 'github.com/kashichavan',
+                'portfolio': 'kashiiupdatez.online'
+            },
+            'summary': exp_data['summary'],
+            'skills': role_data['technical_skills'],
+            'experience': exp_data['experience'],
+            'projects': role_data['enterprise_projects'][:1],
+            'education': {
+                'degree': role_data['education']['degree'],
+                'institution': role_data['education']['institution'],
+                'year': '2019 – 2023',
+                'gpa': '8.6 / 10.0 CGPA',
+                'coursework': 'Distributed Systems, DBMS, Operating Systems, Cloud Architecture'
+            },
+            'certifications': role_data['certifications']
+        }
+    else:
+        default_resume = {
+            'name': 'Kashinath Chavan',
+            'profile_level': 'fresher',
+            'contact': {
+                'email': 'kashinath@example.com',
+                'phone': '+91 98765 43210',
+                'location': 'Bengaluru, India',
+                'linkedin': 'linkedin.com/in/kashinath-chavan',
+                'github': 'github.com/kashichavan',
+                'portfolio': 'kashiiupdatez.online'
+            },
+            'summary': role_data['summary'],
+            'skills': role_data['technical_skills'],
+            'experience': [],
+            'projects': role_data['enterprise_projects'],
+            'education': role_data['education'],
+            'certifications': role_data['certifications']
+        }
 
     ats_eval = calculate_ats_score(default_resume, role)
 
@@ -2455,6 +2486,73 @@ def api_resume_template(request, role):
         'resume': default_resume,
         'ats_eval': ats_eval
     })
+
+
+def api_bengaluru_projects(request):
+    """Return catalog of real-world Indian & Bengaluru startup projects with Google XYZ metrics."""
+    from .resume_engine import BENGALURU_STARTUP_PROJECTS
+    return JsonResponse({
+        'success': True,
+        'projects': BENGALURU_STARTUP_PROJECTS
+    })
+
+
+@csrf_exempt
+def api_ai_github_project(request):
+    """Fetch GitHub repo metadata and transform into enterprise resume project with Google XYZ metrics."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    import re
+    import requests
+    from .ai_engine import generate_github_project_bullets
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        raw_input = body.get('repo', '').strip()
+        if not raw_input:
+            return JsonResponse({'success': False, 'error': 'GitHub repository URL or username/repo is required.'}, status=400)
+
+        # Parse owner and repo from URL or string
+        clean_input = re.sub(r'^https?://github\.com/', '', raw_input).strip('/')
+        parts = clean_input.split('/')
+
+        repo_name = parts[-1] if parts else 'Awesome-Project'
+        owner = parts[0] if len(parts) > 1 else 'developer'
+
+        description = body.get('description', '')
+        primary_lang = body.get('language', '')
+        topics = []
+        stars = 0
+
+        # Attempt to fetch live from GitHub Public API
+        if len(parts) >= 2:
+            try:
+                gh_url = f"https://api.github.com/repos/{owner}/{repo_name}"
+                gh_res = requests.get(gh_url, headers={'User-Agent': 'KashiiUpdatez-App'}, timeout=4)
+                if gh_res.status_code == 200:
+                    gh_data = gh_res.json()
+                    repo_name = gh_data.get('name', repo_name)
+                    description = gh_data.get('description') or description
+                    primary_lang = gh_data.get('language') or primary_lang
+                    topics = gh_data.get('topics', [])
+                    stars = gh_data.get('stargazers_count', 0)
+            except Exception:
+                pass  # Fallback to AI generation with given inputs
+
+        # Generate Google XYZ Project Bullets via Groq AI
+        project_data = generate_github_project_bullets(
+            repo_name=repo_name,
+            description=description,
+            primary_language=primary_lang,
+            topics=topics,
+            stars=stars,
+        )
+
+        return JsonResponse({'success': True, 'project': project_data})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 
 @csrf_exempt
