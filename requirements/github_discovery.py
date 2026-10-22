@@ -223,20 +223,33 @@ def calculate_relevance_score(
 NON_PROJECT_INDICATORS = {
     'interview', 'interviews', 'exercise', 'exercises', 'question', 'questions',
     'cheat-sheet', 'cheatsheet', 'awesome', 'roadmap', 'curated-list',
-    'study-plan', 'handbook', 'leetcode', 'qa', 'quiz', 'quizzes', 'prep-guide'
+    'study-plan', 'handbook', 'leetcode', 'qa', 'quiz', 'quizzes', 'prep-guide',
+    'interview-questions', 'interview-prep'
 }
 
 
 def is_interview_or_qa_repo(repo: Dict[str, Any]) -> bool:
     """Check if repository is an interview question collection rather than a real software project."""
-    name_words = set(re.split(r'[-_/\s.]', (repo.get("name") or "").lower()))
-    full_name_words = set(re.split(r'[-_/\s.]', (repo.get("full_name") or "").lower()))
+    name_str = (repo.get("repo_name") or repo.get("name") or repo.get("full_name") or "").lower()
     desc_lower = (repo.get("description") or "").lower()
 
-    if name_words.intersection(NON_PROJECT_INDICATORS) or full_name_words.intersection(NON_PROJECT_INDICATORS):
+    if not name_str:
+        return False
+
+    name_words = set(re.split(r'[-_/\s.]', name_str))
+    if name_words.intersection(NON_PROJECT_INDICATORS):
         return True
 
-    if 'interview question' in desc_lower or 'interview prep' in desc_lower or 'cheatsheet' in desc_lower:
+    for ind in NON_PROJECT_INDICATORS:
+        if ind in name_str:
+            return True
+
+    indicators_in_desc = [
+        'interview question', 'interview questions', 'interview prep',
+        'cheatsheet', 'cheat sheet', 'devops interview', 'python interview',
+        'java interview', 'coding interview', 'leetcode solutions', 'exercise questions'
+    ]
+    if any(q in desc_lower for q in indicators_in_desc):
         return True
 
     return False

@@ -3256,13 +3256,19 @@ def api_resume_generation_status(request, job_uuid):
 
 def api_resume_generation_projects(request, job_uuid):
     """Fetch discovered GitHub repositories with transparent 5-factor relevance scores."""
-    from .models import ResumeGenerationJob
+    from .models import ResumeGenerationJob, DiscoveredProject
+    from .github_discovery import is_interview_or_qa_repo, get_fallback_curated_projects, extract_keywords_from_job
+
     job = ResumeGenerationJob.objects.filter(uuid=job_uuid).first()
     if not job:
         return JsonResponse({'success': False, 'error': 'Generation job not found'}, status=404)
 
+    # Purge any interview question / cheat sheet repos from DB for this job
     projects = []
-    for dp in job.discovered_projects.all():
+    for dp in list(job.discovered_projects.all()):
+        if is_interview_or_qa_repo({'repo_name': dp.repo_name, 'name': dp.repo_name, 'description': dp.description}):
+            dp.delete()
+            continue
         projects.append({
             'id': str(dp.uuid),
             'repo_name': dp.repo_name,
@@ -3277,6 +3283,44 @@ def api_resume_generation_projects(request, job_uuid):
             'candidate_relationship': dp.candidate_relationship,
             'is_selected': dp.is_selected,
         })
+
+    # If all or most were interview repos and now we have < 2, backfill with curated real codebases
+    if len(projects) < 2:
+        detected = extract_keywords_from_job(job.target_job_title, job.target_skills, job.target_job_description)
+        curated = get_fallback_curated_projects(detected)
+        for c in curated:
+            if any(p['repo_name'] == c['repo_name'] for p in projects):
+                continue
+            new_dp = DiscoveredProject.objects.create(
+                generation_job=job,
+                repo_name=c['repo_name'],
+                repo_url=c['repo_url'],
+                description=c['description'],
+                stars=c['stars'],
+                language=c['language'],
+                tech_stack=c['tech_stack'],
+                relevance_score=c['relevance_score'],
+                score_breakdown=c['score_breakdown'],
+                evidence_summary=c['evidence_summary'],
+                candidate_relationship='BUILT',
+                is_selected=(len(projects) < 2)
+            )
+            projects.append({
+                'id': str(new_dp.uuid),
+                'repo_name': new_dp.repo_name,
+                'repo_url': new_dp.repo_url,
+                'description': new_dp.description,
+                'stars': new_dp.stars,
+                'language': new_dp.language,
+                'tech_stack': new_dp.tech_stack,
+                'relevance_score': new_dp.relevance_score,
+                'score_breakdown': new_dp.score_breakdown,
+                'evidence_summary': new_dp.evidence_summary,
+                'candidate_relationship': new_dp.candidate_relationship,
+                'is_selected': new_dp.is_selected,
+            })
+            if len(projects) >= 4:
+                break
 
     return JsonResponse({
         'success': True,

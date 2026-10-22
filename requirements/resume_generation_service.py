@@ -87,7 +87,7 @@ def run_generation_pipeline(job_uuid: str):
                 relevance_score=repo["relevance_score"],
                 score_breakdown=repo["score_breakdown"],
                 evidence_summary=repo["evidence_summary"],
-                candidate_relationship=repo.get("candidate_relationship", "RECOMMENDED"),
+                candidate_relationship=repo.get("candidate_relationship", "BUILT"),
                 is_selected=is_def_selected
             )
             created_projects.append(dp)
