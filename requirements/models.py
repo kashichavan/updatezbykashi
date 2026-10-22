@@ -703,6 +703,61 @@ class ResumeGenerationJob(models.Model):
         return f"ResumeGenJob {self.uuid} ({self.mode} - {self.status} {self.progress_pct}%)"
 
 
+class IndianDemoProject(models.Model):
+    """
+    Curated library of realistic, fictional demonstration and portfolio projects
+    based on Indian IT industry use cases across major technology hubs.
+    Explicitly labeled as fictional practice/portfolio projects.
+    """
+    DIFFICULTY_CHOICES = [
+        ('Beginner', 'Beginner'),
+        ('Intermediate', 'Intermediate'),
+        ('Advanced', 'Advanced'),
+    ]
+
+    slug = models.SlugField(max_length=220, unique=True, db_index=True)
+    title = models.CharField(max_length=250)
+    fictional_company_name = models.CharField(max_length=200, blank=True, default='')
+    location_city = models.CharField(max_length=100, db_index=True)
+    location_state = models.CharField(max_length=100, db_index=True)
+    industry = models.CharField(max_length=100, db_index=True)
+    
+    target_job_roles = models.JSONField(default=list, help_text="e.g. ['Python / Django', 'Backend Engineer']")
+    difficulty_level = models.CharField(max_length=30, choices=DIFFICULTY_CHOICES, default='Intermediate', db_index=True)
+    project_type = models.CharField(max_length=80, default='Personal Portfolio Project')
+    
+    description = models.TextField()
+    problem_statement = models.TextField(blank=True, default='')
+    technical_stack = models.JSONField(default=list, help_text="List of technologies, frameworks, and databases")
+    key_features = models.JSONField(default=list)
+    
+    architecture_summary = models.TextField(blank=True, default='')
+    database_design_summary = models.TextField(blank=True, default='')
+    api_design_summary = models.TextField(blank=True, default='')
+    
+    resume_bullet_templates = models.JSONField(default=list, help_text="3-5 Google XYZ bullet templates")
+    estimated_duration = models.CharField(max_length=50, default='3-4 weeks')
+    learning_outcomes = models.JSONField(default=list, blank=True)
+    
+    source_type = models.CharField(max_length=50, default='CURATED_INDIAN_DEMO')
+    is_curated = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['location_city', 'title']
+        indexes = [
+            models.Index(fields=['location_city', 'is_active']),
+            models.Index(fields=['industry', 'is_active']),
+            models.Index(fields=['difficulty_level', 'is_active']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} — {self.location_city} ({self.difficulty_level})"
+
+
 class DiscoveredProject(models.Model):
     """
     Discovered GitHub public repositories ranked for relevance to target job skills.
@@ -711,12 +766,15 @@ class DiscoveredProject(models.Model):
     """
     RELATIONSHIP_CHOICES = [
         ('BUILT', 'Built / Authored Personally'),
+        ('PORTFOLIO', 'Personal Portfolio Project (Demonstration)'),
+        ('PRACTICE', 'Guided Practice / Case Study'),
         ('CONTRIBUTED', 'Contributed / Forked / Enhanced'),
-        ('RECOMMENDED', 'Recommended / Studied Project'),
+        ('RECOMMENDED', 'Architecture Case Study'),
     ]
 
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, db_index=True)
     generation_job = models.ForeignKey(ResumeGenerationJob, on_delete=models.CASCADE, related_name='discovered_projects')
+    demo_project = models.ForeignKey(IndianDemoProject, on_delete=models.SET_NULL, null=True, blank=True, related_name='discovered_instances')
     repo_name = models.CharField(max_length=200)
     repo_url = models.URLField(max_length=500)
     description = models.TextField(blank=True, default='')

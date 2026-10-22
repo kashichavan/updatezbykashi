@@ -2674,10 +2674,211 @@ def api_resume_template(request, role):
 def api_bengaluru_projects(request):
     """Return catalog of real-world Indian & Bengaluru startup projects with Google XYZ metrics."""
     from .resume_engine import BENGALURU_STARTUP_PROJECTS
+    from .models import IndianDemoProject
+    from .indian_project_service import serialize_demo_project
+
+    # Merge Bengaluru curated demo projects if available
+    db_projects = IndianDemoProject.objects.filter(location_city__iexact='Bengaluru', is_active=True)
+    if db_projects.exists():
+        combined = [serialize_demo_project(p) for p in db_projects]
+        # Include legacy catalog items if not overlapping
+        for lp in BENGALURU_STARTUP_PROJECTS:
+            if not any(lp.get('id') == p.get('slug') for p in combined):
+                combined.append(lp)
+        return JsonResponse({
+            'success': True,
+            'projects': combined
+        })
+
     return JsonResponse({
         'success': True,
         'projects': BENGALURU_STARTUP_PROJECTS
     })
+
+
+def api_indian_demo_projects(request):
+    """
+    Search and filter curated Indian Market Demonstration Projects Library.
+    Supports filtering by city, state, role, technology keyword, difficulty, and full-text search.
+    """
+    from .models import IndianDemoProject
+    from .indian_project_service import serialize_demo_project
+    from django.db.models import Q
+
+    role = request.GET.get('role', '').strip()
+    tech = request.GET.get('tech', '').strip()
+    city = request.GET.get('city', '').strip()
+    state = request.GET.get('state', '').strip()
+    difficulty = request.GET.get('difficulty', '').strip()
+    industry = request.GET.get('industry', '').strip()
+    q = request.GET.get('q', '').strip()
+
+    qs = IndianDemoProject.objects.filter(is_active=True)
+
+    if city:
+        qs = qs.filter(location_city__iexact=city)
+    if state:
+        qs = qs.filter(location_state__iexact=state)
+    if difficulty:
+        qs = qs.filter(difficulty_level__iexact=difficulty)
+    if industry:
+        qs = qs.filter(industry__icontains=industry)
+
+    if role:
+        qs = qs.filter(
+            Q(target_job_roles__icontains=role) |
+            Q(title__icontains=role)
+        )
+
+    if tech:
+        qs = qs.filter(
+            Q(technical_stack__icontains=tech) |
+            Q(description__icontains=tech)
+        )
+
+    if q:
+        qs = qs.filter(
+            Q(title__icontains=q) |
+            Q(description__icontains=q) |
+            Q(industry__icontains=q) |
+            Q(location_city__icontains=q) |
+            Q(technical_stack__icontains=q) |
+            Q(target_job_roles__icontains=q)
+        )
+
+    available_cities = list(
+        IndianDemoProject.objects.filter(is_active=True)
+        .values_list('location_city', flat=True)
+        .distinct()
+        .order_by('location_city')
+    )
+
+    projects_list = [serialize_demo_project(p) for p in qs]
+
+    return JsonResponse({
+        'success': True,
+        'count': len(projects_list),
+        'available_cities': available_cities,
+        'projects': projects_list
+    })
+
+
+@csrf_exempt
+def api_match_indian_projects_for_job(request):
+    """
+    Matches and ranks curated Indian IT industry dummy/portfolio demonstration projects
+    against a specific JobPosting (via job_id) or ad-hoc job title and skills.
+    """
+    from .models import JobPosting
+    from .indian_project_service import match_demo_projects_for_job
+
+    job_id = request.GET.get('job_id') or request.POST.get('job_id')
+    job_title = request.GET.get('job_title') or request.POST.get('job_title', '')
+    job_skills = request.GET.get('job_skills') or request.POST.get('job_skills', '')
+    city = request.GET.get('city') or request.POST.get('city', '')
+    difficulty = request.GET.get('difficulty') or request.POST.get('difficulty', '')
+
+    if request.method == 'POST' and request.body:
+        try:
+            body = json.loads(request.body.decode('utf-8'))
+            job_id = body.get('job_id', job_id)
+            job_title = body.get('job_title', job_title)
+            job_skills = body.get('job_skills', job_skills)
+            city = body.get('city', city)
+            difficulty = body.get('difficulty', difficulty)
+        except Exception:
+            pass
+
+    if job_id:
+        try:
+            job = JobPosting.objects.filter(pk=job_id).first()
+            if job:
+                if not job_title:
+                    job_title = job.title
+                if not job_skills:
+                    job_skills = job.get_skills_list()
+                if not city and job.location:
+                    city = job.location
+        except Exception:
+            pass
+
+    matched = match_demo_projects_for_job(
+        job_title=job_title,
+        job_skills=job_skills,
+        preferred_city=city,
+        difficulty=difficulty,
+        limit=12
+    )
+
+    return JsonResponse({
+        'success': True,
+        'job_title': job_title,
+        'preferred_city': city,
+        'count': len(matched),
+        'projects': matched
+    })
+
+
+@csrf_exempt
+def api_resume_attach_indian_project(request):
+    """
+    Attaches a curated IndianDemoProject to an active ResumeGenerationJob as a DiscoveredProject.
+    Preserves ethical attribution ('PORTFOLIO', 'PRACTICE', 'BUILT', 'RECOMMENDED').
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .models import ResumeGenerationJob, IndianDemoProject
+    from .indian_project_service import attach_demo_project_to_generation_job
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        job_uuid = body.get('job_uuid')
+        project_slug = body.get('project_slug') or body.get('slug')
+        project_id = body.get('project_id') or body.get('id')
+        relationship = body.get('relationship', 'PORTFOLIO')
+        is_selected = body.get('is_selected', True)
+
+        if not job_uuid:
+            return JsonResponse({'success': False, 'error': 'job_uuid is required'}, status=400)
+
+        gen_job = ResumeGenerationJob.objects.filter(uuid=job_uuid).first()
+        if not gen_job:
+            return JsonResponse({'success': False, 'error': 'ResumeGenerationJob not found'}, status=404)
+
+        demo_project = None
+        if project_slug:
+            demo_project = IndianDemoProject.objects.filter(slug=project_slug).first()
+        elif project_id:
+            demo_project = IndianDemoProject.objects.filter(id=project_id).first()
+
+        if not demo_project:
+            return JsonResponse({'success': False, 'error': 'IndianDemoProject not found'}, status=404)
+
+        dp = attach_demo_project_to_generation_job(
+            generation_job=gen_job,
+            demo_project=demo_project,
+            relationship=relationship,
+            is_selected=is_selected
+        )
+
+        return JsonResponse({
+            'success': True,
+            'project': {
+                'id': str(dp.uuid),
+                'repo_name': dp.repo_name,
+                'repo_url': dp.repo_url,
+                'description': dp.description,
+                'tech_stack': dp.tech_stack,
+                'relevance_score': dp.relevance_score,
+                'candidate_relationship': dp.candidate_relationship,
+                'is_selected': dp.is_selected,
+                'bullets': demo_project.resume_bullet_templates or []
+            }
+        })
+    except Exception as e:
+        logger.exception("Error attaching Indian demo project:")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 @csrf_exempt
@@ -3360,7 +3561,7 @@ def api_resume_generation_select_projects(request, job_uuid):
                     dp.is_selected = bool(item['is_selected'])
                 if 'relationship' in item:
                     rel = item['relationship'].upper()
-                    if rel in ['BUILT', 'CONTRIBUTED', 'RECOMMENDED']:
+                    if rel in ['BUILT', 'PORTFOLIO', 'PRACTICE', 'CONTRIBUTED', 'RECOMMENDED']:
                         dp.candidate_relationship = rel
                 dp.save(update_fields=['is_selected', 'candidate_relationship'])
 

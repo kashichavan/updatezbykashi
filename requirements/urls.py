@@ -27,6 +27,9 @@ urlpatterns = [
     path('api/resume/evaluate/', views.api_ats_score_eval, name='api_ats_score_eval'),
     path('api/resume/score-project/', views.api_score_project_ats, name='api_score_project_ats'),
     path('api/resume/bengaluru-projects/', views.api_bengaluru_projects, name='api_bengaluru_projects'),
+    path('api/projects/indian-demo/', views.api_indian_demo_projects, name='api_indian_demo_projects'),
+    path('api/projects/indian-demo/match/', views.api_match_indian_projects_for_job, name='api_match_indian_projects_for_job'),
+    path('api/resume/attach-indian-project/', views.api_resume_attach_indian_project, name='api_resume_attach_indian_project'),
     path('api/resume/upload/', views.api_resume_upload, name='api_resume_upload'),
     
     # Job-Specific AI Resume Generation & GitHub Project Discovery Pipeline

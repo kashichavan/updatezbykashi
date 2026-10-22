@@ -155,30 +155,40 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
         # Generate bullet points with honest relationship tag
         rel_label = {
             'BUILT': 'Personally Developed',
+            'PORTFOLIO': 'Personal Portfolio Project',
+            'PRACTICE': 'Guided Practice / Case Study',
             'CONTRIBUTED': 'Open Source Contribution',
             'RECOMMENDED': 'Academic Architecture & Case Study'
         }.get(dp.candidate_relationship, 'Academic Project')
 
         # Generate XYZ bullets
-        try:
-            proj_data = generate_github_project_bullets(
-                repo_name=dp.repo_name,
-                description=dp.description,
-                primary_language=dp.language,
-                topics=dp.tech_stack,
-                stars=dp.stars
-            )
-            bullets = proj_data.get('bullets', [])
-        except Exception:
-            bullets = [
-                f"Architected modular solution utilizing {dp.language} and {', '.join(dp.tech_stack[:2])}, delivering robust software components.",
-                f"Implemented RESTful endpoints and optimized data access patterns, reducing latency and ensuring test coverage.",
-                f"Configured automated CI/CD validation pipeline and deployment scripts, adhering to modern development practices."
-            ]
+        if dp.demo_project and dp.demo_project.resume_bullet_templates:
+            bullets = list(dp.demo_project.resume_bullet_templates)
+            clean_title = dp.demo_project.title
+        else:
+            try:
+                proj_data = generate_github_project_bullets(
+                    repo_name=dp.repo_name,
+                    description=dp.description,
+                    primary_language=dp.language,
+                    topics=dp.tech_stack,
+                    stars=dp.stars
+                )
+                bullets = proj_data.get('bullets', [])
+            except Exception:
+                bullets = [
+                    f"Architected modular solution utilizing {dp.language} and {', '.join(dp.tech_stack[:2])}, delivering robust software components.",
+                    f"Implemented RESTful endpoints and optimized data access patterns, reducing latency and ensuring test coverage.",
+                    f"Configured automated CI/CD validation pipeline and deployment scripts, adhering to modern development practices."
+                ]
+            clean_title = proj_data.get('title') if (isinstance(proj_data, dict) and proj_data.get('title')) else (dp.repo_name.split('/')[-1].replace('-', ' ').title())
 
-        clean_title = proj_data.get('title') if (isinstance(proj_data, dict) and proj_data.get('title')) else (dp.repo_name.split('/')[-1].replace('-', ' ').title())
         if dp.candidate_relationship == 'BUILT':
             full_title = f"{clean_title} [Personally Developed]"
+        elif dp.candidate_relationship == 'PORTFOLIO':
+            full_title = f"{clean_title} [Personal Portfolio Project]"
+        elif dp.candidate_relationship == 'PRACTICE':
+            full_title = f"{clean_title} [Practice Case Study]"
         elif dp.candidate_relationship == 'CONTRIBUTED':
             full_title = f"{clean_title} [Open Source Contribution]"
         else:

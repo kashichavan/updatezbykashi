@@ -3565,6 +3565,12 @@
     if (window.lucide) window.lucide.createIcons();
   }
 
+  /* ==========================================================
+     INDIAN IT DEMO PROJECTS & GITHUB IMPORT HANDLERS
+     ========================================================== */
+
+  let indianDemoCatalog = [];
+
   function openUnifiedAddProjectModal(initialTab = 'bengaluru') {
     const modal = document.getElementById('unifiedAddProjectModal');
     if (modal) {
@@ -3575,16 +3581,25 @@
       openBengaluruProjectsModal();
     }
 
-    if (bengaluruCatalog.length === 0) {
-      fetch('/api/resume/bengaluru-projects/')
+    if (indianDemoCatalog.length === 0) {
+      fetch('/api/projects/indian-demo/')
         .then(res => res.json())
         .then(data => {
-          bengaluruCatalog = data.projects || [];
-          renderBengaluruCards(bengaluruCatalog);
+          indianDemoCatalog = data.projects || [];
+          renderIndianDemoCards(indianDemoCatalog);
         })
-        .catch(err => console.error("Error loading Bengaluru projects:", err));
+        .catch(err => {
+          console.error("Error loading Indian demo projects:", err);
+          // Fallback to legacy endpoint if needed
+          fetch('/api/resume/bengaluru-projects/')
+            .then(res => res.json())
+            .then(d => {
+              indianDemoCatalog = d.projects || [];
+              renderIndianDemoCards(indianDemoCatalog);
+            });
+        });
     } else {
-      renderBengaluruCards(bengaluruCatalog);
+      renderIndianDemoCards(indianDemoCatalog);
     }
   }
 
@@ -3593,117 +3608,149 @@
     if (modal) modal.style.display = 'none';
   }
 
-  function switchProjectModalTab(tabId) {
-    document.querySelectorAll('.proj-tab-btn').forEach(btn => {
-      const active = btn.getAttribute('data-tab') === tabId;
-      btn.style.background = active ? 'linear-gradient(135deg, #a855f7, #6366f1)' : '#1e293b';
-      btn.style.color = active ? '#ffffff' : '#94a3b8';
-      btn.style.border = active ? '1px solid transparent' : '1px solid #334155';
+  function filterIndianDemoProjects() {
+    const searchVal = (document.getElementById('demoFilterSearch')?.value || '').toLowerCase().trim();
+    const cityVal = (document.getElementById('demoFilterCity')?.value || '').toLowerCase().trim();
+    const roleVal = (document.getElementById('demoFilterRole')?.value || '').toLowerCase().trim();
+    const diffVal = (document.getElementById('demoFilterDifficulty')?.value || '').toLowerCase().trim();
+
+    const filtered = indianDemoCatalog.filter(p => {
+      if (cityVal && !(p.location_city || '').toLowerCase().includes(cityVal)) return false;
+      if (diffVal && (p.difficulty_level || '').toLowerCase() !== diffVal) return false;
+      if (roleVal) {
+        const roles = Array.isArray(p.target_job_roles) ? p.target_job_roles.join(' ').toLowerCase() : (p.role || '').toLowerCase();
+        if (!roles.includes(roleVal) && !(p.title || '').toLowerCase().includes(roleVal)) return false;
+      }
+      if (searchVal) {
+        const titleMatch = (p.title || '').toLowerCase().includes(searchVal);
+        const stackMatch = (p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(' ') : '')).toLowerCase().includes(searchVal);
+        const descMatch = (p.description || '').toLowerCase().includes(searchVal);
+        const indMatch = (p.industry || p.domain || '').toLowerCase().includes(searchVal);
+        if (!titleMatch && !stackMatch && !descMatch && !indMatch) return false;
+      }
+      return true;
     });
-    const tabBengaluru = document.getElementById('tabContentBengaluru');
-    const tabGithub = document.getElementById('tabContentGithub');
-    const tabCustom = document.getElementById('tabContentCustom');
-    if (tabBengaluru) tabBengaluru.style.display = tabId === 'bengaluru' ? 'block' : 'none';
-    if (tabGithub) tabGithub.style.display = tabId === 'github' ? 'block' : 'none';
-    if (tabCustom) tabCustom.style.display = tabId === 'custom' ? 'block' : 'none';
 
-    if (tabId === 'github') {
-      const inputEl = document.getElementById('ghSearchKeywords');
-      const grid = document.getElementById('ghSearchResultsGrid');
-      if (inputEl && !inputEl.value) {
-        if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills_list && targetJobData.skills_list.length > 0) {
-          inputEl.value = targetJobData.skills_list.slice(0, 3).join(' ');
-        } else if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills) {
-          inputEl.value = targetJobData.skills.split(',').slice(0, 3).map(s => s.trim()).join(' ');
-        } else {
-          inputEl.value = 'Python Django REST API';
-        }
-      }
-      if (grid && (!grid.children || grid.children.length === 0)) {
-        handleSearchPublicGitHub();
-      }
-    }
-    if (window.lucide) window.lucide.createIcons();
+    renderIndianDemoCards(filtered);
   }
 
-  /* ==========================================================
-     BENGALURU STARTUP PROJECTS & GITHUB IMPORT HANDLERS
-     ========================================================== */
-
-  let bengaluruCatalog = [];
-
-  async function openBengaluruProjectsModal() {
-    const modal = document.getElementById('bengaluruProjectsModal');
-    if (modal) {
-      modal.style.display = 'flex';
-      if (window.lucide) window.lucide.createIcons();
-    }
-
-    if (bengaluruCatalog.length === 0) {
-      try {
-        const res = await fetch('/api/resume/bengaluru-projects/');
-        const data = await res.json();
-        bengaluruCatalog = data.projects || [];
-        renderBengaluruCards(bengaluruCatalog);
-      } catch (err) {
-        console.error("Error loading Bengaluru projects:", err);
-      }
-    } else {
-      renderBengaluruCards(bengaluruCatalog);
-    }
-  }
-
-  function closeBengaluruProjectsModal() {
-    const modal = document.getElementById('bengaluruProjectsModal');
-    if (modal) modal.style.display = 'none';
-  }
-
-  function renderBengaluruCards(items) {
+  function renderIndianDemoCards(items) {
     const container = document.getElementById('bengaluruCardsGrid');
     if (!container) return;
+    if (!items || items.length === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: #94a3b8; font-size: 13px;">
+          <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
+          <div>No demo projects found matching your filter criteria.</div>
+          <button type="button" onclick="document.getElementById('demoFilterSearch').value='';document.getElementById('demoFilterCity').value='';document.getElementById('demoFilterRole').value='';document.getElementById('demoFilterDifficulty').value='';filterIndianDemoProjects();" style="margin-top: 10px; background: #334155; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;">Reset Filters</button>
+        </div>
+      `;
+      return;
+    }
+
     let html = '';
     items.forEach(p => {
+      const pId = p.id || p.slug;
+      const cityLabel = p.location_city ? `${p.location_city}, ${p.location_state || 'India'}` : 'Bengaluru, India';
+      const roleLabel = (p.target_job_roles && p.target_job_roles.length > 0) ? p.target_job_roles[0] : (p.role || 'Software Engineer');
+      const difficulty = p.difficulty_level || 'Intermediate';
+      const diffColor = difficulty === 'Advanced' ? '#f43f5e' : (difficulty === 'Intermediate' ? '#38bdf8' : '#34d399');
+      const bullets = p.bullets || p.resume_bullet_templates || [];
+
       html += `
         <div class="bengaluru-card" style="background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
           <div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
               <span style="font-size: 10.5px; font-weight: 800; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">
-                ${p.company}
+                ${p.company || p.fictional_company_name || 'Portfolio Lab'}
               </span>
-              <span style="font-size: 11px; font-weight: 700; color: #94a3b8;">${p.domain}</span>
+              <div style="display: flex; gap: 5px; align-items: center;">
+                <span style="font-size: 10px; font-weight: 700; color: ${diffColor}; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; border: 1px solid ${diffColor}44;">
+                  ${difficulty}
+                </span>
+                <span style="font-size: 11px; font-weight: 700; color: #94a3b8;">${p.domain || p.industry || 'Tech'}</span>
+              </div>
             </div>
+
             <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin: 0 0 6px; line-height: 1.35;">${p.title}</h4>
-            <div style="font-size: 11.5px; color: #38bdf8; font-weight: 600; margin-bottom: 8px;">Stack: ${p.tech_stack}</div>
-            <ul style="margin: 0; padding-left: 16px; font-size: 12px; color: #cbd5e1; line-height: 1.45; display: flex; flex-direction: column; gap: 4px;">
-              ${p.bullets.slice(0, 2).map(b => `<li>${b}</li>`).join('')}
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 11px;">
+              <span style="color: #a855f7; font-weight: 600;">📍 ${cityLabel}</span>
+              <span style="color: #64748b;">•</span>
+              <span style="color: #38bdf8; font-weight: 600;">🎯 ${roleLabel}</span>
+              ${p.estimated_duration ? `<span style="color: #64748b;">•</span><span style="color: #94a3b8;">⏱️ ${p.estimated_duration}</span>` : ''}
+            </div>
+
+            <div style="font-size: 11.5px; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; background: rgba(255,255,255,0.04); padding: 5px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+              <span style="color: #38bdf8;">Stack:</span> ${p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(', ') : p.technical_stack)}
+            </div>
+
+            <ul style="margin: 0; padding-left: 16px; font-size: 11.5px; color: #cbd5e1; line-height: 1.45; display: flex; flex-direction: column; gap: 4px;">
+              ${bullets.slice(0, 2).map(b => `<li>${b}</li>`).join('')}
             </ul>
           </div>
-          <button type="button" onclick="addBengaluruProjectToResume('${p.id}')" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 800; font-size: 12px; padding: 9px 14px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">
-            <span>⚡ Add to My Resume</span>
-          </button>
+
+          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <label style="font-size: 11px; color: #94a3b8; font-weight: 700;">Attribution:</label>
+              <select id="attrRel_${pId}" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; font-size: 11px; padding: 4px 8px; border-radius: 6px; outline: none; flex: 1;">
+                <option value="PORTFOLIO" selected>Personal Portfolio Project</option>
+                <option value="PRACTICE">Guided Practice Case Study</option>
+                <option value="BUILT">Personally Developed</option>
+                <option value="RECOMMENDED">Architecture &amp; Case Study</option>
+              </select>
+            </div>
+
+            <button type="button" onclick="addIndianDemoProjectToResume('${pId}')" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 800; font-size: 12px; padding: 9px 14px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">
+              <span>⚡ Add to My Resume</span>
+            </button>
+          </div>
         </div>
       `;
     });
     container.innerHTML = html;
   }
 
-  function addBengaluruProjectToResume(projId) {
-    const p = bengaluruCatalog.find(x => x.id === projId);
+  function addIndianDemoProjectToResume(projId) {
+    const p = indianDemoCatalog.find(x => String(x.id) === String(projId) || x.slug === projId);
     if (!p) return;
+
+    const relSelect = document.getElementById(`attrRel_${p.id || p.slug}`);
+    const rel = relSelect ? relSelect.value : 'PORTFOLIO';
+
+    let relTag = '[Personal Portfolio Project]';
+    if (rel === 'BUILT') relTag = '[Personally Developed]';
+    else if (rel === 'PRACTICE') relTag = '[Practice Case Study]';
+    else if (rel === 'CONTRIBUTED') relTag = '[Open Source Contribution]';
+    else if (rel === 'RECOMMENDED') relTag = '[Architecture & Case Study]';
 
     if (!currentResumeData.projects) currentResumeData.projects = [];
     currentResumeData.projects.unshift({
-      title: p.title,
-      role: p.role,
-      tech_stack: p.tech_stack,
-      bullets: [...p.bullets]
+      title: `${p.title} ${relTag}`,
+      role: (p.target_job_roles && p.target_job_roles[0]) || p.role || 'Software Engineer',
+      tech_stack: p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(', ') : p.technical_stack),
+      bullets: [...(p.bullets || p.resume_bullet_templates || [])]
     });
 
     renderResumeSheet();
     recalculateAtsScore();
-    closeBengaluruProjectsModal();
-    if (window.showToast) window.showToast(`✅ Added ${p.company} project!`, "success");
-    else alert(`✅ Added ${p.company} project to your resume!`);
+    closeUnifiedAddProjectModal();
+    if (window.showToast) window.showToast(`✅ Added ${p.title} to resume!`, "success");
+    else alert(`✅ Added ${p.title} to resume!`);
+  }
+
+  // Backward compatibility alias functions
+  function renderBengaluruCards(items) {
+    renderIndianDemoCards(items);
+  }
+  function addBengaluruProjectToResume(projId) {
+    addIndianDemoProjectToResume(projId);
+  }
+  function openBengaluruProjectsModal() {
+    openUnifiedAddProjectModal('bengaluru');
+  }
+  function closeBengaluruProjectsModal() {
+    closeUnifiedAddProjectModal();
   }
 
   /* GitHub Repo Import Handlers */
@@ -4138,8 +4185,8 @@
           ⚡
         </div>
         <div>
-          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Add Flagship Tech Project</h3>
-          <p style="font-size: 12px; color: #94a3b8; margin: 0;">Select a top Indian startup project, import from GitHub, or enter custom details.</p>
+          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Add Tech Portfolio Project</h3>
+          <p style="font-size: 12px; color: #94a3b8; margin: 0;">Curated Indian IT industry demo projects, live GitHub repos, or custom entries.</p>
         </div>
       </div>
       <button type="button" onclick="closeUnifiedAddProjectModal()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); width: 32px; height: 32px; border-radius: 50%; color: #cbd5e1; font-size: 16px; cursor: pointer; display: grid; place-items: center;">&times;</button>
@@ -4148,7 +4195,7 @@
     <!-- 3 Segmented Tabs -->
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; background: #0f172a; padding: 5px; border-radius: 12px; border: 1px solid #334155;">
       <button type="button" class="proj-tab-btn" data-tab="bengaluru" onclick="switchProjectModalTab('bengaluru')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;">
-        <span>⚡ Bengaluru Unicorns</span>
+        <span>🇮🇳 Indian Demo Projects</span>
       </button>
       <button type="button" class="proj-tab-btn" data-tab="github" onclick="switchProjectModalTab('github')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #1e293b; color: #94a3b8;">
         <span>🐙 GitHub Repo AI</span>
@@ -4158,8 +4205,56 @@
       </button>
     </div>
 
-    <!-- Tab 1: Bengaluru Tech Startups -->
+    <!-- Tab 1: Indian IT Industry Demo Projects -->
     <div id="tabContentBengaluru">
+      <!-- Ethical Guidance Banner -->
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px;">🇮🇳</span>
+        <div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.45;">
+          <strong style="color: #38bdf8;">Curated Indian IT Market Demonstration Library:</strong> 36 realistic portfolio projects across Bengaluru, Pune, Hyderabad, Mumbai, Chennai, Gurugram, and Noida. Includes Google XYZ metric bullet templates. Select ethical attribution (Portfolio, Practice, or Developed) and adjust bullets according to features you have verified.
+        </div>
+      </div>
+
+      <!-- Filter Controls: City, Role, Search -->
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; background: #0f172a; padding: 10px; border-radius: 10px; border: 1px solid #334155;">
+        <div style="flex: 1; min-width: 180px;">
+          <input type="text" id="demoFilterSearch" oninput="filterIndianDemoProjects()" placeholder="Search projects (e.g. Django, Spring, PySpark, K8s, Microservices)..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #fff; font-size: 12px; outline: none; box-sizing: border-box;">
+        </div>
+        <div>
+          <select id="demoFilterCity" onchange="filterIndianDemoProjects()" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #e2e8f0; font-size: 12px; outline: none;">
+            <option value="">🏙️ All Tech Hubs</option>
+            <option value="Bengaluru">Bengaluru, Karnataka</option>
+            <option value="Hyderabad">Hyderabad, Telangana</option>
+            <option value="Pune">Pune, Maharashtra</option>
+            <option value="Mumbai">Mumbai, Maharashtra</option>
+            <option value="Chennai">Chennai, Tamil Nadu</option>
+            <option value="Gurugram">Gurugram, Haryana</option>
+            <option value="Noida">Noida, Uttar Pradesh</option>
+            <option value="Ahmedabad">Ahmedabad, Gujarat</option>
+            <option value="Kochi">Kochi, Kerala</option>
+          </select>
+        </div>
+        <div>
+          <select id="demoFilterRole" onchange="filterIndianDemoProjects()" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #e2e8f0; font-size: 12px; outline: none;">
+            <option value="">🎯 All Roles</option>
+            <option value="Python">Python / Django</option>
+            <option value="Java">Java / Spring Boot</option>
+            <option value="React">React / Full-Stack</option>
+            <option value="DevOps">DevOps / Cloud</option>
+            <option value="Data">Data Engineer / PySpark</option>
+            <option value="QA">QA / Automation</option>
+          </select>
+        </div>
+        <div>
+          <select id="demoFilterDifficulty" onchange="filterIndianDemoProjects()" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #e2e8f0; font-size: 12px; outline: none;">
+            <option value="">⚡ All Levels</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+
       <div id="bengaluruCardsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 14px;"></div>
     </div>
 
