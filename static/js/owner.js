@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const tabTitles = {
     'tabJobs': { title: 'Opportunity Pipeline CRM', sub: 'Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.' },
+    'tabLinkedin': { title: 'LinkedIn Post Scraper & Referrals Ingestion', sub: 'Scrape LinkedIn posts, extract requirements & employee referrals, validate quality scorecard, and pass directly to live pipeline.' },
     'tabBulkParse': { title: 'Bulk Multi-Job Automation', sub: 'Parse multi-job Telegram/WhatsApp messages & auto-publish all leads in 1 click.' },
     'tabJobdexo': { title: 'Jobdexo Auto-Sync Engine', sub: 'Automatically crawl & import off-campus drives directly from Jobdexo with official apply links.' },
     'tabAnalytics': { title: 'Website Traffic & Visitor Analytics', sub: 'Real-time student visitor volume, daily trends, referrer sources, and top viewed requirements.' },
@@ -68,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const tabUrlMap = {
     'tabJobs': '/owner/manage-jobs/',
+    'tabLinkedin': '/owner/linkedin-scraper/',
     'tabBulkParse': '/owner/bulk-parser/',
     'tabJobdexo': '/owner/jobdexo-sync/',
     'tabAnalytics': '/owner/analytics/',
@@ -81,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const urlTabMap = {
     '/owner/': 'tabJobs',
     '/owner/manage-jobs/': 'tabJobs',
+    '/owner/linkedin-scraper/': 'tabLinkedin',
     '/owner/bulk-parser/': 'tabBulkParse',
     '/owner/jobdexo-sync/': 'tabJobdexo',
     '/owner/analytics/': 'tabAnalytics',
@@ -678,6 +681,181 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // --- LINKEDIN POST SCRAPER & REFERRALS PIPELINE ---
+
+  let currentParsedLinkedInLead = null;
+
+  window.handleScrapeAndParseLinkedIn = async function() {
+    const postUrl = document.getElementById('linkedinPostUrl')?.value.trim() || '';
+    const rawText = document.getElementById('linkedinRawText')?.value.trim() || '';
+    const oppType = document.getElementById('linkedinOpportunityType')?.value || 'auto';
+    const referrerName = document.getElementById('linkedinReferrerName')?.value.trim() || '';
+    const referrerLinkedin = document.getElementById('linkedinReferrerLinkedin')?.value.trim() || '';
+
+    if (!postUrl && !rawText) {
+      showToast('Please provide either a LinkedIn URL or paste the post text.', 'warn');
+      return;
+    }
+
+    const loadEl = document.getElementById('linkedinLoadingState');
+    const cardEl = document.getElementById('linkedinValidationCard');
+    const successAlert = document.getElementById('linkedinSuccessAlert');
+    if (loadEl) loadEl.style.display = 'block';
+    if (cardEl) cardEl.style.display = 'none';
+    if (successAlert) successAlert.style.display = 'none';
+
+    try {
+      const res = await authFetch('/api/owner/linkedin/parse/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          post_url: postUrl,
+          raw_text: rawText,
+          force_referral: oppType === 'referral' ? true : (oppType === 'requirement' ? false : null),
+          referrer_name: referrerName,
+          referrer_linkedin: referrerLinkedin
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        currentParsedLinkedInLead = data.parsed;
+        renderLinkedInValidationReview(data.parsed, data.validation);
+        showToast('LinkedIn lead parsed & validated!', 'success');
+      } else {
+        showToast(data.error || 'Failed to parse LinkedIn post.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error while parsing LinkedIn post: ' + err.message, 'error');
+    } finally {
+      if (loadEl) loadEl.style.display = 'none';
+    }
+  };
+
+  window.renderLinkedInValidationReview = function(parsed, validation) {
+    const cardEl = document.getElementById('linkedinValidationCard');
+    if (!cardEl) return;
+
+    // Score & Badges
+    const scoreEl = document.getElementById('linkedinScoreBadge');
+    const statusEl = document.getElementById('linkedinStatusBadge');
+    const summaryEl = document.getElementById('linkedinValidationSummary');
+
+    if (scoreEl) {
+      scoreEl.innerText = `${validation.score} / 100`;
+      scoreEl.style.background = validation.is_valid ? '#dcfce7' : '#fee2e2';
+      scoreEl.style.color = validation.is_valid ? '#15803d' : '#b91c1c';
+      scoreEl.style.borderColor = validation.is_valid ? '#86efac' : '#fca5a5';
+    }
+
+    if (statusEl) {
+      statusEl.innerText = validation.badge_text;
+      statusEl.className = validation.is_valid ? 'status-pill status-active' : 'status-pill status-closed';
+    }
+
+    if (summaryEl) {
+      summaryEl.innerText = validation.is_valid 
+        ? 'All quality checks passed. You can pass & publish directly to the live student catalog.'
+        : 'Quality checks require attention before publishing (check company, role or apply destination).';
+    }
+
+    // Checks List
+    const checksList = document.getElementById('linkedinChecksList');
+    if (checksList && Array.isArray(validation.checks)) {
+      checksList.innerHTML = validation.checks.map(c => `
+        <li style="display: flex; align-items: flex-start; gap: 8px; padding: 4px 0;">
+          <span style="color: ${c.passed ? '#16a34a' : '#ef4444'}; font-weight: 800;">${c.passed ? '✓' : '✗'}</span>
+          <span><strong>${c.rule}</strong>: <span style="color: #64748b;">${c.detail}</span></span>
+        </li>
+      `).join('');
+    }
+
+    // Populate Editable Form
+    document.getElementById('valCompName').value = parsed.company || '';
+    document.getElementById('valTitle').value = parsed.title || '';
+    document.getElementById('valLocation').value = parsed.location || 'Bengaluru / Hybrid';
+    document.getElementById('valSalary').value = parsed.stipend_salary || 'Competitive';
+    document.getElementById('valIsReferral').value = parsed.is_referral ? 'true' : 'false';
+    document.getElementById('valApplyUrl').value = parsed.apply_url || '';
+    document.getElementById('valSkills').value = parsed.skills_required || '';
+    document.getElementById('valReferrerName').value = parsed.referrer_name || '';
+    document.getElementById('valReferrerLinkedin').value = parsed.referrer_linkedin || '';
+    document.getElementById('valReferralInstructions').value = parsed.referral_instructions || '';
+    document.getElementById('valDescription').value = parsed.description || '';
+
+    toggleReferralFields(parsed.is_referral);
+    cardEl.style.display = 'block';
+    cardEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.toggleReferralFields = function(isRef) {
+    const grp = document.getElementById('valReferralFieldsGroup');
+    if (grp) {
+      grp.style.display = isRef ? 'block' : 'none';
+    }
+  };
+
+  window.handlePublishLinkedInLead = async function() {
+    const payload = {
+      company: document.getElementById('valCompName').value.trim(),
+      title: document.getElementById('valTitle').value.trim(),
+      location: document.getElementById('valLocation').value.trim(),
+      is_remote: document.getElementById('valLocation').value.toLowerCase().includes('remote'),
+      stipend_salary: document.getElementById('valSalary').value.trim(),
+      is_referral: document.getElementById('valIsReferral').value === 'true',
+      apply_url: document.getElementById('valApplyUrl').value.trim(),
+      skills_required: document.getElementById('valSkills').value.trim(),
+      referrer_name: document.getElementById('valReferrerName').value.trim(),
+      referrer_linkedin: document.getElementById('valReferrerLinkedin').value.trim(),
+      referral_instructions: document.getElementById('valReferralInstructions').value.trim(),
+      description: document.getElementById('valDescription').value.trim(),
+      source_url: document.getElementById('linkedinPostUrl')?.value.trim() || ''
+    };
+
+    if (!payload.company || !payload.title) {
+      showToast('Company Name and Role Title are required.', 'error');
+      return;
+    }
+
+    try {
+      const res = await authFetch('/api/owner/linkedin/publish/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast(`🎉 PASSED & PUBLISHED: ${data.company} - ${data.title}!`, 'success');
+        logActivity('LinkedIn Lead Published', `${data.company} - ${data.title}`);
+
+        const successAlert = document.getElementById('linkedinSuccessAlert');
+        const successMsg = document.getElementById('linkedinSuccessMsg');
+        const successLink = document.getElementById('linkedinSuccessLink');
+
+        if (successMsg) successMsg.innerText = `Successfully published to active catalog as ${data.is_referral ? 'Employee Referral' : 'Job Requirement'}.`;
+        if (successLink) successLink.href = data.url;
+        if (successAlert) successAlert.style.display = 'block';
+
+        loadKpiStats();
+      } else {
+        showToast(data.error || 'Failed to publish lead.', 'error');
+      }
+    } catch (err) {
+      showToast('Server error publishing lead: ' + err.message, 'error');
+    }
+  };
+
+  window.resetLinkedInForm = function() {
+    document.getElementById('linkedinPostUrl').value = '';
+    document.getElementById('linkedinRawText').value = '';
+    document.getElementById('linkedinReferrerName').value = '';
+    document.getElementById('linkedinReferrerLinkedin').value = '';
+    const cardEl = document.getElementById('linkedinValidationCard');
+    if (cardEl) cardEl.style.display = 'none';
+    const successAlert = document.getElementById('linkedinSuccessAlert');
+    if (successAlert) successAlert.style.display = 'none';
+  };
 
   // --- MANUAL JOB POST FORM ENGINE ---
 

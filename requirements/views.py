@@ -1583,6 +1583,9 @@ def api_jobs(request):
                     'freshness_badge': j.get_freshness_badge(),
                     'experience_display': j.get_experience_display(),
                     'experience_tier': j.experience_tier,
+                    'is_referral': getattr(j, 'is_referral', False),
+                    'referrer_name': getattr(j, 'referrer_name', ''),
+                    'referrer_linkedin': getattr(j, 'referrer_linkedin', ''),
                     'insta_story_text': j.get_insta_story_text(share_url=request.build_absolute_uri(share_url)),
                 })
 
@@ -4042,6 +4045,99 @@ def api_jobs_deduplicate(request):
     except Exception as e:
         logger.exception("Error executing duplicate purge:")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_owner_linkedin_parse(request):
+    """
+    Owner API: Scrape, parse and validate a LinkedIn post or employee referral.
+    """
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .linkedin_service import scrape_linkedin_url, parse_linkedin_content, validate_linkedin_lead
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        post_url = data.get('post_url', '').strip()
+        raw_text = data.get('raw_text', '').strip()
+        force_referral = data.get('force_referral')
+        referrer_name = data.get('referrer_name', '').strip()
+        referrer_linkedin = data.get('referrer_linkedin', '').strip()
+
+        scrape_info = {}
+        if post_url and not raw_text:
+            scrape_res = scrape_linkedin_url(post_url)
+            scrape_info = scrape_res
+            if scrape_res.get('raw_text'):
+                raw_text = scrape_res['raw_text']
+            if not referrer_name and scrape_res.get('og_author'):
+                referrer_name = scrape_res['og_author']
+
+        if not raw_text and not post_url:
+            return JsonResponse({'error': 'Please provide either a LinkedIn post URL or raw post text snippet.'}, status=400)
+
+        parsed_data = parse_linkedin_content(
+            raw_text=raw_text,
+            source_url=post_url,
+            force_referral=force_referral,
+            referrer_name=referrer_name,
+            referrer_linkedin=referrer_linkedin
+        )
+        validation = validate_linkedin_lead(parsed_data)
+
+        return JsonResponse({
+            'success': True,
+            'parsed': parsed_data,
+            'validation': validation,
+            'scrape_info': scrape_info
+        })
+    except Exception as e:
+        logger.error(f"Error in api_owner_linkedin_parse: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_owner_linkedin_publish(request):
+    """
+    Owner API: Validate and pass a parsed LinkedIn requirement or referral directly into the live pipeline.
+    """
+    is_auth, owner_user = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .linkedin_service import publish_linkedin_lead, validate_linkedin_lead
+
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        validation = validate_linkedin_lead(data)
+
+        username = owner_user.username if hasattr(owner_user, 'username') else 'Owner'
+        job = publish_linkedin_lead(data, posted_by_user=username)
+
+        logger.info(f"Published {'Referral' if job.is_referral else 'Requirement'}: {job.title} at {job.company_name} (ID: {job.id}) by {username}")
+
+        return JsonResponse({
+            'success': True,
+            'job_id': job.id,
+            'uuid': str(job.uuid),
+            'url': job.get_absolute_url(),
+            'company': job.company_name,
+            'title': job.title,
+            'is_referral': job.is_referral,
+            'validation': validation
+        })
+    except Exception as e:
+        logger.error(f"Error in api_owner_linkedin_publish: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 
 

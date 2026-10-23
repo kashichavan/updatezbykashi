@@ -66,6 +66,12 @@ class JobPosting(models.Model):
     applications_count = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)
     
+    # ── LinkedIn & Employee Referral Metadata ──
+    is_referral = models.BooleanField(default=False, db_index=True, help_text="True if this is an employee referral opportunity")
+    referrer_name = models.CharField(max_length=150, blank=True, default="", help_text="Name of the employee/recruiter offering referral or posting on LinkedIn")
+    referrer_linkedin = models.URLField(max_length=500, blank=True, default="", help_text="LinkedIn profile URL of the referrer/poster")
+    referral_instructions = models.TextField(blank=True, default="", help_text="Instructions on how to get referred e.g. Email resume with Job ID to...")
+    
     # ── India-Wide Multi-Source Aggregation & Last-Hour Discovery Fields ──
     PRECISION_CHOICES = [
         ('EXACT_TIMESTAMP', 'Exact Timestamp (Hour & Minute)'),
@@ -135,6 +141,10 @@ class JobPosting(models.Model):
 
     def is_expired(self):
         return timezone.now() > self.deadline or self.status in ['CLOSED', 'EXPIRED']
+
+    def get_absolute_url(self):
+        cat_slug = self.category.slug if self.category else 'software-tech'
+        return f"/category/{cat_slug}/job/{self.uuid}/"
 
 
 

@@ -747,6 +747,23 @@
         </div>
       </div>
       {% endif %}
+
+      {% if job.is_referral or job.referrer_name %}
+      <div class="meta-strip-item" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(96, 165, 250, 0.4);">
+        <div class="meta-strip-icon">
+          <i data-lucide="handshake" style="width: 20px; height: 20px; color: #60a5fa;"></i>
+        </div>
+        <div class="meta-strip-content">
+          <span class="meta-strip-label" style="color: #93c5fd;">Employee Referral</span>
+          <span class="meta-strip-val" style="color: #bfdbfe; font-weight: 800;">
+            {% if job.referrer_name %}{{ job.referrer_name }}{% else %}Verified Insider{% endif %}
+            {% if job.referrer_linkedin %}
+              <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline; margin-left: 4px;">[LinkedIn ↗]</a>
+            {% endif %}
+          </span>
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Hero Fast Action Bar (Prominent Above-the-Fold Buttons) -->
@@ -790,6 +807,34 @@
 
     <!-- LEFT COLUMN: REQUIREMENT DETAILS -->
     <main class="job-main-card">
+
+      {% if job.is_referral or job.referral_instructions or job.referrer_name %}
+      <div style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.35) 0%, rgba(15, 23, 42, 0.6) 100%); border: 1.5px solid rgba(96, 165, 250, 0.4); border-radius: 14px; padding: 20px 22px; margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 4px 12px; border-radius: 99px; font-size: 11.5px; font-weight: 800; text-transform: uppercase;">
+            <i data-lucide="award" style="width: 14px; height: 14px;"></i> EMPLOYEE REFERRAL OPPORTUNITY
+          </span>
+          {% if job.referrer_linkedin %}
+            <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="font-size: 12.5px; font-weight: 700; color: #38bdf8; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+              <span>View Referrer's LinkedIn Profile</span>
+              <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+            </a>
+          {% endif %}
+        </div>
+        <p style="font-size: 13.5px; color: #e2e8f0; line-height: 1.6; margin: 0 0 10px;">
+          <strong>Referral Posted By:</strong> {{ job.referrer_name|default:"Verified Company Insider / Recruiter" }}
+          {% if job.referrer_linkedin %}
+            &bull; <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="color: #60a5fa;">{{ job.referrer_linkedin }}</a>
+          {% endif %}
+        </p>
+        {% if job.referral_instructions %}
+        <div style="background: rgba(15, 23, 42, 0.6); border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+          <div style="font-weight: 700; color: #60a5fa; margin-bottom: 4px;">📌 How to Request Referral:</div>
+          {{ job.referral_instructions|linebreaksbr }}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
 
       <!-- Required Skills -->
       <div style="margin-bottom: 20px;">

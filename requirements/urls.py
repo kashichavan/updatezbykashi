@@ -95,6 +95,7 @@ urlpatterns = [
     path('owner/post-job/', views.owner_view, name='owner_post_job'),
     path('owner/manage-jobs/', views.owner_view, name='owner_manage_jobs'),
     path('owner/jobdexo-sync/', views.owner_view, name='owner_jobdexo_sync'),
+    path('owner/linkedin-scraper/', views.owner_view, name='owner_linkedin_scraper'),
     path('owner/analytics/', views.owner_view, name='owner_analytics'),
     path('owner/categories/', views.owner_view, name='owner_categories'),
     path('owner/groups/', views.owner_view, name='owner_groups'),
@@ -133,5 +134,7 @@ urlpatterns = [
     path('api/owner/kpi-stats/', views.api_owner_kpi_stats, name='api_owner_kpi_stats'),
     path('api/owner/verify-links/', views.api_owner_verify_links, name='api_owner_verify_links'),
     path('api/owner/backup/trigger/', views.api_owner_trigger_backup, name='api_owner_trigger_backup'),
+    path('api/owner/linkedin/parse/', views.api_owner_linkedin_parse, name='api_owner_linkedin_parse'),
+    path('api/owner/linkedin/publish/', views.api_owner_linkedin_publish, name='api_owner_linkedin_publish'),
 ]
 

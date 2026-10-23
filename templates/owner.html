@@ -973,6 +973,9 @@
           <span style="font-size: 10px; opacity: 0.7;">▾</span>
         </button>
         <div class="nav-dropdown-menu" role="menu" aria-labelledby="moreToolsDropdownBtn">
+          <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabLinkedin" role="menuitem">
+            <span>💼 LinkedIn &amp; Referrals</span>
+          </button>
           <button type="button" class="nav-dropdown-item owner-nav-item" data-tab="tabSmartParse" role="menuitem">
             <span>1-Click Parser</span>
           </button>
@@ -1015,6 +1018,7 @@
   <!-- Mobile Swipeable Horizontal Sub-Nav Strip (Phone Navigation) -->
   <nav class="mobile-subnav-strip" id="mobileSubNavStrip" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-label="Mobile Studio Navigation">
     <button type="button" class="owner-link-item owner-nav-item active" data-tab="tabJobs">📊 Pipeline</button>
+    <button type="button" class="owner-link-item owner-nav-item" data-tab="tabLinkedin">💼 LinkedIn</button>
     <button type="button" class="owner-link-item owner-nav-item" data-tab="tabPost">✍️ + Post</button>
     <button type="button" class="owner-link-item owner-nav-item" data-tab="tabSmartParse">🎯 1-Parser</button>
     <button type="button" class="owner-link-item owner-nav-item" data-tab="tabBulkParse">⚡ Bulk</button>
@@ -1303,6 +1307,203 @@
           🎯 Parse &amp; Publish Single Lead 🚀
         </button>
       </form>
+    </div>
+
+    <!-- ==========================================
+         TAB: LINKEDIN POST SCRAPER & REFERRALS INGESTION
+         ========================================== -->
+    <div id="tabLinkedin" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 24px;">
+        <span class="status-pill" style="background: rgba(2, 132, 199, 0.1); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); margin-bottom: 8px;">
+          💼 LINKEDIN POST SCRAPER &amp; REFERRAL PIPELINE
+        </span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">LinkedIn Post Scraper &amp; Employee Referral Suite</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+          Scrape and extract hiring announcements, job requirement posts, and employee referrals from LinkedIn. Validates destination links, attributes the referrer mention, and lets you <strong>VALIDATE &amp; PASS</strong> directly into the live catalog!
+        </p>
+      </div>
+
+      <!-- Scraper Input Form -->
+      <form id="formLinkedinScraper" onsubmit="event.preventDefault(); handleScrapeAndParseLinkedIn();" style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <!-- URL Input -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="linkedinPostUrl" class="form-label" style="display: flex; justify-content: space-between;">
+            <span>LinkedIn Post or Job URL (Optional if pasting raw text)</span>
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Supports /posts/, /feed/update/, /jobs/view/</span>
+          </label>
+          <input type="url" id="linkedinPostUrl" class="form-input" placeholder="e.g. https://www.linkedin.com/posts/username_hiring-software-engineer-activity-..." style="background: #ffffff;">
+        </div>
+
+        <!-- Raw Text Snippet -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="linkedinRawText" class="form-label">Raw LinkedIn Post Text *</label>
+          <textarea id="linkedinRawText" class="form-textarea" rows="6" placeholder="Paste the full text of the LinkedIn post here...&#10;e.g. 'We are hiring SDE-1 at Amazon! Open for 2024-2026 Batch. Experience: 0-2 years. Skills: Java, AWS. DM me or email resume to yourname@amazon.com with Job ID 12345 for referral!'" style="background: #ffffff;"></textarea>
+        </div>
+
+        <!-- Options: Classification & Attribution -->
+        <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px;">
+          <div class="form-group">
+            <label for="linkedinOpportunityType" class="form-label">Opportunity Type</label>
+            <select id="linkedinOpportunityType" class="form-input" style="background: #ffffff;">
+              <option value="auto" selected>⚡ Auto-Detect (AI / Heuristic)</option>
+              <option value="referral">🤝 Force Employee Referral</option>
+              <option value="requirement">💼 Direct Job Requirement</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="linkedinReferrerName" class="form-label">Referrer / Poster Name</label>
+            <input type="text" id="linkedinReferrerName" class="form-input" placeholder="e.g. Kashinath / Tech Recruiter" style="background: #ffffff;">
+          </div>
+          <div class="form-group">
+            <label for="linkedinReferrerLinkedin" class="form-label">Referrer's LinkedIn Profile</label>
+            <input type="url" id="linkedinReferrerLinkedin" class="form-input" placeholder="https://linkedin.com/in/username" style="background: #ffffff;">
+          </div>
+        </div>
+
+        <button type="submit" id="btnLinkedinScrape" class="btn btn-primary" style="height: 44px; padding: 0 24px; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+          <span>🔍 Scrape, Parse &amp; Validate Lead</span>
+        </button>
+      </form>
+
+      <!-- Loading State -->
+      <div id="linkedinLoadingState" style="display: none; text-align: center; padding: 40px 20px;">
+        <div class="spinner-pulse" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid rgba(2, 132, 199, 0.2); border-top-color: #0284c7; margin: 0 auto 12px; animation: spin 0.8s linear infinite;"></div>
+        <h4 style="font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 4px;">Analyzing &amp; Validating LinkedIn Post...</h4>
+        <p style="font-size: 13px; color: var(--muted); margin: 0;">Extracting company, role, skills, referrer attribution, and checking application links.</p>
+      </div>
+
+      <!-- Validation Scorecard & Review Deck -->
+      <div id="linkedinValidationCard" style="display: none; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 14px; padding: 24px; box-shadow: var(--card-shadow);">
+        
+        <!-- Top Validation Score Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--subtle-border); margin-bottom: 20px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span id="linkedinScoreBadge" style="font-size: 18px; font-weight: 800; padding: 4px 12px; border-radius: 99px; background: #dcfce7; color: #15803d; border: 1px solid #86efac;">
+                95 / 100
+              </span>
+              <span id="linkedinStatusBadge" class="status-pill status-active" style="font-size: 12px;">
+                ✅ VALIDATED — READY TO PASS
+              </span>
+            </div>
+            <p style="font-size: 13px; color: var(--muted); margin: 6px 0 0;" id="linkedinValidationSummary">
+              All critical fields verified. Opportunity is ready for one-click publishing.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="handlePublishLinkedInLead()" id="btnPublishLinkedInLead" class="btn btn-primary" style="background: #16a34a; border-color: #16a34a; font-weight: 800; padding: 10px 22px; display: inline-flex; align-items: center; gap: 8px;">
+              <span>🚀 VALIDATE &amp; PASS LEAD ↗</span>
+            </button>
+            <button type="button" onclick="resetLinkedInForm()" class="btn btn-secondary" style="padding: 10px 16px;">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Validation Checklist -->
+        <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: 10px; padding: 14px 18px; margin-bottom: 22px;">
+          <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink); margin: 0 0 10px;">
+            Quality &amp; Validation Scorecard:
+          </h4>
+          <ul id="linkedinChecksList" style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; font-size: 13px;">
+          </ul>
+        </div>
+
+        <!-- Editable Review Fields Form -->
+        <h4 style="font-size: 14px; font-weight: 800; color: var(--ink); margin: 0 0 14px;">Review &amp; Fine-Tune Extracted Information:</h4>
+        <form id="formLinkedinReview">
+          <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label class="form-label">Company Name *</label>
+              <input type="text" id="valCompName" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role Title *</label>
+              <input type="text" id="valTitle" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input type="text" id="valLocation" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Salary / Stipend</label>
+              <input type="text" id="valSalary" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Is Employee Referral?</label>
+              <select id="valIsReferral" class="form-input" onchange="toggleReferralFields(this.value === 'true')">
+                <option value="true">🤝 Yes (Referral Opportunity)</option>
+                <option value="false">💼 No (Direct Requirement)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Application URL or Referral Email (mailto:) *</label>
+            <input type="text" id="valApplyUrl" class="form-input" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Skills / Tech Stack *</label>
+            <input type="text" id="valSkills" class="form-input" required>
+          </div>
+
+          <!-- Referral Attribution Block -->
+          <div id="valReferralFieldsGroup" style="background: rgba(2, 132, 199, 0.05); border: 1px solid rgba(2, 132, 199, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+            <div style="font-size: 13px; font-weight: 700; color: #0284c7; margin-bottom: 10px;">
+              🤝 Employee Referral Mention &amp; Instructions:
+            </div>
+            <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+              <div class="form-group">
+                <label class="form-label">Referrer Name / Mention</label>
+                <input type="text" id="valReferrerName" class="form-input" placeholder="e.g. Kashinath">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Referrer's LinkedIn Profile</label>
+                <input type="url" id="valReferrerLinkedin" class="form-input" placeholder="https://linkedin.com/in/...">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instructions on How to Request Referral</label>
+              <textarea id="valReferralInstructions" class="form-textarea" rows="2" placeholder="e.g. Email resume with Job ID to ... or DM on LinkedIn"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label class="form-label">Full Opportunity Description</label>
+            <textarea id="valDescription" class="form-textarea" rows="4"></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button type="button" onclick="handlePublishLinkedInLead()" class="btn btn-primary" style="background: #16a34a; border-color: #16a34a; font-weight: 800; height: 46px; padding: 0 28px; font-size: 15px;">
+              🚀 VALIDATE &amp; PASS — PUBLISH TO PIPELINE NOW
+            </button>
+          </div>
+        </form>
+
+        <!-- Published Success Card -->
+        <div id="linkedinSuccessAlert" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 18px; margin-top: 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h4 style="font-size: 16px; font-weight: 800; color: #166534; margin: 0 0 4px;">🎉 Opportunity Successfully Published &amp; Live!</h4>
+              <p style="font-size: 13.5px; color: #15803d; margin: 0;" id="linkedinSuccessMsg">
+                Live in active student catalog.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <a id="linkedinSuccessLink" href="#" target="_blank" class="btn btn-primary" style="text-decoration: none; font-size: 13px; padding: 8px 16px;">
+                View Live Opportunity ↗
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
 
     <!-- ==========================================
