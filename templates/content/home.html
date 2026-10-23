@@ -1,10 +1,32 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}⚡ Kashii Update — Daily Student Jobs & Internships | Kashii Updatez{% endblock %}
-{% block meta_description %}Official Kashii Update & Kashii Updatez (kashiiupdatez.online) by Python Kashi. Verified daily off-campus student job opportunities, tech & non-IT internships, and coding tutorials with official direct apply links.{% endblock %}
-{% block og_title %}⚡ Kashii Update — Daily Student Jobs & Internships | Kashii Updatez{% endblock %}
-{% block og_description %}Official Kashii Update & Kashii Updatez portal. Access daily curated student job drives, fresher internships, and programming tutorials by Python Kashi.{% endblock %}
+{% block title %}⚡ Kashii Updatez — Latest Jobs, Student Internships & Off-Campus Drives 2026{% endblock %}
+{% block meta_description %}Apply for latest tech jobs, software engineering fresher roles, Bangalore student internships, and daily off-campus drives 2026. 100% verified official recruiter apply links with 7-day freshness guarantee.{% endblock %}
+{% block og_title %}⚡ Kashii Updatez — Latest Jobs, Student Internships & Off-Campus Drives 2026{% endblock %}
+{% block og_description %}Discover verified daily student job requirements, tech internships, and deep-dive programming tutorials by Python Kashi. 100% direct official career apply links.{% endblock %}
+
+{% block schema_markup %}
+<!-- Google Job Directory ItemList Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Latest Verified Student Jobs & Internships",
+  "description": "Daily verified software engineering, IT, and campus job drives across India.",
+  "itemListElement": [
+    {% for j in initial_jobs|slice:":10" %}
+    {
+      "@type": "ListItem",
+      "position": {{ forloop.counter }},
+      "url": "https://kashiiupdatez.online/category/{{ j.category.slug }}/job/{{ j.uuid }}/",
+      "name": "{{ j.company_name|escapejs }} Hiring: {{ j.title|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="wrap">

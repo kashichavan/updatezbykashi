@@ -1,8 +1,101 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}🖥️ Beginner Code Execution Debugger | Python Kashi{% endblock %}
-{% block meta_description %}Interactive step-by-step code debugger for beginners. Watch Python, JavaScript, and Java code run line-by-line with visual memory allocation.{% endblock %}
+{% block title %}Online Code Editor & Compiler — Run Python, JavaScript & Java Online | Kashii Updatez{% endblock %}
+{% block meta_description %}Free online code editor and multi-language compiler by Kashii Updatez. Write, run, trace and debug Python, JavaScript, and Java in your browser with real-time memory visualization, stack inspection, and VS Code Monaco editor. No setup required.{% endblock %}
+
+{% block schema_markup %}
+<!-- WebApplication & SoftwareApplication Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Kashii Online Code Editor & Interactive Visual Compiler",
+  "url": "https://kashiiupdatez.online/debugger/",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "All (Web Browser, Chrome, Firefox, Safari, Edge)",
+  "browserRequirements": "Requires JavaScript. Requires HTML5.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "description": "High-performance browser-based online code editor and step-by-step visual debugger supporting Python 3, JavaScript (Node.js), and Java 21 LTS with real-time stack and heap memory inspection.",
+  "featureList": [
+    "Free Online Code Editor with Zero Installation",
+    "Interactive Line-by-Line Execution Tracer",
+    "Visual Memory Stack and Heap Inspector",
+    "Python 3, JavaScript ES6+, Java 21 Compilers",
+    "Monaco VS Code Editor with Syntax Highlighting and Autocompletion",
+    "Built-in Output Console and Sandboxed Execution"
+  ]
+}
+</script>
+
+<!-- FAQPage Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is Kashii Online Code Editor?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Kashii Online Code Editor is a free, zero-setup browser coding environment where developers and students can write, execute, trace, and debug code in Python, JavaScript, and Java with real-time memory visualization."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which programming languages can I compile and run online?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can compile and run Python 3, JavaScript (Node.js ES6+), and Java 21 LTS directly in your browser without installing any software or compilers locally."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the visual code debugger work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Unlike traditional online compilers that only display terminal output after completion, Kashii Visual Debugger steps through each line of code, displaying memory state changes, active variables, and call stack frames in real time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is this online code editor free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, it is 100% free with unlimited runs, no account required, and instant execution in the browser."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- BreadcrumbList Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://kashiiupdatez.online/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Online Code Editor & Compiler",
+      "item": "https://kashiiupdatez.online/debugger/"
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block extra_css %}
 <!-- Monaco Editor CSS -->
@@ -283,10 +376,10 @@
       </span>
       <div>
         <h1 style="font:800 18px var(--font-serif); margin:0; color:var(--text-main);">
-          Interactive Code Execution &amp; Memory Debugger
+          Online Code Editor &amp; Visual Compiler
         </h1>
         <p style="color:var(--text-muted); font-size:11.5px; margin:1px 0 0;">
-          Step through Python, JavaScript &amp; Java line-by-line — watch memory allocation live
+          Write, run &amp; debug Python, JavaScript &amp; Java online — watch memory allocation &amp; stack frames live
         </p>
       </div>
     </div>

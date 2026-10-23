@@ -427,6 +427,42 @@ class JobPosting(models.Model):
             'title': self.get_posted_date_display()
         }
 
+    @property
+    def schema_employment_type(self):
+        """Standardized Schema.org employmentType for Google for Jobs."""
+        mapping = {
+            'INTERNSHIP': 'INTERN',
+            'FULL_TIME': 'FULL_TIME',
+            'PART_TIME': 'PART_TIME',
+            'FREELANCE': 'CONTRACTOR',
+            'CAMPUS': 'FULL_TIME',
+        }
+        return mapping.get(self.job_type, 'FULL_TIME')
+
+    @property
+    def schema_description_html(self):
+        """Valid HTML description matching Google Search Central JobPosting guidelines."""
+        import html
+        parts = []
+        if self.description:
+            clean_desc = html.escape(self.description.strip())
+            parts.append(f"<p>{clean_desc}</p>")
+        if self.eligibility:
+            clean_elig = html.escape(self.eligibility.strip())
+            parts.append(f"<p><strong>Eligibility & Qualifications:</strong> {clean_elig}</p>")
+        if self.skills_required:
+            skills = [html.escape(s.strip()) for s in self.skills_required.split(',') if s.strip()]
+            if skills:
+                parts.append("<p><strong>Key Skills Required:</strong></p><ul>")
+                for s in skills:
+                    parts.append(f"<li>{s}</li>")
+                parts.append("</ul>")
+        if self.stipend_salary:
+            parts.append(f"<p><strong>Stipend / Compensation:</strong> {html.escape(self.stipend_salary)}</p>")
+        if self.location:
+            parts.append(f"<p><strong>Location:</strong> {html.escape(self.location)}</p>")
+        return "".join(parts) if parts else "<p>Verified student job opening on Kashii Updatez.</p>"
+
     def __str__(self):
         return f"{self.title} at {self.company_name} ({self.status})"
 

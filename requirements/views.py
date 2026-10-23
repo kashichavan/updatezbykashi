@@ -312,14 +312,17 @@ def sitemap_xml_view(request):
     # Static pages
     static_urls = [
         ('', 'daily', '1.0'),
-        ('/guides/', 'daily', '0.9'),
-        ('/about/', 'weekly', '0.8'),
-        ('/youtube/', 'weekly', '0.8'),
-        ('/debugger/', 'weekly', '0.8'),
-        ('/privacy-policy/', 'monthly', '0.5'),
-        ('/terms/', 'monthly', '0.5'),
-        ('/disclaimer/', 'monthly', '0.5'),
-        ('/contact/', 'monthly', '0.6'),
+        ('/debugger/', 'daily', '1.0'),
+        ('/resume/', 'daily', '0.95'),
+        ('/sql/', 'daily', '0.90'),
+        ('/tools/job-description-generator/', 'weekly', '0.85'),
+        ('/guides/', 'daily', '0.90'),
+        ('/about/', 'weekly', '0.80'),
+        ('/youtube/', 'weekly', '0.80'),
+        ('/privacy-policy/', 'monthly', '0.50'),
+        ('/terms/', 'monthly', '0.50'),
+        ('/disclaimer/', 'monthly', '0.50'),
+        ('/contact/', 'monthly', '0.60'),
     ]
 
     xml_lines = [
@@ -350,14 +353,14 @@ def sitemap_xml_view(request):
         from debugger.learn_curriculum import CURRICULUM
         for lang_key, l_data in CURRICULUM.items():
             xml_lines.append(f'  <url>')
-            xml_lines.append(f'    <loc>{host}/learn/{lang_key}/</loc>')
+            xml_lines.append(f'    <loc>{host}/debugger/learn/{lang_key}/</loc>')
             xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
             xml_lines.append(f'    <changefreq>weekly</changefreq>')
             xml_lines.append(f'    <priority>0.85</priority>')
             xml_lines.append(f'  </url>')
             for top in l_data.get('topics', []):
                 xml_lines.append(f'  <url>')
-                xml_lines.append(f'    <loc>{host}/learn/{lang_key}/{top["slug"]}/</loc>')
+                xml_lines.append(f'    <loc>{host}/debugger/learn/{lang_key}/{top["slug"]}/</loc>')
                 xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
                 xml_lines.append(f'    <changefreq>weekly</changefreq>')
                 xml_lines.append(f'    <priority>0.8</priority>')

@@ -1,8 +1,90 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}💼 {{ job.company_name }} — {{ job.title }} | Kashii Updatez{% endblock %}
-{% block meta_description %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Stipend/Salary: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}.{% endblock %}
+{% block title %}💼 {{ job.company_name }} Hiring: {{ job.title }} (Apply Online) | Kashii Updatez{% endblock %}
+{% block meta_description %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Compensation: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}. 100% verified student job requirement with direct official application link on Kashii Updatez.{% endblock %}
+
+{% block schema_markup %}
+<!-- Google for Jobs Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "JobPosting",
+  "title": "{{ job.title|escapejs }}",
+  "description": "{{ job.schema_description_html|escapejs }}",
+  "identifier": {
+    "@type": "PropertyValue",
+    "name": "{{ job.company_name|escapejs }}",
+    "value": "{{ job.uuid }}"
+  },
+  "datePosted": "{{ job.created_at|date:'c' }}",
+  "validThrough": "{{ job.deadline|date:'c' }}",
+  "employmentType": "{{ job.schema_employment_type }}",
+  "hiringOrganization": {
+    "@type": "Organization",
+    "name": "{{ job.company_name|escapejs }}",
+    "sameAs": "https://kashiiupdatez.online",
+    "logo": "https://kashiiupdatez.online{% static 'images/icon-apply.png' %}"
+  },
+  {% if job.is_remote %}
+  "jobLocationType": "TELECOMMUTE",
+  "applicantLocationRequirements": {
+    "@type": "Country",
+    "name": "India"
+  },
+  {% else %}
+  "jobLocation": {
+    "@type": "Place",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "{{ job.location|default:'India'|escapejs }}",
+      "addressRegion": "Karnataka",
+      "addressCountry": "IN"
+    }
+  },
+  {% endif %}
+  "baseSalary": {
+    "@type": "MonetaryAmount",
+    "currency": "INR",
+    "value": {
+      "@type": "QuantitativeValue",
+      "value": "{{ job.stipend_salary|escapejs }}",
+      "unitText": "MONTH"
+    }
+  },
+  "directApply": true,
+  "url": "{{ share_url }}"
+}
+</script>
+
+<!-- Google Breadcrumbs Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://kashiiupdatez.online/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "{{ job.category.name|default:'Jobs'|escapejs }}",
+      "item": "https://kashiiupdatez.online/category/{{ job.category.slug }}/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "{{ job.title|escapejs }} at {{ job.company_name|escapejs }}",
+      "item": "{{ share_url }}"
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block extra_css %}
 <!-- Open Graph & Social Media Share Meta Tags -->
