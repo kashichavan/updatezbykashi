@@ -547,8 +547,11 @@ def cleanup_all_database_duplicates():
         primary_key = f"{comp_key}::{title_key}"
 
         if primary_key in seen_keys:
-            # Already have this job! Delete the duplicate record
-            job.delete()
+            # Already have this job! Soft-close duplicate instead of hard-deleting to prevent 404 on shared URLs
+            if job.status != 'CLOSED':
+                job.status = 'CLOSED'
+                job.is_featured = False
+                job.save(update_fields=['status', 'is_featured'])
             deleted_count += 1
             continue
 

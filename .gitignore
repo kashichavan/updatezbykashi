@@ -127,5 +127,6 @@ $RECYCLE.BIN/
 .gemini/
 .system_generated/
 scratch/
-backups/
+backups/*
+!backups/kashii_full_snapshot_latest.json
 data_backup*.json

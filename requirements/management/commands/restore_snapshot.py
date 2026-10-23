@@ -1,4 +1,5 @@
 import json
+import uuid as py_uuid
 from pathlib import Path
 from datetime import timedelta
 from django.core.management.base import BaseCommand
@@ -150,8 +151,17 @@ class Command(BaseCommand):
                     jobs_to_update.append(target_obj)
                     job_id_map[old_pk] = target_obj
                 else:
+                    raw_uuid = f.get('uuid')
+                    stable_uuid = None
+                    if raw_uuid:
+                        try:
+                            stable_uuid = py_uuid.UUID(str(raw_uuid))
+                        except Exception:
+                            stable_uuid = None
+
                     new_job = JobPosting(
                         id=old_pk,
+                        uuid=stable_uuid or py_uuid.uuid4(),
                         title=title,
                         company_name=company,
                         company_logo_icon=f.get('company_logo_icon', 'building'),
@@ -166,10 +176,25 @@ class Command(BaseCommand):
                         description=f.get('description', ''),
                         eligibility=f.get('eligibility', ''),
                         selection_process=f.get('selection_process', ''),
+                        study_materials=f.get('study_materials', []),
+                        posted_by=f.get('posted_by', 'Kashii Updatez Admin'),
+                        poster_email=f.get('poster_email', 'admin@kashiiupdatez.com'),
                         status='ACTIVE',  # All seeded requirements ACTIVE
                         deadline=default_deadline,  # Active 7-day window
                         posted_date=posted_date,
                         is_featured=f.get('is_featured', False),
+                        is_referral=f.get('is_referral', False),
+                        referrer_name=f.get('referrer_name', ''),
+                        referrer_linkedin=f.get('referrer_linkedin', ''),
+                        referral_instructions=f.get('referral_instructions', ''),
+                        source_name=f.get('source_name', 'Jobdexo'),
+                        source_job_id=f.get('source_job_id', ''),
+                        source_url=f.get('source_url', ''),
+                        source_published_at=f.get('source_published_at'),
+                        timestamp_precision=f.get('timestamp_precision', 'DATE_ONLY'),
+                        industry_domain=f.get('industry_domain', 'TECHNICAL'),
+                        experience_tier=f.get('experience_tier', 'FRESHER'),
+                        normalized_city=f.get('normalized_city', 'Bengaluru'),
                         views_count=f.get('views_count', 0),
                         applications_count=f.get('applications_count', 0),
                     )

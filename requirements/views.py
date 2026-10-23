@@ -478,17 +478,59 @@ def category_detail_view(request, slug):
     videos = get_cached_youtube_videos()
     return render(request, 'content/category_detail.html', {'category': category, 'youtube_videos': videos})
 
-def job_detail_view(request, category_slug=None, uuid=None, pk=None):
+def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=None):
     job = None
+    # 1. Direct uuid kwarg
     if uuid:
         job = JobPosting.objects.filter(uuid=uuid).first()
         if not job:
             clean_str = str(uuid).replace('-', '')
             job = JobPosting.objects.filter(uuid__icontains=clean_str).first()
+
+    # 2. Direct pk kwarg
     if not job and pk:
         job = JobPosting.objects.filter(pk=pk).first()
 
+    # 3. String identifier (could be uuid string, pk digit, source_job_id, or slug)
+    if not job and identifier:
+        target_id_str = str(identifier).strip()
+        if target_id_str.isdigit():
+            job = JobPosting.objects.filter(pk=int(target_id_str)).first()
+        if not job:
+            try:
+                import uuid as py_uuid
+                val_uuid = py_uuid.UUID(target_id_str)
+                job = JobPosting.objects.filter(uuid=val_uuid).first()
+            except Exception:
+                pass
+        if not job:
+            clean_str = target_id_str.replace('-', '')
+            if len(clean_str) >= 28:
+                job = JobPosting.objects.filter(uuid__icontains=clean_str).first()
+        if not job:
+            job = JobPosting.objects.filter(source_job_id=target_id_str).first()
+
+    # Resilient Zero-404 Fallback:
+    # If user arrived from an outdated WhatsApp/LinkedIn link where the exact ID was from an old snapshot,
+    # redirect them gracefully (302) to the freshest active job in the requested category, or to /
     if not job:
+        latest_job = None
+        if category_slug:
+            latest_job = JobPosting.objects.filter(
+                category__slug=category_slug,
+                status='ACTIVE',
+                deadline__gt=timezone.now()
+            ).order_by('-created_at').first()
+        if not latest_job:
+            latest_job = JobPosting.objects.filter(
+                status='ACTIVE',
+                deadline__gt=timezone.now()
+            ).order_by('-created_at').first()
+
+        if latest_job:
+            from django.shortcuts import redirect
+            return redirect(latest_job.get_absolute_url())
+
         from django.http import Http404
         raise Http404("No job posting matches the requested link.")
 
@@ -527,7 +569,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None):
     }
     return render(request, 'content/job_detail.html', context)
 
-def job_apply_redirect_view(request, uuid=None, pk=None):
+def job_apply_redirect_view(request, uuid=None, pk=None, identifier=None):
     """
     Direct Apply link tracker & redirector.
     Increments application counter and soft-expires dead links.
@@ -537,6 +579,16 @@ def job_apply_redirect_view(request, uuid=None, pk=None):
         job = JobPosting.objects.filter(uuid=uuid).first()
     if not job and pk:
         job = JobPosting.objects.filter(pk=pk).first()
+    if not job and identifier:
+        target_str = str(identifier).strip()
+        if target_str.isdigit():
+            job = JobPosting.objects.filter(pk=int(target_str)).first()
+        else:
+            try:
+                import uuid as py_uuid
+                job = JobPosting.objects.filter(uuid=py_uuid.UUID(target_str)).first()
+            except Exception:
+                job = JobPosting.objects.filter(source_job_id=target_str).first()
 
     if not job or not job.apply_url:
         return redirect('/')

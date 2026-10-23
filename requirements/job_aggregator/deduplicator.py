@@ -478,15 +478,18 @@ def purge_all_database_duplicates(dry_run: bool = False) -> Dict[str, Any]:
             'duplicate_count': len(losers),
         })
 
-    # Delete duplicates in bulk
+    # Soft-close duplicate records instead of hard-deleting to prevent 404 on shared URLs
     deleted_count = 0
     if records_to_delete and not dry_run:
-        deleted_count, _ = JobPosting.objects.filter(id__in=records_to_delete).delete()
+        deleted_count = JobPosting.objects.filter(id__in=records_to_delete).update(
+            status='CLOSED',
+            is_featured=False
+        )
 
     logger.info(
         f"[Deduplicator Purge] Scanned: {total_scanned}, "
         f"Duplicate Groups: {duplicate_clusters}, "
-        f"Duplicates Deleted: {deleted_count} (dry_run={dry_run})"
+        f"Duplicates Closed: {deleted_count} (dry_run={dry_run})"
     )
 
     return {
