@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isYesterdayOnly: isYesterdayOnly,
     isPreviousOnly: isPreviousOnly,
     page: 1,
-    pageSize: 9, // 9 opportunities per page (3x3 grid layout)
+    pageSize: 18, // 18 opportunities per page (6x3 grid layout)
     totalPages: 1,
     totalCount: 0,
     jobs: [],

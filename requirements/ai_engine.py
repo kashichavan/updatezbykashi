@@ -97,24 +97,27 @@ def generate_job_description(
     skills: str = "",
     additional_notes: str = "",
 ) -> dict:
-    """Generate an enterprise-grade, high-converting job description."""
+    """Generate an enterprise-grade, high-converting job description with ATS keywords and interview prep."""
     system_prompt = (
-        "You are an elite Tech Talent Recruiter and Hiring Architect for top startups and FAANG companies. "
-        "Your goal is to write a compelling, high-converting, ATS-friendly Job Description. "
+        "You are an elite Tech Talent Recruiter, Hiring Architect, and Career Mentor for top startups and FAANG companies. "
+        "Your goal is to write a compelling, high-converting, ATS-friendly Job Description and Candidate Preparation Blueprint. "
         "Return a valid JSON object with the following exact keys:\n"
         "- 'role_title': string (polished role title)\n"
+        "- 'company': string (company name)\n"
         "- 'summary': string (2-3 sentences hook and team mission)\n"
         "- 'responsibilities': list of 5-7 clear, actionable bullet points starting with strong action verbs\n"
         "- 'required_qualifications': list of 4-6 must-have technical skills, frameworks, and experience\n"
         "- 'preferred_qualifications': list of 3-4 nice-to-have bonus skills\n"
         "- 'tech_stack_tags': list of 5-8 skill tags (e.g. ['React', 'Python', 'Docker'])\n"
         "- 'perks_benefits': list of 4 attractive perks (e.g. Health insurance, flexible hours, learning stipend)\n"
+        "- 'interview_questions': list of 4-5 technical interview questions candidates will be asked for this role\n"
+        "- 'ats_keywords': list of 6-10 high-value ATS resume keywords to pass candidate screening\n"
         "- 'linkedin_post_snippet': string (an engaging 150-word LinkedIn announcement with relevant hashtags)\n"
         "- 'full_markdown': string (clean Markdown representation ready to copy-paste)"
     )
 
     user_prompt = f"""
-Create a job description with these details:
+Create a job description and candidate blueprint with these details:
 - Job Title: {title}
 - Company Name: {company or 'Innovative Tech Startup'}
 - Experience Level: {experience}
@@ -128,8 +131,145 @@ Create a job description with these details:
         {"role": "user", "content": user_prompt},
     ]
 
-    response_text = call_groq_chat(messages, temperature=0.3, json_mode=True)
-    return json.loads(response_text)
+    try:
+        response_text = call_groq_chat(messages, temperature=0.3, json_mode=True)
+        data = json.loads(response_text)
+        # Ensure interview_questions & ats_keywords exist
+        if 'interview_questions' not in data or not data['interview_questions']:
+            data['interview_questions'] = [
+                f"How would you architect a production feature for this role using {skills or 'core tech'}?",
+                "Describe a difficult debugging challenge you resolved and your root cause analysis approach.",
+                "How do you design database queries and schema indices to prevent performance bottlenecks?",
+                "Walk through your testing methodology: unit tests vs integration tests vs end-to-end tests."
+            ]
+        if 'ats_keywords' not in data or not data['ats_keywords']:
+            tags = data.get('tech_stack_tags', [])
+            data['ats_keywords'] = list(dict.fromkeys(tags + ["System Architecture", "REST API", "Database Optimization", "Unit Testing", "CI/CD"]))
+        if 'company' not in data:
+            data['company'] = company or 'Tech Enterprise'
+        return data
+    except Exception as e:
+        logger.warning(f"Groq API call failed in generate_job_description: {e}. Using resilient template engine.")
+        return _generate_job_description_fallback(title, company, experience, location, work_mode, skills, additional_notes)
+
+
+def _generate_job_description_fallback(
+    title: str,
+    company: str = "",
+    experience: str = "0-2 years",
+    location: str = "Remote / Bangalore",
+    work_mode: str = "Full-time",
+    skills: str = "",
+    additional_notes: str = "",
+) -> dict:
+    """Resilient offline template engine for job descriptions, ATS keywords, and interview prep."""
+    role = title.strip() or "Full-Stack Software Engineer"
+    comp = company.strip() or "Fast-Growing Tech Enterprise"
+    raw_skills = [s.strip() for s in skills.split(",") if s.strip()] if skills else []
+    if not raw_skills:
+        role_lower = role.lower()
+        if "python" in role_lower or "django" in role_lower:
+            raw_skills = ["Python", "Django", "PostgreSQL", "REST APIs", "Docker", "Redis"]
+        elif "react" in role_lower or "frontend" in role_lower or "next" in role_lower:
+            raw_skills = ["React 19", "TypeScript", "Next.js", "Tailwind CSS", "Redux", "HTML5/CSS3"]
+        elif "qa" in role_lower or "test" in role_lower:
+            raw_skills = ["Python", "Selenium", "Playwright", "Postman", "CI/CD", "Jira"]
+        elif "devops" in role_lower or "cloud" in role_lower:
+            raw_skills = ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD", "Linux"]
+        elif "java" in role_lower or "spring" in role_lower:
+            raw_skills = ["Java 17+", "Spring Boot", "Microservices", "PostgreSQL", "Kafka", "Docker"]
+        else:
+            raw_skills = ["Python / Java", "SQL / Relational DB", "Git / GitHub", "Data Structures", "RESTful APIs"]
+
+    tags = raw_skills[:8]
+    summary = f"Join {comp} as a {role} to architect high-performance, resilient software systems. We are seeking an ambitious engineer with {experience} of hands-on experience ready to build scalable products in a high-impact engineering team."
+
+    responsibilities = [
+        f"Design, develop, and deploy modular features for production systems using {', '.join(tags[:3])}.",
+        "Collaborate with cross-functional teams including product managers and UX designers to ship clean, reliable code.",
+        "Write comprehensive unit and integration tests to ensure 99.9% uptime and zero regressions.",
+        "Optimize database queries, cache layers, and backend response latencies for optimal user experience.",
+        "Participate in daily standups, technical architecture reviews, and sprint planning sessions."
+    ]
+
+    required_qualifications = [
+        f"Demonstrated proficiency in {', '.join(tags[:3])} and core software development lifecycle.",
+        f"Solid foundation in data structures, algorithms, and system design tailored for {experience} level.",
+        "Hands-on experience with relational databases (PostgreSQL/MySQL) and writing optimized queries.",
+        "Familiarity with version control (Git), branching workflows, and agile development methodologies."
+    ]
+
+    preferred_qualifications = [
+        f"Prior experience with cloud environments (AWS, GCP) and containerization ({tags[3] if len(tags) > 3 else 'Docker'}).",
+        "Contributions to open-source software, active GitHub portfolio, or hackathon achievements.",
+        "Understanding of CI/CD pipelines, automated testing, and web application security standards."
+    ]
+
+    perks = [
+        "Competitive salary package & performance bonuses",
+        "Flexible hybrid/remote work schedule",
+        "Comprehensive health insurance & wellness stipend",
+        "Annual learning & conference budget for career development"
+    ]
+
+    interview_questions = [
+        f"How would you architect a high-throughput endpoint using {tags[0]} and ensure sub-100ms response time?",
+        f"Explain how you debug slow database queries or lock contention in PostgreSQL/MySQL.",
+        "Describe a challenging technical bug you encountered in a recent project and how you solved it.",
+        f"Walk through how you design RESTful APIs with proper authentication, validation, and error codes."
+    ]
+
+    ats_keywords = list(dict.fromkeys(tags + ["System Design", "Agile / Scrum", "Unit Testing", "REST API", "Database Optimization"]))
+
+    linkedin_snippet = f"""🚀 We're Hiring at {comp}!
+
+We are looking for a talented {role} ({experience} • {location} • {work_mode}) to join our engineering organization.
+
+Key Tech Stack: {', '.join(tags)}
+
+✨ What you will do:
+- Build mission-critical user-facing applications
+- Collaborate with top engineering mentors
+- Scale distributed architecture
+
+Apply today or tag a friend who would be a great fit!
+#Hiring #TechJobs #{role.replace(' ', '')} #Careers #JobSearch"""
+
+    full_markdown = f"""# {role} — {comp}
+**Experience:** {experience} | **Location:** {location} ({work_mode})
+
+## Role Overview
+{summary}
+
+## Key Responsibilities
+""" + "\n".join(f"- {r}" for r in responsibilities) + """
+
+## Required Qualifications
+""" + "\n".join(f"- {q}" for q in required_qualifications) + """
+
+## Preferred Qualifications
+""" + "\n".join(f"- {p}" for p in preferred_qualifications) + """
+
+## Tech Stack & ATS Keywords
+""" + ", ".join(ats_keywords) + """
+
+## Perks & Culture
+""" + "\n".join(f"- {pk}" for pk in perks)
+
+    return {
+        "role_title": role,
+        "company": comp,
+        "summary": summary,
+        "responsibilities": responsibilities,
+        "required_qualifications": required_qualifications,
+        "preferred_qualifications": preferred_qualifications,
+        "tech_stack_tags": tags,
+        "perks_benefits": perks,
+        "interview_questions": interview_questions,
+        "ats_keywords": ats_keywords,
+        "linkedin_post_snippet": linkedin_snippet,
+        "full_markdown": full_markdown,
+    }
 
 
 def polish_resume_bullet(bullet: str, role: str = "", tech_stack: str = "") -> dict:

@@ -1475,45 +1475,79 @@
     box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
   }
 
-  /* Visual Page Break Marker inside Word Sheet */
+  /* Visual Microsoft Word Multi-Page Sheet Gap & Splitter */
   .word-page-break {
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    margin: 32px -52px 28px;
-    padding: 10px 0;
-    background: #f8fafc;
-    border-top: 2px dashed #94a3b8;
-    border-bottom: 2px dashed #94a3b8;
-    color: #475569;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
+    margin: 40px -52px 40px;
+    height: 38px;
+    background: #e2e8f0 !important; /* Matches desk canvas backdrop */
+    border-top: 1px solid #cbd5e1;
+    border-bottom: 1px solid #cbd5e1;
+    box-shadow: 
+      0 4px 6px -2px rgba(15, 23, 42, 0.08),
+      inset 0 6px 10px -4px rgba(0, 0, 0, 0.12),
+      inset 0 -6px 10px -4px rgba(0, 0, 0, 0.12);
     user-select: none;
     cursor: default;
+    z-index: 5;
+  }
+  .word-page-break::before {
+    content: "PAGE 1 END";
+    position: absolute;
+    top: -24px;
+    right: 52px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+  .word-page-break::after {
+    content: "PAGE 2 START";
+    position: absolute;
+    bottom: -24px;
+    right: 52px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
   }
   .word-page-break-tag {
     background: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 99px;
-    padding: 3px 14px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    display: flex;
+    padding: 4px 16px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    color: #1e293b;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .word-page-break-tag .page-indicator-pill {
+    background: #eff6ff;
     color: #2563eb;
+    border: 1px solid #bfdbfe;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+    font-weight: 800;
   }
   .word-page-break-delete {
     background: transparent;
     border: none;
     color: #94a3b8;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1;
-    padding: 0 2px;
-    margin-left: 4px;
+    padding: 0 4px;
+    margin-left: 6px;
+    transition: color 0.15s ease;
   }
   .word-page-break-delete:hover {
     color: #ef4444;
@@ -2497,7 +2531,7 @@
       WordEditor.updateCounts();
     },
 
-    insertPageBreak() {
+    insertPageBreak(targetNode) {
       const sheet = document.getElementById('resumeSheet');
       if (!sheet) return;
       const breakEl = document.createElement('div');
@@ -2505,28 +2539,80 @@
       breakEl.contentEditable = 'false';
       breakEl.innerHTML = `
         <span class="word-page-break-tag">
-          <i data-lucide="split" style="width: 12px; height: 12px;"></i>
+          <span class="page-indicator-pill">Word Multi-Page</span>
           <span>Page Break</span>
           <button type="button" class="word-page-break-delete print-hide" onclick="this.closest('.word-page-break').remove(); WordEditor.updateCounts();" title="Remove page break">&times;</button>
         </span>
       `;
 
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0) {
-        const range = sel.getRangeAt(0);
-        range.collapse(false);
-        range.insertNode(breakEl);
-        const nextP = document.createElement('p');
-        nextP.innerHTML = '<br>';
-        breakEl.parentNode.insertBefore(nextP, breakEl.nextSibling);
+      if (targetNode && targetNode.parentNode) {
+        targetNode.parentNode.insertBefore(breakEl, targetNode);
       } else {
-        sheet.appendChild(breakEl);
-        const nextP = document.createElement('p');
-        nextP.innerHTML = '<br>';
-        sheet.appendChild(nextP);
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          range.collapse(false);
+          range.insertNode(breakEl);
+          const nextP = document.createElement('p');
+          nextP.innerHTML = '<br>';
+          breakEl.parentNode.insertBefore(nextP, breakEl.nextSibling);
+        } else {
+          sheet.appendChild(breakEl);
+          const nextP = document.createElement('p');
+          nextP.innerHTML = '<br>';
+          sheet.appendChild(nextP);
+        }
       }
       if (window.lucide) window.lucide.createIcons();
       WordEditor.updateCounts();
+    },
+
+    autoPaginate() {
+      const sheet = document.getElementById('resumeSheet');
+      if (!sheet) return;
+      if (activeDocPageMode === 'single') return;
+
+      const existingBreaks = sheet.querySelectorAll('.word-page-break');
+      const A4_HEIGHT_THRESHOLD = 1115; // Natural A4 page boundary
+
+      if (sheet.scrollHeight > A4_HEIGHT_THRESHOLD && existingBreaks.length === 0) {
+        // Find natural section boundary crossing near the 950px-1130px zone
+        const sections = Array.from(sheet.children);
+        let targetElement = null;
+
+        for (const sec of sections) {
+          if (sec.classList.contains('word-page-break') || sec.tagName === 'HEADER') continue;
+          const top = sec.offsetTop;
+          if (top >= 920 && top <= 1220) {
+            targetElement = sec;
+            break;
+          }
+        }
+
+        // Check project entries if section boundary is too large
+        if (!targetElement) {
+          const projectEntries = Array.from(sheet.querySelectorAll('.ats-project-entry'));
+          for (const pe of projectEntries) {
+            const top = pe.offsetTop;
+            if (top >= 900 && top <= 1220) {
+              targetElement = pe;
+              break;
+            }
+          }
+        }
+
+        // Fallback: education or certifications section
+        if (!targetElement) {
+          const eduSec = document.getElementById('previewDegree')?.closest('.ats-section');
+          if (eduSec && eduSec.offsetTop > 700) {
+            targetElement = eduSec;
+          }
+        }
+
+        if (targetElement) {
+          WordEditor.insertPageBreak(targetElement);
+        }
+      }
     },
 
     updateToolbarState() {
@@ -2551,6 +2637,12 @@
     updateCounts() {
       const sheet = document.getElementById('resumeSheet');
       if (!sheet) return;
+
+      // Auto-paginate if text overflows A4 boundary
+      if (activeDocPageMode !== 'single') {
+        WordEditor.autoPaginate();
+      }
+
       const text = sheet.innerText || '';
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       const chars = text.length;
@@ -2566,10 +2658,7 @@
       const autoPages = Math.max(1, Math.ceil(scrollH / 1123));
       const totalPages = Math.max(autoPages, manualBreaks + 1);
 
-      const pDisplay = document.getElementById('wordStatusPageDisplay');
-      if (pDisplay) {
-        pDisplay.innerText = `Page 1 of ${totalPages}`;
-      }
+      WordEditor.updateActiveScrollPage(totalPages);
 
       const pill = document.getElementById('docPageModePill');
       if (pill) {
@@ -2582,6 +2671,31 @@
           pill.style.color = '#475569';
         }
       }
+    },
+
+    updateActiveScrollPage(total) {
+      const sheet = document.getElementById('resumeSheet');
+      const pDisplay = document.getElementById('wordStatusPageDisplay');
+      if (!sheet || !pDisplay) return;
+
+      const manualBreaks = sheet.querySelectorAll('.word-page-break');
+      const totalPages = total || Math.max(Math.ceil(sheet.scrollHeight / 1123), manualBreaks.length + 1);
+
+      let currentPage = 1;
+      if (manualBreaks.length > 0) {
+        const stage = document.getElementById('wordDocumentStage');
+        manualBreaks.forEach((br, idx) => {
+          const brRect = br.getBoundingClientRect();
+          if (brRect.top < window.innerHeight * 0.55) {
+            currentPage = idx + 2;
+          }
+        });
+      } else {
+        const rect = sheet.getBoundingClientRect();
+        const scrollY = Math.max(0, -rect.top);
+        currentPage = Math.min(totalPages, Math.max(1, Math.floor((scrollY + 200) / 1123) + 1));
+      }
+      pDisplay.innerText = `Page ${currentPage} of ${totalPages}`;
     },
 
     zoom(delta) {
@@ -2605,6 +2719,22 @@
       }
     }
   };
+
+  // Real-time scroll listener for active page tracking
+  window.addEventListener('scroll', () => {
+    if (typeof WordEditor !== 'undefined' && WordEditor.updateActiveScrollPage) {
+      WordEditor.updateActiveScrollPage();
+    }
+  }, { passive: true });
+
+  const stageEl = document.getElementById('wordDocumentStage');
+  if (stageEl) {
+    stageEl.addEventListener('scroll', () => {
+      if (typeof WordEditor !== 'undefined' && WordEditor.updateActiveScrollPage) {
+        WordEditor.updateActiveScrollPage();
+      }
+    }, { passive: true });
+  }
 
   // Keyboard formatting shortcuts inside Word editor
   document.addEventListener('keydown', function(e) {
@@ -2648,7 +2778,31 @@
     const activeBtn = document.getElementById(`btnPageMode${mode.charAt(0).toUpperCase() + mode.slice(1)}`);
     if (activeBtn) activeBtn.classList.add('active-page-toggle');
 
-    if (window.showToast) {
+    const sheet = document.getElementById('resumeSheet');
+    if (sheet) {
+      if (mode === 'single') {
+        sheet.querySelectorAll('.word-page-break').forEach(el => el.remove());
+        if (window.showToast) window.showToast('Formatted for Single-Page A4 PDF', 'info');
+      } else if (mode === 'multi') {
+        if (sheet.querySelectorAll('.word-page-break').length === 0) {
+          const projHeader = document.getElementById('projectsSectionTitle');
+          const projSection = projHeader ? projHeader.closest('.ats-section') : null;
+          const eduSection = document.getElementById('previewDegree')?.closest('.ats-section');
+          const target = projSection || eduSection;
+          if (target) {
+            WordEditor.insertPageBreak(target);
+          } else {
+            WordEditor.insertPageBreak();
+          }
+        }
+        if (window.showToast) window.showToast('Formatted for 2-Page / Multi-Page Word Flow', 'info');
+      } else {
+        WordEditor.autoPaginate();
+        if (window.showToast) window.showToast('Auto Dynamic Multi-Page Sizing', 'info');
+      }
+    }
+    WordEditor.updateCounts();
+  }
       const label = mode === 'auto' ? 'Auto Dynamic Page Sizing' : (mode === 'single' ? 'Target: Single-Page A4 PDF' : 'Target: 2-Page / Multi-Page A4 PDF');
       window.showToast(label, 'info');
     }

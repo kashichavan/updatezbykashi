@@ -1,32 +1,79 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}⚡ AI Job Description Generator & Tech Recruiter Suite — Kashii Updatez{% endblock %}
-{% block meta_description %}Generate high-converting, ATS-compliant tech job descriptions in seconds using Groq AI. Formatted for LinkedIn announcements, Instagram Stories, and job boards.{% endblock %}
+{% block title %}⚡ AI Job Description Generator & Career Blueprint — Kashii Updatez{% endblock %}
+{% block meta_description %}Reverse-engineer tech job descriptions, extract ATS keywords to add to your resume, prepare for technical interviews, or draft high-converting recruiter postings in seconds.{% endblock %}
 
 {% block content %}
-<main class="wrap" style="padding-top: 36px; padding-bottom: 80px;">
+<main class="wrap" style="padding-top: 32px; padding-bottom: 80px;">
 
-  <!-- Hero Header -->
-  <div style="text-align: center; max-width: 860px; margin: 0 auto 36px;">
-    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 600; color: #c084fc; margin-bottom: 14px;">
+  <!-- Hero Header with Dual-Mode Explainer -->
+  <div style="text-align: center; max-width: 900px; margin: 0 auto 30px;">
+    
+    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 600; color: #c084fc; margin-bottom: 14px;">
       <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-      <span>Powered by Groq High-Speed AI Engine</span>
+      <span>AI Career Intelligence &amp; Recruiter Suite</span>
     </div>
-    <h1 style="font-size: clamp(28px, 4vw, 42px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; color: var(--text-primary, #f8fafc);">
-      AI <span style="background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Job Description</span> Generator
+
+    <h1 style="font-size: clamp(26px, 3.8vw, 40px); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; color: var(--text-primary, #f8fafc);">
+      AI <span style="background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Job Description &amp; Career Blueprint</span>
     </h1>
-    <p style="font-size: 16px; color: var(--text-secondary, #94a3b8); line-height: 1.6; margin: 0 auto 20px;">
-      Create recruiter-grade, ATS-friendly tech job descriptions in seconds. Automatically extracts core competencies, structured responsibilities, and generates ready-to-publish <strong>LinkedIn</strong> and <strong>Instagram</strong> posts.
+
+    <p style="font-size: 15.5px; color: var(--text-secondary, #94a3b8); line-height: 1.6; margin: 0 auto 24px; max-width: 720px;">
+      Whether you are a <strong>Job Seeker</strong> preparing for applications or a <strong>Recruiter / Founder</strong> hiring talent, generate structured requirements, ATS keywords, and interview guides in seconds.
     </p>
 
+    <!-- Why Use This Tool? Dual-Persona Explainer Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; text-align: left;">
+      <!-- For Job Seekers -->
+      <div id="cardSeekerMode" onclick="setMode('seeker')" style="background: rgba(30, 41, 59, 0.7); border: 2px solid #3b82f6; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.2s; position: relative;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 12px; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="graduation-cap" style="width: 16px; height: 16px;"></i> FOR JOB SEEKERS &amp; STUDENTS
+          </span>
+          <span id="badgeSeeker" style="background: #2563eb; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px;">ACTIVE</span>
+        </div>
+        <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc; margin: 0 0 6px;">Reverse-Engineer Job Requirements</h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">
+          Discover the exact ATS keywords recruiters screen for, review interview questions, and tailor your resume to pass the 90+ score barrier.
+        </p>
+      </div>
+
+      <!-- For Recruiters & Founders -->
+      <div id="cardRecruiterMode" onclick="setMode('recruiter')" style="background: rgba(30, 41, 59, 0.4); border: 2px solid #334155; border-radius: 14px; padding: 18px 20px; cursor: pointer; transition: all 0.2s; position: relative;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <span style="font-size: 12px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="briefcase" style="width: 16px; height: 16px;"></i> FOR RECRUITERS &amp; FOUNDERS
+          </span>
+          <span id="badgeRecruiter" style="display: none; background: #a855f7; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px;">ACTIVE</span>
+        </div>
+        <h3 style="font-size: 15px; font-weight: 700; color: #f8fafc; margin: 0 0 6px;">Draft Recruiter-Grade Job Posts</h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">
+          Build high-converting job posts with structured responsibilities, must-have skills, and 1-click LinkedIn/WhatsApp hiring announcements.
+        </p>
+      </div>
+    </div>
+
+    <!-- Job Context Indicator (if linked from a job posting) -->
+    <div id="jobContextAlert" style="display: none; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; text-align: left; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i data-lucide="link" style="width: 18px; height: 18px; color: #60a5fa;"></i>
+        <div>
+          <span style="font-size: 13px; font-weight: 700; color: #f8fafc;">Loaded from Job Opportunity:</span>
+          <span id="contextJobTitle" style="font-size: 13px; color: #93c5fd; font-weight: 600;"></span>
+        </div>
+      </div>
+      <span style="font-size: 12px; color: #94a3b8;">Click &ldquo;Generate Blueprint&rdquo; below to view full skills rubric</span>
+    </div>
+
     <!-- Quick Role Presets -->
-    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 14px;">
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px;">
       <span style="font-size: 12px; color: #64748b; font-weight: 600; display: flex; align-items: center; margin-right: 4px;">Quick Presets:</span>
       <button type="button" class="preset-btn" onclick="applyPreset('Junior Python / Django Engineer', 'Kashii Tech', '0-2 years', 'Bangalore / Hybrid', 'Python, Django, PostgreSQL, Redis, Docker')">Python Backend</button>
       <button type="button" class="preset-btn" onclick="applyPreset('Frontend React / Next.js Developer', 'SaaS Studio', '1-3 years', 'Remote', 'React 19, TypeScript, Next.js, Tailwind CSS, Redux')">React Frontend</button>
-      <button type="button" class="preset-btn" onclick="applyPreset('QA Automation & API Test Engineer', 'Global Media Labs', '2-4 years', 'Bangalore', 'Python, Postman, Playwright, Selenium, Jira, CI/CD')">QA Automation</button>
-      <button type="button" class="preset-btn" onclick="applyPreset('DevOps & Cloud Systems Engineer', 'CloudScale Inc', '2-5 years', 'Remote (India)', 'AWS, Docker, Kubernetes, Terraform, Linux, CI/CD')">DevOps / Cloud</button>
+      <button type="button" class="preset-btn" onclick="applyPreset('Full-Stack Software Engineer', 'ScaleUp Labs', '0-3 years', 'Bangalore / Remote', 'Python, React, TypeScript, PostgreSQL, AWS, Docker')">Full-Stack</button>
+      <button type="button" class="preset-btn" onclick="applyPreset('QA Automation & API Test Engineer', 'Global Media Labs', '1-3 years', 'Bangalore', 'Python, Postman, Playwright, Selenium, Jira, CI/CD')">QA Automation</button>
+      <button type="button" class="preset-btn" onclick="applyPreset('DevOps & Cloud Systems Engineer', 'CloudScale Inc', '2-4 years', 'Remote (India)', 'AWS, Docker, Kubernetes, Terraform, Linux, CI/CD')">DevOps / Cloud</button>
     </div>
   </div>
 
@@ -37,21 +84,21 @@
     <aside style="background: var(--bg-card, #1e293b); border: 1px solid var(--border-color, #334155); border-radius: 16px; padding: 24px; position: sticky; top: 88px;">
       <h3 style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
         <i data-lucide="sliders" style="width: 18px; height: 18px; color: #a855f7;"></i>
-        <span>Job Specifications</span>
+        <span id="panelTitle">Role Specifications</span>
       </h3>
 
       <form id="jdForm" onsubmit="handleGenerateJD(event)">
         <!-- Role Title -->
         <div style="margin-bottom: 16px;">
           <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Role Title *</label>
-          <input type="text" id="jdTitle" required placeholder="e.g. Python Backend Engineer" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; transition: border-color 0.2s;">
+          <input type="text" id="jdTitle" required value="{{ target_title }}" placeholder="e.g. Python Backend Engineer" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none; transition: border-color 0.2s;">
         </div>
 
         <!-- Company & Work Mode -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
           <div>
             <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Company Name</label>
-            <input type="text" id="jdCompany" placeholder="e.g. Kashii Tech" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none;">
+            <input type="text" id="jdCompany" value="{{ target_company }}" placeholder="e.g. Top Tech Firm" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none;">
           </div>
           <div>
             <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Work Mode</label>
@@ -78,20 +125,20 @@
 
         <!-- Tech Stack -->
         <div style="margin-bottom: 16px;">
-          <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Core Tech Stack & Tools</label>
+          <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Core Tech Stack &amp; Tools</label>
           <input type="text" id="jdSkills" placeholder="e.g. Python, Django, PostgreSQL, Docker, Redis" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 14px; outline: none;">
         </div>
 
         <!-- Additional Notes -->
         <div style="margin-bottom: 22px;">
-          <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Additional Perks / Notes (Optional)</label>
-          <textarea id="jdNotes" rows="2" placeholder="e.g. Health insurance, flexible hours, fast career growth" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 13px; outline: none; resize: vertical;"></textarea>
+          <label style="display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 6px;">Additional Focus / Notes (Optional)</label>
+          <textarea id="jdNotes" rows="2" placeholder="e.g. Emphasize REST APIs, microservices, or specific university criteria" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 13px; outline: none; resize: vertical;"></textarea>
         </div>
 
         <!-- Generate Button -->
         <button type="submit" id="generateBtn" style="width: 100%; background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%); color: #fff; border: none; padding: 14px; border-radius: 10px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35); transition: opacity 0.2s;">
           <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
-          <span id="btnText">Generate Job Description</span>
+          <span id="btnText">Generate Blueprint &amp; ATS Rubric</span>
         </button>
       </form>
     </aside>
@@ -101,10 +148,14 @@
 
       <!-- Tabs Header -->
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 14px; margin-bottom: 22px; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           <button type="button" class="tab-btn active" onclick="switchOutputTab('preview')">
             <i data-lucide="layout" style="width: 14px; height: 14px;"></i>
             <span>Interactive View</span>
+          </button>
+          <button type="button" class="tab-btn" onclick="switchOutputTab('atsKeywords')">
+            <i data-lucide="target" style="width: 14px; height: 14px; color: #38bdf8;"></i>
+            <span>ATS Keywords &amp; Prep</span>
           </button>
           <button type="button" class="tab-btn" onclick="switchOutputTab('markdown')">
             <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
@@ -116,8 +167,12 @@
           </button>
         </div>
 
-        <div style="display: flex; gap: 8px;" id="actionButtons">
-          <button type="button" onclick="copyCurrentTab()" style="background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;" id="actionButtons">
+          <a href="/resume/" id="btnTakeToResume" class="tab-action-btn" style="background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; text-decoration: none;">
+            <i data-lucide="file-check-2" style="width: 14px; height: 14px;"></i>
+            <span>Resume Studio &rarr;</span>
+          </a>
+          <button type="button" onclick="copyCurrentTab()" class="tab-action-btn">
             <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
             <span id="copyBtnLabel">Copy Content</span>
           </button>
@@ -129,32 +184,35 @@
         <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
           <i data-lucide="file-code" style="width: 28px; height: 28px; color: #c084fc;"></i>
         </div>
-        <h4 style="font-size: 18px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">Your Job Description Will Appear Here</h4>
-        <p style="font-size: 14px; color: #94a3b8; max-width: 440px; margin: 0 auto;">
-          Fill in the details on the left or click a Quick Preset, then tap <strong>Generate Job Description</strong> to build an ATS-optimized listing in seconds.
+        <h4 style="font-size: 18px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">Your Career Blueprint Will Appear Here</h4>
+        <p style="font-size: 14px; color: #94a3b8; max-width: 480px; margin: 0 auto 20px; line-height: 1.6;">
+          Enter a role title or choose a Quick Preset to extract <strong>ATS Keywords</strong>, <strong>Technical Interview Questions</strong>, and <strong>Full Job Specifications</strong>.
         </p>
+        <button type="button" onclick="applyPreset('Junior Python / Django Engineer', 'Kashii Tech', '0-2 years', 'Bangalore / Hybrid', 'Python, Django, PostgreSQL, Redis, Docker'); handleGenerateJD(event);" style="background: #334155; border: 1px solid #475569; color: #f8fafc; font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 8px; cursor: pointer;">
+          Try Sample: Python Backend Blueprint &rarr;
+        </button>
       </div>
 
       <!-- Loading State -->
       <div id="loadingState" style="display: none; text-align: center; padding: 80px 20px;">
         <div class="spinner-pulse" style="width: 48px; height: 48px; border-radius: 50%; border: 3px solid rgba(168, 85, 247, 0.2); border-top-color: #a855f7; margin: 0 auto 16px; animation: spin 0.8s linear infinite;"></div>
-        <h4 style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">Drafting Recruiter-Grade Job Description...</h4>
-        <p style="font-size: 13px; color: #94a3b8;">Structuring responsibilities, requirements, and tags via Groq AI.</p>
+        <h4 style="font-size: 16px; font-weight: 700; color: #f8fafc; margin-bottom: 6px;">Generating Recruiter Blueprint &amp; ATS Rubric...</h4>
+        <p style="font-size: 13px; color: #94a3b8;">Structuring responsibilities, qualifications, and interview prep questions.</p>
       </div>
 
       <!-- Generated Content Tab 1: Interactive Preview -->
       <div id="tabPreview" style="display: none; color: #e2e8f0;">
         <div style="margin-bottom: 24px;">
           <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;" id="badgeContainer"></div>
-          <h2 id="outTitle" style="font-size: 26px; font-weight: 800; color: #f8fafc; margin-bottom: 12px;"></h2>
-          <p id="outSummary" style="font-size: 15px; line-height: 1.7; color: #94a3b8;"></p>
+          <h2 id="outTitle" style="font-size: 24px; font-weight: 800; color: #f8fafc; margin-bottom: 12px;"></h2>
+          <p id="outSummary" style="font-size: 14.5px; line-height: 1.7; color: #94a3b8;"></p>
         </div>
 
         <!-- Responsibilities -->
         <div style="margin-bottom: 22px;">
           <h4 style="font-size: 15px; font-weight: 700; color: #60a5fa; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
             <i data-lucide="check-circle-2" style="width: 16px; height: 16px;"></i>
-            <span>Key Responsibilities</span>
+            <span>Core Responsibilities</span>
           </h4>
           <ul id="outResponsibilities" style="padding-left: 20px; font-size: 14px; line-height: 1.8; color: #cbd5e1;"></ul>
         </div>
@@ -173,17 +231,48 @@
 
         <!-- Perks & Benefits -->
         <div style="background: rgba(15, 23, 42, 0.5); border: 1px solid #334155; border-radius: 12px; padding: 16px;">
-          <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">Perks & Culture</h4>
+          <h4 style="font-size: 14px; font-weight: 700; color: #f8fafc; margin-bottom: 8px;">Perks &amp; Culture</h4>
           <div id="outPerks" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
         </div>
       </div>
 
-      <!-- Generated Content Tab 2: Markdown -->
+      <!-- Generated Content Tab 2: ATS Keywords & Interview Prep -->
+      <div id="tabAtsKeywords" style="display: none;">
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 14px; padding: 22px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <h4 style="font-size: 15px; font-weight: 700; color: #38bdf8; margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="target" style="width: 16px; height: 16px;"></i>
+              <span>High-Yield ATS Resume Keywords</span>
+            </h4>
+            <button type="button" onclick="copyKeywordsOnly()" style="background: #1e293b; border: 1px solid #475569; color: #cbd5e1; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+              Copy All Keywords
+            </button>
+          </div>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px;">
+            Include these exact terminology tokens across your resume skills, project bullets, and summary to pass Applicant Tracking Systems (Workday, Taleo, Greenhouse).
+          </p>
+          <div id="outAtsKeywordsList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+        </div>
+
+        <!-- Technical Interview Questions -->
+        <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 14px; padding: 22px;">
+          <h4 style="font-size: 15px; font-weight: 700; color: #a855f7; margin: 0 0 12px; display: flex; align-items: center; gap: 6px;">
+            <i data-lucide="help-circle" style="width: 16px; height: 16px;"></i>
+            <span>Anticipated Technical Interview Questions</span>
+          </h4>
+          <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px;">
+            Interviewers for this role frequently evaluate candidates on these core architectural and problem-solving topics:
+          </p>
+          <ul id="outInterviewQuestions" style="padding-left: 20px; font-size: 13.5px; line-height: 1.8; color: #e2e8f0;"></ul>
+        </div>
+      </div>
+
+      <!-- Generated Content Tab 3: Markdown -->
       <div id="tabMarkdown" style="display: none;">
         <textarea id="outMarkdown" readonly style="width: 100%; height: 460px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px; color: #cbd5e1; font-family: monospace; font-size: 13px; line-height: 1.6; outline: none;"></textarea>
       </div>
 
-      <!-- Generated Content Tab 3: LinkedIn Post -->
+      <!-- Generated Content Tab 4: LinkedIn Post -->
       <div id="tabLinkedin" style="display: none;">
         <div style="background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 20px;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
@@ -192,7 +281,7 @@
             </div>
             <div>
               <div style="font-size: 14px; font-weight: 700; color: #f8fafc;">Hiring Announcement</div>
-              <div style="font-size: 11px; color: #64748b;">Ready to paste on LinkedIn & Socials</div>
+              <div style="font-size: 11px; color: #64748b;">Ready to paste on LinkedIn, WhatsApp &amp; Socials</div>
             </div>
           </div>
           <textarea id="outLinkedin" readonly style="width: 100%; height: 360px; background: transparent; border: none; color: #e2e8f0; font-size: 14px; line-height: 1.7; outline: none; resize: none;"></textarea>
@@ -239,6 +328,23 @@
   background: #334155;
   color: #f8fafc;
 }
+.tab-action-btn {
+  background: #334155;
+  color: #f8fafc;
+  border: 1px solid #475569;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.tab-action-btn:hover {
+  background: #475569;
+}
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -252,6 +358,37 @@
 <script>
 let currentJdData = null;
 let currentTab = 'preview';
+let activeUserMode = 'seeker'; // 'seeker' | 'recruiter'
+
+function setMode(mode) {
+  activeUserMode = mode;
+  const cardSeeker = document.getElementById('cardSeekerMode');
+  const cardRecruiter = document.getElementById('cardRecruiterMode');
+  const badgeSeeker = document.getElementById('badgeSeeker');
+  const badgeRecruiter = document.getElementById('badgeRecruiter');
+  const btnText = document.getElementById('btnText');
+  const panelTitle = document.getElementById('panelTitle');
+
+  if (mode === 'seeker') {
+    cardSeeker.style.border = '2px solid #3b82f6';
+    cardSeeker.style.background = 'rgba(30, 41, 59, 0.7)';
+    cardRecruiter.style.border = '2px solid #334155';
+    cardRecruiter.style.background = 'rgba(30, 41, 59, 0.4)';
+    badgeSeeker.style.display = 'inline-block';
+    badgeRecruiter.style.display = 'none';
+    btnText.innerText = 'Generate Blueprint & ATS Rubric';
+    panelTitle.innerText = 'Target Role Specifications';
+  } else {
+    cardRecruiter.style.border = '2px solid #a855f7';
+    cardRecruiter.style.background = 'rgba(30, 41, 59, 0.7)';
+    cardSeeker.style.border = '2px solid #334155';
+    cardSeeker.style.background = 'rgba(30, 41, 59, 0.4)';
+    badgeRecruiter.style.display = 'inline-block';
+    badgeSeeker.style.display = 'none';
+    btnText.innerText = 'Generate Job Description & Post';
+    panelTitle.innerText = 'Hiring Job Specifications';
+  }
+}
 
 function applyPreset(title, company, exp, loc, skills) {
   document.getElementById('jdTitle').value = title;
@@ -264,15 +401,18 @@ function applyPreset(title, company, exp, loc, skills) {
 function switchOutputTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  if (event && event.currentTarget) {
+    event.currentTarget.classList.add('active');
+  }
 
   document.getElementById('tabPreview').style.display = (tab === 'preview') ? 'block' : 'none';
+  document.getElementById('tabAtsKeywords').style.display = (tab === 'atsKeywords') ? 'block' : 'none';
   document.getElementById('tabMarkdown').style.display = (tab === 'markdown') ? 'block' : 'none';
   document.getElementById('tabLinkedin').style.display = (tab === 'linkedin') ? 'block' : 'none';
 }
 
 async function handleGenerateJD(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
 
   const title = document.getElementById('jdTitle').value.trim();
   const company = document.getElementById('jdCompany').value.trim();
@@ -284,13 +424,14 @@ async function handleGenerateJD(e) {
 
   document.getElementById('emptyState').style.display = 'none';
   document.getElementById('tabPreview').style.display = 'none';
+  document.getElementById('tabAtsKeywords').style.display = 'none';
   document.getElementById('tabMarkdown').style.display = 'none';
   document.getElementById('tabLinkedin').style.display = 'none';
   document.getElementById('loadingState').style.display = 'block';
 
   const btn = document.getElementById('generateBtn');
   btn.disabled = true;
-  document.getElementById('btnText').innerText = 'Generating via Groq AI...';
+  document.getElementById('btnText').innerText = 'Generating Blueprint...';
 
   try {
     const res = await fetch('/api/ai/generate-jd/', {
@@ -309,7 +450,7 @@ async function handleGenerateJD(e) {
 
     const result = await res.json();
     if (!result.success) {
-      alert('Error generating job description: ' + (result.error || 'Server error'));
+      alert('Error generating job blueprint: ' + (result.error || 'Server error'));
       document.getElementById('emptyState').style.display = 'block';
       return;
     }
@@ -322,7 +463,7 @@ async function handleGenerateJD(e) {
   } finally {
     document.getElementById('loadingState').style.display = 'none';
     btn.disabled = false;
-    document.getElementById('btnText').innerText = 'Generate Job Description';
+    document.getElementById('btnText').innerText = (activeUserMode === 'seeker') ? 'Generate Blueprint & ATS Rubric' : 'Generate Job Description & Post';
   }
 }
 
@@ -337,7 +478,7 @@ function renderOutput(data) {
     badgeBox.appendChild(span);
   });
 
-  document.getElementById('outTitle').innerText = data.role_title;
+  document.getElementById('outTitle').innerText = data.role_title + (data.company ? (' — ' + data.company) : '');
   document.getElementById('outSummary').innerText = data.summary;
 
   // Responsibilities
@@ -380,17 +521,63 @@ function renderOutput(data) {
     perksBox.appendChild(span);
   });
 
+  // ATS Keywords Tab
+  const kwBox = document.getElementById('outAtsKeywordsList');
+  kwBox.innerHTML = '';
+  const keywords = data.ats_keywords || data.tech_stack_tags || [];
+  keywords.forEach(kw => {
+    const span = document.createElement('span');
+    span.style.cssText = 'background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #7dd3fc; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 99px; display: inline-flex; align-items: center; gap: 4px;';
+    span.innerHTML = `<span>${kw}</span>`;
+    kwBox.appendChild(span);
+  });
+
+  // Interview Questions
+  const iqBox = document.getElementById('outInterviewQuestions');
+  iqBox.innerHTML = '';
+  (data.interview_questions || []).forEach(q => {
+    const li = document.createElement('li');
+    li.style.marginBottom = '8px';
+    li.innerText = q;
+    iqBox.appendChild(li);
+  });
+
   // Markdown Tab
   document.getElementById('outMarkdown').value = data.full_markdown;
 
   // LinkedIn Tab
   document.getElementById('outLinkedin').value = data.linkedin_post_snippet;
 
-  // Switch to Preview
-  switchOutputTab('preview');
+  // Update Resume Builder link
+  const resumeBtn = document.getElementById('btnTakeToResume');
+  if (resumeBtn) {
+    resumeBtn.href = `/resume/?target_title=${encodeURIComponent(data.role_title)}`;
+  }
+
+  // Switch to Preview or ATS Keywords based on active mode
+  if (activeUserMode === 'seeker') {
+    switchOutputTab('atsKeywords');
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    tabBtns.forEach(btn => {
+      if (btn.innerText.includes('ATS Keywords')) btn.classList.add('active');
+      else btn.classList.remove('active');
+    });
+  } else {
+    switchOutputTab('preview');
+  }
+
   if (window.lucide) {
     window.lucide.createIcons();
   }
+}
+
+function copyKeywordsOnly() {
+  if (!currentJdData) return;
+  const keywords = (currentJdData.ats_keywords || currentJdData.tech_stack_tags || []).join(', ');
+  navigator.clipboard.writeText(keywords).then(() => {
+    if (window.showToast) window.showToast('Copied ATS keywords to clipboard!', 'success');
+    else alert('Copied ATS keywords: ' + keywords);
+  });
 }
 
 function copyCurrentTab() {
@@ -401,6 +588,8 @@ function copyCurrentTab() {
     textToCopy = document.getElementById('outMarkdown').value;
   } else if (currentTab === 'linkedin') {
     textToCopy = document.getElementById('outLinkedin').value;
+  } else if (currentTab === 'atsKeywords') {
+    textToCopy = 'ATS Keywords:\n' + (currentJdData.ats_keywords || []).join(', ') + '\n\nInterview Questions:\n' + (currentJdData.interview_questions || []).join('\n');
   } else {
     textToCopy = document.getElementById('outMarkdown').value;
   }
@@ -414,6 +603,26 @@ function copyCurrentTab() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Read URL query params
+  const params = new URLSearchParams(window.location.search);
+  const qTitle = params.get('title');
+  const qCompany = params.get('company');
+
+  if (qTitle) {
+    document.getElementById('jdTitle').value = qTitle;
+  }
+  if (qCompany) {
+    document.getElementById('jdCompany').value = qCompany;
+  }
+
+  if (qTitle || qCompany) {
+    const alertBox = document.getElementById('jobContextAlert');
+    if (alertBox) {
+      alertBox.style.display = 'flex';
+      document.getElementById('contextJobTitle').innerText = `${qTitle || 'Position'} ${qCompany ? ('at ' + qCompany) : ''}`;
+    }
+  }
+
   if (window.lucide) {
     window.lucide.createIcons();
   }

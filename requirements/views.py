@@ -228,7 +228,7 @@ def index_view(request):
     recent_posts = []
 
     try:
-        initial_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-posted_date', '-created_at')[:9])
+        initial_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-posted_date', '-created_at')[:18])
     except Exception as e:
         logger.warning(f"Error fetching initial_jobs: {e}")
 
@@ -1363,7 +1363,7 @@ def api_jobs(request):
             filter_previous = request.GET.get('previous', '').strip()
             sort = request.GET.get('sort', 'newest')
             page = request.GET.get('page', '1')
-            page_size = request.GET.get('page_size', '9')
+            page_size = request.GET.get('page_size', '18')
             domain_filter = request.GET.get('domain', '').strip()
             city_filter = request.GET.get('city', '').strip() or request.GET.get('location', '').strip()
             source_filter = request.GET.get('source', '').strip()
@@ -1525,7 +1525,7 @@ def api_jobs(request):
             try:
                 page_size_int = int(page_size)
             except ValueError:
-                page_size_int = 9
+                page_size_int = 18
 
             total_count = qs.count()
             total_pages = max(1, (total_count + page_size_int - 1) // page_size_int)
@@ -3124,10 +3124,14 @@ def api_download_resume_docx(request):
 
 
 def job_description_generator_view(request):
-    """AI Job Description Generator Hub."""
+    """AI Job Description Generator & Career Blueprint Hub."""
+    target_title = request.GET.get('title', '').strip()
+    target_company = request.GET.get('company', '').strip()
     context = {
-        'page_title': '⚡ AI Job Description Generator & Recruiter Suite — Kashii Updatez',
-        'meta_description': 'Generate high-converting, ATS-optimized tech job descriptions in seconds using AI. Formatted for LinkedIn, Instagram Stories, and job boards.',
+        'page_title': '⚡ AI Job Description Generator & Career Blueprint — Kashii Updatez',
+        'meta_description': 'Reverse-engineer tech job descriptions, extract ATS keywords, prepare for interviews, and draft high-converting recruiter postings in seconds.',
+        'target_title': target_title,
+        'target_company': target_company,
     }
     return render(request, 'job_description_generator.html', context)
 
