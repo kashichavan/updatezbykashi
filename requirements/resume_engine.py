@@ -371,12 +371,26 @@ def calculate_ats_score(resume_data, role_key='python-backend'):
         'detail': 'Summary, Technical Skills, Enterprise Projects, Education, Certifications.'
     })
 
+    final_score = min(100, max(0, total_score))
+    if final_score >= 90:
+        grade = 'Top Tier (ATS 90+)'
+        pass_rate = 'Guaranteed Pass on Workday, Taleo & Greenhouse'
+    elif final_score >= 80:
+        grade = 'Competitive (ATS 80+)'
+        pass_rate = 'Passes Enterprise ATS Filters'
+    elif final_score >= 70:
+        grade = 'Moderate (ATS 70+)'
+        pass_rate = 'Eligible for review — add metrics'
+    else:
+        grade = 'Needs Work (ATS <70)'
+        pass_rate = 'High risk of rejection — boost metrics'
+
     return {
-        'score': min(100, max(0, total_score)),
+        'score': final_score,
         'checks': checks,
         'matched_keywords': matched_keywords,
-        'grade': 'Excellent (ATS 90+ Top Tier)' if total_score >= 90 else 'Good (ATS 80+)',
-        'pass_rate': 'Guaranteed Pass on Greenhouse, Lever, Workday, Taleo, iCIMS' if total_score >= 90 else 'Eligible for review'
+        'grade': grade,
+        'pass_rate': pass_rate
     }
 
 

@@ -52,13 +52,15 @@
     <!-- Zone 2: Live ATS Pulse Meter Widget -->
     <div class="deck-zone deck-zone-pulse">
       <button type="button" onclick="openAtsDiagnosticModal()" class="ats-pulse-card" title="Click to view ATS Score Breakdown &amp; Audit">
-        <div class="ats-pulse-gauge">
-          <span id="atsScoreValue" class="ats-gauge-num">{{ ats_eval.score }}</span>
+        <div class="ats-pulse-gauge" style="{% if ats_eval.score >= 90 %}background: #dcfce7; border-color: #22c55e;{% elif ats_eval.score >= 80 %}background: #dbeafe; border-color: #3b82f6;{% elif ats_eval.score >= 70 %}background: #fef3c7; border-color: #f59e0b;{% else %}background: #fee2e2; border-color: #ef4444;{% endif %}">
+          <span id="atsScoreValue" class="ats-gauge-num" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #b91c1c;{% endif %}">{{ ats_eval.score }}</span>
         </div>
         <div class="ats-pulse-text">
           <div class="ats-pulse-top">
-            <span class="ats-pulse-label">ATS SCORE</span>
-            <span id="atsGradeText" class="ats-pulse-grade">{{ ats_eval.grade }}</span>
+            <span class="ats-pulse-label" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #b91c1c;{% endif %}">ATS SCORE</span>
+            <span id="atsGradeText" class="ats-pulse-grade" style="{% if ats_eval.score >= 90 %}color: #16a34a;{% elif ats_eval.score >= 80 %}color: #2563eb;{% elif ats_eval.score >= 70 %}color: #d97706;{% else %}color: #dc2626;{% endif %}">
+              {% if ats_eval.score >= 90 %}✓ {{ ats_eval.grade }}{% elif ats_eval.score >= 80 %}✓ {{ ats_eval.grade }}{% elif ats_eval.score >= 70 %}⚡ {{ ats_eval.grade }}{% else %}⚠️ {{ ats_eval.grade }}{% endif %}
+            </span>
           </div>
           <div class="ats-pulse-sub" id="atsPassRateText">{{ ats_eval.pass_rate }} &bull; Click to Audit &rarr;</div>
         </div>
@@ -705,19 +707,22 @@
 
   .ats-pulse-gauge {
     position: relative;
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     border-radius: 9999px;
     background: #dcfce7;
-    border: 1.5px solid #22c55e;
+    border: 2px solid #22c55e;
     display: grid;
     place-items: center;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
   }
 
   .ats-gauge-num {
-    font-size: 13.5px;
+    font-size: 14px;
     font-weight: 850;
     color: #15803d;
+    line-height: 1;
   }
 
   .ats-pulse-text {
@@ -2432,13 +2437,81 @@
     if (!evalData) return;
     const score = evalData.score !== undefined ? evalData.score : (evalData.overall_score || 85);
     const scoreValEl = document.getElementById('atsScoreValue');
-    if (scoreValEl) scoreValEl.innerText = `${score} / 100`;
     const barEl = document.getElementById('atsProgressBar');
-    if (barEl) barEl.style.width = `${score}%`;
     const gradeEl = document.getElementById('atsGradeText');
-    if (gradeEl) gradeEl.innerText = `✓ ${evalData.grade || 'Competitive'}`;
     const passEl = document.getElementById('atsPassRateText');
-    if (passEl) passEl.innerText = evalData.pass_rate || '';
+    const statusScoreEl = document.getElementById('wordStatusScoreVal');
+
+    if (statusScoreEl) statusScoreEl.innerText = score;
+    if (barEl) barEl.style.width = `${score}%`;
+
+    // Dynamic Color, Icon & Grade determination based on score
+    let grade = evalData.grade || '';
+    let passRate = evalData.pass_rate || '';
+    let prefix = '✓ ';
+    let gaugeColor = '#15803d'; // green
+    let gaugeBg = '#dcfce7';
+    let gaugeBorder = '#22c55e';
+    let gradeColor = '#16a34a';
+
+    if (score >= 90) {
+      if (!grade || grade.includes('80+') || grade.includes('<70') || grade.includes('70+')) grade = 'Top Tier (ATS 90+)';
+      if (!passRate) passRate = 'Guaranteed Pass on Workday, Taleo & Greenhouse';
+      prefix = '✓ ';
+      gaugeColor = '#15803d';
+      gaugeBg = '#dcfce7';
+      gaugeBorder = '#22c55e';
+      gradeColor = '#16a34a';
+    } else if (score >= 80) {
+      if (!grade || grade.includes('90+') || grade.includes('<70') || grade.includes('70+')) grade = 'Competitive (ATS 80+)';
+      if (!passRate) passRate = 'Passes Enterprise ATS Filters';
+      prefix = '✓ ';
+      gaugeColor = '#1d4ed8';
+      gaugeBg = '#dbeafe';
+      gaugeBorder = '#3b82f6';
+      gradeColor = '#2563eb';
+    } else if (score >= 70) {
+      if (!grade || grade.includes('80+') || grade.includes('90+') || grade.includes('<70')) grade = 'Moderate (ATS 70+)';
+      if (!passRate) passRate = 'Eligible for review — add metrics';
+      prefix = '⚡ ';
+      gaugeColor = '#b45309';
+      gaugeBg = '#fef3c7';
+      gaugeBorder = '#f59e0b';
+      gradeColor = '#d97706';
+    } else {
+      if (!grade || grade.includes('80+') || grade.includes('90+') || grade.includes('70+')) grade = 'Needs Work (ATS <70)';
+      if (!passRate) passRate = 'High risk of rejection — boost metrics';
+      prefix = '⚠️ ';
+      gaugeColor = '#b91c1c';
+      gaugeBg = '#fee2e2';
+      gaugeBorder = '#ef4444';
+      gradeColor = '#dc2626';
+    }
+
+    if (scoreValEl) {
+      scoreValEl.innerText = score;
+      scoreValEl.style.color = gaugeColor;
+    }
+
+    const gaugeEl = document.querySelector('.ats-pulse-gauge');
+    if (gaugeEl) {
+      gaugeEl.style.background = gaugeBg;
+      gaugeEl.style.borderColor = gaugeBorder;
+    }
+
+    const labelEl = document.querySelector('.ats-pulse-label');
+    if (labelEl) {
+      labelEl.style.color = gaugeColor;
+    }
+
+    if (gradeEl) {
+      gradeEl.innerText = `${prefix}${grade.replace(/^[✓⚡⚠️]\s*/, '')}`;
+      gradeEl.style.color = gradeColor;
+    }
+
+    if (passEl) {
+      passEl.innerHTML = `${passRate} &bull; Click to Audit &rarr;`;
+    }
 
     const checkList = document.getElementById('atsChecklist');
     if (checkList && Array.isArray(evalData.checks)) {
@@ -3768,7 +3841,8 @@
     if (!modal) return;
     document.getElementById('uploadScoreFilename').innerText = 'Live Resume Session';
     document.getElementById('uploadScoreCandName').innerText = currentResumeData.name || 'Candidate';
-    document.getElementById('uploadScoreBig').innerText = document.getElementById('atsScoreValue').innerText;
+    const scoreVal = document.getElementById('atsScoreValue').innerText.replace(/\s*\/.*$/, '').trim();
+    document.getElementById('uploadScoreBig').innerText = `${scoreVal} / 100`;
     document.getElementById('uploadScoreGrade').innerText = document.getElementById('atsGradeText').innerText;
     document.getElementById('uploadScorePassRate').innerText = document.getElementById('atsPassRateText').innerText;
     modal.style.display = 'flex';
