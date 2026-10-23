@@ -1959,11 +1959,10 @@ def api_owner_groups(request):
 
     if request.method == 'GET':
         is_summary = request.GET.get('summary') == 'true'
-        cache_key = f"api_owner_groups_json_{'summary' if is_summary else 'full'}"
-        if request.GET.get('refresh') != '1':
-            cached_res = cache.get(cache_key)
-            if cached_res:
-                return JsonResponse(cached_res)
+        q = request.GET.get('q', '').strip()
+        filter_type = request.GET.get('filter', 'all')
+        page_val = request.GET.get('page', '1')
+        page_size_val = request.GET.get('page_size', '15')
 
         now = timezone.now()
         host_url = request.build_absolute_uri('/')[:-1]
@@ -1973,7 +1972,10 @@ def api_owner_groups(request):
             groups_qs = JobGroup.objects.annotate(
                 active_count=Count('jobs', filter=Q(jobs__status='ACTIVE', jobs__deadline__gt=now), distinct=True),
                 total_count=Count('jobs', distinct=True)
-            ).values('id', 'name', 'slug', 'banner_tag', 'active_count', 'total_count').order_by('-posted_date', '-id')
+            )
+            if q:
+                groups_qs = groups_qs.filter(Q(name__icontains=q) | Q(slug__icontains=q))
+            groups_qs = groups_qs.values('id', 'name', 'slug', 'banner_tag', 'active_count', 'total_count').order_by('-posted_date', '-id')
 
             res = [
                 {
@@ -1988,25 +1990,59 @@ def api_owner_groups(request):
                 }
                 for g in groups_qs
             ]
-            response_payload = {'groups': res}
-            cache.set(cache_key, response_payload, 60)
-            return JsonResponse(response_payload)
+            return JsonResponse({'groups': res, 'total_count': len(res)})
 
-        from django.db.models import Prefetch
+        from django.db.models import Prefetch, Count, Q
 
-        groups = JobGroup.objects.all().prefetch_related(
+        qs = JobGroup.objects.annotate(
+            annotated_active_count=Count('jobs', filter=Q(jobs__status='ACTIVE', jobs__deadline__gt=now), distinct=True),
+            annotated_total_count=Count('jobs', distinct=True)
+        )
+
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(slug__icontains=q) | Q(description__icontains=q))
+
+        if filter_type == 'active':
+            qs = qs.filter(annotated_active_count__gt=0)
+        elif filter_type == 'empty':
+            qs = qs.filter(annotated_total_count=0)
+        elif filter_type == 'expired':
+            qs = qs.filter(deadline__lte=now)
+
+        qs = qs.prefetch_related(
             Prefetch('jobs', queryset=JobPosting.objects.only(
                 'id', 'title', 'company_name', 'location', 'stipend_salary',
                 'status', 'posted_date', 'created_at', 'apply_url', 'deadline'
             ).order_by('-posted_date', '-created_at'))
         ).order_by('-posted_date', '-id')
 
+        total_count = qs.count()
+
+        if page_size_val == 'all':
+            page_size = max(1, total_count)
+            page_num = 1
+        else:
+            try:
+                page_size = max(1, min(100, int(page_size_val)))
+            except ValueError:
+                page_size = 15
+            try:
+                page_num = max(1, int(page_val))
+            except ValueError:
+                page_num = 1
+
+        total_pages = max(1, (total_count + page_size - 1) // page_size)
+        page_num = min(page_num, total_pages)
+        start_idx = (page_num - 1) * page_size
+        end_idx = start_idx + page_size
+
+        page_groups = qs[start_idx:end_idx]
+
         res = []
-        host_url = request.build_absolute_uri('/')[:-1]
-        for g in groups:
+        for g in page_groups:
             all_jobs_list = list(g.jobs.all())
-            total_count = len(all_jobs_list)
-            active_count = sum(1 for j in all_jobs_list if j.status == 'ACTIVE' and j.deadline and j.deadline > now)
+            total_count_g = getattr(g, 'annotated_total_count', len(all_jobs_list))
+            active_count_g = getattr(g, 'annotated_active_count', sum(1 for j in all_jobs_list if j.status == 'ACTIVE' and j.deadline and j.deadline > now))
 
             group_jobs = [
                 {
@@ -2028,8 +2064,8 @@ def api_owner_groups(request):
                 'slug': g.slug,
                 'banner_tag': g.banner_tag,
                 'description': g.description,
-                'total_jobs_count': total_count,
-                'active_jobs_count': active_count,
+                'total_jobs_count': total_count_g,
+                'active_jobs_count': active_count_g,
                 'jobs': group_jobs,
                 'views_count': g.views_count,
                 'is_expired': g.is_expired(),
@@ -2040,9 +2076,16 @@ def api_owner_groups(request):
                 'url': f"/group/{g.slug}/",
                 'full_url': f"{host_url}/group/{g.slug}/",
             })
-        
-        response_payload = {'groups': res}
-        cache.set(cache_key, response_payload, 60)
+
+        response_payload = {
+            'groups': res,
+            'total_count': total_count,
+            'total_pages': total_pages,
+            'current_page': page_num,
+            'page_size': page_size,
+            'has_next': page_num < total_pages,
+            'has_previous': page_num > 1,
+        }
         return JsonResponse(response_payload)
 
     elif request.method == 'POST':

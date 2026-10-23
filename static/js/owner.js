@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let allLoadedJobs = [];
   let currentJobsPage = 1;
+  let currentGroupsPage = 1;
 
   async function authFetch(url, options = {}) {
     const jwtAccess = localStorage.getItem('owner_jwt_access');
@@ -263,10 +264,59 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    const crmSourceFilter = document.getElementById('crmSourceFilter');
+    if (crmSourceFilter) {
+      crmSourceFilter.addEventListener('change', () => {
+        loadJobsList(1);
+      });
+    }
+
+    const crmRecencyFilter = document.getElementById('crmRecencyFilter');
+    if (crmRecencyFilter) {
+      crmRecencyFilter.addEventListener('change', () => {
+        loadJobsList(1);
+      });
+    }
+
+    const ownerGroupsSearch = document.getElementById('ownerGroupsSearch');
+    if (ownerGroupsSearch) {
+      let debounceTimer;
+      ownerGroupsSearch.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => loadGroupsList(1), 300);
+        const clearBtn = document.getElementById('btnGroupsSearchClear');
+        if (clearBtn) clearBtn.style.display = ownerGroupsSearch.value ? 'block' : 'none';
+      });
+    }
+
+    const btnGroupsSearchClear = document.getElementById('btnGroupsSearchClear');
+    if (btnGroupsSearchClear) {
+      btnGroupsSearchClear.addEventListener('click', () => {
+        const searchInput = document.getElementById('ownerGroupsSearch');
+        if (searchInput) searchInput.value = '';
+        btnGroupsSearchClear.style.display = 'none';
+        loadGroupsList(1);
+      });
+    }
+
+    const ownerGroupsFilter = document.getElementById('ownerGroupsFilter');
+    if (ownerGroupsFilter) {
+      ownerGroupsFilter.addEventListener('change', () => {
+        loadGroupsList(1);
+      });
+    }
+
+    const ownerGroupsPageSize = document.getElementById('ownerGroupsPageSize');
+    if (ownerGroupsPageSize) {
+      ownerGroupsPageSize.addEventListener('change', () => {
+        loadGroupsList(1);
+      });
+    }
+
     const btnRefreshGroups = document.getElementById('btnRefreshGroups');
     if (btnRefreshGroups) {
       btnRefreshGroups.addEventListener('click', () => {
-        loadGroupsList();
+        loadGroupsList(currentGroupsPage || 1);
         showToast('Requirement groups refreshed and empty groups cleaned up!', 'success');
       });
     }
@@ -958,6 +1008,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusVal = filterStatusSelect ? filterStatusSelect.value : 'ALL';
     const query = searchInput ? searchInput.value.trim() : '';
     const selectedCat = filterCategorySelect ? filterCategorySelect.value : 'ALL';
+    const sourceSelect = document.getElementById('crmSourceFilter');
+    const recencySelect = document.getElementById('crmRecencyFilter');
+    const sourceVal = sourceSelect ? sourceSelect.value : 'ALL';
+    const recencyVal = recencySelect ? recencySelect.value : 'ALL';
 
     let url = `/api/jobs/?sort=newest&page=${page}&page_size=${pageSize}`;
     if (statusVal && statusVal !== 'ALL') {
@@ -968,6 +1022,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (selectedCat && selectedCat !== 'ALL') {
       url += `&category=${encodeURIComponent(selectedCat)}`;
+    }
+    if (sourceVal && sourceVal !== 'ALL') {
+      url += `&source=${encodeURIComponent(sourceVal)}`;
+    }
+    if (recencyVal === 'today') {
+      url += `&today=true`;
+    } else if (recencyVal === 'yesterday') {
+      url += `&yesterday=true`;
+    } else if (recencyVal === '3d') {
+      url += `&time_window=72h`;
+    } else if (recencyVal === '7d') {
+      url += `&time_window=7d`;
     }
 
     try {
@@ -1458,29 +1524,55 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function loadGroupsList() {
+  async function loadGroupsList(page = 1) {
     const container = document.getElementById('ownerGroupsTableContainer');
     if (!container) return;
 
+    currentGroupsPage = page;
     container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--color-text-muted);">Loading requirement groups...</div>';
 
+    const searchInput = document.getElementById('ownerGroupsSearch');
+    const filterSelect = document.getElementById('ownerGroupsFilter');
+    const pageSizeSelect = document.getElementById('ownerGroupsPageSize');
+
+    const q = searchInput ? searchInput.value.trim() : '';
+    const filterVal = filterSelect ? filterSelect.value : 'all';
+    const pageSizeVal = pageSizeSelect ? pageSizeSelect.value : '15';
+
+    let url = `/api/owner/groups/?page=${page}&page_size=${encodeURIComponent(pageSizeVal)}`;
+    if (q) url += `&q=${encodeURIComponent(q)}`;
+    if (filterVal && filterVal !== 'all') url += `&filter=${encodeURIComponent(filterVal)}`;
+
     try {
-      const res = await authFetch('/api/owner/groups/');
+      const res = await authFetch(url);
       const data = await res.json();
       const groups = data.groups || [];
+      const totalCount = data.total_count !== undefined ? data.total_count : groups.length;
+      const totalPages = data.total_pages !== undefined ? data.total_pages : 1;
+      const curPage = data.current_page !== undefined ? data.current_page : page;
+      const pageSize = data.page_size !== undefined ? data.page_size : 15;
+      currentGroupsPage = curPage;
       allGroupsData = groups;
 
       if (groups.length === 0) {
         container.innerHTML = `
           <div style="padding: 48px 24px; text-align: center;">
             <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
-            <h3 style="font-size: 16px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 6px;">No Requirement Groups Yet</h3>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 6px;">
+              ${q || filterVal !== 'all' ? 'No Matching Groups Found' : 'No Requirement Groups Yet'}
+            </h3>
             <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">
-              Whenever you use the Bulk Parser or Create Group, a bundle is automatically created with direct shareable links!
+              ${q || filterVal !== 'all' ? 'Try adjusting your search keywords or filter selection.' : 'Whenever you use the Bulk Parser or Create Group, a bundle is automatically created with direct shareable links!'}
             </p>
-            <button class="btn btn-primary" style="height: 38px; font-size: 13px;" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
-              ⚡ Open Bulk Parser
-            </button>
+            ${q || filterVal !== 'all' ? `
+              <button class="btn btn-secondary" style="height: 38px; font-size: 13px;" onclick="if(document.getElementById('ownerGroupsSearch')) document.getElementById('ownerGroupsSearch').value=''; if(document.getElementById('ownerGroupsFilter')) document.getElementById('ownerGroupsFilter').value='all'; loadGroupsList(1);">
+                Reset Filters
+              </button>
+            ` : `
+              <button class="btn btn-primary" style="height: 38px; font-size: 13px;" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
+                ⚡ Open Bulk Parser
+              </button>
+            `}
           </div>
         `;
         return;
@@ -1586,7 +1678,83 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       html += '</tbody></table>';
+
+      if (pageSizeVal !== 'all' && (totalPages > 1 || totalCount > 0)) {
+        const startNum = totalCount === 0 ? 0 : (curPage - 1) * pageSize + 1;
+        const endNum = Math.min(totalCount, curPage * pageSize);
+
+        let pageNumbers = [];
+        if (totalPages <= 7) {
+          for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+        } else {
+          if (curPage <= 4) {
+            pageNumbers = [1, 2, 3, 4, 5, '...', totalPages];
+          } else if (curPage >= totalPages - 3) {
+            pageNumbers = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+          } else {
+            pageNumbers = [1, '...', curPage - 1, curPage, curPage + 1, '...', totalPages];
+          }
+        }
+
+        const pagesHtml = pageNumbers.map(p => {
+          if (p === '...') {
+            return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>`;
+          }
+          return `
+            <button type="button" class="groups-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid ${p === curPage ? '#2563eb' : '#e2e8f0'}; background: ${p === curPage ? '#2563eb' : '#ffffff'}; color: ${p === curPage ? '#ffffff' : '#0f172a'}; cursor: pointer;">
+              ${p}
+            </button>
+          `;
+        }).join('');
+
+        html += `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
+            <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
+              Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalCount}</strong> groups (Page ${curPage} of ${totalPages})
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              <button type="button" id="btnPrevGroupsPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage <= 1 ? 'disabled' : ''}>
+                ← Previous
+              </button>
+              ${pagesHtml}
+              <button type="button" id="btnNextGroupsPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage >= totalPages ? 'disabled' : ''}>
+                Next →
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
       container.innerHTML = html;
+
+      // 0. Bind Pagination Controls
+      const btnPrevGroups = container.querySelector('#btnPrevGroupsPage');
+      const btnNextGroups = container.querySelector('#btnNextGroupsPage');
+      if (btnPrevGroups) {
+        btnPrevGroups.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (curPage > 1) {
+            loadGroupsList(curPage - 1);
+          }
+        });
+      }
+      if (btnNextGroups) {
+        btnNextGroups.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (curPage < totalPages) {
+            loadGroupsList(curPage + 1);
+          }
+        });
+      }
+      container.querySelectorAll('.groups-page-btn').forEach(pBtn => {
+        pBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetPage = parseInt(pBtn.dataset.page, 10);
+          if (!isNaN(targetPage) && targetPage !== curPage) {
+            loadGroupsList(targetPage);
+          }
+        });
+      });
 
       // 1. Toggle Drawer Handlers
       container.querySelectorAll('.btn-toggle-group-jobs').forEach(btn => {
@@ -1635,7 +1803,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (res.ok) {
                 showToast(data.message || 'Job removed from group.', 'success');
                 logActivity('Removed job from group', `${jobTitle} from ${groupName}`);
-                loadGroupsList();
+                loadGroupsList(currentGroupsPage || 1);
               } else {
                 showToast(data.error || 'Failed to remove job from group.', 'error');
               }
@@ -1805,7 +1973,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (res.ok) {
                 showToast(`Group "${groupName}" deleted.`, 'success');
                 logActivity(`Deleted group`, groupName);
-                loadGroupsList();
+                loadGroupsList(currentGroupsPage || 1);
                 loadKpiStats();
               }
             } catch (err) {
@@ -2081,7 +2249,7 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(data.message || 'Requirements transferred successfully!', 'success');
           logActivity('Transferred requirements', data.message);
           closeMoveRequirementsModal();
-          loadGroupsList();
+          loadGroupsList(currentGroupsPage || 1);
           loadJobsList(currentJobsPage);
           loadKpiStats();
         } else {
