@@ -20,6 +20,8 @@ import secrets
 import logging
 from typing import List, Dict, Any, Optional
 
+from django.utils import timezone
+
 from ..base_adapter import BaseJobSourceAdapter
 from ..normalizer import (
     normalize_indian_location,
