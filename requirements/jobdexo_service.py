@@ -275,7 +275,10 @@ def extract_jobdexo_detail(url):
             if title_m:
                 title = title_m.group(1).split('|')[0].split('-')[0].strip()
 
-    # 3. Company Extraction
+    # 3. Official Apply URL (Extracted first so company resolver can leverage ATS subdomains/paths)
+    apply_url = extract_official_apply_url(page_html, fallback_url=url)
+
+    # 4. Company Extraction
     raw_company = ""
     if schema_data.get('hiringOrganization', {}).get('name'):
         raw_company = schema_data.get('hiringOrganization', {}).get('name').strip()
@@ -288,16 +291,16 @@ def extract_jobdexo_detail(url):
         if len(items) >= 3 and items[2].get('name'):
             raw_company = items[2].get('name').strip()
 
-    # 4. Resolve standardized company name
+    # 5. Resolve standardized company name
     company = resolve_company_name(
         raw_name=raw_company,
         title=title,
         description=schema_data.get('description', '') or page_html[:1000],
-        apply_url=url,
+        apply_url=apply_url,
         url=url
     )
 
-    # 5. Clean Title (strip batch noise and redundant company mentions)
+    # 6. Clean Title (strip batch noise and redundant company mentions)
     clean_title = clean_job_title(title, company_name=company)
 
     # 6. Salary
@@ -362,8 +365,7 @@ def extract_jobdexo_detail(url):
             'url': link.strip()
         })
 
-    # 12. Official Apply URL
-    apply_url = extract_official_apply_url(page_html, fallback_url=url)
+    # 12. Official Apply URL already extracted in step 3 above
 
     # 13. Expiration Check
     is_expired = False
@@ -478,11 +480,14 @@ def is_job_duplicate_in_db(job_data, seen_in_batch=None):
             return True
 
     # 3. Exact (Normalized Company + Normalized Title) Match
-    existing_same_company = JobPosting.objects.filter(
-        Q(company_name__iexact=raw_comp) | 
-        Q(company_name__iexact=raw_comp.replace(' ', '')) |
-        Q(company_name__icontains=raw_comp)
-    )
+    if raw_comp and raw_comp.strip():
+        existing_same_company = JobPosting.objects.filter(
+            Q(company_name__iexact=raw_comp) | 
+            Q(company_name__iexact=raw_comp.replace(' ', '')) |
+            Q(company_name__icontains=raw_comp)
+        )
+    else:
+        existing_same_company = []
 
     t1_tokens = set(re.findall(r'[a-z0-9]+', raw_title.lower()))
     for existing in existing_same_company:

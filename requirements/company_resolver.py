@@ -175,7 +175,8 @@ def resolve_company_name(raw_name='', title='', description='', apply_url='', ur
     # Check if raw_clean is an aggregator (indeed, jobsmind, foundit)
     is_aggregator = any(agg in raw_low for agg in JOB_AGGREGATORS)
     is_generic = not raw_clean or raw_low in [
-        'featured partner', 'featured hiring partner', 'tech company', 'company', 'partner', 'fresher'
+        'featured partner', 'featured hiring partner', 'tech company', 'company', 'partner', 'fresher',
+        'job', 'jobs', 'careers', 'career', 'opportunity', 'opportunities', 'hiring'
     ]
     is_domain = (
         ('.' in raw_clean and not raw_clean.endswith('.ai') and not raw_clean.endswith('.io'))
@@ -217,7 +218,42 @@ def resolve_company_name(raw_name='', title='', description='', apply_url='', ur
             if len(cand) >= 3:
                 return cand.capitalize()
 
-    # 3. If raw_clean was an aggregator (e.g. indeed, jobsmind, foundit), extract real company from description / title
+    # 3. Resolve from official Apply URL (e.g. Greenhouse, Lever, Ashby, Workday, corporate subdomain)
+    check_url = (apply_url or url or '').strip()
+    if check_url and 'jobdexo.com' not in check_url and 'mailto:' not in check_url:
+        try:
+            parsed_u = urllib.parse.urlparse(check_url)
+            host = parsed_u.netloc.lower()
+            path_parts = [x for x in parsed_u.path.strip('/').split('/') if x]
+            ats_cand = None
+
+            if ('greenhouse.io' in host or 'lever.co' in host or 'ashbyhq.com' in host) and path_parts:
+                ats_cand = path_parts[0]
+            elif 'myworkdayjobs.com' in host:
+                sub = host.split('.')[0]
+                if sub in ['wd1', 'wd2', 'wd3', 'wd4', 'wd5', 'fa', 'em2', 'ejgk'] and len(host.split('.')) > 1:
+                    sub = host.split('.')[1]
+                ats_cand = sub
+            elif any(ats in host for ats in ATS_STRINGS):
+                for part in host.split('.'):
+                    if part not in ['www', 'com', 'org', 'net', 'jobs', 'careers', 'job', 'career'] and not any(ats in part for ats in ATS_STRINGS):
+                        ats_cand = part
+                        break
+            elif host.startswith('jobs.') or host.startswith('careers.') or host.startswith('job.'):
+                parts = host.split('.')
+                if len(parts) >= 3 and parts[1] not in ['com', 'org', 'net', 'in', 'co']:
+                    ats_cand = parts[1]
+
+            if ats_cand and len(ats_cand) >= 2:
+                ats_low = ats_cand.lower()
+                if ats_low in KNOWN_COMPANIES_MAP:
+                    return KNOWN_COMPANIES_MAP[ats_low]
+                if not any(agg in ats_low for agg in JOB_AGGREGATORS) and ats_low not in ['jobs', 'careers', 'apply']:
+                    return ats_cand.capitalize()
+        except Exception:
+            pass
+
+    # 4. If raw_clean was an aggregator (e.g. indeed, jobsmind, foundit), extract real company from description / title
     if description:
         desc_start = description[:400]
         # Check first sentence corporate name: "Simply Vyapar Apps Private Limited is a fast-growing..."
