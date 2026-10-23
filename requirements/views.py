@@ -2595,6 +2595,15 @@ def resume_builder_view(request):
         else:
             ats_eval = calculate_ats_score(initial_resume, selected_role_id)
 
+    # Preload Curated Indian Demo Projects for instant modal rendering
+    demo_projects = []
+    try:
+        from .models import IndianDemoProject
+        from .indian_project_service import serialize_demo_project
+        demo_projects = [serialize_demo_project(p) for p in IndianDemoProject.objects.filter(is_active=True).order_by('id')[:36]]
+    except Exception:
+        demo_projects = []
+
     context = {
         'roles': RESUME_ROLES,
         'selected_role': role_data,
@@ -2602,6 +2611,7 @@ def resume_builder_view(request):
         'target_job': target_job,
         'initial_resume': initial_resume,
         'initial_resume_json': json.dumps(initial_resume),
+        'demo_projects_json': json.dumps(demo_projects),
         'ats_eval': ats_eval,
         'page_title': '⚡ 90+ ATS Score Resume Generator — Kashii Updatez',
         'meta_description': 'Free ATS-compliant resume builder for engineering freshers. Auto-generate enterprise projects, quantified XYZ metrics, and pass Workday, Greenhouse, and Lever filters.',

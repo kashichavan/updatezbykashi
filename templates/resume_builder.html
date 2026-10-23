@@ -361,10 +361,10 @@
 
           <!-- Page Target Selector -->
           <div class="word-tool-group" style="align-items: center; gap: 4px;">
-            <span style="font-size: 11px; font-weight: 700; color: #64748b; margin-right: 2px;">Target:</span>
-            <button type="button" id="btnPageModeAuto" onclick="setDocPageMode('auto')" class="word-page-toggle active-page-toggle" title="Auto: Sized dynamically (1-page for compact, 2-page for multi-project/experienced)">Auto</button>
-            <button type="button" id="btnPageModeSingle" onclick="setDocPageMode('single')" class="word-page-toggle" title="Force Single-Page A4 PDF">1-Page</button>
-            <button type="button" id="btnPageModeMulti" onclick="setDocPageMode('multi')" class="word-page-toggle" title="Force 2-Page / Multi-Page A4 PDF">2-Page</button>
+            <span style="font-size: 11px; font-weight: 700; color: #64748b; margin-right: 2px;">A4 Format:</span>
+            <button type="button" id="btnPageModeSingle" onclick="setDocPageMode('single')" class="word-page-toggle active-page-toggle" title="Standard 1-Page A4 (210mm × 297mm) - Recommended for Freshers">1-Page A4</button>
+            <button type="button" id="btnPageModeMulti" onclick="setDocPageMode('multi')" class="word-page-toggle" title="2-Page A4 for Multi-Project / Experienced Engineers">2-Page A4</button>
+            <button type="button" id="btnPageModeAuto" onclick="setDocPageMode('auto')" class="word-page-toggle" title="Auto A4: Dynamic multi-page sizing">Auto A4</button>
           </div>
 
         </div>
@@ -1428,14 +1428,23 @@
     transition: transform 0.15s ease;
   }
 
-  /* Single & Multi-Page A4 ATS Resume Sheet */
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .spin-icon {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+  }
+
+  /* Single & Multi-Page A4 ATS Resume Sheet (ISO 216: 210mm × 297mm = 794px × 1123px at 96 DPI) */
   .ats-resume-sheet {
     background: #ffffff !important;
     color: #0f172a !important;
     width: 100%;
-    max-width: 800px;
-    min-height: 1130px;
-    padding: 48px 52px;
+    max-width: 794px;
+    min-height: 1123px;
+    padding: 44px 50px;
     border-radius: 2px;
     border: 1px solid #cbd5e1;
     box-shadow: 
@@ -1449,6 +1458,7 @@
     box-sizing: border-box;
     transition: box-shadow 0.2s ease, outline 0.2s ease, transform 0.15s ease;
     transform-origin: top center;
+    position: relative;
   }
   .ats-resume-sheet:focus-within {
     box-shadow: 
@@ -2240,6 +2250,9 @@
     document.getElementById('previewCertifications').innerHTML = certHtml;
 
     if (window.lucide) window.lucide.createIcons();
+    if (typeof WordEditor !== 'undefined' && WordEditor.updateCounts) {
+      WordEditor.updateCounts();
+    }
   }
 
   function renderProjectsControlsList() {
@@ -2840,7 +2853,7 @@
   });
 
   // Target Page Budget Mode
-  let activeDocPageMode = 'auto'; // 'auto' | 'single' | 'multi'
+  let activeDocPageMode = 'single'; // Default: Standard 1-Page A4 ('single' | 'multi' | 'auto')
 
   function setDocPageMode(mode) {
     activeDocPageMode = mode;
@@ -2855,7 +2868,7 @@
     if (sheet) {
       if (mode === 'single') {
         sheet.querySelectorAll('.word-page-break').forEach(el => el.remove());
-        if (window.showToast) window.showToast('Formatted for Single-Page A4 PDF', 'info');
+        if (window.showToast) window.showToast('📄 Formatted for Standard 1-Page A4 Sheet', 'info');
       } else if (mode === 'multi') {
         if (sheet.querySelectorAll('.word-page-break').length === 0) {
           const projHeader = document.getElementById('projectsSectionTitle');
@@ -2868,10 +2881,10 @@
             WordEditor.insertPageBreak();
           }
         }
-        if (window.showToast) window.showToast('Formatted for 2-Page / Multi-Page Word Flow', 'info');
+        if (window.showToast) window.showToast('📄 Formatted for 2-Page Standard A4 Flow', 'info');
       } else {
         WordEditor.autoPaginate();
-        if (window.showToast) window.showToast('Auto Dynamic Multi-Page Sizing', 'info');
+        if (window.showToast) window.showToast('📄 Auto Dynamic A4 Sizing', 'info');
       }
     }
     WordEditor.updateCounts();
@@ -3848,7 +3861,7 @@
      INDIAN IT DEMO PROJECTS & GITHUB IMPORT HANDLERS
      ========================================================== */
 
-  let indianDemoCatalog = [];
+  let indianDemoCatalog = {{ demo_projects_json|safe|default:"[]" }};
 
   function openUnifiedAddProjectModal(initialTab = 'bengaluru') {
     const modal = document.getElementById('unifiedAddProjectModal');
@@ -3860,21 +3873,45 @@
       openBengaluruProjectsModal();
     }
 
-    if (indianDemoCatalog.length === 0) {
+    const container = document.getElementById('bengaluruCardsGrid');
+
+    if (!Array.isArray(indianDemoCatalog) || indianDemoCatalog.length === 0) {
+      if (container) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: #94a3b8;">
+            <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(245, 158, 11, 0.2); border-top-color: #f59e0b; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #e2e8f0;">Loading verified enterprise project catalog...</div>
+            <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Fetching top Bengaluru &amp; Indian IT projects</div>
+          </div>
+        `;
+      }
       fetch('/api/projects/indian-demo/')
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error("Status " + res.status);
+          return res.json();
+        })
         .then(data => {
           indianDemoCatalog = data.projects || [];
           renderIndianDemoCards(indianDemoCatalog);
         })
         .catch(err => {
           console.error("Error loading Indian demo projects:", err);
-          // Fallback to legacy endpoint if needed
           fetch('/api/resume/bengaluru-projects/')
             .then(res => res.json())
             .then(d => {
               indianDemoCatalog = d.projects || [];
               renderIndianDemoCards(indianDemoCatalog);
+            })
+            .catch(e => {
+              if (container) {
+                container.innerHTML = `
+                  <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: #f87171;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+                    <div style="font-weight: 700;">Failed to load project catalog</div>
+                    <button type="button" onclick="openUnifiedAddProjectModal('bengaluru')" style="margin-top: 12px; background: #f59e0b; color: #000; font-weight: 700; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Retry Loading</button>
+                  </div>
+                `;
+              }
             });
         });
     } else {
@@ -4046,6 +4083,9 @@
 
     renderResumeSheet();
     recalculateAtsScore();
+    if (typeof WordEditor !== 'undefined' && WordEditor.updateCounts) {
+      WordEditor.updateCounts();
+    }
     closeUnifiedAddProjectModal();
     if (window.showToast) window.showToast(`✅ Added ${p.title} to resume!`, "success");
     else alert(`✅ Added ${p.title} to resume!`);
@@ -4138,6 +4178,9 @@
 
     renderResumeSheet();
     recalculateAtsScore();
+    if (typeof WordEditor !== 'undefined' && WordEditor.updateCounts) {
+      WordEditor.updateCounts();
+    }
     closeUnifiedAddProjectModal();
     closeGitHubImportModal();
     if (window.showToast) window.showToast("✅ GitHub project added with Google XYZ bullets!", "success");
@@ -4266,11 +4309,17 @@
 
   /* Custom Project Modal Handlers */
   function openCustomProjectModal() {
+    const unifiedModal = document.getElementById('unifiedAddProjectModal');
+    if (unifiedModal) {
+      openUnifiedAddProjectModal('custom');
+      return;
+    }
     const modal = document.getElementById('customProjectModal');
     if (modal) modal.style.display = 'flex';
   }
 
   function closeCustomProjectModal() {
+    closeUnifiedAddProjectModal();
     const modal = document.getElementById('customProjectModal');
     if (modal) modal.style.display = 'none';
   }
@@ -4302,6 +4351,10 @@
 
     renderResumeSheet();
     recalculateAtsScore();
+    if (typeof WordEditor !== 'undefined' && WordEditor.updateCounts) {
+      WordEditor.updateCounts();
+    }
+    closeUnifiedAddProjectModal();
     closeCustomProjectModal();
     if (window.showToast) window.showToast("✅ Custom project added!", "success");
   }
