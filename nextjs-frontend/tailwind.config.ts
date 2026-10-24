@@ -42,7 +42,7 @@ const config: Config = {
     },
   },
   plugins: [
-    function ({ addUtilities }) {
+    function ({ addUtilities }: { addUtilities: any }) {
       const newUtilities = {
         '.glass-panel': {
           background: 'rgba(18, 24, 38, 0.6)',

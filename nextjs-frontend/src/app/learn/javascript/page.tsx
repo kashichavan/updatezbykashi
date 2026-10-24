@@ -1,12 +1,24 @@
 import Link from 'next/link';
 import { getJavaScriptRoadmap, getJavaScriptChapters } from '@/lib/api';
+import { RoadmapStage, ChapterSummary } from '@/lib/types';
 import { Zap, BookOpen, CheckCircle2, PlayCircle, Trophy, Sparkles } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function JavaScriptCurriculumPage() {
-  const [roadmap, chapters] = await Promise.all([
-    getJavaScriptRoadmap(),
-    getJavaScriptChapters(),
-  ]);
+  let roadmap: RoadmapStage[] = [];
+  let chapters: ChapterSummary[] = [];
+
+  try {
+    const results = await Promise.all([
+      getJavaScriptRoadmap().catch(() => []),
+      getJavaScriptChapters().catch(() => []),
+    ]);
+    roadmap = results[0] || [];
+    chapters = results[1] || [];
+  } catch (err) {
+    console.error('Failed to load JavaScript curriculum data:', err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12 space-y-12">
@@ -52,7 +64,7 @@ export default async function JavaScriptCurriculumPage() {
               <p className="text-xs text-slate-400 leading-relaxed max-w-2xl">{stage.description}</p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                {stage.chapters.map((ch) => (
+                {stage.chapters.map((ch: any) => (
                   <Link
                     key={ch.slug}
                     href={`/learn/javascript/${ch.slug}`}

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { getBlogPosts, getBlogCategories } from '@/lib/api';
-import { BookOpen, Clock, Eye, Sparkles, Search, Loading, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Clock, Eye, Sparkles } from 'lucide-react';
 
-export default function BlogIndexPage() {
+function BlogContent() {
   const searchParams = useSearchParams();
   const category = searchParams.get('category') || '';
   const search = searchParams.get('search') || '';
@@ -171,6 +171,21 @@ export default function BlogIndexPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function BlogIndexPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-slate-800/50 rounded w-1/4"></div>
+          <div className="h-4 bg-slate-800/30 rounded w-1/2"></div>
+        </div>
+      </div>
+    }>
+      <BlogContent />
+    </Suspense>
   );
 }
 

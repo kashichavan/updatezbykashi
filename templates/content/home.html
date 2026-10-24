@@ -7,7 +7,6 @@
 {% block og_description %}Official Kashii Updates portal by Python Kashi. Access daily verified student job drives, fresher internships, and programming tutorials.{% endblock %}
 
 {% block schema_markup %}
-<!-- Google Job Directory ItemList Structured Data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -28,72 +27,978 @@
 </script>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* ─── HOME PAGE PREMIUM STYLES ─── */
+
+/* Hero */
+.home-hero {
+  margin: 20px 0 32px;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% -5%, rgba(37,99,235,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 40% at 85% 90%, rgba(6,182,212,0.06) 0%, transparent 55%),
+    linear-gradient(rgba(226,232,240,0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226,232,240,0.28) 1px, transparent 1px),
+    #ffffff;
+  background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+  border-radius: 20px;
+  border: 1px solid rgba(226,232,240,0.9);
+  padding: clamp(24px, 5vw, 48px);
+  box-shadow: 0 12px 40px -12px rgba(15,23,42,0.07), inset 0 1px 0 rgba(255,255,255,0.95);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 30%, rgba(37,99,235,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+@media (min-width: 960px) {
+  .hero-inner { grid-template-columns: 1.3fr 0.9fr; gap: 40px; }
+}
+
+/* Eyebrow badge */
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-code);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue-primary);
+  background: rgba(239,246,255,0.95);
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 1px 4px rgba(37,99,235,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+  padding: 5px 14px;
+  border-radius: 9999px;
+  margin-bottom: 16px;
+  letter-spacing: 0.04em;
+}
+
+.hero-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563eb;
+  animation: heroEyebrowPulse 2.5s infinite ease-in-out;
+  box-shadow: 0 0 0 0 rgba(37,99,235,0.4);
+}
+
+@keyframes heroEyebrowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(37,99,235,0); }
+}
+
+/* Hero H1 */
+.hero-title {
+  font-family: 'Fraunces', 'Playfair Display', Georgia, serif;
+  font-size: clamp(26px, 5.5vw, 42px);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 16px;
+  text-wrap: balance;
+}
+
+.hero-title em {
+  font-style: italic;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-desc {
+  font-size: clamp(14px, 2.2vw, 15.5px);
+  color: #475569;
+  line-height: 1.68;
+  margin-bottom: 24px;
+  max-width: 540px;
+  font-weight: 450;
+}
+
+/* Stats strip */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  background: rgba(248,250,252,0.7);
+  border: 1px solid rgba(226,232,240,0.8);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+  width: fit-content;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 20px;
+  position: relative;
+}
+
+.hero-stat:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 10%;
+  height: 80%;
+  width: 1px;
+  background: var(--subtle-border);
+}
+
+.hero-stat:first-child { padding-left: 0; }
+.hero-stat:last-child { padding-right: 0; }
+
+.hero-stat-num {
+  font-family: var(--font-code);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--blue-primary);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hero-stat-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .hero-stats { padding: 12px 14px; gap: 0; }
+  .hero-stat { padding: 0 14px; }
+  .hero-stat-num { font-size: 17px; }
+}
+
+/* Trust pills */
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  background: #ffffff;
+  border: 1px solid var(--subtle-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.9);
+  padding: 7px 14px;
+  border-radius: 9999px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-pill:hover {
+  border-color: var(--blue-border);
+  color: var(--blue-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+/* ─── CODING TERMINAL ─── */
+.home-terminal {
+  background: radial-gradient(130% 120% at 50% 0%, #111827 0%, #090d16 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 0 rgba(0,0,0,0.4),
+    0 28px 56px -16px rgba(15,23,42,0.55),
+    0 0 0 1px rgba(0,0,0,0.7);
+  font-family: var(--font-code);
+  animation: floatUp 5.5s ease-in-out infinite;
+  width: 100%;
+  position: relative;
+}
+
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0) rotate(0.2deg); }
+  50% { transform: translateY(-7px) rotate(-0.2deg); }
+}
+
+.terminal-bar {
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.terminal-dots { display: flex; gap: 7px; }
+.t-dot { width: 11px; height: 11px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+.t-dot.red { background: #ff5f57; }
+.t-dot.yellow { background: #febc2e; }
+.t-dot.green { background: #28c840; }
+
+.terminal-name {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  font-family: var(--font-code);
+}
+
+.terminal-body {
+  padding: 18px 16px;
+  font-size: clamp(11px, 2.5vw, 13px);
+  line-height: 1.8;
+  color: #e2e8f0;
+  overflow-x: hidden;
+}
+
+.t-line { display: flex; align-items: flex-start; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
+.t-prompt { color: #38bdf8; font-weight: 700; user-select: none; }
+.t-kw { color: #f43f5e; font-weight: 700; }
+.t-fn { color: #38bdf8; }
+.t-str { color: #34d399; }
+.t-cm { color: #475569; font-style: italic; }
+.t-ok { color: #4ade80; font-weight: 700; }
+
+.t-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: #38bdf8;
+  vertical-align: middle;
+  margin-left: 3px;
+  animation: blink 0.8s step-end infinite;
+  box-shadow: 0 0 10px rgba(56,189,248,0.7);
+}
+
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ─── YT MARQUEE SECTION ─── */
+.yt-section {
+  margin-bottom: 36px;
+}
+
+.yt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 0 2px;
+}
+
+.yt-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.yt-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.yt-section-title-text {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  letter-spacing: -0.02em;
+}
+
+.yt-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #dc2626;
+  display: block;
+  margin-bottom: 1px;
+}
+
+.yt-view-all {
+  font-size: 13px;
+  font-weight: 700;
+  color: #dc2626;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  transition: all 0.2s ease;
+}
+
+.yt-view-all:hover {
+  background: #dc2626;
+  color: #fff;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+/* ─── FILTER BAR ─── */
+.filter-section {
+  background: rgba(248,250,252,0.9);
+  border: 1px solid rgba(226,232,240,0.9);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 28px;
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 2px 8px rgba(15,23,42,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (min-width: 768px) {
+  .filter-section {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* ─── GRID HEADER ─── */
+.grid-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  padding: 0 2px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.grid-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grid-header-accent {
+  width: 4px;
+  height: 28px;
+  background: linear-gradient(180deg, #2563eb 0%, #06b6d4 100%);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.grid-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+.grid-subtitle {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin: 3px 0 0;
+  font-weight: 500;
+}
+
+.grid-view-all {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-primary);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 14px;
+  border-radius: 9999px;
+  border: 1px solid var(--blue-border);
+  background: var(--blue-light);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.grid-view-all:hover {
+  background: var(--blue-primary);
+  color: #fff;
+  border-color: var(--blue-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+}
+
+/* ─── JOB CARDS (NEXT LEVEL) ─── */
+.job-card {
+  background: #ffffff;
+  border: 1px solid rgba(226,232,240,0.9);
+  border-radius: 18px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 1px 3px rgba(15,23,42,0.04),
+    0 4px 14px -4px rgba(15,23,42,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  animation: cardIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  will-change: transform, box-shadow;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.job-card:nth-child(1) { animation-delay: 0.03s; }
+.job-card:nth-child(2) { animation-delay: 0.07s; }
+.job-card:nth-child(3) { animation-delay: 0.11s; }
+.job-card:nth-child(4) { animation-delay: 0.15s; }
+.job-card:nth-child(5) { animation-delay: 0.19s; }
+.job-card:nth-child(6) { animation-delay: 0.23s; }
+.job-card:nth-child(7) { animation-delay: 0.27s; }
+.job-card:nth-child(8) { animation-delay: 0.31s; }
+.job-card:nth-child(9) { animation-delay: 0.35s; }
+
+/* Top accent bar */
+.job-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2563eb, #06b6d4);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+/* Left accent */
+.job-card::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #2563eb, #06b6d4);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: 0 0 0 18px;
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 20px 40px -12px rgba(37,99,235,0.14),
+    0 6px 16px rgba(15,23,42,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.95);
+  border-color: rgba(147,197,253,0.8);
+}
+
+.job-card:hover::before { opacity: 1; }
+.job-card:hover::after { opacity: 1; }
+.job-card:active { transform: translateY(-3px) scale(0.99); }
+
+/* Card header row */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.card-top-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+/* Company initial avatar */
+.co-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  border: 1px solid;
+}
+
+.co-avatar.blue { background: linear-gradient(135deg,#dbeafe,#bfdbfe); color: #2563eb; border-color: #bfdbfe; }
+.co-avatar.green { background: linear-gradient(135deg,#d1fae5,#a7f3d0); color: #047857; border-color: #a7f3d0; }
+.co-avatar.purple { background: linear-gradient(135deg,#ede9fe,#ddd6fe); color: #6d28d9; border-color: #ddd6fe; }
+.co-avatar.orange { background: linear-gradient(135deg,#fef3c7,#fde68a); color: #b45309; border-color: #fde68a; }
+.co-avatar.red { background: linear-gradient(135deg,#fee2e2,#fca5a5); color: #b91c1c; border-color: #fca5a5; }
+
+.co-name-badge {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--blue-primary);
+  background: rgba(239,246,255,0.9);
+  border: 1px solid var(--blue-border);
+  box-shadow: 0 1px 2px rgba(37,99,235,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+  padding: 3px 12px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+  letter-spacing: 0.01em;
+}
+
+.card-top-right {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.job-type-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.job-type-badge.internship { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+.job-type-badge.fulltime { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.job-type-badge.default { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+/* Card body */
+.card-body { flex: 1; display: flex; flex-direction: column; }
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 16.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  letter-spacing: -0.01em;
+  min-height: 44px;
+  text-decoration: none;
+}
+
+.card-title:hover { color: var(--blue-primary); }
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1d4ed8;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.card-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-meta-item.muted { color: var(--muted); font-weight: 600; }
+
+.card-info-row {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.card-info-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.card-info-exp {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--blue-primary);
+  font-weight: 700;
+}
+
+/* HR contact highlight */
+.card-hr-contact {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #059669;
+  background: rgba(16,185,129,0.07);
+  border: 1px solid rgba(16,185,129,0.22);
+  padding: 4px 10px;
+  border-radius: 8px;
+  margin-bottom: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+}
+
+/* Description */
+.card-desc {
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.55;
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Skills */
+.card-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.skill-chip {
+  font-size: 11px;
+  font-weight: 650;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 3px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.1px;
+  transition: all 0.18s ease;
+}
+
+.skill-chip:hover { background: #f1f5f9; border-color: #cbd5e1; color: var(--blue-primary); }
+
+/* Card footer */
+.card-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(226,232,240,0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  background: #f8fafc;
+  border: 1px solid var(--subtle-border);
+  padding: 4px 11px;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-apply {
+  height: 41px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 750;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--blue-primary);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 10px rgba(37,99,235,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-apply::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -130%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform: skewX(-20deg);
+  animation: btnSheen 4.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes btnSheen {
+  0%, 60% { left: -130%; }
+  100% { left: 170%; }
+}
+
+.btn-apply:hover {
+  background: var(--blue-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37,99,235,0.35);
+  color: #fff;
+}
+
+.btn-apply:active { transform: scale(0.97); }
+
+.btn-detail {
+  height: 41px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--blue-light);
+  color: var(--blue-primary);
+  border: 1px solid var(--blue-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+
+.btn-detail:hover {
+  background: #dbeafe;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.12);
+  color: var(--blue-primary);
+}
+
+.btn-detail:active { transform: scale(0.97); }
+
+.btn-full {
+  grid-column: 1 / -1;
+}
+
+/* Shimmer */
+@keyframes shimmerWave {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-block {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmerWave 1.6s ease-in-out infinite;
+  border-radius: 6px;
+  display: block;
+}
+
+/* Empty state */
+.jobs-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 64px 24px;
+}
+
+.jobs-empty-emoji { font-size: 52px; display: block; margin-bottom: 16px; }
+
+.jobs-empty-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.jobs-empty-text {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 360px;
+  margin: 0 auto 24px;
+}
+
+/* Source tag */
+.source-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  letter-spacing: 0.2px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="wrap">
 
-  <!-- Creative Hero Banner with Consolas Typewriter & Animated Terminal -->
-  <section class="vp-hero">
-    <div class="vp-hero-inner">
-      <div class="vp-hero-copy">
-        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
-        <h1 id="typewriterText">Kashii Updates — Daily Student Jobs &amp; <em>Internship Requirements</em></h1>
-        <p class="lead">
-          <strong>Kashii Updates</strong> (also known as <strong>Kashii Updatez</strong>) provides verified daily student requirements, off-campus drives, &amp; internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
+  <!-- ═══════════════════════════════════════
+       HERO SECTION — PREMIUM EDITORIAL
+  ══════════════════════════════════════════ -->
+  <section class="home-hero">
+    <div class="hero-inner">
+
+      <!-- Copy -->
+      <div class="hero-copy">
+        <div class="hero-eyebrow">
+          <span class="hero-eyebrow-dot"></span>
+          Fresh Daily Student Requirements
+        </div>
+
+        <h1 class="hero-title" id="typewriterText">
+          Kashii Updates —<br>
+          Daily Student Jobs &amp; <em>Internship Requirements</em>
+        </h1>
+
+        <p class="hero-desc">
+          <strong>Kashii Updates</strong> (also known as <strong>Kashii Updatez</strong>) delivers verified daily student requirements, off-campus drives &amp; internships. Every posting is auto-purged after 7 days — 100% fresh, always.
         </p>
 
-        <div class="vp-trust-pills">
-          <span class="vp-pill" style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="7-Day"> Auto 7-Day Fresh Rule</span>
-          <span class="vp-pill"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software & Tech</span>
-          <span class="vp-pill"><img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Links"> Official Direct Links</span>
+        <!-- Stats strip -->
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-num">500+</span>
+            <span class="hero-stat-label">Jobs Posted</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">7-Day</span>
+            <span class="hero-stat-label">Freshness Rule</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">100%</span>
+            <span class="hero-stat-label">Free Forever</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">Direct</span>
+            <span class="hero-stat-label">Official Links</span>
+          </div>
+        </div>
+
+        <!-- Trust pills -->
+        <div class="hero-pills">
+          <span class="hero-pill">📅 Auto 7-Day Fresh Rule</span>
+          <span class="hero-pill">💻 Software &amp; Tech</span>
+          <span class="hero-pill">🔗 Official Direct Links</span>
         </div>
       </div>
 
-      <!-- Animated Coding Terminal Box -->
-      <div class="coding-terminal">
-        <div class="terminal-header">
+      <!-- Terminal -->
+      <div class="home-terminal">
+        <div class="terminal-bar">
           <div class="terminal-dots">
             <span class="t-dot red"></span>
             <span class="t-dot yellow"></span>
             <span class="t-dot green"></span>
           </div>
-          <span class="terminal-title">python_kashi_script.py</span>
+          <span class="terminal-name">python_kashi_script.py</span>
+          <span></span>
         </div>
         <div class="terminal-body">
-          <div class="code-line">
-            <span class="code-prompt">&gt;</span>
-            <span class="code-kw">import</span> <span class="code-fn">kashii_updatez</span>
+          <div class="t-line">
+            <span class="t-prompt">&gt;</span>
+            <span class="t-kw">import</span>&nbsp;<span class="t-fn">kashii_updatez</span>
           </div>
-          <div class="code-line">
-            <span class="code-prompt">&gt;</span>
-            <span class="code-kw">def</span> <span class="code-fn">get_fresh_opportunities</span>():
+          <div class="t-line">
+            <span class="t-prompt">&gt;</span>
+            <span class="t-kw">def</span>&nbsp;<span class="t-fn">get_fresh_opportunities</span>():
           </div>
-          <div class="code-line" style="padding-left: 14px;">
-            <span class="code-cm"># Filter 100% active 7-day requirements</span>
+          <div class="t-line" style="padding-left:14px;">
+            <span class="t-cm"># Only 100% active 7-day requirements</span>
           </div>
-          <div class="code-line" style="padding-left: 14px;">
-            <span class="code-kw">return</span> kashii_updatez.<span class="code-fn">filter</span>(category=<span class="code-str">"Software & Tech"</span>)
+          <div class="t-line" style="padding-left:14px;">
+            <span class="t-kw">return</span>&nbsp;kashii_updatez.<span class="t-fn">filter</span>(
           </div>
-          <div class="code-line" style="margin-top: 10px;">
-            <span class="code-prompt">&gt;&gt;&gt;</span> <span style="color: #4ade80; font-weight: 700;">Status: 100% Verified &amp; Active</span><span class="typing-cursor"></span>
+          <div class="t-line" style="padding-left:28px;">
+            category=<span class="t-str">"Software &amp; Tech"</span>
+          </div>
+          <div class="t-line" style="padding-left:14px;">)</div>
+          <div class="t-line" style="margin-top:10px;">
+            <span class="t-prompt">&gt;&gt;&gt;</span>&nbsp;<span class="t-ok">✓ Status: 100% Verified &amp; Active</span><span class="t-cursor"></span>
           </div>
         </div>
       </div>
+
     </div>
   </section>
 
-  <!-- 3D Infinite Seamless Marquee: YouTube Video Tutorials (INSTANT PRE-RENDERED) -->
-  <section style="margin-bottom: 32px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="color: #dc2626; font-weight: 800; font-size: 16px;">▶</span>
-        <h3 style="font: 700 18px var(--font-sans); margin: 0; color: var(--ink);">Latest Tutorials from @pythonkashi</h3>
+  <!-- ═══════════════════════════════════════
+       YOUTUBE TUTORIALS MARQUEE
+  ══════════════════════════════════════════ -->
+  <section class="yt-section">
+    <div class="yt-header">
+      <div class="yt-header-left">
+        <div class="yt-icon-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </div>
+        <div>
+          <span class="yt-eyebrow">Python Kashi</span>
+          <div class="yt-section-title-text">Latest Tutorials from @pythonkashi</div>
+        </div>
       </div>
-      <a href="/youtube/" style="font-size: 13px; font-weight: 700; color: #dc2626;">View All Videos ↗</a>
+      <a href="/youtube/" class="yt-view-all">View All ↗</a>
     </div>
 
-    <div class="logo-marquee-wrapper" style="margin-bottom: 0; min-height: 160px;">
+    <div class="logo-marquee-wrapper" style="min-height: 160px;">
       <div id="ytMarqueeTrack" class="logo-marquee-track">
-        <!-- Set 1: eager load so thumbnails appear immediately for first-time visitors -->
         {% for v in youtube_videos %}
           <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
             <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="eager" fetchpriority="high" width="240" height="135">
@@ -101,7 +1006,6 @@
             <div class="yt-title-bar">{{ v.title }}</div>
           </a>
         {% endfor %}
-        <!-- Set 2: duplicate for seamless infinite scroll -->
         {% for v in youtube_videos %}
           <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
             <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="lazy" width="240" height="135">
@@ -109,7 +1013,6 @@
             <div class="yt-title-bar">{{ v.title }}</div>
           </a>
         {% endfor %}
-        <!-- Set 3: extra duplicate to keep scroll gap-free on wide screens -->
         {% for v in youtube_videos %}
           <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
             <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="lazy" width="240" height="135">
@@ -121,221 +1024,250 @@
     </div>
   </section>
 
-  <!-- Clean Category & Search Filter Bar -->
-  <section id="catalogSection" class="vp-filter-bar">
+  <!-- ═══════════════════════════════════════
+       FILTER & SEARCH BAR
+  ══════════════════════════════════════════ -->
+  <section id="catalogSection" class="filter-section">
     <div class="vp-tabs">
-      <button class="vp-tab {% if request.GET.today %}active{% endif %}" id="btnFilterToday" data-today="true" style="background: rgba(220, 38, 38, 0.08); color: #dc2626; border-color: rgba(220, 38, 38, 0.3); font-weight: 800;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="Today"> 🔥 Today's Requirements</button>
-      <button class="vp-tab {% if not request.GET.today and not request.GET.experience and not request.GET.category %}active{% endif %}" data-category="all"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="All"> All Opportunities</button>
-      <button class="vp-tab {% if request.GET.experience == 'fresher' %}active{% endif %}" data-category="freshers" style="background: rgba(16, 185, 129, 0.08); color: #059669; border-color: rgba(16, 185, 129, 0.3); font-weight: 800;"><span>🎓</span> Fresher Hiring (0-1 Yrs)</button>
-      <button class="vp-tab {% if request.GET.experience == 'experienced' %}active{% endif %}" data-category="experienced" style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; border-color: rgba(99, 102, 241, 0.3); font-weight: 800;"><span>💼</span> Experienced (1-5+ Yrs)</button>
-      <button class="vp-tab" data-category="qa-testing"><span>🧪</span> QA &amp; Testing</button>
-      <button class="vp-tab" data-category="hr-recruitment"><span>👥</span> HR &amp; Hiring</button>
-      <button class="vp-tab" data-category="mba-business"><span>📈</span> MBA &amp; Business</button>
-      <button class="vp-tab" data-category="software-tech"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software &amp; Tech</button>
-      <button class="vp-tab" data-category="non-it"><span>📞</span> Non IT &amp; Ops</button>
+      <button class="vp-tab {% if request.GET.today %}active{% endif %}" id="btnFilterToday" data-today="true" style="background:rgba(220,38,38,0.08);color:#dc2626;border-color:rgba(220,38,38,0.25);font-weight:800;">🔥 Today's</button>
+      <button class="vp-tab {% if not request.GET.today and not request.GET.experience and not request.GET.category %}active{% endif %}" data-category="all">📋 All</button>
+      <button class="vp-tab {% if request.GET.experience == 'fresher' %}active{% endif %}" data-category="freshers" style="color:#059669;font-weight:800;">🎓 Freshers</button>
+      <button class="vp-tab {% if request.GET.experience == 'experienced' %}active{% endif %}" data-category="experienced" style="color:#4f46e5;font-weight:800;">💼 Experienced</button>
+      <button class="vp-tab" data-category="qa-testing">🧪 QA</button>
+      <button class="vp-tab" data-category="hr-recruitment">👥 HR</button>
+      <button class="vp-tab" data-category="mba-business">📈 MBA</button>
+      <button class="vp-tab" data-category="software-tech">💻 Software</button>
+      <button class="vp-tab" data-category="non-it">📞 Non-IT</button>
     </div>
 
-    <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">
-      <div class="search-box">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    <div style="display:flex;gap:8px;width:100%;max-width:480px;flex-wrap:wrap;">
+      <div class="search-box" style="flex:1;">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
-        <input type="text" id="searchInput" placeholder="Search latest software requirements...">
+        <input type="text" id="searchInput" placeholder="Search roles, companies, skills...">
       </div>
-
-      <div class="filter-selects" style="display: flex; gap: 6px;">
-        <select id="filterCategory" style="display: none;">
-          <option value="all">All Categories</option>
-        </select>
-
-        <select id="filterJobType">
-          <option value="all">All Types</option>
-          <option value="INTERNSHIP">Internships</option>
-          <option value="FULL_TIME">Full-Time</option>
-        </select>
-
-        <select id="filterSort">
-          <option value="newest">Newest First</option>
-          <option value="deadline">Closing Soon</option>
-        </select>
+      <div class="filter-selects" style="display:flex;gap:6px;">
+        <select id="filterCategory" style="display:none;"><option value="all">All Categories</option></select>
+        <select id="filterJobType"><option value="all">All Types</option><option value="INTERNSHIP">Internships</option><option value="FULL_TIME">Full-Time</option></select>
+        <select id="filterSort"><option value="newest">Newest First</option><option value="deadline">Closing Soon</option></select>
       </div>
     </div>
   </section>
 
-  <!-- High-Visibility Google AdSense Display Unit -->
+  <!-- AdSense -->
   {% include 'components/adsense_unit.html' %}
 
-  <!-- Paginated Grid Feed (Displays 9 Opportunities per Page) -->
+  <!-- ═══════════════════════════════════════
+       JOBS GRID
+  ══════════════════════════════════════════ -->
   <main>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
-      <div>
-        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="18" height="18" alt="Requirements"> Latest Requirements</h2>
-        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Showing 18 verified opportunities per page — sorted newest first</p>
+    <!-- Section header -->
+    <div class="grid-header">
+      <div class="grid-header-left">
+        <div class="grid-header-accent"></div>
+        <div>
+          <h2 class="grid-title">Latest Requirements</h2>
+          <p class="grid-subtitle">Showing verified opportunities — sorted newest first</p>
+        </div>
       </div>
-      <a href="/category/software-tech/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary);">View All ↗</a>
+      <a href="/category/software-tech/" class="grid-view-all">View All ↗</a>
     </div>
 
+    <!-- Cards grid -->
     <div id="jobsGrid" class="vp-catalog-grid">
       {% for job in initial_jobs %}
-      <div class="vp-product-card" data-id="{{ job.id }}" data-share-url="/category/{{ job.category.slug }}/job/{{ job.uuid }}/">
-        <div class="vp-card-header">
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-            <span class="company-badge">{{ job.company_name }}</span>
-            <span class="source-tag" title="Verified Source" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;">{{ job.get_discreet_source_code }}</span>
-          </div>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <span class="type-badge">{{ job.get_job_type_display }}</span>
-          </div>
-        </div>
+      <div class="job-card vp-product-card{% if request.GET.today and forloop.first %} today-highlight-card{% endif %}"
+           data-id="{{ job.id }}"
+           data-share-url="/category/{{ job.category.slug }}/job/{{ job.uuid }}/">
 
-        <div class="vp-card-content">
-          <h3><a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/" style="color:inherit;text-decoration:none;">{{ job.title }}</a></h3>
-          
-          <div class="vp-salary-row">
-            <span style="display:inline-flex;align-items:center;gap:4px;"><i data-lucide="badge-dollar-sign" class="nav-icon" style="width: 15px; height: 15px;"></i> {{ job.stipend_salary }}</span>
-            <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><i data-lucide="map-pin" class="nav-icon" style="width: 15px; height: 15px;"></i> {{ job.location }}</span>
+        <!-- Card top -->
+        <div class="card-top">
+          <div class="card-top-left">
+            {% with co=job.company_name|slice:":2" %}
+            <span class="co-avatar {% cycle 'blue' 'green' 'purple' 'orange' 'red' %}">{{ co }}</span>
+            {% endwith %}
+            <span class="co-name-badge">{{ job.company_name }}</span>
+            <span class="source-tag" title="Verified Source">{{ job.get_discreet_source_code }}</span>
           </div>
-
-          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
-            <div style="display:flex;align-items:center;gap:4px;">
-              <i data-lucide="calendar" class="nav-icon" style="width: 14px; height: 14px;"></i> Posted: <strong style="color:var(--ink);">{{ job.get_posted_date_display }}</strong>
-            </div>
-            <div style="display:flex;align-items:center;gap:4px;color:var(--blue-primary);font-weight:700;">
-              <i data-lucide="briefcase" class="nav-icon" style="width: 13px; height: 13px;"></i> <span>Exp: {{ job.get_experience_display }}</span>
-            </div>
-          </div>
-
-          {% if job.contact_phone %}
-          <div style="font-size:11.5px;font-weight:700;color:#059669;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);padding:3px 8px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:5px;">
-            <i data-lucide="phone-call" style="width:12px;height:12px;"></i>
-            <span>HR Contact: <strong style="color:#047857;">{{ job.contact_phone }}</strong></span>
-          </div>
-          {% endif %}
-
-          <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ job.description|default:"Detailed job description and requirements available on the requirement page."|truncatewords:22 }}</p>
-
-          <div class="skills-wrapper" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 4px;">
-            {% for skill in job.get_skills_list|slice:":4" %}
-              <span class="skill-tag">{{ skill }}</span>
-            {% empty %}
-              <span class="skill-tag">Software Engineering</span>
-            {% endfor %}
-          </div>
-
-          <div class="vp-price-row">
-            <div class="timer-tag" data-timer="{{ job.id }}" data-seconds="{{ job.get_time_left_seconds }}">
-              <i data-lucide="clock" style="width: 13px; height: 13px;"></i> <span>Auto-Expires in 7 Days</span>
-            </div>
-          </div>
-
-          <div class="card-action-grid">
-            {% if job.apply_url %}
-            <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
-               class="external-apply-btn"
-               onclick="event.stopPropagation();">
-              <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Apply Now ↗
-            </a>
-            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
-               class="detail-page-btn"
-               onclick="event.stopPropagation();">
-              <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> Detail Page
-            </a>
+          <div class="card-top-right">
+            {% if job.job_type == 'INTERNSHIP' %}
+              <span class="job-type-badge internship">Internship</span>
+            {% elif job.job_type == 'FULL_TIME' %}
+              <span class="job-type-badge fulltime">Full-Time</span>
             {% else %}
-            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
-               class="external-apply-btn"
-               onclick="event.stopPropagation();"
-               style="grid-column: 1 / -1;">
-              <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i> View Requirement Page ↗
-            </a>
+              <span class="job-type-badge default">{{ job.get_job_type_display }}</span>
             {% endif %}
           </div>
         </div>
+
+        <!-- Card body -->
+        <div class="card-body">
+          <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/" class="card-title">{{ job.title }}</a>
+
+          <div class="card-meta">
+            <span class="card-meta-item">
+              <i data-lucide="badge-dollar-sign" style="width:14px;height:14px;"></i>
+              {{ job.stipend_salary }}
+            </span>
+            <span class="card-meta-item muted">
+              <i data-lucide="map-pin" style="width:14px;height:14px;"></i>
+              {{ job.location }}
+            </span>
+          </div>
+
+          <div class="card-info-row">
+            <span class="card-info-date">
+              <i data-lucide="calendar" style="width:13px;height:13px;"></i>
+              Posted: <strong style="color:var(--ink);">{{ job.get_posted_date_display }}</strong>
+            </span>
+            <span class="card-info-exp">
+              <i data-lucide="briefcase" style="width:12px;height:12px;"></i>
+              {{ job.get_experience_display }}
+            </span>
+          </div>
+
+          {% if job.contact_phone %}
+          <div class="card-hr-contact">
+            <i data-lucide="phone-call" style="width:12px;height:12px;"></i>
+            HR Contact: <strong style="color:#047857;">{{ job.contact_phone }}</strong>
+          </div>
+          {% endif %}
+
+          <p class="card-desc">{{ job.description|default:"Detailed requirements and eligibility on the job detail page."|truncatewords:20 }}</p>
+
+          <div class="card-skills">
+            {% for skill in job.get_skills_list|slice:":4" %}
+              <span class="skill-chip">{{ skill }}</span>
+            {% empty %}
+              <span class="skill-chip">Software Engineering</span>
+            {% endfor %}
+          </div>
+
+          <!-- Footer -->
+          <div class="card-footer">
+            <div class="card-timer" data-timer="{{ job.id }}" data-seconds="{{ job.get_time_left_seconds }}">
+              <i data-lucide="clock" style="width:12px;height:12px;"></i>
+              <span>Auto-Expires in 7 Days</span>
+            </div>
+
+            <div class="card-actions">
+              {% if job.apply_url %}
+              <a href="{{ job.apply_url }}" target="_blank" rel="noopener"
+                 class="btn-apply"
+                 onclick="event.stopPropagation();">
+                <i data-lucide="external-link" style="width:13px;height:13px;"></i>
+                Apply Now ↗
+              </a>
+              <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+                 class="btn-detail"
+                 onclick="event.stopPropagation();">
+                <i data-lucide="file-text" style="width:13px;height:13px;"></i>
+                Detail Page
+              </a>
+              {% else %}
+              <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+                 class="btn-apply btn-full"
+                 onclick="event.stopPropagation();">
+                <i data-lucide="arrow-right" style="width:13px;height:13px;"></i>
+                View Requirement Page ↗
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
       </div>
+
       {% empty %}
       {% for i in "123456" %}
-      <div class="vp-product-card vp-shimmer-card">
-        <div class="vp-card-header" style="margin-bottom: 16px;">
-          <div class="shimmer-placeholder" style="width: 100px; height: 22px; border-radius: 9999px;"></div>
-          <div class="shimmer-placeholder" style="width: 75px; height: 22px; border-radius: 9999px;"></div>
+      <div class="job-card vp-shimmer-card" style="pointer-events:none;">
+        <div class="card-top" style="margin-bottom:16px;">
+          <span class="shimmer-block" style="width:32px;height:32px;border-radius:9px;"></span>
+          <span class="shimmer-block" style="width:110px;height:22px;border-radius:9999px;"></span>
+          <span class="shimmer-block" style="width:70px;height:20px;border-radius:9999px;margin-left:auto;"></span>
         </div>
-        <div class="vp-card-content">
-          <div class="shimmer-placeholder" style="width: 85%; height: 20px; margin-bottom: 12px; border-radius: 6px;"></div>
-          <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-            <div class="shimmer-placeholder" style="width: 90px; height: 16px; border-radius: 4px;"></div>
-            <div class="shimmer-placeholder" style="width: 70px; height: 16px; border-radius: 4px;"></div>
-          </div>
-          <div class="shimmer-placeholder" style="width: 110px; height: 14px; margin-bottom: 12px; border-radius: 4px;"></div>
-          <div class="shimmer-placeholder" style="width: 100%; height: 13px; margin-bottom: 6px; border-radius: 4px;"></div>
-          <div class="shimmer-placeholder" style="width: 70%; height: 13px; margin-bottom: 16px; border-radius: 4px;"></div>
-          <div class="skills-wrapper" style="display: flex; gap: 6px; margin-bottom: 18px;">
-            <div class="shimmer-placeholder" style="width: 55px; height: 22px; border-radius: 6px;"></div>
-            <div class="shimmer-placeholder" style="width: 65px; height: 22px; border-radius: 6px;"></div>
-            <div class="shimmer-placeholder" style="width: 50px; height: 22px; border-radius: 6px;"></div>
-          </div>
-          <div class="shimmer-placeholder" style="width: 140px; height: 18px; margin-bottom: 16px; border-radius: 6px;"></div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;">
-            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
-            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
-          </div>
+        <span class="shimmer-block" style="width:88%;height:20px;border-radius:6px;margin-bottom:10px;"></span>
+        <span class="shimmer-block" style="width:65%;height:18px;border-radius:6px;margin-bottom:12px;"></span>
+        <span class="shimmer-block" style="width:100%;height:13px;border-radius:4px;margin-bottom:6px;"></span>
+        <span class="shimmer-block" style="width:70%;height:13px;border-radius:4px;margin-bottom:14px;"></span>
+        <div style="display:flex;gap:6px;margin-bottom:16px;">
+          <span class="shimmer-block" style="width:56px;height:22px;border-radius:6px;"></span>
+          <span class="shimmer-block" style="width:68px;height:22px;border-radius:6px;"></span>
+          <span class="shimmer-block" style="width:50px;height:22px;border-radius:6px;"></span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;">
+          <span class="shimmer-block" style="height:40px;border-radius:10px;"></span>
+          <span class="shimmer-block" style="height:40px;border-radius:10px;"></span>
         </div>
       </div>
       {% endfor %}
       {% endfor %}
     </div>
 
-    <!-- Clean Pagination Bar -->
-    <div id="paginationContainer" style="margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
-      <!-- Dynamically populated via JS -->
-    </div>
+    <!-- Pagination -->
+    <div id="paginationContainer" style="margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:14px;"></div>
   </main>
 
-
-
-  <!-- High-RPM Multiplex Discovery Ad Grid -->
+  <!-- AdSense Multiplex -->
   {% include 'components/adsense_unit.html' with ad_type='multiplex' margin_y='40px' %}
 
 </div>
 
-<!-- Job Detail Drawer -->
+<!-- ═══════════════════════════════════════
+     JOB DETAIL MODAL (UPGRADED)
+══════════════════════════════════════════ -->
 <div id="detailModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-header">
-      <div>
-        <span id="detailCompany" class="company-badge">Company</span>
-        <span id="detailJobType" class="type-badge">Type</span>
+  <div class="modal-content" style="border-radius:20px;overflow:hidden;">
+    <div class="modal-header" style="padding:20px 24px;border-bottom:1px solid var(--subtle-border);display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fafbfc;">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span id="detailCompany" class="co-name-badge">Company</span>
+        <span id="detailJobType" class="job-type-badge default">Type</span>
       </div>
-      <button id="btnCloseDetail" class="close-btn">✕</button>
+      <button id="btnCloseDetail" class="vp-drawer-close" style="flex-shrink:0;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
     </div>
 
-    <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
-    
-    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap; align-items: center;">
-      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> Salary / Stipend: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
-      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> Location: <span id="detailLocation">Remote</span></span>
-      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="16" height="16" alt="Date"> Posted: <span id="detailPostedDate">Today</span></span>
-    </div>
+    <div style="padding:24px;overflow-y:auto;max-height:calc(90vh - 80px);">
+      <h2 id="detailTitle" style="font-family:var(--font-serif);font-size:20px;font-weight:800;color:var(--ink);margin:0 0 16px;letter-spacing:-0.02em;line-height:1.3;">Job Title</h2>
 
-    <div style="margin-bottom: 16px;">
-      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Required Skills</div>
-      <div id="detailSkills" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
-    </div>
+      <div style="display:flex;gap:14px;margin-bottom:18px;font-size:13.5px;font-weight:600;color:var(--muted);flex-wrap:wrap;align-items:center;">
+        <span style="display:inline-flex;align-items:center;gap:5px;">
+          <i data-lucide="badge-dollar-sign" style="width:15px;height:15px;"></i>
+          Salary: <strong id="detailSalary" style="color:var(--blue-primary);"></strong>
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:5px;">
+          <i data-lucide="map-pin" style="width:15px;height:15px;"></i>
+          <span id="detailLocation"></span>
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:5px;">
+          <i data-lucide="calendar" style="width:15px;height:15px;"></i>
+          <span id="detailPostedDate"></span>
+        </span>
+      </div>
 
-    <div style="margin-bottom: 16px;">
-      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Eligibility Criteria</div>
-      <p id="detailEligibility" style="color: var(--ink); font-size: 14px; margin: 0;"></p>
-    </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:0.7px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Required Skills</div>
+        <div id="detailSkills" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+      </div>
 
-    <div style="margin-bottom: 24px;">
-      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Job Description &amp; Responsibilities</div>
-      <p id="detailDescription" style="color: #475569; line-height: 1.6; white-space: pre-line; font-size: 14px; margin: 0;"></p>
-    </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:0.7px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Eligibility Criteria</div>
+        <p id="detailEligibility" style="color:var(--ink);font-size:14px;margin:0;line-height:1.6;"></p>
+      </div>
 
-    <div style="text-align: center; background: var(--blue-light); padding: 22px; border-radius: 16px; border: 1px solid var(--blue-border);">
-      <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px;">Official Application Link</h4>
-      <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Click below to open the official application portal provided by recruiter:</p>
-      <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="button button-dark" style="width: 100%; justify-content: center; font-size: 15px; padding: 13px;">
-        Apply via Official Application Link ↗
-      </a>
+      <div style="margin-bottom:24px;">
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:0.7px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Job Description &amp; Responsibilities</div>
+        <p id="detailDescription" style="color:#475569;line-height:1.65;white-space:pre-line;font-size:14px;margin:0;"></p>
+      </div>
+
+      <div style="background:var(--blue-light);padding:22px;border-radius:16px;border:1px solid var(--blue-border);text-align:center;">
+        <h4 style="font-size:16px;font-weight:700;margin:0 0 6px;color:var(--ink);">Official Application Link</h4>
+        <p style="font-size:13px;color:var(--muted);margin:0 0 16px;">Click below to open the official application portal provided by recruiter:</p>
+        <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="btn-apply" style="width:100%;justify-content:center;font-size:15px;padding:13px;border-radius:12px;">
+          Apply via Official Link ↗
+        </a>
+      </div>
     </div>
 
   </div>

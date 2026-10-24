@@ -1,16 +1,23 @@
 import Link from 'next/link';
-import { useState } from 'react';
 import { getFeaturedPosts, getJavaScriptChapters } from '@/lib/api';
 import { Sparkles, Code2, BookOpen, Terminal, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
-import ArrowRightIcon from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  let featuredPosts: any[] = [];
+  let jsChapters: any[] = [];
 
-  const [featuredPosts, jsChapters] = await Promise.all([
-    getFeaturedPosts(3),
-    getJavaScriptChapters(),
-  ]);
+  try {
+    const results = await Promise.all([
+      getFeaturedPosts(3).catch(() => []),
+      getJavaScriptChapters().catch(() => []),
+    ]);
+    featuredPosts = results[0] || [];
+    jsChapters = results[1] || [];
+  } catch (err) {
+    console.error('Failed to fetch initial home data:', err);
+  }
 
   return (
     <div className="space-y-20 pb-20">
