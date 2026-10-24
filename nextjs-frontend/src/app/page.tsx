@@ -1,8 +1,12 @@
 import Link from 'next/link';
+import { useState } from 'react';
 import { getFeaturedPosts, getJavaScriptChapters } from '@/lib/api';
 import { Sparkles, Code2, BookOpen, Terminal, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
+import ArrowRightIcon from 'lucide-react';
 
 export default async function HomePage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const [featuredPosts, jsChapters] = await Promise.all([
     getFeaturedPosts(3),
     getJavaScriptChapters(),
@@ -13,7 +17,7 @@ export default async function HomePage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-16 px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-500/20 via-transparent to-transparent pointer-events-none" />
-        
+
         <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
           <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 text-sky-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" /> Next.js 15 + Django Ninja OpenAPI Stack
@@ -33,13 +37,13 @@ export default async function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Link
               href="/learn/javascript"
-              className="bg-sky-500 hover:bg-sky-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-sky-500/25 flex items-center gap-2 text-sm transition-all"
+              className="bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 flex items-center gap-2 text-sm transition-all duration-300"
             >
               <Zap className="w-4 h-4" /> Start JS Masterclass
             </Link>
             <Link
               href="/blog"
-              className="bg-[#0d1527] hover:bg-[#152442] border border-slate-800 text-slate-200 font-bold px-6 py-3 rounded-xl text-sm transition-all flex items-center gap-2"
+              className="bg-[#0d1527] hover:bg-[#141c2e] border border-slate-800/60 text-slate-200 font-bold px-6 py-3 rounded-xl text-sm transition-all flex items-center gap-2"
             >
               <BookOpen className="w-4 h-4" /> Read Tech Blog
             </Link>
