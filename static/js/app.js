@@ -15,6 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const isTodayOnly = urlParams.get('today') === 'true' || urlParams.get('today') === '1';
   const isYesterdayOnly = urlParams.get('yesterday') === 'true' || urlParams.get('yesterday') === '1';
   const isPreviousOnly = urlParams.get('previous') === 'true' || urlParams.get('previous') === '1';
+  const expParam = (urlParams.get('experience') || urlParams.get('exp') || '').toLowerCase().trim();
+  if (expParam in ['fresher', 'freshers', '0-1']) {
+    currentCategory = 'freshers';
+  } else if (expParam in ['experienced', 'experience', '1+', 'lateral']) {
+    currentCategory = 'experienced';
+  }
 
   const state = {
     searchQuery: '',
@@ -299,9 +305,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       renderShimmerSkeletons(state.pageSize || 6);
 
+      const expFilterVal = state.category === 'freshers' ? 'fresher' : (state.category === 'experienced' ? 'experienced' : '');
       const params = new URLSearchParams({
         q: state.searchQuery,
         category: state.category || 'all',
+        experience: expFilterVal,
         job_type: state.jobType,
         today: state.isTodayOnly ? 'true' : '',
         yesterday: state.isYesterdayOnly ? 'true' : '',
@@ -629,6 +637,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setupHomePageListeners() {
     const btnFilterToday = document.getElementById('btnFilterToday');
+
+    if (state.category && state.category !== 'all') {
+      const activeTab = document.querySelector(`.vp-tabs .vp-tab[data-category="${state.category}"]`);
+      if (activeTab) {
+        document.querySelectorAll('.vp-tabs .vp-tab').forEach(t => t.classList.remove('active'));
+        activeTab.classList.add('active');
+      }
+    }
 
     if (btnFilterToday) {
       btnFilterToday.addEventListener('click', () => {

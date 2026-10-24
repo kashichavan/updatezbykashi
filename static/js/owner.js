@@ -264,6 +264,29 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    const crmExperienceFilter = document.getElementById('crmExperienceFilter');
+    if (crmExperienceFilter) {
+      crmExperienceFilter.addEventListener('change', () => {
+        const val = crmExperienceFilter.value;
+        document.querySelectorAll('.owner-exp-pill').forEach(p => {
+          if (p.dataset.exp === val) p.classList.add('active');
+          else p.classList.remove('active');
+        });
+        loadJobsList(1);
+      });
+    }
+
+    document.querySelectorAll('.owner-exp-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('.owner-exp-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const expVal = pill.dataset.exp || 'ALL';
+        const expSelect = document.getElementById('crmExperienceFilter');
+        if (expSelect) expSelect.value = expVal;
+        loadJobsList(1);
+      });
+    });
+
     const crmSourceFilter = document.getElementById('crmSourceFilter');
     if (crmSourceFilter) {
       crmSourceFilter.addEventListener('change', () => {
@@ -324,23 +347,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAutoOrganizeGroups = document.getElementById('btnAutoOrganizeGroups');
     if (btnAutoOrganizeGroups) {
       btnAutoOrganizeGroups.addEventListener('click', async () => {
-        btnAutoOrganizeGroups.textContent = '⚡ Organizing & Cleaning...';
+        btnAutoOrganizeGroups.textContent = '⚡ Segregating & Cleaning...';
         btnAutoOrganizeGroups.disabled = true;
         try {
           const res = await authFetch('/api/owner/groups/auto-organize/', { method: 'POST' });
           const data = await res.json();
           if (res.ok) {
-            showToast(data.message || 'Auto-organized requirements successfully!', 'success');
-            logActivity('Auto-organized groups', data.message);
+            showToast(data.message || 'Auto-segregated requirements successfully!', 'success');
+            logActivity('Auto-segregated groups', data.message);
             loadGroupsList();
             loadKpiStats();
           } else {
-            showToast(data.error || 'Failed to auto-organize groups.', 'error');
+            showToast(data.error || 'Failed to auto-segregate groups.', 'error');
           }
         } catch (err) {
-          showToast('Network error while auto-organizing groups.', 'error');
+          showToast('Network error while auto-segregating groups.', 'error');
         } finally {
-          btnAutoOrganizeGroups.textContent = '⚡ Auto-Move & Clean Empty Groups';
+          btnAutoOrganizeGroups.textContent = '⚡ Auto-Segregate Freshers & Experience Groups';
           btnAutoOrganizeGroups.disabled = false;
         }
       });
@@ -1010,8 +1033,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedCat = filterCategorySelect ? filterCategorySelect.value : 'ALL';
     const sourceSelect = document.getElementById('crmSourceFilter');
     const recencySelect = document.getElementById('crmRecencyFilter');
+    const expSelect = document.getElementById('crmExperienceFilter');
     const sourceVal = sourceSelect ? sourceSelect.value : 'ALL';
     const recencyVal = recencySelect ? recencySelect.value : 'ALL';
+    const expVal = expSelect ? expSelect.value : 'ALL';
 
     let url = `/api/jobs/?sort=newest&page=${page}&page_size=${pageSize}`;
     if (statusVal && statusVal !== 'ALL') {
@@ -1022,6 +1047,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (selectedCat && selectedCat !== 'ALL') {
       url += `&category=${encodeURIComponent(selectedCat)}`;
+    }
+    if (expVal && expVal !== 'ALL') {
+      url += `&experience=${encodeURIComponent(expVal)}`;
     }
     if (sourceVal && sourceVal !== 'ALL') {
       url += `&source=${encodeURIComponent(sourceVal)}`;
@@ -1115,12 +1143,17 @@ document.addEventListener('DOMContentLoaded', () => {
           const skillsList = Array.isArray(j.skills_list) && j.skills_list.length > 0 
             ? j.skills_list 
             : (j.skills_required ? j.skills_required.split(',').map(s => s.trim()).filter(Boolean) : []);
+          const isFresher = (j.experience_tier === 'FRESHER' || j.experience_tier === 'INTERNSHIP' || j.job_type === 'INTERNSHIP' || (j.title && /fresher|intern|trainee|0-1/i.test(j.title))) && j.experience_tier !== 'SENIOR_LEVEL' && j.experience_tier !== 'MID_LEVEL';
+          const expBadge = isFresher 
+            ? `<span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 10.5px; font-weight: 700;">🎓 Fresher (0-1 Y)</span>`
+            : `<span class="status-pill" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25); font-size: 10.5px; font-weight: 700;">💼 Experienced</span>`;
 
           return `
           <div class="vp-product-card" data-id="${j.id}">
             <div class="vp-card-header">
               <span class="company-badge">${escapeHtml(j.company_name)}</span>
-              <div style="display: flex; gap: 6px; align-items: center;">
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                ${expBadge}
                 <span class="type-badge">${escapeHtml(j.job_type_display || j.job_type || 'Full-Time')}</span>
                 <span class="status-pill ${isExpired ? 'status-expired' : 'status-active'}" style="font-size: 11px;">
                   ${isExpired ? '🔴 Expired' : '🟢 ' + hoursLeft + 'h left'}
@@ -1594,10 +1627,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       groups.forEach(g => {
         const jobsCount = g.jobs ? g.jobs.length : (g.total_jobs_count || 0);
+        const tierBadge = g.tier_type === 'FRESHER' 
+          ? '<span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 10px; font-weight: 800; padding: 1px 6px;">🎓 FRESHER</span>'
+          : (g.tier_type === 'EXPERIENCED' 
+              ? '<span class="status-pill" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25); font-size: 10px; font-weight: 800; padding: 1px 6px;">💼 EXPERIENCED</span>'
+              : '');
         html += `
           <tr data-group-id="${g.id}">
             <td>
-              <div style="font-weight: 800; color: var(--color-text-primary); font-size: 14px;">${escapeHtml(g.name)}</div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="font-weight: 800; color: var(--color-text-primary); font-size: 14px;">${escapeHtml(g.name)}</span>
+                ${tierBadge}
+              </div>
               <div style="font-size: 11px; color: var(--blue-primary); font-family: ui-monospace, monospace; margin-top: 2px;">/group/${escapeHtml(g.slug)}/</div>
             </td>
             <td>

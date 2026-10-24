@@ -31,7 +31,7 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <Link
             href="/learn/javascript"
-            className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-lg shadow-sky-500/20 transition-all"
+            className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-lg transition-all hover:shadow-lg"
           >
             Start Learning &rarr;
           </Link>

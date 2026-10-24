@@ -228,7 +228,27 @@ def index_view(request):
     recent_posts = []
 
     try:
-        initial_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-posted_date', '-created_at')[:18])
+        jobs_qs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category')
+        exp_param = (request.GET.get('experience') or request.GET.get('exp') or '').lower().strip()
+        cat_param = (request.GET.get('category') or '').lower().strip()
+        if exp_param in ['fresher', 'freshers', '0-1'] or cat_param in ['freshers', 'fresher']:
+            jobs_qs = jobs_qs.filter(
+                Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
+                Q(job_type='INTERNSHIP') |
+                Q(title__icontains='fresher') |
+                Q(title__icontains='intern') |
+                Q(title__icontains='trainee')
+            ).exclude(experience_tier__in=['SENIOR_LEVEL', 'MID_LEVEL'])
+        elif exp_param in ['experienced', 'experience', '1+', 'lateral'] or cat_param in ['experienced', 'experience', 'lateral']:
+            jobs_qs = jobs_qs.filter(
+                Q(experience_tier__in=['EARLY_CAREER', 'MID_LEVEL', 'SENIOR_LEVEL']) |
+                Q(title__icontains='senior') |
+                Q(title__icontains='lead') |
+                Q(title__icontains='experienced') |
+                Q(title__icontains='architect')
+            ).exclude(job_type='INTERNSHIP').exclude(experience_tier__in=['INTERNSHIP', 'FRESHER'])
+
+        initial_jobs = list(jobs_qs.order_by('-posted_date', '-created_at')[:18])
     except Exception as e:
         logger.warning(f"Error fetching initial_jobs: {e}")
 
@@ -666,7 +686,10 @@ def owner_view(request):
     search_query = ''
     selected_category = 'ALL'
     selected_status = 'ALL'
+    selected_experience = 'ALL'
     page_size = 10
+    fresher_jobs_count = 0
+    experienced_jobs_count = 0
 
     if is_admin:
         from django.core.paginator import Paginator
@@ -680,6 +703,7 @@ def owner_view(request):
         search_query = request.GET.get('q', '').strip()
         selected_category = request.GET.get('category', 'ALL').strip()
         selected_status = request.GET.get('status', 'ALL').strip()
+        selected_experience = request.GET.get('experience', 'ALL').strip()
 
         jobs_qs = JobPosting.objects.all().select_related('category').order_by('-created_at')
         if search_query:
@@ -695,9 +719,45 @@ def owner_view(request):
         if selected_status and selected_status != 'ALL':
             jobs_qs = jobs_qs.filter(status=selected_status)
 
+        if selected_experience and selected_experience != 'ALL':
+            exp_upper = selected_experience.upper()
+            if exp_upper in ['FRESHER', 'FRESHERS', '0-1']:
+                jobs_qs = jobs_qs.filter(
+                    Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
+                    Q(job_type='INTERNSHIP') |
+                    Q(title__icontains='fresher') |
+                    Q(title__icontains='intern') |
+                    Q(title__icontains='trainee')
+                ).exclude(experience_tier__in=['SENIOR_LEVEL', 'MID_LEVEL'])
+            elif exp_upper in ['EXPERIENCED', 'EXPERIENCE', '1+']:
+                jobs_qs = jobs_qs.filter(
+                    Q(experience_tier__in=['EARLY_CAREER', 'MID_LEVEL', 'SENIOR_LEVEL']) |
+                    Q(title__icontains='senior') |
+                    Q(title__icontains='lead') |
+                    Q(title__icontains='experienced') |
+                    Q(title__icontains='architect')
+                ).exclude(job_type='INTERNSHIP').exclude(experience_tier__in=['INTERNSHIP', 'FRESHER'])
+            elif exp_upper == 'INTERNSHIP':
+                jobs_qs = jobs_qs.filter(Q(job_type='INTERNSHIP') | Q(experience_tier='INTERNSHIP'))
+            else:
+                jobs_qs = jobs_qs.filter(experience_tier__iexact=selected_experience)
+
         total_jobs_count = JobPosting.objects.count()
         active_jobs_count = JobPosting.objects.filter(status='ACTIVE').count()
         expired_jobs_count = JobPosting.objects.filter(status='EXPIRED').count()
+        fresher_jobs_count = JobPosting.objects.filter(
+            Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
+            Q(job_type='INTERNSHIP') |
+            Q(title__icontains='fresher') |
+            Q(title__icontains='intern') |
+            Q(title__icontains='trainee')
+        ).exclude(experience_tier__in=['SENIOR_LEVEL', 'MID_LEVEL']).count()
+        experienced_jobs_count = JobPosting.objects.filter(
+            Q(experience_tier__in=['EARLY_CAREER', 'MID_LEVEL', 'SENIOR_LEVEL']) |
+            Q(title__icontains='senior') |
+            Q(title__icontains='lead') |
+            Q(title__icontains='experienced')
+        ).exclude(job_type='INTERNSHIP').exclude(experience_tier__in=['INTERNSHIP', 'FRESHER']).count()
         total_groups_count = JobGroup.objects.count()
         categories = list(Category.objects.all())
 
@@ -727,10 +787,13 @@ def owner_view(request):
         'search_query': search_query,
         'selected_category': selected_category,
         'selected_status': selected_status,
+        'selected_experience': selected_experience,
         'page_size': page_size,
         'total_jobs_count': total_jobs_count,
         'active_jobs_count': active_jobs_count,
         'expired_jobs_count': expired_jobs_count,
+        'fresher_jobs_count': fresher_jobs_count,
+        'experienced_jobs_count': experienced_jobs_count,
         'total_groups_count': total_groups_count,
         'categories': categories,
     })
@@ -1423,13 +1486,14 @@ def api_jobs(request):
             city_filter = request.GET.get('city', '').strip() or request.GET.get('location', '').strip()
             source_filter = request.GET.get('source', '').strip()
             time_window = request.GET.get('time_window', '').strip()
+            exp_filter = request.GET.get('experience', '').strip() or request.GET.get('exp', '').strip()
 
             # Cache key including all filter dimensions
-            raw_key = f"jobs_feed_{query}_{category_slug}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}_{domain_filter}_{city_filter}_{source_filter}_{time_window}"
+            raw_key = f"jobs_feed_{query}_{category_slug}_{exp_filter}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}_{domain_filter}_{city_filter}_{source_filter}_{time_window}"
             cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
             
             # Don't use stale cache if searching with query or specific filters
-            if not query and not city_filter and not domain_filter and not time_window:
+            if not query and not city_filter and not domain_filter and not time_window and not exp_filter:
                 cached_response = cache.get(cache_key)
                 if cached_response:
                     return JsonResponse(cached_response)
@@ -1484,8 +1548,17 @@ def api_jobs(request):
                         Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
                         Q(job_type='INTERNSHIP') |
                         Q(title__icontains='fresher') |
-                        Q(title__icontains='intern')
+                        Q(title__icontains='intern') |
+                        Q(title__icontains='trainee')
                     ).exclude(experience_tier__in=['SENIOR_LEVEL', 'MID_LEVEL'])
+                elif cat_lower in ['experienced', 'experience', 'lateral']:
+                    qs = qs.filter(
+                        Q(experience_tier__in=['EARLY_CAREER', 'MID_LEVEL', 'SENIOR_LEVEL']) |
+                        Q(title__icontains='senior') |
+                        Q(title__icontains='lead') |
+                        Q(title__icontains='experienced') |
+                        Q(title__icontains='architect')
+                    ).exclude(job_type='INTERNSHIP').exclude(experience_tier__in=['INTERNSHIP', 'FRESHER'])
                 elif cat_lower == 'qa-testing':
                     qs = qs.filter(
                         Q(category__slug='qa-testing') |
@@ -1525,17 +1598,28 @@ def api_jobs(request):
                 else:
                     qs = qs.filter(category__slug=category_slug)
 
-            # Experience tier filter (e.g. ?experience=FRESHER)
+            # Experience tier filter (e.g. ?experience=FRESHER, ?experience=EXPERIENCED)
             exp_filter = request.GET.get('experience', '').strip() or request.GET.get('exp', '').strip()
-            if exp_filter:
+            if exp_filter and exp_filter != 'ALL':
                 exp_lower = exp_filter.lower()
-                if exp_lower in ['fresher', '0-1']:
+                if exp_lower in ['fresher', 'freshers', '0-1']:
                     qs = qs.filter(
                         Q(experience_tier__in=['FRESHER', 'INTERNSHIP']) |
                         Q(job_type='INTERNSHIP') |
                         Q(title__icontains='fresher') |
-                        Q(title__icontains='intern')
-                    )
+                        Q(title__icontains='intern') |
+                        Q(title__icontains='trainee')
+                    ).exclude(experience_tier__in=['SENIOR_LEVEL', 'MID_LEVEL'])
+                elif exp_lower in ['experienced', 'experience', '1+', 'lateral']:
+                    qs = qs.filter(
+                        Q(experience_tier__in=['EARLY_CAREER', 'MID_LEVEL', 'SENIOR_LEVEL']) |
+                        Q(title__icontains='senior') |
+                        Q(title__icontains='lead') |
+                        Q(title__icontains='experienced') |
+                        Q(title__icontains='architect')
+                    ).exclude(job_type='INTERNSHIP').exclude(experience_tier__in=['INTERNSHIP', 'FRESHER'])
+                elif exp_lower == 'internship':
+                    qs = qs.filter(Q(job_type='INTERNSHIP') | Q(experience_tier='INTERNSHIP'))
                 else:
                     qs = qs.filter(experience_tier__iexact=exp_filter)
 
@@ -2011,6 +2095,10 @@ def api_owner_groups(request):
             qs = qs.filter(annotated_total_count=0)
         elif filter_type == 'expired':
             qs = qs.filter(deadline__lte=now)
+        elif filter_type in ['freshers', 'fresher']:
+            qs = qs.filter(Q(name__icontains='fresher') | Q(name__icontains='campus') | Q(banner_tag__icontains='fresher') | Q(description__icontains='fresher') | Q(description__icontains='entry-level'))
+        elif filter_type in ['experienced', 'experience']:
+            qs = qs.filter(Q(name__icontains='experience') | Q(name__icontains='lateral') | Q(banner_tag__icontains='experience') | Q(description__icontains='experience'))
 
         qs = qs.prefetch_related(
             Prefetch('jobs', queryset=JobPosting.objects.only(
@@ -2061,12 +2149,15 @@ def api_owner_groups(request):
                 }
                 for j in all_jobs_list[:15]
             ]
+            group_combined = (g.name + ' ' + (g.banner_tag or '') + ' ' + (g.description or '')).lower()
+            tier_type = 'FRESHER' if any(w in group_combined for w in ['fresher', 'campus', '0-1', 'intern']) else ('EXPERIENCED' if any(w in group_combined for w in ['experience', 'lateral', 'senior', '1+']) else 'GENERAL')
             res.append({
                 'id': g.id,
                 'name': g.name,
                 'slug': g.slug,
                 'banner_tag': g.banner_tag,
                 'description': g.description,
+                'tier_type': tier_type,
                 'total_jobs_count': total_count_g,
                 'active_jobs_count': active_count_g,
                 'jobs': group_jobs,
@@ -2293,7 +2384,9 @@ def api_owner_groups_auto_organize(request):
 
     now_local = timezone.localtime(timezone.now())
 
-    active_jobs = list(JobPosting.objects.filter(status='ACTIVE').select_related('category').order_by('-created_at'))
+    active_jobs = list(JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category').order_by('-created_at'))
+    if not active_jobs:
+        active_jobs = list(JobPosting.objects.filter(status='ACTIVE').select_related('category').order_by('-created_at'))
     
     if not active_jobs:
         cache.delete('api_owner_groups_json')
@@ -2302,32 +2395,73 @@ def api_owner_groups_auto_organize(request):
             'message': 'No active requirements found to organize.'
         })
 
-    master_name = now_local.strftime("🔥 Master Tech Hiring Drive — %d %b %Y")
-    master_slug = slugify(f"master-drive-{now_local.strftime('%Y%m%d')}")
-    master_group, created = JobGroup.objects.get_or_create(
-        slug=master_slug,
+    fresher_jobs = []
+    experienced_jobs = []
+
+    for job in active_jobs:
+        title_lower = (job.title or '').lower()
+        is_fresher = (
+            job.experience_tier in ['FRESHER', 'INTERNSHIP'] or
+            job.job_type == 'INTERNSHIP' or
+            any(w in title_lower for w in ['fresher', 'intern', 'trainee', 'graduate', 'entry level', 'entry-level', '0-1'])
+        ) and job.experience_tier not in ['SENIOR_LEVEL', 'MID_LEVEL']
+
+        if is_fresher:
+            fresher_jobs.append(job)
+        else:
+            experienced_jobs.append(job)
+
+    # 1. Dedicated Freshers & Off-Campus Hiring Drive
+    fresher_drive_name = now_local.strftime("🎓 Freshers & Off-Campus Hiring Drive — %d %b %Y")
+    fresher_slug = slugify(f"freshers-drive-{now_local.strftime('%Y%m%d')}")
+    fresher_group, _ = JobGroup.objects.get_or_create(
+        slug=fresher_slug,
         defaults={
-            'name': master_name,
-            'banner_tag': '🔥 MASTER TECH & OFF-CAMPUS HIRING DRIVE',
-            'description': 'Curated verified active requirements for tech roles, freshers, and experienced engineering talent.',
+            'name': fresher_drive_name,
+            'banner_tag': '🎓 FRESHER & OFF-CAMPUS HIRING DRIVE (0-1 YRS)',
+            'description': 'Curated verified entry-level software engineering, developer internships, and campus opportunities for 2024, 2025, and 2026 batches.',
             'posted_date': now_local.date(),
             'deadline': timezone.now() + timedelta(days=3650),
             'is_active': True,
         }
     )
+    if fresher_jobs:
+        fresher_group.jobs.add(*fresher_jobs)
 
-    master_group.jobs.add(*active_jobs)
-    moved_count = len(active_jobs)
+    # 2. Dedicated Experienced Engineers & Lateral Hiring Drive
+    exp_drive_name = now_local.strftime("💼 Experienced Engineers & Lateral Hiring Drive — %d %b %Y")
+    exp_slug = slugify(f"experienced-drive-{now_local.strftime('%Y%m%d')}")
+    exp_group, _ = JobGroup.objects.get_or_create(
+        slug=exp_slug,
+        defaults={
+            'name': exp_drive_name,
+            'banner_tag': '💼 EXPERIENCED & LATERAL HIRING DRIVE (1-5+ YRS)',
+            'description': 'Curated career advancement roles for experienced developers, tech leads, backend, frontend, full-stack, DevOps, and cloud professionals.',
+            'posted_date': now_local.date(),
+            'deadline': timezone.now() + timedelta(days=3650),
+            'is_active': True,
+        }
+    )
+    if experienced_jobs:
+        exp_group.jobs.add(*experienced_jobs)
+
+    # 3. Clean up any empty groups (0 jobs)
+    from django.db.models import Count
+    empty_groups_qs = JobGroup.objects.annotate(j_count=Count('jobs')).filter(j_count=0)
+    deleted_empty_count = empty_groups_qs.count()
+    empty_groups_qs.delete()
 
     cache.delete('api_owner_groups_json')
 
     return JsonResponse({
         'success': True,
-        'message': f"Auto-moved {moved_count} requirement(s) into '{master_group.name}'!",
-        'master_group_id': master_group.id,
-        'master_group_name': master_group.name,
-        'moved_count': moved_count,
-        'deleted_empty_groups': 0
+        'message': f"Auto-segregated {len(active_jobs)} requirements: {len(fresher_jobs)} in Freshers Drive and {len(experienced_jobs)} in Experienced Drive. Cleaned up {deleted_empty_count} empty groups.",
+        'total_active': len(active_jobs),
+        'fresher_count': len(fresher_jobs),
+        'experienced_count': len(experienced_jobs),
+        'deleted_empty_groups': deleted_empty_count,
+        'fresher_group_id': fresher_group.id,
+        'experienced_group_id': exp_group.id,
     })
 
 @csrf_exempt
