@@ -603,6 +603,14 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
     google_xray_query = f'site:linkedin.com/in "{company_clean}" (recruiter OR "talent acquisition")'
     google_recruiter_search_url = f"https://www.google.com/search?q={urllib.parse.quote(google_xray_query)}"
 
+    # Google OSINT email search (searches public recruiter email addresses & direct contacts)
+    google_email_query = f'"{company_clean}" ("recruiter email" OR "hr email" OR "talent acquisition" OR "contact:" OR "email:")'
+    google_recruiter_email_url = f"https://www.google.com/search?q={urllib.parse.quote(google_email_query)}"
+
+    # Heuristic company domain for corporate email patterns
+    domain_slug = re.sub(r'[^a-zA-Z0-9]+', '', company_clean).lower()
+    company_domain_guess = f"{domain_slug}.com"
+
     context = {
         'job': job,
         'skills_list': job.get_skills_list(),
@@ -615,6 +623,8 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
         'clean_company_name': company_clean,
         'linkedin_recruiter_search_url': linkedin_recruiter_search_url,
         'google_recruiter_search_url': google_recruiter_search_url,
+        'google_recruiter_email_url': google_recruiter_email_url,
+        'company_domain_guess': company_domain_guess,
     }
     return render(request, 'content/job_detail.html', context)
 
