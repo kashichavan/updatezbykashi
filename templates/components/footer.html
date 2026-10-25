@@ -1,106 +1,101 @@
 {% load static %}
-<!-- Premium Multi-Column Site Footer -->
-<footer class="site-footer">
-  <!-- Gradient top separator -->
-  <div class="footer-gradient-bar"></div>
-
+<!-- Modern Multi-Column Site Footer with Mandatory Compliance & AdSense Policies -->
+<footer style="border-top: 1px solid var(--subtle-border); background: #ffffff; padding: 50px 0 30px; margin-top: 60px;">
   <div class="wrap">
-
-    <div class="footer-grid">
-
-      <!-- Brand & Mission -->
-      <div class="footer-brand-col">
-        <a href="/" class="brand footer-brand" aria-label="Kashii Updatez">
-          <span class="brand-lightning">⚡</span>Kashii<span>Updatez</span>
-        </a>
-        <p class="footer-desc">
-          Free educational platform offering verified student job drives, campus recruitment alerts,
-          Python &amp; Django tutorials, and interactive visual coding tools — by Kashinath (Python Kashi).
+    
+    <div style="display: grid; grid-template-columns: 1.5fr 1fr 1.2fr 1fr; gap: 36px; margin-bottom: 40px;" class="footer-grid">
+      
+      <!-- Brand & Mission Column -->
+      <div>
+        <a href="/" class="brand" style="font-size: 22px;">Kashii<span>Updatez</span></a>
+        <p style="font-size: 13px; color: #64748b; margin: 10px 0 16px; line-height: 1.7;">
+          Free educational platform offering verified student job requirements, campus recruitment alerts, Python &amp; Django technical guides, and interactive visual code debugging tools by Kashinath (Kashii).
         </p>
-        <div class="footer-social-row">
-          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="footer-social-btn footer-yt" title="YouTube @pythonkashi" aria-label="YouTube">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: #fef2f2; border: 1px solid #fecaca;" title="YouTube">
+            <img src="{% static 'images/icon-youtube.png' %}" width="16" height="16" alt="YouTube">
           </a>
-          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" class="footer-social-btn footer-ig" title="Instagram @ikashii_07" aria-label="Instagram">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-            </svg>
-          </a>
-          <a href="https://github.com/kashichavan" target="_blank" rel="noopener" class="footer-social-btn footer-gh" title="GitHub" aria-label="GitHub">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-            </svg>
+          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: #fdf2f8; border: 1px solid #fbcfe8;" title="Instagram">
+            <img src="{% static 'images/icon-chat.png' %}" width="16" height="16" alt="Instagram">
           </a>
         </div>
       </div>
 
-      <!-- Quick Nav -->
+      <!-- Quick Navigation Column -->
       <div>
-        <div class="footer-col-title">Explore</div>
-        <ul class="footer-links-list">
-          <li><a href="/">Student Job Feed</a></li>
-          <li><a href="/?today=true">Today's Requirements</a></li>
-          <li><a href="/?experience=fresher">Freshers (0-1 Yr)</a></li>
-          <li><a href="/resume/">ATS 90+ Resume Studio</a></li>
-          <li><a href="/debugger/">Visual Code Debugger</a></li>
-          <li><a href="/youtube/">YouTube Tutorials</a></li>
-          <li><a href="/about/">About Founder</a></li>
-        </ul>
-      </div>
-
-      <!-- Legal -->
-      <div>
-        <div class="footer-col-title">Legal &amp; Policies</div>
-        <ul class="footer-links-list">
-          <li><a href="/privacy-policy/">Privacy Policy</a></li>
-          <li><a href="/terms/">Terms &amp; Conditions</a></li>
-          <li><a href="/disclaimer/">Website Disclaimer</a></li>
-          <li><a href="/contact/">Contact &amp; Support</a></li>
-          <li><a href="/sitemap.xml" target="_blank">XML Sitemap</a></li>
-        </ul>
-      </div>
-
-      <!-- Connect -->
-      <div>
-        <div class="footer-col-title">Connect</div>
-        <p class="footer-connect-text">
-          Created with ❤️ in India by <strong>Kashinath (Kashii)</strong>.
-        </p>
-        <div class="footer-trust-pills">
-          <span class="footer-trust-pill">✅ 100% Free</span>
-          <span class="footer-trust-pill">🔒 No Spam</span>
-          <span class="footer-trust-pill">📅 7-Day Fresh</span>
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--ink); margin-bottom: 14px;">
+          Explore
         </div>
-        <a href="/contact/" class="footer-contact-btn">
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+          <li><a href="/" style="color: #475569; text-decoration: none; font-weight: 500;">Student Job Feed</a></li>
+          <li><a href="/resume/" style="color: #475569; text-decoration: none; font-weight: 500;">ATS 90+ Resume Studio</a></li>
+          <li><a href="/debugger/" style="color: #475569; text-decoration: none; font-weight: 500;">Visual Code Debugger</a></li>
+          <li><a href="/youtube/" style="color: #475569; text-decoration: none; font-weight: 500;">YouTube Tutorials</a></li>
+          <li><a href="/about/" style="color: #475569; text-decoration: none; font-weight: 500;">About Founder</a></li>
+        </ul>
+      </div>
+
+      <!-- Legal & Trust Compliance Column -->
+      <div>
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--ink); margin-bottom: 14px;">
+          Legal &amp; Policies
+        </div>
+        <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; font-size: 14px;">
+          <li><a href="/privacy-policy/" style="color: #475569; text-decoration: none; font-weight: 500;">Privacy Policy</a></li>
+          <li><a href="/terms/" style="color: #475569; text-decoration: none; font-weight: 500;">Terms &amp; Conditions</a></li>
+          <li><a href="/disclaimer/" style="color: #475569; text-decoration: none; font-weight: 500;">Website Disclaimer</a></li>
+          <li><a href="/contact/" style="color: #475569; text-decoration: none; font-weight: 500;">Contact Us &amp; Support</a></li>
+          <li><a href="/sitemap.xml" target="_blank" style="color: #475569; text-decoration: none; font-weight: 500;">XML Sitemap</a></li>
+        </ul>
+      </div>
+
+      <!-- Creator & Contact Column -->
+      <div>
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--ink); margin-bottom: 14px;">
+          Connect
+        </div>
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 10px; line-height: 1.6;">
+          Created with ❤️ by <strong style="color: var(--ink);">Kashinath (Kashii)</strong>.
+        </p>
+        <a href="/contact/" style="display: inline-block; background: #eff6ff; color: var(--blue-primary); border: 1px solid var(--blue-border); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none;">
           ✉️ Send Feedback / Query
         </a>
       </div>
 
     </div>
 
-    <!-- Bottom Bar -->
-    <div class="footer-bottom">
-      <div class="footer-bottom-left">
-        &copy; 2026 <strong>Kashii Updatez</strong> &middot; All rights reserved &middot; Made with ❤️ in India
+    <!-- Bottom Copyright Line -->
+    <div style="border-top: 1px solid var(--subtle-border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #94a3b8;">
+      <div>
+        &copy; 2026 <strong>Kashii Updatez</strong> &middot; All rights reserved.
       </div>
-      <div class="footer-bottom-right">
-        <button type="button" onclick="if(window.replayKashiiEntry){window.replayKashiiEntry();}" class="footer-replay-btn">
+      <div>
+        <button type="button" onclick="if(window.replayKashiiEntry){window.replayKashiiEntry();}" style="background:none; border:none; color:var(--blue-primary); font-size:13px; font-weight:700; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:4px;">
           ✨ Replay 3D Intro
-        </button>
-        <span>&middot;</span>
-        <span>7-Day Fresh Job Policy</span>
-        <span>&middot;</span>
-        <span>Free Python Educational Ecosystem</span>
+        </button> &middot; 7-Day Fresh Job Policy &middot; Free Python Educational Ecosystem
       </div>
     </div>
 
   </div>
 </footer>
 
-<!-- Mobile Bottom Navigation Bar -->
-<nav class="mobile-bottom-nav" role="navigation" aria-label="Mobile navigation">
+<style>
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 28px !important;
+    }
+  }
+  @media (max-width: 560px) {
+    .footer-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
+
+
+<!-- Mobile Bottom Navigation Bar (Mobile First) -->
+<nav class="mobile-bottom-nav">
   <a href="/" class="mobile-nav-item {% if request.path == '/' %}active{% endif %}">
     <i data-lucide="briefcase" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
     <span>Feed</span>
@@ -108,10 +103,6 @@
   <a href="/about/" class="mobile-nav-item {% if request.path == '/about/' %}active{% endif %}">
     <i data-lucide="user" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
     <span>About</span>
-  </a>
-  <a href="/?today=true" class="mobile-nav-item mobile-nav-today {% if request.GET.today %}active{% endif %}">
-    <span class="mobile-nav-fire-icon">🔥</span>
-    <span>Today</span>
   </a>
   <a href="/youtube/" class="mobile-nav-item {% if request.path == '/youtube/' %}active{% endif %}">
     <svg class="mobile-nav-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="#dc2626">
@@ -125,14 +116,21 @@
   </a>
 </nav>
 
-<!-- Debugger Mobile Popup -->
+<!-- Debugger Desktop-Only Popup (mobile) -->
 <div id="debuggerMobilePopup" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; padding:24px;">
   <div style="background:linear-gradient(135deg,#0d1527,#1e293b); border:1px solid #334155; border-radius:20px; padding:32px 24px; max-width:360px; width:100%; text-align:center; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-    <button onclick="document.getElementById('debuggerMobilePopup').style.display='none';" style="position:absolute; top:14px; right:16px; background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer;">✕</button>
-    <div style="font-size:52px; margin-bottom:14px;">🖥️</div>
+    <button onclick="document.getElementById('debuggerMobilePopup').style.display='none';" style="position:absolute; top:14px; right:16px; background:none; border:none; color:#94a3b8; font-size:20px; cursor:pointer; line-height:1;">✕</button>
+    <div style="font-size:52px; margin-bottom:14px; animation:dbgFloat 2.5s ease-in-out infinite;">🖥️</div>
     <h2 style="font-size:18px; font-weight:800; color:#f8fafc; margin:0 0 8px;">Open on Desktop Browser</h2>
     <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 20px;">The <strong style="color:#38bdf8;">Visual Code Debugger IDE</strong> requires a desktop or laptop to work properly.</p>
-    <p style="color:#475569; font-size:11px; background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.15); border-radius:8px; padding:10px 14px; line-height:1.6; margin:0;">📋 Copy the URL <strong style="color:#38bdf8;">kashiiupdatez.online/debugger/</strong> and open it on your PC.</p>
+    <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🌐</div>Chrome</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🦊</div>Firefox</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🧭</div>Safari</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🔷</div>Edge</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(59,130,246,0.25); border-radius:10px; padding:10px 14px; color:#e2e8f0; font-size:11px; font-weight:700; text-align:center;"><div style="font-size:24px;">🎭</div>Brave</div>
+    </div>
+    <p style="color:#475569; font-size:11px; background:rgba(255,255,255,0.04); border:1px solid rgba(59,130,246,0.15); border-radius:8px; padding:10px 14px; line-height:1.6; margin:0;">📋 Copy the URL <strong style="color:#38bdf8;">kashiiupdatez.com/debugger/</strong> and open it on your PC in any browser above.</p>
   </div>
 </div>
 <style>

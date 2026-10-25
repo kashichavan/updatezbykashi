@@ -1,87 +1,86 @@
 {% load static %}
-<!-- Dynamic Global Navbar - Human-Crafted Premium Design -->
-<header class="site-header" id="siteHeader">
+<!-- Dynamic Global Navbar - All Screen Responsive -->
+<header class="site-header">
   <div class="wrap nav">
-
+    
     <!-- Brand & Drawer Trigger -->
-    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+    <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
       <button id="btnToggleDrawer" class="vp-sidebar-btn" title="Categories & Menu Drawer" aria-label="Open navigation menu">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10M4 18h16" />
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
         <span class="btn-drawer-text">Menu</span>
       </button>
 
-      <a href="/" class="brand" aria-label="Kashii Updatez Home">
-        <span class="brand-lightning">⚡</span>Kashii<span>Updatez</span>
+      <a href="/" class="brand">
+        Kashii<span>Updatez</span>
       </a>
-
-      <!-- Live jobs count pill -->
-      <span class="nav-live-badge" title="Jobs posted today">
-        <span class="nav-live-dot"></span>
-        <span class="nav-live-text">Live</span>
-      </span>
     </div>
 
     <!-- Desktop / Tablet Navigation Links -->
     <nav class="nav-links" aria-label="Primary Navigation">
       <a href="/?today=true" class="nav-pill-today {% if request.GET.today %}active{% endif %}">
-        <i data-lucide="flame" class="nav-icon" style="width: 15px; height: 15px;"></i>
-        <span class="nav-label-long">Today's Jobs</span>
+        <i data-lucide="flame" class="nav-icon" style="width: 16px; height: 16px;"></i>
+        <span class="nav-label-long">Today's Requirements</span>
         <span class="nav-label-short">Today</span>
       </a>
-
+      
       <a href="/" class="{% if request.path == '/' and not request.GET.today and not request.GET.experience %}active{% endif %}">
-        <i data-lucide="briefcase" class="nav-icon" style="width: 15px; height: 15px;"></i>
+        <i data-lucide="briefcase" class="nav-icon" style="width: 16px; height: 16px;"></i>
         <span>Feed</span>
       </a>
 
-      <a href="/?experience=fresher" class="{% if request.GET.experience == 'fresher' %}active{% endif %}">
-        <i data-lucide="graduation-cap" class="nav-icon" style="width: 15px; height: 15px; color: #10b981;"></i>
-        <span class="nav-label-long">Freshers <em class="nav-chip green">0-1 Y</em></span>
+      <a href="/?experience=fresher" class="{% if request.GET.experience == 'fresher' %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="graduation-cap" class="nav-icon" style="width: 16px; height: 16px; color: #10b981;"></i>
+        <span class="nav-label-long">Freshers <span style="background: rgba(16, 185, 129, 0.18); color: #059669; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 800;">0-1 Y</span></span>
         <span class="nav-label-short">Freshers</span>
       </a>
 
-      <a href="/?experience=experienced" class="{% if request.GET.experience == 'experienced' %}active{% endif %}">
-        <i data-lucide="award" class="nav-icon" style="width: 15px; height: 15px; color: #6366f1;"></i>
-        <span class="nav-label-long">Experienced <em class="nav-chip purple">1+ Y</em></span>
-        <span class="nav-label-short">Exp</span>
+      <a href="/?experience=experienced" class="{% if request.GET.experience == 'experienced' %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="award" class="nav-icon" style="width: 16px; height: 16px; color: #6366f1;"></i>
+        <span class="nav-label-long">Experienced <span style="background: rgba(99, 102, 241, 0.18); color: #4f46e5; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 800;">1+ Y</span></span>
+        <span class="nav-label-short">Exp (1+)</span>
       </a>
 
-      <a href="/resume/" class="{% if '/resume' in request.path %}active{% endif %}">
-        <i data-lucide="file-badge" class="nav-icon" style="width: 15px; height: 15px; color: #34d399;"></i>
-        <span class="nav-label-long">ATS Resume <em class="nav-chip teal">90+</em></span>
+      <a href="/resume/" class="{% if '/resume' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="file-badge" class="nav-icon" style="width: 16px; height: 16px; color: #34d399;"></i>
+        <span class="nav-label-long">ATS Resume <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">90+</span></span>
         <span class="nav-label-short">Resume</span>
       </a>
 
       <a href="/debugger/" class="{% if '/debugger' in request.path %}active{% endif %}">
-        <i data-lucide="terminal" class="nav-icon" style="width: 15px; height: 15px;"></i>
-        <span class="nav-label-long">Debugger</span>
-        <span class="nav-label-short">Debug</span>
+        <i data-lucide="terminal" class="nav-icon" style="width: 16px; height: 16px;"></i>
+        <span class="nav-label-long">Code Debugger</span>
+        <span class="nav-label-short">Debugger</span>
       </a>
 
       <a href="/sql/" class="{% if '/sql' in request.path %}active{% endif %}">
-        <i data-lucide="database" class="nav-icon" style="width: 15px; height: 15px;"></i>
-        <span class="nav-label-long">SQL IDE</span>
+        <i data-lucide="database" class="nav-icon" style="width: 16px; height: 16px;"></i>
+        <span class="nav-label-long">SQL Debugger</span>
         <span class="nav-label-short">SQL</span>
       </a>
 
-      <a href="/tools/job-description-generator/" class="{% if '/job-description-generator' in request.path %}active{% endif %}">
-        <i data-lucide="sparkles" class="nav-icon" style="width: 15px; height: 15px; color: #c084fc;"></i>
-        <span class="nav-label-long">AI JD Gen <em class="nav-chip violet">AI</em></span>
+      <a href="/tools/job-description-generator/" class="{% if '/job-description-generator' in request.path or '/jd-generator' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="sparkles" class="nav-icon" style="width: 16px; height: 16px; color: #c084fc;"></i>
+        <span class="nav-label-long">AI JD Generator <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">AI</span></span>
         <span class="nav-label-short">AI JD</span>
       </a>
+      
+      <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
+        <i data-lucide="user" class="nav-icon" style="width: 16px; height: 16px;"></i>
+        <span>About</span>
+      </a>
 
-      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="nav-yt-link">
-        <svg class="nav-icon" style="width: 15px; height: 15px;" viewBox="0 0 24 24" fill="#dc2626">
+      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 800;">
+        <svg class="nav-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="#dc2626">
           <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
         </svg>
-        <span class="nav-label-long">YouTube</span>
-        <span class="nav-label-short">YT</span>
+        <span class="nav-label-long">YouTube (@pythonkashi)</span>
+        <span class="nav-label-short">YouTube</span>
       </a>
     </nav>
 
-    <!-- Mobile Quick Today Action -->
+    <!-- Mobile Quick Today Action Pill (Visible on small screens where desktop nav is hidden) -->
     <div class="mobile-header-actions">
       <a href="/?today=true" class="mobile-today-badge {% if request.GET.today %}active{% endif %}">
         🔥 <span>Today</span>
@@ -94,14 +93,14 @@
 <!-- Off-Canvas Navigation Drawer -->
 <div id="drawerOverlay" class="vp-drawer-overlay" aria-hidden="true">
   <aside class="vp-side-drawer" role="dialog" aria-label="Main Navigation Menu" aria-modal="true">
-
+    
     <!-- Drawer Header -->
     <div class="vp-drawer-header">
-      <a href="/" class="brand" style="font-size: 20px;">
-        <span class="brand-lightning">⚡</span>Kashii<span>Updatez</span>
+      <a href="/" class="brand">
+        Kashii<span>Updatez</span>
       </a>
-      <button id="btnCloseDrawer" class="vp-drawer-close" aria-label="Close menu">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+      <button id="btnCloseDrawer" class="vp-drawer-close" aria-label="Close menu" title="Close Menu">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
@@ -109,28 +108,25 @@
 
     <!-- Drawer Body -->
     <div class="vp-drawer-body">
-
-      <!-- Quick Search -->
+      
+      <!-- Quick Search in Drawer -->
       <div class="drawer-search-wrap">
         <div class="drawer-search-inner">
-          <svg class="drawer-search-icon" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <svg class="drawer-search-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input type="text" id="drawerSearchInput" class="drawer-search-input" placeholder="Search roles, skills, categories..." autocomplete="off" spellcheck="false">
+          <input type="text" id="drawerSearchInput" class="drawer-search-input" placeholder="Search roles, categories, skills..." autocomplete="off" spellcheck="false">
         </div>
       </div>
 
       <!-- Opportunities Section -->
       <div class="drawer-section">
-        <div class="drawer-section-title">
-          <span style="width:16px;height:1px;background:var(--subtle-border);display:inline-block;"></span>
-          Opportunities
-        </div>
+        <div class="drawer-section-title">Opportunities</div>
         <nav class="drawer-nav-list" aria-label="Opportunities Navigation">
           <a href="/?today=true" class="drawer-link drawer-link-featured {% if request.GET.today %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-hot">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9.9a3 3 0 00-.021 2.121z" />
                 </svg>
@@ -143,7 +139,7 @@
           <a href="/" class="drawer-link {% if request.path == '/' and not request.GET.today and not request.GET.experience %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-feed">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </span>
@@ -154,42 +150,39 @@
 
           <a href="/?experience=fresher" class="drawer-link {% if request.GET.experience == 'fresher' %}active{% endif %}">
             <div class="drawer-link-left">
-              <span class="drawer-link-icon" style="background:#d1fae5;color:#059669;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <span class="drawer-link-icon" style="color: #10b981;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                 </svg>
               </span>
               <span class="drawer-link-label">Freshers &amp; Off-Campus (0-1 Y)</span>
             </div>
-            <span class="drawer-badge" style="background:#d1fae5;color:#059669;">0-1 Y</span>
+            <span class="drawer-badge" style="background: rgba(16, 185, 129, 0.18); color: #059669; font-weight: 800;">0-1 Y</span>
           </a>
 
           <a href="/?experience=experienced" class="drawer-link {% if request.GET.experience == 'experienced' %}active{% endif %}">
             <div class="drawer-link-left">
-              <span class="drawer-link-icon" style="background:#ede9fe;color:#6d28d9;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <span class="drawer-link-icon" style="color: #6366f1;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </span>
               <span class="drawer-link-label">Experienced Professionals (1+ Y)</span>
             </div>
-            <span class="drawer-badge" style="background:#ede9fe;color:#6d28d9;">1+ Y</span>
+            <span class="drawer-badge" style="background: rgba(99, 102, 241, 0.18); color: #4f46e5; font-weight: 800;">1+ Y</span>
           </a>
         </nav>
       </div>
 
-      <!-- Developer Labs & Academy -->
+      <!-- Developer Labs & Academy Section -->
       <div class="drawer-section">
-        <div class="drawer-section-title">
-          <span style="width:16px;height:1px;background:var(--subtle-border);display:inline-block;"></span>
-          Developer Labs &amp; Learning
-        </div>
+        <div class="drawer-section-title">Developer Labs &amp; Learning</div>
         <nav class="drawer-nav-list" aria-label="Developer Tools">
           <a href="/debugger/" class="drawer-link {% if '/debugger' in request.path %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-debugger">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                 </svg>
               </span>
@@ -201,7 +194,7 @@
           <a href="/sql/" class="drawer-link {% if '/sql' in request.path %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-sql">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
                 </svg>
               </span>
@@ -212,52 +205,34 @@
 
           <a href="/resume/" class="drawer-link {% if '/resume' in request.path %}active{% endif %}">
             <div class="drawer-link-left">
-              <span class="drawer-link-icon" style="background:#d1fae5;color:#059669;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <span class="drawer-link-icon" style="color: #34d399;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </span>
               <span class="drawer-link-label">ATS Resume Studio</span>
             </div>
-            <span class="drawer-badge" style="background:#d1fae5;color:#047857;">90+</span>
-          </a>
-
-          <a href="/tools/job-description-generator/" class="drawer-link {% if '/job-description-generator' in request.path %}active{% endif %}">
-            <div class="drawer-link-left">
-              <span class="drawer-link-icon" style="background:#f3e8ff;color:#7c3aed;">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </span>
-              <span class="drawer-link-label">AI JD Generator</span>
-            </div>
-            <span class="drawer-badge" style="background:#f3e8ff;color:#7c3aed;">AI</span>
+            <span class="drawer-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">90+</span>
           </a>
         </nav>
       </div>
 
-      <!-- Job Categories -->
+      <!-- Categories Section -->
       <div class="drawer-section">
-        <div class="drawer-section-title">
-          <span style="width:16px;height:1px;background:var(--subtle-border);display:inline-block;"></span>
-          Job Categories
-        </div>
+        <div class="drawer-section-title">Job Categories</div>
         <div id="drawerCategoryNav" class="drawer-nav-list">
           <!-- Dynamically populated via JS -->
         </div>
       </div>
 
-      <!-- Community & Social -->
+      <!-- Community Channels -->
       <div class="drawer-section">
-        <div class="drawer-section-title">
-          <span style="width:16px;height:1px;background:var(--subtle-border);display:inline-block;"></span>
-          Community &amp; Social
-        </div>
+        <div class="drawer-section-title">Community &amp; Social</div>
         <nav class="drawer-nav-list" aria-label="Social Links">
           <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener noreferrer" class="drawer-link">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-youtube">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                 </svg>
               </span>
@@ -269,7 +244,7 @@
           <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener noreferrer" class="drawer-link">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-instagram">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                 </svg>
               </span>
@@ -280,17 +255,14 @@
         </nav>
       </div>
 
-      <!-- Support & Info -->
+      <!-- About & Support -->
       <div class="drawer-section">
-        <div class="drawer-section-title">
-          <span style="width:16px;height:1px;background:var(--subtle-border);display:inline-block;"></span>
-          Support &amp; Info
-        </div>
+        <div class="drawer-section-title">Support &amp; Info</div>
         <nav class="drawer-nav-list" aria-label="Support Navigation">
           <a href="/about/" class="drawer-link {% if request.path == '/about/' %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-about">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </span>
@@ -301,7 +273,7 @@
           <a href="/contact/" class="drawer-link {% if request.path == '/contact/' %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon drawer-icon-contact">
-                <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </span>
@@ -322,26 +294,8 @@
         <span class="drawer-policy-dot">&middot;</span>
         <a href="/disclaimer/">Disclaimer</a>
       </div>
-      <div class="drawer-copyright">&copy; 2026 Kashii Updatez &middot; Made with ❤️ in India</div>
+      <div class="drawer-copyright">&copy; 2026 Kashii Updatez &middot; Direct Official Careers</div>
     </div>
 
   </aside>
 </div>
-
-<script>
-// Compact header on scroll
-(function() {
-  var header = document.getElementById('siteHeader');
-  if (!header) return;
-  var lastY = 0;
-  window.addEventListener('scroll', function() {
-    var y = window.scrollY;
-    if (y > 60) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-    lastY = y;
-  }, { passive: true });
-})();
-</script>
