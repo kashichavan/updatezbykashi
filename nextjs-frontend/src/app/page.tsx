@@ -66,29 +66,43 @@ export default async function HomePage() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/25 text-sky-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider animate-fade-in-up">
             <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-            Next.js 15 + Django Ninja OpenAPI Stack
+            FRESH DAILY STUDENT REQUIREMENTS
           </div>
 
           {/* Headline */}
           <h1
-            className="text-5xl sm:text-7xl font-black text-white tracking-[-0.035em] leading-[1.05] text-balance animate-fade-in-up"
+            className="text-4xl sm:text-6xl font-black text-white tracking-[-0.035em] leading-[1.1] text-balance animate-fade-in-up"
             style={{ animationDelay: '60ms' }}
           >
-            Master Modern JavaScript
-            <br />
-            <span className="bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">
-              With Interactive V8 Debuggers
+            Kashii Updates — Daily Student Jobs &amp;{' '}
+            <span className="bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent italic">
+              Internship Requirements
             </span>
           </h1>
 
           {/* Sub-copy */}
           <p
-            className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed animate-fade-in-up"
+            className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed animate-fade-in-up font-normal"
             style={{ animationDelay: '120ms' }}
           >
-            15 deep-dive ES6+ chapters, step-by-step V8 AST execution tracers, and
-            Notion-quality engineering write-ups on Next.js, React&nbsp;19 &amp; Django Ninja.
+            <strong className="text-white font-bold">Kashii Updates</strong> (also known as <strong className="text-white font-bold">Kashii Updatez</strong>) provides verified daily student requirements, off-campus drives, &amp; internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
           </p>
+
+          {/* Trust pills */}
+          <div
+            className="flex flex-wrap items-center justify-center gap-2.5 pt-1 animate-fade-in-up text-xs text-slate-300 font-semibold"
+            style={{ animationDelay: '150ms' }}
+          >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 shadow-sm">
+              ⚡ Auto 7-Day Fresh Rule
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 shadow-sm">
+              💻 Software &amp; Tech
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 shadow-sm">
+              🔗 Official Direct Links
+            </span>
+          </div>
 
           {/* CTAs */}
           <div

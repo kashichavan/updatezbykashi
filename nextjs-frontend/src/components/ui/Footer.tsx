@@ -38,11 +38,11 @@ export function Footer() {
           <Link href="/" className="flex items-center gap-2 group w-fit">
             <span className="text-2xl animate-glow" aria-hidden="true">⚡</span>
             <span className="font-extrabold text-lg text-white tracking-tight">
-              Kashii<span className="text-sky-400">DevAcademy</span>
+              Kashii<span className="text-sky-400">Updatez</span>
             </span>
           </Link>
           <p className="text-xs text-slate-400 max-w-sm leading-relaxed">
-            Interactive developer education powered by Django Ninja OpenAPI, Python V8 Execution Tracers, and Next.js 15 React 19.
+            Kashii Updates (also known as Kashii Updatez) provides verified daily student requirements, off-campus drives, &amp; internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
           </p>
           <div className="flex items-center gap-3 pt-2">
             {social.map(({ href, icon: Icon, label }) => (

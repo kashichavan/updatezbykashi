@@ -4,8 +4,8 @@ import { Navbar } from '@/components/ui/Navbar';
 import { Footer } from '@/components/ui/Footer';
 
 export const metadata: Metadata = {
-  title: '⚡ Kashii DevAcademy & Engineering Blog — Next.js + Django Ninja',
-  description: 'Interactive JavaScript ES6+ masterclass, V8 AST step visualizers, and engineering deep dives powered by Django Ninja & Next.js React 19.',
+  title: 'Kashii Updates — Verified Daily Student Requirements & Off-Campus Drives',
+  description: 'Kashii Updates (also known as Kashii Updatez) provides verified daily student requirements, off-campus drives, & internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.',
 };
 
 export default function RootLayout({

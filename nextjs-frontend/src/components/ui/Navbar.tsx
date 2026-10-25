@@ -69,13 +69,13 @@ export function Navbar() {
         <Link
           href="/"
           className="flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-sky-500/50 rounded-lg px-2 py-1"
-          aria-label="Kashii DevAcademy Home"
+          aria-label="Kashii Updates Home"
         >
           <span className="text-xl animate-glow" aria-hidden="true">⚡</span>
           <span className="font-extrabold text-lg text-white tracking-tight hidden sm:block">
-            Kashii<span className="text-sky-400">DevAcademy</span>
+            Kashii<span className="text-sky-400">Updatez</span>
           </span>
-          <span className="font-extrabold text-lg text-white tracking-tight sm:hidden">KDA</span>
+          <span className="font-extrabold text-lg text-white tracking-tight sm:hidden">Kashii</span>
         </Link>
 
         {/* ── Desktop nav ── */}
