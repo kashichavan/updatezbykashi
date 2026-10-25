@@ -140,7 +140,24 @@ class JobPosting(models.Model):
         super().save(*args, **kwargs)
 
     def is_expired(self):
-        return timezone.now() > self.deadline or self.status in ['CLOSED', 'EXPIRED']
+        now = timezone.now()
+        if self.status in ['CLOSED', 'EXPIRED']:
+            return True
+        if self.deadline and now > self.deadline:
+            return True
+        if self.created_at and (now - self.created_at).days >= 7:
+            return True
+        return False
+
+    @property
+    def clean_apply_url(self):
+        url = (self.apply_url or '').strip()
+        if not url:
+            return ''
+        if 'naukri.com/job-listings-' in url and '?' in url:
+            # Strip fbclid, utm, and tracking query params that trigger Naukri app intent freeze
+            url = url.split('?')[0]
+        return url
 
     def get_absolute_url(self):
         cat_slug = self.category.slug if self.category else 'software-tech'

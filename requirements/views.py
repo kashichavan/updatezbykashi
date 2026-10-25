@@ -95,7 +95,8 @@ def cleanup_empty_groups(grace_period_minutes=120):
 def sync_expired_jobs():
     """
     Throttled 7-day auto-expiration runner (executes at most once every 15 minutes).
-    Soft-expires requirements older than 7 days to keep DB lean without hard deleting data.
+    Soft-expires requirements older than 7 days to keep DB lean without hard deleting data,
+    guaranteeing 100% fresh postings as promised by Kashii Updates.
     """
     lock_key = 'sync_expired_jobs_throttled_lock'
     if cache.get(lock_key):
@@ -104,7 +105,10 @@ def sync_expired_jobs():
 
     try:
         now = timezone.now()
-        JobPosting.objects.filter(status='ACTIVE', deadline__lte=now).update(status='EXPIRED')
+        seven_days_ago = now - timedelta(days=7)
+        JobPosting.objects.filter(
+            Q(status='ACTIVE') & (Q(deadline__lte=now) | Q(created_at__lte=seven_days_ago))
+        ).update(status='EXPIRED')
     except Exception:
         pass
 
@@ -616,9 +620,16 @@ def job_apply_redirect_view(request, uuid=None, pk=None, identifier=None):
     if not job or not job.apply_url:
         return redirect('/')
 
+    # Check if job has expired (7-day rule)
+    if job.is_expired():
+        if job.status == 'ACTIVE':
+            JobPosting.objects.filter(pk=job.pk).update(status='EXPIRED')
+        return redirect(job.get_absolute_url())
+
     # Track application count atomically
     JobPosting.objects.filter(pk=job.pk).update(applications_count=F('applications_count') + 1)
-    response = redirect(job.apply_url)
+    target_url = job.clean_apply_url or job.apply_url
+    response = redirect(target_url)
     response['Referrer-Policy'] = 'no-referrer'
     return response
 
