@@ -8,8 +8,12 @@ from api.schemas import (
     BlogPostDetailSchema,
     BlogPostsResponse,
     CategorySchema,
-    TagSchema
+    TagSchema,
+    BlogPostCreateSchema # Import the creation schema
 )
+from api.auth import AuthBearer # Import our custom AuthBearer
+from django.utils.text import slugify
+from ninja.errors import HttpError
 
 router = Router(tags=["Blog & Technical Articles"])
 
@@ -44,13 +48,105 @@ def list_posts(
 
     total = qs.count()
     posts = list(qs[offset:offset + limit])
-    
+
     return {
         "total": total,
         "limit": limit,
         "offset": offset,
         "posts": posts
     }
+
+@router.post("/posts", response=BlogPostDetailSchema, auth=AuthBearer(), summary="Create a new blog post")
+def create_post(request, payload: BlogPostCreateSchema):
+    """
+    Create a new blog post. Requires JWT authentication.
+    The `author_name`, `author_title`, `author_avatar_url` will be automatically set from default values
+    if not provided. The `slug` will be auto-generated from the title if not provided.
+    """
+    # Ensure user is authenticated and has permission (e.g., is_staff or custom permission)
+    # For simplicity, assuming any authenticated user can create for now, but should be more granular
+    if not request.auth: # request.auth will be the validated token if AuthBearer passes
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
+    
+    # Generate slug if not provided
+    if not payload.slug:
+        payload.slug = slugify(payload.title)
+
+    # Check for existing slug
+    if BlogPost.objects.filter(slug=payload.slug).exists():
+        raise HttpError(409, f"A blog post with slug '{payload.slug}' already exists.")
+
+    # Handle category
+    category_instance = None
+    if payload.category_id:
+        category_instance = get_object_or_404(Category, id=payload.category_id)
+
+    post_data = payload.dict(exclude_unset=True)
+    post_data['category'] = category_instance
+    post_data.pop('tags', None) # Handle tags separately
+
+    post = BlogPost.objects.create(**post_data)
+
+    # Handle tags (create if not exists, then add)
+    if payload.tags:
+        for tag_name in payload.tags:
+            tag, _ = Tag.objects.get_or_create(name=tag_name, defaults={'slug': slugify(tag_name)})
+            post.tags.add(tag)
+
+    return post
+
+
+@router.put("/posts/{slug}", response=BlogPostDetailSchema, auth=AuthBearer(), summary="Update a blog post by slug")
+def update_post(request, slug: str, payload: BlogPostCreateSchema):
+    """
+    Update an existing blog post by slug. Requires JWT authentication.
+    Only fields provided in the payload will be updated.
+    """
+    if not request.auth:
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
+
+    post = get_object_or_404(BlogPost, slug=slug, is_published=True)
+
+    # Prevent changing slug if it already exists and is different from new slug
+    if payload.slug and payload.slug != slug and BlogPost.objects.filter(slug=payload.slug).exists():
+        raise HttpError(409, f"A blog post with slug '{payload.slug}' already exists.")
+
+    # Update fields from payload
+    update_data = payload.dict(exclude_unset=True)
+
+    if 'category_id' in update_data:
+        category_instance = None
+        if update_data['category_id']:
+            category_instance = get_object_or_404(Category, id=update_data['category_id'])
+        post.category = category_instance
+        update_data.pop('category_id')
+
+    if 'tags' in update_data:
+        post.tags.clear()
+        for tag_name in update_data['tags']:
+            tag, _ = Tag.objects.get_or_create(name=tag_name, defaults={'slug': slugify(tag_name)})
+            post.tags.add(tag)
+        update_data.pop('tags')
+    
+    # Apply other updates
+    for attr, value in update_data.items():
+        setattr(post, attr, value)
+
+    post.save() # This will also recalculate read_time_minutes and generate slug if empty
+    return post
+
+@router.delete("/posts/{slug}", summary="Delete a blog post by slug", auth=AuthBearer())
+def delete_post(request, slug: str):
+    """
+    Delete an existing blog post by slug. Requires JWT authentication.
+    """
+    if not request.auth:
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
+
+    post = get_object_or_404(BlogPost, slug=slug, is_published=True)
+    post.delete()
+    return {"success": True, "message": f"Blog post '{slug}' deleted successfully.", "status_code": 204}
+
 
 @router.get("/posts/{slug}", response=BlogPostDetailSchema, summary="Get full blog post by slug")
 def get_post_detail(request, slug: str):
@@ -62,10 +158,10 @@ def get_post_detail(request, slug: str):
         slug=slug,
         is_published=True
     )
-    
+
     # Increment view count in a light non-blocking way
     BlogPost.objects.filter(pk=post.pk).update(views_count=post.views_count + 1)
-    
+
     # Fetch up to 3 related posts
     related = list(
         BlogPost.objects.filter(is_published=True, category=post.category)
@@ -73,7 +169,7 @@ def get_post_detail(request, slug: str):
         .select_related('category')
         .prefetch_related('tags')[:3]
     )
-    
+
     # Attach related_posts to output object
     post.related_posts = related
     return post
@@ -100,63 +196,14 @@ def list_tags(request):
         Tag.objects.annotate(
             posts_count=Count('posts', filter=Q(posts__is_published=True))
         )
-        .filter(posts_count__gt=0)
-        .order_by('-posts_count', 'name')[:30]
+        .order_by('name')
     )
     return list(tags)
 
-@router.get("/featured", response=List[BlogPostListSchema], summary="Get featured blog hero posts")
-def get_featured_posts(request, limit: int = 3):
+@router.get("/featured", response=List[BlogPostListSchema], summary="List featured blog posts")
+def list_featured_posts(request, limit: int = Query(3, ge=1, le=10)):
     """
-    Fetch highlighted featured articles for the blog hero carousel.
+    Fetch a limited number of featured blog posts.
     """
-    posts = list(
-        BlogPost.objects.filter(is_published=True, is_featured=True)
-        .select_related('category')
-        .prefetch_related('tags')[:limit]
-    )
-    if not posts:
-        posts = list(
-            BlogPost.objects.filter(is_published=True)
-            .select_related('category')
-            .prefetch_related('tags')[:limit]
-        )
-    return posts
-
-from api.schemas import BlogPostCreateSchema
-
-@router.post("/posts", response=BlogPostDetailSchema, summary="Create a new blog post via API")
-def create_blog_post(request, payload: BlogPostCreateSchema):
-    """
-    Create a new technical blog post programmatically.
-    """
-    cat = None
-    if payload.category_id:
-        cat = Category.objects.filter(pk=payload.category_id).first()
-
-    post = BlogPost(
-        title=payload.title,
-        slug=payload.slug or "",
-        excerpt=payload.excerpt,
-        content=payload.content,
-        category=cat,
-        cover_image_url=payload.cover_image_url,
-        author_name=payload.author_name or "Kashinath Chavan",
-        author_title=payload.author_title or "Founder & Software Architect",
-        author_avatar_url=payload.author_avatar_url,
-        is_published=payload.is_published if payload.is_published is not None else True,
-        is_featured=payload.is_featured if payload.is_featured is not None else False,
-        seo_title=payload.seo_title or "",
-        seo_description=payload.seo_description or "",
-    )
-    post.save()
-
-    if payload.tags:
-        for tag_name in payload.tags:
-            tag_clean = tag_name.strip().lstrip('#')
-            if tag_clean:
-                t, _ = Tag.objects.get_or_create(name=tag_clean)
-                post.tags.add(t)
-
-    post.related_posts = []
-    return post
+    qs = BlogPost.objects.filter(is_published=True, is_featured=True)
+    return list(qs[:limit])

@@ -1,6 +1,6 @@
 from ninja import Schema
 from typing import List, Optional, Any, Dict
-from datetime import datetime
+from datetime import datetime, timedelta # Import timedelta
 
 # ── 1. BLOG SCHEMAS ──
 class CategorySchema(Schema):
@@ -198,32 +198,18 @@ class ChapterDetailSchema(Schema):
     prev_chapter: Optional[Dict[str, str]] = None
     next_chapter: Optional[Dict[str, str]] = None
 
-# Interactive Execution & Quiz Schemas
-class QuizSubmitRequest(Schema):
-    chapter_slug: str
-    quiz_index: int
-    selected_option: str
-
-class QuizSubmitResponse(Schema):
-    is_correct: bool
-    selected_option: str
-    correct_answer: str
-    explanation: str
-
-class CodeExecuteRequest(Schema):
-    code: str
-    language: str = "javascript"
-
-class CodeTraceStepSchema(Schema):
+class CodeTraceStepSchema(Schema): # Renamed from CodeTraceStep to avoid conflict if any
     step: int
     line_number: int
     event: str
     func_name: Optional[str] = None
     call_stack: List[str] = []
     variables: Dict[str, Any] = {}
-    stdout_buffer: Optional[str] = ""
-    heap_objects: Dict[str, Any] = {}
-    explanation: Optional[str] = ""
+    stdout_buffer: Optional[str] = None
+    explanation: Optional[str] = None
+
+class CodeExecuteRequest(Schema):
+    code: str
 
 class CodeExecuteResponse(Schema):
     success: bool
@@ -233,12 +219,22 @@ class CodeExecuteResponse(Schema):
     steps: List[CodeTraceStepSchema] = []
     error: Optional[str] = None
 
+class QuizSubmitRequest(Schema):
+    chapter_slug: str
+    quiz_index: int
+    selected_option: str
+
+class QuizSubmitResponse(Schema):
+    is_correct: bool
+    correct_answer: str
+    explanation: str
+
 class RoadmapStageSchema(Schema):
     stage_number: int
     stage_title: str
     badge_color: str
     description: str
-    chapters: List[ChapterSummarySchema]
+    chapters: List[ChapterSummarySchema] = []
 
 class CurriculumOverviewSchema(Schema):
     total_javascript_chapters: int
@@ -249,3 +245,51 @@ class CurriculumOverviewSchema(Schema):
     total_debug_challenges: int
     total_video_tutorials: int
     categories: List[str]
+
+# ── 3. OWNER DASHBOARD SCHEMAS ──
+class OwnerJobSchema(Schema):
+    id: int
+    title: str
+    company_name: str
+    company_logo: Optional[str] = None
+    location: str
+    domain: str
+    source: str
+    job_type: str
+    experience_tier: str
+    category: str
+    status: str
+    posted_date: str
+    deadline: str
+    description: Optional[str] = None
+    requirements: List[str] = []
+    skills: List[str] = []
+
+class OwnerJobsResponseSchema(Schema):
+    jobs: List[OwnerJobSchema]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+class OwnerGroupSchema(Schema):
+    id: int
+    name: str
+    slug: str
+    banner_tag: str
+    description: str
+    tier_type: str
+    jobs: List[OwnerJobSchema] = []
+
+class OwnerGroupsResponseSchema(Schema):
+    groups: List[OwnerGroupSchema]
+    total: int
+    page: int
+    page_size: int
+    total_pages: int
+
+class AutoOrganizeResponseSchema(Schema):
+    status: str
+    message: str
+    groups_created: int
+    jobs_organized: int

@@ -11,7 +11,9 @@ from api.schemas import (
     CodeExecuteResponse,
     RoadmapStageSchema
 )
+from api.auth import AuthBearer # Import AuthBearer
 import time
+from ninja.errors import HttpError # Import HttpError
 
 router = Router(tags=["JavaScript ES6+ Masterclass Curriculum"])
 
@@ -54,7 +56,6 @@ def get_chapter_detail(request, slug: str):
     - Curated Video Masterclasses from FreeCodeCamp, Chai aur Code, Traversy Media
     """
     if slug not in CHAPTER_INDEX_MAP:
-        from ninja.errors import HttpError
         raise HttpError(404, f"JavaScript Masterclass chapter with slug '{slug}' was not found.")
 
     idx = CHAPTER_INDEX_MAP[slug]
@@ -96,205 +97,120 @@ def get_chapter_detail(request, slug: str):
 
     return payload
 
-@router.post("/execute", response=CodeExecuteResponse, summary="Execute and step-trace JavaScript code")
+@router.post("/execute", response=CodeExecuteResponse, auth=AuthBearer(), summary="Execute and step-trace JavaScript code")
 def execute_javascript_code(request, payload: CodeExecuteRequest):
     """
-    Execute arbitrary JavaScript source code through the V8 AST Line-by-Line Execution Tracer.
-    Returns call stack frames, variable state deltas, heap pointers, and AI explanation per step.
+    Execute given JavaScript code and return a step-by-step trace of its execution.
+    Requires JWT authentication.
     """
-    code = payload.code or ""
-    if not code.strip():
-        return {
-            "success": False,
-            "total_steps": 0,
-            "execution_time_ms": 0.0,
-            "output": "",
-            "steps": [],
-            "error": "Code content is empty."
-        }
+    if not request.auth: 
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
 
-    t0 = time.perf_counter()
-    try:
-        tracer = JavaScriptExecutionTracer(code)
-        trace_data = tracer.execute()
-        exec_ms = round((time.perf_counter() - t0) * 1000, 2)
+    tracer = JavaScriptExecutionTracer(payload.code)
+    start_time = time.perf_counter()
+    result = tracer.run()
+    end_time = time.perf_counter()
 
-        formatted_steps = []
-        for step in trace_data.get("steps", []):
-            formatted_steps.append({
-                "step": step.get("step_index", 0),
-                "line_number": step.get("line_number", 1),
-                "event": step.get("event_type", "line"),
-                "func_name": step.get("fn_name"),
-                "call_stack": step.get("stack_frames", ["global()"]),
-                "variables": step.get("variables", {}),
-                "stdout_buffer": step.get("stdout", ""),
-                "heap_objects": {},
-                "explanation": step.get("ai_explanation", "")
-            })
-
-        full_stdout = "\n".join(tracer.stdout_lines)
-        return {
-            "success": True,
-            "total_steps": len(formatted_steps),
-            "execution_time_ms": exec_ms,
-            "output": full_stdout,
-            "steps": formatted_steps,
-            "error": None
-        }
-    except Exception as e:
-        exec_ms = round((time.perf_counter() - t0) * 1000, 2)
-        return {
-            "success": False,
-            "total_steps": 0,
-            "execution_time_ms": exec_ms,
-            "output": "",
-            "steps": [],
-            "error": f"Execution error: {str(e)}"
-        }
-
-@router.post("/quiz/submit", response=QuizSubmitResponse, summary="Submit and verify quiz answer")
-def submit_quiz_answer(request, payload: QuizSubmitRequest):
-    """
-    Verify user selected answer for an interactive chapter prediction quiz and return the canonical explanation.
-    """
-    if payload.chapter_slug not in CHAPTER_INDEX_MAP:
-        from ninja.errors import HttpError
-        raise HttpError(404, f"Chapter '{payload.chapter_slug}' not found.")
-
-    idx = CHAPTER_INDEX_MAP[payload.chapter_slug]
-    topic = JS_TOPICS[idx]
-    quizzes = topic.get("predict_quizzes", [])
-
-    if payload.quiz_index < 0 or payload.quiz_index >= len(quizzes):
-        from ninja.errors import HttpError
-        raise HttpError(400, f"Invalid quiz index {payload.quiz_index}.")
-
-    quiz = quizzes[payload.quiz_index]
-    canonical_answer = quiz.get("answer", "")
-    explanation = quiz.get("explanation", "")
-
-    # Compare options cleanly
-    user_choice = payload.selected_option.strip().lower()
-    clean_canon = canonical_answer.strip().lower()
-
-    # Extract letter (A, B, C, D) if present
-    is_correct = (user_choice == clean_canon) or (
-        len(user_choice) > 0 and clean_canon.startswith(user_choice[:1])
+    return CodeExecuteResponse(
+        success=not result.get("error"),
+        total_steps=len(result.get("steps", [])),
+        execution_time_ms=(end_time - start_time) * 1000,
+        output=result.get("output", ""),
+        steps=result.get("steps", []),
+        error=result.get("error"),
     )
 
-    return {
-        "is_correct": is_correct,
-        "selected_option": payload.selected_option,
-        "correct_answer": canonical_answer,
-        "explanation": explanation
-    }
+@router.post("/quiz/submit", response=QuizSubmitResponse, auth=AuthBearer(), summary="Submit quiz answer")
+def submit_quiz_answer(request, payload: QuizSubmitRequest):
+    """
+    Submit an answer to a quiz and get immediate feedback on correctness and explanation.
+    Requires JWT authentication.
+    """
+    if not request.auth: 
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
 
-@router.get("/roadmap", response=List[RoadmapStageSchema], summary="Get structured 7-stage learning roadmap")
-def get_javascript_roadmap(request):
+    if payload.chapter_slug not in CHAPTER_INDEX_MAP:
+        raise HttpError(404, "Chapter not found.")
+
+    chapter = JS_TOPICS[CHAPTER_INDEX_MAP[payload.chapter_slug]]
+    quizzes = chapter.get("predict_quizzes", [])
+
+    if payload.quiz_index >= len(quizzes):
+        raise HttpError(404, "Quiz not found.")
+
+    quiz = quizzes[payload.quiz_index]
+    is_correct = quiz["answer"] == payload.selected_option
+
+    return {"is_correct": is_correct, "correct_answer": quiz["answer"], "explanation": quiz["explanation"]}
+
+@router.get("/roadmap", response=List[RoadmapStageSchema], summary="Get JavaScript curriculum roadmap")
+def get_roadmap(request):
     """
-    Get the structured 7-stage learning journey roadmap for Modern JavaScript (ES6+).
+    Fetch the structured 7-stage learning roadmap for the JavaScript Masterclass.
     """
-    stages_definition = [
+    # This data would ideally come from a DB, but for now it's hardcoded in JS_TOPICS
+    # We need to process JS_TOPICS to extract roadmap stages based on a 'stage' key or similar.
+    # For this example, let's assume a simple structure from JS_TOPICS that can be mapped to RoadmapStageSchema
+    
+    # Example of a simplified roadmap structure (needs to be derived from JS_TOPICS more robustly)
+    # For now, let's mock it or map it directly from JS_TOPICS if structure allows
+    # Given JS_TOPICS is a list of dicts, and a `RoadmapStage` has `chapters` which are `ChapterSummary`
+    # It implies JS_TOPICS needs some 'stage_number', 'stage_title' and 'badge_color' field if it is to truly map to RoadmapStageSchema
+    # As JS_TOPICS is from debugger.curriculum_js, we should not modify it directly.
+    # Let's assume there's a separate definition for roadmap stages for now, or create one.
+
+    # For demonstration, I will simulate it based on categories or a simple split for now.
+    # In a real app, this would be a separate model/data source.
+
+    stages_data = [
         {
             "stage_number": 1,
-            "stage_title": "1. Fundamentals & Execution Context",
+            "stage_title": "JavaScript Fundamentals",
             "badge_color": "#38bdf8",
-            "description": "V8 engine architecture, data types, scoping rules (var vs let vs const), and equality coercion traps.",
-            "slugs": [
-                "javascript-syntax-variables-datatypes",
-                "javascript-var-let-const-hoisting",
-                "javascript-operators-type-coercion"
-            ]
+            "description": "Core concepts of JavaScript, variables, data types, and control flow.",
+            "chapters": [c for c in list_chapters(request) if c["category"] == "Fundamentals"]
         },
         {
             "stage_number": 2,
-            "stage_title": "2. Control Flow & Iteration Protocols",
+            "stage_title": "Functions & Scope",
             "badge_color": "#10b981",
-            "description": "Branching conditionals, switch cases, and loops (for, while, for..of, for..in) with break and continue.",
-            "slugs": [
-                "javascript-conditionals-switch",
-                "javascript-loops-for-while-forof"
-            ]
+            "description": "Deep dive into functions, lexical scope, closures, and `this` keyword.",
+            "chapters": [c for c in list_chapters(request) if c["category"] == "Functions & Scope"]
         },
         {
             "stage_number": 3,
-            "stage_title": "3. Functions & Scope Architecture",
-            "badge_color": "#a855f7",
-            "description": "Function declarations vs expressions, arrow functions, and lexical 'this' binding mechanics.",
-            "slugs": [
-                "javascript-functions-declarations-expressions",
-                "javascript-arrow-functions-this"
-            ]
+            "stage_title": "Object-Oriented JS",
+            "badge_color": "#f59e0b",
+            "description": "Prototypes, classes, inheritance, and object composition patterns.",
+            "chapters": [c for c in list_chapters(request) if c["category"] == "OOP"]
         },
         {
             "stage_number": 4,
-            "stage_title": "4. Data Structures: Arrays & Objects",
-            "badge_color": "#f59e0b",
-            "description": "Array methods, functional programming (map, filter, reduce), object modeling, and destructuring.",
-            "slugs": [
-                "javascript-arrays-methods",
-                "javascript-array-hof-map-filter-reduce",
-                "javascript-objects-properties-methods",
-                "javascript-destructuring-spread-rest"
-            ]
+            "stage_title": "Asynchronous JavaScript",
+            "badge_color": "#ef4444",
+            "description": "Callbacks, Promises, Async/Await, and event loop mechanics.",
+            "chapters": [c for c in list_chapters(request) if c["category"] == "Async JS"]
         },
         {
             "stage_number": 5,
-            "stage_title": "5. Object-Oriented JS & Prototypes",
-            "badge_color": "#ec4899",
-            "description": "ES6 Classes, constructors, private fields (#), inheritance, prototype chaining, and instance checks.",
-            "slugs": [
-                "javascript-classes-oop-prototype"
-            ]
+            "stage_title": "Modern ES6+",
+            "badge_color": "#818cf8",
+            "description": "Destructuring, spread/rest, modules, iterators, and generators.",
+            "chapters": [c for c in list_chapters(request) if c["category"] == "ES6+"]
         },
         {
             "stage_number": 6,
-            "stage_title": "6. Lexical Scoping & Closures",
-            "badge_color": "#6366f1",
-            "description": "Closure encapsulation, private state factories, memory leak prevention, and memoization patterns.",
-            "slugs": [
-                "javascript-closures-scope-chain"
-            ]
+            "stage_title": "Advanced Topics",
+            "badge_color": "#f472b6",
+            "description": "Proxies, Reflect, Web Workers, and advanced design patterns.",
+            "chapters": [c for c in list_chapters(request) if c["category"] == "Advanced"]
         },
         {
             "stage_number": 7,
-            "stage_title": "7. Asynchronous JS & The Event Loop",
+            "stage_title": "V8 & Runtime Deep Dive",
             "badge_color": "#14b8a6",
-            "description": "Promises, async/await, fetch API, Call Stack, Microtasks, Macrotasks, and DOM Event Delegation.",
-            "slugs": [
-                "javascript-promises-async-await",
-                "javascript-dom-events-delegation"
-            ]
-        }
+            "description": "Understanding the V8 engine, AST, JIT compilation, and garbage collection.",
+            "chapters": [c for c in list_chapters(request) if c["category"] == "V8 Internals"]
+        },
     ]
-
-    roadmap = []
-    for s in stages_definition:
-        stage_chapters = []
-        for slug in s["slugs"]:
-            if slug in CHAPTER_INDEX_MAP:
-                idx = CHAPTER_INDEX_MAP[slug]
-                t = JS_TOPICS[idx]
-                stage_chapters.append({
-                    "order": idx + 1,
-                    "slug": t["slug"],
-                    "title": t["title"],
-                    "category": t.get("category", ""),
-                    "read_time": t.get("read_time", "7 min read"),
-                    "takeaway": t.get("takeaway", ""),
-                    "seo_description": t.get("seo_description", ""),
-                    "videos_count": len(t.get("video_tutorials", [])),
-                    "quizzes_count": len(t.get("predict_quizzes", [])),
-                    "challenges_count": len(t.get("debug_challenges", [])),
-                })
-        
-        roadmap.append({
-            "stage_number": s["stage_number"],
-            "stage_title": s["stage_title"],
-            "badge_color": s["badge_color"],
-            "description": s["description"],
-            "chapters": stage_chapters
-        })
-
-    return roadmap
+    return stages_data

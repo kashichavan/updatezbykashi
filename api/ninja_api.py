@@ -3,6 +3,7 @@ from api.routers.blog import router as blog_router
 from api.routers.curriculum_js import router as curriculum_js_router
 from api.routers.overview import router as overview_router
 from api.routers.ai import router as ai_router
+from api.routers.owner import router as owner_router # Import the new owner router
 
 # Initialize production-grade Django Ninja OpenAPI instance
 api = NinjaAPI(
@@ -16,6 +17,7 @@ Powered by **Django Ninja & Pydantic v2**, this OpenAPI suite provides type-safe
 2. **⚡ JavaScript ES6+ Masterclass**: Complete 15 interactive chapters with V8 AST execution models, mental models, progressive code snippets, quizzes, debug challenges, interview questions, and curated video masterclasses.
 3. **🔍 Live Code Step Execution**: AST Line-by-line execution tracer for interactive web IDEs and debuggers.
 4. **🛣️ Curriculum Roadmaps & Platform Metrics**: Structured 7-stage learning journey and global DevAcademy stats.
+5. **💼 Owner Dashboard**: Management of job postings, applicant pipelines, and automated grouping.
 
 ### Interactive Documentation:
 - **Swagger UI**: `/api/v1/docs`
@@ -32,3 +34,4 @@ api.add_router("/blog", blog_router)
 api.add_router("/curriculum/javascript", curriculum_js_router)
 api.add_router("/curriculum", overview_router)
 api.add_router("/ai", ai_router)
+api.add_router("/owner", owner_router) # Add the new owner router

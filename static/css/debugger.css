@@ -478,13 +478,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.20);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .btn-start-debug:hover {
   background: var(--primary-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.btn-start-debug:active {
+  transform: scale(0.97);
 }
 
 .dbg-step-btn {
@@ -500,14 +504,19 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .dbg-step-btn:hover:not(:disabled) {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--accent);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.20);
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.dbg-step-btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .dbg-step-btn:disabled {
@@ -553,7 +562,10 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),   /* Top specular highlight */
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),          /* Bottom ambient shadow */
+    0 10px 30px -10px rgba(0, 0, 0, 0.5);         /* Soft drop elevation */
 }
 
 .editor-card-header {
@@ -584,17 +596,25 @@
   border: 1px solid var(--border-subtle);
   cursor: pointer;
   transition: all 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .font-size-btn:hover {
-  background: var(--primary);
-  color: #ffffff;
+  background: var(--bg-surface);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.font-size-btn:active {
+  transform: scale(0.97);
 }
 
 .section-maximize-btn {
   padding: 3px 10px;
   background: var(--badge-bg);
-  color: var(--primary);
+  color: var(--badge-text);
   font-size: 11px;
   font-weight: 800;
   border-radius: 6px;
@@ -604,13 +624,19 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
 .section-maximize-btn:hover {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 0 10px rgba(37,99,235,0.4);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+
+.section-maximize-btn:active {
+  transform: scale(0.97);
 }
 
 /* Fullscreen Maximized Section Overlay */
@@ -752,7 +778,10 @@ body.debugger-has-maximized {
   border: 1px solid var(--border-subtle);
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),   /* Top specular highlight */
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),          /* Bottom ambient shadow */
+    0 10px 30px -10px rgba(0, 0, 0, 0.5);         /* Soft drop elevation */
 }
 
 .visual-card-header {
@@ -925,15 +954,18 @@ body.debugger-has-maximized {
 
 /* ── Glassmorphic Mobile Blocker Card ── */
 .dbg-blocker-card {
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.90));
-  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: linear-gradient(145deg, var(--bg-surface), var(--bg-card));
+  border: 1px solid var(--border-subtle);
   border-radius: 24px;
   padding: 32px 24px 28px;
   max-width: 380px;
   width: 100%;
   text-align: center;
   position: relative;
-  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.75), 0 0 30px rgba(56, 189, 248, 0.15);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.15),   /* Top specular highlight */
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),          /* Bottom ambient shadow */
+    0 10px 30px -10px rgba(0, 0, 0, 0.5);         /* Soft drop elevation */
   transform: scale(1);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

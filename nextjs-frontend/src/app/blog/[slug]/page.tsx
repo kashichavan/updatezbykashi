@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getBlogPostBySlug } from '@/lib/api';
 import { Clock, Calendar, Eye, ArrowLeft } from 'lucide-react';
 
@@ -11,38 +12,43 @@ export default async function BlogPostDetailPage({ params }: BlogPostPageProps) 
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
 
-  if (!post) {
-    notFound();
-  }
+  if (!post) notFound();
 
   return (
-    <article className="max-w-4xl mx-auto px-4 py-12 space-y-8">
+    <article className="max-w-4xl mx-auto px-4 py-14 space-y-8">
+      {/* Back link */}
       <Link
         href="/blog"
-        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-sky-400 font-bold transition-colors"
+        className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-sky-400 font-bold transition-colors active-press"
       >
-        <ArrowLeft className="w-3.5 h-3.5" /> Back to all articles
+        <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" /> Back to all articles
       </Link>
 
-      {/* Header */}
-      <header className="space-y-4">
+      {/* ── Header ── */}
+      <header className="space-y-5">
         {post.category && (
-          <span className="inline-flex items-center gap-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/30 px-3 py-1 rounded-full text-xs font-bold">
+          <span className="inline-flex items-center gap-1.5 bg-sky-500/10 text-sky-400 border border-sky-500/25 px-3 py-1 rounded-full text-xs font-bold">
             {post.category.icon} {post.category.name}
           </span>
         )}
-        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+
+        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-[-0.03em] leading-[1.08] text-balance">
           {post.title}
         </h1>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-slate-800 text-xs text-slate-400">
+        {/* Meta bar */}
+        <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-y border-slate-800/70 text-xs text-slate-400">
           <div className="flex items-center gap-3">
             {post.author_avatar_url && (
-              <img
-                src={post.author_avatar_url}
-                alt={post.author_name}
-                className="w-9 h-9 rounded-full object-cover border border-sky-400"
-              />
+              <div className="relative w-9 h-9 rounded-full overflow-hidden border border-sky-400/40 flex-shrink-0">
+                <Image
+                  src={post.author_avatar_url}
+                  alt={post.author_name}
+                  fill
+                  className="object-cover"
+                  sizes="36px"
+                />
+              </div>
             )}
             <div>
               <div className="font-bold text-white">{post.author_name}</div>
@@ -52,37 +58,50 @@ export default async function BlogPostDetailPage({ params }: BlogPostPageProps) 
 
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" /> {post.read_time_minutes} min read
+              <Clock className="w-3.5 h-3.5" aria-hidden="true" /> {post.read_time_minutes} min read
             </span>
             <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" /> {new Date(post.published_at).toLocaleDateString()}
+              <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+              {new Date(post.published_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'short', day: 'numeric',
+              })}
             </span>
             <span className="flex items-center gap-1">
-              <Eye className="w-3.5 h-3.5" /> {post.views_count}
+              <Eye className="w-3.5 h-3.5" aria-hidden="true" /> {post.views_count}
             </span>
           </div>
         </div>
       </header>
 
-      {/* Cover Image */}
+      {/* ── Cover image ── */}
       {post.cover_image_url && (
-        <div className="rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
-          <img src={post.cover_image_url} alt={post.title} className="w-full max-h-[420px] object-cover" />
+        <div className="relative w-full h-[420px] rounded-2xl overflow-hidden border border-slate-800/60 shadow-2xl">
+          <Image
+            src={post.cover_image_url}
+            alt={post.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 896px"
+            priority
+          />
         </div>
       )}
 
-      {/* Content */}
+      {/* ── Content ── */}
       <div
-        className="prose prose-invert max-w-none text-slate-300 text-base leading-relaxed space-y-6"
+        className="prose prose-invert prose-sm sm:prose-base max-w-none text-slate-300 leading-relaxed"
         dangerouslySetInnerHTML={{ __html: post.content || '' }}
       />
 
-      {/* Tags */}
+      {/* ── Tags ── */}
       {post.tags && post.tags.length > 0 && (
-        <div className="pt-6 border-t border-slate-800 flex flex-wrap gap-2 items-center">
+        <div className="pt-6 border-t border-slate-800/70 flex flex-wrap gap-2 items-center">
           <span className="text-xs text-slate-500 font-bold">Tags:</span>
           {post.tags.map((t) => (
-            <span key={t.slug} className="bg-slate-900 border border-slate-800 text-slate-400 text-xs px-2.5 py-1 rounded-md">
+            <span
+              key={t.slug}
+              className="bg-slate-900 border border-slate-800 text-slate-400 text-xs px-2.5 py-1 rounded-md"
+            >
               #{t.name}
             </span>
           ))}

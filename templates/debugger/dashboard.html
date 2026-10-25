@@ -172,13 +172,14 @@
   }
 
   .mobile-blocker-x:hover, .mobile-blocker-x:active {
-    background: rgba(239, 68, 68, 0.3);
+    background: rgba(239, 68, 68, 0.25);
     border-color: rgba(239, 68, 68, 0.5);
-    transform: scale(0.95);
+    color: #ffffff;
+    transform: scale(0.97);
   }
 
   .mobile-blocker-btn-primary {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
@@ -191,8 +192,13 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .mobile-blocker-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -4px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4);
   }
 
   .mobile-blocker-btn-primary:active {
@@ -201,7 +207,7 @@
 
   .mobile-blocker-btn-secondary {
     background: rgba(255, 255, 255, 0.06);
-    color: #94a3b8;
+    color: var(--text-muted);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 11px 16px;
@@ -221,6 +227,11 @@
   .mobile-blocker-btn-secondary:hover {
     color: #ffffff;
     background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .mobile-blocker-btn-secondary:active {
+    transform: scale(0.97);
   }
 
   /* ── Mobile View Toggle Tabs (Sticky Mobile Toolbar) ── */

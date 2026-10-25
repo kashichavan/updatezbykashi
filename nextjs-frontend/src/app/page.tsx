@@ -1,157 +1,271 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getFeaturedPosts, getJavaScriptChapters } from '@/lib/api';
-import { Sparkles, Code2, BookOpen, Terminal, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
+import { Sparkles, BookOpen, ArrowRight, Zap, Code2 } from 'lucide-react';
+import type { BlogPost, ChapterSummary } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage() {
-  let featuredPosts: any[] = [];
-  let jsChapters: any[] = [];
+/* ── Empty-state placeholder cards ── */
+function ChapterSkeleton() {
+  return (
+    <div className="craft-card p-5 space-y-3 animate-pulse">
+      <div className="h-3 skeleton w-20" />
+      <div className="h-4 skeleton w-3/4" />
+      <div className="h-3 skeleton w-full" />
+      <div className="h-3 skeleton w-2/3" />
+    </div>
+  );
+}
 
-  try {
-    const results = await Promise.all([
-      getFeaturedPosts(3).catch(() => []),
-      getJavaScriptChapters().catch(() => []),
-    ]);
-    featuredPosts = results[0] || [];
-    jsChapters = results[1] || [];
-  } catch (err) {
-    console.error('Failed to fetch initial home data:', err);
-  }
+function PostSkeleton() {
+  return (
+    <div className="craft-card overflow-hidden animate-pulse">
+      <div className="h-44 skeleton" />
+      <div className="p-5 space-y-3">
+        <div className="h-3 skeleton w-24" />
+        <div className="h-4 skeleton w-3/4" />
+        <div className="h-3 skeleton w-full" />
+      </div>
+    </div>
+  );
+}
+
+export default async function HomePage() {
+  let featuredPosts: BlogPost[] = [];
+  let jsChapters: ChapterSummary[] = [];
+
+  await Promise.all([
+    getFeaturedPosts(3)
+      .then((d) => { featuredPosts = d; })
+      .catch(() => {}),
+    getJavaScriptChapters()
+      .then((d) => { jsChapters = d; })
+      .catch(() => {}),
+  ]);
 
   return (
-    <div className="space-y-20 pb-20">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-16 px-4">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-500/20 via-transparent to-transparent pointer-events-none" />
+    <div className="space-y-24 pb-24">
 
-        <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
-          <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 text-sky-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" /> Next.js 15 + Django Ninja OpenAPI Stack
+      {/* ══════════════════════════════════════════
+          HERO
+      ══════════════════════════════════════════ */}
+      <section className="relative overflow-hidden pt-28 pb-20 px-4">
+        {/* Ambient radial spotlight */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(56,189,248,0.15),transparent)]" />
+        {/* Noise grain */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.025] mix-blend-overlay"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+          }}
+        />
+
+        <div className="max-w-5xl mx-auto text-center space-y-7 relative z-10">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-sky-500/10 border border-sky-500/25 text-sky-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider animate-fade-in-up">
+            <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+            Next.js 15 + Django Ninja OpenAPI Stack
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.1]">
-            Master Modern JavaScript <br />
+          {/* Headline */}
+          <h1
+            className="text-5xl sm:text-7xl font-black text-white tracking-[-0.035em] leading-[1.05] text-balance animate-fade-in-up"
+            style={{ animationDelay: '60ms' }}
+          >
+            Master Modern JavaScript
+            <br />
             <span className="bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-400 bg-clip-text text-transparent">
-              With Interactive V8 Step Debuggers
+              With Interactive V8 Debuggers
             </span>
           </h1>
 
-          <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
-            15 in-depth JavaScript ES6+ masterclass chapters, V8 AST line execution tracers, and Notion-quality engineering deep dives on Next.js, React 19, and Django Ninja.
+          {/* Sub-copy */}
+          <p
+            className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed animate-fade-in-up"
+            style={{ animationDelay: '120ms' }}
+          >
+            15 deep-dive ES6+ chapters, step-by-step V8 AST execution tracers, and
+            Notion-quality engineering write-ups on Next.js, React&nbsp;19 &amp; Django Ninja.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          {/* CTAs */}
+          <div
+            className="flex flex-wrap items-center justify-center gap-4 pt-2 animate-fade-in-up"
+            style={{ animationDelay: '180ms' }}
+          >
             <Link
               href="/learn/javascript"
-              className="bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 flex items-center gap-2 text-sm transition-all duration-300"
+              className="active-press inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-sky-500/30 hover:shadow-sky-500/50 transition-all duration-300"
+              style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px -2px rgba(56,189,248,0.45)' }}
             >
-              <Zap className="w-4 h-4" /> Start JS Masterclass
+              <Zap className="w-4 h-4" aria-hidden="true" /> Start JS Masterclass
             </Link>
             <Link
               href="/blog"
-              className="bg-[#0d1527] hover:bg-[#141c2e] border border-slate-800/60 text-slate-200 font-bold px-6 py-3 rounded-xl text-sm transition-all flex items-center gap-2"
+              className="active-press inline-flex items-center gap-2 bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] border border-slate-700/60 hover:border-slate-600 text-slate-200 font-bold px-7 py-3.5 rounded-xl text-sm transition-all"
+              style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}
             >
-              <BookOpen className="w-4 h-4" /> Read Tech Blog
+              <BookOpen className="w-4 h-4" aria-hidden="true" /> Read Tech Blog
             </Link>
+          </div>
+
+          {/* Quick stats row */}
+          <div
+            className="flex flex-wrap items-center justify-center gap-6 pt-4 text-xs text-slate-500 animate-fade-in-up"
+            style={{ animationDelay: '240ms' }}
+          >
+            {[
+              { label: '15 Chapters', color: 'text-sky-400' },
+              { label: 'V8 Step Tracer', color: 'text-teal-400' },
+              { label: 'Live Code Editor', color: 'text-indigo-400' },
+              { label: 'Django Ninja API', color: 'text-emerald-400' },
+            ].map(({ label, color }) => (
+              <span key={label} className="flex items-center gap-1.5">
+                <span className={`w-1.5 h-1.5 rounded-full ${color} bg-current`} />
+                {label}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* JavaScript Curriculum Showcase */}
+      {/* ══════════════════════════════════════════
+          JS CURRICULUM SHOWCASE
+      ══════════════════════════════════════════ */}
       <section className="max-w-7xl mx-auto px-4 space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800/70 pb-5">
           <div>
             <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">Interactive DevAcademy</span>
-            <h2 className="text-2xl font-black text-white">JavaScript ES6+ Complete Masterclass</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
+              JavaScript ES6+ Complete Masterclass
+            </h2>
           </div>
-          <Link href="/learn/javascript" className="text-xs font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1">
-            View All 15 Chapters <ArrowRight className="w-3.5 h-3.5" />
+          <Link
+            href="/learn/javascript"
+            className="active-press text-xs font-bold text-sky-400 hover:text-sky-300 flex items-center gap-1 transition-colors"
+          >
+            View All 15 Chapters <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {jsChapters.slice(0, 6).map((ch) => (
-            <Link
-              key={ch.slug}
-              href={`/learn/javascript/${ch.slug}`}
-              className="group bg-[#0d1527] border border-sky-500/15 hover:border-sky-500/50 rounded-xl p-5 transition-all flex flex-col justify-between hover:-translate-y-1 shadow-lg shadow-black/40"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="bg-sky-500/10 text-sky-400 font-mono font-bold px-2 py-0.5 rounded text-[10px]">
-                    Chapter {ch.order}
-                  </span>
-                  <span>{ch.read_time}</span>
-                </div>
-                <h3 className="font-bold text-white group-hover:text-sky-400 transition-colors text-base line-clamp-2">
-                  {ch.title}
-                </h3>
-                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                  {ch.takeaway}
-                </p>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {jsChapters.length === 0
+            ? Array.from({ length: 6 }).map((_, i) => <ChapterSkeleton key={i} />)
+            : jsChapters.slice(0, 6).map((ch) => (
+                <Link
+                  key={ch.slug}
+                  href={`/learn/javascript/${ch.slug}`}
+                  className="craft-card group p-5 flex flex-col justify-between min-h-[160px]"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span className="bg-sky-500/10 text-sky-400 font-mono font-bold px-2 py-0.5 rounded text-[10px]">
+                        Ch.{String(ch.order).padStart(2, '0')}
+                      </span>
+                      <span>{ch.read_time}</span>
+                    </div>
+                    <h3 className="font-bold text-white group-hover:text-sky-400 transition-colors text-sm leading-snug line-clamp-2">
+                      {ch.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{ch.takeaway}</p>
+                  </div>
 
-              <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-                <span>{ch.category}</span>
-                <span className="text-sky-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                  Explore &rarr;
-                </span>
-              </div>
-            </Link>
-          ))}
+                  <div className="pt-4 mt-4 border-t border-slate-800/70 flex items-center justify-between text-[11px] text-slate-500">
+                    <span>{ch.category}</span>
+                    <span className="text-sky-400 font-bold flex items-center gap-0.5 group-hover:translate-x-1 transition-transform">
+                      Explore →
+                    </span>
+                  </div>
+                </Link>
+              ))}
         </div>
       </section>
 
-      {/* Featured Engineering Articles */}
+      {/* ══════════════════════════════════════════
+          FEATURED ENGINEERING ARTICLES
+      ══════════════════════════════════════════ */}
       <section className="max-w-7xl mx-auto px-4 space-y-8">
-        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800 pb-4">
+        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800/70 pb-5">
           <div>
             <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Engineering Articles</span>
-            <h2 className="text-2xl font-black text-white">Technical Deep Dives</h2>
+            <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">Technical Deep Dives</h2>
           </div>
-          <Link href="/blog" className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-            Browse All Posts <ArrowRight className="w-3.5 h-3.5" />
+          <Link
+            href="/blog"
+            className="active-press text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
+          >
+            Browse All Posts <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featuredPosts.map((post) => (
-            <Link
-              key={post.slug}
-              href={`/blog/${post.slug}`}
-              className="group bg-[#0d1527] border border-slate-800 hover:border-emerald-500/40 rounded-xl overflow-hidden transition-all flex flex-col hover:-translate-y-1 shadow-lg"
-            >
-              {post.cover_image_url && (
-                <div className="h-44 overflow-hidden bg-slate-900">
-                  <img
-                    src={post.cover_image_url}
-                    alt={post.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              )}
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span className="text-emerald-400 font-bold">{post.category?.name}</span>
-                    <span>{post.read_time_minutes} min read</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {featuredPosts.length === 0
+            ? Array.from({ length: 3 }).map((_, i) => <PostSkeleton key={i} />)
+            : featuredPosts.map((post) => (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="craft-card group overflow-hidden flex flex-col"
+                >
+                  {post.cover_image_url && (
+                    <div className="relative h-44 bg-slate-900 overflow-hidden">
+                      <Image
+                        src={post.cover_image_url}
+                        alt={post.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    </div>
+                  )}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[11px] text-slate-400">
+                        <span className="text-emerald-400 font-bold">{post.category?.name}</span>
+                        <span>{post.read_time_minutes} min read</span>
+                      </div>
+                      <h3 className="font-bold text-white group-hover:text-emerald-400 transition-colors text-sm leading-snug line-clamp-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">{post.excerpt}</p>
+                    </div>
+                    <div className="pt-3 border-t border-slate-800/70 text-xs text-slate-400 flex items-center justify-between">
+                      <span>{post.author_name}</span>
+                      <span className="text-emerald-400 font-bold group-hover:translate-x-1 transition-transform">Read →</span>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-white group-hover:text-emerald-400 transition-colors text-base line-clamp-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                    {post.excerpt}
-                  </p>
-                </div>
+                </Link>
+              ))}
+        </div>
+      </section>
 
-                <div className="pt-3 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
-                  <span>{post.author_name}</span>
-                  <span className="text-emerald-400 font-bold">Read &rarr;</span>
-                </div>
-              </div>
-            </Link>
-          ))}
+      {/* ══════════════════════════════════════════
+          BOTTOM CTA BANNER
+      ══════════════════════════════════════════ */}
+      <section className="max-w-4xl mx-auto px-4">
+        <div
+          className="relative overflow-hidden rounded-2xl border border-sky-500/20 p-10 text-center space-y-5"
+          style={{
+            background: 'radial-gradient(120% 120% at 50% 0%, rgba(56,189,248,0.08) 0%, rgba(8,14,26,0.95) 100%)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+          }}
+        >
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_40%_at_50%_0%,rgba(56,189,248,0.1),transparent)]" />
+          <Code2 className="w-8 h-8 text-sky-400 mx-auto" aria-hidden="true" />
+          <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            Ready to go deep on JavaScript?
+          </h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            Jump into the interactive masterclass — step through V8 execution with real-time AST tracing, tackle quizzes, and build intuition that sticks.
+          </p>
+          <Link
+            href="/learn/javascript"
+            className="active-press inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white font-bold px-8 py-3.5 rounded-xl text-sm shadow-lg shadow-sky-500/30 transition-all"
+            style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px -2px rgba(56,189,248,0.4)' }}
+          >
+            <Zap className="w-4 h-4" aria-hidden="true" /> Begin Masterclass
+          </Link>
         </div>
       </section>
     </div>
