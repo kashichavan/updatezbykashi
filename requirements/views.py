@@ -667,6 +667,8 @@ def job_recruiter_connect_view(request, category_slug=None, uuid=None, pk=None, 
 
     recruiter_intel = get_recruiter_intelligence_for_job(job)
     active_recruiter = recruiter_intel.get('active_recruiter', {})
+    skills = job.get_skills_list()
+    top_skills_text = ", ".join(skills[:3]) if skills else "Full-Stack, Clean Code, Problem Solving"
 
     job_detail_url = ""
     try:
@@ -685,6 +687,8 @@ def job_recruiter_connect_view(request, category_slug=None, uuid=None, pk=None, 
         'clean_company_name': recruiter_intel.get('clean_company_name') or job.company_name,
         'company_domain': recruiter_intel.get('domain'),
         'google_xray_url': recruiter_intel.get('google_xray_url'),
+        'skills_list': skills,
+        'top_skills_text': top_skills_text,
     }
     return render(request, 'content/job_recruiter.html', context)
 

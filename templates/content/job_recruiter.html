@@ -1,87 +1,170 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Recruiter Email & Google X-Ray — {{ clean_company_name }} | Kashii Updatez{% endblock %}
-{% block meta_description %}Find verified recruiter emails and LinkedIn profiles for {{ job.title }} at {{ clean_company_name }} using Google X-Ray and direct email extraction.{% endblock %}
+{% block title %}Recruiter Email & Direct Outreach Studio — {{ clean_company_name }} | Kashii Updatez{% endblock %}
+{% block meta_description %}Direct outreach and recruiter contact hub for {{ job.title }} at {{ clean_company_name }}. Discover recruiters with Google X-Ray, extract original corporate emails, and generate tailored cold DMs and InMails.{% endblock %}
 
 {% block extra_css %}
 <style>
-  .recruiter-connect-wrapper {
-    max-width: 760px;
+  :root {
+    --recruiter-bg: #f8fafc;
+    --card-surface: #ffffff;
+    --card-border: #e2e8f0;
+    --brand-blue: #2563eb;
+    --brand-blue-hover: #1d4ed8;
+    --brand-blue-soft: #eff6ff;
+    --text-primary: #0f172a;
+    --text-muted: #64748b;
+    --accent-emerald: #10b981;
+    --accent-emerald-soft: rgba(16, 185, 129, 0.12);
+  }
+
+  .recruiter-container {
+    max-width: 900px;
     margin: 0 auto;
     padding: 24px 16px 80px;
   }
 
-  .back-btn-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--ink);
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    margin-bottom: 22px;
-    padding: 8px 14px;
-    background: #ffffff;
-    border: 1px solid var(--subtle-border);
-    border-radius: 10px;
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-  }
-  .back-btn-pill:hover {
-    color: var(--blue-primary);
-    border-color: var(--blue-border);
-    transform: translateX(-2px);
-  }
-
-  .step-card {
-    background: #ffffff;
-    border: 1.5px solid var(--subtle-border);
-    border-radius: 18px;
-    padding: 24px;
-    margin-bottom: 22px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-  }
-
-  .step-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--blue-light);
-    color: var(--blue-dark);
-    font-size: 11px;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 10px;
-  }
-
-  .email-result-pill {
-    background: #0f172a;
-    border: 1.5px solid #1e293b;
-    border-radius: 14px;
-    padding: 16px 18px;
-    color: #ffffff;
-    margin-top: 14px;
+  /* Top Navigation & Breadcrumb */
+  .recruiter-breadcrumb-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
+    margin-bottom: 20px;
   }
 
-  .btn-action-primary {
+  .btn-back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1px solid var(--card-border);
+    border-radius: 9999px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    transition: all 0.2s ease;
+  }
+  .btn-back-pill:hover {
+    color: var(--brand-blue);
+    border-color: #93c5fd;
+    transform: translateX(-2px);
+  }
+
+  .btn-view-job {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--brand-blue);
+    background: var(--brand-blue-soft);
+    padding: 8px 14px;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .btn-view-job:hover {
+    background: #dbeafe;
+  }
+
+  /* Job Header Summary Card */
+  .job-summary-header {
+    background: #ffffff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .job-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+  }
+
+  /* Universal Step Cards */
+  .step-card {
+    background: #ffffff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    padding: 26px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+    transition: border-color 0.2s ease;
+  }
+  .step-card:hover {
+    border-color: #cbd5e1;
+  }
+
+  .step-header-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--brand-blue-soft);
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+  }
+
+  .step-header-tag.emerald {
+    background: var(--accent-emerald-soft);
+    color: #065f46;
+  }
+
+  .step-header-tag.purple {
+    background: rgba(168, 85, 247, 0.12);
+    color: #7e22ce;
+  }
+
+  .step-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin: 0 0 18px;
+  }
+
+  /* Action Buttons */
+  .btn-gradient-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-    color: #ffffff;
-    padding: 13px 22px;
+    color: #ffffff !important;
+    padding: 12px 22px;
     border-radius: 12px;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 800;
     text-decoration: none;
     border: none;
@@ -89,127 +172,507 @@
     box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     transition: all 0.2s ease;
   }
-  .btn-action-primary:hover {
+  .btn-gradient-primary:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
-    color: #ffffff;
   }
 
-  @media (max-width: 640px) {
-    .recruiter-connect-wrapper {
-      padding: 14px 12px 60px;
+  .btn-secondary-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #f8fafc;
+    border: 1px solid var(--card-border);
+    color: #334155;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .btn-secondary-pill:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: var(--text-primary);
+  }
+
+  /* Live Email Result Banner */
+  .email-result-darkbox {
+    background: #0f172a;
+    border: 1.5px solid #1e293b;
+    border-radius: 16px;
+    padding: 20px;
+    color: #ffffff;
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .email-code-badge {
+    font-family: var(--font-code, 'Fira Code', monospace);
+    font-size: 16px;
+    font-weight: 700;
+    color: #38bdf8;
+    background: rgba(14, 165, 233, 0.12);
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.02em;
+    word-break: break-all;
+  }
+
+  /* Channel Segmented Tabs */
+  .channel-tabs-container {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 18px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .channel-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 15px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    border: 1px solid var(--card-border);
+    background: #f8fafc;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .channel-tab-btn:hover {
+    color: var(--text-primary);
+    background: #f1f5f9;
+  }
+  .channel-tab-btn.active {
+    background: var(--brand-blue);
+    color: #ffffff;
+    border-color: var(--brand-blue);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+
+  /* Tone Selector Pills */
+  .tone-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+  }
+  .tone-pill-btn {
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+  }
+  .tone-pill-btn:hover {
+    color: var(--text-primary);
+  }
+  .tone-pill-btn.active {
+    background: #ffffff;
+    color: var(--brand-blue);
+    border-color: #bfdbfe;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
+  }
+
+  /* Studio Customization Inputs */
+  .studio-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .studio-input-wrap label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .studio-input-wrap input {
+    width: 100%;
+    background: #f8fafc;
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 600;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+  }
+  .studio-input-wrap input:focus {
+    border-color: var(--brand-blue);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  /* Pitch Textarea Container */
+  .pitch-box-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .pitch-textarea {
+    width: 100%;
+    background: #f8fafc;
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    color: var(--text-primary);
+    font-size: 13.5px;
+    font-family: var(--font-sans, system-ui, sans-serif);
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+  }
+  .pitch-textarea:focus {
+    background: #ffffff;
+    border-color: var(--brand-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  /* Action Buttons Toolbar */
+  .studio-action-toolbar {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 10px;
+  }
+
+  @media (max-width: 768px) {
+    .studio-inputs-grid {
+      grid-template-columns: 1fr;
     }
-    .step-card {
-      padding: 18px 16px;
-    }
-    .btn-action-primary {
-      width: 100%;
+    .studio-action-toolbar {
+      grid-template-columns: 1fr;
     }
     .email-result-actions {
       width: 100%;
       display: grid !important;
       grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .recruiter-container {
+      padding: 16px 12px 60px;
+    }
+    .step-card {
+      padding: 20px 16px;
+      border-radius: 16px;
+    }
+    .job-summary-header {
+      padding: 18px 16px;
+      border-radius: 16px;
+    }
+    .btn-gradient-primary {
+      width: 100%;
+    }
+    .step-title {
+      font-size: 18px;
     }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="recruiter-connect-wrapper">
+<div class="recruiter-container">
 
-  <!-- Back Navigation -->
-  <a href="{{ job_detail_url }}" class="back-btn-pill">
-    <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
-    <span>Back to Job Details ({{ job.title|truncatechars:35 }})</span>
-  </a>
+  <!-- Top Navigation & Breadcrumbs -->
+  <div class="recruiter-breadcrumb-bar">
+    <a href="{{ job_detail_url }}" class="btn-back-pill">
+      <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
+      <span>Back to Job Details</span>
+    </a>
+    <a href="{{ job_detail_url }}" class="btn-view-job">
+      <span>View Full Job Requirements ↗</span>
+    </a>
+  </div>
 
-  <!-- Header -->
-  <div style="margin-bottom: 24px;">
-    <div style="font-size: 13px; font-weight: 700; color: var(--blue-primary); margin-bottom: 4px;">
-      Direct Sourcing Hub
+  <!-- Job Header Card -->
+  <div class="job-summary-header">
+    <div style="flex: 1; min-width: 250px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+        <span style="font-size: 12px; font-weight: 800; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.05em;">
+          {{ clean_company_name }}
+        </span>
+        <span class="job-badge-pill">
+          <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
+          <span>{{ job.location|default:"India" }}</span>
+        </span>
+        <span class="job-badge-pill">
+          <i data-lucide="briefcase" style="width: 12px; height: 12px;"></i>
+          <span>{{ job.get_work_mode_display|default:job.job_type|default:"Full-Time" }}</span>
+        </span>
+        {% if job.stipend_salary %}
+        <span class="job-badge-pill" style="color: #047857; background: #ecfdf5;">
+          <i data-lucide="badge-dollar-sign" style="width: 12px; height: 12px;"></i>
+          <span>{{ job.stipend_salary }}</span>
+        </span>
+        {% endif %}
+      </div>
+      <h1 style="font-size: 24px; font-weight: 900; color: var(--text-primary); margin: 0 0 6px; letter-spacing: -0.02em;">
+        Direct Recruiter Outreach &amp; Email Hub
+      </h1>
+      <p style="font-size: 14px; color: var(--text-muted); margin: 0;">
+        Role: <strong style="color: var(--text-primary);">{{ job.title }}</strong> &bull; Skip candidate queues by connecting directly with talent leads.
+      </p>
     </div>
-    <h1 style="font-size: 26px; font-weight: 900; color: var(--ink); margin: 0 0 6px; letter-spacing: -0.02em;">
-      Find Recruiter &amp; Original Email ID
-    </h1>
-    <p style="font-size: 14px; color: var(--muted); margin: 0; line-height: 1.5;">
-      Search LinkedIn recruiters for <strong>{{ clean_company_name }}</strong> via Google X-Ray, then paste their profile to get their original email ID.
-    </p>
   </div>
 
   <!-- STEP 1: GOOGLE X-RAY SEARCH -->
   <div class="step-card">
-    <div class="step-badge">
+    <div class="step-header-tag">
       <i data-lucide="search" style="width: 13px; height: 13px;"></i>
-      <span>Step 1: Google X-Ray</span>
+      <span>Step 1 • Zero-Limit LinkedIn Sourcing</span>
     </div>
-    <h2 style="font-size: 18px; font-weight: 900; color: var(--ink); margin: 0 0 8px;">
+    <h2 class="step-title">
       Find {{ clean_company_name }} Recruiters on LinkedIn
     </h2>
-    <p style="font-size: 13.5px; color: var(--muted); margin: 0 0 16px; line-height: 1.5;">
-      Google X-Ray bypasses LinkedIn login walls, commercial search limits, and private profile masking. Click below to view all talent acquisition leads at {{ clean_company_name }}.
+    <p class="step-desc">
+      Google X-Ray searches the entire public LinkedIn index directly using boolean syntax. It completely bypasses LinkedIn login walls, commercial monthly search limits, and blurred profiles.
     </p>
 
-    <a href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" class="btn-action-primary">
-      <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
-      <span>Open Google X-Ray Search for {{ clean_company_name }} ↗</span>
-    </a>
+    <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 16px; margin-bottom: 18px;">
+      <div style="font-size: 11.5px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px;">
+        💡 Precision Query Format:
+      </div>
+      <code style="font-size: 12px; color: #0284c7; word-break: break-all; font-family: var(--font-code);">
+        site:linkedin.com/in "{{ clean_company_name }}" (recruiter OR "talent acquisition" OR "technical recruiter" OR "hiring manager")
+      </code>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+      <a href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" class="btn-gradient-primary">
+        <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+        <span>Open Google X-Ray Search for {{ clean_company_name }} ↗</span>
+      </a>
+      <span style="font-size: 12.5px; color: var(--text-muted);">
+        Copy any recruiter profile URL you find, then paste it in Step 2 below ↓
+      </span>
+    </div>
   </div>
 
-  <!-- STEP 2: PASTE LINKEDIN PROFILE & GET ORIGINAL EMAIL ID -->
+  <!-- STEP 2: PROFILE-TO-ORIGINAL-EMAIL EXTRACTOR -->
   <div class="step-card">
-    <div class="step-badge" style="background: rgba(16, 185, 129, 0.15); color: #047857;">
-      <i data-lucide="mail" style="width: 13px; height: 13px;"></i>
-      <span>Step 2: Profile to Original Email ID</span>
+    <div class="step-header-tag emerald">
+      <i data-lucide="mail-check" style="width: 13px; height: 13px;"></i>
+      <span>Step 2 • Original Email ID Extractor</span>
     </div>
-    <h2 style="font-size: 18px; font-weight: 900; color: var(--ink); margin: 0 0 8px;">
-      Enter Recruiter Profile ➔ Get Original Email
+    <h2 class="step-title">
+      Paste Recruiter Profile ➔ Get Original Email ID
     </h2>
-    <p style="font-size: 13.5px; color: var(--muted); margin: 0 0 14px; line-height: 1.5;">
-      Paste any recruiter's LinkedIn profile link below. Our engine automatically resolves their name and original email ID.
+    <p class="step-desc">
+      Paste any recruiter's LinkedIn profile URL below. Our engine resolves their verified name, company email domain (<strong style="color: var(--text-primary);">{{ company_domain }}</strong>), and returns their individual corporate email.
     </p>
 
+    <!-- Interactive URL Input Group -->
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <input type="text" id="targetLinkedInUrl" placeholder="Paste recruiter profile (e.g. https://www.linkedin.com/in/recruiter-name/)" oninput="handleProfileInputDebounced()" style="flex: 1; min-width: 250px; background: #f8fafc; border: 1.5px solid var(--subtle-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; color: var(--ink); outline: none; box-sizing: border-box;">
-      <button type="button" id="btnGetOriginalEmail" onclick="fetchOriginalRecruiterEmail()" class="btn-action-primary" style="padding: 12px 18px;">
+      <div style="flex: 1; min-width: 260px; position: relative;">
+        <input 
+          type="text" 
+          id="targetLinkedInUrl" 
+          placeholder="Paste recruiter LinkedIn profile (e.g. https://www.linkedin.com/in/recruiter-name/)" 
+          oninput="handleProfileInputDebounced()" 
+          style="width: 100%; background: #f8fafc; border: 1.5px solid var(--card-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; color: var(--text-primary); outline: none; box-sizing: border-box;"
+        >
+      </div>
+      <button type="button" id="btnGetOriginalEmail" onclick="fetchOriginalRecruiterEmail()" class="btn-gradient-primary" style="padding: 12px 18px;">
         <i data-lucide="zap" style="width: 15px; height: 15px;"></i>
         <span>Get Original Email</span>
       </button>
     </div>
 
     <!-- Live Original Email Result Box -->
-    <div id="emailResultBox" class="email-result-pill">
+    <div id="emailResultBox" class="email-result-darkbox">
       <div>
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-          <span style="font-size: 15px; font-weight: 900; color: #ffffff;" id="displayRecruiterName">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
+          <span style="font-size: 16px; font-weight: 800; color: #ffffff;" id="displayRecruiterName">
             {{ active_recruiter.name }}
           </span>
-          <span style="background: rgba(16, 185, 129, 0.25); color: #34d399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px;" id="displayEmailBadge">
-            ✓ Original Recruiter Email
+          <span style="background: rgba(16, 185, 129, 0.25); color: #34d399; font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 6px;" id="displayEmailBadge">
+            {% if active_recruiter.verified %}✓ Verified Recruiter Contact{% else %}✓ Original Corporate Recruiter Email{% endif %}
+          </span>
+          <span style="font-size: 12px; color: #94a3b8;" id="displayRecruiterRole">
+            {{ active_recruiter.title }}
           </span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-          <code id="displayOriginalEmail" style="font-size: 16px; font-weight: 800; color: #38bdf8; letter-spacing: 0.02em;">
+          <code class="email-code-badge" id="displayOriginalEmail">
             {{ active_recruiter.email }}
           </code>
         </div>
       </div>
 
       <div class="email-result-actions" style="display: flex; gap: 8px;">
-        <button type="button" id="btnCopyEmail" onclick="copyOriginalEmail()" style="background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.5); color: #93c5fd; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
-          📋 Copy Email
+        <button type="button" id="btnCopyEmail" onclick="copyOriginalEmail()" class="btn-secondary-pill" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: #93c5fd;">
+          <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+          <span>Copy Email</span>
         </button>
-        <button type="button" onclick="composeEmailToRecruiter()" style="background: #2563eb; border: none; color: #ffffff; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
-          ✉️ Send Mail
+        <button type="button" onclick="composeEmailToRecruiter()" class="btn-gradient-primary" style="padding: 10px 18px; font-size: 13px;">
+          <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+          <span>Send Mail</span>
+        </button>
+        <button type="button" onclick="syncRecruiterToStudio()" class="btn-secondary-pill" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35); color: #38bdf8;" title="Load this recruiter into the DM studio below">
+          <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+          <span>Sync to DM Studio ↓</span>
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- STEP 3: COLD DM & OUTREACH MESSAGE STUDIO -->
+  <div class="step-card" id="stepOutreachStudio">
+    <div class="step-header-tag purple">
+      <i data-lucide="message-square" style="width: 13px; height: 13px;"></i>
+      <span>Step 3 • Cold DM &amp; Outreach Message Studio</span>
+    </div>
+    <h2 class="step-title">
+      Generate Tailored DM, InMail &amp; Cold Email
+    </h2>
+    <p class="step-desc">
+      Recruiters receive hundreds of generic applications. Stand out with concise, high-signal messages customized for <strong style="color: var(--text-primary);">{{ job.title }}</strong> at <strong style="color: var(--text-primary);">{{ clean_company_name }}</strong>.
+    </p>
+
+    <!-- Channel Selector Tabs -->
+    <div class="channel-tabs-container">
+      <button type="button" class="channel-tab-btn active" id="tabConnect" onclick="switchOutreachChannel('connect')">
+        <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i>
+        <span>LinkedIn Connect (&le; 300 Chars)</span>
+      </button>
+      <button type="button" class="channel-tab-btn" id="tabInmail" onclick="switchOutreachChannel('inmail')">
+        <i data-lucide="message-circle" style="width: 14px; height: 14px;"></i>
+        <span>LinkedIn InMail / DM</span>
+      </button>
+      <button type="button" class="channel-tab-btn" id="tabEmail" onclick="switchOutreachChannel('email')">
+        <i data-lucide="mail" style="width: 14px; height: 14px;"></i>
+        <span>Cold Email to Recruiter</span>
+      </button>
+      <button type="button" class="channel-tab-btn" id="tabWhatsapp" onclick="switchOutreachChannel('whatsapp')">
+        <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
+        <span>WhatsApp / Quick Ping</span>
+      </button>
+      <button type="button" class="channel-tab-btn" id="tabFollowup" onclick="switchOutreachChannel('followup')">
+        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+        <span>3-Day Follow-Up</span>
+      </button>
+    </div>
+
+    <!-- Tone Selector Row -->
+    <div class="tone-pills-row">
+      <span style="font-size: 11.5px; font-weight: 800; color: #475569; text-transform: uppercase;">
+        Outreach Tone:
+      </span>
+      <button type="button" id="toneBtnConfident" onclick="setOutreachTone('confident')" class="tone-pill-btn active">
+        ⚡ Confident &amp; Direct
+      </button>
+      <button type="button" id="toneBtnFresher" onclick="setOutreachTone('fresher')" class="tone-pill-btn">
+        🎓 Enthusiastic Fresher
+      </button>
+      <button type="button" id="toneBtnImpact" onclick="setOutreachTone('impact')" class="tone-pill-btn">
+        💼 High-Impact Senior
+      </button>
+
+      <!-- Live Dynamic Character Badge -->
+      <div id="outreachCharBadge" style="margin-left: auto; font-size: 11.5px; font-weight: 800; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px;">
+        242 / 300 chars (Safe for Free LinkedIn)
+      </div>
+    </div>
+
+    <!-- Customization Inputs Bar -->
+    <div class="studio-inputs-grid">
+      <div class="studio-input-wrap">
+        <label for="outreachCandidateName">Your Name:</label>
+        <input type="text" id="outreachCandidateName" value="[Your Name]" oninput="renderOutreachTemplates()">
+      </div>
+      <div class="studio-input-wrap">
+        <label for="outreachRecruiterName">Recruiter Name:</label>
+        <input type="text" id="outreachRecruiterName" value="{{ active_recruiter.name|default:'Hiring Team' }}" oninput="renderOutreachTemplates()">
+      </div>
+      <div class="studio-input-wrap">
+        <label for="outreachProjectFocus">Project / Skill Highlight:</label>
+        <input type="text" id="outreachProjectFocus" value="{{ top_skills_text }}" oninput="renderOutreachTemplates()">
+      </div>
+    </div>
+
+    <!-- Cold Email Subject Box (Visible only for Cold Email tab) -->
+    <div id="emailSubjectContainer" style="display: none; margin-bottom: 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 14px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
+        <span style="font-size: 11.5px; font-weight: 800; color: #1e40af; text-transform: uppercase;">
+          Email Subject Line:
+        </span>
+        <button type="button" onclick="copyEmailSubjectOnly()" class="btn-secondary-pill" style="padding: 4px 10px; font-size: 11px;">
+          📋 Copy Subject
+        </button>
+      </div>
+      <input type="text" id="outreachEmailSubject" readonly style="width: 100%; background: #ffffff; border: 1px solid #93c5fd; border-radius: 8px; padding: 8px 12px; color: #1e3a8a; font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
+    </div>
+
+    <!-- Message Textarea -->
+    <div class="pitch-box-wrap">
+      <textarea id="outreachMessageText" rows="7" class="pitch-textarea" spellcheck="false"></textarea>
+    </div>
+
+    <!-- Action Buttons Toolbar -->
+    <div class="studio-action-toolbar">
+      <button type="button" id="btnCopyPitch" onclick="copyOutreachMessage()" class="btn-gradient-primary">
+        <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
+        <span id="btnCopyPitchText">📋 Copy Outreach Pitch</span>
+      </button>
+
+      <a href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" id="btnOpenLinkedIn" class="btn-secondary-pill" style="background: #0077b5; color: #ffffff; border-color: #0077b5;" title="Open Recruiter Search on LinkedIn">
+        <i data-lucide="linkedin" style="width: 15px; height: 15px;"></i>
+        <span>Search on LinkedIn ↗</span>
+      </a>
+
+      <button type="button" onclick="launchDirectEmailClient()" class="btn-secondary-pill" title="Open your email client with pitch prefilled">
+        <i data-lucide="send" style="width: 15px; height: 15px;"></i>
+        <span>Draft in Email Client</span>
+      </button>
     </div>
   </div>
 
 </div>
 
 <script>
+  /* ── GLOBAL STATE & RECRUITER DATA ── */
+  let currentChannel = 'connect';
+  let currentTone = 'confident';
   let debounceTimeout = null;
 
+  const jobMeta = {
+    title: "{{ job.title|escapejs }}",
+    company: "{{ clean_company_name|escapejs }}",
+    domain: "{{ company_domain|default:'company.com'|escapejs }}",
+    skills: "{{ top_skills_text|escapejs }}",
+    jobUrl: "{{ job_detail_url|escapejs }}"
+  };
+
+  /* ── STEP 2: PROFILE-TO-EMAIL EXTRACTOR LOGIC ── */
   function handleProfileInputDebounced() {
     clearTimeout(debounceTimeout);
     debounceTimeout = setTimeout(() => {
@@ -224,13 +687,17 @@
     const input = document.getElementById('targetLinkedInUrl');
     const url = input ? input.value.trim() : '';
     if (!url || !url.includes('linkedin.com/in/')) {
-      if (window.showToast) window.showToast("⚠️ Please enter a valid LinkedIn profile URL", "error");
+      if (window.showToast) {
+        window.showToast("⚠️ Please enter a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/recruiter-name/)", "error");
+      } else {
+        alert("Please enter a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/recruiter-name/)");
+      }
       return;
     }
 
     const btn = document.getElementById('btnGetOriginalEmail');
     if (btn) {
-      btn.innerHTML = '<span>⏳ Resolving...</span>';
+      btn.innerHTML = '<span>⏳ Resolving OSINT...</span>';
       btn.disabled = true;
     }
 
@@ -239,23 +706,48 @@
       const res = await resp.json();
       if (res.status === 'ok' && res.data) {
         const data = res.data;
+
+        // Update Step 2 Card
         const nameEl = document.getElementById('displayRecruiterName');
         if (nameEl) nameEl.innerText = data.name;
 
         const emailEl = document.getElementById('displayOriginalEmail');
         if (emailEl) emailEl.innerText = data.email;
 
+        const roleEl = document.getElementById('displayRecruiterRole');
+        if (roleEl) roleEl.innerText = data.title || 'Technical Recruiter';
+
         const badgeEl = document.getElementById('displayEmailBadge');
         if (badgeEl) badgeEl.innerText = '✓ ' + (data.status || 'Original Recruiter Email');
 
+        // Automatically update Step 3 Recruiter Name input
+        const recInput = document.getElementById('outreachRecruiterName');
+        if (recInput) {
+          recInput.value = data.name;
+        }
+
+        // Update LinkedIn Profile button in Step 3
+        const liBtn = document.getElementById('btnOpenLinkedIn');
+        if (liBtn) {
+          liBtn.href = data.linkedin_url || url;
+          liBtn.innerHTML = '<i data-lucide="linkedin" style="width: 15px; height: 15px;"></i><span>Open Profile ↗</span>';
+          if (window.lucide) window.lucide.createIcons();
+        }
+
+        renderOutreachTemplates();
+
         if (window.showToast) {
-          window.showToast(`✅ Original email found: ${data.email}`, "success");
+          window.showToast(`✅ Recruiter resolved: ${data.name} (${data.email})`, "success");
         }
       } else {
-        throw new Error(res.message || "Failed to resolve email");
+        throw new Error(res.message || "Failed to resolve recruiter email");
       }
     } catch (err) {
-      if (window.showToast) window.showToast(`❌ Error: ${err.message}`, "error");
+      if (window.showToast) {
+        window.showToast(`❌ Error: ${err.message}`, "error");
+      } else {
+        alert(`Error: ${err.message}`);
+      }
     } finally {
       if (btn) {
         btn.innerHTML = '<i data-lucide="zap" style="width: 15px; height: 15px;"></i><span>Get Original Email</span>';
@@ -269,18 +761,15 @@
     const emailEl = document.getElementById('displayOriginalEmail');
     const email = emailEl ? emailEl.innerText.trim() : '';
     if (!email) return;
+
     navigator.clipboard.writeText(email).then(() => {
       const btn = document.getElementById('btnCopyEmail');
       if (btn) {
-        const orig = btn.innerText;
-        btn.innerText = '✅ Copied!';
-        setTimeout(() => { btn.innerText = orig; }, 2000);
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span>✅ Copied!</span>';
+        setTimeout(() => { btn.innerHTML = orig; if (window.lucide) window.lucide.createIcons(); }, 2000);
       }
-      if (window.showToast) {
-        window.showToast(`📋 Copied: ${email}`, "success");
-      } else {
-        alert(`Copied: ${email}`);
-      }
+      if (window.showToast) window.showToast(`📋 Copied: ${email}`, "success");
     });
   }
 
@@ -288,12 +777,183 @@
     const emailEl = document.getElementById('displayOriginalEmail');
     const email = emailEl ? emailEl.innerText.trim() : '';
     if (!email) return;
-    const subject = `Application: {{ job.title|escapejs }} at {{ clean_company_name|escapejs }}`;
-    const body = `Hi,\n\nI came across the {{ job.title|escapejs }} role at {{ clean_company_name|escapejs }} and wanted to share my resume directly.\n\nWarm regards,\nCandidate`;
+
+    const candidateName = document.getElementById('outreachCandidateName')?.value?.trim() || 'Candidate';
+    const subject = `Application: ${jobMeta.title} at ${jobMeta.company} - ${candidateName}`;
+    const body = `Hi,\n\nI noticed the opening for ${jobMeta.title} at ${jobMeta.company} and wanted to reach out directly.\n\nWarm regards,\n${candidateName}`;
     window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
   }
 
+  function syncRecruiterToStudio() {
+    const nameEl = document.getElementById('displayRecruiterName');
+    const name = nameEl ? nameEl.innerText.trim() : '';
+    if (name) {
+      const recInput = document.getElementById('outreachRecruiterName');
+      if (recInput) recInput.value = name;
+      renderOutreachTemplates();
+    }
+    const studioEl = document.getElementById('stepOutreachStudio');
+    if (studioEl) {
+      studioEl.scrollIntoView({ behavior: 'smooth' });
+    }
+    if (window.showToast) {
+      window.showToast("⚡ Recruiter synced to DM Studio below!", "success");
+    }
+  }
+
+  /* ── STEP 3: COLD DM & OUTREACH MESSAGE STUDIO LOGIC ── */
+  function switchOutreachChannel(channel) {
+    currentChannel = channel;
+    const channels = ['connect', 'inmail', 'email', 'whatsapp', 'followup'];
+    channels.forEach(ch => {
+      const btn = document.getElementById('tab' + ch.charAt(0).toUpperCase() + ch.slice(1));
+      if (btn) {
+        if (ch === channel) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
+
+    const subjContainer = document.getElementById('emailSubjectContainer');
+    if (subjContainer) {
+      subjContainer.style.display = (channel === 'email') ? 'block' : 'none';
+    }
+
+    renderOutreachTemplates();
+  }
+
+  function setOutreachTone(tone) {
+    currentTone = tone;
+    const tones = ['confident', 'fresher', 'impact'];
+    tones.forEach(t => {
+      const btn = document.getElementById('toneBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (btn) {
+        if (t === tone) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      }
+    });
+
+    renderOutreachTemplates();
+  }
+
+  function renderOutreachTemplates() {
+    const candidateName = document.getElementById('outreachCandidateName')?.value?.trim() || '[Your Name]';
+    const recruiterName = document.getElementById('outreachRecruiterName')?.value?.trim() || 'Hiring Lead';
+    const projectFocus = document.getElementById('outreachProjectFocus')?.value?.trim() || jobMeta.skills || 'production-ready projects';
+    const company = jobMeta.company;
+    const jobTitle = jobMeta.title;
+
+    let message = '';
+    const charBadge = document.getElementById('outreachCharBadge');
+
+    if (currentChannel === 'connect') {
+      // Strictly under 300 characters for LinkedIn free connection invite!
+      if (currentTone === 'fresher') {
+        message = `Hi ${recruiterName}, aspiring engineer eager to contribute to ${company}'s ${jobTitle} opening. Skilled in ${projectFocus}. Would love to connect and share my portfolio! - ${candidateName}`;
+      } else if (currentTone === 'impact') {
+        message = `Hi ${recruiterName}, saw ${company}'s search for a ${jobTitle}. Built production projects using ${projectFocus}, prioritizing scalable architecture. Would love to connect. - ${candidateName}`;
+      } else {
+        // Confident & Direct
+        message = `Hi ${recruiterName}, I saw your opening for ${jobTitle} at ${company}. With hands-on experience in ${projectFocus}, I'd value connecting and sharing my portfolio. - ${candidateName}`;
+      }
+    } else if (currentChannel === 'inmail') {
+      // Structured 3-paragraph InMail / DM
+      if (currentTone === 'fresher') {
+        message = `Hi ${recruiterName},\n\nI hope you're having a productive week! I recently came across the ${jobTitle} role at ${company} and was immediately drawn to your engineering standards.\n\nAs an early-career engineer with strong practical training in ${projectFocus}, I focus heavily on write-tested, production-clean code with 250+ DSA problems solved.\n\nI have already submitted my formal application through the careers portal, but wanted to reach out directly. Would you be open to reviewing my GitHub or having a brief 5-minute chat?\n\nWarm regards,\n${candidateName}\nPortfolio / GitHub: [Add Link]`;
+      } else if (currentTone === 'impact') {
+        message = `Hi ${recruiterName},\n\nI noticed ${company} is expanding its technical team with the ${jobTitle} position.\n\nMy background centers on building high-reliability systems using ${projectFocus}. Recently, I engineered production architectures with robust REST endpoints and modular components.\n\nGiven ${company}'s engineering scale, I am confident my hands-on background can deliver immediate momentum. I'd love to connect for a quick 5-minute conversation or share my code samples.\n\nBest regards,\n${candidateName}\nLinkedIn / GitHub: [Your Link]`;
+      } else {
+        message = `Hi ${recruiterName},\n\nI hope this finds you well! I noticed ${company} is hiring for the ${jobTitle} position and wanted to reach out.\n\nI specialize in ${projectFocus} and have built scalable, production-ready applications. I believe my hands-on experience aligns closely with what you're looking for in this role.\n\nI have submitted my application via the careers portal, but would welcome the chance to share my portfolio or speak briefly about how I can contribute to ${company}.\n\nBest regards,\n${candidateName}\nPortfolio / Projects: [Add Link]`;
+      }
+    } else if (currentChannel === 'email') {
+      const emailSubject = `Application & Engineering Match: ${jobTitle} - ${candidateName}`;
+      const subjEl = document.getElementById('outreachEmailSubject');
+      if (subjEl) subjEl.value = emailSubject;
+
+      message = `Dear ${recruiterName} / ${company} Talent Acquisition Team,\n\nI am writing to express my strong interest in the ${jobTitle} opening at ${company}.\n\nWhy I am an immediate technical fit:\n• Practical proficiency in core requirements: ${projectFocus}\n• Engineered and deployed scalable, tested projects with production design patterns\n• Dedicated to clean code, maintainable architecture, and fast execution\n\nI have attached my resume and would welcome a brief 5-minute conversation to discuss how my skill set can support ${company}'s milestones.\n\nSincerely,\n${candidateName}\nPortfolio / GitHub: [Add Link]\nPhone: [Your Phone Number]`;
+    } else if (currentChannel === 'whatsapp') {
+      message = `Hi ${recruiterName}! I saw the ${jobTitle} opportunity at ${company}. I specialize in ${projectFocus} and recently shipped production code. I have submitted my formal application and wanted to share my resume directly. Would you be open to taking a quick look? Thank you! - ${candidateName}`;
+    } else {
+      // Follow-up
+      message = `Hi ${recruiterName},\n\nI wanted to follow up briefly regarding the ${jobTitle} opening at ${company}.\n\nI remain very excited about the opportunity to contribute with my background in ${projectFocus}. If you need any additional code samples, test cases, or details from my side, please feel free to let me know.\n\nThank you for your time and consideration!\n\nBest regards,\n${candidateName}`;
+    }
+
+    const textArea = document.getElementById('outreachMessageText');
+    if (textArea) {
+      textArea.value = message;
+    }
+
+    // Update Character Badge
+    if (charBadge) {
+      const len = message.length;
+      if (currentChannel === 'connect') {
+        charBadge.style.display = 'inline-block';
+        if (len <= 300) {
+          charBadge.innerText = `${len} / 300 chars (Safe for Free LinkedIn)`;
+          charBadge.style.color = '#047857';
+          charBadge.style.background = '#ecfdf5';
+          charBadge.style.borderColor = '#a7f3d0';
+        } else {
+          charBadge.innerText = `${len} / 300 chars (Exceeds Limit!)`;
+          charBadge.style.color = '#b91c1c';
+          charBadge.style.background = '#fef2f2';
+          charBadge.style.borderColor = '#fecaca';
+        }
+      } else {
+        charBadge.innerText = `${len} characters • Ready to send`;
+        charBadge.style.color = '#1d4ed8';
+        charBadge.style.background = '#eff6ff';
+        charBadge.style.borderColor = '#bfdbfe';
+      }
+    }
+  }
+
+  function copyOutreachMessage() {
+    const textArea = document.getElementById('outreachMessageText');
+    if (!textArea) return;
+
+    navigator.clipboard.writeText(textArea.value).then(() => {
+      const btnText = document.getElementById('btnCopyPitchText');
+      if (btnText) {
+        const orig = btnText.innerText;
+        btnText.innerText = '✅ Copied to Clipboard!';
+        setTimeout(() => { btnText.innerText = orig; }, 2200);
+      }
+      if (window.showToast) {
+        window.showToast("📋 Pitch copied! Ready to paste into LinkedIn or Email.", "success");
+      }
+    }).catch(err => {
+      prompt("Copy your outreach message manually:", textArea.value);
+    });
+  }
+
+  function copyEmailSubjectOnly() {
+    const subjEl = document.getElementById('outreachEmailSubject');
+    if (!subjEl || !subjEl.value) return;
+
+    navigator.clipboard.writeText(subjEl.value).then(() => {
+      if (window.showToast) window.showToast("📋 Email Subject copied!", "success");
+    });
+  }
+
+  function launchDirectEmailClient() {
+    const emailEl = document.getElementById('displayOriginalEmail');
+    const targetEmail = (emailEl ? emailEl.innerText.trim() : '') || `recruiter@${jobMeta.domain}`;
+    const subject = document.getElementById('outreachEmailSubject')?.value || `Application: ${jobMeta.title} - ${document.getElementById('outreachCandidateName')?.value || 'Candidate'}`;
+    const body = document.getElementById('outreachMessageText')?.value || '';
+
+    const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
+  }
+
+  // Initial render on page load
   document.addEventListener('DOMContentLoaded', function() {
+    renderOutreachTemplates();
     if (window.lucide) window.lucide.createIcons();
   });
 </script>
