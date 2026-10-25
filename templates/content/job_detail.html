@@ -1546,108 +1546,105 @@
       </button>
     </div>
 
-    <!-- TAB 1: FRESHER BUILDER WITH GITHUB PROJECT DISCOVERY -->
+    <!-- TAB 1: FRESHER BUILDER WITH PRE-BUILT PRODUCTION PROJECTS & ATS GAUGE -->
     <div id="panelJobFresher">
-      <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 10px; padding: 10px 12px; margin-bottom: 14px; font-size: 12px; color: #e2e8f0; line-height: 1.45;">
-        🎯 <strong>I'm a Fresher Workflow:</strong> Discovers real public GitHub repositories matching {{ job.company_name }}'s exact tech stack, ranks them with a 5-factor transparent score, and creates honest quantified bullets.
+
+      <!-- Live ATS Semantic Match Gauge & Gap Analyzer -->
+      <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border: 1.5px solid rgba(168, 85, 247, 0.45); border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <!-- Circular ATS Progress Gauge -->
+            <div id="atsGaugeCircle" class="ats-gauge-circle" style="width: 76px; height: 76px; border-radius: 50%; background: conic-gradient(#34d399 0%, #34d399 85%, #1e293b 85%, #1e293b 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 14px rgba(52, 211, 153, 0.25); transition: all 0.4s ease;">
+              <div style="width: 58px; height: 58px; border-radius: 50%; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span id="atsScoreValue" style="font-size: 18px; font-weight: 900; color: #34d399; line-height: 1;">88%</span>
+                <span style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">ATS Score</span>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 2px;">
+                ATS Match &amp; Semantic Alignment
+              </div>
+              <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
+                Targeted for <strong style="color: #60a5fa;">{{ job.title }}</strong> based on selected project bullets.
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Keyword Alignment Badges -->
+          <div id="atsKeywordsContainer" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 320px;">
+            <!-- Dynamically populated by updateAtsMatchGauge() -->
+          </div>
+        </div>
       </div>
 
-      <!-- Essential Candidate Details -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+      <!-- Candidate Profile Inputs -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
         <div>
-          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Full Name</label>
-          <input type="text" id="fresherName" value="Kashinath Chavan" placeholder="e.g. Kashinath Chavan" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
+          <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 3px;">Candidate Name</label>
+          <input type="text" id="fresherName" value="Kashinath Chavan" placeholder="e.g. Kashinath Chavan" oninput="renderProjectsLibrary()" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 7px 11px; color: #fff; font-size: 12px; box-sizing: border-box; outline: none;">
         </div>
         <div>
-          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">Degree / Major</label>
-          <input type="text" id="fresherDegree" value="B.Tech in Computer Science" placeholder="e.g. B.Tech in CSE / MCA / BCA" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
-        </div>
-      </div>
-
-      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; margin-bottom: 12px;">
-        <div>
-          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">College / University</label>
-          <input type="text" id="fresherCollege" value="Visvesvaraya Technological University" placeholder="e.g. VTU Bangalore" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
-        </div>
-        <div>
-          <label style="display: block; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 4px;">CGPA / Year</label>
-          <input type="text" id="fresherGpaYear" value="8.5 CGPA • 2025" placeholder="e.g. 8.4 CGPA • 2025" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 9px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box;">
+          <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 3px;">Degree &amp; Major</label>
+          <input type="text" id="fresherDegree" value="B.Tech in Computer Science" placeholder="e.g. B.Tech in CSE • 2025" oninput="renderProjectsLibrary()" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 7px 11px; color: #fff; font-size: 12px; box-sizing: border-box; outline: none;">
         </div>
       </div>
 
-      <!-- Action Button to Discover Repositories -->
-      <button type="button" id="btnStartFresherGen" onclick="triggerFresherDiscoveryPipeline()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 10px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45); margin-bottom: 14px;">
-        <i data-lucide="github" style="width: 16px; height: 16px;"></i>
-        <span>⚡ Discover Tech Projects for {{ job.title }}</span>
-      </button>
-
-      <!-- Async Progress Box -->
-      <div id="fresherProgressBox" style="display: none; background: #0b1120; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+      <!-- Instant Search & Category Filter Bar -->
+      <div style="margin-bottom: 10px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span id="fresherStageText" style="font-size: 12px; font-weight: 700; color: #38bdf8;">Searching GitHub repositories...</span>
-          <span id="fresherPctText" style="font-size: 12px; font-weight: 800; color: #a855f7;">40%</span>
+          <span style="font-size: 11.5px; font-weight: 800; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em;">
+            🛠️ Production Projects Library (Google XYZ Bullets)
+          </span>
+          <span style="font-size: 10.5px; color: #38bdf8; font-weight: 700;">1-Click Select</span>
         </div>
-        <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 99px; overflow: hidden;">
-          <div id="fresherProgressBar" style="width: 40%; height: 100%; background: linear-gradient(90deg, #a855f7, #38bdf8); border-radius: 99px; transition: width 0.3s ease;"></div>
+
+        <div style="position: relative; margin-bottom: 6px;">
+          <input type="search" id="projectSearchInput" placeholder="🔍 Search projects by stack (e.g. React, Python, Docker, SQL, AWS, Kafka)..." oninput="filterPreBuiltProjects(this.value)" style="width: 100%; background: #0b1120; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 8px; padding: 8px 12px; color: #ffffff; font-size: 12px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <!-- Filter Category Chips -->
+        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+          <button type="button" class="proj-filter-pill active" onclick="setProjectCategoryFilter('all', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.2); color: #c084fc;">All (6)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('fullstack', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">Full-Stack</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('ai', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">AI / Python</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('devops', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">DevOps &amp; Cloud</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('mobile', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">Mobile App</button>
         </div>
       </div>
 
-      <!-- Discovered Projects Selection Queue -->
-      <div id="fresherProjectsQueue" style="display: none; margin-bottom: 14px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #38bdf8; letter-spacing: 0.5px;">Recommended Projects &amp; Repositories:</span>
-          <span style="font-size: 11px; color: #94a3b8;">Choose 1-2 projects</span>
-        </div>
+      <!-- Projects Cards Container -->
+      <div id="projectsLibraryList" style="display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px;">
+        <!-- Rendered by renderProjectsLibrary() -->
+      </div>
 
-        <!-- Mode Toggle: Indian Demo Projects vs GitHub Repos -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; background: #0f172a; padding: 4px; border-radius: 8px; border: 1px solid #334155;">
-          <button type="button" id="tabBtnFresherIndian" onclick="switchFresherQueueSource('indian')" style="padding: 7px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;">
-            <span>🇮🇳 Indian Market Demos</span>
-          </button>
-          <button type="button" id="tabBtnFresherGithub" onclick="switchFresherQueueSource('github')" style="padding: 7px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 800; border: 1px solid #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; background: #1e293b; color: #94a3b8;">
-            <span>⚡ GitHub Repositories</span>
-          </button>
-        </div>
-
-        <!-- Panel 1: Indian Demo Projects (Curated) -->
-        <div id="panelFresherIndianDemo">
-          <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 8px; padding: 7px 10px; margin-bottom: 8px; font-size: 11px; color: #cbd5e1; display: flex; align-items: center; gap: 6px;">
-            <span>🇮🇳</span>
-            <span><strong style="color: #38bdf8;">Curated Indian Tech Hub Portfolio:</strong> Realistic demonstration projects with Google XYZ bullets. Ready to customize.</span>
-          </div>
-          <div id="fresherIndianProjectsList" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 4px;"></div>
-        </div>
-
-        <!-- Panel 2: GitHub Repositories Search & Ranking -->
-        <div id="panelFresherGithub" style="display: none;">
-          <!-- Custom Search & Filter for GitHub Projects -->
-          <div style="margin-bottom: 10px;">
-            <div style="display: flex; gap: 6px; margin-bottom: 6px;">
-              <input type="text" id="jobGhCustomSearchInput" placeholder="Search any repository (e.g. jhipster/generator-jhipster, kubernetes, terraform, fastapi)..." style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 7px 11px; color: #f8fafc; font-size: 12px; outline: none;">
-              <button type="button" id="btnRunJobCustomGhSearch" onclick="runJobCustomGhSearch()" style="background: #2563eb; color: #fff; border: none; padding: 7px 13px; border-radius: 8px; font-weight: 800; font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
-                <i data-lucide="search" style="width: 13px; height: 13px;"></i>
-                <span>Search</span>
-              </button>
-            </div>
-            <!-- Quick Filter Chips -->
-            <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-              <button type="button" onclick="runJobCustomGhSearch('jhipster/generator-jhipster')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; cursor: pointer;">⚡ JHipster Cloud</button>
-              <button type="button" onclick="runJobCustomGhSearch('kubernetes docker devops')" style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; cursor: pointer;">🐳 DevOps &amp; K8s</button>
-              <button type="button" onclick="runJobCustomGhSearch('spring boot microservice')" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; cursor: pointer;">☕ Spring Boot</button>
-              <button type="button" onclick="runJobCustomGhSearch('python fastapi microservices')" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; cursor: pointer;">🐍 Python / FastAPI</button>
-              <button type="button" onclick="runJobCustomGhSearch('react nextjs fullstack')" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px; cursor: pointer;">⚛️ React / Fullstack</button>
-            </div>
-          </div>
-
-          <div id="fresherProjectsList" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 4px;"></div>
-        </div>
-        
-        <!-- Synthesize and Open in Editor Button -->
-        <button type="button" id="btnSynthesizeFresher" onclick="finalizeFresherResumeSynthesis()" style="width: 100%; margin-top: 12px; padding: 12px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; border-radius: 10px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);">
-          <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i>
-          <span>🚀 Generate Tailored Resume &amp; Open Live Editor</span>
+      <!-- Action & Export Bar -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+        <button type="button" id="btnCopyTailoredBullets" onclick="copySelectedProjectBullets()" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+          <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
+          <span id="btnCopyTailoredBulletsText">📋 Copy Project Bullets</span>
         </button>
+
+        <a href="/resume-builder/?job_id={{ job.uuid }}" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #ffffff; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); transition: all 0.2s;">
+          <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
+          <span>Open Live Resume Canvas ↗</span>
+        </a>
       </div>
+
+      <!-- Collapsible Public GitHub Scanner -->
+      <details style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; font-size: 12px;">
+        <summary style="cursor: pointer; color: #cbd5e1; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+          <i data-lucide="github" style="width: 14px; height: 14px; color: #a855f7;"></i>
+          <span>Advanced: Search Public GitHub Repositories for {{ job.company_name }}</span>
+        </summary>
+        <div style="margin-top: 10px;">
+          <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+            <input type="text" id="jobGhCustomSearchInput" placeholder="Search repository (e.g. fastapi, kubernetes, nextjs)..." style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 7px 11px; color: #f8fafc; font-size: 12px; outline: none;">
+            <button type="button" onclick="runJobCustomGhSearch()" style="background: #2563eb; color: #fff; border: none; padding: 7px 13px; border-radius: 8px; font-weight: 800; font-size: 11.5px; cursor: pointer;">Search</button>
+          </div>
+          <div id="fresherProjectsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;"></div>
+        </div>
+      </details>
 
     </div>
 
@@ -2781,8 +2778,292 @@
       modal.style.opacity = '1';
       modal.style.visibility = 'visible';
       modal.classList.add('active');
+      renderProjectsLibrary();
+      updateAtsMatchGauge();
       if (window.lucide) window.lucide.createIcons();
     }
+  }
+
+  /* ── 6 PRE-BUILT PRODUCTION PROJECTS LIBRARY & LIVE ATS GAUGE ── */
+  const PRESET_PRODUCTION_PROJECTS = [
+    {
+      id: 'fs-saas',
+      title: 'Full-Stack SaaS Platform (Multi-Tenant)',
+      category: 'fullstack',
+      tech_stack: ['Next.js 15', 'Django Ninja', 'PostgreSQL', 'Redis', 'Stripe', 'Tailwind CSS'],
+      bullets: [
+        'Architected multi-tenant SaaS backend with Django Ninja and PostgreSQL, reducing query latency by 42% via Redis multi-tier caching for 10,000+ monthly active requests.',
+        'Engineered webhook-driven subscription billing engine with Stripe, handling recurring payments, prorations, and automated dunning with 99.9% invoice accuracy.',
+        'Designed responsive Next.js 15 frontend with App Router, server-rendered dynamic dashboards, and optimistic UI updates for sub-second user transitions.'
+      ],
+      skills: ['Next.js', 'React', 'Django', 'Python', 'PostgreSQL', 'Redis', 'Stripe', 'Tailwind', 'REST APIs', 'SQL']
+    },
+    {
+      id: 'ai-rag-agent',
+      title: 'Enterprise AI Customer Support RAG Agent',
+      category: 'ai',
+      tech_stack: ['FastAPI', 'LangChain', 'Groq / OpenAI', 'Pinecone', 'Docker', 'Python'],
+      bullets: [
+        'Engineered sub-500ms hybrid search across 50,000+ technical knowledge docs using Pinecone vector database and custom sentence embeddings with 94% retrieval recall.',
+        'Orchestrated multi-turn conversational AI workflows using LangChain and FastAPI, cutting customer support escalation rates by 35% with strict hallucination guardrails.',
+        'Containerized full Python AI pipeline with Docker, achieving automated CI/CD deployments and sub-minute horizontal auto-scaling on cloud clusters.'
+      ],
+      skills: ['FastAPI', 'LangChain', 'Python', 'AI', 'Machine Learning', 'Docker', 'Pinecone', 'NLP', 'LLM', 'REST APIs']
+    },
+    {
+      id: 'ecommerce-microservices',
+      title: 'High-Throughput E-Commerce Microservices',
+      category: 'fullstack',
+      tech_stack: ['Node.js', 'TypeScript', 'Apache Kafka', 'Docker', 'MongoDB', 'Redis'],
+      bullets: [
+        'Architected event-driven distributed checkout microservices using Apache Kafka, processing 1,500 transactions/second with zero deadlocks during peak flash sales.',
+        'Implemented saga orchestration pattern for distributed order fulfillment, cutting payment and inventory reconciliation failures to < 0.05%.',
+        'Developed high-performance REST and gRPC internal communication layers in TypeScript with schema validation and circuit breakers.'
+      ],
+      skills: ['Node.js', 'TypeScript', 'Kafka', 'MongoDB', 'Docker', 'Microservices', 'Redis', 'Distributed Systems', 'Backend']
+    },
+    {
+      id: 'collab-code-editor',
+      title: 'Real-Time Collaborative Code Editor & Sandbox',
+      category: 'fullstack',
+      tech_stack: ['React', 'WebSockets', 'Monaco Editor', 'Web Workers', 'Node.js'],
+      bullets: [
+        'Implemented real-time collaborative editing using Yjs CRDTs over secure WebSockets, enabling 20+ simultaneous peer edits at zero document collision and 60 FPS.',
+        'Integrated Monaco Editor with custom language server protocols, providing syntax highlighting, auto-completion, and in-browser code diagnostics.',
+        'Isolated untrusted code execution using isolated Web Workers and WebAssembly sandbox, preventing main thread freezing during intensive computations.'
+      ],
+      skills: ['React', 'JavaScript', 'TypeScript', 'WebSockets', 'Node.js', 'Frontend', 'WebAssembly', 'HTML5']
+    },
+    {
+      id: 'devops-cicd',
+      title: 'Automated Cloud DevOps CI/CD & Infrastructure',
+      category: 'devops',
+      tech_stack: ['GitHub Actions', 'Terraform', 'AWS ECS', 'Docker', 'Prometheus', 'Grafana'],
+      bullets: [
+        'Automated end-to-end blue/green deployment pipelines with GitHub Actions and Terraform, shrinking production release duration from 45 minutes to 4 minutes.',
+        'Provisioned scalable cloud infrastructure on AWS ECS with auto-scaling policies, slashing idle container infrastructure spend by 28%.',
+        'Configured unified observability stack using Prometheus, Grafana, and Alertmanager, achieving 99.95% service uptime and sub-2-minute incident notification.'
+      ],
+      skills: ['DevOps', 'AWS', 'Docker', 'Terraform', 'CI/CD', 'GitHub Actions', 'Prometheus', 'Linux', 'Cloud']
+    },
+    {
+      id: 'fintech-mobile',
+      title: 'Offline-First Cross-Platform FinTech Mobile App',
+      category: 'mobile',
+      tech_stack: ['React Native', 'TypeScript', 'SQLite', 'Biometrics', 'Node.js'],
+      bullets: [
+        'Architected cross-platform mobile app in React Native with offline-first SQLite synchronization, enabling seamless transaction logging in low-connectivity areas.',
+        'Integrated hardware biometric authentication (FaceID/Fingerprint) and AES-256 local encrypted storage for bank-grade financial security.',
+        'Engineered real-time expense analytics with interactive SVG charting, achieving 99.8% crash-free sessions across 25,000+ active mobile users.'
+      ],
+      skills: ['React Native', 'Mobile', 'TypeScript', 'JavaScript', 'SQLite', 'Security', 'iOS', 'Android']
+    }
+  ];
+
+  let selectedProjectIds = ['fs-saas', 'ai-rag-agent'];
+  let currentProjectCategoryFilter = 'all';
+  let currentProjectSearchQuery = '';
+
+  function renderProjectsLibrary() {
+    const listEl = document.getElementById('projectsLibraryList');
+    if (!listEl) return;
+
+    const query = currentProjectSearchQuery.toLowerCase().trim();
+    const filtered = PRESET_PRODUCTION_PROJECTS.filter(p => {
+      if (currentProjectCategoryFilter !== 'all' && p.category !== currentProjectCategoryFilter) {
+        return false;
+      }
+      if (!query) return true;
+      const titleMatch = p.title.toLowerCase().includes(query);
+      const stackMatch = p.tech_stack.some(t => t.toLowerCase().includes(query));
+      const skillsMatch = p.skills.some(s => s.toLowerCase().includes(query));
+      return titleMatch || stackMatch || skillsMatch;
+    });
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `
+        <div style="text-align: center; padding: 20px 10px; color: #94a3b8; font-size: 12px; background: #0f172a; border: 1px dashed #334155; border-radius: 10px;">
+          No pre-built projects matched "${currentProjectSearchQuery}". Try another keyword or clear search.
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = '';
+    filtered.forEach(proj => {
+      const isSelected = selectedProjectIds.includes(proj.id);
+      const card = document.createElement('div');
+      card.style.cssText = `background: ${isSelected ? 'rgba(30, 41, 59, 0.95)' : '#1e293b'}; border: 1.5px solid ${isSelected ? 'rgba(168, 85, 247, 0.65)' : '#334155'}; border-radius: 12px; padding: 12px 14px; transition: all 0.2s; box-shadow: ${isSelected ? '0 4px 16px rgba(168, 85, 247, 0.2)' : 'none'};`;
+
+      const techPills = proj.tech_stack.map(t => `<span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;">${t}</span>`).join(' ');
+      const bulletsList = proj.bullets.map(b => `<li style="font-size: 11.5px; color: #cbd5e1; margin-bottom: 5px; line-height: 1.45;">${b}</li>`).join('');
+
+      card.innerHTML = `
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px;">
+          <div>
+            <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">
+              ${proj.title}
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+              ${techPills}
+            </div>
+          </div>
+          <button type="button" onclick="toggleProjectSelection('${proj.id}')" style="background: ${isSelected ? 'linear-gradient(135deg, #10b981, #059669)' : '#0f172a'}; border: 1px solid ${isSelected ? 'rgba(16, 185, 129, 0.6)' : '#475569'}; color: ${isSelected ? '#ffffff' : '#94a3b8'}; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all 0.2s;">
+            ${isSelected ? '✓ Added' : '+ Add'}
+          </button>
+        </div>
+        <ul style="margin: 0; padding-left: 18px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 8px;">
+          ${bulletsList}
+        </ul>
+      `;
+      listEl.appendChild(card);
+    });
+
+    updateAtsMatchGauge();
+  }
+
+  function toggleProjectSelection(projId) {
+    if (selectedProjectIds.includes(projId)) {
+      if (selectedProjectIds.length > 1) {
+        selectedProjectIds = selectedProjectIds.filter(id => id !== projId);
+      } else {
+        if (window.showToast) window.showToast("Keep at least 1 project selected for your ATS resume.", "warning");
+        return;
+      }
+    } else {
+      selectedProjectIds.push(projId);
+    }
+    renderProjectsLibrary();
+  }
+
+  function filterPreBuiltProjects(query) {
+    currentProjectSearchQuery = query || '';
+    renderProjectsLibrary();
+  }
+
+  function setProjectCategoryFilter(cat, btn) {
+    currentProjectCategoryFilter = cat;
+    document.querySelectorAll('.proj-filter-pill').forEach(p => {
+      p.style.background = '#1e293b';
+      p.style.color = '#94a3b8';
+      p.style.borderColor = '#334155';
+    });
+    if (btn) {
+      btn.style.background = 'rgba(168, 85, 247, 0.2)';
+      btn.style.color = '#c084fc';
+      btn.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+    }
+    renderProjectsLibrary();
+  }
+
+  function updateAtsMatchGauge() {
+    const rawSkills = "{{ job.skills_required|escapejs }}";
+    const jobSkills = rawSkills ? rawSkills.split(',').map(s => s.trim()).filter(Boolean) : ['Python', 'SQL', 'Problem Solving', 'REST APIs'];
+    
+    // Collect all skills from selected projects
+    const candidateSkills = new Set();
+    selectedProjectIds.forEach(id => {
+      const proj = PRESET_PRODUCTION_PROJECTS.find(p => p.id === id);
+      if (proj && proj.skills) {
+        proj.skills.forEach(s => candidateSkills.add(s.toLowerCase()));
+      }
+    });
+
+    let matched = [];
+    let missing = [];
+
+    jobSkills.forEach(s => {
+      const sLow = s.toLowerCase();
+      let isMatch = false;
+      for (let cs of candidateSkills) {
+        if (cs.includes(sLow) || sLow.includes(cs)) {
+          isMatch = true;
+          break;
+        }
+      }
+      if (isMatch) {
+        matched.push(s);
+      } else {
+        missing.push(s);
+      }
+    });
+
+    const score = Math.min(96, Math.max(70, Math.round((matched.length / Math.max(1, jobSkills.length)) * 40 + selectedProjectIds.length * 28)));
+    const scoreVal = document.getElementById('atsScoreValue');
+    const gaugeCircle = document.getElementById('atsGaugeCircle');
+    const container = document.getElementById('atsKeywordsContainer');
+
+    if (scoreVal) {
+      scoreVal.innerText = score + '%';
+      scoreVal.style.color = score >= 85 ? '#34d399' : '#38bdf8';
+    }
+    if (gaugeCircle) {
+      const color = score >= 85 ? '#34d399' : '#38bdf8';
+      gaugeCircle.style.background = `conic-gradient(${color} 0%, ${color} ${score}%, #1e293b ${score}%, #1e293b 100%)`;
+    }
+
+    if (container) {
+      container.innerHTML = '';
+      matched.slice(0, 5).forEach(m => {
+        const badge = document.createElement('span');
+        badge.style.cssText = 'background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;';
+        badge.innerText = '✓ ' + m;
+        container.appendChild(badge);
+      });
+      missing.slice(0, 3).forEach(mis => {
+        const badge = document.createElement('button');
+        badge.type = 'button';
+        badge.style.cssText = 'background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; cursor: pointer;';
+        badge.innerText = '+ ' + mis;
+        badge.onclick = () => autoSelectProjectForSkill(mis);
+        badge.title = 'Click to select project matching ' + mis;
+        container.appendChild(badge);
+      });
+    }
+  }
+
+  function autoSelectProjectForSkill(skillName) {
+    const sLow = skillName.toLowerCase();
+    const match = PRESET_PRODUCTION_PROJECTS.find(p => p.skills.some(s => s.toLowerCase().includes(sLow)));
+    if (match && !selectedProjectIds.includes(match.id)) {
+      selectedProjectIds.push(match.id);
+      renderProjectsLibrary();
+      if (window.showToast) window.showToast(`Added ${match.title} for ${skillName}!`, "success");
+    }
+  }
+
+  function copySelectedProjectBullets() {
+    const candidateName = document.getElementById('fresherName')?.value || 'Candidate';
+    const degree = document.getElementById('fresherDegree')?.value || 'B.Tech in Computer Science';
+    
+    let text = `${candidateName} • ${degree}\n`;
+    text += `Target Role: {{ job.title|escapejs }} at {{ job.company_name|escapejs }}\n\nKEY PRODUCTION PROJECTS:\n`;
+    
+    selectedProjectIds.forEach(id => {
+      const proj = PRESET_PRODUCTION_PROJECTS.find(p => p.id === id);
+      if (proj) {
+        text += `\n${proj.title} [${proj.tech_stack.join(', ')}]\n`;
+        proj.bullets.forEach(b => {
+          text += `• ${b}\n`;
+        });
+      }
+    });
+
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('btnCopyTailoredBulletsText');
+      if (btn) {
+        const orig = btn.innerText;
+        btn.innerText = '✅ Bullets Copied!';
+        setTimeout(() => { btn.innerText = orig; }, 2500);
+      }
+      if (window.showToast) {
+        window.showToast("📋 Tailored Google XYZ project bullets copied to clipboard!", "success");
+      } else {
+        alert("Project bullets copied!");
+      }
+    }).catch(err => {
+      prompt("Copy bullets manually:", text);
+    });
   }
 
   /* ── FRESHER GITHUB PROJECT DISCOVERY PIPELINE ── */
