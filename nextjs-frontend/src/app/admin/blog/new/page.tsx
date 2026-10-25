@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Sparkles, Send, Eye, FileText, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image'; // Import Image
+import { motion } from 'framer-motion'; // Import motion
+import { ArrowLeft, Sparkles, Send, Eye, FileText, Image as ImageIcon, CheckCircle2, XCircle } from 'lucide-react'; // Add CheckCircle2, XCircle
 
 export default function NextAdminNewBlogPage() {
   const router = useRouter();
@@ -78,13 +80,20 @@ export default function NextAdminNewBlogPage() {
       </header>
 
       {statusMsg && (
-        <div className="p-3 bg-sky-950/60 border border-sky-500/40 rounded-xl text-xs font-bold text-sky-300">
-          {statusMsg}
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className={`p-3 rounded-xl text-xs font-bold flex items-center gap-2 ${statusMsg.startsWith('✨') ? 'bg-emerald-950/60 border border-emerald-500/40 text-emerald-300' : 'bg-rose-950/60 border border-rose-500/40 text-rose-300'}`}
+        >
+          {statusMsg.startsWith('✨') ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+          <span>{statusMsg}</span>
+        </motion.div>
       )}
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-5 bg-[#0d1527] border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div className="lg:col-span-2 space-y-5 craft-card p-6">
           <div className="space-y-1.5">
             <label className="text-xs font-bold uppercase text-slate-400">Article Title *</label>
             <input
@@ -93,7 +102,7 @@ export default function NextAdminNewBlogPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Deep Dive into V8 Engine & JIT Compiler"
-              className="w-full bg-[#080e1a] border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-400 outline-none"
+              className="w-full bg-[var(--surface-input)] border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-400 outline-none"
             />
           </div>
 
@@ -105,7 +114,7 @@ export default function NextAdminNewBlogPage() {
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               placeholder="Concise breakdown shown on cards..."
-              className="w-full bg-[#080e1a] border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-400 outline-none"
+              className="w-full bg-[var(--surface-input)] border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white focus:border-sky-400 outline-none"
             />
           </div>
 
@@ -119,17 +128,17 @@ export default function NextAdminNewBlogPage() {
               required
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="## 1. Overview&#10;&#10;Write your technical deep dive here...&#10;&#10;```javascript&#10;let count = 10;&#10;```"
-              className="w-full bg-[#080e1a] border border-slate-700/80 rounded-xl p-4 font-mono text-xs text-slate-200 focus:border-sky-400 outline-none leading-relaxed"
+              placeholder="## 1. Overview\n\nWrite your technical deep dive here...\n\n```javascript\nlet count = 10;\n```"
+              className="w-full bg-[var(--surface-input)] border border-slate-700/80 rounded-xl p-4 font-mono text-xs text-slate-200 focus:border-sky-400 outline-none leading-relaxed"
             />
           </div>
         </div>
 
         {/* Sidebar Settings */}
         <div className="space-y-6">
-          <div className="bg-[#0d1527] border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+          <div className="craft-card p-5 space-y-4">
             <h3 className="font-bold text-sm text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-sky-400" /> Publication Settings
+              <Sparkles className="w-4 h-4 text-sky-400" aria-hidden="true" /> Publication Settings
             </h3>
 
             <label className="flex items-center gap-2 text-xs font-semibold text-slate-300 cursor-pointer">
@@ -137,7 +146,7 @@ export default function NextAdminNewBlogPage() {
                 type="checkbox"
                 checked={isFeatured}
                 onChange={(e) => setIsFeatured(e.target.checked)}
-                className="accent-amber-500 rounded"
+                className="accent-sky-500 rounded"
               />
               <span>⭐ Mark as Featured Hero Post</span>
             </label>
@@ -149,7 +158,7 @@ export default function NextAdminNewBlogPage() {
                 value={tagsStr}
                 onChange={(e) => setTagsStr(e.target.value)}
                 placeholder="javascript, v8, nodejs"
-                className="w-full bg-[#080e1a] border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-sky-400 outline-none"
+                className="w-full bg-[var(--surface-input)] border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-sky-400 outline-none"
               />
             </div>
 
@@ -160,21 +169,33 @@ export default function NextAdminNewBlogPage() {
                 value={coverUrl}
                 onChange={(e) => setCoverUrl(e.target.value)}
                 placeholder="https://images.unsplash.com/..."
-                className="w-full bg-[#080e1a] border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-sky-400 outline-none"
+                className="w-full bg-[var(--surface-input)] border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white focus:border-sky-400 outline-none"
               />
               {coverUrl && (
-                <img src={coverUrl} alt="Preview" className="w-full h-28 object-cover rounded-lg mt-2 border border-slate-800" />
+                <div className="relative w-full h-28 rounded-lg mt-2 border border-slate-800/70 overflow-hidden">
+                  <Image
+                    src={coverUrl}
+                    alt="Cover image preview"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 300px"
+                  />
+                </div>
               )}
             </div>
 
-            <button
+            <motion.button
               type="submit"
               disabled={isPublishing}
-              className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition-all disabled:opacity-50"
+              whileHover={{ y: -2, rotateX: 3, z: 10 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="active-press w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition-all disabled:opacity-50"
+              style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2)' }}
             >
-              <Send className="w-3.5 h-3.5" />
-              {isPublishing ? 'Publishing...' : 'Publish Article Live'}
-            </button>
+              <Send className="w-3.5 h-3.5" aria-hidden="true" />
+              {isPublishing ? 'Publishing…' : 'Publish Article Live'}
+            </motion.button>
           </div>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion'; // Import motion
 import { getFeaturedPosts, getJavaScriptChapters } from '@/lib/api';
 import { Sparkles, BookOpen, ArrowRight, Zap, Code2 } from 'lucide-react';
 import type { BlogPost, ChapterSummary } from '@/lib/types';
@@ -94,19 +95,27 @@ export default async function HomePage() {
             className="flex flex-wrap items-center justify-center gap-4 pt-2 animate-fade-in-up"
             style={{ animationDelay: '180ms' }}
           >
-            <Link
-              href="/learn/javascript"
-              className="active-press inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-sky-500/30 hover:shadow-sky-500/50 transition-all duration-300"
-              style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px -2px rgba(56,189,248,0.45)' }}
-            >
-              <Zap className="w-4 h-4" aria-hidden="true" /> Start JS Masterclass
+            <Link href="/learn/javascript">
+              <motion.div
+                whileHover={{ y: -3, rotateX: 5, z: 20 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="active-press inline-flex items-center gap-2 bg-gradient-to-r from-sky-500 via-blue-500 to-indigo-500 hover:from-sky-400 hover:via-blue-400 hover:to-indigo-400 text-white font-bold px-7 py-3.5 rounded-xl text-sm shadow-lg shadow-sky-500/30 hover:shadow-sky-500/50 transition-all duration-300"
+                style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 14px -2px rgba(56,189,248,0.45)' }}
+              >
+                <Zap className="w-4 h-4" aria-hidden="true" /> Start JS Masterclass
+              </motion.div>
             </Link>
-            <Link
-              href="/blog"
-              className="active-press inline-flex items-center gap-2 bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] border border-slate-700/60 hover:border-slate-600 text-slate-200 font-bold px-7 py-3.5 rounded-xl text-sm transition-all"
-              style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}
-            >
-              <BookOpen className="w-4 h-4" aria-hidden="true" /> Read Tech Blog
+            <Link href="/blog">
+              <motion.div
+                whileHover={{ y: -3, rotateX: 5, z: 20 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="active-press inline-flex items-center gap-2 bg-[var(--surface-card)] hover:bg-[var(--surface-hover)] border border-slate-700/60 hover:border-slate-600 text-slate-200 font-bold px-7 py-3.5 rounded-xl text-sm transition-all"
+                style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)' }}
+              >
+                <BookOpen className="w-4 h-4" aria-hidden="true" /> Read Tech Blog
+              </motion.div>
             </Link>
           </div>
 

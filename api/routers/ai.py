@@ -12,6 +12,8 @@ from requirements.ai_engine import (
     tailor_resume_to_job,
     generate_professional_summary,
 )
+from api.auth import AuthBearer # Import AuthBearer
+from ninja.errors import HttpError # Import HttpError
 
 router = Router(tags=["⚡ AI Career & Job Tools"])
 
@@ -46,9 +48,11 @@ class SummaryGenRequest(Schema):
     target_company_type: Optional[str] = Field("Product Startup", description="Startup, FAANG, Service")
 
 
-@router.post("/generate-jd", summary="Generate High-Converting Job Description")
+@router.post("/generate-jd", summary="Generate High-Converting Job Description", auth=AuthBearer())
 def api_generate_jd(request, payload: JobDescriptionRequest):
-    """Generate structured, ATS-compliant job description with LinkedIn and IG post formats."""
+    """Generate structured, ATS-compliant job description with LinkedIn and IG post formats. Requires JWT authentication."""
+    if not request.auth: 
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
     try:
         data = generate_job_description(
             title=payload.title,
@@ -61,12 +65,14 @@ def api_generate_jd(request, payload: JobDescriptionRequest):
         )
         return {"success": True, "data": data}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        raise HttpError(500, f"Failed to generate job description: {e}")
 
 
-@router.post("/polish-bullet", summary="Polish Resume Bullet to Google XYZ Format")
+@router.post("/polish-bullet", summary="Polish Resume Bullet to Google XYZ Format", auth=AuthBearer())
 def api_polish_bullet(request, payload: BulletPolishRequest):
-    """Transform raw bullet points into quantified Google XYZ metrics."""
+    """Transform raw bullet points into quantified Google XYZ metrics. Requires JWT authentication."""
+    if not request.auth: 
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
     try:
         data = polish_resume_bullet(
             bullet=payload.bullet,
@@ -75,12 +81,14 @@ def api_polish_bullet(request, payload: BulletPolishRequest):
         )
         return {"success": True, "data": data}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        raise HttpError(500, f"Failed to polish bullet point: {e}")
 
 
-@router.post("/tailor-resume", summary="Tailor Resume to Target Job Description")
+@router.post("/tailor-resume", summary="Tailor Resume to Target Job Description", auth=AuthBearer())
 def api_tailor_resume(request, payload: ResumeTailorRequest):
-    """Compute semantic keyword gap and generate optimized resume bullets for a target JD."""
+    """Compute semantic keyword gap and generate optimized resume bullets for a target JD. Requires JWT authentication."""
+    if not request.auth: 
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
     try:
         data = tailor_resume_to_job(
             resume_summary=payload.resume_summary,
@@ -90,12 +98,14 @@ def api_tailor_resume(request, payload: ResumeTailorRequest):
         )
         return {"success": True, "data": data}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        raise HttpError(500, f"Failed to tailor resume: {e}")
 
 
-@router.post("/generate-summary", summary="Generate Professional Resume Summary")
+@router.post("/generate-summary", summary="Generate Professional Resume Summary", auth=AuthBearer())
 def api_generate_summary(request, payload: SummaryGenRequest):
-    """Generate 3 elevator pitch options tailored to the candidate's target role."""
+    """Generate 3 elevator pitch options tailored to the candidate's target role. Requires JWT authentication."""
+    if not request.auth: 
+        raise HttpError(401, "Unauthorized: Valid JWT token required.")
     try:
         data = generate_professional_summary(
             role=payload.role,
@@ -105,4 +115,4 @@ def api_generate_summary(request, payload: SummaryGenRequest):
         )
         return {"success": True, "data": data}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        raise HttpError(500, f"Failed to generate summary: {e}")

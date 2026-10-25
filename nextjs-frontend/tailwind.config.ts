@@ -19,8 +19,10 @@ const config: Config = {
         accent: '#38bdf8',
         accent_soft: 'rgba(56, 189, 248, 0.15)',
         accent_glow: 'rgba(56, 189, 248, 0.25)',
-        emerald: '#059669',
+        emerald: '#10b981', // Aligning with --success
         emerald_soft: 'rgba(16, 185, 129, 0.1)',
+        rose: '#ef4444', // Aligning with --danger
+        amber: '#f59e0b', // Aligning with --warning
         indigo: '#4f46e5',
         muted: '#64748b',
         subtle: '#0f172a',
@@ -56,8 +58,8 @@ const config: Config = {
         },
         '.glass-card-hover:hover': {
           transform: 'translateY(-4px)',
-          borderColor: 'rgba(99, 102, 241, 0.4)',
-          boxShadow: '0 12px 24px -8px rgba(99, 102, 241, 0.25)',
+          borderColor: 'rgba(56, 189, 248, 0.4)',
+          boxShadow: '0 12px 24px -8px rgba(56, 189, 248, 0.25)',
         },
         '.status-badge': {
         display: 'inline-flex',

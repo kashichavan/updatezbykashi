@@ -9,9 +9,10 @@ import { Play, SkipForward, SkipBack, RefreshCw, Sparkles, Terminal, AlertCircle
 interface CodeEditorProps {
   initialCode: string;
   topicTitle?: string;
+  language?: string; // Added language prop
 }
 
-export function CodeEditor({ initialCode, topicTitle }: CodeEditorProps) {
+export function CodeEditor({ initialCode, topicTitle, language = 'javascript' }: CodeEditorProps) {
   const [code, setCode] = useState(initialCode);
   const [isExecuting, setIsExecuting] = useState(false);
   const [steps, setSteps] = useState<CodeTraceStep[]>([]);
@@ -29,6 +30,11 @@ export function CodeEditor({ initialCode, topicTitle }: CodeEditorProps) {
     setExecTime(null);
 
     try {
+      // NOTE: This currently only executes JavaScript. For other languages, a separate backend endpoint is needed.
+      if (language !== 'javascript') {
+        setExecError(`Execution for ${language} is not supported by the current backend API.`);
+        return;
+      }
       const res = await executeJavaScriptCode(code);
       if (res.success) {
         setSteps(res.steps);
@@ -44,7 +50,7 @@ export function CodeEditor({ initialCode, topicTitle }: CodeEditorProps) {
     } finally {
       setIsExecuting(false);
     }
-  }, [code, isExecuting]);
+  }, [code, isExecuting, language]);
 
   const handleReset = useCallback(() => {
     setCode(initialCode);
@@ -65,7 +71,7 @@ export function CodeEditor({ initialCode, topicTitle }: CodeEditorProps) {
 
   return (
     <div
-      className="rounded-xl border border-sky-500/20 overflow-hidden shadow-2xl"
+      className="rounded-xl border border-sky-500/20 overflow-hidden shadow-2xl flex flex-col h-full md:h-[min(80vh,700px)]"
       style={{
         background: 'var(--surface-card)',
         boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 20px 40px -10px rgba(0,0,0,0.6)',
@@ -81,7 +87,7 @@ export function CodeEditor({ initialCode, topicTitle }: CodeEditorProps) {
             <span className="w-3 h-3 rounded-full bg-emerald-500/70" />
           </div>
           <span className="text-sky-400 font-mono text-xs font-bold">
-            ⚡ V8 AST Interactive IDE{topicTitle ? ` — ${topicTitle}` : ''}
+            ⚡ {language.charAt(0).toUpperCase() + language.slice(1)} Interactive IDE{topicTitle ? ` — ${topicTitle}` : ''}
           </span>
           {execTime !== null && (
             <span className="text-[11px] text-emerald-400 font-mono bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
@@ -112,10 +118,10 @@ export function CodeEditor({ initialCode, topicTitle }: CodeEditorProps) {
       </div>
 
       {/* ── Monaco editor ── */}
-      <div className="h-64 w-full">
+      <div className="flex-1 w-full min-h-[16rem]"> {/* Changed from h-64 to flex-1 and min-h */}
         <Editor
           height="100%"
-          language="javascript"
+          language={language}
           theme="vs-dark"
           value={code}
           onChange={(val) => setCode(val ?? '')}
@@ -203,7 +209,7 @@ export function CodeEditor({ initialCode, topicTitle }: CodeEditorProps) {
                 {Object.entries(currentStep.variables).map(([k, v]: [string, any]) => (
                   <div key={k} className="bg-slate-900 border border-slate-700/60 px-2 py-1 rounded text-xs">
                     <span className="text-sky-400 font-bold">{k}: </span>
-                    <span className="text-emerald-300">{v?.value ?? v?.raw ?? String(v)}</span>
+                    <span className="text-emerald-300">{v?.value ?? v?.raw ?? (v === null ? 'null' : v === undefined ? 'undefined' : String(v))}</span>
                     {v?.type && <span className="text-[9px] text-slate-500 ml-1">({v.type})</span>}
                   </div>
                 ))}
