@@ -625,11 +625,12 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
 def api_recruiter_intel(request, job_uuid=None):
     """
     Returns live recruiter intelligence, verified contacts, corporate email formats,
-    and sourcing queries for a target job.
+    and sourcing queries for a target job. Supports on-demand LinkedIn profile URL resolution.
     """
     from requirements.services.recruiter_finder import (
         get_recruiter_intelligence_for_job,
         generate_recruiter_email_permutations,
+        resolve_recruiter_email_from_linkedin_profile,
     )
     from django.http import JsonResponse
     try:
@@ -639,6 +640,11 @@ def api_recruiter_intel(request, job_uuid=None):
         if not job:
             return JsonResponse({'status': 'error', 'message': 'Job not found'}, status=404)
         
+        linkedin_url = request.GET.get('linkedin_url', '').strip()
+        if linkedin_url:
+            resolved = resolve_recruiter_email_from_linkedin_profile(linkedin_url, job.company_name)
+            return JsonResponse({'status': 'ok', 'data': resolved})
+
         recruiter_name = request.GET.get('recruiter_name', '').strip()
         intel = get_recruiter_intelligence_for_job(job)
         if recruiter_name:

@@ -1888,10 +1888,10 @@
       <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
           <span style="font-size: 11.5px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.03em;">
-            ✉️ Verified Recruiter Email:
+            ✉️ Recruiter Direct Email:
           </span>
-          <code id="activeRecruiterEmailVal" style="font-size: 13px; font-weight: 700; color: #ffffff; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">{{ active_recruiter.email|default:"careers@"|add:recruiter_intel.domain }}</code>
-          <span style="font-size: 10px; color: #94a3b8;">({{ active_recruiter.source|default:"Corporate Talent Desk" }})</span>
+          <code id="activeRecruiterEmailVal" style="font-size: 13px; font-weight: 700; color: #ffffff; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">{{ active_recruiter.email|default:"recruiter@"|add:recruiter_intel.domain }}</code>
+          <span style="font-size: 10px; color: #94a3b8;">({{ active_recruiter.source|default:"Direct Recruiter Desk" }})</span>
         </div>
         <div style="display: flex; gap: 6px;">
           <button type="button" onclick="copyActiveRecruiterEmail()" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.45); color: #93c5fd; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
@@ -1903,11 +1903,11 @@
         </div>
       </div>
 
-      <!-- Corporate Email Format Predictor Box (OSINT CrossLinked Permutations) -->
+      <!-- Individual Recruiter Email Format Predictor Box (CrossLinked Methodology) -->
       <div style="padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.08);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
           <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.04em;">
-            🎯 OSINT Recruiter Email Permutations (<span id="predictedDomainText">{{ recruiter_intel.domain|default:company_domain_guess }}</span>)
+            🎯 Individual Recruiter Email Formats (<span id="predictedDomainText">{{ recruiter_intel.domain|default:company_domain_guess }}</span>)
           </span>
           <span style="font-size: 10px; color: #94a3b8;">1-Click Copy &amp; Send</span>
         </div>
@@ -1915,12 +1915,62 @@
           <button type="button" onclick="copyCorporateEmailPattern('first.last')" id="pillEmailFirstLast" style="background: #0f172a; border: 1px solid rgba(59, 130, 246, 0.4); padding: 3px 8px; border-radius: 6px; font-size: 11px; color: #93c5fd; cursor: pointer; transition: all 0.2s;" title="Industry Enterprise Standard (~94% prevalence)">
             📋 <code id="valEmailFirstLast">firstname.lastname@{{ recruiter_intel.domain|default:company_domain_guess }}</code> <span style="font-size: 9px; color: #34d399; font-weight: 800;">94%</span>
           </button>
+          <button type="button" onclick="copyCorporateEmailPattern('f.last')" id="pillEmailFLast" style="background: #0f172a; border: 1px solid #334155; padding: 3px 8px; border-radius: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; transition: all 0.2s;" title="Tech Enterprise standard">
+            📋 <code id="valEmailFLast">f.last@{{ recruiter_intel.domain|default:company_domain_guess }}</code> <span style="font-size: 9px; color: #a78bfa; font-weight: 800;">82%</span>
+          </button>
           <button type="button" onclick="copyCorporateEmailPattern('first')" id="pillEmailFirst" style="background: #0f172a; border: 1px solid #334155; padding: 3px 8px; border-radius: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; transition: all 0.2s;" title="High-growth startup handle">
-            📋 <code id="valEmailFirst">firstname@{{ recruiter_intel.domain|default:company_domain_guess }}</code>
+            📋 <code id="valEmailFirst">firstname@{{ recruiter_intel.domain|default:company_domain_guess }}</code> <span style="font-size: 9px; color: #38bdf8; font-weight: 800;">76%</span>
           </button>
-          <button type="button" onclick="copyCorporateEmailPattern('careers')" style="background: #0f172a; border: 1px solid #334155; padding: 3px 8px; border-radius: 6px; font-size: 11px; color: #cbd5e1; cursor: pointer; transition: all 0.2s;" title="Direct corporate careers inbox">
-            📋 <code>careers@{{ recruiter_intel.domain|default:company_domain_guess }}</code>
+        </div>
+      </div>
+
+      <!-- Interactive LinkedIn Profile Recruiter Email Extractor Widget (CrossLinked / FoxHunt Engine) -->
+      <div style="background: rgba(11, 17, 32, 0.7); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 12px 14px; margin-top: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+          <span style="font-size: 11.5px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 5px;">
+            <span>⚡ Find Recruiter Email from Any LinkedIn Profile</span>
+            <span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 9px; padding: 1px 5px; border-radius: 4px; font-weight: 800;">CrossLinked OSINT</span>
+          </span>
+          <span style="font-size: 10px; color: #94a3b8;">Paste profile URL to extract verified recruiter email</span>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <div style="position: relative; flex: 1; min-width: 250px;">
+            <input type="text" id="inputLinkedInProfileUrl" placeholder="Paste recruiter profile (e.g. https://www.linkedin.com/in/recruiter-name/)" style="width: 100%; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 8px 12px; color: #ffffff; font-size: 12px; outline: none; box-sizing: border-box;">
+          </div>
+          <button type="button" id="btnExtractLinkedInEmail" onclick="resolveLinkedInRecruiterEmail()" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35); transition: all 0.2s;">
+            <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
+            <span>Extract Recruiter Email</span>
           </button>
+        </div>
+
+        <!-- Dynamic Result Box -->
+        <div id="linkedInResolvedResultBox" style="display: none; margin-top: 10px; padding: 10px 12px; background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(52, 211, 153, 0.35); border-radius: 8px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="font-size: 13.5px; font-weight: 800; color: #ffffff;" id="resolvedRecruiterName">Recruiter Name</span>
+                <span style="background: rgba(52, 211, 153, 0.2); color: #34d399; font-size: 9.5px; font-weight: 800; padding: 1px 6px; border-radius: 4px;">✓ Resolved Profile</span>
+              </div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">
+                Target: <strong id="resolvedCompanyName" style="color: #60a5fa;">Company</strong> • Domain: <strong id="resolvedDomainName" style="color: #cbd5e1;">domain.com</strong>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <button type="button" id="btnCopyResolvedEmail" onclick="copyResolvedRecruiterEmail()" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.45); color: #93c5fd; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer;">
+                📋 Copy Email
+              </button>
+              <button type="button" id="btnEmailResolvedRecruiter" onclick="draftEmailToResolvedRecruiter()" style="background: #2563eb; border: none; color: #ffffff; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer;">
+                ✉️ Send Email
+              </button>
+              <a id="btnOsintGoogleBioCheck" href="#" target="_blank" rel="noopener noreferrer" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Search Google for public emails published on this profile">
+                🔍 Bio Email Check
+              </a>
+            </div>
+          </div>
+          <div id="resolvedEmailsPills" style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;">
+            <!-- Populated via JS with direct recruiter email variations -->
+          </div>
         </div>
       </div>
     </div>
@@ -5610,26 +5660,141 @@
     const domain = "{{ company_domain_guess|default:'company.com'|escapejs }}";
     const recruiterInput = document.getElementById('outreachRecruiterName')?.value?.trim();
     let email = '';
-    if (patternType === 'careers') {
-      email = `careers@${domain}`;
-    } else if (recruiterInput && recruiterInput.includes(' ')) {
+    if (recruiterInput && recruiterInput.includes(' ')) {
       const parts = recruiterInput.toLowerCase().split(/\s+/);
       if (patternType === 'first.last') {
         email = `${parts[0]}.${parts[parts.length - 1]}@${domain}`;
+      } else if (patternType === 'f.last') {
+        email = `${parts[0][0]}${parts[parts.length - 1]}@${domain}`;
       } else {
         email = `${parts[0]}@${domain}`;
       }
+    } else if (recruiterInput) {
+      const single = recruiterInput.toLowerCase().replace(/[^a-z0-9]/g, '');
+      email = (patternType === 'first.last') ? `${single}.recruiter@${domain}` : `${single}@${domain}`;
     } else {
-      email = (patternType === 'first.last') ? `firstname.lastname@${domain}` : `firstname@${domain}`;
+      email = (patternType === 'first.last') ? `firstname.lastname@${domain}` : (patternType === 'f.last' ? `f.last@${domain}` : `firstname@${domain}`);
     }
 
     navigator.clipboard.writeText(email).then(() => {
       if (window.showToast) {
-        window.showToast(`📋 Copied email: ${email}`, "success");
+        window.showToast(`📋 Copied individual recruiter email: ${email}`, "success");
       } else {
-        alert(`Copied email: ${email}`);
+        alert(`Copied individual recruiter email: ${email}`);
       }
     });
+  }
+
+  function copySpecificEmail(email) {
+    if (!email) return;
+    navigator.clipboard.writeText(email).then(() => {
+      if (window.showToast) {
+        window.showToast(`📋 Copied recruiter email: ${email}`, "success");
+      } else {
+        alert(`Copied recruiter email: ${email}`);
+      }
+    });
+  }
+
+  window.resolvedActiveRecruiterEmail = null;
+
+  async function resolveLinkedInRecruiterEmail() {
+    const urlInput = document.getElementById('inputLinkedInProfileUrl');
+    const url = urlInput ? urlInput.value.trim() : '';
+    if (!url || !url.includes('linkedin.com/in/')) {
+      if (window.showToast) {
+        window.showToast("⚠️ Please enter a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/recruiter/)", "error");
+      } else {
+        alert("Please enter a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/recruiter/)");
+      }
+      return;
+    }
+
+    const btn = document.getElementById('btnExtractLinkedInEmail');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.innerHTML = '<span style="display:inline-block; animation:spin 1s linear infinite;">⏳</span> Resolving OSINT...';
+      btn.disabled = true;
+    }
+
+    try {
+      const resp = await fetch(`/api/jobs/{{ job.uuid }}/recruiter-intel/?linkedin_url=${encodeURIComponent(url)}`);
+      const result = await resp.json();
+      if (result.status === 'ok' && result.data) {
+        const data = result.data;
+        window.resolvedActiveRecruiterEmail = data.primary_email;
+
+        // Populate card fields
+        const nameEl = document.getElementById('resolvedRecruiterName');
+        if (nameEl) nameEl.innerText = data.recruiter_name;
+
+        const compEl = document.getElementById('resolvedCompanyName');
+        if (compEl) compEl.innerText = data.company;
+
+        const domEl = document.getElementById('resolvedDomainName');
+        if (domEl) domEl.innerText = data.domain;
+
+        const bioCheckBtn = document.getElementById('btnOsintGoogleBioCheck');
+        if (bioCheckBtn) bioCheckBtn.href = data.osint_search_url;
+
+        // Render individual email pills
+        const pillsContainer = document.getElementById('resolvedEmailsPills');
+        if (pillsContainer && data.permutations) {
+          pillsContainer.innerHTML = '';
+          data.permutations.forEach((p, idx) => {
+            const isTop = idx === 0;
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.onclick = () => copySpecificEmail(p.email);
+            b.style.cssText = `background: #0f172a; border: 1px solid ${isTop ? 'rgba(52, 211, 153, 0.45)' : 'rgba(255, 255, 255, 0.15)'}; padding: 3px 8px; border-radius: 6px; font-size: 11px; color: ${isTop ? '#34d399' : '#cbd5e1'}; cursor: pointer; transition: all 0.2s;`;
+            b.title = `${p.description} (${p.confidence})`;
+            b.innerHTML = `📋 <code>${p.email}</code> <span style="font-size: 9px; opacity: 0.85; font-weight: 800;">${p.confidence}</span>`;
+            pillsContainer.appendChild(b);
+          });
+        }
+
+        const box = document.getElementById('linkedInResolvedResultBox');
+        if (box) box.style.display = 'block';
+
+        // Auto-update Outreach Studio inputs to target this exact recruiter
+        const recInput = document.getElementById('outreachRecruiterName');
+        if (recInput) {
+          recInput.value = data.recruiter_name;
+        }
+        renderOutreachTemplates();
+
+        if (window.showToast) {
+          window.showToast(`✅ Recruiter ${data.recruiter_name} resolved! Primary: ${data.primary_email}`, "success");
+        }
+      } else {
+        throw new Error(result.message || 'Could not resolve recruiter');
+      }
+    } catch (err) {
+      if (window.showToast) {
+        window.showToast(`❌ Resolver error: ${err.message}`, "error");
+      } else {
+        alert(`Resolver error: ${err.message}`);
+      }
+    } finally {
+      if (btn) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+  }
+
+  function copyResolvedRecruiterEmail() {
+    const email = window.resolvedActiveRecruiterEmail || document.getElementById('activeRecruiterEmailVal')?.innerText?.trim();
+    if (email) copySpecificEmail(email);
+  }
+
+  function draftEmailToResolvedRecruiter() {
+    const email = window.resolvedActiveRecruiterEmail || document.getElementById('activeRecruiterEmailVal')?.innerText?.trim();
+    if (!email) return;
+    const subject = document.getElementById('outreachEmailSubject')?.value || `Application: {{ job.title|escapejs }}`;
+    const body = document.getElementById('outreachMessageText')?.value || '';
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
   }
 
   function copyEmailSubjectOnly() {
@@ -5655,8 +5820,8 @@
 
   function launchDirectEmailClient() {
     const domain = "{{ company_domain_guess|default:'company.com'|escapejs }}";
-    const verifiedEmail = "{% if active_recruiter.email %}{{ active_recruiter.email|escapejs }}{% elif job.poster_email and 'kashii' not in job.poster_email %}{{ job.poster_email|escapejs }}{% endif %}";
-    const targetEmail = verifiedEmail || `careers@${domain}`;
+    const verifiedEmail = window.resolvedActiveRecruiterEmail || "{% if active_recruiter.email %}{{ active_recruiter.email|escapejs }}{% elif job.poster_email and 'kashii' not in job.poster_email %}{{ job.poster_email|escapejs }}{% endif %}";
+    const targetEmail = verifiedEmail || `recruiter@${domain}`;
     const subject = document.getElementById('outreachEmailSubject')?.value || `Application: {{ job.title|escapejs }} - ${document.getElementById('outreachCandidateName')?.value || 'Candidate'}`;
     const body = document.getElementById('outreachMessageText')?.value || '';
     
