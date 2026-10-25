@@ -1590,26 +1590,48 @@
         </div>
       </div>
 
-      <!-- Instant Search & Category Filter Bar -->
-      <div style="margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span style="font-size: 11.5px; font-weight: 800; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em;">
-            🛠️ Production Projects Library (Google XYZ Bullets)
-          </span>
-          <span style="font-size: 10.5px; color: #38bdf8; font-weight: 700;">1-Click Select</span>
+      <!-- Instant Search & Multi-Tier Filter Bar (Fresher vs Experienced + Domain) -->
+      <div style="margin-bottom: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 12px; font-weight: 800; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.04em;">
+              🛠️ 50+ Production Projects Library
+            </span>
+            <span id="projectsCountBadge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 12px;">54 Projects</span>
+          </div>
+          <span style="font-size: 10.5px; color: #a855f7; font-weight: 700;">Google XYZ Bullets • 1-Click Add</span>
         </div>
 
-        <div style="position: relative; margin-bottom: 6px;">
-          <input type="search" id="projectSearchInput" placeholder="🔍 Search projects by stack (e.g. React, Python, Docker, SQL, AWS, Kafka)..." oninput="filterPreBuiltProjects(this.value)" style="width: 100%; background: #0b1120; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 8px; padding: 8px 12px; color: #ffffff; font-size: 12px; box-sizing: border-box; outline: none;">
+        <!-- Experience Level Toggle (Fresher vs Experienced) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px;">
+          <button type="button" id="pillLevelAll" class="proj-level-pill active" onclick="setProjectLevelFilter('all', this)" style="padding: 7px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid rgba(168, 85, 247, 0.5); background: rgba(168, 85, 247, 0.2); color: #c084fc; transition: all 0.2s; text-align: center;">
+            🌟 All Levels (<span id="countLevelAll">54</span>)
+          </button>
+          <button type="button" id="pillLevelFresher" class="proj-level-pill" onclick="setProjectLevelFilter('fresher', this)" style="padding: 7px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid #334155; background: #1e293b; color: #94a3b8; transition: all 0.2s; text-align: center;">
+            🎓 Fresher (0-2 Y) (<span id="countLevelFresher">27</span>)
+          </button>
+          <button type="button" id="pillLevelExp" class="proj-level-pill" onclick="setProjectLevelFilter('experienced', this)" style="padding: 7px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid #334155; background: #1e293b; color: #94a3b8; transition: all 0.2s; text-align: center;">
+            💼 Experienced (2-5+ Y) (<span id="countLevelExp">27</span>)
+          </button>
         </div>
 
-        <!-- Filter Category Chips -->
-        <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-          <button type="button" class="proj-filter-pill active" onclick="setProjectCategoryFilter('all', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.2); color: #c084fc;">All (6)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('fullstack', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">Full-Stack</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('ai', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">AI / Python</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('devops', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">DevOps &amp; Cloud</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('mobile', this)" style="padding: 3px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8;">Mobile App</button>
+        <!-- Stack Search Input -->
+        <div style="position: relative; margin-bottom: 8px;">
+          <input type="search" id="projectSearchInput" placeholder="🔍 Search 50+ projects by stack (e.g. React, Spring Boot, PyTest, Selenium, AWS, Kafka, Flutter, SQL)..." oninput="filterPreBuiltProjects(this.value)" style="width: 100%; background: #0b1120; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 8px; padding: 8px 12px; color: #ffffff; font-size: 12px; box-sizing: border-box; outline: none;">
+        </div>
+
+        <!-- Domain Filter Chips (Horizontal Scrollable) -->
+        <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch;">
+          <button type="button" class="proj-filter-pill active" onclick="setProjectCategoryFilter('all', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(37, 99, 235, 0.2); color: #60a5fa; white-space: nowrap;">All Domains</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('fullstack', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🌐 Full-Stack (8)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('backend', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">⚙️ Backend &amp; APIs (8)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('ai', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🤖 AI &amp; GenAI (8)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('devops', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">☁️ DevOps &amp; Cloud (7)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('mobile', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">📱 Mobile App (6)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('qa', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🧪 QA &amp; SDET (6)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('data', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">📊 Data &amp; BI (5)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('security', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🔒 Cybersecurity (4)</button>
+          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('embedded', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">⚡ Embedded &amp; IoT (2)</button>
         </div>
       </div>
 
@@ -2784,85 +2806,1755 @@
     }
   }
 
-  /* ── 6 PRE-BUILT PRODUCTION PROJECTS LIBRARY & LIVE ATS GAUGE ── */
+  /* ── 54 PRE-BUILT PRODUCTION PROJECTS LIBRARY & LIVE ATS GAUGE (FRESHER + EXPERIENCED) ── */
   const PRESET_PRODUCTION_PROJECTS = [
     {
-      id: 'fs-saas',
-      title: 'Full-Stack SaaS Platform (Multi-Tenant)',
-      category: 'fullstack',
-      tech_stack: ['Next.js 15', 'Django Ninja', 'PostgreSQL', 'Redis', 'Stripe', 'Tailwind CSS'],
-      bullets: [
-        'Architected multi-tenant SaaS backend with Django Ninja and PostgreSQL, reducing query latency by 42% via Redis multi-tier caching for 10,000+ monthly active requests.',
-        'Engineered webhook-driven subscription billing engine with Stripe, handling recurring payments, prorations, and automated dunning with 99.9% invoice accuracy.',
-        'Designed responsive Next.js 15 frontend with App Router, server-rendered dynamic dashboards, and optimistic UI updates for sub-second user transitions.'
-      ],
-      skills: ['Next.js', 'React', 'Django', 'Python', 'PostgreSQL', 'Redis', 'Stripe', 'Tailwind', 'REST APIs', 'SQL']
+        "id": "fs-workflow-fresher",
+        "title": "Full-Stack Task & Workflow Management Platform",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Next.js 15",
+            "Django Ninja",
+            "PostgreSQL",
+            "Redis",
+            "Tailwind CSS"
+        ],
+        "bullets": [
+            "Architected responsive Kanban workflow application with Next.js 15 App Router and Django Ninja, accelerating initial page rendering by 45% via server-side streaming.",
+            "Engineered normalized PostgreSQL relational schema with indexed queries, reducing dashboard load times from 1.8s to 320ms for 5,000+ simulated active tasks.",
+            "Integrated Redis cache-aside caching and JWT cookie authentication, achieving sub-50ms API response latency and zero unauthorized route accesses."
+        ],
+        "skills": [
+            "Next.js",
+            "React",
+            "Django",
+            "Python",
+            "PostgreSQL",
+            "Redis",
+            "Tailwind CSS",
+            "REST APIs",
+            "SQL",
+            "JavaScript",
+            "TypeScript"
+        ]
     },
     {
-      id: 'ai-rag-agent',
-      title: 'Enterprise AI Customer Support RAG Agent',
-      category: 'ai',
-      tech_stack: ['FastAPI', 'LangChain', 'Groq / OpenAI', 'Pinecone', 'Docker', 'Python'],
-      bullets: [
-        'Engineered sub-500ms hybrid search across 50,000+ technical knowledge docs using Pinecone vector database and custom sentence embeddings with 94% retrieval recall.',
-        'Orchestrated multi-turn conversational AI workflows using LangChain and FastAPI, cutting customer support escalation rates by 35% with strict hallucination guardrails.',
-        'Containerized full Python AI pipeline with Docker, achieving automated CI/CD deployments and sub-minute horizontal auto-scaling on cloud clusters.'
-      ],
-      skills: ['FastAPI', 'LangChain', 'Python', 'AI', 'Machine Learning', 'Docker', 'Pinecone', 'NLP', 'LLM', 'REST APIs']
+        "id": "fs-ecommerce-fresher",
+        "title": "E-Commerce Multi-Vendor Storefront with Instant Search",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "React",
+            "Node.js",
+            "Express",
+            "MongoDB",
+            "Stripe",
+            "Redux Toolkit"
+        ],
+        "bullets": [
+            "Built end-to-end e-commerce web platform in React and Node.js, supporting 1,200+ product catalog items with debounced instant search and multi-facet filtering.",
+            "Integrated Stripe payment gateway checkout sessions and automated webhooks, handling multi-currency order fulfillment with 100% transactional reliability.",
+            "Configured MongoDB aggregation pipelines and Redux state caching, cutting server roundtrips by 35% during cart management and checkout navigation."
+        ],
+        "skills": [
+            "React",
+            "Node.js",
+            "Express",
+            "MongoDB",
+            "Stripe",
+            "Redux",
+            "JavaScript",
+            "REST APIs",
+            "E-Commerce",
+            "HTML5",
+            "CSS3"
+        ]
     },
     {
-      id: 'ecommerce-microservices',
-      title: 'High-Throughput E-Commerce Microservices',
-      category: 'fullstack',
-      tech_stack: ['Node.js', 'TypeScript', 'Apache Kafka', 'Docker', 'MongoDB', 'Redis'],
-      bullets: [
-        'Architected event-driven distributed checkout microservices using Apache Kafka, processing 1,500 transactions/second with zero deadlocks during peak flash sales.',
-        'Implemented saga orchestration pattern for distributed order fulfillment, cutting payment and inventory reconciliation failures to < 0.05%.',
-        'Developed high-performance REST and gRPC internal communication layers in TypeScript with schema validation and circuit breakers.'
-      ],
-      skills: ['Node.js', 'TypeScript', 'Kafka', 'MongoDB', 'Docker', 'Microservices', 'Redis', 'Distributed Systems', 'Backend']
+        "id": "fs-collab-docs-fresher",
+        "title": "Collaborative Markdown Documentation Hub",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "React",
+            "TypeScript",
+            "Supabase",
+            "PostgreSQL",
+            "Tailwind CSS"
+        ],
+        "bullets": [
+            "Developed real-time markdown documentation platform featuring live split-screen preview, syntax highlighting, and autosave functionality using React and TypeScript.",
+            "Leveraged Supabase PostgreSQL Realtime subscriptions and Row-Level Security (RLS) policies, allowing multiple team members to co-edit team docs with zero data leaks.",
+            "Achieved a 98/100 Google Lighthouse performance score by implementing route lazy loading, dynamic bundle splitting, and WebP asset optimization."
+        ],
+        "skills": [
+            "React",
+            "TypeScript",
+            "Supabase",
+            "PostgreSQL",
+            "Tailwind CSS",
+            "Frontend",
+            "Git",
+            "Markdown",
+            "Web Development"
+        ]
     },
     {
-      id: 'collab-code-editor',
-      title: 'Real-Time Collaborative Code Editor & Sandbox',
-      category: 'fullstack',
-      tech_stack: ['React', 'WebSockets', 'Monaco Editor', 'Web Workers', 'Node.js'],
-      bullets: [
-        'Implemented real-time collaborative editing using Yjs CRDTs over secure WebSockets, enabling 20+ simultaneous peer edits at zero document collision and 60 FPS.',
-        'Integrated Monaco Editor with custom language server protocols, providing syntax highlighting, auto-completion, and in-browser code diagnostics.',
-        'Isolated untrusted code execution using isolated Web Workers and WebAssembly sandbox, preventing main thread freezing during intensive computations.'
-      ],
-      skills: ['React', 'JavaScript', 'TypeScript', 'WebSockets', 'Node.js', 'Frontend', 'WebAssembly', 'HTML5']
+        "id": "fs-campus-portal-fresher",
+        "title": "University Campus Recruitment & Placement Portal",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Django",
+            "Python",
+            "PostgreSQL",
+            "Bootstrap 5",
+            "Chart.js"
+        ],
+        "bullets": [
+            "Engineered centralized campus recruitment web portal handling student registrations, company job postings, and interview drive schedules for 1,500+ active candidates.",
+            "Designed automated eligibility filter engine in Django ORM matching CGPA, department, and skill criteria, saving placement coordinators 15+ manual screening hours per drive.",
+            "Implemented interactive analytics dashboard with Chart.js visualizing department-wise placement percentages, median CTCs, and company hiring trends in real-time."
+        ],
+        "skills": [
+            "Django",
+            "Python",
+            "PostgreSQL",
+            "SQL",
+            "Bootstrap",
+            "Chart.js",
+            "HTML",
+            "CSS",
+            "Agile",
+            "Web Applications"
+        ]
     },
     {
-      id: 'devops-cicd',
-      title: 'Automated Cloud DevOps CI/CD & Infrastructure',
-      category: 'devops',
-      tech_stack: ['GitHub Actions', 'Terraform', 'AWS ECS', 'Docker', 'Prometheus', 'Grafana'],
-      bullets: [
-        'Automated end-to-end blue/green deployment pipelines with GitHub Actions and Terraform, shrinking production release duration from 45 minutes to 4 minutes.',
-        'Provisioned scalable cloud infrastructure on AWS ECS with auto-scaling policies, slashing idle container infrastructure spend by 28%.',
-        'Configured unified observability stack using Prometheus, Grafana, and Alertmanager, achieving 99.95% service uptime and sub-2-minute incident notification.'
-      ],
-      skills: ['DevOps', 'AWS', 'Docker', 'Terraform', 'CI/CD', 'GitHub Actions', 'Prometheus', 'Linux', 'Cloud']
+        "id": "fs-saas-exp",
+        "title": "Enterprise Multi-Tenant SaaS Platform with Metered Billing",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Next.js 15",
+            "FastAPI",
+            "PostgreSQL",
+            "Redis",
+            "Stripe",
+            "Docker"
+        ],
+        "bullets": [
+            "Architected multi-tenant SaaS backend with schema-isolated PostgreSQL and FastAPI, reducing P99 query latency by 42% via Redis multi-tier caching for 50,000+ daily requests.",
+            "Engineered webhook-driven subscription billing engine with Stripe, handling recurring seat subscriptions, usage-based metering, and dunning workflows with 99.9% invoice accuracy.",
+            "Designed responsive Next.js 15 frontend with App Router, server-rendered analytics tables, and optimistic UI updates for sub-second user transitions."
+        ],
+        "skills": [
+            "Next.js",
+            "React",
+            "FastAPI",
+            "Python",
+            "PostgreSQL",
+            "Redis",
+            "Stripe",
+            "Docker",
+            "SaaS",
+            "Distributed Architecture",
+            "TypeScript"
+        ]
     },
     {
-      id: 'fintech-mobile',
-      title: 'Offline-First Cross-Platform FinTech Mobile App',
-      category: 'mobile',
-      tech_stack: ['React Native', 'TypeScript', 'SQLite', 'Biometrics', 'Node.js'],
-      bullets: [
-        'Architected cross-platform mobile app in React Native with offline-first SQLite synchronization, enabling seamless transaction logging in low-connectivity areas.',
-        'Integrated hardware biometric authentication (FaceID/Fingerprint) and AES-256 local encrypted storage for bank-grade financial security.',
-        'Engineered real-time expense analytics with interactive SVG charting, achieving 99.8% crash-free sessions across 25,000+ active mobile users.'
-      ],
-      skills: ['React Native', 'Mobile', 'TypeScript', 'JavaScript', 'SQLite', 'Security', 'iOS', 'Android']
+        "id": "fs-mfe-ecommerce-exp",
+        "title": "Distributed Micro-Frontend E-Commerce Ecosystem",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "React 19",
+            "Webpack Module Federation",
+            "Node.js",
+            "GraphQL",
+            "Redis",
+            "Tailwind CSS"
+        ],
+        "bullets": [
+            "Decoupled monolithic web app into 4 independent micro-frontends (Catalog, Cart, Checkout, Account) via Webpack 5 Module Federation, slashing release deployment cycles from 3 days to 2 hours.",
+            "Orchestrated Apollo Federation GraphQL gateway uniting 6 downstream REST microservices, eliminating over-fetching and decreasing mobile payload sizes by 58%.",
+            "Implemented cross-application state bridge using custom event buses and shared sessionStorage, maintaining seamless checkout state during cross-MFE transitions."
+        ],
+        "skills": [
+            "React",
+            "Micro-Frontends",
+            "Webpack",
+            "GraphQL",
+            "Node.js",
+            "TypeScript",
+            "Redis",
+            "Performance Tuning",
+            "Architecture"
+        ]
+    },
+    {
+        "id": "fs-collab-canvas-exp",
+        "title": "High-Concurrency Collaborative Canvas & Whiteboard",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "React",
+            "WebSockets",
+            "HTML5 Canvas",
+            "Node.js",
+            "Redis Pub/Sub",
+            "WebAssembly"
+        ],
+        "bullets": [
+            "Built high-concurrency collaborative vector canvas handling 50+ simultaneous editors per room at 60 FPS, utilizing Conflict-Free Replicated Data Types (CRDTs) over WebSockets.",
+            "Offloaded geometry rendering calculations and path smoothing to WebAssembly (Rust), shrinking CPU frame-drop rate by 70% on complex 10,000-node diagrams.",
+            "Engineered horizontally scalable Node.js WebSocket cluster with Redis Pub/Sub adapter, maintaining sub-15ms cross-peer state synchronization latency."
+        ],
+        "skills": [
+            "React",
+            "WebSockets",
+            "Canvas",
+            "Node.js",
+            "Redis",
+            "WebAssembly",
+            "TypeScript",
+            "Real-Time",
+            "CRDT",
+            "Distributed Systems"
+        ]
+    },
+    {
+        "id": "fs-enterprise-erp-exp",
+        "title": "Enterprise B2B Vendor Management & Workflow Engine",
+        "category": "fullstack",
+        "category_label": "Full-Stack Web",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Angular 18",
+            "Spring Boot 3",
+            "PostgreSQL",
+            "Docker",
+            "Keycloak",
+            "OAuth2"
+        ],
+        "bullets": [
+            "Engineered enterprise vendor procurement workflow engine in Spring Boot 3 and Angular 18, automating purchase order approvals across 12 multinational business units.",
+            "Integrated Keycloak OAuth2/OIDC single sign-on with fine-grained Role-Based Access Control (RBAC), securing 80+ enterprise endpoints against privilege escalation.",
+            "Optimized heavy Hibernate JPA queries via batch fetching and second-level cache, accelerating quarterly financial report generation by 65% across 2M+ records."
+        ],
+        "skills": [
+            "Angular",
+            "Spring Boot",
+            "Java",
+            "PostgreSQL",
+            "Keycloak",
+            "OAuth2",
+            "Docker",
+            "Hibernate",
+            "Enterprise Software",
+            "Microservices"
+        ]
+    },
+    {
+        "id": "be-rest-orders-fresher",
+        "title": "High-Performance RESTful Order Processing Service",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Java 21",
+            "Spring Boot 3",
+            "MySQL",
+            "Hibernate",
+            "Swagger / OpenAPI",
+            "JUnit 5"
+        ],
+        "bullets": [
+            "Engineered modular REST API for customer order lifecycle management with Spring Boot 3 and MySQL, achieving 99.8% test coverage via JUnit 5 and Mockito.",
+            "Implemented declarative transactional boundaries with `@Transactional` and optimistic locking, preventing dirty reads and race conditions during simultaneous order updates.",
+            "Structured comprehensive API documentation using OpenAPI 3.0 / Swagger UI, enabling seamless frontend contract alignment and zero API miscommunication."
+        ],
+        "skills": [
+            "Java",
+            "Spring Boot",
+            "MySQL",
+            "Hibernate",
+            "REST APIs",
+            "JUnit",
+            "Microservices",
+            "Git",
+            "Maven"
+        ]
+    },
+    {
+        "id": "be-url-gateway-fresher",
+        "title": "Microservices URL Shortener & Analytics Gateway",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Go (Golang)",
+            "Gin Framework",
+            "Redis",
+            "PostgreSQL",
+            "Docker"
+        ],
+        "bullets": [
+            "Developed ultra-fast URL shortening microservice in Go handling 2,500+ requests/sec with Base62 encoding and sub-5ms redirection response times.",
+            "Implemented Redis caching layer with LRU eviction policy, achieving a 92% cache hit ratio and mitigating redundant database reads on viral redirect links.",
+            "Containerized service using multi-stage Docker builds, resulting in an ultra-lean 18MB production deployment image with automated health check endpoints."
+        ],
+        "skills": [
+            "Go",
+            "Golang",
+            "Gin",
+            "Redis",
+            "PostgreSQL",
+            "Docker",
+            "Microservices",
+            "REST APIs",
+            "Caching"
+        ]
+    },
+    {
+        "id": "be-booking-engine-fresher",
+        "title": "Event Ticketing & Concurrency Reservation Service",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Node.js",
+            "TypeScript",
+            "PostgreSQL",
+            "Prisma ORM",
+            "Redis Distributed Locks"
+        ],
+        "bullets": [
+            "Designed event ticket reservation API handling concurrent booking spikes using Redlock distributed locking, completely eliminating double-booking anomalies.",
+            "Created automated seat hold timer using Redis key expiration and keyspace notifications, auto-releasing unconfirmed tickets after 10 minutes.",
+            "Structured type-safe database queries and automated schema migrations using Prisma ORM, improving code reliability and developer velocity by 40%."
+        ],
+        "skills": [
+            "Node.js",
+            "TypeScript",
+            "PostgreSQL",
+            "Prisma",
+            "Redis",
+            "REST APIs",
+            "Concurrency",
+            "Backend"
+        ]
+    },
+    {
+        "id": "be-async-worker-fresher",
+        "title": "Asynchronous Batch Email & PDF Invoice Dispatch Worker",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python 3.12",
+            "FastAPI",
+            "Celery",
+            "Redis",
+            "WeasyPrint",
+            "Docker"
+        ],
+        "bullets": [
+            "Built distributed background task worker processing asynchronous invoice generation and email dispatch for 20,000+ monthly customer billing cycles.",
+            "Decoupled heavy PDF rendering from FastAPI web thread using Celery queues backed by Redis, keeping user checkout API response times under 120ms.",
+            "Configured exponential backoff retry policies and dead-letter queues, recovering 99.4% of temporary third-party SMTP dispatch failures without manual intervention."
+        ],
+        "skills": [
+            "Python",
+            "FastAPI",
+            "Celery",
+            "Redis",
+            "Docker",
+            "Async",
+            "REST APIs",
+            "Message Queues",
+            "Backend"
+        ]
+    },
+    {
+        "id": "be-trading-engine-exp",
+        "title": "Ultra-Low Latency Limit Order Book & Matching Engine",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Go",
+            "gRPC",
+            "Apache Kafka",
+            "TimescaleDB",
+            "Docker",
+            "Prometheus"
+        ],
+        "bullets": [
+            "Architected in-memory price-time priority (FIFO) order matching engine in Go, sustaining 45,000 matches/sec with sub-millisecond P99 execution latency.",
+            "Implemented event sourcing audit log over Apache Kafka, ensuring complete ledger immutability and instant disaster recovery replay capabilities.",
+            "Exposed low-overhead gRPC streaming endpoints with protocol buffers, slashing network payload serialization overhead by 68% compared to REST JSON."
+        ],
+        "skills": [
+            "Go",
+            "Golang",
+            "gRPC",
+            "Kafka",
+            "Distributed Systems",
+            "TimescaleDB",
+            "High Concurrency",
+            "Fintech",
+            "Docker"
+        ]
+    },
+    {
+        "id": "be-banking-event-exp",
+        "title": "Event-Driven Core Banking Transaction & Ledger Pipeline",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Java 21",
+            "Spring Boot 3",
+            "Apache Kafka",
+            "Apache Cassandra",
+            "Kubernetes",
+            "Docker"
+        ],
+        "bullets": [
+            "Engineered event-driven double-entry accounting ledger processing $12M+ in simulated daily fund transfers with strict idempotency and zero balance drift.",
+            "Implemented Kafka partition keying strategy based on account ID, preserving strict temporal transaction order while scaling consumer throughput horizontally across 12 partitions.",
+            "Designed Cassandra high-write time-series schema with custom compaction strategies, sustaining 8,000 write operations/sec at P99 latency < 12ms."
+        ],
+        "skills": [
+            "Java",
+            "Spring Boot",
+            "Kafka",
+            "Cassandra",
+            "Microservices",
+            "Event-Driven",
+            "Distributed Systems",
+            "Kubernetes",
+            "Fintech"
+        ]
+    },
+    {
+        "id": "be-dotnet-enterprise-exp",
+        "title": "High-Throughput Inventory & Warehouse Management Microservices",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            ".NET Core 8",
+            "C#",
+            "SQL Server",
+            "RabbitMQ",
+            "Docker",
+            "MediatR"
+        ],
+        "bullets": [
+            "Architected enterprise supply chain microservices with .NET 8 using Clean Architecture and CQRS patterns via MediatR, handling 4M+ daily inventory balance queries.",
+            "Implemented asynchronous message publishing via RabbitMQ with outbox pattern, guaranteeing zero message loss between warehouse scanning and core inventory databases.",
+            "Optimized SQL Server table indexing and partitioned tables by warehouse zone, cutting slow-moving query lock times by 55% during end-of-quarter inventory reconciliations."
+        ],
+        "skills": [
+            ".NET",
+            "C#",
+            "SQL Server",
+            "RabbitMQ",
+            "CQRS",
+            "Microservices",
+            "MediatR",
+            "Clean Architecture",
+            "Docker"
+        ]
+    },
+    {
+        "id": "be-proxy-ratelimit-exp",
+        "title": "Distributed Cloud API Gateway & Token Bucket Rate Limiter",
+        "category": "backend",
+        "category_label": "Backend & APIs",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Go",
+            "Envoy Proxy",
+            "Redis",
+            "Prometheus",
+            "Grafana",
+            "Linux"
+        ],
+        "bullets": [
+            "Designed distributed API Gateway sidecar in Go and Envoy, enforcing sliding-window and token bucket rate limits across 80+ internal microservices.",
+            "Engineered custom Redis Lua scripts executing atomic rate-limiting checks in < 1.2ms, effectively neutralizing volumetric DDoS attacks and abusive scraping bots.",
+            "Integrated real-time Prometheus metrics exporter and Grafana telemetry boards, providing SRE teams with instantaneous HTTP error rate and latency percentiles."
+        ],
+        "skills": [
+            "Go",
+            "Envoy",
+            "Redis",
+            "Prometheus",
+            "Grafana",
+            "API Gateway",
+            "Distributed Systems",
+            "SRE",
+            "Linux"
+        ]
+    },
+    {
+        "id": "ai-resume-parser-fresher",
+        "title": "AI Resume ATS Parser & Keyword Recommendation Engine",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "FastAPI",
+            "SpaCy",
+            "Sentence-Transformers",
+            "PyPDF2",
+            "Streamlit"
+        ],
+        "bullets": [
+            "Engineered resume parser in Python extracting candidate work experience, skills, and education from PDF/DOCX resumes with 93% entity extraction precision.",
+            "Computed cosine similarity against job description text embeddings using Sentence-BERT (`all-MiniLM-L6-v2`), generating instant match scores in < 250ms.",
+            "Built interactive Streamlit UI visualizing missing technical keywords, skill density histograms, and tailored bullet improvement suggestions."
+        ],
+        "skills": [
+            "Python",
+            "FastAPI",
+            "NLP",
+            "Machine Learning",
+            "SpaCy",
+            "Sentence-Transformers",
+            "Streamlit",
+            "Pandas",
+            "PyPDF2"
+        ]
+    },
+    {
+        "id": "ai-doc-qa-fresher",
+        "title": "Intelligent Document Question-Answering & Retrieval Tool",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "LangChain",
+            "FAISS",
+            "HuggingFace",
+            "FastAPI",
+            "Docker"
+        ],
+        "bullets": [
+            "Developed local document search and conversational Q&A system using LangChain, recursive chunking, and FAISS vector indexing over 500+ PDF pages.",
+            "Implemented open-source quantized LLM inference via HuggingFace pipelines, eliminating recurring third-party API token costs with zero network data egress.",
+            "Packaged full inference service into a containerized FastAPI endpoint, delivering contextual answers with exact page citation links in < 1.5 seconds."
+        ],
+        "skills": [
+            "Python",
+            "LangChain",
+            "FAISS",
+            "HuggingFace",
+            "RAG",
+            "FastAPI",
+            "NLP",
+            "Docker",
+            "Machine Learning"
+        ]
+    },
+    {
+        "id": "ai-sentiment-fresher",
+        "title": "E-Commerce Review Mining & Aspect-Based Sentiment Classifier",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "Scikit-Learn",
+            "NLTK",
+            "Pandas",
+            "FastAPI",
+            "Matplotlib"
+        ],
+        "bullets": [
+            "Trained TF-IDF and Logistic Regression / Random Forest classifiers on 50,000+ consumer product reviews, reaching 89.2% classification accuracy across 5 sentiment categories.",
+            "Built aspect-based sentiment extraction pipeline identifying specific consumer feedback regarding delivery speed, build quality, and pricing.",
+            "Exposed batch text classification endpoint via FastAPI with input sanitization, processing 200 customer feedback reviews per second."
+        ],
+        "skills": [
+            "Python",
+            "Scikit-Learn",
+            "NLTK",
+            "Pandas",
+            "Machine Learning",
+            "FastAPI",
+            "Data Analysis",
+            "NLP"
+        ]
+    },
+    {
+        "id": "ai-vision-tagger-fresher",
+        "title": "Multi-Modal Product Image Classification & Auto-Tagging System",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "PyTorch",
+            "Torchvision",
+            "OpenCV",
+            "Flask",
+            "Docker"
+        ],
+        "bullets": [
+            "Fine-tuned pre-trained ResNet-50 computer vision model on custom 15-class retail fashion dataset, achieving a top-1 test accuracy of 91.4%.",
+            "Implemented OpenCV image preprocessing pipeline (normalization, bounding box cropping, data augmentation), shrinking inference latency by 32%.",
+            "Deployed model as containerized Flask microservice, automatically generating search tags and visual metadata for 5,000+ warehouse inventory photos."
+        ],
+        "skills": [
+            "Python",
+            "PyTorch",
+            "OpenCV",
+            "Computer Vision",
+            "Deep Learning",
+            "Flask",
+            "Docker",
+            "Image Processing"
+        ]
+    },
+    {
+        "id": "ai-rag-agent-exp",
+        "title": "Enterprise Customer Support Multi-Agent RAG Orchestrator",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "FastAPI",
+            "LangChain",
+            "LlamaIndex",
+            "Pinecone",
+            "Groq / OpenAI",
+            "Docker"
+        ],
+        "bullets": [
+            "Engineered sub-450ms hybrid vector search across 80,000+ technical documentation pages using Pinecone vector database and custom sentence embeddings with 94% retrieval recall.",
+            "Orchestrated multi-agent conversational workflows with LangGraph and semantic router guardrails, cutting support ticket escalation rates by 38% with zero hallucinations.",
+            "Implemented automated citation verification and confidence scoring, flagging ambiguous technical inquiries for human agent review before answering."
+        ],
+        "skills": [
+            "Python",
+            "LangChain",
+            "LlamaIndex",
+            "Pinecone",
+            "RAG",
+            "LLM",
+            "FastAPI",
+            "Docker",
+            "Machine Learning",
+            "GenAI"
+        ]
+    },
+    {
+        "id": "ai-code-auditor-exp",
+        "title": "Autonomous Static Analysis & Vulnerability Remediation Agent",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Python",
+            "LangGraph",
+            "Tree-sitter",
+            "Claude API",
+            "PostgreSQL",
+            "GitHub API"
+        ],
+        "bullets": [
+            "Engineered autonomous AI coding agent using LangGraph and Tree-sitter AST parsing to detect OWASP Top 10 vulnerabilities (SQLi, SSRF, XSS) across pull requests.",
+            "Generated syntactically validated patch pull requests with automated regression test cases, achieving 82% direct developer merge acceptance rate.",
+            "Built PostgreSQL caching layer for AST dependency trees, reducing per-repo analysis cost by 64% by analyzing only modified Git diff chunks."
+        ],
+        "skills": [
+            "Python",
+            "LangGraph",
+            "AST",
+            "Security",
+            "GitHub API",
+            "LLM",
+            "Docker",
+            "CI/CD",
+            "Software Engineering"
+        ]
+    },
+    {
+        "id": "ai-fraud-anomaly-exp",
+        "title": "Real-Time Financial Fraud Detection & Anomaly Stream Classifier",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "PyTorch",
+            "Apache Kafka",
+            "Scikit-Learn",
+            "Redis",
+            "MLflow",
+            "AWS Sagemaker"
+        ],
+        "bullets": [
+            "Developed real-time credit card fraud classification system evaluating 8,000 transactions/sec with XGBoost and PyTorch autoencoder anomaly models.",
+            "Achieved 96.4% ROC-AUC score while maintaining false positive rate under 0.08%, saving an estimated $420,000 in simulated chargeback liabilities.",
+            "Orchestrated model lifecycle tracking, experiment versioning, and blue/green inference deployments using MLflow and AWS SageMaker endpoints."
+        ],
+        "skills": [
+            "Python",
+            "PyTorch",
+            "Kafka",
+            "Machine Learning",
+            "MLflow",
+            "Redis",
+            "AWS",
+            "SageMaker",
+            "Anomaly Detection",
+            "Fintech"
+        ]
+    },
+    {
+        "id": "ai-vector-recs-exp",
+        "title": "Multi-Billion Vector Semantic Search & Product Recommendation Engine",
+        "category": "ai",
+        "category_label": "AI & GenAI",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Milvus",
+            "FastAPI",
+            "ONNX Runtime",
+            "Ray",
+            "Kubernetes",
+            "Redis"
+        ],
+        "bullets": [
+            "Architected distributed semantic product recommendation engine indexing 5M+ item embeddings in Milvus with HNSW graph indexing for sub-12ms vector queries.",
+            "Accelerated deep learning embedding generation by 3.8x using ONNX Runtime with TensorRT GPU optimizations, slashing model serving server costs by 45%.",
+            "Deployed horizontally scalable inference cluster on Kubernetes managed by Ray Serve, sustaining 14,000 queries per second during peak traffic."
+        ],
+        "skills": [
+            "Milvus",
+            "FastAPI",
+            "ONNX",
+            "Ray",
+            "Kubernetes",
+            "Vector DB",
+            "Deep Learning",
+            "Python",
+            "Distributed Systems"
+        ]
+    },
+    {
+        "id": "devops-docker-cicd-fresher",
+        "title": "Automated Multi-Stage Docker CI/CD Pipeline",
+        "category": "devops",
+        "category_label": "DevOps & Cloud",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Docker",
+            "GitHub Actions",
+            "Linux / Bash",
+            "Nginx",
+            "AWS EC2"
+        ],
+        "bullets": [
+            "Configured end-to-end automated CI/CD pipeline using GitHub Actions, executing automated linting, test suites, and Docker image builds on every pull request.",
+            "Optimized multi-stage Docker build files with alpine base images, reducing production deployment artifact size by 68% (from 820MB to 160MB).",
+            "Deployed containerized web apps onto AWS EC2 with Nginx reverse proxy and Let's Encrypt automated SSL/TLS certificate renewal."
+        ],
+        "skills": [
+            "Docker",
+            "GitHub Actions",
+            "CI/CD",
+            "Linux",
+            "Bash",
+            "Nginx",
+            "AWS",
+            "Git",
+            "DevOps"
+        ]
+    },
+    {
+        "id": "devops-serverless-fresher",
+        "title": "Serverless REST API & Cloud Event Architecture",
+        "category": "devops",
+        "category_label": "DevOps & Cloud",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "AWS Lambda",
+            "API Gateway",
+            "DynamoDB",
+            "AWS S3",
+            "CloudFront",
+            "Python"
+        ],
+        "bullets": [
+            "Built serverless event-driven image processing architecture using AWS S3 bucket triggers and AWS Lambda (Python), auto-generating thumbnails in < 800ms.",
+            "Designed single-table DynamoDB schema with secondary global indexes, supporting fast key-value user preference lookups at zero idle server cost.",
+            "Configured Amazon CloudFront global CDN distribution with edge caching, cutting worldwide static asset delivery latency by 55%."
+        ],
+        "skills": [
+            "AWS",
+            "Serverless",
+            "Lambda",
+            "DynamoDB",
+            "S3",
+            "CloudFront",
+            "Python",
+            "Cloud Architecture"
+        ]
+    },
+    {
+        "id": "devops-cost-monitor-fresher",
+        "title": "Cloud Resource & Idle Cost Optimization Sentinel",
+        "category": "devops",
+        "category_label": "DevOps & Cloud",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "Boto3 SDK",
+            "AWS CloudWatch",
+            "Slack Webhooks",
+            "Docker"
+        ],
+        "bullets": [
+            "Developed automated cloud auditing script using Python Boto3 SDK, identifying unattached EBS volumes, idle EC2 instances, and obsolete S3 versions.",
+            "Implemented scheduled cron alerts via Slack Webhooks and AWS CloudWatch Events, providing development teams daily visibility into wasted cloud resources.",
+            "Demonstrated 22% potential cloud cost reduction across development accounts by auto-stopping staging instances outside of business hours."
+        ],
+        "skills": [
+            "AWS",
+            "Boto3",
+            "Python",
+            "CloudWatch",
+            "Cost Optimization",
+            "Slack API",
+            "Linux",
+            "Automation"
+        ]
+    },
+    {
+        "id": "devops-k8s-gitops-exp",
+        "title": "Production GitOps-Driven Kubernetes Cluster Platform",
+        "category": "devops",
+        "category_label": "DevOps & Cloud",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Kubernetes (EKS)",
+            "ArgoCD",
+            "Helm",
+            "Terraform",
+            "AWS",
+            "Prometheus"
+        ],
+        "bullets": [
+            "Architected production-ready Amazon EKS Kubernetes clusters using Terraform IaC, hosting 25+ microservices across multi-AZ private subnets.",
+            "Implemented GitOps continuous deployment workflows using ArgoCD and Helm charts, achieving zero-drift configuration and instant single-click rollbacks.",
+            "Configured Horizontal Pod Autoscalers (HPA) and Karpenter node provisioning, reducing cloud cluster compute expenditure by 34% during off-peak hours."
+        ],
+        "skills": [
+            "Kubernetes",
+            "Docker",
+            "ArgoCD",
+            "Helm",
+            "Terraform",
+            "AWS",
+            "EKS",
+            "GitOps",
+            "DevOps",
+            "Linux"
+        ]
+    },
+    {
+        "id": "devops-iac-vpc-exp",
+        "title": "High-Availability Multi-Region Cloud VPC & Security Infrastructure",
+        "category": "devops",
+        "category_label": "DevOps & Cloud",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Terraform",
+            "AWS",
+            "Ansible",
+            "HashiCorp Vault",
+            "Datadog",
+            "Linux"
+        ],
+        "bullets": [
+            "Engineered modular Terraform modules for multi-region VPC topologies featuring NAT gateways, transit gateways, and strict security group ingress/egress rules.",
+            "Integrated HashiCorp Vault for dynamic database credential injection and TLS certificate lifecycle management, completely eliminating static secrets in Git.",
+            "Automated server configuration and hardening across 60+ Linux nodes using Ansible playbooks, meeting CIS Benchmark Level-2 compliance requirements."
+        ],
+        "skills": [
+            "Terraform",
+            "AWS",
+            "Ansible",
+            "Vault",
+            "Security",
+            "Infrastructure as Code",
+            "Linux",
+            "Networking"
+        ]
+    },
+    {
+        "id": "devops-canary-exp",
+        "title": "Automated Canary Release Pipeline with Istio Service Mesh",
+        "category": "devops",
+        "category_label": "DevOps & Cloud",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "GitHub Actions",
+            "Istio Service Mesh",
+            "Kubernetes",
+            "Prometheus",
+            "Flagger"
+        ],
+        "bullets": [
+            "Designed automated progressive canary delivery pipeline using Istio service mesh and Flagger, routing 10% to 50% live user traffic to new revisions.",
+            "Integrated Prometheus metric analysis evaluating HTTP 5xx error thresholds and latency P99 during deployment, triggering automated zero-downtime rollbacks.",
+            "Eliminated production deployment outages and human validation delays, safely enabling up to 15 automated microservice production releases per week."
+        ],
+        "skills": [
+            "Istio",
+            "Kubernetes",
+            "Prometheus",
+            "CI/CD",
+            "GitHub Actions",
+            "Flagger",
+            "SRE",
+            "Cloud Architecture"
+        ]
+    },
+    {
+        "id": "devops-observability-exp",
+        "title": "Distributed Tracing, Metrics & Centralized Log Aggregation Mesh",
+        "category": "devops",
+        "category_label": "DevOps & Cloud",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "ELK Stack",
+            "OpenTelemetry",
+            "Jaeger",
+            "Grafana",
+            "Loki",
+            "Docker"
+        ],
+        "bullets": [
+            "Architected centralized observability platform aggregating 2.5 billion daily log lines and traces across 40+ microservices using OpenTelemetry collectors and Loki.",
+            "Integrated Jaeger distributed tracing with contextual trace/span IDs, reducing Mean Time to Resolution (MTTR) for high-latency production incidents from 4 hours to 18 minutes.",
+            "Constructed executive Grafana dashboards and proactive Alertmanager rules, maintaining 99.99% application reliability across distributed microservices."
+        ],
+        "skills": [
+            "OpenTelemetry",
+            "Jaeger",
+            "Grafana",
+            "Loki",
+            "ELK",
+            "Prometheus",
+            "SRE",
+            "Observability",
+            "DevOps"
+        ]
+    },
+    {
+        "id": "mob-fitness-fresher",
+        "title": "Cross-Platform Habit & Workout Routine Tracker",
+        "category": "mobile",
+        "category_label": "Mobile Apps",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Flutter",
+            "Dart",
+            "SQLite",
+            "Provider",
+            "Firebase Auth"
+        ],
+        "bullets": [
+            "Developed responsive mobile wellness app in Flutter for Android and iOS, featuring customizable daily workout routines and interactive calendar streak logging.",
+            "Implemented offline-first SQLite database layer with reactive Provider state management, ensuring smooth 60 FPS performance without network delays.",
+            "Integrated Firebase Authentication with Google Sign-In and automated cloud backup synchronization for 2,500+ active mobile beta users."
+        ],
+        "skills": [
+            "Flutter",
+            "Dart",
+            "Mobile",
+            "SQLite",
+            "Provider",
+            "Firebase",
+            "Android",
+            "iOS",
+            "UI/UX"
+        ]
+    },
+    {
+        "id": "mob-food-fresher",
+        "title": "Hyperlocal Food Delivery & Live Status Tracking Mobile App",
+        "category": "mobile",
+        "category_label": "Mobile Apps",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "React Native",
+            "Expo",
+            "Redux Toolkit",
+            "REST APIs",
+            "Tailwind (NativeWind)"
+        ],
+        "bullets": [
+            "Built consumer mobile delivery application in React Native with real-time restaurant menus, dietary filters, and animated shopping cart interactions.",
+            "Integrated simulated order status stepper and push notifications via Expo Notifications, updating customers throughout meal preparation stages.",
+            "Engineered global state handling with Redux Toolkit and AsyncStorage, enabling instant offline cart recovery upon application restart."
+        ],
+        "skills": [
+            "React Native",
+            "Expo",
+            "JavaScript",
+            "TypeScript",
+            "Redux",
+            "Mobile",
+            "REST APIs",
+            "Android",
+            "iOS"
+        ]
+    },
+    {
+        "id": "mob-expense-fresher",
+        "title": "Personal Budget & Expense Management App with Visual Analytics",
+        "category": "mobile",
+        "category_label": "Mobile Apps",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Flutter",
+            "Dart",
+            "Hive Local DB",
+            "FL Chart",
+            "Material Design 3"
+        ],
+        "bullets": [
+            "Engineered fast, encrypted personal finance tracker in Flutter featuring category expense splits, recurring subscriptions, and budget limit notifications.",
+            "Implemented lightning-fast key-value storage using Hive NoSQL local database, achieving instantaneous app launch and transaction logging in < 10ms.",
+            "Rendered interactive visual expense charts using FL Chart, helping users monitor weekly spending trends with smooth touch-drag tooltips."
+        ],
+        "skills": [
+            "Flutter",
+            "Dart",
+            "Hive",
+            "Mobile",
+            "Material Design",
+            "Data Visualization",
+            "Android",
+            "iOS"
+        ]
+    },
+    {
+        "id": "mob-fintech-wallet-exp",
+        "title": "Bank-Grade Offline-First FinTech Wallet & QR Payment App",
+        "category": "mobile",
+        "category_label": "Mobile Apps",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "React Native",
+            "TypeScript",
+            "SQLite",
+            "Biometrics",
+            "AES-256",
+            "Node.js"
+        ],
+        "bullets": [
+            "Architected cross-platform mobile wallet in React Native with hardware biometric security (FaceID/Fingerprint) and AES-256 encrypted local SQLite database.",
+            "Engineered offline QR code transaction queue that automatically reconciles with backend payment microservices upon network reconnection.",
+            "Achieved 99.85% crash-free sessions across 40,000+ monthly active mobile users through proactive memory leak profiling and Hermes JavaScript engine optimization."
+        ],
+        "skills": [
+            "React Native",
+            "TypeScript",
+            "Mobile",
+            "Security",
+            "Fintech",
+            "SQLite",
+            "Biometrics",
+            "Android",
+            "iOS"
+        ]
+    },
+    {
+        "id": "mob-rideshare-exp",
+        "title": "Real-Time Ride Hailing, Routing & Driver GPS Dispatch System",
+        "category": "mobile",
+        "category_label": "Mobile Apps",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Flutter",
+            "Google Maps SDK",
+            "WebSockets",
+            "Go",
+            "Redis Geo",
+            "Docker"
+        ],
+        "bullets": [
+            "Built high-precision driver and passenger mobile apps in Flutter featuring smooth polyline route rendering, dynamic pricing, and ETA predictions.",
+            "Engineered sub-second GPS coordinate streaming over WebSockets, synchronizing moving driver map markers with smooth bearing interpolation at 60 FPS.",
+            "Integrated Redis Geo commands on Go backend to query nearest 10 available drivers within a 3km radius in < 4ms, reducing dispatch wait times by 24%."
+        ],
+        "skills": [
+            "Flutter",
+            "Dart",
+            "Google Maps",
+            "WebSockets",
+            "Go",
+            "Redis",
+            "Mobile",
+            "Real-Time",
+            "Geolocation"
+        ]
+    },
+    {
+        "id": "mob-media-streaming-exp",
+        "title": "Low-Latency Video Streaming & Content Feed Mobile Client",
+        "category": "mobile",
+        "category_label": "Mobile Apps",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Kotlin (Android)",
+            "Swift (iOS)",
+            "ExoPlayer / AVPlayer",
+            "WebRTC",
+            "AWS CloudFront"
+        ],
+        "bullets": [
+            "Engineered high-retention short-form video feed app utilizing native ExoPlayer (Android) and AVPlayer (iOS) with adaptive HLS video bitrate streaming.",
+            "Implemented aggressive two-video ahead pre-caching and chunked buffer management, reducing video playback start latency from 1.2s to sub-180ms.",
+            "Optimized device thermal performance and battery consumption by 22% by leveraging hardware-accelerated video decoding and efficient memory recycling."
+        ],
+        "skills": [
+            "Kotlin",
+            "Swift",
+            "Android",
+            "iOS",
+            "Video Streaming",
+            "ExoPlayer",
+            "Mobile",
+            "AWS",
+            "Performance"
+        ]
+    },
+    {
+        "id": "qa-selenium-pytest-fresher",
+        "title": "Cross-Browser Web Automation & Regression Testing Framework",
+        "category": "qa",
+        "category_label": "QA & SDET",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "Selenium WebDriver",
+            "PyTest",
+            "Allure Reports",
+            "Page Object Model",
+            "GitHub Actions"
+        ],
+        "bullets": [
+            "Architected robust cross-browser test automation framework in Python using Selenium WebDriver and Page Object Model (POM), covering 350+ UI regression scenarios.",
+            "Implemented parallel test execution with `pytest-xdist`, shrinking full regression test suite run times from 42 minutes to under 7 minutes.",
+            "Integrated Allure HTML test reporting and automated screenshot capture on test failure into GitHub Actions CI, delivering instant visual failure diagnostics to developers."
+        ],
+        "skills": [
+            "Selenium",
+            "Python",
+            "PyTest",
+            "Test Automation",
+            "QA",
+            "Allure",
+            "Page Object Model",
+            "CI/CD",
+            "Regression Testing"
+        ]
+    },
+    {
+        "id": "qa-api-restassured-fresher",
+        "title": "Automated Enterprise REST API Test Suite & Schema Validator",
+        "category": "qa",
+        "category_label": "QA & SDET",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Java",
+            "REST Assured",
+            "TestNG",
+            "Maven",
+            "JSON Schema Validator",
+            "Postman"
+        ],
+        "bullets": [
+            "Developed comprehensive automated API test suite using REST Assured and TestNG, validating status codes, response payloads, and edge error contracts for 60+ endpoints.",
+            "Implemented strict JSON Schema validation and data-driven testing using TestNG `@DataProvider`, achieving 99.5% API payload contract conformity.",
+            "Constructed reusable Postman collections with automated pre-request authentication scripts and Newman CLI runners for pre-commit local developer verification."
+        ],
+        "skills": [
+            "REST Assured",
+            "Java",
+            "TestNG",
+            "API Testing",
+            "Postman",
+            "QA",
+            "JSON Schema",
+            "Maven",
+            "Automation"
+        ]
+    },
+    {
+        "id": "qa-appium-mobile-fresher",
+        "title": "Automated Cross-Platform Mobile Test Harness",
+        "category": "qa",
+        "category_label": "QA & SDET",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Appium",
+            "Python",
+            "PyTest",
+            "Android Emulator",
+            "BrowserStack"
+        ],
+        "bullets": [
+            "Automated critical user onboarding, login, and in-app checkout test scenarios across Android devices using Appium and PyTest with Page Object design pattern.",
+            "Implemented dynamic explicit waits and element locator strategies (accessibility IDs and XPath), decreasing flakiness in mobile automation runs by 40%.",
+            "Executed automated mobile test matrices across 8 real cloud devices via BrowserStack integration, validating compatibility across Android OS versions 11 through 15."
+        ],
+        "skills": [
+            "Appium",
+            "Mobile Testing",
+            "Python",
+            "PyTest",
+            "Android",
+            "BrowserStack",
+            "QA",
+            "Test Automation"
+        ]
+    },
+    {
+        "id": "qa-playwright-k6-exp",
+        "title": "Scalable End-to-End Playwright Automation & Distributed Load Test Mesh",
+        "category": "qa",
+        "category_label": "QA & SDET",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Playwright",
+            "TypeScript",
+            "Docker",
+            "K6",
+            "Jenkins",
+            "Grafana"
+        ],
+        "bullets": [
+            "Built production-grade end-to-end automation suite in TypeScript with Playwright, executing 1,200+ tests across Chromium, WebKit, and Firefox in headless Docker containers.",
+            "Integrated network mocking, API interception, and session state storage, slashing regression pipeline execution duration by 55% while maintaining zero test flakes.",
+            "Conducted distributed stress and load testing with K6, simulating 10,000 concurrent virtual users to identify database thread pool bottlenecks prior to Black Friday."
+        ],
+        "skills": [
+            "Playwright",
+            "TypeScript",
+            "K6",
+            "Performance Testing",
+            "Docker",
+            "Jenkins",
+            "SDET",
+            "QA",
+            "CI/CD"
+        ]
+    },
+    {
+        "id": "qa-contract-security-exp",
+        "title": "Shift-Left API Contract Verification & Automated DAST Security Suite",
+        "category": "qa",
+        "category_label": "QA & SDET",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Pact",
+            "Python",
+            "OWASP ZAP",
+            "REST Assured",
+            "GitLab CI",
+            "Docker"
+        ],
+        "bullets": [
+            "Implemented consumer-driven contract testing across 18 microservices using Pact framework, preventing breaking API contract drift from reaching production environments.",
+            "Integrated automated Dynamic Application Security Testing (DAST) using OWASP ZAP into GitLab CI pipelines, scanning pull requests for CSRF and header misconfigurations.",
+            "Reduced regression release verification cycle from 3 business days to 35 minutes through automated shift-left testing."
+        ],
+        "skills": [
+            "Pact",
+            "Contract Testing",
+            "OWASP ZAP",
+            "Security Testing",
+            "QA",
+            "SDET",
+            "Python",
+            "GitLab CI"
+        ]
+    },
+    {
+        "id": "qa-chaos-benchmark-exp",
+        "title": "Enterprise Chaos Engineering & High-Concurrency Performance Harness",
+        "category": "qa",
+        "category_label": "QA & SDET",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Chaos Mesh",
+            "JMeter",
+            "InfluxDB",
+            "Grafana",
+            "Python",
+            "Kubernetes"
+        ],
+        "bullets": [
+            "Designed automated resilience and chaos experiments using Chaos Mesh, injecting network latency, packet loss, and pod failures into staging Kubernetes clusters.",
+            "Benchmarked system circuit breaker trip points and failover recovery times using Apache JMeter, ensuring core services maintain 99.95% uptime during regional outages.",
+            "Constructed real-time performance telemetry pipelines with InfluxDB and Grafana to track memory leak trends and garbage collection pauses under sustained load."
+        ],
+        "skills": [
+            "Chaos Engineering",
+            "JMeter",
+            "Performance Testing",
+            "Kubernetes",
+            "Grafana",
+            "InfluxDB",
+            "SDET",
+            "SRE",
+            "QA"
+        ]
+    },
+    {
+        "id": "data-scraper-etl-fresher",
+        "title": "Automated Web Scraper & Resilient ETL Data Pipeline",
+        "category": "data",
+        "category_label": "Data Engineering",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "BeautifulSoup4",
+            "Scrapy",
+            "PostgreSQL",
+            "Pandas",
+            "Apache Airflow"
+        ],
+        "bullets": [
+            "Built distributed web scraping pipeline in Python using Scrapy with rotating user-agents and proxy middleware, extracting 150,000+ public real estate listings.",
+            "Cleaned and transformed unstructured HTML data using Pandas, validating schema constraints and deduplicating records with 99.2% data integrity.",
+            "Orchestrated scheduled daily ETL runs via Apache Airflow DAGs, loading validated analytics data into PostgreSQL with automated Slack alert monitoring."
+        ],
+        "skills": [
+            "Python",
+            "Scrapy",
+            "ETL",
+            "PostgreSQL",
+            "Pandas",
+            "Airflow",
+            "Data Engineering",
+            "SQL"
+        ]
+    },
+    {
+        "id": "data-bi-dashboard-fresher",
+        "title": "Multi-Channel Sales Performance & Customer Cohort BI Dashboard",
+        "category": "data",
+        "category_label": "Data Engineering",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "SQL",
+            "Power BI",
+            "Python",
+            "Pandas",
+            "Snowflake",
+            "Excel"
+        ],
+        "bullets": [
+            "Wrote advanced SQL queries utilizing window functions, Common Table Expressions (CTEs), and cohort groupings over 1.2M+ transaction records in Snowflake.",
+            "Designed executive Power BI dashboard with dynamic drill-downs visualizing Monthly Recurring Revenue (MRR), Customer Acquisition Cost (CAC), and cohort churn.",
+            "Automated data extraction and formatting pipelines using Python and Pandas, saving commercial finance analysts 8+ manual reporting hours every Monday morning."
+        ],
+        "skills": [
+            "SQL",
+            "Power BI",
+            "Snowflake",
+            "Python",
+            "Pandas",
+            "Data Analytics",
+            "Business Intelligence",
+            "Excel"
+        ]
+    },
+    {
+        "id": "data-clickstream-fresher",
+        "title": "Real-Time User Clickstream Ingestion & Event Aggregator",
+        "category": "data",
+        "category_label": "Data Engineering",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "FastAPI",
+            "SQLite",
+            "Streamlit",
+            "Pandas",
+            "Docker"
+        ],
+        "bullets": [
+            "Engineered lightweight clickstream ingestion API using FastAPI, capturing pageview, button click, and session duration events at 500 events/sec.",
+            "Developed automated event aggregation cron calculating hourly bounce rates, top traffic entry pages, and conversion funnel drop-off points.",
+            "Visualized live traffic metrics and user navigation paths in a responsive Streamlit dashboard with real-time automatic polling."
+        ],
+        "skills": [
+            "Python",
+            "FastAPI",
+            "Data Analytics",
+            "Pandas",
+            "Streamlit",
+            "SQL",
+            "Data Pipelines"
+        ]
+    },
+    {
+        "id": "data-spark-streaming-exp",
+        "title": "Real-Time High-Velocity Financial Tick Streaming Pipeline",
+        "category": "data",
+        "category_label": "Data Engineering",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Apache Spark Streaming",
+            "Apache Kafka",
+            "Delta Lake",
+            "AWS S3",
+            "Python / PySpark",
+            "Databricks"
+        ],
+        "bullets": [
+            "Architected distributed real-time data streaming pipeline ingesting 120,000 market tick events/second from Kafka using PySpark Structured Streaming.",
+            "Implemented sliding window aggregations calculating moving VWAP and volatility indicators, writing deduplicated micro-batches to Delta Lake tables on AWS S3.",
+            "Optimized Spark partition sizes and Delta Lake Z-Ordering, reducing downstream analytical query scan times from 15 minutes to 4 seconds."
+        ],
+        "skills": [
+            "Spark",
+            "Kafka",
+            "PySpark",
+            "Delta Lake",
+            "AWS",
+            "Big Data",
+            "Data Engineering",
+            "Databricks",
+            "Python"
+        ]
+    },
+    {
+        "id": "data-dbt-lakehouse-exp",
+        "title": "Enterprise Modern Data Stack & Automated dbt Lakehouse Transformation",
+        "category": "data",
+        "category_label": "Data Engineering",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Snowflake",
+            "dbt Core",
+            "Apache Airflow",
+            "Python",
+            "Google BigQuery"
+        ],
+        "bullets": [
+            "Engineered modular dimensional data warehouse (Kimball Star Schema) in Snowflake using dbt Core, transforming raw operational logs into 40+ production fact/dim tables.",
+            "Implemented 200+ automated dbt tests (uniqueness, referential integrity, accepted values), guaranteeing zero silent data corruption in executive reporting layers.",
+            "Orchestrated multi-stage Airflow DAGs with incremental table builds and table clustering, cutting monthly Snowflake compute warehouse credits by 32%."
+        ],
+        "skills": [
+            "Snowflake",
+            "dbt",
+            "Airflow",
+            "SQL",
+            "Data Modeling",
+            "BigQuery",
+            "Data Warehousing",
+            "Python"
+        ]
+    },
+    {
+        "id": "sec-scanner-fresher",
+        "title": "Automated Network Vulnerability Scanner & Port Audit Tool",
+        "category": "security",
+        "category_label": "Cybersecurity",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Python",
+            "Nmap",
+            "Scapy",
+            "Linux",
+            "SQLite",
+            "HTML Reporting"
+        ],
+        "bullets": [
+            "Developed multi-threaded network security scanner in Python evaluating open TCP/UDP ports, service banners, and outdated software versions across subnets.",
+            "Integrated vulnerability database lookups against the National Vulnerability Database (NVD) via CVE search APIs, pinpointing critical known exposures.",
+            "Generated structured HTML security audit reports with severity ratings and remediation recommendations, accelerating internal network security reviews."
+        ],
+        "skills": [
+            "Python",
+            "Cybersecurity",
+            "Network Security",
+            "Nmap",
+            "Linux",
+            "Vulnerability Assessment",
+            "Information Security"
+        ]
+    },
+    {
+        "id": "sec-rbac-auth-fresher",
+        "title": "Zero-Trust RBAC & OAuth2 Single Sign-On Authentication Microservice",
+        "category": "security",
+        "category_label": "Cybersecurity",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Node.js",
+            "Express",
+            "JWT",
+            "Redis",
+            "bcrypt",
+            "Docker"
+        ],
+        "bullets": [
+            "Engineered secure authentication service implementing short-lived JWT access tokens and sliding refresh tokens with bcrypt password hashing (work factor 12).",
+            "Implemented fine-grained Role-Based Access Control (RBAC) middleware verifying user permissions on every API route with zero authorization bypasses.",
+            "Added Redis token blocklisting and IP rate-limiting, mitigating brute-force dictionary attacks and enabling instant user session revocation on security events."
+        ],
+        "skills": [
+            "Security",
+            "Node.js",
+            "JWT",
+            "OAuth2",
+            "Redis",
+            "Express",
+            "Authentication",
+            "Cryptography"
+        ]
+    },
+    {
+        "id": "sec-siem-wazuh-exp",
+        "title": "Centralized Enterprise SIEM & Real-Time Threat Hunting Pipeline",
+        "category": "security",
+        "category_label": "Cybersecurity",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Wazuh",
+            "Elasticsearch",
+            "Logstash",
+            "Suricata IDS",
+            "Python",
+            "Linux"
+        ],
+        "bullets": [
+            "Architected enterprise Security Operations Center (SOC) pipeline using Wazuh and Elasticsearch, ingesting and correlating 15,000+ security events/sec from 120 endpoints.",
+            "Authored custom Sigma and Suricata intrusion detection rules identifying SSH brute-force attempts, unauthorized privilege escalation, and suspicious outbound DNS beacons.",
+            "Automated incident response playbooks using Python scripts that automatically isolate compromised endpoints and block attacker IPs at firewall level in < 15 seconds."
+        ],
+        "skills": [
+            "SIEM",
+            "SOC",
+            "Wazuh",
+            "Cybersecurity",
+            "Elasticsearch",
+            "Threat Hunting",
+            "Suricata",
+            "Incident Response",
+            "Linux"
+        ]
+    },
+    {
+        "id": "sec-vault-gateway-exp",
+        "title": "Dynamic Secrets Management & Zero-Trust Reverse Proxy Engine",
+        "category": "security",
+        "category_label": "Cybersecurity",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "HashiCorp Vault",
+            "Go",
+            "OAuth2 / OIDC",
+            "Nginx",
+            "Docker",
+            "TLS 1.3"
+        ],
+        "bullets": [
+            "Designed zero-trust reverse proxy in Go enforcing mutual TLS (mTLS) and dynamic short-lived database lease credential generation via HashiCorp Vault.",
+            "Eliminated persistent database passwords across 30+ microservices, replacing them with rotating 15-minute Vault leases that auto-revoke upon container termination.",
+            "Secured enterprise microservice perimeter with automated HTTP security headers, CORS policies, and rate-limiting, achieving clean A+ SSL Labs security ratings."
+        ],
+        "skills": [
+            "HashiCorp Vault",
+            "Go",
+            "Zero Trust",
+            "mTLS",
+            "Security",
+            "OAuth2",
+            "Docker",
+            "Cryptography"
+        ]
+    },
+    {
+        "id": "emb-smart-sensor-fresher",
+        "title": "Smart Edge IoT Environmental Monitoring Sensor Node",
+        "category": "embedded",
+        "category_label": "Embedded & IoT",
+        "level": "fresher",
+        "exp_badge": "\ud83c\udf93 Fresher (0-2 YOE)",
+        "tech_stack": [
+            "Embedded C",
+            "ESP32",
+            "MQTT",
+            "FreeRTOS",
+            "I2C / SPI",
+            "Arduino IDE"
+        ],
+        "bullets": [
+            "Engineered ultra-low-power environmental telemetry node using ESP32 microcontroller reading temperature, humidity, and gas sensor data via I2C/SPI bus protocols.",
+            "Implemented FreeRTOS preemptive task scheduling and deep sleep modes, extending sensor battery operating lifetime from 4 days to over 9 months on a single 18650 cell.",
+            "Transmitted encrypted sensor telemetry over MQTT to cloud broker with automatic reconnection and local flash buffer during network dropouts."
+        ],
+        "skills": [
+            "Embedded C",
+            "C++",
+            "ESP32",
+            "FreeRTOS",
+            "MQTT",
+            "I2C",
+            "SPI",
+            "IoT",
+            "Microcontrollers"
+        ]
+    },
+    {
+        "id": "emb-bms-automotive-exp",
+        "title": "Automotive CAN Bus & Battery Management System (BMS) Firmware",
+        "category": "embedded",
+        "category_label": "Embedded & IoT",
+        "level": "experienced",
+        "exp_badge": "\ud83d\udcbc Experienced (2-5+ YOE)",
+        "tech_stack": [
+            "Embedded C",
+            "ARM Cortex-M4 (STM32)",
+            "FreeRTOS",
+            "CANopen / CAN Bus",
+            "Keil uVision"
+        ],
+        "bullets": [
+            "Architected safety-critical firmware for electric vehicle Battery Management System (BMS) monitoring 96 lithium cell voltages and temperatures at 100 Hz.",
+            "Engineered Kalman filter algorithm for real-time State-of-Charge (SoC) and State-of-Health (SoH) estimation with < 2.5% estimation error across full thermal operating ranges.",
+            "Implemented ISO 26262 functional safety diagnostics, over-voltage/over-current protections, and CAN 2.0B broadcast messaging with Keil uVision."
+        ],
+        "skills": [
+            "Embedded C",
+            "ARM Cortex",
+            "STM32",
+            "CAN Bus",
+            "FreeRTOS",
+            "BMS",
+            "Automotive",
+            "Firmware",
+            "Hardware"
+        ]
     }
-  ];
+];
 
-  let selectedProjectIds = ['fs-saas', 'ai-rag-agent'];
+  let selectedProjectIds = ['fs-workflow-fresher', 'ai-rag-agent-exp'];
+  let currentProjectLevelFilter = 'all'; // 'all' | 'fresher' | 'experienced'
   let currentProjectCategoryFilter = 'all';
   let currentProjectSearchQuery = '';
+
+  function setProjectLevelFilter(lvl, btn) {
+    currentProjectLevelFilter = lvl;
+    document.querySelectorAll('.proj-level-pill').forEach(p => {
+      p.style.background = '#1e293b';
+      p.style.color = '#94a3b8';
+      p.style.borderColor = '#334155';
+    });
+    if (btn) {
+      btn.style.background = 'rgba(168, 85, 247, 0.2)';
+      btn.style.color = '#c084fc';
+      btn.style.borderColor = 'rgba(168, 85, 247, 0.5)';
+    }
+    renderProjectsLibrary();
+  }
+
+  function setProjectCategoryFilter(cat, btn) {
+    currentProjectCategoryFilter = cat;
+    document.querySelectorAll('.proj-filter-pill').forEach(p => {
+      p.style.background = '#1e293b';
+      p.style.color = '#94a3b8';
+      p.style.borderColor = '#334155';
+    });
+    if (btn) {
+      btn.style.background = 'rgba(37, 99, 235, 0.25)';
+      btn.style.color = '#60a5fa';
+      btn.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+    }
+    renderProjectsLibrary();
+  }
+
+  function filterPreBuiltProjects(query) {
+    currentProjectSearchQuery = query || '';
+    renderProjectsLibrary();
+  }
 
   function renderProjectsLibrary() {
     const listEl = document.getElementById('projectsLibraryList');
@@ -2870,20 +4562,37 @@
 
     const query = currentProjectSearchQuery.toLowerCase().trim();
     const filtered = PRESET_PRODUCTION_PROJECTS.filter(p => {
+      // 1. Level Filter (fresher vs experienced)
+      if (currentProjectLevelFilter !== 'all' && p.level !== currentProjectLevelFilter) {
+        return false;
+      }
+      // 2. Domain Category Filter
       if (currentProjectCategoryFilter !== 'all' && p.category !== currentProjectCategoryFilter) {
         return false;
       }
+      // 3. Search Query
       if (!query) return true;
       const titleMatch = p.title.toLowerCase().includes(query);
       const stackMatch = p.tech_stack.some(t => t.toLowerCase().includes(query));
       const skillsMatch = p.skills.some(s => s.toLowerCase().includes(query));
-      return titleMatch || stackMatch || skillsMatch;
+      const catMatch = (p.category_label || p.category).toLowerCase().includes(query);
+      const levelMatch = p.level.toLowerCase().includes(query) || (p.exp_badge || '').toLowerCase().includes(query);
+      const bulletsMatch = p.bullets.some(b => b.toLowerCase().includes(query));
+      return titleMatch || stackMatch || skillsMatch || catMatch || levelMatch || bulletsMatch;
     });
+
+    // Update count badge dynamically
+    const countBadge = document.getElementById('projectsCountBadge');
+    if (countBadge) {
+      countBadge.innerText = `${filtered.length} of ${PRESET_PRODUCTION_PROJECTS.length} Projects`;
+    }
 
     if (filtered.length === 0) {
       listEl.innerHTML = `
-        <div style="text-align: center; padding: 20px 10px; color: #94a3b8; font-size: 12px; background: #0f172a; border: 1px dashed #334155; border-radius: 10px;">
-          No pre-built projects matched "${currentProjectSearchQuery}". Try another keyword or clear search.
+        <div style="text-align: center; padding: 24px 14px; color: #94a3b8; font-size: 12px; background: #0f172a; border: 1px dashed #334155; border-radius: 12px;">
+          <div style="font-size: 20px; margin-bottom: 6px;">🔍</div>
+          <div style="color: #cbd5e1; font-weight: 700; margin-bottom: 4px;">No projects found for "${currentProjectSearchQuery}"</div>
+          <div>Try another tech keyword (e.g. Python, Selenium, Docker, React, AWS, Spring) or switch filters.</div>
         </div>
       `;
       return;
@@ -2895,13 +4604,23 @@
       const card = document.createElement('div');
       card.style.cssText = `background: ${isSelected ? 'rgba(30, 41, 59, 0.95)' : '#1e293b'}; border: 1.5px solid ${isSelected ? 'rgba(168, 85, 247, 0.65)' : '#334155'}; border-radius: 12px; padding: 12px 14px; transition: all 0.2s; box-shadow: ${isSelected ? '0 4px 16px rgba(168, 85, 247, 0.2)' : 'none'};`;
 
+      const isFresher = proj.level === 'fresher';
+      const levelBadge = isFresher
+        ? `<span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px;">🎓 Fresher Friendly (0-2 YOE)</span>`
+        : `<span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px;">💼 Experienced (2-5+ YOE)</span>`;
+      const catBadge = `<span style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.25); font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px;">${proj.category_label || proj.category}</span>`;
+
       const techPills = proj.tech_stack.map(t => `<span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;">${t}</span>`).join(' ');
       const bulletsList = proj.bullets.map(b => `<li style="font-size: 11.5px; color: #cbd5e1; margin-bottom: 5px; line-height: 1.45;">${b}</li>`).join('');
 
       card.innerHTML = `
         <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px;">
           <div>
-            <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;">
+              ${levelBadge}
+              ${catBadge}
+            </div>
+            <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
               ${proj.title}
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 4px;">
@@ -2932,26 +4651,6 @@
       }
     } else {
       selectedProjectIds.push(projId);
-    }
-    renderProjectsLibrary();
-  }
-
-  function filterPreBuiltProjects(query) {
-    currentProjectSearchQuery = query || '';
-    renderProjectsLibrary();
-  }
-
-  function setProjectCategoryFilter(cat, btn) {
-    currentProjectCategoryFilter = cat;
-    document.querySelectorAll('.proj-filter-pill').forEach(p => {
-      p.style.background = '#1e293b';
-      p.style.color = '#94a3b8';
-      p.style.borderColor = '#334155';
-    });
-    if (btn) {
-      btn.style.background = 'rgba(168, 85, 247, 0.2)';
-      btn.style.color = '#c084fc';
-      btn.style.borderColor = 'rgba(168, 85, 247, 0.4)';
     }
     renderProjectsLibrary();
   }
