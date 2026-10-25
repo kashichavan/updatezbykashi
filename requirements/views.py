@@ -584,6 +584,11 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
         eligibility=job.eligibility
     )
 
+    import urllib.parse
+    company_clean = (job.company_name or '').strip()
+    recruiter_kw = urllib.parse.quote_plus(f"{company_clean} technical recruiter OR hiring manager")
+    linkedin_recruiter_search_url = f"https://www.linkedin.com/search/results/people/?keywords={recruiter_kw}"
+
     context = {
         'job': job,
         'skills_list': job.get_skills_list(),
@@ -593,6 +598,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
         'share_url': full_share_url,
         'insta_story_text': insta_story_text,
         'interview_prep': interview_prep,
+        'linkedin_recruiter_search_url': linkedin_recruiter_search_url,
     }
     return render(request, 'content/job_detail.html', context)
 

@@ -876,6 +876,12 @@
         <span>⚡ Create Resume for This Job</span>
       </button>
 
+      <!-- Recruiter Outreach Studio CTA -->
+      <button type="button" onclick="openRecruiterModal()" class="hero-tailor-btn-main" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important; color: #ffffff !important; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4) !important;" title="Connect directly with {{ job.company_name }} recruiters & hiring managers">
+        <i data-lucide="user-check" style="width: 16px; height: 16px;"></i>
+        <span>🤝 Connect Recruiter</span>
+      </button>
+
       <!-- Optional Secondary Tailor Action -->
       <button type="button" onclick="openJobTailorModal('upload')" class="hero-tailor-btn-main" style="background: rgba(255, 255, 255, 0.08) !important; color: #cbd5e1 !important; border: 1px solid rgba(255, 255, 255, 0.18) !important;">
         <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
@@ -1202,6 +1208,12 @@
           <span>Upload Resume &amp; Tailor It</span>
         </button>
 
+        <!-- Recruiter Cold DM Studio CTA -->
+        <button type="button" onclick="openRecruiterModal()" class="btn-match-resume-sidebar" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%) !important; color: #ffffff !important; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;" title="Send AI-tailored outreach message to recruiter">
+          <i data-lucide="user-check" style="width: 16px; height: 16px;"></i>
+          <span>🤝 Connect with Recruiter</span>
+        </button>
+
         <!-- Quick specs inside sidebar card -->
         <div class="sidebar-specs-list">
           <div class="sidebar-spec-row">
@@ -1468,6 +1480,10 @@
       <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
       <span>⚡ Resume</span>
     </button>
+    <button type="button" onclick="openRecruiterModal()" class="mobile-tailor-btn" style="background: rgba(37, 99, 235, 0.25) !important; color: #60a5fa !important; border: 1px solid rgba(37, 99, 235, 0.45) !important;" title="Connect with Recruiter">
+      <i data-lucide="user-check" style="width: 14px; height: 14px;"></i>
+      <span>Recruiter</span>
+    </button>
     {% if job.is_expired %}
     <div class="mobile-apply-btn" style="background: rgba(100, 116, 139, 0.4) !important; color: #94a3b8 !important; cursor: not-allowed; text-align: center;">
       <span>Closed</span>
@@ -1723,6 +1739,160 @@
         <span>Open Clean Canvas in Live Editor</span>
         <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
       </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── RECRUITER OUTREACH & COLD DM STUDIO MODAL ── -->
+<div id="recruiterOutreachModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 14px; overflow-y: auto;">
+  <div style="background: #0f172a; width: 100%; max-width: 720px; border-radius: 24px; padding: 26px 24px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.75); position: relative; border: 1px solid rgba(59, 130, 246, 0.45); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; color: #f8fafc;">
+    
+    <button type="button" onclick="closeRecruiterModal()" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); width: 34px; height: 34px; border-radius: 50%; color: #cbd5e1; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10; transition: all 0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">✕</button>
+
+    <!-- Modal Header -->
+    <div style="display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px;">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, rgba(37,99,235,0.2), rgba(14,165,233,0.3)); border: 1px solid rgba(56,189,248,0.4); display: grid; place-items: center; color: #38bdf8; flex-shrink: 0; box-shadow: 0 8px 20px rgba(14,165,233,0.25);">
+        <i data-lucide="user-check" style="width: 24px; height: 24px;"></i>
+      </div>
+      <div>
+        <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(37, 99, 235, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">
+          <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
+          <span>Direct Hiring Manager Outreach</span>
+        </div>
+        <h3 style="font-size: 21px; font-weight: 800; margin: 0 0 4px; color: #ffffff; letter-spacing: -0.02em;">
+          Connect with Recruiter &amp; Cold DM Studio
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; margin: 0; line-height: 1.45;">
+          Get shortlisted directly for <strong style="color: #60a5fa;">{{ job.title }}</strong> at <strong style="color: #ffffff;">{{ job.company_name }}</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Strategy Insight Callout -->
+    <div style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(15, 23, 42, 0.5) 100%); border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px;">
+      <i data-lucide="lightbulb" style="width: 20px; height: 20px; color: #fbbf24; flex-shrink: 0; margin-top: 1px;"></i>
+      <div style="font-size: 12.5px; color: #cbd5e1; line-height: 1.5;">
+        <strong style="color: #f8fafc;">Why Direct Outreach Works:</strong> Web portals receive 500+ generic applications. Sending a concise, skill-targeted pitch directly to the recruiter or hiring manager yields a <strong>4x higher callback rate</strong>.
+      </div>
+    </div>
+
+    <!-- Recruiter Lead / LinkedIn Search Card -->
+    <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 16px 18px; margin-bottom: 22px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: #0077b5; display: grid; place-items: center; color: #ffffff; font-weight: 900; font-size: 18px; flex-shrink: 0;">
+            in
+          </div>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: #ffffff;">
+              {% if job.referrer_name %}
+                {{ job.referrer_name }} <span style="font-size: 11px; color: #34d399; font-weight: 700;">(Verified Lead)</span>
+              {% else %}
+                Recruiters &amp; Tech Leads at {{ job.company_name }}
+              {% endif %}
+            </div>
+            <div style="font-size: 12px; color: #94a3b8;">
+              {% if job.poster_email %}
+                Email: {{ job.poster_email }} • Hiring Team
+              {% else %}
+                Talent Acquisition &amp; Engineering Hiring Managers
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          {% if job.referrer_linkedin %}
+            <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; background: #0077b5; color: #ffffff; padding: 9px 15px; border-radius: 10px; font-size: 12.5px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(0,119,181,0.3); transition: all 0.2s;">
+              <span>View Profile</span>
+              <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+            </a>
+          {% else %}
+            <a href="{{ linkedin_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; background: #0077b5; color: #ffffff; padding: 9px 15px; border-radius: 10px; font-size: 12.5px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(0,119,181,0.3); transition: all 0.2s;">
+              <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+              <span>Find on LinkedIn</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Candidate Quick Inputs (Injects into Templates) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+      <div>
+        <label style="font-size: 11.5px; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px;">
+          Your Name:
+        </label>
+        <input type="text" id="outreachCandidateName" placeholder="e.g. Rahul Sharma" value="" oninput="renderOutreachTemplates()" style="width: 100%; background: #1e293b; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 9px 12px; color: #ffffff; font-size: 13px; box-sizing: border-box; outline: none;">
+      </div>
+      <div>
+        <label style="font-size: 11.5px; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px;">
+          Key Project / Focus:
+        </label>
+        <input type="text" id="outreachProjectFocus" placeholder="e.g. Full-Stack SaaS / AI Agent" value="" oninput="renderOutreachTemplates()" style="width: 100%; background: #1e293b; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 9px 12px; color: #ffffff; font-size: 13px; box-sizing: border-box; outline: none;">
+      </div>
+    </div>
+
+    <!-- Template Switcher Tabs -->
+    <div style="display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch;">
+      <button type="button" id="tabOutreachConnect" onclick="switchOutreachTab('connect')" style="flex: 1; min-width: 130px; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(37, 99, 235, 0.2); color: #60a5fa; white-space: nowrap; transition: all 0.2s;">
+        🔗 LinkedIn Connect (&lt;300)
+      </button>
+      <button type="button" id="tabOutreachInmail" onclick="switchOutreachTab('inmail')" style="flex: 1; min-width: 120px; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid transparent; background: transparent; color: #94a3b8; white-space: nowrap; transition: all 0.2s;">
+        💬 LinkedIn InMail / DM
+      </button>
+      <button type="button" id="tabOutreachEmail" onclick="switchOutreachTab('email')" style="flex: 1; min-width: 100px; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid transparent; background: transparent; color: #94a3b8; white-space: nowrap; transition: all 0.2s;">
+        ✉️ Cold Email
+      </button>
+      <button type="button" id="tabOutreachFollowup" onclick="switchOutreachTab('followup')" style="flex: 1; min-width: 90px; padding: 9px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid transparent; background: transparent; color: #94a3b8; white-space: nowrap; transition: all 0.2s;">
+        🔄 Follow-Up
+      </button>
+    </div>
+
+    <!-- Tone Selector Bar -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 11.5px; font-weight: 700; color: #94a3b8;">Tone:</span>
+        <button type="button" id="toneBtnConfident" onclick="setOutreachTone('confident')" style="padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(37, 99, 235, 0.2); color: #60a5fa;">
+          Confident &amp; Direct
+        </button>
+        <button type="button" id="toneBtnFresher" onclick="setOutreachTone('fresher')" style="padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid transparent; background: transparent; color: #94a3b8;">
+          Enthusiastic Fresher
+        </button>
+        <button type="button" id="toneBtnImpact" onclick="setOutreachTone('impact')" style="padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid transparent; background: transparent; color: #94a3b8;">
+          High-Impact Dev
+        </button>
+      </div>
+
+      <div id="outreachCharBadge" style="font-size: 11.5px; font-weight: 800; color: #34d399; background: rgba(52, 211, 153, 0.15); border: 1px solid rgba(52, 211, 153, 0.3); padding: 3px 8px; border-radius: 6px;">
+        242 / 300 chars (Safe for LinkedIn)
+      </div>
+    </div>
+
+    <!-- Message Content Box -->
+    <div style="position: relative; margin-bottom: 20px;">
+      <textarea id="outreachMessageText" rows="7" style="width: 100%; background: #090d16; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 14px; padding: 14px 16px; color: #f1f5f9; font-size: 13.5px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; resize: vertical; box-sizing: border-box; outline: none;"></textarea>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+      <button type="button" id="btnCopyOutreach" onclick="copyOutreachMessage()" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; padding: 12px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 800; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); transition: all 0.2s;">
+        <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+        <span id="btnCopyOutreachText">📋 Copy Message</span>
+      </button>
+
+      {% if job.referrer_linkedin %}
+        <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: #0077b5; color: #ffffff; padding: 12px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 15px rgba(0,119,181,0.4); transition: all 0.2s;">
+          <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+          <span>Open LinkedIn Message ↗</span>
+        </a>
+      {% else %}
+        <a href="{{ linkedin_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: #0077b5; color: #ffffff; padding: 12px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 15px rgba(0,119,181,0.4); transition: all 0.2s;">
+          <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+          <span>Open LinkedIn Search ↗</span>
+        </a>
+      {% endif %}
     </div>
 
   </div>
@@ -3202,6 +3372,170 @@
       modal.classList.remove('active');
     }
   }
+
+  /* ── RECRUITER OUTREACH & COLD DM STUDIO LOGIC ── */
+  let currentOutreachTab = 'connect';
+  let currentOutreachTone = 'confident';
+
+  function openRecruiterModal() {
+    const modal = document.getElementById('recruiterOutreachModal');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.style.opacity = '1';
+      modal.style.visibility = 'visible';
+      modal.classList.add('active');
+      renderOutreachTemplates();
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  function closeRecruiterModal() {
+    const modal = document.getElementById('recruiterOutreachModal');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.style.opacity = '0';
+      modal.style.visibility = 'hidden';
+      modal.classList.remove('active');
+    }
+  }
+
+  function switchOutreachTab(tab) {
+    currentOutreachTab = tab;
+    const tabs = ['connect', 'inmail', 'email', 'followup'];
+    tabs.forEach(t => {
+      const btn = document.getElementById('tabOutreach' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (btn) {
+        if (t === tab) {
+          btn.style.background = 'rgba(37, 99, 235, 0.2)';
+          btn.style.color = '#60a5fa';
+          btn.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = '#94a3b8';
+          btn.style.borderColor = 'transparent';
+        }
+      }
+    });
+    renderOutreachTemplates();
+  }
+
+  function setOutreachTone(tone) {
+    currentOutreachTone = tone;
+    const tones = ['confident', 'fresher', 'impact'];
+    tones.forEach(t => {
+      const btn = document.getElementById('toneBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (btn) {
+        if (t === tone) {
+          btn.style.background = 'rgba(37, 99, 235, 0.2)';
+          btn.style.color = '#60a5fa';
+          btn.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = '#94a3b8';
+          btn.style.borderColor = 'transparent';
+        }
+      }
+    });
+    renderOutreachTemplates();
+  }
+
+  function renderOutreachTemplates() {
+    const candidateName = document.getElementById('outreachCandidateName')?.value?.trim() || '[Your Name]';
+    const projectFocus = document.getElementById('outreachProjectFocus')?.value?.trim() || 'production-ready projects';
+    const company = "{{ job.company_name|escapejs }}";
+    const jobTitle = "{{ job.title|escapejs }}";
+    const recruiterName = "{% if job.referrer_name %}{{ job.referrer_name|escapejs }}{% else %}Hiring Lead{% endif %}";
+    
+    // Extract top 3 skills
+    const rawSkills = "{{ job.skills_required|escapejs }}";
+    const skillsArr = rawSkills ? rawSkills.split(',').map(s => s.trim()).filter(Boolean).slice(0, 3) : ['Full-Stack', 'Modern Tech Stack', 'Problem Solving'];
+    const skillsText = skillsArr.join(', ');
+
+    let message = '';
+    const charBadge = document.getElementById('outreachCharBadge');
+
+    if (currentOutreachTab === 'connect') {
+      // Strictly under 300 characters for LinkedIn free connection invite!
+      if (currentOutreachTone === 'fresher') {
+        message = `Hi ${recruiterName}, aspiring engineer eager to contribute to ${company}'s ${jobTitle} opening. Skilled in ${skillsText} with hands-on ${projectFocus}. Would love to connect and share my work! - ${candidateName}`;
+      } else if (currentOutreachTone === 'impact') {
+        message = `Hi ${recruiterName}, saw ${company}'s search for a ${jobTitle}. Built ${projectFocus} with ${skillsText}, focusing on scalable architecture. Would love to connect and discuss fit. - ${candidateName}`;
+      } else {
+        // Confident & Direct
+        message = `Hi ${recruiterName}, I saw your opening for ${jobTitle} at ${company}. With hands-on experience in ${skillsText} and building ${projectFocus}, I'd value connecting and sharing my portfolio. - ${candidateName}`;
+      }
+    } else if (currentOutreachTab === 'inmail') {
+      // Structured 3-paragraph InMail / DM
+      if (currentOutreachTone === 'fresher') {
+        message = `Hi ${recruiterName},\n\nI hope you're having a great week! I recently came across the ${jobTitle} opening at ${company} and was immediately drawn to your engineering culture.\n\nAs a recent graduate with strong practical training in ${skillsText}, I recently engineered ${projectFocus}. I have solved 250+ problem-solving challenges and focus heavily on write-tested, production-clean code.\n\nI have already submitted my formal application through the recruitment portal, but wanted to reach out directly. Would you be open to reviewing my GitHub or having a quick 5-minute chat?\n\nWarm regards,\n${candidateName}\nGitHub/Portfolio: [Add Link Here]`;
+      } else if (currentOutreachTone === 'impact') {
+        message = `Hi ${recruiterName},\n\nI noticed ${company} is expanding its technical team with the ${jobTitle} role.\n\nMy background centers on building high-reliability systems using ${skillsText}. Recently, I engineered ${projectFocus}, optimizing response times and ensuring maintainable modular code.\n\nGiven ${company}'s engineering scale, I am confident my hands-on background can deliver immediate momentum. I'd love to connect for a quick 5-minute conversation or share my code samples.\n\nBest regards,\n${candidateName}\nLinkedIn: [Your Profile Link]`;
+      } else {
+        message = `Hi ${recruiterName},\n\nI hope this finds you well! I noticed ${company} is hiring for the ${jobTitle} position and wanted to reach out.\n\nI specialize in ${skillsText} and recently completed ${projectFocus}, focusing on clean architecture and high-performance execution. I believe my hands-on experience aligns closely with what you're looking for.\n\nI have submitted my application via the careers portal, but would welcome the chance to share my portfolio or speak briefly about how I can contribute to ${company}.\n\nBest regards,\n${candidateName}\nPortfolio / Projects: [Add Link]`;
+      }
+    } else if (currentOutreachTab === 'email') {
+      message = `Subject: Application & Engineering Fit: ${jobTitle} - ${candidateName}\n\nDear ${recruiterName} / ${company} Hiring Team,\n\nI am writing to express my strong interest in the ${jobTitle} opening at ${company}.\n\nWhy I believe I am a strong technical match:\n• Proficient in core required technologies: ${skillsText}\n• Built and shipped ${projectFocus} with clean design patterns\n• Dedicated to high-velocity development and continuous learning\n\nI have attached my resume and would welcome the opportunity to discuss how my skill set can benefit ${company}.\n\nSincerely,\n${candidateName}\nContact: [Your Phone / Email]\nPortfolio: [Your Website / GitHub]`;
+    } else {
+      // Follow-up
+      message = `Hi ${recruiterName},\n\nI wanted to follow up briefly regarding the ${jobTitle} opening at ${company}.\n\nI remain very excited about the opportunity to contribute with my background in ${skillsText}. If you need any additional code samples or details from my side, please feel free to let me know.\n\nThank you for your time and consideration!\n\nBest regards,\n${candidateName}`;
+    }
+
+    const textArea = document.getElementById('outreachMessageText');
+    if (textArea) {
+      textArea.value = message;
+    }
+
+    if (charBadge) {
+      const len = message.length;
+      if (currentOutreachTab === 'connect') {
+        charBadge.style.display = 'inline-block';
+        if (len <= 300) {
+          charBadge.innerText = `${len} / 300 chars (Safe for Free LinkedIn)`;
+          charBadge.style.color = '#34d399';
+          charBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+          charBadge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+        } else {
+          charBadge.innerText = `${len} / 300 chars (Exceeds Limit!)`;
+          charBadge.style.color = '#f87171';
+          charBadge.style.background = 'rgba(239, 68, 68, 0.15)';
+          charBadge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        }
+      } else {
+        charBadge.innerText = `${len} characters • Ready to send`;
+        charBadge.style.color = '#60a5fa';
+        charBadge.style.background = 'rgba(37, 99, 235, 0.15)';
+        charBadge.style.borderColor = 'rgba(37, 99, 235, 0.3)';
+      }
+    }
+  }
+
+  function copyOutreachMessage() {
+    const textArea = document.getElementById('outreachMessageText');
+    if (!textArea) return;
+    navigator.clipboard.writeText(textArea.value).then(() => {
+      const btn = document.getElementById('btnCopyOutreachText');
+      if (btn) {
+        const orig = btn.innerText;
+        btn.innerText = '✅ Copied to Clipboard!';
+        setTimeout(() => { btn.innerText = orig; }, 2500);
+      }
+      if (window.showToast) {
+        window.showToast("📋 Outreach message copied! Ready to paste into LinkedIn.", "success");
+      } else {
+        alert("Outreach message copied! Ready to paste into LinkedIn.");
+      }
+    }).catch(err => {
+      prompt("Copy message manually:", textArea.value);
+    });
+  }
+
+  // Close modals on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeRecruiterModal();
+      closeJobTailorModal();
+    }
+  });
 
   function fillJobTailorSample() {
     const input = document.getElementById('jobTailorResumeInput');
