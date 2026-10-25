@@ -6,6 +6,7 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -595,21 +596,9 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
     if not company_clean:
         company_clean = (job.company_name or '').strip()
 
-    # Exact Boolean match: "Company" (recruiter OR "talent acquisition")
-    li_query = f'"{company_clean}" (recruiter OR "talent acquisition")'
-    linkedin_recruiter_search_url = f"https://www.linkedin.com/search/results/people/?keywords={urllib.parse.quote(li_query)}&origin=GLOBAL_SEARCH_HEADER"
-
-    # Google X-Ray (100% company recruiter profiles without login walls)
-    google_xray_query = f'site:linkedin.com/in "{company_clean}" (recruiter OR "talent acquisition")'
-    google_recruiter_search_url = f"https://www.google.com/search?q={urllib.parse.quote(google_xray_query)}"
-
-    # Google OSINT email search (searches public recruiter email addresses & direct contacts)
-    google_email_query = f'"{company_clean}" ("recruiter email" OR "hr email" OR "talent acquisition" OR "contact:" OR "email:")'
-    google_recruiter_email_url = f"https://www.google.com/search?q={urllib.parse.quote(google_email_query)}"
-
-    # Heuristic company domain for corporate email patterns
-    domain_slug = re.sub(r'[^a-zA-Z0-9]+', '', company_clean).lower()
-    company_domain_guess = f"{domain_slug}.com"
+    from requirements.services.recruiter_finder import get_recruiter_intelligence_for_job
+    recruiter_intel = get_recruiter_intelligence_for_job(job)
+    sourcing_links = recruiter_intel.get('sourcing_links', {})
 
     context = {
         'job': job,
@@ -620,13 +609,41 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
         'share_url': full_share_url,
         'insta_story_text': insta_story_text,
         'interview_prep': interview_prep,
-        'clean_company_name': company_clean,
-        'linkedin_recruiter_search_url': linkedin_recruiter_search_url,
-        'google_recruiter_search_url': google_recruiter_search_url,
-        'google_recruiter_email_url': google_recruiter_email_url,
-        'company_domain_guess': company_domain_guess,
+        'clean_company_name': recruiter_intel.get('clean_company_name') or company_clean,
+        'linkedin_recruiter_search_url': sourcing_links.get('linkedin_search_url'),
+        'google_recruiter_search_url': sourcing_links.get('google_xray_url'),
+        'google_recruiter_email_url': sourcing_links.get('google_email_url'),
+        'google_recruiter_phone_url': sourcing_links.get('google_phone_url'),
+        'company_domain_guess': recruiter_intel.get('domain'),
+        'recruiter_intel': recruiter_intel,
     }
     return render(request, 'content/job_detail.html', context)
+
+@require_GET
+def api_recruiter_intel(request, job_uuid=None):
+    """
+    Returns live recruiter intelligence, verified contacts, corporate email formats,
+    and sourcing queries for a target job.
+    """
+    from requirements.services.recruiter_finder import (
+        get_recruiter_intelligence_for_job,
+        generate_recruiter_email_permutations,
+    )
+    from django.http import JsonResponse
+    try:
+        job = JobPosting.objects.filter(uuid=job_uuid).first()
+        if not job and str(job_uuid).isdigit():
+            job = JobPosting.objects.filter(id=int(job_uuid)).first()
+        if not job:
+            return JsonResponse({'status': 'error', 'message': 'Job not found'}, status=404)
+        
+        recruiter_name = request.GET.get('recruiter_name', '').strip()
+        intel = get_recruiter_intelligence_for_job(job)
+        if recruiter_name:
+            intel['predicted_emails'] = generate_recruiter_email_permutations(recruiter_name, intel['domain'])
+        return JsonResponse({'status': 'ok', 'data': intel})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 def job_apply_redirect_view(request, uuid=None, pk=None, identifier=None):
     """
