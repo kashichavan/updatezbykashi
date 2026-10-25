@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Recruiter Email & Google X-Ray — {{ clean_company_name }} | Kashii Updatez{% endblock %}
+{% block meta_description %}Find verified recruiter emails and LinkedIn profiles for {{ job.title }} at {{ clean_company_name }} using Google X-Ray and direct email extraction.{% endblock %}
+
+{% block extra_css %}
+<style>
+  .recruiter-connect-wrapper {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+
+  .back-btn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    margin-bottom: 22px;
+    padding: 8px 14px;
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+  }
+  .back-btn-pill:hover {
+    color: var(--blue-primary);
+    border-color: var(--blue-border);
+    transform: translateX(-2px);
+  }
+
+  .step-card {
+    background: #ffffff;
+    border: 1.5px solid var(--subtle-border);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  }
+
+  .step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+
+  .email-result-pill {
+    background: #0f172a;
+    border: 1.5px solid #1e293b;
+    border-radius: 14px;
+    padding: 16px 18px;
+    color: #ffffff;
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .btn-action-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff;
+    padding: 13px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transition: all 0.2s ease;
+  }
+  .btn-action-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+    color: #ffffff;
+  }
+
+  @media (max-width: 640px) {
+    .recruiter-connect-wrapper {
+      padding: 14px 12px 60px;
+    }
+    .step-card {
+      padding: 18px 16px;
+    }
+    .btn-action-primary {
+      width: 100%;
+    }
+    .email-result-actions {
+      width: 100%;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="recruiter-connect-wrapper">
+
+  <!-- Back Navigation -->
+  <a href="{{ job_detail_url }}" class="back-btn-pill">
+    <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
+    <span>Back to Job Details ({{ job.title|truncatechars:35 }})</span>
+  </a>
+
+  <!-- Header -->
+  <div style="margin-bottom: 24px;">
+    <div style="font-size: 13px; font-weight: 700; color: var(--blue-primary); margin-bottom: 4px;">
+      Direct Sourcing Hub
+    </div>
+    <h1 style="font-size: 26px; font-weight: 900; color: var(--ink); margin: 0 0 6px; letter-spacing: -0.02em;">
+      Find Recruiter &amp; Original Email ID
+    </h1>
+    <p style="font-size: 14px; color: var(--muted); margin: 0; line-height: 1.5;">
+      Search LinkedIn recruiters for <strong>{{ clean_company_name }}</strong> via Google X-Ray, then paste their profile to get their original email ID.
+    </p>
+  </div>
+
+  <!-- STEP 1: GOOGLE X-RAY SEARCH -->
+  <div class="step-card">
+    <div class="step-badge">
+      <i data-lucide="search" style="width: 13px; height: 13px;"></i>
+      <span>Step 1: Google X-Ray</span>
+    </div>
+    <h2 style="font-size: 18px; font-weight: 900; color: var(--ink); margin: 0 0 8px;">
+      Find {{ clean_company_name }} Recruiters on LinkedIn
+    </h2>
+    <p style="font-size: 13.5px; color: var(--muted); margin: 0 0 16px; line-height: 1.5;">
+      Google X-Ray bypasses LinkedIn login walls, commercial search limits, and private profile masking. Click below to view all talent acquisition leads at {{ clean_company_name }}.
+    </p>
+
+    <a href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" class="btn-action-primary">
+      <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+      <span>Open Google X-Ray Search for {{ clean_company_name }} ↗</span>
+    </a>
+  </div>
+
+  <!-- STEP 2: PASTE LINKEDIN PROFILE & GET ORIGINAL EMAIL ID -->
+  <div class="step-card">
+    <div class="step-badge" style="background: rgba(16, 185, 129, 0.15); color: #047857;">
+      <i data-lucide="mail" style="width: 13px; height: 13px;"></i>
+      <span>Step 2: Profile to Original Email ID</span>
+    </div>
+    <h2 style="font-size: 18px; font-weight: 900; color: var(--ink); margin: 0 0 8px;">
+      Enter Recruiter Profile ➔ Get Original Email
+    </h2>
+    <p style="font-size: 13.5px; color: var(--muted); margin: 0 0 14px; line-height: 1.5;">
+      Paste any recruiter's LinkedIn profile link below. Our engine automatically resolves their name and original email ID.
+    </p>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <input type="text" id="targetLinkedInUrl" placeholder="Paste recruiter profile (e.g. https://www.linkedin.com/in/recruiter-name/)" oninput="handleProfileInputDebounced()" style="flex: 1; min-width: 250px; background: #f8fafc; border: 1.5px solid var(--subtle-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; color: var(--ink); outline: none; box-sizing: border-box;">
+      <button type="button" id="btnGetOriginalEmail" onclick="fetchOriginalRecruiterEmail()" class="btn-action-primary" style="padding: 12px 18px;">
+        <i data-lucide="zap" style="width: 15px; height: 15px;"></i>
+        <span>Get Original Email</span>
+      </button>
+    </div>
+
+    <!-- Live Original Email Result Box -->
+    <div id="emailResultBox" class="email-result-pill">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <span style="font-size: 15px; font-weight: 900; color: #ffffff;" id="displayRecruiterName">
+            {{ active_recruiter.name }}
+          </span>
+          <span style="background: rgba(16, 185, 129, 0.25); color: #34d399; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px;" id="displayEmailBadge">
+            ✓ Original Recruiter Email
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <code id="displayOriginalEmail" style="font-size: 16px; font-weight: 800; color: #38bdf8; letter-spacing: 0.02em;">
+            {{ active_recruiter.email }}
+          </code>
+        </div>
+      </div>
+
+      <div class="email-result-actions" style="display: flex; gap: 8px;">
+        <button type="button" id="btnCopyEmail" onclick="copyOriginalEmail()" style="background: rgba(59, 130, 246, 0.25); border: 1px solid rgba(59, 130, 246, 0.5); color: #93c5fd; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+          📋 Copy Email
+        </button>
+        <button type="button" onclick="composeEmailToRecruiter()" style="background: #2563eb; border: none; color: #ffffff; padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+          ✉️ Send Mail
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let debounceTimeout = null;
+
+  function handleProfileInputDebounced() {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      const val = document.getElementById('targetLinkedInUrl')?.value?.trim();
+      if (val && val.includes('linkedin.com/in/')) {
+        fetchOriginalRecruiterEmail();
+      }
+    }, 450);
+  }
+
+  async function fetchOriginalRecruiterEmail() {
+    const input = document.getElementById('targetLinkedInUrl');
+    const url = input ? input.value.trim() : '';
+    if (!url || !url.includes('linkedin.com/in/')) {
+      if (window.showToast) window.showToast("⚠️ Please enter a valid LinkedIn profile URL", "error");
+      return;
+    }
+
+    const btn = document.getElementById('btnGetOriginalEmail');
+    if (btn) {
+      btn.innerHTML = '<span>⏳ Resolving...</span>';
+      btn.disabled = true;
+    }
+
+    try {
+      const resp = await fetch(`/api/jobs/{{ job.uuid }}/recruiter-intel/?linkedin_url=${encodeURIComponent(url)}`);
+      const res = await resp.json();
+      if (res.status === 'ok' && res.data) {
+        const data = res.data;
+        const nameEl = document.getElementById('displayRecruiterName');
+        if (nameEl) nameEl.innerText = data.name;
+
+        const emailEl = document.getElementById('displayOriginalEmail');
+        if (emailEl) emailEl.innerText = data.email;
+
+        const badgeEl = document.getElementById('displayEmailBadge');
+        if (badgeEl) badgeEl.innerText = '✓ ' + (data.status || 'Original Recruiter Email');
+
+        if (window.showToast) {
+          window.showToast(`✅ Original email found: ${data.email}`, "success");
+        }
+      } else {
+        throw new Error(res.message || "Failed to resolve email");
+      }
+    } catch (err) {
+      if (window.showToast) window.showToast(`❌ Error: ${err.message}`, "error");
+    } finally {
+      if (btn) {
+        btn.innerHTML = '<i data-lucide="zap" style="width: 15px; height: 15px;"></i><span>Get Original Email</span>';
+        btn.disabled = false;
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  }
+
+  function copyOriginalEmail() {
+    const emailEl = document.getElementById('displayOriginalEmail');
+    const email = emailEl ? emailEl.innerText.trim() : '';
+    if (!email) return;
+    navigator.clipboard.writeText(email).then(() => {
+      const btn = document.getElementById('btnCopyEmail');
+      if (btn) {
+        const orig = btn.innerText;
+        btn.innerText = '✅ Copied!';
+        setTimeout(() => { btn.innerText = orig; }, 2000);
+      }
+      if (window.showToast) {
+        window.showToast(`📋 Copied: ${email}`, "success");
+      } else {
+        alert(`Copied: ${email}`);
+      }
+    });
+  }
+
+  function composeEmailToRecruiter() {
+    const emailEl = document.getElementById('displayOriginalEmail');
+    const email = emailEl ? emailEl.innerText.trim() : '';
+    if (!email) return;
+    const subject = `Application: {{ job.title|escapejs }} at {{ clean_company_name|escapejs }}`;
+    const body = `Hi,\n\nI came across the {{ job.title|escapejs }} role at {{ clean_company_name|escapejs }} and wanted to share my resume directly.\n\nWarm regards,\nCandidate`;
+    window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) window.lucide.createIcons();
+  });
+</script>
+{% endblock %}

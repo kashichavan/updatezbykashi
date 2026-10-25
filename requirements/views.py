@@ -601,6 +601,16 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
     sourcing_links = recruiter_intel.get('sourcing_links', {})
     active_recruiter = recruiter_intel.get('active_recruiter', {})
 
+    from django.urls import reverse
+    recruiter_connect_url = ""
+    try:
+        if job.category:
+            recruiter_connect_url = reverse('category_job_recruiter', kwargs={'category_slug': job.category.slug, 'uuid': job.uuid})
+        else:
+            recruiter_connect_url = reverse('job_recruiter', kwargs={'uuid': job.uuid})
+    except Exception:
+        recruiter_connect_url = f"/job/{job.uuid}/recruiter/"
+
     context = {
         'job': job,
         'skills_list': job.get_skills_list(),
@@ -618,19 +628,75 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
         'company_domain_guess': recruiter_intel.get('domain'),
         'recruiter_intel': recruiter_intel,
         'active_recruiter': active_recruiter,
+        'recruiter_connect_url': recruiter_connect_url,
     }
     return render(request, 'content/job_detail.html', context)
+
+def job_recruiter_connect_view(request, category_slug=None, uuid=None, pk=None, identifier=None):
+    """
+    Dedicated Mobile-First Recruiter Connect page.
+    Features:
+    1. Google X-Ray Search: 1-click recruiter search on LinkedIn with zero login limits.
+    2. Automatic Profile-to-Email Extractor: Pasting any recruiter profile immediately resolves their original email ID.
+    """
+    from django.urls import reverse
+    from django.shortcuts import get_object_or_404, render
+    from requirements.models import JobPosting
+    from requirements.services.recruiter_finder import get_recruiter_intelligence_for_job
+
+    job = None
+    if uuid:
+        job = get_object_or_404(JobPosting, uuid=uuid)
+    elif pk:
+        job = get_object_or_404(JobPosting, pk=pk)
+    elif identifier:
+        if str(identifier).isdigit():
+            job = JobPosting.objects.filter(pk=int(identifier)).first()
+        if not job:
+            import uuid as uuid_pkg
+            try:
+                u = uuid_pkg.UUID(identifier)
+                job = JobPosting.objects.filter(uuid=u).first()
+            except (ValueError, TypeError):
+                job = None
+        if not job:
+            job = get_object_or_404(JobPosting, pk=identifier)
+    else:
+        from django.http import Http404
+        raise Http404("Job not specified")
+
+    recruiter_intel = get_recruiter_intelligence_for_job(job)
+    active_recruiter = recruiter_intel.get('active_recruiter', {})
+
+    job_detail_url = ""
+    try:
+        if job.category:
+            job_detail_url = reverse('category_job_detail', kwargs={'category_slug': job.category.slug, 'uuid': job.uuid})
+        else:
+            job_detail_url = reverse('job_detail', kwargs={'uuid': job.uuid})
+    except Exception:
+        job_detail_url = f"/job/{job.uuid}/"
+
+    context = {
+        'job': job,
+        'job_detail_url': job_detail_url,
+        'recruiter_intel': recruiter_intel,
+        'active_recruiter': active_recruiter,
+        'clean_company_name': recruiter_intel.get('clean_company_name') or job.company_name,
+        'company_domain': recruiter_intel.get('domain'),
+        'google_xray_url': recruiter_intel.get('google_xray_url'),
+    }
+    return render(request, 'content/job_recruiter.html', context)
 
 @require_GET
 def api_recruiter_intel(request, job_uuid=None):
     """
-    Returns live recruiter intelligence, verified contacts, corporate email formats,
-    and sourcing queries for a target job. Supports on-demand LinkedIn profile URL resolution.
+    Returns live recruiter intelligence.
+    Supports on-demand LinkedIn profile URL scraping to return the original email.
     """
     from requirements.services.recruiter_finder import (
         get_recruiter_intelligence_for_job,
-        generate_recruiter_email_permutations,
-        resolve_recruiter_email_from_linkedin_profile,
+        scrape_original_recruiter_email_from_linkedin,
     )
     from django.http import JsonResponse
     try:
@@ -642,13 +708,10 @@ def api_recruiter_intel(request, job_uuid=None):
         
         linkedin_url = request.GET.get('linkedin_url', '').strip()
         if linkedin_url:
-            resolved = resolve_recruiter_email_from_linkedin_profile(linkedin_url, job.company_name)
+            resolved = scrape_original_recruiter_email_from_linkedin(linkedin_url, job.company_name)
             return JsonResponse({'status': 'ok', 'data': resolved})
 
-        recruiter_name = request.GET.get('recruiter_name', '').strip()
         intel = get_recruiter_intelligence_for_job(job)
-        if recruiter_name:
-            intel['predicted_emails'] = generate_recruiter_email_permutations(recruiter_name, intel['domain'])
         return JsonResponse({'status': 'ok', 'data': intel})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
