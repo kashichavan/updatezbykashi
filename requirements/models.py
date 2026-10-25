@@ -157,6 +157,34 @@ class JobPosting(models.Model):
         if 'naukri.com/job-listings-' in url and '?' in url:
             # Strip fbclid, utm, and tracking query params that trigger Naukri app intent freeze
             url = url.split('?')[0]
+
+        # Intercept mock Naukri IDs (9 digits like ...-221026006) that Naukri redirects to home page
+        import re
+        if re.search(r'naukri\.com/job-listings-.*-2210260\d{2}$', url):
+            comp = re.sub(r'[^a-zA-Z0-9]+', '-', (self.company_name or '').lower()).strip('-')
+            comp = re.sub(r'-(pvt|ltd|limited|solutions|technologies|india)$', '', comp)
+            role = ''
+            title_low = (self.title or '').lower()
+            if 'qa' in title_low or 'test' in title_low or 'sdet' in title_low:
+                role = '-qa'
+            elif 'cyber' in title_low or 'security' in title_low:
+                role = '-cyber-security'
+            elif 'mobile' in title_low or 'flutter' in title_low or 'android' in title_low or 'ios' in title_low:
+                role = '-mobile-app-developer'
+            elif 'java' in title_low:
+                role = '-java-developer'
+            elif 'python' in title_low:
+                role = '-python-developer'
+            elif 'mern' in title_low or 'full stack' in title_low or 'fullstack' in title_low:
+                role = '-full-stack-developer'
+            elif 'frontend' in title_low or 'react' in title_low:
+                role = '-frontend-developer'
+            elif 'devops' in title_low or 'cloud' in title_low:
+                role = '-devops-engineer'
+            elif 'data' in title_low or 'analyst' in title_low:
+                role = '-data-analyst'
+            return f"https://www.naukri.com/{comp}{role}-jobs"
+
         return url
 
     def get_absolute_url(self):

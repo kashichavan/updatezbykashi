@@ -167,7 +167,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹4.5 - 8.5 LPA",
                 "skills": "Java, Spring Boot, Angular, REST APIs, Microservices, MySQL",
                 "desc": "Tata Consultancy Services is hiring Java Full Stack Developers. Selected engineers will build scalable enterprise banking microservices, develop clean Angular UI components, write unit tests, and collaborate in Agile sprint cycles.",
-                "url": "https://www.naukri.com/job-listings-java-full-stack-developer-tcs-bengaluru-0-to-3-years-221026001"
+                "url": "https://www.naukri.com/tcs-java-developer-jobs"
             },
             {
                 "id": "nk_infosys_python_2026",
@@ -178,7 +178,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹6.0 - 11.0 LPA",
                 "skills": "Python, Django, FastAPI, PostgreSQL, Docker, Redis",
                 "desc": "Infosys is looking for a Python Backend Engineer to engineer high-throughput cloud APIs, optimize PostgreSQL relational database queries, design automated ETL data pipelines, and deploy containerized services via Docker.",
-                "url": "https://www.naukri.com/job-listings-python-backend-engineer-infosys-hyderabad-1-to-4-years-221026002"
+                "url": "https://www.naukri.com/infosys-python-developer-jobs"
             },
             {
                 "id": "nk_swiggy_react_2026",
@@ -189,7 +189,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹8.0 - 14.0 LPA",
                 "skills": "React, TypeScript, Next.js, Redux, Tailwind CSS, JavaScript",
                 "desc": "Swiggy Consumer Tech team is seeking a Frontend Engineer to architect responsive, lightning-fast food delivery and quick-commerce web interfaces. You will build reusable component systems, optimize Core Web Vitals, and handle high concurrency traffic.",
-                "url": "https://www.naukri.com/job-listings-frontend-software-engineer-swiggy-bengaluru-0-to-2-years-221026003"
+                "url": "https://www.naukri.com/swiggy-frontend-developer-jobs"
             },
             {
                 "id": "nk_wipro_cloud_2026",
@@ -200,7 +200,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹5.0 - 9.0 LPA",
                 "skills": "AWS, Docker, Kubernetes, CI/CD, Linux, Python Scripting",
                 "desc": "Wipro Cloud Infrastructure team is hiring DevOps Engineers. Responsibilities include building continuous delivery pipelines with GitHub Actions, managing AWS infrastructure, monitoring production logs, and ensuring 99.9% application uptime.",
-                "url": "https://www.naukri.com/job-listings-cloud-devops-engineer-wipro-pune-0-to-3-years-221026004"
+                "url": "https://www.naukri.com/wipro-devops-engineer-jobs"
             },
             {
                 "id": "nk_razorpay_data_2026",
@@ -211,7 +211,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹7.5 - 12.0 LPA",
                 "skills": "SQL, Python, Tableau, Power BI, Pandas, Data Warehousing",
                 "desc": "Razorpay Payments Analytics group is hiring Data Analysts. You will build merchant transaction dashboards, write advanced SQL queries, analyze checkout conversion funnels, and generate actionable business intelligence for fintech products.",
-                "url": "https://www.naukri.com/job-listings-data-analyst-razorpay-bengaluru-0-to-2-years-221026005"
+                "url": "https://www.naukri.com/razorpay-data-analyst-jobs"
             },
             {
                 "id": "nk_accenture_qa_2026",
@@ -222,7 +222,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹4.8 - 8.0 LPA",
                 "skills": "Selenium, Python, PyTest, REST Assured, Test Automation, Git",
                 "desc": "Accenture is looking for QA Automation Engineers to develop robust end-to-end regression test suites, execute automated API testing, integrate test frameworks with CI/CD pipelines, and report high-severity software defects.",
-                "url": "https://www.naukri.com/job-listings-qa-automation-engineer-accenture-chennai-1-to-3-years-221026006"
+                "url": "https://www.naukri.com/accenture-qa-jobs"
             },
             {
                 "id": "nk_zomato_mobile_2026",
@@ -233,7 +233,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹7.0 - 13.0 LPA",
                 "skills": "Flutter, Dart, React Native, REST APIs, Mobile UI/UX",
                 "desc": "Zomato Engineering is hiring Mobile App Developers to develop smooth, gesture-driven consumer mobile experiences. Implement offline caching, integrate live order tracking maps, and optimize rendering speed across Android and iOS.",
-                "url": "https://www.naukri.com/job-listings-mobile-app-developer-zomato-gurugram-0-to-3-years-221026007"
+                "url": "https://www.naukri.com/zomato-mobile-app-developer-jobs"
             },
             {
                 "id": "nk_techm_cyber_2026",
@@ -244,7 +244,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹4.5 - 7.5 LPA",
                 "skills": "Network Security, SIEM, SOC, Vulnerability Assessment, Linux",
                 "desc": "Tech Mahindra Enterprise Security is looking for Cybersecurity Analysts to monitor Security Operations Center (SOC) alerts, investigate unauthorized access incidents, assess system vulnerabilities, and implement OWASP security baselines. For walk-in queries contact HR desk: +91 98112 34567.",
-                "url": "https://www.naukri.com/job-listings-cybersecurity-analyst-tech-mahindra-noida-0-to-2-years-221026008",
+                "url": "https://www.naukri.com/tech-mahindra-cyber-security-jobs",
                 "contact": "+91 98112 34567"
             },
             {
@@ -256,7 +256,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹5.2 - 8.8 LPA",
                 "skills": "Node.js, Express, React, MongoDB, RESTful APIs, Git",
                 "desc": "Cognizant Digital Engineering is hiring MERN Stack Developers. Build responsive user interfaces, engineer REST microservices with Node.js, integrate MongoDB NoSQL storage, and participate in Agile code reviews. HR Support: +91 94432 10987.",
-                "url": "https://www.naukri.com/job-listings-mern-developer-cognizant-coimbatore-0-to-3-years-221026009",
+                "url": "https://www.naukri.com/cognizant-full-stack-developer-jobs",
                 "contact": "+91 94432 10987"
             },
             {
@@ -268,7 +268,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹7.0 - 11.5 LPA",
                 "skills": "Business Analysis, Agile, Jira, Stakeholder Management, Excel, SQL",
                 "desc": "Deloitte Consulting is seeking Business Analysts to bridge business strategy and engineering teams. Document detailed user stories, conduct gap analysis, design process workflows in Visio, and coordinate user acceptance testing (UAT).",
-                "url": "https://www.naukri.com/job-listings-business-analyst-deloitte-hyderabad-0-to-2-years-221026010",
+                "url": "https://www.naukri.com/deloitte-business-analyst-jobs",
                 "contact": "+91 40671 23456"
             },
             {
@@ -280,7 +280,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹4.0 - 6.5 LPA",
                 "skills": "Linux, Bash Scripting, DNS, DHCP, Troubleshooting, VMware",
                 "desc": "HCLTech Infrastructure Services is hiring Linux System Administrators to configure enterprise servers, monitor system uptime, manage automated backups, and handle level-2 support tickets. Walkin inquiry line: +91 95543 21876.",
-                "url": "https://www.naukri.com/job-listings-linux-admin-hcltech-lucknow-1-to-3-years-221026011",
+                "url": "https://www.naukri.com/hcltech-linux-administrator-jobs",
                 "contact": "+91 95543 21876"
             },
             {
@@ -292,7 +292,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹12.0 - 18.0 LPA",
                 "skills": "Java, Selenium, RestAssured, Appium, TestNG, Performance Testing",
                 "desc": "PhonePe Core Payments team is looking for SDETs. Architect scalable test automation frameworks for transaction processing microservices, perform load testing with JMeter, and ensure zero regressions across millions of daily UPI payments.",
-                "url": "https://www.naukri.com/job-listings-sdet-phonepe-bengaluru-1-to-4-years-221026012"
+                "url": "https://www.naukri.com/phonepe-sdet-jobs"
             },
             {
                 "id": "nk_byjus_sales_2026",
@@ -303,7 +303,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹5.0 - 8.0 LPA + Incentives",
                 "skills": "Sales, Client Counseling, Lead Conversion, Communication, CRM",
                 "desc": "Join as Business Development Associate. Counsel aspiring students, demonstrate online learning products, convert inbound leads, and achieve weekly sales milestones. Direct HR desk contact: +91 98451 98765.",
-                "url": "https://www.naukri.com/job-listings-bda-unacademy-bengaluru-0-to-2-years-221026013",
+                "url": "https://www.naukri.com/unacademy-business-development-jobs",
                 "contact": "+91 98451 98765"
             },
             {
@@ -315,7 +315,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹5.5 - 9.5 LPA",
                 "skills": "Embedded C, C++, RTOS, Microcontrollers, SPI, I2C, UART",
                 "desc": "L&T Technology Services is hiring Embedded Engineers. Develop device drivers for ARM Cortex microcontrollers, write firmware in Embedded C, debug hardware using oscilloscopes, and implement RTOS task scheduling.",
-                "url": "https://www.naukri.com/job-listings-embedded-engineer-ltts-mysuru-1-to-3-years-221026014"
+                "url": "https://www.naukri.com/ltts-embedded-engineer-jobs"
             },
             {
                 "id": "nk_zerodha_golang_2026",
@@ -326,7 +326,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹14.0 - 20.0 LPA",
                 "skills": "Golang, PostgreSQL, Redis, Microservices, Clean Architecture, Git",
                 "desc": "Build ultra-low-latency financial services and trading backend systems handling millions of orders. Write idiomatic Go code, optimize concurrency with goroutines and channels, and maintain 99.99% system resilience.",
-                "url": "https://www.naukri.com/job-listings-golang-engineer-zerodha-bengaluru-1-to-3-years-221026015"
+                "url": "https://www.naukri.com/zerodha-software-engineer-jobs"
             },
             {
                 "id": "nk_amazon_ops_2026",
@@ -337,7 +337,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹4.5 - 6.5 LPA",
                 "skills": "Operations Management, Data Auditing, MS Excel, Process Optimization",
                 "desc": "Amazon Customer Fulfillment network is hiring Operations Specialists. Monitor daily fulfillment center metrics, audit logistics data, identify fulfillment bottlenecks, and execute standard operating procedures (SOPs).",
-                "url": "https://www.naukri.com/job-listings-operations-associate-amazon-hyderabad-0-to-2-years-221026016"
+                "url": "https://www.naukri.com/amazon-operations-specialist-jobs"
             },
             {
                 "id": "nk_ola_electric_ev_2026",
@@ -348,7 +348,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹8.0 - 15.0 LPA",
                 "skills": "BMS, CAN Bus, Embedded C, State of Charge (SoC), Thermal Management",
                 "desc": "Ola Electric is hiring BMS Firmware Engineers to design battery management algorithms, integrate CAN bus telematics communication, and calibrate cell balance monitoring for electric two-wheelers.",
-                "url": "https://www.naukri.com/job-listings-bms-engineer-ola-electric-bengaluru-1-to-4-years-221026017"
+                "url": "https://www.naukri.com/ola-electric-firmware-engineer-jobs"
             },
             {
                 "id": "nk_freshworks_support_2026",
@@ -359,7 +359,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹5.0 - 7.5 LPA",
                 "skills": "SaaS Support, API Integration, Webhooks, Troubleshooting, Customer Success",
                 "desc": "Freshworks is looking for Technical Customer Success Associates to support global B2B enterprise clients. Troubleshoot REST API integrations, configure customer service workflows, and maintain customer satisfaction (CSAT) scores.",
-                "url": "https://www.naukri.com/job-listings-customer-success-freshworks-chennai-0-to-2-years-221026018"
+                "url": "https://www.naukri.com/freshworks-customer-success-jobs"
             },
             {
                 "id": "nk_jio_5g_network_2026",
@@ -370,7 +370,7 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 "salary": "₹4.5 - 7.0 LPA",
                 "skills": "5G RAN, IP Networking, Routing, Telecom Protocols, Linux",
                 "desc": "Reliance Jio Telecom is seeking Network Operations Engineers. Monitor pan-India 5G standalone cell sites, perform diagnostic routing checks, resolve fiber backhaul outages, and coordinate with regional field engineers. HR Helpline: +91 99870 12345.",
-                "url": "https://www.naukri.com/job-listings-5g-network-engineer-jio-mumbai-0-to-3-years-221026019",
+                "url": "https://www.naukri.com/reliance-jio-network-engineer-jobs",
                 "contact": "+91 99870 12345"
             }
         ]
