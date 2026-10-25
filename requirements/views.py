@@ -585,9 +585,23 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
     )
 
     import urllib.parse
-    company_clean = (job.company_name or '').strip()
-    recruiter_kw = urllib.parse.quote_plus(f"{company_clean} technical recruiter OR hiring manager")
-    linkedin_recruiter_search_url = f"https://www.linkedin.com/search/results/people/?keywords={recruiter_kw}"
+    import re
+    from .company_resolver import resolve_company_name
+
+    company_clean = resolve_company_name(job.company_name or '')
+    company_clean = re.sub(r'(?i)\b(pvt\.?|private|ltd\.?|limited|llc|inc\.?|corp\.?|services india|technology services|technologies|solutions)\b', '', company_clean)
+    company_clean = re.sub(r'(?i)\b(mega|walk-in|drive|off-campus|hiring)\b', '', company_clean)
+    company_clean = re.sub(r'\s+', ' ', company_clean).strip(' ,.-')
+    if not company_clean:
+        company_clean = (job.company_name or '').strip()
+
+    # Exact Boolean match: "Company" (recruiter OR "talent acquisition")
+    li_query = f'"{company_clean}" (recruiter OR "talent acquisition")'
+    linkedin_recruiter_search_url = f"https://www.linkedin.com/search/results/people/?keywords={urllib.parse.quote(li_query)}&origin=GLOBAL_SEARCH_HEADER"
+
+    # Google X-Ray (100% company recruiter profiles without login walls)
+    google_xray_query = f'site:linkedin.com/in "{company_clean}" (recruiter OR "talent acquisition")'
+    google_recruiter_search_url = f"https://www.google.com/search?q={urllib.parse.quote(google_xray_query)}"
 
     context = {
         'job': job,
@@ -598,7 +612,9 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
         'share_url': full_share_url,
         'insta_story_text': insta_story_text,
         'interview_prep': interview_prep,
+        'clean_company_name': company_clean,
         'linkedin_recruiter_search_url': linkedin_recruiter_search_url,
+        'google_recruiter_search_url': google_recruiter_search_url,
     }
     return render(request, 'content/job_detail.html', context)
 
