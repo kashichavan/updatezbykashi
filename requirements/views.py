@@ -618,7 +618,9 @@ def job_apply_redirect_view(request, uuid=None, pk=None, identifier=None):
 
     # Track application count atomically
     JobPosting.objects.filter(pk=job.pk).update(applications_count=F('applications_count') + 1)
-    return redirect(job.apply_url)
+    response = redirect(job.apply_url)
+    response['Referrer-Policy'] = 'no-referrer'
+    return response
 
 def owner_view(request):
 

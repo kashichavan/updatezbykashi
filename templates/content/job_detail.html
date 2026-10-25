@@ -850,10 +850,16 @@
 
     <!-- Hero Fast Action Bar (Prominent Above-the-Fold Buttons) -->
     <div class="job-hero-actions-row">
-      <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener" class="hero-apply-btn-main">
+      <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener noreferrer" class="hero-apply-btn-main">
         <i data-lucide="external-link" style="width: 17px; height: 17px;"></i>
         <span>Apply on Official Website ↗</span>
       </a>
+
+      <!-- Quick Copy Link Fallback (solves mobile app deep-link freezing) -->
+      <button type="button" onclick="copyDirectApplyUrl()" class="hero-copy-btn" title="Copy direct application link if app freezes" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.18); color: #cbd5e1; border-radius: 12px; padding: 0 14px; height: 46px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600;" aria-label="Copy Direct Apply URL">
+        <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
+        <span>Copy Link</span>
+      </button>
 
       <!-- Primary Job-Specific Resume CTA -->
       <button type="button" onclick="openJobTailorModal('fresher')" class="hero-tailor-btn-main" style="background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%) !important; color: #ffffff !important; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;">
@@ -1164,7 +1170,7 @@
         </p>
 
         <!-- Prominent Primary Apply Button -->
-        <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener" class="btn-apply-portal">
+        <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener noreferrer" class="btn-apply-portal">
           <i data-lucide="external-link" style="width: 18px; height: 18px;"></i>
           <span>Apply via Official Link ↗</span>
         </a>
@@ -1446,7 +1452,7 @@
       <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
       <span>⚡ Resume</span>
     </button>
-    <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener" class="mobile-apply-btn">
+    <a href="{% if job.apply_url %}{{ job.apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}" target="_blank" rel="noopener noreferrer" class="mobile-apply-btn">
       <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
       <span>Apply ↗</span>
     </a>
@@ -3369,6 +3375,16 @@
       btn.innerHTML = '<i data-lucide="sparkles" style="width:17px;height:17px;"></i> <span>⚡ Re-Alter Resume for {{ job.company_name }}</span>';
       if (window.lucide) window.lucide.createIcons();
     }
+  }
+
+  function copyDirectApplyUrl() {
+    const url = "{% if job.apply_url %}{{ job.apply_url|escapejs }}{% else %}https://kashiiupdatez.online/job/{{ job.uuid }}/apply/{% endif %}";
+    navigator.clipboard.writeText(url).then(() => {
+      if (window.showToast) window.showToast("🔗 Direct official apply link copied!", "success");
+      else alert("Direct apply link copied!");
+    }).catch(() => {
+      prompt("Copy official link:", url);
+    });
   }
 
   function copyJobTailorSummary() {
