@@ -599,6 +599,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
     from requirements.services.recruiter_finder import get_recruiter_intelligence_for_job
     recruiter_intel = get_recruiter_intelligence_for_job(job)
     sourcing_links = recruiter_intel.get('sourcing_links', {})
+    active_recruiter = recruiter_intel.get('active_recruiter', {})
 
     context = {
         'job': job,
@@ -616,6 +617,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
         'google_recruiter_phone_url': sourcing_links.get('google_phone_url'),
         'company_domain_guess': recruiter_intel.get('domain'),
         'recruiter_intel': recruiter_intel,
+        'active_recruiter': active_recruiter,
     }
     return render(request, 'content/job_detail.html', context)
 

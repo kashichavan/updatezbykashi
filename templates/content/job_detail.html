@@ -1815,59 +1815,91 @@
     </div>
     {% endif %}
 
-    <!-- Recruiter Lead / Multi-Channel Sourcing Card -->
-    <div style="background: rgba(30, 41, 59, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 14px 16px; margin-bottom: 16px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 38px; height: 38px; border-radius: 10px; background: #0077b5; display: grid; place-items: center; color: #ffffff; font-weight: 900; font-size: 16px; flex-shrink: 0;">
-            in
+    <!-- Recruiter Lead / Verified Account Profile & Multi-Channel Sourcing Card -->
+    <div style="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); border: 1.5px solid rgba(59, 130, 246, 0.25); border-radius: 16px; padding: 16px; margin-bottom: 18px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);">
+      
+      <!-- Recruiter Account Profile Bar -->
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <!-- Avatar with initials & active indicator -->
+          <div style="position: relative; flex-shrink: 0;">
+            <div style="width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #0077b5, #0284c7); display: grid; place-items: center; color: #ffffff; font-weight: 900; font-size: 17px; box-shadow: 0 4px 12px rgba(0,119,181,0.4); text-transform: uppercase;">
+              {% if active_recruiter.name %}
+                {{ active_recruiter.name|slice:":2" }}
+              {% elif job.referrer_name %}
+                {{ job.referrer_name|slice:":2" }}
+              {% else %}
+                HR
+              {% endif %}
+            </div>
+            <span style="position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; border-radius: 50%; background: #10b981; border: 2px solid #0f172a;" title="Active Sourcing Account"></span>
           </div>
+
           <div>
+            <!-- Name + Badges -->
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-              <span style="font-size: 13.5px; font-weight: 700; color: #ffffff;">
-                {% if job.referrer_name %}
-                  {{ job.referrer_name }} <span style="font-size: 10.5px; color: #34d399; font-weight: 700;">(Lead)</span>
-                {% else %}
-                  Technical Recruiters &amp; Leads at {{ clean_company_name|default:job.company_name }}
-                {% endif %}
+              <span style="font-size: 15px; font-weight: 800; color: #ffffff;">
+                {{ active_recruiter.name|default:job.referrer_name|default:"Corporate Talent Acquisition Lead" }}
               </span>
+              {% if active_recruiter.verified %}
+                <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 10px; font-weight: 800; padding: 1.5px 7px; border-radius: 5px;" title="Verified genuine recruiter profile">
+                  ✓ Verified Recruiter
+                </span>
+              {% endif %}
               {% if recruiter_intel.has_active_mail_server %}
-                <span style="background: rgba(52, 211, 153, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.35); font-size: 9.5px; font-weight: 800; padding: 1px 6px; border-radius: 5px;">
+                <span style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35); font-size: 10px; font-weight: 800; padding: 1.5px 7px; border-radius: 5px;">
                   ✓ {{ recruiter_intel.mail_provider }}
                 </span>
               {% endif %}
             </div>
-            <div style="font-size: 11.5px; color: #94a3b8;">
-              Domain: <strong style="color: #60a5fa;">{{ recruiter_intel.domain|default:company_domain_guess }}</strong> • Direct Sourcing Hub
+
+            <!-- Role & Organization -->
+            <div style="font-size: 12px; color: #cbd5e1; margin-top: 2px; font-weight: 500;">
+              {{ active_recruiter.title|default:"Talent Acquisition Specialist • Engineering & Campus Relations" }}
+            </div>
+            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">
+              🏢 <strong>{{ active_recruiter.company|default:clean_company_name|default:job.company_name }}</strong> • 📍 {{ active_recruiter.location|default:job.location|default:"India" }}
             </div>
           </div>
         </div>
 
-        <!-- 4 Sourcing Radar Channels -->
-        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-          {% if job.referrer_linkedin %}
-            <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: #0077b5; color: #ffffff; padding: 7px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(0,119,181,0.3); transition: all 0.2s;">
-              <span>View Profile</span>
-              <i data-lucide="external-link" style="width: 12px; height: 12px;"></i>
-            </a>
-          {% else %}
-            <a href="{{ linkedin_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: #0077b5; color: #ffffff; padding: 7px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(0,119,181,0.3); transition: all 0.2s;" title="Search {{ clean_company_name|default:job.company_name }} recruiters on LinkedIn">
-              <i data-lucide="users" style="width: 13px; height: 13px;"></i>
-              <span>LinkedIn</span>
-            </a>
-            <a href="{{ google_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #cbd5e1; padding: 7px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s;" title="Find direct LinkedIn profiles via Google X-Ray without login limits">
-              <i data-lucide="search" style="width: 13px; height: 13px;"></i>
-              <span>Google X-Ray</span>
-            </a>
-            <a href="{{ google_recruiter_email_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; padding: 7px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s;" title="Search publicly exposed email addresses & recruiter contacts">
-              <i data-lucide="mail" style="width: 13px; height: 13px;"></i>
-              <span>Email Finder</span>
-            </a>
-            <a href="{{ google_recruiter_phone_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; padding: 7px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s;" title="Search HR telephone helpdesk numbers & contact lines">
-              <i data-lucide="phone" style="width: 13px; height: 13px;"></i>
-              <span>HR Helpline</span>
-            </a>
-          {% endif %}
+        <!-- Direct Action Badges: LinkedIn + Sourcing Radar -->
+        <div style="display: flex; gap: 7px; flex-wrap: wrap; align-items: center;">
+          <a href="{{ active_recruiter.linkedin_url|default:linkedin_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; background: #0077b5; color: #ffffff; padding: 8px 13px; border-radius: 9px; font-size: 12px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 14px rgba(0,119,181,0.4); transition: all 0.2s;" title="View Recruiter Profile & Network on LinkedIn">
+            <i data-lucide="linkedin" style="width: 14px; height: 14px;"></i>
+            <span>View LinkedIn Profile ↗</span>
+          </a>
+          <a href="{{ google_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #cbd5e1; padding: 7px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s;" title="Find direct LinkedIn profiles via Google X-Ray without login limits">
+            <i data-lucide="search" style="width: 13px; height: 13px;"></i>
+            <span>Google X-Ray</span>
+          </a>
+          <a href="{{ google_recruiter_email_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; padding: 7px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s;" title="Search publicly exposed email addresses & recruiter contacts">
+            <i data-lucide="mail" style="width: 13px; height: 13px;"></i>
+            <span>Email Finder</span>
+          </a>
+          <a href="{{ google_recruiter_phone_url }}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; padding: 7px 11px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; transition: all 0.2s;" title="Search HR telephone helpdesk numbers & contact lines">
+            <i data-lucide="phone" style="width: 13px; height: 13px;"></i>
+            <span>HR Helpline</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Verified Genuine Recruiter Corporate Email Bar -->
+      <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span style="font-size: 11.5px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.03em;">
+            ✉️ Verified Recruiter Email:
+          </span>
+          <code id="activeRecruiterEmailVal" style="font-size: 13px; font-weight: 700; color: #ffffff; background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">{{ active_recruiter.email|default:"careers@"|add:recruiter_intel.domain }}</code>
+          <span style="font-size: 10px; color: #94a3b8;">({{ active_recruiter.source|default:"Corporate Talent Desk" }})</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" onclick="copyActiveRecruiterEmail()" style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.45); color: #93c5fd; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+            📋 Copy Email
+          </button>
+          <button type="button" onclick="launchDirectEmailClient()" style="background: #2563eb; border: none; color: #ffffff; padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
+            ✉️ Send Direct Email
+          </button>
         </div>
       </div>
 
@@ -1905,7 +1937,7 @@
         <label style="font-size: 11px; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">
           Recruiter Name:
         </label>
-        <input type="text" id="outreachRecruiterName" placeholder="e.g. Ananya / Hiring Lead" value="Hiring Lead" oninput="renderOutreachTemplates()" style="width: 100%; background: #1e293b; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 10px; color: #ffffff; font-size: 12px; box-sizing: border-box; outline: none;">
+        <input type="text" id="outreachRecruiterName" placeholder="e.g. Ananya / Hiring Lead" value="{{ active_recruiter.name|default:'Hiring Lead' }}" oninput="renderOutreachTemplates()" style="width: 100%; background: #1e293b; border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 10px; color: #ffffff; font-size: 12px; box-sizing: border-box; outline: none;">
       </div>
       <div>
         <label style="font-size: 11px; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 4px;">
@@ -1975,17 +2007,10 @@
         <span id="btnCopyOutreachText">📋 Copy Pitch</span>
       </button>
 
-      {% if job.referrer_linkedin %}
-        <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #0077b5; color: #ffffff; padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 14px rgba(0,119,181,0.4); transition: all 0.2s;">
-          <i data-lucide="send" style="width: 15px; height: 15px;"></i>
-          <span>Open LinkedIn DM ↗</span>
-        </a>
-      {% else %}
-        <a href="{{ linkedin_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #0077b5; color: #ffffff; padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 14px rgba(0,119,181,0.4); transition: all 0.2s;">
-          <i data-lucide="users" style="width: 15px; height: 15px;"></i>
-          <span>Search Recruiters ↗</span>
-        </a>
-      {% endif %}
+      <a href="{{ active_recruiter.linkedin_url|default:job.referrer_linkedin|default:linkedin_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #0077b5; color: #ffffff; padding: 11px 14px; border-radius: 10px; font-size: 13px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 14px rgba(0,119,181,0.4); transition: all 0.2s;" title="Open Recruiter LinkedIn Account">
+        <i data-lucide="send" style="width: 15px; height: 15px;"></i>
+        <span>Open LinkedIn Profile ↗</span>
+      </a>
 
       <button type="button" onclick="launchDirectEmailClient()" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #cbd5e1; padding: 11px 12px; border-radius: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;" title="Open default mail client with pitch loaded">
         <i data-lucide="mail" style="width: 15px; height: 15px;"></i>
@@ -5507,7 +5532,7 @@
   function renderOutreachTemplates() {
     const candidateName = document.getElementById('outreachCandidateName')?.value?.trim() || '[Your Name]';
     const recruiterInput = document.getElementById('outreachRecruiterName')?.value?.trim();
-    const recruiterName = recruiterInput || "{% if job.referrer_name %}{{ job.referrer_name|escapejs }}{% else %}Hiring Lead{% endif %}";
+    const recruiterName = recruiterInput || "{% if active_recruiter.name %}{{ active_recruiter.name|escapejs }}{% elif job.referrer_name %}{{ job.referrer_name|escapejs }}{% else %}Hiring Lead{% endif %}";
     const projectFocus = document.getElementById('outreachProjectFocus')?.value?.trim() || 'production-ready projects';
     const company = "{{ clean_company_name|default:job.company_name|escapejs }}";
     const jobTitle = "{{ job.title|escapejs }}";
@@ -5615,11 +5640,24 @@
     });
   }
 
+  function copyActiveRecruiterEmail() {
+    const emailEl = document.getElementById('activeRecruiterEmailVal');
+    const email = emailEl ? emailEl.innerText.trim() : "{% if active_recruiter.email %}{{ active_recruiter.email|escapejs }}{% endif %}";
+    if (!email) return;
+    navigator.clipboard.writeText(email).then(() => {
+      if (window.showToast) {
+        window.showToast(`📋 Copied verified recruiter email: ${email}`, "success");
+      } else {
+        alert(`Copied verified recruiter email: ${email}`);
+      }
+    });
+  }
+
   function launchDirectEmailClient() {
     const domain = "{{ company_domain_guess|default:'company.com'|escapejs }}";
-    const verifiedEmail = "{% if job.poster_email %}{{ job.poster_email|escapejs }}{% endif %}";
+    const verifiedEmail = "{% if active_recruiter.email %}{{ active_recruiter.email|escapejs }}{% elif job.poster_email and 'kashii' not in job.poster_email %}{{ job.poster_email|escapejs }}{% endif %}";
     const targetEmail = verifiedEmail || `careers@${domain}`;
-    const subject = document.getElementById('outreachEmailSubject')?.value || `Application: {{ job.title|escapejs }}`;
+    const subject = document.getElementById('outreachEmailSubject')?.value || `Application: {{ job.title|escapejs }} - ${document.getElementById('outreachCandidateName')?.value || 'Candidate'}`;
     const body = document.getElementById('outreachMessageText')?.value || '';
     
     const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
