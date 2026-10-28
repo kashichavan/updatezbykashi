@@ -137,15 +137,27 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
     job_posting = job.job
     target_skills_list = job_posting.get_skills_list() if job_posting else []
 
-    # Build contact info
+    # Build contact info.
+    # Never substitute a placeholder: this document gets sent to recruiters, so a
+    # fabricated email or phone number is worse than a blank field. The UI collects
+    # the real values and lists whatever is still missing.
+    def _clean(value):
+        return (value or '').strip() if isinstance(value, str) else ''
+
     contact = {
-        'email': candidate.get('email', 'candidate@example.com'),
-        'phone': candidate.get('phone', '+91 98765 43210'),
-        'location': candidate.get('location', 'Bengaluru, India'),
-        'linkedin': candidate.get('linkedin', 'linkedin.com/in/candidate'),
-        'github': candidate.get('github', 'github.com/candidate'),
-        'portfolio': candidate.get('portfolio', 'kashiiupdatez.online'),
+        'email': _clean(candidate.get('email')),
+        'phone': _clean(candidate.get('phone')),
+        'location': _clean(candidate.get('location')),
+        'linkedin': _clean(candidate.get('linkedin')),
+        'github': _clean(candidate.get('github')),
+        'portfolio': _clean(candidate.get('portfolio')),
     }
+    missing_fields = [label for key, label in (
+        ('name', 'Full name'),
+        ('email', 'Email'),
+        ('phone', 'Phone'),
+        ('degree', 'Degree'),
+    ) if not _clean(candidate.get(key))]
 
     # Selected projects
     selected_dps = job.discovered_projects.filter(is_selected=True)
@@ -166,6 +178,10 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
             bullets = list(dp.demo_project.resume_bullet_templates)
             clean_title = dp.demo_project.title
         else:
+            # `proj_data` must exist before the try: when the AI call raises we
+            # still read it below for the title, and an unbound name turned a
+            # recoverable AI failure into a 500 on the whole request.
+            proj_data = {}
             try:
                 proj_data = generate_github_project_bullets(
                     repo_name=dp.repo_name,
@@ -173,14 +189,24 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
                     primary_language=dp.language,
                     topics=dp.tech_stack,
                     stars=dp.stars
-                )
+                ) or {}
                 bullets = proj_data.get('bullets', [])
             except Exception:
-                bullets = [
-                    f"Architected modular solution utilizing {dp.language} and {', '.join(dp.tech_stack[:2])}, delivering robust software components.",
-                    f"Implemented RESTful endpoints and optimized data access patterns, reducing latency and ensuring test coverage.",
-                    f"Configured automated CI/CD validation pipeline and deployment scripts, adhering to modern development practices."
-                ]
+                # Describe only what the repository metadata actually supports.
+                # The previous fallback asserted latency wins, test coverage and
+                # a CI/CD pipeline that nobody had verified.
+                bullets = []
+                desc_line = (dp.description or '').strip().split('. ')[0].strip().rstrip('.')
+                if desc_line:
+                    bullets.append(desc_line + '.')
+                stack_bits = []
+                for bit in [dp.language] + list(dp.tech_stack or [])[:3]:
+                    if bit and bit not in stack_bits:
+                        stack_bits.append(bit)
+                if stack_bits:
+                    bullets.append(f"Studied the codebase and its use of {', '.join(stack_bits)}.")
+                if not bullets:
+                    bullets = [f"Studied the architecture of {dp.repo_name}."]
             clean_title = proj_data.get('title') if (isinstance(proj_data, dict) and proj_data.get('title')) else (dp.repo_name.split('/')[-1].replace('-', ' ').title())
 
         if dp.candidate_relationship == 'BUILT':
@@ -208,74 +234,60 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
         proj_dict['candidate_relationship'] = dp.candidate_relationship
         resume_projects.append(proj_dict)
 
-    # If no selected projects, provide a standard academic/starter project
+    # No selected projects is a valid, honest state: an empty projects section.
+    # Previously this injected a fabricated project pointing at someone else's
+    # GitHub account, which the candidate would then send to a recruiter.
     if not resume_projects:
-        default_p = {
-            'title': 'High-Throughput Distributed API Platform [Academic Project]',
-            'tech_stack': 'Python, Django REST Framework, PostgreSQL, Redis, Docker',
-            'github': 'https://github.com/kashichavan',
-            'bullets': [
-                'Engineered scalable RESTful API handling 1,500+ requests/min with sub-45ms P95 latency using Django and Redis caching.',
-                'Designed normalized PostgreSQL relational schema with database indexing, reducing query response times by 38%.',
-                'Integrated token-based JWT authentication and role-based access control (RBAC), securing 12+ API endpoints.'
-            ]
-        }
-        eval_p = score_project_ats(default_p, target_skills_list)
-        default_p['ats_score'] = eval_p['score']
-        default_p['ats_badge'] = eval_p['badge']
-        default_p['ats_grade'] = eval_p['grade']
-        default_p['candidate_relationship'] = 'RECOMMENDED'
-        resume_projects.append(default_p)
+        missing_fields.append('Projects (select at least one repository)')
 
-    # Format technical skills
+    # Format technical skills — only the skills the candidate confirmed.
     raw_skills = candidate.get('skills')
     if isinstance(raw_skills, dict):
-        formatted_skills = raw_skills
+        formatted_skills = {k: v for k, v in raw_skills.items() if v}
     elif isinstance(raw_skills, list):
-        formatted_skills = {
-            'Languages & Frameworks': ', '.join(raw_skills[:5]),
-            'Databases & Caching': 'PostgreSQL, Redis, MySQL',
-            'Tools & Platforms': 'Git, GitHub, Docker, Postman, Linux'
-        }
+        cleaned = [str(s).strip() for s in raw_skills if str(s).strip()]
+        formatted_skills = {'Technical Skills': ', '.join(cleaned)} if cleaned else {}
+    elif isinstance(raw_skills, str):
+        cleaned = [s.strip() for s in raw_skills.split(',') if s.strip()]
+        formatted_skills = {'Technical Skills': ', '.join(cleaned)} if cleaned else {}
     else:
-        # Default skill mapping aligned with target job
-        primary_skills = ', '.join(target_skills_list[:4]) if target_skills_list else 'Python, JavaScript, SQL'
-        formatted_skills = {
-            'Programming & Frameworks': primary_skills,
-            'Databases & Storage': 'PostgreSQL, MySQL, Redis',
-            'Developer Tools': 'Git, Docker, VS Code, REST APIs'
-        }
+        formatted_skills = {}
 
-    # Education block
+    if not formatted_skills:
+        missing_fields.append('Skills')
+
+    # Education block — no invented university, years or CGPA.
     education = {
-        'degree': candidate.get('degree', 'Bachelor of Technology (B.Tech) in Computer Science'),
-        'institution': candidate.get('institution', 'Visvesvaraya Technological University (VTU)'),
-        'year': candidate.get('year', '2021 – 2025'),
-        'gpa': candidate.get('gpa', '8.4 / 10.0 CGPA'),
-        'coursework': candidate.get('coursework', 'Data Structures, Operating Systems, Database Management Systems, Computer Networks')
+        'degree': _clean(candidate.get('degree')),
+        'institution': _clean(candidate.get('institution')),
+        'year': _clean(candidate.get('year')),
+        'gpa': _clean(candidate.get('gpa')),
+        'coursework': _clean(candidate.get('coursework')),
     }
 
     # Summary
     role_title = job_posting.title if job_posting else "Software Engineer"
     company_target = job_posting.company_name if job_posting else "Top Tech Companies"
+    skill_phrase = ''
+    if formatted_skills:
+        raw_first = str(next(iter(formatted_skills.values()), ''))
+        top_skills = [s.strip() for s in raw_first.split(',') if s.strip()][:4]
+        skill_phrase = ', '.join(top_skills)
     summary = (
-        f"Goal-oriented Computer Science graduate with strong foundations in {list(formatted_skills.values())[0]}. "
-        f"Passionate about building resilient, performant backend systems and full-stack solutions tailored for {company_target}. "
-        f"Demonstrated project competence in API architecture, relational database indexing, and automated testing."
+        f"{'Fresher' if not skill_phrase else 'Early-career engineer'} targeting the {role_title} role at {company_target}."
+        + (f" Working with {skill_phrase}." if skill_phrase else "")
+        + " Built the selected projects listed below and is looking for a first full-time engineering role."
     )
 
     final_resume = {
-        'name': candidate.get('name', 'Kashinath Chavan'),
+        'name': _clean(candidate.get('name')),
         'profile_level': 'fresher' if job.mode == 'FRESHER_GITHUB' else 'experienced',
         'contact': contact,
-        'summary': candidate.get('summary') or summary,
+        'summary': _clean(candidate.get('summary')) or summary,
         'skills': formatted_skills,
         'projects': resume_projects,
         'education': education,
-        'certifications': candidate.get('certifications') or [
-            'HackerRank Problem Solving (Intermediate) Certificate',
-            'Full Stack Web Development & Database Architecture Certification'
-        ]
+        'certifications': candidate.get('certifications') or [],
     }
 
     # Phase 5: Honest ATS evaluation
@@ -296,5 +308,6 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
 
     return {
         'resume': final_resume,
-        'ats_eval': ats_eval
+        'ats_eval': ats_eval,
+        'missing_fields': missing_fields,
     }

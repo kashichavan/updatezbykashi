@@ -1137,14 +1137,8 @@
     .floating-chat-widget { display: none !important; }
   }
 
-  /* Modal form controls must never overflow their column */
-  #jobTailorModal input,
-  #jobTailorModal select,
-  #jobTailorModal textarea {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
+  /* Text controls are sized by .jr-input / .jr-select / .jr-textarea.
+     (A blanket `#jobTailorModal input` rule used to stretch checkboxes too.) */
 
   /* Focus visibility */
   .jd-btn:focus-visible,
@@ -1163,6 +1157,863 @@
   @media (prefers-reduced-motion: reduce) {
     .jd-btn, .jd-rel-card, .jd-row, .jd-acc > summary .jd-chev { transition: none !important; }
   }
+  /* ==========================================================================
+     AI RESUME STUDIO (job-scoped)
+     A single dark panel: fixed header, scrolling body, one action per step.
+     All rules are namespaced under #jobTailorModal / .jr-* so they cannot
+     leak into the rest of the page.
+     ========================================================================== */
+
+  #jobTailorModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(4, 8, 18, 0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 16px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .jr-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 720px;
+    max-height: min(92dvh, 900px);
+    background: #0b1220;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 20px;
+    box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    color: #e2e8f0;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 640px) {
+    #jobTailorModal { padding: 0; align-items: stretch; }
+    .jr-panel {
+      max-width: none;
+      max-height: none;
+      height: 100dvh;
+      border-radius: 0;
+      border: none;
+    }
+  }
+
+  /* ── Header (fixed, never scrolls away) ──────────────────────────── */
+  .jr-head {
+    position: relative;
+    flex-shrink: 0;
+    padding: 16px 16px 0;
+    background:
+      radial-gradient(120% 140% at 0% 0%, rgba(168, 85, 247, 0.18) 0%, transparent 58%),
+      linear-gradient(180deg, #111d33 0%, #0b1220 100%);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  }
+  @media (min-width: 641px) {
+    .jr-head { padding: 20px 22px 0; }
+  }
+
+  .jr-titlebar {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding-right: 40px;
+    min-width: 0;
+  }
+
+  .jr-mark {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    box-shadow: 0 6px 18px -6px rgba(168, 85, 247, 0.9);
+  }
+  .jr-mark svg { width: 19px; height: 19px; color: #fff; }
+
+  .jr-titles { min-width: 0; }
+  .jr-title {
+    margin: 0;
+    font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
+    font-size: 15.5px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+  }
+  .jr-sub {
+    margin: 2px 0 0;
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: #8fa0b8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .jr-sub strong { color: #7dd3fc; font-weight: 700; }
+
+  .jr-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: #cbd5e1;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    transition: background .16s ease, color .16s ease;
+  }
+  .jr-close:hover { background: rgba(255, 255, 255, 0.14); color: #fff; }
+  .jr-close:focus-visible { outline: 2px solid #c0a3ff; outline-offset: 2px; }
+
+  /* ── Keyword strip (single scrollable line on phones) ────────────── */
+  .jr-keywords { margin-top: 12px; }
+
+  .jr-keywords-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #7f8fa6;
+  }
+  .jr-keywords-head .jr-kw-count {
+    margin-left: auto;
+    color: #94a3b8;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 700;
+  }
+
+  .jr-keywords-row {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, #000 92%, transparent 100%);
+  }
+  .jr-keywords-row::-webkit-scrollbar { display: none; }
+  @media (min-width: 641px) {
+    .jr-keywords-row {
+      flex-wrap: wrap;
+      overflow: visible;
+      mask-image: none;
+      -webkit-mask-image: none;
+    }
+  }
+
+  .jr-kw {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(59, 130, 246, 0.32);
+    background: rgba(37, 99, 235, 0.16);
+    color: #93c5fd;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+
+  /* ── Segmented tabs (equal width, never wrap) ────────────────────── */
+  .jr-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3px;
+    margin-top: 12px;
+    padding: 3px;
+    border-radius: 11px 11px 0 0;
+    background: rgba(8, 14, 26, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-bottom: none;
+  }
+
+  .jr-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 0;
+    height: 34px;
+    padding: 0 6px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: #8fa0b8;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background .16s ease, color .16s ease;
+  }
+  .jr-tab > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .jr-tab > svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .jr-tab:hover { color: #e2e8f0; background: rgba(255, 255, 255, 0.05); }
+  .jr-tab[aria-selected="true"] {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 5px 14px -7px rgba(168, 85, 247, 1);
+  }
+  .jr-tab:focus-visible { outline: 2px solid #c0a3ff; outline-offset: -2px; }
+
+  @media (max-width: 379px) {
+    .jr-tab { font-size: 11px; gap: 4px; padding: 0 4px; }
+    .jr-tab > svg { display: none; }
+  }
+
+  /* ── Scrolling body ──────────────────────────────────────────────── */
+  .jr-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 14px 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #0b1220;
+  }
+  @media (min-width: 641px) {
+    .jr-body { padding: 16px 22px 22px; gap: 12px; }
+  }
+
+  /* ── Step cards ──────────────────────────────────────────────────── */
+  .jr-card {
+    background: #111c31;
+    border: 1px solid rgba(148, 163, 184, 0.16);
+    border-radius: 13px;
+    padding: 13px;
+    min-width: 0;
+  }
+  @media (min-width: 641px) { .jr-card { padding: 15px; } }
+
+  .jr-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 11px;
+    min-width: 0;
+  }
+  .jr-num {
+    display: grid;
+    place-items: center;
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    border: 1px solid rgba(168, 85, 247, 0.42);
+    background: rgba(168, 85, 247, 0.16);
+    color: #d8b4fe;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .jr-num.is-done {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.16);
+    color: #6ee7b7;
+  }
+  .jr-step h4 {
+    margin: 0;
+    min-width: 0;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #e8eef7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .jr-hint {
+    margin-left: auto;
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: #7f8fa6;
+  }
+  .jr-hint.is-ok { color: #6ee7b7; }
+  .jr-hint.is-warn { color: #fbbf24; }
+
+  /* ── Form fields ─────────────────────────────────────────────────── */
+  .jr-fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+  }
+  @media (min-width: 521px) {
+    .jr-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .jr-field.is-full { grid-column: 1 / -1; }
+  }
+
+  .jr-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+  .jr-label {
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #8fa0b8;
+  }
+  .jr-label .jr-req { color: #f472b6; }
+
+  .jr-input,
+  .jr-select,
+  .jr-textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #2b3a52;
+    background: #0a1424;
+    color: #f1f5f9;
+    font-family: inherit;
+    font-size: 13px;
+    border-radius: 9px;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .jr-input,
+  .jr-select { height: 38px; padding: 0 10px; }
+  .jr-textarea {
+    padding: 9px 10px;
+    line-height: 1.55;
+    resize: vertical;
+    min-height: 72px;
+  }
+  .jr-input::placeholder,
+  .jr-textarea::placeholder { color: #5b6b83; }
+  .jr-input:focus,
+  .jr-select:focus,
+  .jr-textarea:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.16);
+  }
+  .jr-input.is-invalid {
+    border-color: #f472b6;
+    box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.14);
+  }
+
+  .jr-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 10px 0 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #7f8fa6;
+  }
+  .jr-note svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; color: #64748b; }
+
+  /* ── Buttons ─────────────────────────────────────────────────────── */
+  .jr-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 0 15px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background .16s ease, border-color .16s ease, transform .16s cubic-bezier(.16,1,.3,1);
+  }
+  .jr-btn > svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .jr-btn:active { transform: scale(.985); }
+  .jr-btn:disabled { cursor: progress; opacity: .7; }
+  .jr-btn:focus-visible { outline: 2px solid #c0a3ff; outline-offset: 2px; }
+
+  .jr-btn-primary {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    color: #ffffff;
+    box-shadow: 0 8px 20px -10px rgba(168, 85, 247, 0.95);
+  }
+  .jr-btn-primary:hover:not(:disabled) { filter: brightness(1.07); }
+
+  .jr-btn-solid {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 8px 20px -10px rgba(37, 99, 235, 0.9);
+  }
+  .jr-btn-solid:hover:not(:disabled) { background: #1d4ed8; }
+
+  .jr-btn-quiet {
+    background: #1b2740;
+    border-color: #33445e;
+    color: #dbe4f0;
+  }
+  .jr-btn-quiet:hover:not(:disabled) { background: #223154; }
+
+  .jr-btn-block { width: 100%; }
+
+  .jr-btn-sm {
+    min-height: 34px;
+    padding: 0 11px;
+    font-size: 11.5px;
+    font-weight: 700;
+    border-radius: 8px;
+  }
+  .jr-btn-sm > svg { width: 13px; height: 13px; }
+
+  .jr-btn-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  @media (max-width: 400px) { .jr-btn-row { grid-template-columns: minmax(0, 1fr); } }
+
+  /* ── Progress ────────────────────────────────────────────────────── */
+  .jr-progress { display: none; margin-top: 10px; }
+  .jr-progress.is-on { display: block; }
+
+  .jr-track {
+    height: 5px;
+    border-radius: 99px;
+    background: #1b2740;
+    overflow: hidden;
+  }
+  .jr-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #a855f7, #6366f1);
+    transition: width .35s cubic-bezier(.16, 1, .3, 1);
+  }
+
+  .jr-progress-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: #8fa0b8;
+  }
+  .jr-progress-meta .jr-pct {
+    flex-shrink: 0;
+    font-weight: 800;
+    color: #c4b5fd;
+  }
+
+  /* ── Repository results ──────────────────────────────────────────── */
+  .jr-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+  .jr-list.is-empty { max-height: none; }
+
+  .jr-proj {
+    border: 1px solid #2b3a52;
+    border-radius: 11px;
+    padding: 10px 11px;
+    background: #0e1830;
+    transition: border-color .16s ease, background .16s ease;
+  }
+  .jr-proj.is-picked {
+    border-color: rgba(168, 85, 247, 0.55);
+    background: rgba(30, 27, 60, 0.55);
+  }
+
+  .jr-proj-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+  }
+  .jr-check {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: #a855f7;
+    cursor: pointer;
+  }
+
+  .jr-proj-main { flex: 1; min-width: 0; }
+
+  .jr-repo {
+    display: inline-block;
+    max-width: 100%;
+    font-size: 12.5px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #93c5fd;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .jr-repo:hover { color: #bfdbfe; text-decoration: underline; }
+
+  .jr-proj-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    margin-top: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #7f8fa6;
+  }
+
+  .jr-score {
+    flex-shrink: 0;
+    padding: 2px 7px;
+    border-radius: 99px;
+    border: 1px solid rgba(56, 189, 248, 0.45);
+    background: rgba(56, 189, 248, 0.12);
+    color: #7dd3fc;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .jr-score.is-high {
+    border-color: rgba(16, 185, 129, 0.45);
+    background: rgba(16, 185, 129, 0.12);
+    color: #6ee7b7;
+  }
+
+  .jr-proj-desc {
+    margin: 6px 0 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #a7b6c9;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .jr-proj-foot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 7px;
+    padding-top: 7px;
+    border-top: 1px solid rgba(148, 163, 184, 0.12);
+    min-width: 0;
+  }
+  .jr-proj-foot label {
+    flex-shrink: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: #7f8fa6;
+  }
+
+  .jr-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 18px 12px;
+    border: 1px dashed #2b3a52;
+    border-radius: 11px;
+    text-align: center;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #7f8fa6;
+  }
+  .jr-empty svg { width: 18px; height: 18px; color: #4b5b72; }
+  .jr-empty strong { display: block; color: #a7b6c9; font-size: 12px; }
+
+  /* ── Collapsible curated library ─────────────────────────────────── */
+  .jr-details {
+    margin-top: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 10px;
+    background: rgba(10, 20, 36, 0.6);
+  }
+  .jr-details > summary {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 11px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #a7b6c9;
+    border-radius: 10px;
+  }
+  .jr-details > summary::-webkit-details-marker { display: none; }
+  .jr-details > summary:hover { background: rgba(255, 255, 255, 0.03); }
+  .jr-details > summary svg { width: 13px; height: 13px; flex-shrink: 0; color: #a855f7; }
+  .jr-details > summary .jr-chev {
+    margin-left: auto;
+    color: #64748b;
+    transition: transform .2s cubic-bezier(.16, 1, .3, 1);
+  }
+  .jr-details[open] > summary .jr-chev { transform: rotate(180deg); }
+  .jr-details-body { padding: 0 11px 11px; }
+
+  /* ── Upload tab ──────────────────────────────────────────────────── */
+  .jr-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 100%;
+    min-height: 92px;
+    padding: 14px;
+    box-sizing: border-box;
+    border: 1px dashed #3b4d68;
+    border-radius: 11px;
+    background: rgba(20, 32, 54, 0.5);
+    color: #8fa0b8;
+    font-family: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .16s ease, background .16s ease;
+  }
+  .jr-drop:hover,
+  .jr-drop:focus-visible {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.08);
+    outline: none;
+  }
+  .jr-drop svg { width: 22px; height: 22px; color: #c084fc; }
+  .jr-drop strong {
+    margin-top: 3px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #e2e8f0;
+  }
+  .jr-drop span { font-size: 10.5px; color: #7f8fa6; }
+
+  .jr-or {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 11px 0 7px;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+  .jr-or::before,
+  .jr-or::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(148, 163, 184, 0.16);
+  }
+
+  /* ── Result scorecard ────────────────────────────────────────────── */
+  .jr-scorecard {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 12px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+  }
+
+  .jr-gauge {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: conic-gradient(#a855f7 0%, #a855f7 0%, #1e293b 0%, #1e293b 100%);
+    transition: background .5s ease;
+  }
+  .jr-gauge-in {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #0b1220;
+  }
+  .jr-gauge-num {
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1;
+    color: #c4b5fd;
+  }
+  .jr-gauge-cap {
+    margin-top: 2px;
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #7f8fa6;
+  }
+
+  .jr-scorecard-main { flex: 1; min-width: 140px; }
+  .jr-scorecard-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.35;
+  }
+  .jr-scorecard-sub {
+    margin-top: 2px;
+    font-size: 10.5px;
+    line-height: 1.45;
+    color: #8fa0b8;
+  }
+
+  /* ── Pillars ─────────────────────────────────────────────────────── */
+  .jr-pillars {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .jr-pillar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 62px;
+    align-items: center;
+    gap: 8px;
+  }
+  .jr-pillar-name {
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #a7b6c9;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* These are <span>s, so they need an explicit block display or the
+     width/height below are ignored and the bars render as nothing. */
+  .jr-pillar-track {
+    display: block;
+    height: 4px;
+    border-radius: 99px;
+    background: #1b2740;
+    overflow: hidden;
+  }
+  .jr-pillar-fill {
+    display: block;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #a855f7, #6366f1);
+  }
+
+  .jr-chiprow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .jr-chip {
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.6;
+  }
+  .jr-chip.is-ok {
+    border: 1px solid rgba(34, 197, 94, 0.35);
+    background: rgba(34, 197, 94, 0.12);
+    color: #4ade80;
+  }
+  .jr-chip.is-miss {
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+  }
+
+  .jr-block-label {
+    margin: 12px 0 5px;
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #7f8fa6;
+  }
+
+  .jr-copybox {
+    max-height: 108px;
+    overflow-y: auto;
+    padding: 9px 11px;
+    border: 1px solid #2b3a52;
+    border-radius: 9px;
+    background: #0a1424;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: #dbe4f0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .jr-flash {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 9px 11px;
+    border-radius: 9px;
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    background: rgba(245, 158, 11, 0.1);
+    font-size: 11px;
+    line-height: 1.5;
+    color: #fcd34d;
+  }
+  .jr-flash svg { width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; }
+  .jr-flash ul { margin: 0; padding-left: 15px; }
+
+  /* Loading spinner (was referenced by the old markup but never defined) */
+  .spin-icon { animation: jrSpin 1s linear infinite; }
+  @keyframes jrSpin { to { transform: rotate(360deg); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jr-fill, .jr-gauge, .jr-btn, .jr-details > summary .jr-chev { transition: none !important; }
+    .spin-icon { animation: none; }
+  }
+
 </style>
 {% endblock %}
 
@@ -1854,275 +2705,427 @@
   </div>
 </div>
 
-<!-- ── JOB-SPECIFIC AI RESUME STUDIO & GITHUB PROJECT DISCOVERY MODAL ── -->
-<div id="jobTailorModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 14px; overflow-y: auto;">
-  <div style="background: #0f172a; width: 100%; max-width: 680px; border-radius: 24px; padding: 24px 22px; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.7); position: relative; border: 1px solid rgba(168, 85, 247, 0.45); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch; box-sizing: border-box; color: #f8fafc;">
-    
-    <button type="button" onclick="closeJobTailorModal()" style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); width: 32px; height: 32px; border-radius: 50%; color: #cbd5e1; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
+<!-- ══════════════════════════════════════════════════════════════════════
+     AI RESUME STUDIO — job-specific resume builder
+     Step 1 profile → step 2 real GitHub discovery → step 3 generated resume.
+     ══════════════════════════════════════════════════════════════════════ -->
+<div id="jobTailorModal" role="dialog" aria-modal="true" aria-labelledby="jrTitle">
+  <div class="jr-panel">
 
-    <!-- Modal Header -->
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-      <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #a855f7, #6366f1); display: grid; place-items: center; color: white; flex-shrink: 0; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4);">
-        <i data-lucide="sparkles" style="width: 22px; height: 22px;"></i>
-      </div>
-      <div>
-        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #ffffff;">Job-Specific AI Resume Studio</h3>
-        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Tailored for <strong style="color: #38bdf8;">{{ job.company_name }} — {{ job.title }}</strong></p>
-      </div>
-    </div>
-
-    <!-- Target Job Tags Banner -->
-    <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; color: #cbd5e1;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-        <strong style="color: #f8fafc; font-size: 11.5px;">Required Technologies &amp; Keywords:</strong>
-        <span style="font-size: 10.5px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 99px; font-weight: 700;">Pass Workday / Taleo ATS</span>
-      </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-        {% for s in skills_list|slice:":10" %}
-          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700;">{{ s }}</span>
-        {% empty %}
-          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700;">Software Engineering</span>
-          <span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700;">Problem Solving</span>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- 3 Segmented Mode Tabs -->
-    <div style="display: grid; grid-template-columns: 1.2fr 1fr 0.8fr; gap: 6px; margin-bottom: 16px; background: #0b1120; padding: 4px; border-radius: 12px; border: 1px solid #334155;">
-      <button type="button" id="tabBtnFresher" onclick="switchJobStudioTab('fresher')" style="padding: 9px 8px; border-radius: 8px; font-size: 12px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;">
-        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-        <span>⚡ Fresher &amp; GitHub</span>
-      </button>
-      <button type="button" id="tabBtnUpload" onclick="switchJobStudioTab('upload')" style="padding: 9px 8px; border-radius: 8px; font-size: 12px; font-weight: 800; border: 1px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #94a3b8;">
-        <i data-lucide="upload-cloud" style="width: 14px; height: 14px;"></i>
-        <span>📄 Upload Resume</span>
-      </button>
-      <button type="button" id="tabBtnScratch" onclick="switchJobStudioTab('scratch')" style="padding: 9px 8px; border-radius: 8px; font-size: 12px; font-weight: 800; border: 1px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; color: #94a3b8;">
-        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
-        <span>✏️ Scratch</span>
-      </button>
-    </div>
-
-    <!-- TAB 1: FRESHER BUILDER WITH PRE-BUILT PRODUCTION PROJECTS & ATS GAUGE -->
-    <div id="panelJobFresher">
-
-      <!-- Live ATS Semantic Match Gauge & Gap Analyzer -->
-      <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.98)); border: 1.5px solid rgba(168, 85, 247, 0.45); border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.35);">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <!-- Circular ATS Progress Gauge -->
-            <div id="atsGaugeCircle" class="ats-gauge-circle" style="width: 76px; height: 76px; border-radius: 50%; background: conic-gradient(#34d399 0%, #34d399 85%, #1e293b 85%, #1e293b 100%); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 14px rgba(52, 211, 153, 0.25); transition: all 0.4s ease;">
-              <div style="width: 58px; height: 58px; border-radius: 50%; background: #0f172a; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <span id="atsScoreValue" style="font-size: 18px; font-weight: 900; color: #34d399; line-height: 1;">88%</span>
-                <span style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">ATS Score</span>
-              </div>
-            </div>
-
-            <div>
-              <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 2px;">
-                ATS Match &amp; Semantic Alignment
-              </div>
-              <div style="font-size: 11px; color: #94a3b8; line-height: 1.4;">
-                Targeted for <strong style="color: #60a5fa;">{{ job.title }}</strong> based on selected project bullets.
-              </div>
-            </div>
-          </div>
-
-          <!-- Real-Time Keyword Alignment Badges -->
-          <div id="atsKeywordsContainer" style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 320px;">
-            <!-- Dynamically populated by updateAtsMatchGauge() -->
-          </div>
+    <!-- ── Fixed header ─────────────────────────────────────────────── -->
+    <div class="jr-head">
+      <div class="jr-titlebar">
+        <span class="jr-mark"><i data-lucide="sparkles"></i></span>
+        <div class="jr-titles">
+          <h3 class="jr-title" id="jrTitle">AI Resume Studio</h3>
+          <p class="jr-sub">Tailored for <strong>{{ job.company_name }} — {{ job.title }}</strong></p>
         </div>
       </div>
 
-      <!-- Candidate Profile Inputs -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
-        <div>
-          <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 3px;">Candidate Name</label>
-          <input type="text" id="fresherName" value="Kashinath Chavan" placeholder="e.g. Kashinath Chavan" oninput="renderProjectsLibrary()" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 7px 11px; color: #fff; font-size: 12px; box-sizing: border-box; outline: none;">
-        </div>
-        <div>
-          <label style="display: block; font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 3px;">Degree &amp; Major</label>
-          <input type="text" id="fresherDegree" value="B.Tech in Computer Science" placeholder="e.g. B.Tech in CSE • 2025" oninput="renderProjectsLibrary()" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 7px 11px; color: #fff; font-size: 12px; box-sizing: border-box; outline: none;">
-        </div>
-      </div>
+      <button type="button" class="jr-close" onclick="closeJobTailorModal()" aria-label="Close resume studio">✕</button>
 
-      <!-- Instant Search & Multi-Tier Filter Bar (Fresher vs Experienced + Domain) -->
-      <div style="margin-bottom: 12px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="font-size: 12px; font-weight: 800; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.04em;">
-              🛠️ 50+ Production Projects Library
-            </span>
-            <span id="projectsCountBadge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 12px;">54 Projects</span>
-          </div>
-          <span style="font-size: 10.5px; color: #a855f7; font-weight: 700;">Google XYZ Bullets • 1-Click Add</span>
+      <div class="jr-keywords">
+        <div class="jr-keywords-head">
+          <span>Keywords this job screens for</span>
+          <span class="jr-kw-count">{{ skills_list|length }} total</span>
         </div>
-
-        <!-- Experience Level Toggle (Fresher vs Experienced) -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px;">
-          <button type="button" id="pillLevelAll" class="proj-level-pill active" onclick="setProjectLevelFilter('all', this)" style="padding: 7px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid rgba(168, 85, 247, 0.5); background: rgba(168, 85, 247, 0.2); color: #c084fc; transition: all 0.2s; text-align: center;">
-            🌟 All Levels (<span id="countLevelAll">54</span>)
-          </button>
-          <button type="button" id="pillLevelFresher" class="proj-level-pill" onclick="setProjectLevelFilter('fresher', this)" style="padding: 7px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid #334155; background: #1e293b; color: #94a3b8; transition: all 0.2s; text-align: center;">
-            🎓 Fresher (0-2 Y) (<span id="countLevelFresher">27</span>)
-          </button>
-          <button type="button" id="pillLevelExp" class="proj-level-pill" onclick="setProjectLevelFilter('experienced', this)" style="padding: 7px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; border: 1.5px solid #334155; background: #1e293b; color: #94a3b8; transition: all 0.2s; text-align: center;">
-            💼 Experienced (2-5+ Y) (<span id="countLevelExp">27</span>)
-          </button>
-        </div>
-
-        <!-- Stack Search Input -->
-        <div style="position: relative; margin-bottom: 8px;">
-          <input type="search" id="projectSearchInput" placeholder="🔍 Search 50+ projects by stack (e.g. React, Spring Boot, PyTest, Selenium, AWS, Kafka, Flutter, SQL)..." oninput="filterPreBuiltProjects(this.value)" style="width: 100%; background: #0b1120; border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 8px; padding: 8px 12px; color: #ffffff; font-size: 12px; box-sizing: border-box; outline: none;">
-        </div>
-
-        <!-- Domain Filter Chips (Horizontal Scrollable) -->
-        <div style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch;">
-          <button type="button" class="proj-filter-pill active" onclick="setProjectCategoryFilter('all', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(37, 99, 235, 0.2); color: #60a5fa; white-space: nowrap;">All Domains</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('fullstack', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🌐 Full-Stack (8)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('backend', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">⚙️ Backend &amp; APIs (8)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('ai', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🤖 AI &amp; GenAI (8)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('devops', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">☁️ DevOps &amp; Cloud (7)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('mobile', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">📱 Mobile App (6)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('qa', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🧪 QA &amp; SDET (6)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('data', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">📊 Data &amp; BI (5)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('security', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">🔒 Cybersecurity (4)</button>
-          <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('embedded', this)" style="padding: 4px 10px; border-radius: 6px; font-size: 10.5px; font-weight: 700; cursor: pointer; border: 1px solid #334155; background: #1e293b; color: #94a3b8; white-space: nowrap;">⚡ Embedded &amp; IoT (2)</button>
+        <div class="jr-keywords-row">
+          {% for s in skills_list|slice:":12" %}
+            <span class="jr-kw">{{ s }}</span>
+          {% empty %}
+            <span class="jr-kw">Software Engineering</span>
+            <span class="jr-kw">Problem Solving</span>
+          {% endfor %}
         </div>
       </div>
 
-      <!-- Projects Cards Container -->
-      <div id="projectsLibraryList" style="display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; padding-right: 4px; margin-bottom: 12px;">
-        <!-- Rendered by renderProjectsLibrary() -->
-      </div>
-
-      <!-- Action & Export Bar -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
-        <button type="button" id="btnCopyTailoredBullets" onclick="copySelectedProjectBullets()" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.45); color: #60a5fa; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s;">
-          <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
-          <span id="btnCopyTailoredBulletsText">📋 Copy Project Bullets</span>
+      <div class="jr-tabs" role="tablist" aria-label="Resume builder mode">
+        <button type="button" class="jr-tab" role="tab" id="tabBtnFresher"
+                aria-selected="true" aria-controls="panelJobFresher"
+                onclick="switchJobStudioTab('fresher')">
+          <i data-lucide="user-round-plus"></i>
+          <span>Build</span>
         </button>
-
-        <a href="/resume-builder/?job_id={{ job.uuid }}" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #ffffff; padding: 10px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); transition: all 0.2s;">
-          <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
-          <span>Open Live Resume Canvas ↗</span>
-        </a>
+        <button type="button" class="jr-tab" role="tab" id="tabBtnUpload"
+                aria-selected="false" aria-controls="panelJobUpload"
+                onclick="switchJobStudioTab('upload')">
+          <i data-lucide="upload-cloud"></i>
+          <span>Upload</span>
+        </button>
+        <button type="button" class="jr-tab" role="tab" id="tabBtnScratch"
+                aria-selected="false" aria-controls="panelJobScratch"
+                onclick="switchJobStudioTab('scratch')">
+          <i data-lucide="square-pen"></i>
+          <span>Editor</span>
+        </button>
       </div>
-
-      <!-- Collapsible Public GitHub Scanner -->
-      <details style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; font-size: 12px;">
-        <summary style="cursor: pointer; color: #cbd5e1; font-weight: 700; display: flex; align-items: center; gap: 6px;">
-          <i data-lucide="github" style="width: 14px; height: 14px; color: #a855f7;"></i>
-          <span>Advanced: Search Public GitHub Repositories for {{ job.company_name }}</span>
-        </summary>
-        <div style="margin-top: 10px;">
-          <div style="display: flex; gap: 6px; margin-bottom: 6px;">
-            <input type="text" id="jobGhCustomSearchInput" placeholder="Search repository (e.g. fastapi, kubernetes, nextjs)..." style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 7px 11px; color: #f8fafc; font-size: 12px; outline: none;">
-            <button type="button" onclick="runJobCustomGhSearch()" style="background: #2563eb; color: #fff; border: none; padding: 7px 13px; border-radius: 8px; font-weight: 800; font-size: 11.5px; cursor: pointer;">Search</button>
-          </div>
-          <div id="fresherProjectsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;"></div>
-        </div>
-      </details>
-
     </div>
 
-    <!-- TAB 2: UPLOAD & TAILOR EXISTING RESUME -->
-    <div id="panelJobUpload" style="display: none;">
-      <!-- Candidate Resume Input Box -->
-      <div style="margin-bottom: 14px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <label style="font-size: 11.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Your Resume Document / Text:</label>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <button type="button" onclick="triggerJobTailorDocUpload()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-              <i data-lucide="upload-cloud" style="width: 12px; height: 12px;"></i>
-              <span>Upload PDF / DOCX</span>
-            </button>
-            <button type="button" onclick="fillJobTailorSample()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #c084fc; cursor: pointer; text-decoration: underline;">+ Sample</button>
+    <!-- ── Scrolling body ───────────────────────────────────────────── -->
+    <div class="jr-body" id="jrBody">
+
+      <!-- ══ TAB 1 — BUILD ═══════════════════════════════════════════ -->
+      <div id="panelJobFresher" role="tabpanel" aria-labelledby="tabBtnFresher">
+
+        <!-- Step 1: profile -->
+        <section class="jr-card">
+          <div class="jr-step">
+            <span class="jr-num" id="jrStepNum1">1</span>
+            <h4>Your details</h4>
+            <span class="jr-hint" id="jrProfileHint">3 required</span>
           </div>
-        </div>
-        <input type="file" id="jobTailorDocInput" accept=".pdf,.docx,.doc" style="display: none;" onchange="handleJobTailorDocSelect(event)">
-        <textarea id="jobTailorResumeInput" rows="4" placeholder="Upload a PDF/Word resume above or paste your resume text here..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px; font-size: 13px; color: #f8fafc; font-family: inherit; box-sizing: border-box; resize: vertical;"></textarea>
-      </div>
 
-      <!-- Action Button to Alter Resume -->
-      <button type="button" id="btnRunJobTailor" onclick="runJobAlterationStudio()" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #ffffff; border: none; border-radius: 12px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45); margin-bottom: 16px;">
-        <i data-lucide="sparkles" style="width: 17px; height: 17px;"></i>
-        <span>⚡ Auto-Alter My Resume to 95+ Score for {{ job.company_name }}</span>
-      </button>
+          <div class="jr-fields">
+            <div class="jr-field">
+              <label class="jr-label" for="fresherName">Full name <span class="jr-req">*</span></label>
+              <input class="jr-input" type="text" id="fresherName" autocomplete="name"
+                     placeholder="e.g. Kashinath Chavan" oninput="syncJobProfileHints()">
+            </div>
 
-      <!-- Results Container (Displayed once alteration is generated) -->
-      <div id="jobTailorResults" style="display: none; border-top: 1px solid #334155; padding-top: 16px;">
-        <!-- ATS Score Banner -->
-        <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; color: #fff; padding: 12px 16px; border-radius: 12px; margin-bottom: 12px;">
-          <div>
-            <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">ATS Match Score</div>
-            <div id="jobTailorScore" style="font-size: 24px; font-weight: 900; color: #34d399;">95 / 100</div>
+            <div class="jr-field">
+              <label class="jr-label" for="frEmail">Email <span class="jr-req">*</span></label>
+              <input class="jr-input" type="email" id="frEmail" autocomplete="email" inputmode="email"
+                     placeholder="you@example.com" oninput="syncJobProfileHints()">
+            </div>
+
+            <div class="jr-field">
+              <label class="jr-label" for="frPhone">Phone <span class="jr-req">*</span></label>
+              <input class="jr-input" type="tel" id="frPhone" autocomplete="tel" inputmode="tel"
+                     placeholder="+91 98765 43210" oninput="syncJobProfileHints()">
+            </div>
+
+            <div class="jr-field">
+              <label class="jr-label" for="fresherDegree">Degree</label>
+              <input class="jr-input" type="text" id="fresherDegree"
+                     placeholder="e.g. B.Tech in Computer Science">
+            </div>
+
+            <div class="jr-field">
+              <label class="jr-label" for="frInstitution">College / university</label>
+              <input class="jr-input" type="text" id="frInstitution" placeholder="e.g. Pune University">
+            </div>
+
+            <div class="jr-field">
+              <label class="jr-label" for="frYear">Graduation year</label>
+              <input class="jr-input" type="text" id="frYear" placeholder="e.g. 2026">
+            </div>
+
+            <div class="jr-field is-full">
+              <label class="jr-label" for="frSkills">Skills you can defend in an interview</label>
+              <textarea class="jr-textarea" id="frSkills" rows="2"
+                        placeholder="Python, SQL, Git — only the ones you actually use"></textarea>
+              {% if skills_list %}
+              <p class="jr-note" style="margin-top:0;">
+                <i data-lucide="list-checks"></i>
+                <span>This posting screens for {{ skills_list|join:", " }}. Only add the ones that are genuinely yours.</span>
+              </p>
+              {% endif %}
+            </div>
           </div>
-          <div style="text-align: right;">
-            <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.8px;">Rating Grade</div>
-            <div id="jobTailorGrade" style="font-size: 15px; font-weight: 900; color: #38bdf8;">Top Tier Pass ✓</div>
+
+          <p class="jr-note">
+            <i data-lucide="shield-check"></i>
+            <span>Nothing here is invented. A blank field stays blank on the generated resume, and the scorecard tells you what is missing.</span>
+          </p>
+        </section>
+
+        <!-- Step 2: real repository discovery -->
+        <section class="jr-card">
+          <div class="jr-step">
+            <span class="jr-num" id="jrStepNum2">2</span>
+            <h4>Projects that prove the fit</h4>
+            <span class="jr-hint" id="jrProjectHint">None yet</span>
           </div>
-        </div>
 
-        <!-- Injected Keywords Pill Bar -->
-        <div style="margin-bottom: 12px;">
-          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #38bdf8; margin-bottom: 5px;">Skills Injected to Pass ATS Recruiter Scanners:</div>
-          <div id="jobTailorInjected" style="display: flex; flex-wrap: wrap; gap: 5px;"></div>
-        </div>
-
-        <!-- Altered Summary -->
-        <div style="margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #cbd5e1;">Altered Professional Summary:</span>
-            <button type="button" onclick="copyJobTailorSummary()" style="background: none; border: none; font-size: 11px; font-weight: 700; color: #60a5fa; cursor: pointer;">📋 Copy</button>
-          </div>
-          <div id="jobTailorSummary" style="background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #f8fafc; line-height: 1.5; max-height: 95px; overflow-y: auto;"></div>
-        </div>
-
-        <!-- Altered Projects with Individual ATS Ratings -->
-        <div style="margin-bottom: 14px;">
-          <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #cbd5e1; margin-bottom: 5px;">
-            Altered Projects (Rated with Reverse-Engineered ATS Score):
-          </div>
-          <div id="jobTailorProjectsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <button type="button" onclick="copyFullAlteredResume()" style="background: #334155; color: #fff; border: 1px solid #475569; padding: 11px; border-radius: 10px; font-size: 12.5px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
-            <span>Copy Text</span>
+          <button type="button" class="jr-btn jr-btn-primary jr-btn-block" id="btnDiscoverProjects"
+                  onclick="startJobProjectDiscovery()">
+            <i data-lucide="git-branch"></i>
+            <span>Find repositories matching this job</span>
           </button>
-          <a id="btnOpenInResumeBuilder" href="/resume-builder/?job_id={{ job.uuid }}" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; padding: 11px; border-radius: 10px; font-size: 12.5px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box;">
-            <span>Open Full Editor</span>
-            <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+
+          <div class="jr-progress" id="discoveryProgress">
+            <div class="jr-track"><div class="jr-fill" id="discoveryBar"></div></div>
+            <div class="jr-progress-meta">
+              <span id="discoveryStage">Searching public GitHub repositories…</span>
+              <span class="jr-pct" id="discoveryPct">0%</span>
+            </div>
+          </div>
+
+          <div class="jr-list is-empty" id="discoveredProjectsList">
+            <p class="jr-empty">
+              <i data-lucide="search"></i>
+              <strong>No repositories yet</strong>
+              Run discovery to see public repositories scored against this job's stack.
+            </p>
+          </div>
+
+          <details class="jr-details">
+            <summary>
+              <i data-lucide="library"></i>
+              <span>Or start from a curated project template</span>
+              <i data-lucide="chevron-down" class="jr-chev"></i>
+            </summary>
+            <div class="jr-details-body">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <span style="font-size:10.5px;font-weight:700;color:#8fa0b8;">Templates you can describe honestly as your own work</span>
+                <span id="projectsCountBadge" style="flex-shrink:0;padding:1px 7px;border-radius:99px;border:1px solid rgba(56,189,248,.3);background:rgba(56,189,248,.14);color:#7dd3fc;font-size:9.5px;font-weight:800;">54</span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-bottom:7px;">
+                <button type="button" id="pillLevelAll" class="proj-level-pill active" onclick="setProjectLevelFilter('all', this)"
+                        style="padding:6px 4px;border-radius:7px;border:1.5px solid rgba(168,85,247,.5);background:rgba(168,85,247,.2);color:#c084fc;font-size:10px;font-weight:800;cursor:pointer;">
+                  All (<span id="countLevelAll">54</span>)
+                </button>
+                <button type="button" id="pillLevelFresher" class="proj-level-pill" onclick="setProjectLevelFilter('fresher', this)"
+                        style="padding:6px 4px;border-radius:7px;border:1.5px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:800;cursor:pointer;">
+                  Fresher (<span id="countLevelFresher">27</span>)
+                </button>
+                <button type="button" id="pillLevelExp" class="proj-level-pill" onclick="setProjectLevelFilter('experienced', this)"
+                        style="padding:6px 4px;border-radius:7px;border:1.5px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:800;cursor:pointer;">
+                  Experienced (<span id="countLevelExp">27</span>)
+                </button>
+              </div>
+
+              <input type="search" id="projectSearchInput" class="jr-input" style="height:34px;font-size:12px;margin-bottom:7px;"
+                     placeholder="Search by stack — React, Spring Boot, PyTest, AWS, Kafka…"
+                     oninput="filterPreBuiltProjects(this.value)">
+
+              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+                <button type="button" class="proj-filter-pill active" onclick="setProjectCategoryFilter('all', this)" style="padding:3px 8px;border-radius:99px;border:1px solid rgba(59,130,246,.45);background:rgba(37,99,235,.2);color:#60a5fa;font-size:10px;font-weight:700;cursor:pointer;">All</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('fullstack', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">Full-Stack</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('backend', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">Backend</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('ai', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">AI</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('devops', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">DevOps</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('mobile', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">Mobile</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('qa', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">QA</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('data', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">Data</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('security', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">Security</button>
+                <button type="button" class="proj-filter-pill" onclick="setProjectCategoryFilter('embedded', this)" style="padding:3px 8px;border-radius:99px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:10px;font-weight:700;cursor:pointer;">Embedded</button>
+              </div>
+
+              <div id="projectsLibraryList" style="display:flex;flex-direction:column;gap:7px;max-height:260px;overflow-y:auto;padding-right:2px;">
+                <!-- rendered by renderProjectsLibrary() -->
+              </div>
+
+              <button type="button" id="btnCopyTailoredBullets" onclick="copySelectedProjectBullets()"
+                      class="jr-btn jr-btn-quiet jr-btn-sm jr-btn-block" style="margin-top:8px;">
+                <i data-lucide="copy"></i>
+                <span id="btnCopyTailoredBulletsText">Copy the selected bullet points</span>
+              </button>
+
+              <details class="jr-details" style="margin-top:8px;">
+                <summary>
+                  <i data-lucide="github"></i>
+                  <span>Search all of GitHub by keyword instead</span>
+                  <i data-lucide="chevron-down" class="jr-chev"></i>
+                </summary>
+                <div class="jr-details-body">
+                  <div style="display:flex;gap:6px;margin-bottom:7px;">
+                    <input type="text" id="jobGhCustomSearchInput" class="jr-input" style="height:34px;font-size:12px;"
+                           placeholder="e.g. fastapi, kubernetes, nextjs">
+                    <button type="button" id="btnRunJobCustomGhSearch" onclick="runJobCustomGhSearch()"
+                            class="jr-btn jr-btn-solid jr-btn-sm" style="flex-shrink:0;">Search</button>
+                  </div>
+                  <div id="fresherProjectsList" style="display:flex;flex-direction:column;gap:7px;max-height:240px;overflow-y:auto;"></div>
+                </div>
+              </details>
+            </div>
+          </details>
+        </section>
+
+        <!-- Step 3: generate + real scorecard -->
+        <section class="jr-card">
+          <div class="jr-step">
+            <span class="jr-num" id="jrStepNum3">3</span>
+            <h4>Generate and score</h4>
+            <span class="jr-hint" id="jrGenerateHint">Not generated</span>
+          </div>
+
+          <button type="button" class="jr-btn jr-btn-solid jr-btn-block" id="btnGenerateResume"
+                  onclick="generateJobTailoredResume()">
+            <i data-lucide="wand-sparkles"></i>
+            <span>Generate my tailored resume</span>
+          </button>
+
+          <div class="jr-progress" id="generateProgress">
+            <div class="jr-track"><div class="jr-fill" id="generateBar"></div></div>
+            <div class="jr-progress-meta">
+              <span id="generateStage">Synthesizing…</span>
+              <span class="jr-pct" id="generatePct">0%</span>
+            </div>
+          </div>
+
+          <div id="generatedWrap" style="display:none;">
+            <div class="jr-scorecard" style="margin-top:11px;">
+              <div class="jr-gauge" id="atsGaugeCircle">
+                <div class="jr-gauge-in">
+                  <span class="jr-gauge-num" id="atsScoreValue">0</span>
+                  <span class="jr-gauge-cap">ATS</span>
+                </div>
+              </div>
+              <div class="jr-scorecard-main">
+                <div class="jr-scorecard-title" id="generatedGrade">—</div>
+                <div class="jr-scorecard-sub" id="generatedPassRate"></div>
+                <div class="jr-chiprow" id="atsKeywordsContainer"></div>
+              </div>
+            </div>
+
+            <div class="jr-pillars" id="generatedPillars"></div>
+
+            <div class="jr-block-label">Summary written for this job</div>
+            <div class="jr-copybox" id="generatedSummary"></div>
+
+            <div id="generatedMissingWrap" style="display:none;">
+              <div class="jr-block-label">Missing so far</div>
+              <div class="jr-flash">
+                <i data-lucide="alert-triangle"></i>
+                <ul id="generatedMissing"></ul>
+              </div>
+            </div>
+
+            <div class="jr-block-label">Download or continue editing</div>
+            <div class="jr-btn-row">
+              <button type="button" class="jr-btn jr-btn-quiet jr-btn-sm" onclick="downloadGeneratedResume('pdf')">
+                <i data-lucide="file-down"></i>
+                <span>PDF</span>
+              </button>
+              <button type="button" class="jr-btn jr-btn-quiet jr-btn-sm" onclick="downloadGeneratedResume('docx')">
+                <i data-lucide="file-text"></i>
+                <span>DOCX</span>
+              </button>
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:7px;margin-top:7px;">
+              <button type="button" class="jr-btn jr-btn-quiet jr-btn-sm" onclick="copyGeneratedResume()">
+                <i data-lucide="copy"></i>
+                <span>Copy as plain text</span>
+              </button>
+              <a id="btnOpenInResumeBuilder" href="/resume-builder/?job_id={{ job.uuid }}"
+                 class="jr-btn jr-btn-primary jr-btn-sm" style="width:100%;box-sizing:border-box;">
+                <i data-lucide="pencil-line"></i>
+                <span>Open in the full editor</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ══ TAB 2 — UPLOAD ══════════════════════════════════════════ -->
+      <div id="panelJobUpload" role="tabpanel" aria-labelledby="tabBtnUpload" hidden>
+
+        <section class="jr-card">
+          <div class="jr-step">
+            <span class="jr-num">1</span>
+            <h4>Add your current resume</h4>
+          </div>
+
+          <button type="button" class="jr-drop" onclick="triggerJobTailorDocUpload()">
+            <i data-lucide="upload-cloud"></i>
+            <strong>Upload a PDF or DOCX</strong>
+            <span>Up to 8 MB — parsed locally, then tailored</span>
+          </button>
+          <input type="file" id="jobTailorDocInput" accept=".pdf,.docx,.doc"
+                 style="display:none;" onchange="handleJobTailorDocSelect(event)">
+
+          <div class="jr-or">or paste the text</div>
+
+          <label class="jr-label" for="jobTailorResumeInput" style="display:block;margin-bottom:4px;">Resume text</label>
+          <textarea class="jr-textarea" id="jobTailorResumeInput" rows="5"
+                    placeholder="Paste your resume text here — summary, skills, projects, experience."></textarea>
+
+          <button type="button" class="jr-btn jr-btn-quiet jr-btn-sm" onclick="fillJobTailorSample()"
+                  style="margin-top:7px;">
+            <i data-lucide="clipboard-paste"></i>
+            <span>Load a sample instead</span>
+          </button>
+        </section>
+
+        <section class="jr-card">
+          <div class="jr-step">
+            <span class="jr-num">2</span>
+            <h4>Rewrite it for this job</h4>
+            <span class="jr-hint" id="uploadHint">Not run</span>
+          </div>
+
+          <button type="button" id="btnRunJobTailor" class="jr-btn jr-btn-primary jr-btn-block"
+                  onclick="runJobAlterationStudio()">
+            <i data-lucide="sparkles"></i>
+            <span>Tailor for {{ job.company_name }}</span>
+          </button>
+
+          <div id="jobTailorResults" style="display:none;">
+            <div class="jr-scorecard" style="margin-top:11px;">
+              <div>
+                <div class="jr-label">ATS match</div>
+                <div id="jobTailorScore" style="font-size:22px;font-weight:900;line-height:1.1;color:#6ee7b7;">—</div>
+              </div>
+              <div style="margin-left:auto;text-align:right;">
+                <div class="jr-label">Verdict</div>
+                <div id="jobTailorGrade" style="font-size:13px;font-weight:900;color:#7dd3fc;">—</div>
+              </div>
+            </div>
+
+            <div class="jr-block-label">Skills now matched to the posting</div>
+            <div id="jobTailorInjected" class="jr-chiprow" style="margin-top:0;"></div>
+
+            <div class="jr-block-label" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+              <span>Rewritten summary</span>
+              <button type="button" onclick="copyJobTailorSummary()"
+                      style="border:0;background:none;padding:0;color:#7dd3fc;font-family:inherit;font-size:10px;font-weight:800;cursor:pointer;">Copy</button>
+            </div>
+            <div class="jr-copybox" id="jobTailorSummary"></div>
+
+            <div class="jr-block-label">Rewritten projects</div>
+            <div id="jobTailorProjectsList" style="display:flex;flex-direction:column;gap:7px;"></div>
+
+            <div class="jr-btn-row" style="margin-top:11px;">
+              <button type="button" class="jr-btn jr-btn-quiet jr-btn-sm" onclick="copyFullAlteredResume()">
+                <i data-lucide="copy"></i>
+                <span>Copy text</span>
+              </button>
+              <a href="/resume-builder/?job_id={{ job.uuid }}" class="jr-btn jr-btn-primary jr-btn-sm">
+                <i data-lucide="pencil-line"></i>
+                <span>Full editor</span>
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ══ TAB 3 — EDITOR ══════════════════════════════════════════ -->
+      <div id="panelJobScratch" role="tabpanel" aria-labelledby="tabBtnScratch" hidden>
+        <section class="jr-card" style="text-align:center;padding:26px 18px;">
+          <div style="display:grid;place-items:center;width:46px;height:46px;margin:0 auto 12px;border-radius:13px;border:1px solid rgba(56,189,248,.3);background:rgba(56,189,248,.12);color:#7dd3fc;">
+            <i data-lucide="square-pen" style="width:21px;height:21px;"></i>
+          </div>
+          <h4 style="margin:0 0 6px;font-size:14.5px;font-weight:800;color:#fff;">Write it from scratch</h4>
+          <p style="margin:0 auto 16px;max-width:380px;font-size:12px;line-height:1.55;color:#8fa0b8;">
+            Opens the single-column ATS editor with <strong style="color:#e2e8f0;">{{ job.company_name }}</strong>'s
+            keyword list already loaded in the live scanner.
+          </p>
+          <a href="/resume-builder/?job_id={{ job.uuid }}"
+             class="jr-btn jr-btn-primary" style="width:100%;max-width:320px;box-sizing:border-box;">
+            <i data-lucide="arrow-right"></i>
+            <span>Open the live editor</span>
           </a>
-        </div>
+        </section>
       </div>
-    </div>
 
-    <!-- TAB 3: START FROM SCRATCH -->
-    <div id="panelJobScratch" style="display: none; text-align: center; padding: 20px 10px;">
-      <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: grid; place-items: center; margin: 0 auto 12px; color: #38bdf8;">
-        <i data-lucide="file-plus" style="width: 24px; height: 24px;"></i>
-      </div>
-      <h4 style="font-size: 16px; font-weight: 800; margin: 0 0 6px; color: #fff;">Open Live Resume Builder with Target Job Context</h4>
-      <p style="font-size: 12.5px; color: #94a3b8; max-width: 440px; margin: 0 auto 18px; line-height: 1.5;">
-        Launches the single-column ATS live editor with <strong>{{ job.company_name }}</strong>'s required skills loaded in the real-time keyword scanner.
-      </p>
-      <a href="/resume-builder/?job_id={{ job.uuid }}" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 13.5px; text-decoration: none; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);">
-        <span>Open Clean Canvas in Live Editor</span>
-        <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
-      </a>
     </div>
-
   </div>
 </div>
 
-
-
 <script>
+  /* Local HTML-escape helper.
+     app.js defines an equivalent function inside its own closure, so it is not
+     reachable from this page's inline script. Every template literal that
+     interpolates repo names, descriptions or job skills goes through this. */
+  function escapeHtml(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/[&<>"']/g, function (m) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+  }
+
   async function openIgStoryModal() {
     const url = "{{ share_url }}";
 
@@ -2948,63 +3951,34 @@
   let activeGenJobId = null;
 
   function switchJobStudioTab(tab) {
-    const pFresher = document.getElementById('panelJobFresher');
-    const pUpload = document.getElementById('panelJobUpload');
-    const pScratch = document.getElementById('panelJobScratch');
-    const btnFresher = document.getElementById('tabBtnFresher');
-    const btnUpload = document.getElementById('tabBtnUpload');
-    const btnScratch = document.getElementById('tabBtnScratch');
-
-    // Hide all
-    if (pFresher) pFresher.style.display = 'none';
-    if (pUpload) pUpload.style.display = 'none';
-    if (pScratch) pScratch.style.display = 'none';
-
-    // Reset styles
-    const resetStyle = (btn) => {
-      if (btn) {
-        btn.style.background = 'transparent';
-        btn.style.color = '#94a3b8';
-        btn.style.border = '1px solid transparent';
-      }
+    const tabs = {
+      fresher: ['tabBtnFresher', 'panelJobFresher'],
+      upload:  ['tabBtnUpload',  'panelJobUpload'],
+      scratch: ['tabBtnScratch', 'panelJobScratch']
     };
-    resetStyle(btnFresher);
-    resetStyle(btnUpload);
-    resetStyle(btnScratch);
-
-    const activeStyle = (btn) => {
-      if (btn) {
-        btn.style.background = 'linear-gradient(135deg, #a855f7, #6366f1)';
-        btn.style.color = '#fff';
-        btn.style.border = 'none';
-      }
-    };
-
-    if (tab === 'upload') {
-      if (pUpload) pUpload.style.display = 'block';
-      activeStyle(btnUpload);
-    } else if (tab === 'scratch') {
-      if (pScratch) pScratch.style.display = 'block';
-      activeStyle(btnScratch);
-    } else {
-      if (pFresher) pFresher.style.display = 'block';
-      activeStyle(btnFresher);
-    }
+    Object.keys(tabs).forEach(key => {
+      const [btnId, panelId] = tabs[key];
+      const btn = document.getElementById(btnId);
+      const panel = document.getElementById(panelId);
+      const on = key === tab;
+      if (btn) btn.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (panel) panel.hidden = !on;
+    });
+    const body = document.getElementById('jrBody');
+    if (body) body.scrollTop = 0;
     if (window.lucide) window.lucide.createIcons();
   }
 
   function openJobTailorModal(initialTab = 'fresher') {
     const modal = document.getElementById('jobTailorModal');
-    if (modal) {
-      switchJobStudioTab(initialTab);
-      modal.style.display = 'flex';
-      modal.style.opacity = '1';
-      modal.style.visibility = 'visible';
-      modal.classList.add('active');
-      renderProjectsLibrary();
-      updateAtsMatchGauge();
-      if (window.lucide) window.lucide.createIcons();
-    }
+    if (!modal) return;
+    switchJobStudioTab(initialTab);
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    renderProjectsLibrary();
+    syncJobProfileHints();
+    if (window.lucide) window.lucide.createIcons();
   }
 
   /* ── 54 PRE-BUILT PRODUCTION PROJECTS LIBRARY & LIVE ATS GAUGE (FRESHER + EXPERIENCED) ── */
@@ -4717,7 +5691,7 @@
     }
 ];
 
-  let selectedProjectIds = ['fs-workflow-fresher', 'ai-rag-agent-exp'];
+  let selectedProjectIds = [];
   let currentProjectLevelFilter = 'all'; // 'all' | 'fresher' | 'experienced'
   let currentProjectCategoryFilter = 'all';
   let currentProjectSearchQuery = '';
@@ -4784,18 +5758,16 @@
 
     // Update count badge dynamically
     const countBadge = document.getElementById('projectsCountBadge');
-    if (countBadge) {
-      countBadge.innerText = `${filtered.length} of ${PRESET_PRODUCTION_PROJECTS.length} Projects`;
-    }
+    if (countBadge) countBadge.textContent = `${filtered.length}/${PRESET_PRODUCTION_PROJECTS.length}`;
 
     if (filtered.length === 0) {
       listEl.innerHTML = `
-        <div style="text-align: center; padding: 24px 14px; color: #94a3b8; font-size: 12px; background: #0f172a; border: 1px dashed #334155; border-radius: 12px;">
-          <div style="font-size: 20px; margin-bottom: 6px;">🔍</div>
-          <div style="color: #cbd5e1; font-weight: 700; margin-bottom: 4px;">No projects found for "${currentProjectSearchQuery}"</div>
-          <div>Try another tech keyword (e.g. Python, Selenium, Docker, React, AWS, Spring) or switch filters.</div>
-        </div>
-      `;
+        <p class="jr-empty">
+          <i data-lucide="search"></i>
+          <strong>No template matches "${escapeHtml(currentProjectSearchQuery)}"</strong>
+          Try another keyword (Python, Selenium, Docker, React, AWS, Spring).
+        </p>`;
+      if (window.lucide) window.lucide.createIcons();
       return;
     }
 
@@ -4803,43 +5775,36 @@
     filtered.forEach(proj => {
       const isSelected = selectedProjectIds.includes(proj.id);
       const card = document.createElement('div');
-      card.style.cssText = `background: ${isSelected ? 'rgba(30, 41, 59, 0.95)' : '#1e293b'}; border: 1.5px solid ${isSelected ? 'rgba(168, 85, 247, 0.65)' : '#334155'}; border-radius: 12px; padding: 12px 14px; transition: all 0.2s; box-shadow: ${isSelected ? '0 4px 16px rgba(168, 85, 247, 0.2)' : 'none'};`;
+      card.className = 'jr-proj' + (isSelected ? ' is-picked' : '');
 
-      const isFresher = proj.level === 'fresher';
-      const levelBadge = isFresher
-        ? `<span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px;">🎓 Fresher Friendly (0-2 YOE)</span>`
-        : `<span style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 9.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px;">💼 Experienced (2-5+ YOE)</span>`;
-      const catBadge = `<span style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.25); font-size: 9.5px; font-weight: 700; padding: 2px 7px; border-radius: 5px;">${proj.category_label || proj.category}</span>`;
-
-      const techPills = proj.tech_stack.map(t => `<span style="background: rgba(37, 99, 235, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 5px;">${t}</span>`).join(' ');
-      const bulletsList = proj.bullets.map(b => `<li style="font-size: 11.5px; color: #cbd5e1; margin-bottom: 5px; line-height: 1.45;">${b}</li>`).join('');
+      const levelBadge = proj.level === 'fresher'
+        ? `<span class="jr-chip is-ok">Fresher 0-2y</span>`
+        : `<span class="jr-chip is-miss">Experienced 2y+</span>`;
+      const catBadge = `<span class="jr-chip" style="border:1px solid rgba(148,163,184,.25);background:rgba(148,163,184,.14);color:#cbd5e1;">${escapeHtml(proj.category_label || proj.category)}</span>`;
+      const techPills = proj.tech_stack.slice(0, 6).map(t => `<span class="jr-chip" style="border:1px solid rgba(59,130,246,.3);background:rgba(37,99,235,.16);color:#93c5fd;">${escapeHtml(t)}</span>`).join('');
+      const bulletsList = proj.bullets.map(b => `<li>${escapeHtml(b)}</li>`).join('');
 
       card.innerHTML = `
-        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px;">
-          <div>
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap;">
-              ${levelBadge}
-              ${catBadge}
-            </div>
-            <div style="font-size: 13.5px; font-weight: 800; color: #ffffff; margin-bottom: 6px;">
-              ${proj.title}
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-              ${techPills}
-            </div>
+        <div class="jr-proj-top">
+          <div class="jr-proj-main">
+            <div class="jr-chiprow" style="margin:0 0 5px;">${levelBadge}${catBadge}</div>
+            <div style="font-size:12.5px;font-weight:800;line-height:1.35;color:#fff;">${escapeHtml(proj.title)}</div>
           </div>
-          <button type="button" onclick="toggleProjectSelection('${proj.id}')" style="background: ${isSelected ? 'linear-gradient(135deg, #10b981, #059669)' : '#0f172a'}; border: 1px solid ${isSelected ? 'rgba(16, 185, 129, 0.6)' : '#475569'}; color: ${isSelected ? '#ffffff' : '#94a3b8'}; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; transition: all 0.2s;">
+          <button type="button" class="jr-btn jr-btn-sm ${isSelected ? 'jr-btn-solid' : 'jr-btn-quiet'}"
+                  style="flex-shrink:0;min-height:30px;padding:0 10px;font-size:10.5px;"
+                  onclick="toggleProjectSelection('${proj.id}')">
             ${isSelected ? '✓ Added' : '+ Add'}
           </button>
         </div>
-        <ul style="margin: 0; padding-left: 18px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 8px;">
+        <div class="jr-chiprow" style="margin-top:6px;">${techPills}</div>
+        <ul style="margin:7px 0 0;padding-left:16px;padding-top:7px;border-top:1px solid rgba(148,163,184,.12);font-size:11px;line-height:1.5;color:#a7b6c9;display:flex;flex-direction:column;gap:4px;">
           ${bulletsList}
         </ul>
       `;
       listEl.appendChild(card);
     });
 
-    updateAtsMatchGauge();
+    updateCuratedSelectionMeta();
   }
 
   function toggleProjectSelection(projId) {
@@ -4856,88 +5821,489 @@
     renderProjectsLibrary();
   }
 
-  function updateAtsMatchGauge() {
-    const rawSkills = "{{ job.skills_required|escapejs }}";
-    const jobSkills = rawSkills ? rawSkills.split(',').map(s => s.trim()).filter(Boolean) : ['Python', 'SQL', 'Problem Solving', 'REST APIs'];
-    
-    // Collect all skills from selected projects
-    const candidateSkills = new Set();
-    selectedProjectIds.forEach(id => {
-      const proj = PRESET_PRODUCTION_PROJECTS.find(p => p.id === id);
-      if (proj && proj.skills) {
-        proj.skills.forEach(s => candidateSkills.add(s.toLowerCase()));
-      }
-    });
+  /* The curated library is a set of templates, not evidence. It reports how many
+     templates are selected; it never invents an ATS percentage. The real score
+     comes from the server after synthesis (renderGeneratedResume). */
+  function updateCuratedSelectionMeta() {
+    const el = document.getElementById('jrProjectHint');
+    if (!el) return;
+    const n = selectedProjectIds.length;
+    el.textContent = n === 0 ? 'None yet' : (n === 1 ? '1 template picked' : `${n} templates picked`);
+    el.className = 'jr-hint' + (n ? ' is-ok' : '');
+  }
 
-    let matched = [];
-    let missing = [];
+  /* ── STEP 1: profile state ─────────────────────────────────────── */
+  function collectJobProfile() {
+    const val = (id) => (document.getElementById(id)?.value || '').trim();
+    return {
+      name: val('fresherName'),
+      email: val('frEmail'),
+      phone: val('frPhone'),
+      degree: val('fresherDegree'),
+      institution: val('frInstitution'),
+      year: val('frYear'),
+      skills: val('frSkills')
+    };
+  }
 
-    jobSkills.forEach(s => {
-      const sLow = s.toLowerCase();
-      let isMatch = false;
-      for (let cs of candidateSkills) {
-        if (cs.includes(sLow) || sLow.includes(cs)) {
-          isMatch = true;
-          break;
-        }
-      }
-      if (isMatch) {
-        matched.push(s);
-      } else {
-        missing.push(s);
-      }
-    });
-
-    const score = Math.min(96, Math.max(70, Math.round((matched.length / Math.max(1, jobSkills.length)) * 40 + selectedProjectIds.length * 28)));
-    const scoreVal = document.getElementById('atsScoreValue');
-    const gaugeCircle = document.getElementById('atsGaugeCircle');
-    const container = document.getElementById('atsKeywordsContainer');
-
-    if (scoreVal) {
-      scoreVal.innerText = score + '%';
-      scoreVal.style.color = score >= 85 ? '#34d399' : '#38bdf8';
+  function syncJobProfileHints() {
+    const p = collectJobProfile();
+    const required = ['name', 'email', 'phone'];
+    const missing = required.filter(k => !p[k]);
+    const hint = document.getElementById('jrProfileHint');
+    const num = document.getElementById('jrStepNum1');
+    if (hint) {
+      hint.textContent = missing.length ? `${missing.length} required` : 'Complete';
+      hint.className = 'jr-hint' + (missing.length ? ' is-warn' : ' is-ok');
     }
-    if (gaugeCircle) {
-      const color = score >= 85 ? '#34d399' : '#38bdf8';
-      gaugeCircle.style.background = `conic-gradient(${color} 0%, ${color} ${score}%, #1e293b ${score}%, #1e293b 100%)`;
+    if (num) num.classList.toggle('is-done', missing.length === 0);
+    required.forEach(k => {
+      const map = { name: 'fresherName', email: 'frEmail', phone: 'frPhone' };
+      const el = document.getElementById(map[k]);
+      if (el) el.classList.toggle('is-invalid', el.value.trim() !== '' && !p[k]);
+    });
+  }
+
+  /* ── STEP 2: real GitHub discovery via the generation pipeline ──── */
+  let discoveredProjects = [];
+  let discoveryPollTimer = null;
+
+  function setDiscoveryProgress(pct, stage, on) {
+    const wrap = document.getElementById('discoveryProgress');
+    const bar = document.getElementById('discoveryBar');
+    const stageEl = document.getElementById('discoveryStage');
+    const pctEl = document.getElementById('discoveryPct');
+    if (wrap) wrap.classList.toggle('is-on', !!on);
+    if (bar) bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    if (stageEl && stage) stageEl.textContent = stage;
+    if (pctEl) pctEl.textContent = Math.round(pct) + '%';
+  }
+
+  async function startJobProjectDiscovery() {
+    const profile = collectJobProfile();
+    if (!profile.name || !profile.email || !profile.phone) {
+      syncJobProfileHints();
+      if (window.showToast) window.showToast('Add your name, email and phone first — they go on the resume.', 'warning');
+      const first = !profile.name ? 'fresherName' : (!profile.email ? 'frEmail' : 'frPhone');
+      document.getElementById(first)?.focus();
+      return;
     }
 
-    if (container) {
-      container.innerHTML = '';
-      matched.slice(0, 5).forEach(m => {
-        const badge = document.createElement('span');
-        badge.style.cssText = 'background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px;';
-        badge.innerText = '✓ ' + m;
-        container.appendChild(badge);
+    const btn = document.getElementById('btnDiscoverProjects');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="spin-icon"></i><span>Searching GitHub…</span>';
+      if (window.lucide) window.lucide.createIcons();
+    }
+    setDiscoveryProgress(8, 'Searching public GitHub repositories…', true);
+    const listEl = document.getElementById('discoveredProjectsList');
+    if (listEl) {
+      listEl.classList.remove('is-empty');
+      listEl.innerHTML = '<p class="jr-empty"><i data-lucide="loader" class="spin-icon"></i><strong>Ranking repositories</strong>Scoring each one against this job\'s stack.</p>';
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    try {
+      const res = await fetch('/api/resume/generations/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'FRESHER_GITHUB',
+          job_id: "{{ job.uuid }}",
+          candidate_data: {
+            name: profile.name,
+            email: profile.email,
+            phone: profile.phone,
+            degree: profile.degree,
+            institution: profile.institution,
+            year: profile.year,
+            skills: profile.skills
+          }
+        })
       });
-      missing.slice(0, 3).forEach(mis => {
-        const badge = document.createElement('button');
-        badge.type = 'button';
-        badge.style.cssText = 'background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; cursor: pointer;';
-        badge.innerText = '+ ' + mis;
-        badge.onclick = () => autoSelectProjectForSkill(mis);
-        badge.title = 'Click to select project matching ' + mis;
-        container.appendChild(badge);
-      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Could not start discovery');
+      activeGenJobId = data.job_id;
+      pollJobDiscovery(activeGenJobId);
+    } catch (err) {
+      if (window.showToast) window.showToast('Discovery failed: ' + err.message, 'error');
+      setDiscoveryProgress(0, err.message, true);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="git-branch"></i><span>Find repositories matching this job</span>';
+        if (window.lucide) window.lucide.createIcons();
+      }
     }
   }
 
-  function autoSelectProjectForSkill(skillName) {
-    const sLow = skillName.toLowerCase();
-    const match = PRESET_PRODUCTION_PROJECTS.find(p => p.skills.some(s => s.toLowerCase().includes(sLow)));
-    if (match && !selectedProjectIds.includes(match.id)) {
-      selectedProjectIds.push(match.id);
-      renderProjectsLibrary();
-      if (window.showToast) window.showToast(`Added ${match.title} for ${skillName}!`, "success");
+  function pollJobDiscovery(jobId) {
+    if (discoveryPollTimer) clearInterval(discoveryPollTimer);
+    const btn = document.getElementById('btnDiscoverProjects');
+
+    discoveryPollTimer = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/resume/generations/${jobId}/`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Status check failed');
+
+        const pct = data.progress_pct || 0;
+        setDiscoveryProgress(pct, data.stage_message || 'Working…', true);
+
+        if (data.status === 'AWAITING_SELECTION' || data.status === 'COMPLETED') {
+          clearInterval(discoveryPollTimer);
+          setDiscoveryProgress(100, 'Ranked. Pick the ones you actually built.', true);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="refresh-cw"></i><span>Re-run discovery</span>';
+            if (window.lucide) window.lucide.createIcons();
+          }
+          loadJobDiscoveredProjects(jobId);
+        } else if (data.status === 'FAILED') {
+          clearInterval(discoveryPollTimer);
+          setDiscoveryProgress(0, data.error_message || 'Discovery failed', true);
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="git-branch"></i><span>Try discovery again</span>';
+            if (window.lucide) window.lucide.createIcons();
+          }
+        }
+      } catch (err) {
+        clearInterval(discoveryPollTimer);
+        setDiscoveryProgress(0, 'Could not read discovery status', true);
+        if (btn) btn.disabled = false;
+      }
+    }, 1200);
+  }
+
+  async function loadJobDiscoveredProjects(jobId) {
+    const listEl = document.getElementById('discoveredProjectsList');
+    try {
+      const res = await fetch(`/api/resume/generations/${jobId}/projects/`);
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Could not load projects');
+      discoveredProjects = data.projects || [];
+      renderJobDiscoveredProjects();
+    } catch (err) {
+      if (listEl) {
+        listEl.classList.remove('is-empty');
+        listEl.innerHTML = `<p class="jr-empty"><strong>Could not load repositories</strong>${escapeHtml(err.message)}</p>`;
+      }
     }
+  }
+
+  function renderJobDiscoveredProjects() {
+    const listEl = document.getElementById('discoveredProjectsList');
+    const hint = document.getElementById('jrProjectHint');
+    const num = document.getElementById('jrStepNum2');
+    if (!listEl) return;
+
+    if (!discoveredProjects.length) {
+      listEl.classList.add('is-empty');
+      listEl.innerHTML = '<p class="jr-empty"><i data-lucide="search"></i><strong>Nothing matched</strong>Try the curated templates below instead.</p>';
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    listEl.classList.remove('is-empty');
+    listEl.innerHTML = '';
+
+    discoveredProjects.forEach(proj => {
+      const score = Math.round(proj.relevance_score || 0);
+      const picked = !!proj.is_selected;
+      const card = document.createElement('div');
+      card.className = 'jr-proj' + (picked ? ' is-picked' : '');
+
+      const desc = (proj.description || '').trim();
+      const evidence = (proj.evidence_summary || '').trim();
+
+      card.innerHTML = `
+        <div class="jr-proj-top">
+          <input type="checkbox" class="jr-check" ${picked ? 'checked' : ''}
+                 onchange="toggleDiscoveredProject('${proj.id}', this.checked)"
+                 aria-label="Include ${escapeHtml(proj.repo_name)}">
+          <div class="jr-proj-main">
+            <a class="jr-repo" href="${proj.repo_url}" target="_blank" rel="noopener">${escapeHtml(proj.repo_name)} ↗</a>
+            <div class="jr-proj-meta">
+              <span>${proj.language ? escapeHtml(proj.language) : 'Unknown stack'}</span>
+              <span>·</span>
+              <span>${proj.stars || 0} stars</span>
+              ${evidence ? `<span>·</span><span>${escapeHtml(evidence).slice(0, 90)}</span>` : ''}
+            </div>
+          </div>
+          <span class="jr-score ${score >= 75 ? 'is-high' : ''}">${score}% fit</span>
+        </div>
+        ${desc ? `<p class="jr-proj-desc">${escapeHtml(desc)}</p>` : ''}
+        <div class="jr-proj-foot">
+          <label for="rel_${proj.id}">My role</label>
+          <select id="rel_${proj.id}" class="jr-select" style="height:28px;font-size:11px;flex:1;min-width:0;"
+                  onchange="setDiscoveredRelationship('${proj.id}', this.value)">
+            <option value="BUILT" ${proj.candidate_relationship === 'BUILT' ? 'selected' : ''}>I built this</option>
+            <option value="CONTRIBUTED" ${proj.candidate_relationship === 'CONTRIBUTED' ? 'selected' : ''}>I contributed</option>
+            <option value="PRACTICE" ${proj.candidate_relationship === 'PRACTICE' ? 'selected' : ''}>I studied it</option>
+            <option value="RECOMMENDED" ${proj.candidate_relationship === 'RECOMMENDED' ? 'selected' : ''}>Reference only</option>
+          </select>
+        </div>
+      `;
+      listEl.appendChild(card);
+    });
+
+    const picked = discoveredProjects.filter(p => p.is_selected).length;
+    if (hint) {
+      hint.textContent = picked ? `${picked} selected` : 'None selected';
+      hint.className = 'jr-hint' + (picked ? ' is-ok' : ' is-warn');
+    }
+    if (num) num.classList.toggle('is-done', picked > 0);
+  }
+
+  function toggleDiscoveredProject(projId, selected) {
+    const proj = discoveredProjects.find(p => p.id === projId);
+    if (proj) proj.is_selected = !!selected;
+    const picked = discoveredProjects.filter(p => p.is_selected).length;
+    const hint = document.getElementById('jrProjectHint');
+    if (hint) {
+      hint.textContent = picked ? `${picked} selected` : 'None selected';
+      hint.className = 'jr-hint' + (picked ? ' is-ok' : ' is-warn');
+    }
+    const card = document.querySelector(`.jr-check[onchange*="${projId}"]`)?.closest('.jr-proj');
+    if (card) card.classList.toggle('is-picked', !!selected);
+  }
+
+  function setDiscoveredRelationship(projId, rel) {
+    const proj = discoveredProjects.find(p => p.id === projId);
+    if (proj) proj.candidate_relationship = rel;
+  }
+
+  /* ── STEP 3: synthesize + honest scorecard ─────────────────────── */
+  let generatedResumeData = null;
+
+  function setGenerateProgress(pct, stage, on) {
+    const wrap = document.getElementById('generateProgress');
+    const bar = document.getElementById('generateBar');
+    const stageEl = document.getElementById('generateStage');
+    const pctEl = document.getElementById('generatePct');
+    if (wrap) wrap.classList.toggle('is-on', !!on);
+    if (bar) bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    if (stageEl && stage) stageEl.textContent = stage;
+    if (pctEl) pctEl.textContent = Math.round(pct) + '%';
+  }
+
+  async function generateJobTailoredResume() {
+    const profile = collectJobProfile();
+    if (!profile.name || !profile.email || !profile.phone) {
+      syncJobProfileHints();
+      if (window.showToast) window.showToast('Name, email and phone are required before generating.', 'warning');
+      switchJobStudioTab('fresher');
+      const first = !profile.name ? 'fresherName' : (!profile.email ? 'frEmail' : 'frPhone');
+      document.getElementById(first)?.focus();
+      return;
+    }
+    if (!activeGenJobId) {
+      if (window.showToast) window.showToast('Run the repository discovery first — it is what makes this resume job-specific.', 'warning');
+      return;
+    }
+
+    const btn = document.getElementById('btnGenerateResume');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="spin-icon"></i><span>Writing your resume…</span>';
+      if (window.lucide) window.lucide.createIcons();
+    }
+    setGenerateProgress(15, 'Saving your project choices…', true);
+
+    try {
+      // 1. Persist selection + attribution
+      if (discoveredProjects.length) {
+        const selections = discoveredProjects.map(p => ({
+          project_id: p.id,
+          is_selected: !!p.is_selected,
+          relationship: p.candidate_relationship || 'BUILT'
+        }));
+        await fetch(`/api/resume/generations/${activeGenJobId}/projects/select/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ selections })
+        });
+      }
+
+      setGenerateProgress(45, 'Synthesizing bullets and scoring ATS…', true);
+
+      const res = await fetch(`/api/resume/generations/${activeGenJobId}/generate/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Generation failed');
+
+      setGenerateProgress(100, 'Done', true);
+      generatedResumeData = data.resume;
+      renderGeneratedResume(data.resume, data.ats_eval || {}, data.missing_fields || []);
+      if (window.showToast) window.showToast('Resume generated for {{ job.company_name|escapejs }}.', 'success');
+    } catch (err) {
+      if (window.showToast) window.showToast('Generation failed: ' + err.message, 'error');
+      setGenerateProgress(0, err.message, true);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="wand-sparkles"></i><span>Regenerate</span>';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  }
+
+  function renderGeneratedResume(resume, ats, missingFields) {
+    const wrap = document.getElementById('generatedWrap');
+    if (wrap) wrap.style.display = 'block';
+
+    const score = Math.round(ats.score || 0);
+    const scoreEl = document.getElementById('atsScoreValue');
+    const gauge = document.getElementById('atsGaugeCircle');
+    const color = score >= 80 ? '#34d399' : (score >= 60 ? '#fbbf24' : '#f87171');
+    if (scoreEl) {
+      scoreEl.textContent = score;
+      scoreEl.style.color = color;
+    }
+    if (gauge) {
+      gauge.style.background = `conic-gradient(${color} 0%, ${color} ${score}%, #1e293b ${score}%, #1e293b 100%)`;
+    }
+
+    const gradeEl = document.getElementById('generatedGrade');
+    if (gradeEl) gradeEl.textContent = ats.grade || 'Scored';
+    const passEl = document.getElementById('generatedPassRate');
+    if (passEl) passEl.textContent = ats.pass_rate || '';
+
+    // matched / missing keywords, straight from the server evaluation
+    const kw = document.getElementById('atsKeywordsContainer');
+    if (kw) {
+      kw.innerHTML = '';
+      (ats.matched_skills || []).slice(0, 4).forEach(s => {
+        const chip = document.createElement('span');
+        chip.className = 'jr-chip is-ok';
+        chip.textContent = '✓ ' + s;
+        kw.appendChild(chip);
+      });
+      (ats.missing_skills || []).slice(0, 3).forEach(s => {
+        const chip = document.createElement('span');
+        chip.className = 'jr-chip is-miss';
+        chip.textContent = '+ ' + s;
+        kw.appendChild(chip);
+      });
+    }
+
+    // Pillar breakdown
+    const pillars = document.getElementById('generatedPillars');
+    if (pillars) {
+      pillars.innerHTML = '';
+      (ats.pillars || []).forEach(p => {
+        const pct = Math.round((p.score / Math.max(1, p.max_score)) * 100);
+        const row = document.createElement('div');
+        row.className = 'jr-pillar';
+        row.innerHTML = `
+          <span class="jr-pillar-name" title="${escapeHtml(p.detail || p.name)}">${escapeHtml(p.name)}</span>
+          <span class="jr-pillar-track"><span class="jr-pillar-fill" style="width:${pct}%"></span></span>
+        `;
+        pillars.appendChild(row);
+      });
+    }
+
+    const summaryEl = document.getElementById('generatedSummary');
+    if (summaryEl) summaryEl.textContent = resume.summary || '';
+
+    const missingWrap = document.getElementById('generatedMissingWrap');
+    const missingList = document.getElementById('generatedMissing');
+    const issues = (missingFields || []).concat((ats.improvements || []).slice(0, 3));
+    if (missingWrap && missingList) {
+      if (issues.length) {
+        missingWrap.style.display = 'block';
+        missingList.innerHTML = issues.map(i => `<li>${escapeHtml(i)}</li>`).join('');
+      } else {
+        missingWrap.style.display = 'none';
+      }
+    }
+
+    const num = document.getElementById('jrStepNum3');
+    if (num) num.classList.add('is-done');
+    const hint = document.getElementById('jrGenerateHint');
+    if (hint) {
+      hint.textContent = score + '/100';
+      hint.className = 'jr-hint is-ok';
+    }
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  async function downloadGeneratedResume(kind) {
+    if (!generatedResumeData) {
+      if (window.showToast) window.showToast('Generate the resume first.', 'warning');
+      return;
+    }
+    const url = kind === 'docx'
+      ? '/api/resume/download-docx/'
+      : '/api/resume/download-pdf/';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resume: generatedResumeData })
+      });
+      if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+      const blob = await res.blob();
+      const name = (generatedResumeData.name || 'Candidate').replace(/[^a-zA-Z0-9_-]+/g, '_');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name}_Resume.${kind}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    } catch (err) {
+      if (window.showToast) window.showToast(err.message, 'error');
+    }
+  }
+
+  function copyGeneratedResume() {
+    if (!generatedResumeData) return;
+    const r = generatedResumeData;
+    const lines = [];
+    if (r.name) lines.push(r.name);
+    const c = r.contact || {};
+    const contactLine = [c.email, c.phone, c.location, c.linkedin, c.github].filter(Boolean).join(' | ');
+    if (contactLine) lines.push(contactLine);
+    if (r.summary) lines.push('', 'SUMMARY', r.summary);
+    if (r.skills && Object.keys(r.skills).length) {
+      lines.push('', 'SKILLS');
+      Object.entries(r.skills).forEach(([k, v]) => lines.push(`${k}: ${v}`));
+    }
+    if (r.projects && r.projects.length) {
+      lines.push('', 'PROJECTS');
+      r.projects.forEach(p => {
+        lines.push(p.title);
+        if (p.tech_stack) lines.push(`Stack: ${p.tech_stack}`);
+        (p.bullets || []).forEach(b => lines.push('• ' + b));
+        lines.push('');
+      });
+    }
+    if (r.education && Object.values(r.education).some(Boolean)) {
+      lines.push('EDUCATION');
+      const e = r.education;
+      lines.push([e.degree, e.institution, e.year, e.gpa].filter(Boolean).join(', '));
+      if (e.coursework) lines.push('Coursework: ' + e.coursework);
+    }
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      if (window.showToast) window.showToast('Resume copied as plain text.', 'success');
+    }).catch(() => prompt('Copy your resume:', text));
   }
 
   function copySelectedProjectBullets() {
-    const candidateName = document.getElementById('fresherName')?.value || 'Candidate';
-    const degree = document.getElementById('fresherDegree')?.value || 'B.Tech in Computer Science';
-    
-    let text = `${candidateName} • ${degree}\n`;
-    text += `Target Role: {{ job.title|escapejs }} at {{ job.company_name|escapejs }}\n\nKEY PRODUCTION PROJECTS:\n`;
+    if (!selectedProjectIds.length) {
+      if (window.showToast) window.showToast('Pick at least one project template first.', 'warning');
+      return;
+    }
+    const profile = collectJobProfile();
+    const header = [profile.name, profile.degree].filter(Boolean).join(' • ');
+
+    let text = (header ? header + '\n' : '');
+    text += `Target role: {{ job.title|escapejs }} at {{ job.company_name|escapejs }}\n\nPROJECT BULLETS:\n`;
     
     selectedProjectIds.forEach(id => {
       const proj = PRESET_PRODUCTION_PROJECTS.find(p => p.id === id);
@@ -4966,317 +6332,6 @@
     });
   }
 
-  /* ── FRESHER GITHUB PROJECT DISCOVERY PIPELINE ── */
-  async function triggerFresherDiscoveryPipeline() {
-    const btn = document.getElementById('btnStartFresherGen');
-    const progBox = document.getElementById('fresherProgressBox');
-    const progBar = document.getElementById('fresherProgressBar');
-    const stageText = document.getElementById('fresherStageText');
-    const pctText = document.getElementById('fresherPctText');
-
-    btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Searching GitHub Repositories...';
-    if (window.lucide) window.lucide.createIcons();
-
-    progBox.style.display = 'block';
-    progBar.style.width = '15%';
-    pctText.innerText = '15%';
-    stageText.innerText = 'Analyzing job requirements & tech stack...';
-
-    const candidatePayload = {
-      name: document.getElementById('fresherName')?.value || 'Candidate',
-      degree: document.getElementById('fresherDegree')?.value || 'B.Tech in Computer Science',
-      institution: document.getElementById('fresherCollege')?.value || 'University Engineering College',
-      gpa: document.getElementById('fresherGpaYear')?.value || '8.5 CGPA • 2025',
-      skills: "{{ job.skills_required|escapejs }}",
-      job_title: "{{ job.title|escapejs }}",
-    };
-
-    try {
-      const res = await fetch('/api/resume/generations/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mode: 'FRESHER_GITHUB',
-          job_id: "{{ job.uuid }}",
-          candidate_data: candidatePayload
-        })
-      });
-
-      const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to initiate discovery');
-      }
-
-      activeGenJobId = data.job_id;
-      pollFresherPipeline(activeGenJobId);
-
-    } catch (err) {
-      alert('Discovery pipeline error: ' + err.message);
-      btn.disabled = false;
-      btn.innerHTML = '<i data-lucide="github" style="width:16px;height:16px;"></i> <span>⚡ Discover Matching GitHub Projects</span>';
-      progBox.style.display = 'none';
-      if (window.lucide) window.lucide.createIcons();
-    }
-  }
-
-  function pollFresherPipeline(jobId) {
-    const progBar = document.getElementById('fresherProgressBar');
-    const stageText = document.getElementById('fresherStageText');
-    const pctText = document.getElementById('fresherPctText');
-    const btn = document.getElementById('btnStartFresherGen');
-
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/resume/generations/${jobId}/`);
-        const data = await res.json();
-
-        if (!data.success) {
-          clearInterval(interval);
-          alert('Error polling status: ' + (data.error || 'Unknown error'));
-          btn.disabled = false;
-          return;
-        }
-
-        const pct = data.progress_pct || 40;
-        progBar.style.width = pct + '%';
-        pctText.innerText = pct + '%';
-        stageText.innerText = data.stage_message || 'Processing...';
-
-        if (data.status === 'AWAITING_SELECTION' || data.status === 'COMPLETED') {
-          clearInterval(interval);
-          progBar.style.width = '100%';
-          pctText.innerText = '100%';
-          stageText.innerText = '✅ Relevant repositories ranked!';
-          
-          btn.disabled = false;
-          btn.innerHTML = '<i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> <span>Re-Discover Repositories</span>';
-          if (window.lucide) window.lucide.createIcons();
-
-          loadDiscoveredProjects(jobId);
-        } else if (data.status === 'FAILED') {
-          clearInterval(interval);
-          alert('Pipeline error: ' + (data.error_message || 'Failed'));
-          btn.disabled = false;
-        }
-      } catch (e) {
-        clearInterval(interval);
-        console.error('Polling error:', e);
-      }
-    }, 900);
-  }
-
-  async function loadDiscoveredProjects(jobId) {
-    try {
-      const res = await fetch(`/api/resume/generations/${jobId}/projects/`);
-      const data = await res.json();
-      if (!data.success || !data.projects) return;
-
-      const queueBox = document.getElementById('fresherProjectsQueue');
-      const listEl = document.getElementById('fresherProjectsList');
-      listEl.innerHTML = '';
-
-      data.projects.forEach((proj, idx) => {
-        const item = document.createElement('div');
-        item.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px;';
-
-        const scoreColor = proj.relevance_score >= 85 ? '#34d399' : (proj.relevance_score >= 70 ? '#38bdf8' : '#fbbf24');
-        const scoreBg = proj.relevance_score >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(56, 189, 248, 0.12)';
-
-        let techPills = '';
-        (proj.tech_stack || []).slice(0, 4).forEach(t => {
-          techPills += `<span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; font-size: 10px; padding: 1px 6px; border-radius: 4px;">${t}</span>`;
-        });
-
-        item.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <input type="checkbox" class="proj-check" data-proj-id="${proj.id}" ${proj.is_selected ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #a855f7; cursor: pointer;">
-              <div>
-                <a href="${proj.repo_url}" target="_blank" rel="noopener" style="color: #60a5fa; font-weight: 800; font-size: 13px; text-decoration: none;">
-                  ${proj.repo_name} ↗
-                </a>
-                <span style="font-size: 11px; color: #94a3b8; margin-left: 6px;">⭐ ${proj.stars}</span>
-              </div>
-            </div>
-            <div style="background: ${scoreBg}; border: 1px solid ${scoreColor}; color: ${scoreColor}; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 800; white-space: nowrap;">
-              ${proj.relevance_score.toFixed(1)}% Match
-            </div>
-          </div>
-
-          <p style="font-size: 11.5px; color: #cbd5e1; margin: 0 0 6px; line-height: 1.4;">${proj.description}</p>
-          <div style="font-size: 11px; color: #38bdf8; margin-bottom: 6px;">
-            <strong>Relevance Evidence:</strong> ${proj.evidence_summary}
-          </div>
-
-          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
-            <div style="display: flex; flex-wrap: wrap; gap: 4px;">${techPills}</div>
-            
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <label style="font-size: 10.5px; color: #94a3b8; font-weight: 700;">Attribution:</label>
-              <select class="proj-rel-select" data-proj-id="${proj.id}" style="background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 11px; padding: 2px 6px; border-radius: 6px; outline: none;">
-                <option value="BUILT" ${proj.candidate_relationship === 'BUILT' ? 'selected' : ''}>Personally Developed</option>
-                <option value="CONTRIBUTED" ${proj.candidate_relationship === 'CONTRIBUTED' ? 'selected' : ''}>Open Source Contribution</option>
-                <option value="RECOMMENDED" ${proj.candidate_relationship === 'RECOMMENDED' ? 'selected' : ''}>Architecture &amp; Case Study</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- AI Bullets Preview Accordion -->
-          <div style="margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 6px;">
-            <button type="button" onclick="previewFresherProjectAiBullets('${proj.id}', '${escapeHtml(proj.repo_name)}', '${escapeHtml(proj.description || '')}', this)" style="background: rgba(99, 102, 241, 0.12); border: 1px solid rgba(99, 102, 241, 0.35); color: #a5b4fc; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-              <i data-lucide="sparkles" style="width: 12px; height: 12px;"></i>
-              <span>✨ AI Generate Google XYZ Bullets Preview</span>
-            </button>
-            <div id="aiBulletsBox_${proj.id}" style="display: none; background: #0f172a; border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 10px 12px; margin-top: 6px;">
-              <div style="font-size: 10.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 4px;">Crafted Enterprise Project Content:</div>
-              <ul class="ai-bullets-list" style="margin: 0; padding-left: 16px; font-size: 11.5px; color: #cbd5e1; line-height: 1.45; display: flex; flex-direction: column; gap: 4px;"></ul>
-            </div>
-          </div>
-        `;
-        listEl.appendChild(item);
-      });
-
-      queueBox.style.display = 'block';
-      if (window.lucide) window.lucide.createIcons();
-
-      // Also trigger matching Indian Demo Projects for this job
-      loadMatchedIndianProjectsForJob();
-
-    } catch (e) {
-      console.error('Error loading discovered projects:', e);
-    }
-  }
-
-  function switchFresherQueueSource(source) {
-    const btnIndian = document.getElementById('tabBtnFresherIndian');
-    const btnGithub = document.getElementById('tabBtnFresherGithub');
-    const panelIndian = document.getElementById('panelFresherIndianDemo');
-    const panelGithub = document.getElementById('panelFresherGithub');
-
-    if (source === 'indian') {
-      if (btnIndian) {
-        btnIndian.style.background = 'linear-gradient(135deg, #a855f7, #6366f1)';
-        btnIndian.style.color = '#fff';
-        btnIndian.style.border = 'none';
-      }
-      if (btnGithub) {
-        btnGithub.style.background = '#1e293b';
-        btnGithub.style.color = '#94a3b8';
-        btnGithub.style.border = '1px solid #334155';
-      }
-      if (panelIndian) panelIndian.style.display = 'block';
-      if (panelGithub) panelGithub.style.display = 'none';
-      loadMatchedIndianProjectsForJob();
-    } else {
-      if (btnGithub) {
-        btnGithub.style.background = 'linear-gradient(135deg, #0284c7, #2563eb)';
-        btnGithub.style.color = '#fff';
-        btnGithub.style.border = 'none';
-      }
-      if (btnIndian) {
-        btnIndian.style.background = '#1e293b';
-        btnIndian.style.color = '#94a3b8';
-        btnIndian.style.border = '1px solid #334155';
-      }
-      if (panelIndian) panelIndian.style.display = 'none';
-      if (panelGithub) panelGithub.style.display = 'block';
-    }
-    if (window.lucide) window.lucide.createIcons();
-  }
-
-  let matchedIndianProjectsCache = [];
-  async function loadMatchedIndianProjectsForJob() {
-    const listEl = document.getElementById('fresherIndianProjectsList');
-    if (!listEl) return;
-    if (matchedIndianProjectsCache.length > 0 && listEl.children.length > 0) return;
-
-    listEl.innerHTML = `
-      <div style="text-align: center; padding: 18px 12px; color: #94a3b8; font-size: 12px;">
-        <i data-lucide="loader" class="spin-icon" style="width: 18px; height: 18px; color: #a855f7; margin-bottom: 6px;"></i>
-        <div>Matching curated Indian IT portfolio projects to this job...</div>
-      </div>
-    `;
-    if (window.lucide) window.lucide.createIcons();
-
-    try {
-      const res = await fetch(`/api/projects/indian-demo/match/?job_id={{ job.id }}`);
-      const data = await res.json();
-      if (!data.success || !data.projects || data.projects.length === 0) {
-        listEl.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 12px; padding: 14px;">No specific Indian demo projects matched. Try searching public repositories.</div>`;
-        return;
-      }
-
-      matchedIndianProjectsCache = data.projects;
-      listEl.innerHTML = '';
-
-      data.projects.forEach((proj, idx) => {
-        const item = document.createElement('div');
-        item.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px;';
-
-        const isChecked = idx < 2;
-        const score = proj.relevance_score || 90.0;
-        const scoreColor = score >= 85 ? '#34d399' : '#38bdf8';
-        const scoreBg = score >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(56, 189, 248, 0.12)';
-        const techStack = Array.isArray(proj.technical_stack) ? proj.technical_stack : (proj.tech_stack ? proj.tech_stack.split(',') : []);
-
-        let techPills = '';
-        techStack.slice(0, 4).forEach(t => {
-          techPills += `<span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; font-size: 10px; padding: 1px 6px; border-radius: 4px;">${t.trim()}</span>`;
-        });
-
-        item.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <input type="checkbox" class="indian-proj-check" data-proj-slug="${proj.slug}" ${isChecked ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #a855f7; cursor: pointer;">
-              <div>
-                <span style="color: #f8fafc; font-weight: 800; font-size: 13px;">
-                  ${proj.title}
-                </span>
-                <span style="font-size: 10.5px; color: #a855f7; margin-left: 6px; font-weight: 700;">📍 ${proj.location_city}, ${proj.location_state}</span>
-              </div>
-            </div>
-            <div style="background: ${scoreBg}; border: 1px solid ${scoreColor}; color: ${scoreColor}; padding: 2px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 800; white-space: nowrap;">
-              ${score.toFixed(1)}% Match
-            </div>
-          </div>
-
-          <p style="font-size: 11.5px; color: #cbd5e1; margin: 0 0 6px; line-height: 1.4;">${escapeHtml(proj.description || '')}</p>
-          <div style="font-size: 11px; color: #38bdf8; margin-bottom: 6px;">
-            <strong>Relevance Evidence:</strong> ${escapeHtml(proj.evidence_summary || 'Curated Indian IT industry practice architecture.')}
-          </div>
-
-          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
-            <div style="display: flex; flex-wrap: wrap; gap: 4px;">${techPills}</div>
-            
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <label style="font-size: 10.5px; color: #94a3b8; font-weight: 700;">Attribution:</label>
-              <select class="indian-proj-rel-select" data-proj-slug="${proj.slug}" style="background: #0f172a; border: 1px solid #334155; color: #e2e8f0; font-size: 11px; padding: 2px 6px; border-radius: 6px; outline: none;">
-                <option value="PORTFOLIO" selected>Personal Portfolio Project</option>
-                <option value="PRACTICE">Guided Practice / Case Study</option>
-                <option value="BUILT">Personally Developed</option>
-                <option value="RECOMMENDED">Architecture &amp; Case Study</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Bullets Preview -->
-          <div style="margin-top: 8px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 6px;">
-            <div style="font-size: 10.5px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 4px;">Google XYZ Resume Bullets:</div>
-            <ul style="margin: 0; padding-left: 16px; font-size: 11px; color: #cbd5e1; line-height: 1.45; display: flex; flex-direction: column; gap: 3px;">
-              ${(proj.resume_bullet_templates || proj.bullets || []).slice(0, 2).map(b => `<li>${escapeHtml(b)}</li>`).join('')}
-            </ul>
-          </div>
-        `;
-        listEl.appendChild(item);
-      });
-
-      if (window.lucide) window.lucide.createIcons();
-    } catch (e) {
-      console.error('Error loading matched Indian demo projects:', e);
-    }
-  }
-
   async function runJobCustomGhSearch(presetQuery) {
     const input = document.getElementById('jobGhCustomSearchInput');
     if (presetQuery) {
@@ -5289,10 +6344,9 @@
     }
 
     const listEl = document.getElementById('fresherProjectsList');
-    const queueBox = document.getElementById('fresherProjectsQueue');
     const searchBtn = document.getElementById('btnRunJobCustomGhSearch');
+    if (!listEl) return;
 
-    queueBox.style.display = 'block';
     listEl.innerHTML = `
       <div style="text-align: center; padding: 24px 16px; color: #94a3b8; font-size: 13px;">
         <i data-lucide="loader" class="spin-icon" style="width: 22px; height: 22px; color: #38bdf8; margin-bottom: 8px;"></i>
@@ -5465,96 +6519,12 @@
     list.innerHTML = html;
   }
 
-  async function finalizeFresherResumeSynthesis() {
-    if (!activeGenJobId) {
-      alert('Please discover projects first.');
-      return;
-    }
-
-    const btn = document.getElementById('btnSynthesizeFresher');
-    btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Synthesizing Resume &amp; Scoring ATS...';
-    if (window.lucide) window.lucide.createIcons();
-
-    // Collect project selections & relationships
-    const selections = [];
-    document.querySelectorAll('.proj-check').forEach(chk => {
-      const projId = chk.getAttribute('data-proj-id');
-      const isSelected = chk.checked;
-      const relSelect = document.querySelector(`.proj-rel-select[data-proj-id="${projId}"]`);
-      const relationship = relSelect ? relSelect.value : 'RECOMMENDED';
-      selections.push({
-        project_id: projId,
-        is_selected: isSelected,
-        relationship: relationship
-      });
-    });
-
-    try {
-      // 1. Sync any selected Indian Demo Projects to the job
-      const indianChecks = document.querySelectorAll('.indian-proj-check:checked');
-      for (const chk of indianChecks) {
-        const slug = chk.getAttribute('data-proj-slug');
-        const relSelect = document.querySelector(`.indian-proj-rel-select[data-proj-slug="${slug}"]`);
-        const relationship = relSelect ? relSelect.value : 'PORTFOLIO';
-        try {
-          await fetch('/api/resume/attach-indian-project/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              job_uuid: activeGenJobId,
-              project_slug: slug,
-              relationship: relationship,
-              is_selected: true
-            })
-          });
-        } catch (e) {
-          console.error('Error attaching demo project:', e);
-        }
-      }
-
-      // 2. Save GitHub project selections if any
-      if (selections.length > 0) {
-        await fetch(`/api/resume/generations/${activeGenJobId}/projects/select/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ selections: selections })
-        });
-      }
-
-      // 3. Synthesize resume
-      const res = await fetch(`/api/resume/generations/${activeGenJobId}/generate/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const data = await res.json();
-
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to synthesize resume');
-      }
-
-      if (window.showToast) window.showToast("🚀 Resume synthesized! Opening Live Editor...", "success");
-
-      // 3. Open in Live Resume Builder with gen_id and target job
-      setTimeout(() => {
-        window.location.href = `/resume-builder/?job_id={{ job.uuid }}&gen_id=${activeGenJobId}`;
-      }, 700);
-
-    } catch (err) {
-      alert('Synthesis error: ' + err.message);
-      btn.disabled = false;
-      btn.innerHTML = '<i data-lucide="check-circle" style="width:16px;height:16px;"></i> <span>🚀 Generate Tailored Resume &amp; Open Live Editor</span>';
-      if (window.lucide) window.lucide.createIcons();
-    }
-  }
-
   function closeJobTailorModal() {
     const modal = document.getElementById('jobTailorModal');
     if (modal) {
       modal.style.display = 'none';
-      modal.style.opacity = '0';
-      modal.style.visibility = 'hidden';
       modal.classList.remove('active');
+      document.body.style.overflow = '';
     }
   }
 
@@ -5632,24 +6602,24 @@
 
   async function runJobAlterationStudio() {
     const input = document.getElementById('jobTailorResumeInput');
-    const userText = (input && input.value ? input.value.trim() : "") || "Passionate engineer skilled in full-stack web development, Python, SQL, REST APIs, and system problem-solving.";
+    const userText = (input && input.value ? input.value.trim() : "");
     const btn = document.getElementById('btnRunJobTailor');
 
+    // Rewriting nothing produces nothing. Ask for the résumé text instead of
+    // sending the model an invented "passionate engineer" summary.
+    if (!userText && !window._lastUploadedParsedResume) {
+      if (window.showToast) window.showToast('Upload a resume or paste its text first.', 'warning');
+      if (input) input.focus();
+      return;
+    }
+
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Altering &amp; Rating ATS Score with AI...';
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> Tailoring…';
     if (window.lucide) window.lucide.createIcons();
 
-    let candSkills = { "Technical Skills": ["Python", "JavaScript", "SQL", "Git", "REST APIs"] };
-    let candProjects = [
-      {
-        title: "Full-Stack Web Platform",
-        tech_stack: "Python, Django, PostgreSQL, Docker, Redis",
-        bullets: [
-          "Architected responsive microservices handling 12,000+ daily active users with 99.9% uptime SLA.",
-          "Engineered automated caching layer utilizing Redis, reducing p95 database response latency by 42%."
-        ]
-      }
-    ];
+    // Only what the candidate actually supplied — no placeholder skills/projects.
+    let candSkills = {};
+    let candProjects = [];
 
     if (window._lastUploadedParsedResume) {
       const p = window._lastUploadedParsedResume;
@@ -5687,18 +6657,33 @@
       const data = json.data;
       lastAlteredData = data;
 
-      // 1. Update Score & Grade
-      const scoreVal = data.match_score || 95;
+      // 1. Update Score & Grade — show what came back, never a stand-in number.
+      const rawScore = (typeof data.overall_match_score === 'number') ? data.overall_match_score
+                     : (typeof data.match_score === 'number' ? data.match_score : null);
       const scoreEl = document.getElementById('jobTailorScore');
-      scoreEl.innerText = `${scoreVal} / 100`;
-      scoreEl.style.color = scoreVal >= 85 ? '#34d399' : (scoreVal >= 70 ? '#fbbf24' : '#f87171');
-      document.getElementById('jobTailorGrade').innerText = data.match_grade || 'Top Tier Pass ✓';
+      if (rawScore === null) {
+        scoreEl.innerText = '—';
+        scoreEl.style.color = '#94a3b8';
+      } else {
+        scoreEl.innerText = `${Math.round(rawScore)} / 100`;
+        scoreEl.style.color = rawScore >= 85 ? '#34d399' : (rawScore >= 70 ? '#fbbf24' : '#f87171');
+      }
+      // The label is derived from the score so it can never contradict it.
+      const gradeFor = (v) => v === null ? 'Not rated'
+        : v >= 85 ? 'Strong match'
+        : v >= 70 ? 'Competitive'
+        : v >= 50 ? 'Needs work'
+        : 'Significant gaps';
+      document.getElementById('jobTailorGrade').innerText = gradeFor(rawScore);
 
       // 2. Injected Keywords
       const injectedBox = document.getElementById('jobTailorInjected');
       if (injectedBox) {
         injectedBox.innerHTML = '';
-        const kws = data.injected_keywords || ["Python", "REST APIs", "SQL", "PostgreSQL", "Scalability"];
+        const kws = data.injected_keywords || [];
+        if (!kws.length) {
+          injectedBox.innerHTML = '<span class="jr-chip is-miss">No job keyword was added — your text did not support any.</span>';
+        }
         kws.forEach(kw => {
           const sp = document.createElement('span');
           sp.style.cssText = 'background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #4ade80; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;';
@@ -5718,26 +6703,33 @@
       if (projectsListEl) {
         projectsListEl.innerHTML = '';
         const projects = data.altered_projects || [];
+        if (!projects.length) {
+          projectsListEl.innerHTML = '<p class="jr-empty"><i data-lucide="file-question"></i><strong>No projects to rewrite</strong>Your resume text did not contain a project section.</p>';
+          if (window.lucide) window.lucide.createIcons();
+        }
         projects.forEach((proj, idx) => {
           const card = document.createElement('div');
           card.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 14px;';
 
-          const scoreBadgeColor = (proj.ats_score || 90) >= 85 ? '#34d399' : ((proj.ats_score || 90) >= 70 ? '#fbbf24' : '#f87171');
-          const scoreBadgeBg = (proj.ats_score || 90) >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(251, 191, 36, 0.12)';
+          // Score badge only when the server actually scored the project.
+          const projScore = (typeof proj.ats_score === 'number') ? proj.ats_score : null;
+          const scoreBadgeColor = projScore === null ? '#94a3b8' : (projScore >= 85 ? '#34d399' : (projScore >= 70 ? '#fbbf24' : '#f87171'));
+          const scoreBadgeBg = projScore === null ? 'rgba(148, 163, 184, 0.12)' : (projScore >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(251, 191, 36, 0.12)');
+          const badgeText = proj.ats_badge || (projScore === null ? 'Not scored' : 'ATS ' + Math.round(projScore) + '/100');
 
           let bulletsHtml = '';
           (proj.bullets || []).forEach(b => {
-            bulletsHtml += `<li style="margin-bottom: 5px; color: #e2e8f0; font-size: 12px; line-height: 1.5;">${b}</li>`;
+            bulletsHtml += `<li style="margin-bottom: 5px; color: #e2e8f0; font-size: 12px; line-height: 1.5;">${escapeHtml(b)}</li>`;
           });
 
           card.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px;">
               <div>
-                <strong style="color: #ffffff; font-size: 13.5px;">${proj.title}</strong>
-                <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px;">Stack: <span style="color: #60a5fa;">${proj.tech_stack || ''}</span></div>
+                <strong style="color: #ffffff; font-size: 13.5px;">${escapeHtml(proj.title || '')}</strong>
+                <div style="font-size: 11px; color: #94a3b8; font-weight: 600; margin-top: 2px;">Stack: <span style="color: #60a5fa;">${escapeHtml(proj.tech_stack || '')}</span></div>
               </div>
               <div style="background: ${scoreBadgeBg}; border: 1px solid ${scoreBadgeColor}; color: ${scoreBadgeColor}; padding: 3px 8px; border-radius: 8px; font-size: 11px; font-weight: 800; white-space: nowrap;">
-                ${proj.ats_badge || '🟢 ATS ' + (proj.ats_score || 92) + '/100'}
+                ${escapeHtml(badgeText)}
               </div>
             </div>
             <ul style="margin: 0; padding-left: 18px; color: #cbd5e1;">

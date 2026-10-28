@@ -70,27 +70,27 @@ def parse_resume_regex_fallback(raw_text: str) -> Dict[str, Any]:
     phone_match = re.search(r'(\+?\d{1,3}[-.\s]?)?\(?\d{3,5}\)?[-.\s]?\d{3,5}[-.\s]?\d{3,5}', raw_text)
     phone = phone_match.group(0) if phone_match else ""
 
-    # LinkedIn / GitHub
+    # LinkedIn / GitHub — only when the document actually contains them.
     linkedin_match = re.search(r'(linkedin\.com/in/[\w-]+)', raw_text, re.IGNORECASE)
-    linkedin = linkedin_match.group(0) if linkedin_match else "linkedin.com/in/candidate"
+    linkedin = linkedin_match.group(0) if linkedin_match else ""
 
     github_match = re.search(r'(github\.com/[\w-]+)', raw_text, re.IGNORECASE)
-    github = github_match.group(0) if github_match else "github.com/candidate"
+    github = github_match.group(0) if github_match else ""
+
+    location_match = re.search(r'^([A-Z][a-zA-Z .]+,\s*[A-Z][a-zA-Z .]+)$', raw_text, re.MULTILINE)
+    location = location_match.group(0).strip() if location_match else ""
 
     # Name: First non-empty line with 2-4 words
     lines = [line.strip() for line in raw_text.split('\n') if line.strip()]
-    name = "Candidate"
+    name = ""
     for line in lines[:5]:
         words = line.split()
         if 2 <= len(words) <= 4 and not any(char.isdigit() or char in '@:/' for char in line):
             name = line
             break
 
-    # Extract Skills
-    skills_dict = {
-        "Languages & Frameworks": "Python, JavaScript, SQL, HTML, CSS",
-        "Developer Tools & Databases": "Git, PostgreSQL, Docker, REST APIs"
-    }
+    # Extract Skills — omitted entirely when the document has no skills section.
+    skills_dict = {}
     skills_match = re.search(r'(?:skills|technical skills|technologies)[:\n](.*?)(?:\n\n|\n[A-Z\s]{4,}|\Z)', raw_text, re.IGNORECASE | re.DOTALL)
     if skills_match:
         skills_text = skills_match.group(1).strip()
@@ -102,8 +102,8 @@ def parse_resume_regex_fallback(raw_text: str) -> Dict[str, Any]:
                 "Tools & Technologies": ", ".join(skills_items[half:])
             }
 
-    # Summary
-    summary = "Results-driven software engineer experienced in designing scalable systems, building REST APIs, and optimizing database performance with clean code practices."
+    # Summary — only when the document supplies one.
+    summary = ""
     summary_match = re.search(r'(?:summary|profile|about me|objective)[:\n](.*?)(?:\n\n|\n[A-Z\s]{4,}|\Z)', raw_text, re.IGNORECASE | re.DOTALL)
     if summary_match:
         summary_candidate = summary_match.group(1).strip()
@@ -113,41 +113,19 @@ def parse_resume_regex_fallback(raw_text: str) -> Dict[str, Any]:
     return {
         "name": name,
         "contact": {
-            "email": email or "candidate@example.com",
-            "phone": phone or "+91 98765 43210",
-            "location": "Bengaluru, India",
+            "email": email,
+            "phone": phone,
+            "location": location,
             "linkedin": linkedin,
             "github": github,
-            "portfolio": "kashiiupdatez.online"
+            "portfolio": ""
         },
         "summary": summary,
         "skills": skills_dict,
         "experience": [],
-        "projects": [
-            {
-                "title": "Full-Stack Web Application",
-                "role": "Lead Developer",
-                "tech_stack": "Python, Django, PostgreSQL, Redis",
-                "bullets": [
-                    "Architected scalable backend microservices serving 10,000+ monthly active users with 99.9% uptime SLA.",
-                    "Optimized database query execution and implemented Redis caching, reducing p95 latency by 45%.",
-                    "Integrated secure JWT authentication and role-based access control (RBAC) across 15+ REST endpoints."
-                ]
-            }
-        ],
-        "education": [
-            {
-                "institution": "Visvesvaraya Technological University",
-                "degree": "Bachelor of Engineering (B.E.)",
-                "field": "Computer Science & Engineering",
-                "year": "2024",
-                "score": "8.5 CGPA"
-            }
-        ],
-        "certifications": [
-            "AWS Certified Cloud Practitioner",
-            "Python for Software Architecture (Coursera)"
-        ]
+        "projects": [],
+        "education": [],
+        "certifications": []
     }
 
 

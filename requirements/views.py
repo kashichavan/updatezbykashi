@@ -3487,14 +3487,17 @@ def api_download_resume_pdf(request):
         if not resume_data:
             role = request.GET.get('role', 'python-backend')
             role_data = RESUME_ROLES.get(role, RESUME_ROLES['python-backend'])
+            # Downloading without posting a resume returns the role template with a
+            # blank identity. Putting a placeholder email on a file the user may send
+            # to a recruiter is worse than leaving it empty.
             resume_data = {
-                'name': 'Kashinath Chavan',
+                'name': '',
                 'contact': {
-                    'email': 'kashinath@example.com',
-                    'phone': '+91 98765 43210',
-                    'location': 'Bangalore, India',
-                    'linkedin': 'linkedin.com/in/kashinath-chavan',
-                    'github': 'github.com/kashichavan',
+                    'email': '',
+                    'phone': '',
+                    'location': '',
+                    'linkedin': '',
+                    'github': '',
                 },
                 'summary': role_data.get('summary', ''),
                 'skills': role_data.get('technical_skills', {}),
@@ -3540,14 +3543,17 @@ def api_download_resume_docx(request):
         if not resume_data:
             role = request.GET.get('role', 'python-backend')
             role_data = RESUME_ROLES.get(role, RESUME_ROLES['python-backend'])
+            # Downloading without posting a resume returns the role template with a
+            # blank identity. Putting a placeholder email on a file the user may send
+            # to a recruiter is worse than leaving it empty.
             resume_data = {
-                'name': 'Kashinath Chavan',
+                'name': '',
                 'contact': {
-                    'email': 'kashinath@example.com',
-                    'phone': '+91 98765 43210',
-                    'location': 'Bangalore, India',
-                    'linkedin': 'linkedin.com/in/kashinath-chavan',
-                    'github': 'github.com/kashichavan',
+                    'email': '',
+                    'phone': '',
+                    'location': '',
+                    'linkedin': '',
+                    'github': '',
                 },
                 'summary': role_data.get('summary', ''),
                 'skills': role_data.get('technical_skills', {}),
@@ -3730,7 +3736,9 @@ def api_ai_alter_resume(request):
 
         # Standardize field names for frontends
         if 'match_score' not in result or result['match_score'] is None:
-            result['match_score'] = result.get('overall_match_score') or 95
+            # No fallback number: an absent score must render as unknown, not 95.
+            score = result.get('overall_match_score')
+            result['match_score'] = score if isinstance(score, (int, float)) else None
         if 'injected_keywords' not in result or result['injected_keywords'] is None:
             result['injected_keywords'] = result.get('missing_keywords_injected') or result.get('matching_keywords') or []
         if 'reordered_skills' not in result or result['reordered_skills'] is None:
@@ -4109,7 +4117,8 @@ def api_resume_generation_finalize(request, job_uuid):
             'success': True,
             'job_id': str(job_uuid),
             'resume': result['resume'],
-            'ats_eval': result['ats_eval']
+            'ats_eval': result['ats_eval'],
+            'missing_fields': result.get('missing_fields', []),
         })
     except Exception as e:
         logger.exception("Error finalizing resume synthesis:")
