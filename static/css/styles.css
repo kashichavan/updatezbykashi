@@ -564,6 +564,15 @@ a {
   }
 }
 
+/* Ultra-narrow phones: keep the header on one line */
+@media (max-width: 360px) {
+  .site-header .wrap { padding-left: 10px; padding-right: 10px; gap: 8px; }
+  .site-header .brand { font-size: 16px; }
+  .vp-sidebar-btn { padding: 6px 9px; }
+  .vp-sidebar-btn .btn-drawer-text { display: none; }
+  .mobile-today-badge { padding: 5px 9px; font-size: 11px; }
+}
+
 /* Mobile & Tablet State (< 880px) */
 @media (max-width: 880px) {
   .nav-links {
