@@ -921,25 +921,30 @@
               {% else %}
                 HR
               {% endif %}
-              <span style="position: absolute; bottom: -2px; right: -2px; width: 13px; height: 13px; border-radius: 50%; background: #10b981; border: 2.5px solid #0f172a;" title="Active Sourcing Recruiter"></span>
+              <span style="position: absolute; bottom: -2px; right: -2px; width: 13px; height: 13px; border-radius: 50%; background: {% if active_recruiter.email %}#10b981{% else %}#64748b{% endif %}; border: 2.5px solid #0f172a;" title="{% if active_recruiter.email %}Contact published in the job post{% else %}Search public sources for a recruiter contact{% endif %}"></span>
             </div>
 
             <div>
               <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                 <span style="font-size: 16px; font-weight: 900; color: #ffffff;">
-                  {{ active_recruiter.name|default:"Hiring Manager & Recruiter" }}
+                  {{ active_recruiter.name|default:"Recruiter contact" }}
                 </span>
-                {% if active_recruiter.verified %}
+                {% if active_recruiter.email %}
                   <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px;">
-                    ✓ Verified Recruiter
+                    ✓ Email in job post
                   </span>
                 {% endif %}
               </div>
               <div style="font-size: 12.5px; color: #cbd5e1; margin-top: 2px; font-weight: 600;">
-                {{ active_recruiter.title|default:"Talent Acquisition Specialist • Engineering & Campus Relations" }}
+                {{ active_recruiter.title|default:"Recruiter / hiring contact" }}
               </div>
               <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">
-                🏢 <strong>{{ clean_company_name|default:job.company_name }}</strong> • Direct Recruiter Email: <code style="color: #60a5fa; font-weight: 700;">{{ active_recruiter.email }}</code>
+                🏢 <strong>{{ clean_company_name|default:job.company_name }}</strong>
+                {% if active_recruiter.email %}
+                  • Email: <code style="color: #60a5fa; font-weight: 700;">{{ active_recruiter.email }}</code>
+                {% else %}
+                  • No public email in this post. <span style="color: #93c5fd; font-weight: 700;">Find a source-linked contact ↗</span>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -950,7 +955,7 @@
               <span>Connect &amp; Pitch ↗</span>
             </a>
             <a href="{{ active_recruiter.linkedin_url|default:linkedin_recruiter_search_url }}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #0077b5; color: #ffffff; padding: 11px 16px; border-radius: 12px; font-size: 13px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 12px rgba(0, 119, 181, 0.35); transition: all 0.2s;" title="View Recruiter LinkedIn Profile">
-              <i data-lucide="linkedin" style="width: 16px; height: 16px;"></i>
+              <i data-lucide="user-search" style="width: 16px; height: 16px;"></i>
               <span>LinkedIn</span>
             </a>
           </div>
@@ -971,7 +976,7 @@
           {% endif %}
         </div>
         <p style="font-size: 13.5px; color: #e2e8f0; line-height: 1.6; margin: 0 0 10px;">
-          <strong>Referral Posted By:</strong> {{ job.referrer_name|default:"Verified Company Insider / Recruiter" }}
+          <strong>Referral Posted By:</strong> {{ job.referrer_name|default:"Not specified in the post" }}
           {% if job.referrer_linkedin %}
             &bull; <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" style="color: #60a5fa;">{{ job.referrer_linkedin }}</a>
           {% endif %}

@@ -1,960 +1,1815 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Recruiter Email & Direct Outreach Studio — {{ clean_company_name }} | Kashii Updatez{% endblock %}
-{% block meta_description %}Direct outreach and recruiter contact hub for {{ job.title }} at {{ clean_company_name }}. Discover recruiters with Google X-Ray, extract original corporate emails, and generate tailored cold DMs and InMails.{% endblock %}
+{% block title %}Recruiter Connect Studio — {{ clean_company_name }} | Kashii Updatez{% endblock %}
+{% block meta_description %}Find a real, publicly published recruiter email for {{ job.title }} at {{ clean_company_name }}. Source-linked discovery across job posts, GitHub, and the public web. No guessed addresses, ever.{% endblock %}
 
 {% block extra_css %}
 <style>
-  :root {
-    --recruiter-bg: #f8fafc;
-    --card-surface: #ffffff;
-    --card-border: #e2e8f0;
-    --brand-blue: #2563eb;
-    --brand-blue-hover: #1d4ed8;
-    --brand-blue-soft: #eff6ff;
-    --text-primary: #0f172a;
-    --text-muted: #64748b;
-    --accent-emerald: #10b981;
-    --accent-emerald-soft: rgba(16, 185, 129, 0.12);
+  .rc-page {
+    --rc-ink: #0b1220;
+    --rc-ink-soft: #1e293b;
+    --rc-muted: #5b6475;
+    --rc-faint: #8a93a6;
+    --rc-paper: #f6f7fb;
+    --rc-card: #ffffff;
+    --rc-line: rgba(15, 23, 42, 0.09);
+    --rc-line-strong: rgba(15, 23, 42, 0.16);
+    --rc-brand: #4f46e5;
+    --rc-brand-deep: #3730a3;
+    --rc-sky: #0284c7;
+    --rc-green: #047857;
+    --rc-green-soft: #ecfdf5;
+    --rc-amber: #b45309;
+    --rc-amber-soft: #fffbeb;
+    --rc-red: #b91c1c;
+    --rc-red-soft: #fef2f2;
+    --rc-radius: 22px;
+    --rc-radius-sm: 14px;
+    --rc-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 18px 48px -28px rgba(15, 23, 42, 0.22);
+    --rc-shadow-lift: 0 2px 4px rgba(15, 23, 42, 0.05), 0 28px 60px -30px rgba(79, 70, 229, 0.35);
+    --rc-mono: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, "Liberation Mono", monospace;
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--rc-ink);
+    background:
+      radial-gradient(1100px 520px at 12% -8%, rgba(79, 70, 229, 0.10), transparent 62%),
+      radial-gradient(900px 480px at 92% 4%, rgba(2, 132, 199, 0.09), transparent 64%),
+      var(--rc-paper);
+    min-height: 100vh;
+    padding: 28px 18px 96px;
+    overflow-x: clip;
   }
 
-  .recruiter-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px 16px 80px;
-  }
+  .rc-page * { box-sizing: border-box; }
+  .rc-wrap { max-width: 1180px; margin: 0 auto; }
 
-  /* Top Navigation & Breadcrumb */
-  .recruiter-breadcrumb-bar {
+  .rc-breadcrumb {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
     gap: 12px;
-    margin-bottom: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
   }
-
-  .btn-back-pill {
+  .rc-back {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--text-primary);
+    min-height: 40px;
+    padding: 8px 15px;
+    border-radius: 999px;
+    border: 1px solid var(--rc-line);
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--rc-ink);
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
-    padding: 8px 16px;
-    background: #ffffff;
-    border: 1px solid var(--card-border);
-    border-radius: 9999px;
-    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
-    transition: all 0.2s ease;
+    backdrop-filter: blur(12px);
+    transition: transform .25s cubic-bezier(.16,1,.3,1), border-color .25s ease, box-shadow .25s ease;
   }
-  .btn-back-pill:hover {
-    color: var(--brand-blue);
-    border-color: #93c5fd;
-    transform: translateX(-2px);
-  }
-
-  .btn-view-job {
+  .rc-back:hover { transform: translateX(-2px); border-color: var(--rc-line-strong); box-shadow: 0 8px 24px -18px rgba(15,23,42,.5); }
+  .rc-breadcrumb-meta {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--brand-blue);
-    background: var(--brand-blue-soft);
-    padding: 8px 14px;
-    border-radius: 9999px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-  .btn-view-job:hover {
-    background: #dbeafe;
-  }
-
-  /* Job Header Summary Card */
-  .job-summary-header {
-    background: #ffffff;
-    border: 1.5px solid var(--card-border);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .job-badge-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #f1f5f9;
-    color: #475569;
+    gap: 8px;
     font-size: 11.5px;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 8px;
+    font-weight: 750;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--rc-muted);
+  }
+  .rc-breadcrumb-meta .rc-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--rc-green);
+    box-shadow: 0 0 0 4px rgba(4, 120, 87, .12);
   }
 
-  /* Universal Step Cards */
-  .step-card {
-    background: #ffffff;
-    border: 1.5px solid var(--card-border);
-    border-radius: 20px;
-    padding: 26px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
-    transition: border-color 0.2s ease;
+  /* ── Hero ─────────────────────────────────────────────── */
+  .rc-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: 30px;
+    background:
+      radial-gradient(760px 340px at 82% 0%, rgba(56, 189, 248, .18), transparent 60%),
+      radial-gradient(640px 420px at 0% 100%, rgba(129, 140, 248, .18), transparent 60%),
+      linear-gradient(145deg, #0a1020 0%, #101a33 54%, #0b1426 100%);
+    border: 1px solid rgba(148, 163, 184, .18);
+    box-shadow: 0 40px 90px -50px rgba(2, 6, 23, .8);
+    color: #fff;
+    padding: clamp(26px, 4vw, 46px);
+    margin-bottom: 26px;
+    isolation: isolate;
   }
-  .step-card:hover {
-    border-color: #cbd5e1;
+  .rc-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(148, 163, 184, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, .07) 1px, transparent 1px);
+    background-size: 54px 54px;
+    mask-image: radial-gradient(ellipse at 30% 10%, #000 10%, transparent 75%);
+    pointer-events: none;
+    z-index: -1;
   }
-
-  .step-header-tag {
+  .rc-hero::after {
+    content: "";
+    position: absolute;
+    width: 340px; height: 340px;
+    right: -120px; bottom: -170px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79, 70, 229, .38), transparent 68%);
+    filter: blur(8px);
+    z-index: -1;
+  }
+  .rc-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(290px, .8fr);
+    gap: clamp(24px, 4vw, 48px);
+    align-items: center;
+  }
+  .rc-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    background: var(--brand-blue-soft);
-    color: #1d4ed8;
+    gap: 9px;
+    min-height: 30px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, .28);
+    background: rgba(255, 255, 255, .06);
+    color: #c7d2fe;
     font-size: 11px;
     font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 6px;
+    letter-spacing: .09em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 12px;
-  }
-
-  .step-header-tag.emerald {
-    background: var(--accent-emerald-soft);
-    color: #065f46;
-  }
-
-  .step-header-tag.purple {
-    background: rgba(168, 85, 247, 0.12);
-    color: #7e22ce;
-  }
-
-  .step-title {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--text-primary);
-    margin: 0 0 8px;
-    letter-spacing: -0.01em;
-  }
-
-  .step-desc {
-    font-size: 13.5px;
-    color: var(--text-muted);
-    line-height: 1.55;
-    margin: 0 0 18px;
-  }
-
-  /* Action Buttons */
-  .btn-gradient-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-    color: #ffffff !important;
-    padding: 12px 22px;
-    border-radius: 12px;
-    font-size: 13.5px;
-    font-weight: 800;
-    text-decoration: none;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
-    transition: all 0.2s ease;
-  }
-  .btn-gradient-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
-  }
-
-  .btn-secondary-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    background: #f8fafc;
-    border: 1px solid var(--card-border);
-    color: #334155;
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }
-  .btn-secondary-pill:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    color: var(--text-primary);
-  }
-
-  /* Live Email Result Banner */
-  .email-result-darkbox {
-    background: #0f172a;
-    border: 1.5px solid #1e293b;
-    border-radius: 16px;
-    padding: 20px;
-    color: #ffffff;
-    margin-top: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .email-code-badge {
-    font-family: var(--font-code, 'Fira Code', monospace);
-    font-size: 16px;
-    font-weight: 700;
-    color: #38bdf8;
-    background: rgba(14, 165, 233, 0.12);
-    padding: 4px 10px;
-    border-radius: 6px;
-    letter-spacing: 0.02em;
-    word-break: break-all;
-  }
-
-  /* Channel Segmented Tabs */
-  .channel-tabs-container {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 6px;
     margin-bottom: 18px;
-    -webkit-overflow-scrolling: touch;
   }
-  .channel-tab-btn {
+  .rc-live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 0 4px rgba(52, 211, 153, .16);
+    animation: rcPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes rcPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(52, 211, 153, .16); }
+    50% { box-shadow: 0 0 0 8px rgba(52, 211, 153, .04); }
+  }
+  .rc-hero h1 {
+    margin: 0 0 14px;
+    font-size: clamp(32px, 4.8vw, 56px);
+    line-height: 1.02;
+    letter-spacing: -.045em;
+    font-weight: 850;
+    color: #f8fafc;
+  }
+  .rc-hero h1 em {
+    font-style: normal;
+    background: linear-gradient(100deg, #a5b4fc 0%, #67e8f9 55%, #86efac 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .rc-hero-copy {
+    max-width: 600px;
+    margin: 0 0 24px;
+    color: #b6c2d6;
+    font-size: clamp(14.5px, 1.4vw, 16.5px);
+    line-height: 1.7;
+  }
+  .rc-hero-copy strong { color: #fff; font-weight: 750; }
+  .rc-hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 26px; }
+  .rc-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 9px 15px;
-    border-radius: 10px;
-    font-size: 12.5px;
-    font-weight: 700;
-    border: 1px solid var(--card-border);
-    background: #f8fafc;
-    color: var(--text-muted);
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.2s ease;
-  }
-  .channel-tab-btn:hover {
-    color: var(--text-primary);
-    background: #f1f5f9;
-  }
-  .channel-tab-btn.active {
-    background: var(--brand-blue);
-    color: #ffffff;
-    border-color: var(--brand-blue);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-  }
-
-  /* Tone Selector Pills */
-  .tone-pills-row {
-    display: flex;
-    align-items: center;
+    justify-content: center;
     gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-    padding: 10px 14px;
-    background: #f8fafc;
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-  }
-  .tone-pill-btn {
-    padding: 5px 12px;
-    border-radius: 8px;
-    font-size: 11.5px;
-    font-weight: 700;
-    cursor: pointer;
+    min-height: 46px;
+    padding: 11px 20px;
+    border-radius: 13px;
     border: 1px solid transparent;
-    background: transparent;
-    color: var(--text-muted);
-    transition: all 0.2s ease;
-  }
-  .tone-pill-btn:hover {
-    color: var(--text-primary);
-  }
-  .tone-pill-btn.active {
-    background: #ffffff;
-    color: var(--brand-blue);
-    border-color: #bfdbfe;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.12);
-  }
-
-  /* Studio Customization Inputs */
-  .studio-inputs-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .studio-input-wrap label {
-    display: block;
-    font-size: 11.5px;
+    font-size: 13.5px;
     font-weight: 800;
-    color: #475569;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s ease, background .2s ease, border-color .2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rc-btn:focus-visible, .rc-input:focus-visible, .rc-textarea:focus-visible, .rc-tab:focus-visible, .rc-tone:focus-visible, .rc-link-card:focus-visible {
+    outline: 3px solid rgba(99, 102, 241, .45);
+    outline-offset: 2px;
+  }
+  .rc-btn:hover { transform: translateY(-1px); }
+  .rc-btn:active { transform: translateY(0); }
+  .rc-btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 45%, #4338ca 100%);
+    box-shadow: 0 14px 34px -16px rgba(79, 70, 229, .9), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .rc-btn-primary:hover { box-shadow: 0 18px 38px -16px rgba(79, 70, 229, 1); }
+  .rc-btn-light {
+    color: #0b1220;
+    background: #fff;
+    box-shadow: 0 10px 28px -18px rgba(255,255,255,.5);
+  }
+  .rc-btn-glass {
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, .07);
+    border-color: rgba(148, 163, 184, .28);
+    backdrop-filter: blur(10px);
+  }
+  .rc-btn-glass:hover { background: rgba(255, 255, 255, .12); border-color: rgba(148, 163, 184, .45); }
+  .rc-btn-ghost {
+    color: var(--rc-ink);
+    background: #fff;
+    border-color: var(--rc-line);
+    box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  }
+  .rc-btn-ghost:hover { border-color: var(--rc-line-strong); }
+  .rc-btn-sm { min-height: 36px; padding: 7px 12px; font-size: 12px; border-radius: 10px; }
+  .rc-btn[disabled] { opacity: .55; cursor: not-allowed; transform: none; }
+
+  .rc-proof {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    max-width: 520px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(148, 163, 184, .18);
+  }
+  .rc-proof strong { display: block; color: #fff; font-size: 21px; letter-spacing: -.03em; line-height: 1; }
+  .rc-proof span { display: block; margin-top: 6px; color: #93a3ba; font-size: 11px; font-weight: 650; line-height: 1.35; }
+
+  .rc-job-card {
+    position: relative;
+    border-radius: 22px;
+    border: 1px solid rgba(148, 163, 184, .22);
+    background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.045));
+    backdrop-filter: blur(18px) saturate(140%);
+    padding: 22px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 24px 50px -34px rgba(0,0,0,.8);
+  }
+  .rc-job-top { display: flex; gap: 14px; align-items: center; margin-bottom: 18px; }
+  .rc-avatar {
+    flex: 0 0 auto;
+    width: 52px; height: 52px;
+    border-radius: 15px;
+    display: grid; place-items: center;
+    color: #fff;
+    font-size: 17px; font-weight: 850; letter-spacing: -.03em;
+    background: linear-gradient(145deg, #6366f1, #0ea5e9);
+    box-shadow: 0 12px 28px -14px rgba(14, 165, 233, .8), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .rc-kicker { display: block; color: #93c5fd; font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; }
+  .rc-job-card h2 { margin: 0; color: #fff; font-size: 17px; line-height: 1.3; letter-spacing: -.02em; font-weight: 800; }
+  .rc-job-meta { display: flex; flex-wrap: wrap; gap: 7px; }
+  .rc-meta-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 9px; border-radius: 8px;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(148,163,184,.18);
+    color: #cbd5e1; font-size: 11px; font-weight: 650;
+  }
+  .rc-job-rule { height: 1px; background: rgba(148,163,184,.18); margin: 18px 0; }
+  .rc-source-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 11.5px; color: #94a3b8; }
+  .rc-source-line a { color: #93c5fd; text-decoration: none; font-weight: 750; }
+  .rc-source-line a:hover { text-decoration: underline; }
+  .rc-mini-status { display: inline-flex; align-items: center; gap: 6px; color: #a7f3d0; font-weight: 700; }
+  .rc-mini-status svg { width: 14px; height: 14px; }
+
+  /* ── Shared section chrome ────────────────────────────── */
+  .rc-section { margin-bottom: 26px; }
+  .rc-section-head {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    margin: 0 4px 14px;
+  }
+  .rc-section-label {
+    display: inline-flex; align-items: center; gap: 7px;
+    color: var(--rc-brand); font-size: 11px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase;
     margin-bottom: 6px;
   }
-  .studio-input-wrap input {
-    width: 100%;
-    background: #f8fafc;
-    border: 1.5px solid var(--card-border);
-    border-radius: 10px;
-    padding: 10px 12px;
-    font-size: 13px;
-    color: var(--text-primary);
-    font-weight: 600;
-    outline: none;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-  }
-  .studio-input-wrap input:focus {
-    border-color: var(--brand-blue);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-  }
+  .rc-section-head h2 { margin: 0; font-size: clamp(22px, 2.6vw, 30px); letter-spacing: -.035em; line-height: 1.15; font-weight: 820; }
+  .rc-section-head p { margin: 6px 0 0; color: var(--rc-muted); font-size: 13.5px; line-height: 1.55; max-width: 640px; }
 
-  /* Pitch Textarea Container */
-  .pitch-box-wrap {
-    position: relative;
-    margin-bottom: 16px;
-  }
-  .pitch-textarea {
-    width: 100%;
-    background: #f8fafc;
-    border: 1.5px solid var(--card-border);
-    border-radius: 14px;
-    padding: 14px 16px;
-    color: var(--text-primary);
-    font-size: 13.5px;
-    font-family: var(--font-sans, system-ui, sans-serif);
-    line-height: 1.6;
-    resize: vertical;
-    outline: none;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-  }
-  .pitch-textarea:focus {
-    background: #ffffff;
-    border-color: var(--brand-blue);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-  }
-
-  /* Action Buttons Toolbar */
-  .studio-action-toolbar {
+  .rc-console {
     display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.18fr);
+    gap: 0;
+    background: var(--rc-card);
+    border: 1px solid var(--rc-line);
+    border-radius: var(--rc-radius);
+    box-shadow: var(--rc-shadow);
+    overflow: hidden;
+  }
+  .rc-console-pane { padding: clamp(20px, 2.6vw, 30px); }
+  .rc-console-pane + .rc-console-pane { border-left: 1px solid var(--rc-line); background: linear-gradient(180deg, #fcfcff, #f8f9fe); }
+  .rc-pane-title { margin: 0 0 4px; font-size: 17px; letter-spacing: -.02em; font-weight: 820; }
+  .rc-pane-sub { margin: 0 0 20px; color: var(--rc-muted); font-size: 12.5px; line-height: 1.55; }
+
+  .rc-field { margin-bottom: 15px; }
+  .rc-label {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin-bottom: 7px; color: var(--rc-ink-soft); font-size: 11.5px; font-weight: 800; letter-spacing: .02em;
+  }
+  .rc-label .rc-hint { color: var(--rc-faint); font-size: 10.5px; font-weight: 600; letter-spacing: 0; }
+  .rc-input-wrap { position: relative; }
+  .rc-input {
+    width: 100%; min-height: 46px;
+    border: 1px solid var(--rc-line-strong);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--rc-ink);
+    padding: 11px 13px;
+    font-size: 13.5px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .rc-input::placeholder { color: #9aa3b5; }
+  .rc-input:hover { border-color: rgba(15,23,42,.26); }
+  .rc-input:focus { border-color: rgba(79,70,229,.7); box-shadow: 0 0 0 4px rgba(79,70,229,.10); }
+  .rc-input[readonly] { background: #f8fafc; color: var(--rc-muted); cursor: default; }
+  .rc-input-icon { padding-left: 39px; }
+  .rc-input-icon + .rc-field-icon {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    width: 17px; height: 17px; color: #94a3b8; pointer-events: none;
+  }
+  .rc-or {
+    display: flex; align-items: center; gap: 12px;
+    margin: 2px 0 16px; color: var(--rc-faint);
+    font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  }
+  .rc-or::before, .rc-or::after { content: ""; flex: 1; height: 1px; background: var(--rc-line); }
+
+  .rc-toggle {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 13px; margin: 4px 0 16px;
+    border-radius: 12px;
+    border: 1px solid var(--rc-line);
+    background: #fbfcff;
+    cursor: pointer;
+  }
+  .rc-toggle input { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--rc-brand); flex: 0 0 auto; }
+  .rc-toggle strong { display: block; font-size: 12.5px; font-weight: 750; color: var(--rc-ink-soft); }
+  .rc-toggle span { display: block; margin-top: 2px; color: var(--rc-muted); font-size: 11px; line-height: 1.45; }
+
+  .rc-search-btn { width: 100%; min-height: 49px; }
+  .rc-form-note { margin: 11px 0 0; color: var(--rc-faint); font-size: 10.5px; line-height: 1.5; }
+  .rc-form-note strong { color: var(--rc-ink-soft); }
+
+  .rc-source-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 17px; }
+  .rc-source-chip {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 9px; border-radius: 9px;
+    border: 1px solid var(--rc-line);
+    background: #fff;
+    color: var(--rc-muted);
+    font-size: 10.5px; font-weight: 700;
+  }
+  .rc-source-chip .rc-source-dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; flex: 0 0 auto; }
+  .rc-source-chip.is-on .rc-source-dot { background: var(--rc-green); box-shadow: 0 0 0 3px rgba(4,120,87,.10); }
+  .rc-source-chip svg { width: 13px; height: 13px; color: #64748b; flex: 0 0 auto; }
+
+  /* ── Results pane ─────────────────────────────────────── */
+  .rc-result-pane { min-height: 430px; display: flex; flex-direction: column; }
+  .rc-state { flex: 1; display: flex; flex-direction: column; }
+  .rc-state[hidden] { display: none !important; }
+
+  .rc-idle {
+    justify-content: center; align-items: center; text-align: center;
+    padding: 18px 4px;
+  }
+  .rc-radar {
+    position: relative; width: 106px; height: 106px; margin: 0 auto 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(79,70,229,.18);
+    background: radial-gradient(circle, rgba(79,70,229,.10), transparent 67%);
+    display: grid; place-items: center;
+  }
+  .rc-radar::before, .rc-radar::after {
+    content: ""; position: absolute; border-radius: 50%; border: 1px solid rgba(79,70,229,.14);
+  }
+  .rc-radar::before { inset: 15px; }
+  .rc-radar::after { inset: 31px; }
+  .rc-radar-sweep {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from 0deg, rgba(79,70,229,.38), transparent 62%);
+    animation: rcSpin 3.6s linear infinite;
+    mask-image: radial-gradient(circle, transparent 28%, #000 29%);
+  }
+  @keyframes rcSpin { to { transform: rotate(360deg); } }
+  .rc-radar svg { position: relative; z-index: 1; width: 27px; height: 27px; color: var(--rc-brand); }
+  .rc-idle h3 { margin: 0 0 7px; font-size: 18px; letter-spacing: -.025em; font-weight: 820; }
+  .rc-idle p { margin: 0 auto; max-width: 330px; color: var(--rc-muted); font-size: 12.5px; line-height: 1.6; }
+  .rc-idle-steps {
+    display: grid; gap: 8px; width: 100%; max-width: 360px; margin: 22px auto 0; text-align: left;
+  }
+  .rc-idle-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 11px; border-radius: 10px;
+    border: 1px solid var(--rc-line);
+    background: rgba(255,255,255,.75);
+    color: var(--rc-muted); font-size: 11.5px; font-weight: 650;
+  }
+  .rc-idle-step b {
+    flex: 0 0 auto; width: 21px; height: 21px; border-radius: 7px;
+    display: grid; place-items: center;
+    background: #eef2ff; color: var(--rc-brand-deep);
+    font-size: 10px; font-weight: 850;
+  }
+
+  .rc-loading { justify-content: center; padding: 18px 4px; }
+  .rc-loading-card {
+    width: 100%; max-width: 390px; margin: 0 auto;
+    padding: 20px; border-radius: 16px;
+    border: 1px solid var(--rc-line);
+    background: #fff;
+    box-shadow: 0 18px 44px -34px rgba(15,23,42,.38);
+  }
+  .rc-spinner-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .rc-spinner {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: conic-gradient(from 0deg, #4f46e5, #0ea5e9, #4f46e5);
+    mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 0);
+    animation: rcSpin 1s linear infinite;
+    flex: 0 0 auto;
+  }
+  .rc-loading-card h3 { margin: 0; font-size: 14px; font-weight: 820; letter-spacing: -.02em; }
+  .rc-loading-card p { margin: 3px 0 0; color: var(--rc-muted); font-size: 11px; }
+  .rc-skel { height: 11px; border-radius: 6px; margin-top: 10px; background: linear-gradient(90deg, #eef1f7 25%, #f8fafc 50%, #eef1f7 75%); background-size: 200% 100%; animation: rcShimmer 1.5s infinite; }
+  .rc-skel.w-60 { width: 60%; } .rc-skel.w-85 { width: 85%; } .rc-skel.w-40 { width: 40%; }
+  @keyframes rcShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  .rc-progress-list { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+  .rc-progress-list li { display: flex; align-items: center; gap: 8px; color: var(--rc-faint); font-size: 11px; font-weight: 650; }
+  .rc-progress-list li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; }
+  .rc-progress-list li.is-active { color: var(--rc-brand-deep); }
+  .rc-progress-list li.is-active::before { background: var(--rc-brand); box-shadow: 0 0 0 3px rgba(79,70,229,.12); animation: rcPulse 1.8s infinite; }
+
+  .rc-result-head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    margin-bottom: 15px;
+  }
+  .rc-result-head h3 { margin: 0 0 3px; font-size: 18px; letter-spacing: -.025em; font-weight: 830; }
+  .rc-result-head p { margin: 0; color: var(--rc-muted); font-size: 11.5px; line-height: 1.5; }
+  .rc-status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    flex: 0 0 auto; padding: 5px 9px; border-radius: 999px;
+    font-size: 9.5px; font-weight: 850; letter-spacing: .07em; text-transform: uppercase;
+    border: 1px solid transparent;
+  }
+  .rc-status-pill.found { background: var(--rc-green-soft); color: var(--rc-green); border-color: #a7f3d0; }
+  .rc-status-pill.team { background: #f1f5f9; color: #475569; border-color: #dbe3ee; }
+  .rc-status-pill.none { background: var(--rc-amber-soft); color: var(--rc-amber); border-color: #fde68a; }
+  .rc-status-pill.error { background: var(--rc-red-soft); color: var(--rc-red); border-color: #fecaca; }
+
+  .rc-best-card {
+    position: relative;
+    border-radius: 17px;
+    border: 1px solid rgba(79, 70, 229, .16);
+    background:
+      radial-gradient(600px 200px at 100% 0%, rgba(99,102,241,.10), transparent 60%),
+      linear-gradient(160deg, #0d1528, #111c35);
+    color: #fff;
+    padding: 18px;
+    margin-bottom: 13px;
+    box-shadow: 0 22px 44px -32px rgba(13, 21, 40, .9);
+  }
+  .rc-best-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+  .rc-best-label { color: #94a3b8; font-size: 9.5px; font-weight: 850; letter-spacing: .11em; text-transform: uppercase; }
+  .rc-conf {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 9px; font-weight: 850; letter-spacing: .05em; text-transform: uppercase;
+  }
+  .rc-conf.high { background: rgba(16,185,129,.16); color: #6ee7b7; border: 1px solid rgba(16,185,129,.28); }
+  .rc-conf.medium { background: rgba(245,158,11,.14); color: #fcd34d; border: 1px solid rgba(245,158,11,.26); }
+  .rc-conf.team { background: rgba(148,163,184,.16); color: #cbd5e1; border: 1px solid rgba(148,163,184,.26); }
+  .rc-best-email {
+    display: block;
+    margin: 0 0 9px;
+    font-family: var(--rc-mono);
+    font-size: clamp(15px, 2.1vw, 20px);
+    font-weight: 700;
+    color: #e0e7ff;
+    letter-spacing: -.02em;
+    word-break: break-all;
+    text-decoration: none;
+  }
+  .rc-best-email:hover { color: #fff; text-decoration: underline; }
+  .rc-best-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #94a3b8; font-size: 10.5px; font-weight: 600; }
+  .rc-best-meta .rc-ok { color: #6ee7b7; display: inline-flex; align-items: center; gap: 4px; }
+  .rc-best-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .rc-best-actions .rc-btn { min-height: 34px; padding: 7px 11px; border-radius: 9px; font-size: 11px; }
+  .rc-best-source { display: inline-flex; align-items: center; gap: 5px; color: #93c5fd; font-size: 9.5px; font-weight: 700; text-decoration: none; margin-top: 10px; }
+  .rc-best-source:hover { text-decoration: underline; }
+
+  .rc-list-label { margin: 16px 0 8px; color: var(--rc-faint); font-size: 9.5px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+  .rc-email-list { display: grid; gap: 8px; }
+  .rc-email-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px;
+    align-items: center;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--rc-line);
+    background: #fff;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
   }
-
-  @media (max-width: 768px) {
-    .studio-inputs-grid {
-      grid-template-columns: 1fr;
-    }
-    .studio-action-toolbar {
-      grid-template-columns: 1fr;
-    }
-    .email-result-actions {
-      width: 100%;
-      display: grid !important;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
+  .rc-email-item:hover { border-color: rgba(79,70,229,.28); box-shadow: 0 12px 26px -22px rgba(79,70,229,.45); transform: translateY(-1px); }
+  .rc-email-main { min-width: 0; }
+  .rc-email-address {
+    display: block; color: var(--rc-ink); font-family: var(--rc-mono); font-size: 12px; font-weight: 700;
+    word-break: break-all; text-decoration: none;
   }
+  .rc-email-address:hover { color: var(--rc-brand); text-decoration: underline; }
+  .rc-email-sub { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 4px; color: var(--rc-faint); font-size: 9.5px; font-weight: 650; }
+  .rc-email-sub a { color: var(--rc-brand); text-decoration: none; }
+  .rc-email-sub a:hover { text-decoration: underline; }
+  .rc-email-actions { display: flex; gap: 5px; }
+  .rc-icon-btn {
+    width: 31px; height: 31px; border-radius: 8px;
+    display: grid; place-items: center;
+    border: 1px solid var(--rc-line);
+    background: #fbfcff; color: #475569;
+    cursor: pointer; transition: all .18s ease;
+  }
+  .rc-icon-btn:hover { color: var(--rc-brand); border-color: rgba(79,70,229,.3); background: #eef2ff; }
+  .rc-icon-btn svg { width: 14px; height: 14px; }
+  .rc-icon-btn.is-done { color: var(--rc-green); border-color: #a7f3d0; background: var(--rc-green-soft); }
 
-  @media (max-width: 640px) {
-    .recruiter-container {
-      padding: 16px 12px 60px;
-    }
-    .step-card {
-      padding: 20px 16px;
-      border-radius: 16px;
-    }
-    .job-summary-header {
-      padding: 18px 16px;
-      border-radius: 16px;
-    }
-    .btn-gradient-primary {
-      width: 100%;
-    }
-    .step-title {
-      font-size: 18px;
+  .rc-empty-note {
+    padding: 15px;
+    border-radius: 13px;
+    border: 1px solid #fde68a;
+    background: var(--rc-amber-soft);
+    color: #78350f;
+  }
+  .rc-empty-note h4 { margin: 0 0 5px; font-size: 13px; font-weight: 820; display: flex; align-items: center; gap: 7px; }
+  .rc-empty-note p { margin: 0; font-size: 11px; line-height: 1.55; }
+  .rc-empty-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+  .rc-empty-actions a { display: inline-flex; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 7px; background: #fff; border: 1px solid #fcd34d; color: #92400e; font-size: 10px; font-weight: 750; text-decoration: none; }
+  .rc-empty-actions a:hover { background: #fffbeb; }
+
+  .rc-checked { margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 5px; }
+  .rc-checked-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 7px; border-radius: 6px;
+    background: #f1f5f9; border: 1px solid #e2e8f0;
+    color: #64748b; font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .rc-checked-chip::before { content: "✓"; color: var(--rc-green); font-weight: 900; }
+
+  .rc-errors { margin-top: 11px; }
+  .rc-errors summary { cursor: pointer; color: var(--rc-faint); font-size: 10px; font-weight: 700; }
+  .rc-errors ul { margin: 6px 0 0; padding-left: 16px; color: var(--rc-faint); font-size: 10px; line-height: 1.5; }
+
+  .rc-error-box {
+    margin: auto 0;
+    padding: 16px; border-radius: 13px;
+    border: 1px solid #fecaca; background: var(--rc-red-soft);
+    color: #7f1d1d;
+  }
+  .rc-error-box h4 { margin: 0 0 5px; font-size: 13px; font-weight: 820; }
+  .rc-error-box p { margin: 0 0 11px; font-size: 11px; line-height: 1.5; }
+
+  /* ── Sourcing rail ────────────────────────────────────── */
+  .rc-rail {
+    background: var(--rc-card);
+    border: 1px solid var(--rc-line);
+    border-radius: var(--rc-radius);
+    padding: clamp(20px, 2.6vw, 28px);
+    box-shadow: var(--rc-shadow);
+  }
+  .rc-rail-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .rc-rail-head h2 { margin: 0; font-size: 19px; letter-spacing: -.025em; font-weight: 820; }
+  .rc-rail-head p { margin: 4px 0 0; color: var(--rc-muted); font-size: 11.5px; }
+  .rc-link-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+  .rc-link-card {
+    display: flex; align-items: center; gap: 11px;
+    padding: 12px 13px;
+    border-radius: 13px;
+    border: 1px solid var(--rc-line);
+    background: linear-gradient(180deg, #fff, #fbfcff);
+    text-decoration: none;
+    color: var(--rc-ink);
+    transition: transform .22s cubic-bezier(.16,1,.3,1), border-color .2s ease, box-shadow .2s ease;
+  }
+  .rc-link-card:hover { transform: translateY(-2px); border-color: rgba(79,70,229,.3); box-shadow: 0 16px 32px -26px rgba(79,70,229,.55); }
+  .rc-link-ico {
+    flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px;
+    display: grid; place-items: center;
+    background: #eef2ff; color: var(--rc-brand-deep);
+  }
+  .rc-link-ico svg { width: 16px; height: 16px; }
+  .rc-link-card.linkedin .rc-link-ico { background: #e8f4fb; color: #0077b5; }
+  .rc-link-card.gmail .rc-link-ico { background: #fef2f2; color: #dc2626; }
+  .rc-link-card.github .rc-link-ico { background: #f1f5f9; color: #111827; }
+  .rc-link-card.web .rc-link-ico { background: #fff7ed; color: #c2410c; }
+  .rc-link-text { min-width: 0; }
+  .rc-link-text strong { display: block; font-size: 12px; font-weight: 800; letter-spacing: -.01em; }
+  .rc-link-text span { display: block; margin-top: 2px; color: var(--rc-faint); font-size: 9.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── Composer ─────────────────────────────────────────── */
+  .rc-composer {
+    background: var(--rc-card);
+    border: 1px solid var(--rc-line);
+    border-radius: var(--rc-radius);
+    box-shadow: var(--rc-shadow);
+    overflow: hidden;
+  }
+  .rc-composer-top {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding: clamp(20px, 2.6vw, 28px);
+    border-bottom: 1px solid var(--rc-line);
+    background: linear-gradient(180deg, #fcfcff, #fff);
+  }
+  .rc-composer-top h2 { margin: 0 0 5px; font-size: 20px; letter-spacing: -.03em; font-weight: 830; }
+  .rc-composer-top p { margin: 0; color: var(--rc-muted); font-size: 12px; line-height: 1.55; max-width: 580px; }
+  .rc-tabs { display: flex; gap: 5px; flex-wrap: wrap; padding: 4px; border-radius: 11px; background: #f1f5f9; border: 1px solid var(--rc-line); }
+  .rc-tab {
+    border: 0; background: transparent; color: #64748b;
+    padding: 7px 10px; border-radius: 8px;
+    font-size: 10.5px; font-weight: 750; font-family: inherit; cursor: pointer;
+    transition: all .18s ease; white-space: nowrap;
+  }
+  .rc-tab:hover { color: var(--rc-ink); }
+  .rc-tab.is-active { background: #fff; color: var(--rc-brand-deep); box-shadow: 0 2px 7px rgba(15,23,42,.08); }
+  .rc-composer-grid { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); }
+  .rc-composer-controls { padding: clamp(20px, 2.6vw, 28px); border-right: 1px solid var(--rc-line); }
+  .rc-composer-preview { padding: clamp(20px, 2.6vw, 28px); background: linear-gradient(180deg, #fcfcff, #f9fafe); display: flex; flex-direction: column; }
+  .rc-tone-row { display: flex; gap: 5px; flex-wrap: wrap; margin: 8px 0 18px; }
+  .rc-tone {
+    border: 1px solid var(--rc-line); background: #fff; color: var(--rc-muted);
+    padding: 6px 9px; border-radius: 8px; font-size: 10px; font-weight: 750; font-family: inherit; cursor: pointer;
+    transition: all .18s ease;
+  }
+  .rc-tone:hover { border-color: var(--rc-line-strong); color: var(--rc-ink); }
+  .rc-tone.is-active { background: #eef2ff; border-color: #c7d2fe; color: var(--rc-brand-deep); }
+  .rc-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+  .rc-preview-head span { color: var(--rc-faint); font-size: 9.5px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+  .rc-count { padding: 3px 7px; border-radius: 5px; background: var(--rc-green-soft); color: var(--rc-green); border: 1px solid #a7f3d0; font-size: 9.5px; font-weight: 800; }
+  .rc-count.is-warn { background: var(--rc-amber-soft); color: var(--rc-amber); border-color: #fde68a; }
+  .rc-textarea {
+    width: 100%; min-height: 230px; resize: vertical;
+    border: 1px solid var(--rc-line-strong); border-radius: 13px;
+    background: #fff; color: var(--rc-ink-soft);
+    padding: 14px; font-size: 12.5px; line-height: 1.65; font-family: inherit;
+    outline: none; transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .rc-textarea:focus { border-color: rgba(79,70,229,.7); box-shadow: 0 0 0 4px rgba(79,70,229,.10); }
+  .rc-preview-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 11px; }
+  .rc-composer-note { margin: 12px 0 0; color: var(--rc-faint); font-size: 10px; line-height: 1.55; }
+
+  /* ── Playbook ─────────────────────────────────────────── */
+  .rc-playbook { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .rc-play-card {
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--rc-line);
+    background: var(--rc-card);
+    box-shadow: var(--rc-shadow);
+  }
+  .rc-play-num {
+    display: inline-grid; place-items: center;
+    width: 27px; height: 27px; border-radius: 8px;
+    background: #eef2ff; color: var(--rc-brand-deep);
+    font-size: 11px; font-weight: 850; margin-bottom: 12px;
+  }
+  .rc-play-card h3 { margin: 0 0 5px; font-size: 14px; letter-spacing: -.02em; font-weight: 820; }
+  .rc-play-card p { margin: 0; color: var(--rc-muted); font-size: 11.5px; line-height: 1.6; }
+  .rc-honesty {
+    grid-column: 1 / -1;
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    border: 1px solid rgba(79,70,229,.16);
+    background: linear-gradient(135deg, #eef2ff, #f8fafc 60%, #ecfeff);
+  }
+  .rc-honesty-ico { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: #fff; color: var(--rc-brand); border: 1px solid rgba(79,70,229,.16); }
+  .rc-honesty-ico svg { width: 18px; height: 18px; }
+  .rc-honesty h3 { margin: 0 0 4px; font-size: 14px; font-weight: 830; letter-spacing: -.02em; }
+  .rc-honesty p { margin: 0; color: var(--rc-muted); font-size: 11.5px; line-height: 1.6; max-width: 900px; }
+
+  .rc-footer-cta {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding: 20px 22px; border-radius: 18px;
+    background: linear-gradient(135deg, #0b1220, #17223b);
+    color: #fff;
+    box-shadow: var(--rc-shadow);
+    margin-top: 26px;
+  }
+  .rc-footer-cta strong { display: block; font-size: 14px; font-weight: 820; letter-spacing: -.02em; }
+  .rc-footer-cta span { display: block; margin-top: 3px; color: #94a3b8; font-size: 11px; }
+  .rc-footer-cta .rc-btn { min-height: 38px; padding: 8px 14px; font-size: 11.5px; }
+
+  @media (max-width: 1024px) {
+    .rc-hero-grid { grid-template-columns: 1fr; }
+    .rc-job-card { max-width: 560px; }
+    .rc-console { grid-template-columns: 1fr; }
+    .rc-console-pane + .rc-console-pane { border-left: 0; border-top: 1px solid var(--rc-line); }
+    .rc-result-pane { min-height: 380px; }
+    .rc-composer-grid { grid-template-columns: 1fr; }
+    .rc-composer-controls { border-right: 0; border-bottom: 1px solid var(--rc-line); }
+    .rc-link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 720px) {
+    .rc-page { padding: 18px 12px 74px; }
+    .rc-hero { border-radius: 22px; }
+    .rc-proof { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .rc-proof strong { font-size: 18px; }
+    .rc-playbook { grid-template-columns: 1fr; }
+    .rc-honesty { grid-column: auto; }
+    .rc-link-grid { grid-template-columns: 1fr; }
+    .rc-composer-top { flex-direction: column; }
+  }
+  @media (max-width: 480px) {
+    .rc-source-grid { grid-template-columns: 1fr; }
+    .rc-email-item { grid-template-columns: 1fr; }
+    .rc-email-actions { justify-content: flex-end; }
+    .rc-proof span { font-size: 10px; }
+    .rc-btn { width: 100%; }
+    .rc-hero-actions .rc-btn { width: 100%; }
+    .rc-best-actions .rc-btn { width: auto; }
+    .rc-footer-cta .rc-btn { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rc-page *, .rc-page *::before, .rc-page *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+      scroll-behavior: auto !important;
     }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="recruiter-container">
+<div class="rc-page">
+  <div class="rc-wrap">
 
-  <!-- Top Navigation & Breadcrumbs -->
-  <div class="recruiter-breadcrumb-bar">
-    <a href="{{ job_detail_url }}" class="btn-back-pill">
-      <i data-lucide="arrow-left" style="width: 15px; height: 15px;"></i>
-      <span>Back to Job Details</span>
-    </a>
-    <a href="{{ job_detail_url }}" class="btn-view-job">
-      <span>View Full Job Requirements ↗</span>
-    </a>
-  </div>
-
-  <!-- Job Header Card -->
-  <div class="job-summary-header">
-    <div style="flex: 1; min-width: 250px;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
-        <span style="font-size: 12px; font-weight: 800; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.05em;">
-          {{ clean_company_name }}
-        </span>
-        <span class="job-badge-pill">
-          <i data-lucide="map-pin" style="width: 12px; height: 12px;"></i>
-          <span>{{ job.location|default:"India" }}</span>
-        </span>
-        <span class="job-badge-pill">
-          <i data-lucide="briefcase" style="width: 12px; height: 12px;"></i>
-          <span>{{ job.get_work_mode_display|default:job.job_type|default:"Full-Time" }}</span>
-        </span>
-        {% if job.stipend_salary %}
-        <span class="job-badge-pill" style="color: #047857; background: #ecfdf5;">
-          <i data-lucide="badge-dollar-sign" style="width: 12px; height: 12px;"></i>
-          <span>{{ job.stipend_salary }}</span>
-        </span>
-        {% endif %}
-      </div>
-      <h1 style="font-size: 24px; font-weight: 900; color: var(--text-primary); margin: 0 0 6px; letter-spacing: -0.02em;">
-        Direct Recruiter Outreach &amp; Email Hub
-      </h1>
-      <p style="font-size: 14px; color: var(--text-muted); margin: 0;">
-        Role: <strong style="color: var(--text-primary);">{{ job.title }}</strong> &bull; Skip candidate queues by connecting directly with talent leads.
-      </p>
-    </div>
-  </div>
-
-  <!-- STEP 1: GOOGLE X-RAY SEARCH -->
-  <div class="step-card">
-    <div class="step-header-tag">
-      <i data-lucide="search" style="width: 13px; height: 13px;"></i>
-      <span>Step 1 • Zero-Limit LinkedIn Sourcing</span>
-    </div>
-    <h2 class="step-title">
-      Find {{ clean_company_name }} Recruiters on LinkedIn
-    </h2>
-    <p class="step-desc">
-      Google X-Ray searches the entire public LinkedIn index directly using boolean syntax. It completely bypasses LinkedIn login walls, commercial monthly search limits, and blurred profiles.
-    </p>
-
-    <div style="background: #f8fafc; border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 16px; margin-bottom: 18px;">
-      <div style="font-size: 11.5px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 6px;">
-        💡 Precision Query Format:
-      </div>
-      <code style="font-size: 12px; color: #0284c7; word-break: break-all; font-family: var(--font-code);">
-        site:linkedin.com/in "{{ clean_company_name }}" (recruiter OR "talent acquisition" OR "technical recruiter" OR "hiring manager")
-      </code>
-    </div>
-
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-      <a href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" class="btn-gradient-primary">
-        <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
-        <span>Open Google X-Ray Search for {{ clean_company_name }} ↗</span>
+    <!-- Breadcrumb -->
+    <nav class="rc-breadcrumb" aria-label="Breadcrumb">
+      <a href="{{ job_detail_url }}" class="rc-back">
+        <i data-lucide="arrow-left" style="width:15px;height:15px;"></i>
+        <span>Back to job details</span>
       </a>
-      <span style="font-size: 12.5px; color: var(--text-muted);">
-        Copy any recruiter profile URL you find, then paste it in Step 2 below ↓
-      </span>
-    </div>
-  </div>
-
-  <!-- STEP 2: PROFILE-TO-ORIGINAL-EMAIL EXTRACTOR -->
-  <div class="step-card">
-    <div class="step-header-tag emerald">
-      <i data-lucide="mail-check" style="width: 13px; height: 13px;"></i>
-      <span>Step 2 • Original Email ID Extractor</span>
-    </div>
-    <h2 class="step-title">
-      Paste Recruiter Profile ➔ Get Original Email ID
-    </h2>
-    <p class="step-desc">
-      Paste any recruiter's LinkedIn profile URL below. Our engine resolves their verified name, company email domain (<strong style="color: var(--text-primary);">{{ company_domain }}</strong>), and returns their individual corporate email.
-    </p>
-
-    <!-- Interactive URL Input Group -->
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <div style="flex: 1; min-width: 260px; position: relative;">
-        <input 
-          type="text" 
-          id="targetLinkedInUrl" 
-          placeholder="Paste recruiter LinkedIn profile (e.g. https://www.linkedin.com/in/recruiter-name/)" 
-          oninput="handleProfileInputDebounced()" 
-          style="width: 100%; background: #f8fafc; border: 1.5px solid var(--card-border); border-radius: 12px; padding: 12px 14px; font-size: 13px; color: var(--text-primary); outline: none; box-sizing: border-box;"
-        >
+      <div class="rc-breadcrumb-meta">
+        <span class="rc-dot" aria-hidden="true"></span>
+        <span>Public-source discovery · No guessed emails</span>
       </div>
-      <button type="button" id="btnGetOriginalEmail" onclick="fetchOriginalRecruiterEmail()" class="btn-gradient-primary" style="padding: 12px 18px;">
-        <i data-lucide="zap" style="width: 15px; height: 15px;"></i>
-        <span>Get Original Email</span>
-      </button>
-    </div>
+    </nav>
 
-    <!-- Live Original Email Result Box -->
-    <div id="emailResultBox" class="email-result-darkbox">
+    <!-- Hero -->
+    <header class="rc-hero">
+      <div class="rc-hero-grid">
+        <div>
+          <div class="rc-eyebrow"><span class="rc-live-dot" aria-hidden="true"></span> Recruiter Connect Studio</div>
+          <h1>Find a real recruiter.<br><em>Never a guessed email.</em></h1>
+          <p class="rc-hero-copy">
+            Most tools invent <strong>first.last@company.com</strong> and hope it lands. This studio searches the
+            job post, public GitHub metadata, and the open web, then shows you the <strong>source</strong> behind
+            every address. If nothing is public, it tells you that too.
+          </p>
+          <div class="rc-hero-actions">
+            <button type="button" class="rc-btn rc-btn-light" data-rc-scroll="rcConsole">
+              <i data-lucide="search" style="width:16px;height:16px;"></i>
+              Search public sources
+            </button>
+            <a href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" class="rc-btn rc-btn-glass">
+              <i data-lucide="user-search" style="width:16px;height:16px;"></i>
+              Open LinkedIn X-Ray
+              <i data-lucide="arrow-up-right" style="width:14px;height:14px;"></i>
+            </a>
+          </div>
+          <div class="rc-proof" aria-label="What this tool guarantees">
+            <div><strong>0</strong><span>invented email addresses</span></div>
+            <div><strong>5</strong><span>public source types available</span></div>
+            <div><strong>MX</strong><span>mail-domain validation</span></div>
+          </div>
+        </div>
+
+        <aside class="rc-job-card" aria-label="Job summary">
+          <div class="rc-job-top">
+            <div class="rc-avatar" aria-hidden="true">{{ clean_company_name|slice:":2"|upper }}</div>
+            <div>
+              <span class="rc-kicker">{{ clean_company_name }}</span>
+              <h2>{{ job.title }}</h2>
+            </div>
+          </div>
+          <div class="rc-job-meta">
+            <span class="rc-meta-pill"><i data-lucide="map-pin" style="width:12px;height:12px;"></i>{{ job.location|default:"India" }}</span>
+            <span class="rc-meta-pill"><i data-lucide="briefcase" style="width:12px;height:12px;"></i>{{ job.get_job_type_display|default:"Full-Time" }}</span>
+            {% if job.stipend_salary %}
+              <span class="rc-meta-pill" style="color:#a7f3d0;"><i data-lucide="badge-indian-rupee" style="width:12px;height:12px;"></i>{{ job.stipend_salary }}</span>
+            {% endif %}
+          </div>
+          <div class="rc-job-rule"></div>
+          <div class="rc-source-line">
+            <span class="rc-mini-status">
+              <i data-lucide="shield-check"></i>
+              {% if job_contact_emails|length %}Email published in job post{% else %}No email in job post{% endif %}
+            </span>
+            <a href="{{ job_detail_url }}">View role →</a>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <!-- Console -->
+    <section class="rc-section" id="rcConsole" aria-labelledby="rcConsoleTitle">
+      <div class="rc-section-head">
+        <div>
+          <div class="rc-section-label"><i data-lucide="scan-search" style="width:13px;height:13px;"></i> Step 1 · Discovery</div>
+          <h2 id="rcConsoleTitle">Start with a name or a public profile</h2>
+          <p>Paste the LinkedIn profile you found through X-Ray. We resolve their public footprint without logging into LinkedIn or bypassing any wall.</p>
+        </div>
+        <a href="{{ sourcing_links.gmail_search_url }}" target="_blank" rel="noopener noreferrer" class="rc-btn rc-btn-ghost rc-btn-sm">
+          <i data-lucide="mail-search" style="width:14px;height:14px;"></i>
+          Search my Gmail
+        </a>
+      </div>
+
+      <div class="rc-console">
+        <!-- Form -->
+        <div class="rc-console-pane">
+          <h3 class="rc-pane-title">Who are you trying to reach?</h3>
+          <p class="rc-pane-sub">Only public information is used. Nothing is sent to the recruiter from this page.</p>
+
+          <div class="rc-field">
+            <label class="rc-label" for="rcLinkedIn">
+              LinkedIn profile URL
+              <span class="rc-hint">Optional</span>
+            </label>
+            <div class="rc-input-wrap">
+              <i data-lucide="link-2" class="rc-field-icon"></i>
+              <input id="rcLinkedIn" class="rc-input rc-input-icon" type="url" inputmode="url"
+                     placeholder="https://www.linkedin.com/in/recruiter-name/"
+                     value="{{ initial_linkedin }}" autocomplete="off" spellcheck="false"
+                     aria-describedby="rcLinkedInHelp">
+            </div>
+            <div id="rcLinkedInHelp" class="rc-form-note">We parse the public slug for a name. We never fetch the auth-walled profile.</div>
+          </div>
+
+          <div class="rc-or">or</div>
+
+          <div class="rc-field">
+            <label class="rc-label" for="rcName">Recruiter / referrer full name</label>
+            <div class="rc-input-wrap">
+              <i data-lucide="user-round" class="rc-field-icon"></i>
+              <input id="rcName" class="rc-input rc-input-icon" type="text"
+                     placeholder="e.g. Ananya Sharma"
+                     value="{{ initial_name }}" autocomplete="name"
+                     aria-describedby="rcNameHelp">
+            </div>
+            <div id="rcNameHelp" class="rc-form-note">A full name gives the search enough context to avoid false matches.</div>
+          </div>
+
+          <div class="rc-field">
+            <label class="rc-label" for="rcCompany">Hiring company</label>
+            <input id="rcCompany" class="rc-input" type="text" value="{{ clean_company_name }}" readonly>
+          </div>
+
+          <label class="rc-toggle" for="rcDeep">
+            <input id="rcDeep" type="checkbox" checked>
+            <span>
+              <strong>Deep scan public pages</strong>
+              <span>Fetch up to 3 public pages and the employer's careers/contact pages. Adds a few seconds, improves accuracy.</span>
+            </span>
+          </label>
+
+          <button type="button" id="rcSearchBtn" class="rc-btn rc-btn-primary rc-search-btn">
+            <i data-lucide="search" style="width:16px;height:16px;"></i>
+            <span id="rcSearchBtnText">Find public contact details</span>
+          </button>
+          <p class="rc-form-note"><strong>Privacy:</strong> Searches are cached for 6 hours. No recruiter is contacted, and no email is generated from a pattern.</p>
+
+          <div class="rc-source-grid" aria-label="Sources checked">
+            <span class="rc-source-chip is-on"><span class="rc-source-dot"></span><i data-lucide="file-text"></i>Job post</span>
+            <span class="rc-source-chip is-on"><span class="rc-source-dot"></span><i data-lucide="git-branch"></i>GitHub</span>
+            <span class="rc-source-chip is-on"><span class="rc-source-dot"></span><i data-lucide="globe"></i>Open web</span>
+            <span class="rc-source-chip is-on"><span class="rc-source-dot"></span><i data-lucide="building-2"></i>Company site</span>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div class="rc-console-pane rc-result-pane" id="rcResultPane" aria-live="polite">
+          <div class="rc-state rc-idle" id="rcIdle">
+            <div class="rc-radar" aria-hidden="true">
+              <span class="rc-radar-sweep"></span>
+              <i data-lucide="scan-search"></i>
+            </div>
+            <h3>Ready when you are</h3>
+            <p>Add a name or profile URL, then run the search. Every result includes its source, so you can verify before you write.</p>
+            <div class="rc-idle-steps">
+              <div class="rc-idle-step"><b>1</b> Check the job post for a published address</div>
+              <div class="rc-idle-step"><b>2</b> Check public GitHub profile and commit metadata</div>
+              <div class="rc-idle-step"><b>3</b> Search the open web, then verify the domain</div>
+            </div>
+          </div>
+
+          <div class="rc-state rc-loading" id="rcLoading" hidden>
+            <div class="rc-loading-card">
+              <div class="rc-spinner-row">
+                <span class="rc-spinner" aria-hidden="true"></span>
+                <div>
+                  <h3>Searching public sources</h3>
+                  <p id="rcLoadingStatus">Checking the job post…</p>
+                </div>
+              </div>
+              <div class="rc-skel w-85"></div>
+              <div class="rc-skel w-60"></div>
+              <div class="rc-skel w-40"></div>
+              <ul class="rc-progress-list" aria-hidden="true">
+                <li class="is-active" data-rc-progress="job">Job post</li>
+                <li data-rc-progress="github">GitHub metadata</li>
+                <li data-rc-progress="web">Open web + public pages</li>
+                <li data-rc-progress="mx">Domain validation</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="rc-state" id="rcResult" hidden>
+            <div class="rc-result-head">
+              <div>
+                <h3 id="rcResultTitle">Public contact details</h3>
+                <p id="rcResultSubtitle">Source-linked results</p>
+              </div>
+              <span class="rc-status-pill" id="rcStatusPill">Found</span>
+            </div>
+
+            <div id="rcBestWrap"></div>
+            <div id="rcEmptyWrap" hidden></div>
+
+            <div id="rcListWrap" hidden>
+              <div class="rc-list-label">Other public sources</div>
+              <div class="rc-email-list" id="rcEmailList"></div>
+            </div>
+
+            <div class="rc-checked" id="rcChecked" aria-label="Sources checked"></div>
+
+            <details class="rc-errors" id="rcErrorsWrap" hidden>
+              <summary>Search notes</summary>
+              <ul id="rcErrors"></ul>
+            </details>
+          </div>
+
+          <div class="rc-state" id="rcError" hidden>
+            <div class="rc-error-box">
+              <h4>That search did not complete</h4>
+              <p id="rcErrorText">Please try again in a moment.</p>
+              <button type="button" class="rc-btn rc-btn-ghost rc-btn-sm" id="rcRetryBtn">
+                <i data-lucide="refresh-cw" style="width:13px;height:13px;"></i>
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Self-serve sourcing links -->
+    <section class="rc-section" aria-labelledby="rcRailTitle">
+      <div class="rc-rail">
+        <div class="rc-rail-head">
+          <div>
+            <div class="rc-section-label"><i data-lucide="compass" style="width:13px;height:13px;"></i> Step 2 · Verify</div>
+            <h2 id="rcRailTitle">Search it yourself, in one click</h2>
+            <p>These open in your browser. No credentials are stored, and no login wall is bypassed.</p>
+          </div>
+          <span class="rc-checked-chip">Public links only</span>
+        </div>
+        <div class="rc-link-grid">
+          <a class="rc-link-card linkedin" href="{{ sourcing_links.linkedin_people_url }}" target="_blank" rel="noopener noreferrer">
+            <span class="rc-link-ico"><i data-lucide="user-search"></i></span>
+            <span class="rc-link-text"><strong>LinkedIn people search</strong><span>{{ clean_company_name }} · recruiters</span></span>
+          </a>
+          <a class="rc-link-card web" href="{{ sourcing_links.google_xray_url }}" target="_blank" rel="noopener noreferrer">
+            <span class="rc-link-ico"><i data-lucide="search"></i></span>
+            <span class="rc-link-text"><strong>Google X-Ray</strong><span>site:linkedin.com/in</span></span>
+          </a>
+          <a class="rc-link-card gmail" href="{{ sourcing_links.gmail_search_url }}" target="_blank" rel="noopener noreferrer">
+            <span class="rc-link-ico"><i data-lucide="mail-search"></i></span>
+            <span class="rc-link-text"><strong>Search my Gmail</strong><span>Find a prior recruiter thread</span></span>
+          </a>
+          <a class="rc-link-card github" href="{{ sourcing_links.github_search_url }}" target="_blank" rel="noopener noreferrer">
+            <span class="rc-link-ico"><i data-lucide="git-branch"></i></span>
+            <span class="rc-link-text"><strong>GitHub search</strong><span>Profiles and public commits</span></span>
+          </a>
+          <a class="rc-link-card web" href="{{ sourcing_links.bing_search_url }}" target="_blank" rel="noopener noreferrer">
+            <span class="rc-link-ico"><i data-lucide="globe"></i></span>
+            <span class="rc-link-text"><strong>Bing search</strong><span>Name + company + contact</span></span>
+          </a>
+          {% if sourcing_links.company_careers_url %}
+          <a class="rc-link-card web" href="{{ sourcing_links.company_careers_url }}" target="_blank" rel="noopener noreferrer">
+            <span class="rc-link-ico"><i data-lucide="building-2"></i></span>
+            <span class="rc-link-text"><strong>Company careers page</strong><span>{{ company_domain }}/careers</span></span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+
+    <!-- Composer -->
+    <section class="rc-section" aria-labelledby="rcComposerTitle">
+      <div class="rc-composer">
+        <div class="rc-composer-top">
+          <div>
+            <div class="rc-section-label"><i data-lucide="pen-line" style="width:13px;height:13px;"></i> Step 3 · Outreach</div>
+            <h2 id="rcComposerTitle">Write a short, specific note</h2>
+            <p>Recruiters skim. Lead with the role, one proof point, and a clear ask. Everything below stays in your browser.</p>
+          </div>
+          <div class="rc-tabs" role="tablist" aria-label="Outreach channel">
+            <button type="button" class="rc-tab is-active" role="tab" aria-selected="true" data-rc-channel="connect">LinkedIn note</button>
+            <button type="button" class="rc-tab" role="tab" aria-selected="false" data-rc-channel="inmail">InMail</button>
+            <button type="button" class="rc-tab" role="tab" aria-selected="false" data-rc-channel="email">Email</button>
+            <button type="button" class="rc-tab" role="tab" aria-selected="false" data-rc-channel="followup">Follow-up</button>
+          </div>
+        </div>
+
+        <div class="rc-composer-grid">
+          <div class="rc-composer-controls">
+            <div class="rc-field">
+              <label class="rc-label" for="rcCandidateName">Your name</label>
+              <input id="rcCandidateName" class="rc-input" type="text" placeholder="Your name" autocomplete="name">
+            </div>
+            <div class="rc-field">
+              <label class="rc-label" for="rcRecipientName">Recipient name</label>
+              <input id="rcRecipientName" class="rc-input" type="text" placeholder="Recruiter name" value="{{ initial_name }}">
+            </div>
+            <div class="rc-field">
+              <label class="rc-label" for="rcHighlight">One proof point</label>
+              <input id="rcHighlight" class="rc-input" type="text" placeholder="e.g. Django + React portfolio, 2 shipped projects" value="{{ top_skills_text }}">
+            </div>
+
+            <div class="rc-label" style="margin-top:4px;">Tone</div>
+            <div class="rc-tone-row">
+              <button type="button" class="rc-tone is-active" data-rc-tone="direct">Direct</button>
+              <button type="button" class="rc-tone" data-rc-tone="fresher">Early career</button>
+              <button type="button" class="rc-tone" data-rc-tone="senior">Experienced</button>
+            </div>
+
+            <p class="rc-composer-note"><strong>Keep it honest.</strong> Only claim what you can show in a portfolio, GitHub repo, or resume. Replace anything in [brackets] before sending.</p>
+          </div>
+
+          <div class="rc-composer-preview">
+            <div class="rc-preview-head">
+              <span>Live preview</span>
+              <span class="rc-count" id="rcCount">0 / 300</span>
+            </div>
+            <textarea id="rcMessage" class="rc-textarea" spellcheck="true" aria-label="Outreach message preview"></textarea>
+            <div class="rc-preview-actions">
+              <button type="button" class="rc-btn rc-btn-primary rc-btn-sm" id="rcCopyBtn">
+                <i data-lucide="copy" style="width:13px;height:13px;"></i>
+                Copy message
+              </button>
+              <button type="button" class="rc-btn rc-btn-ghost rc-btn-sm" id="rcGmailBtn">
+                <i data-lucide="mail" style="width:13px;height:13px;"></i>
+                Open in Gmail
+              </button>
+              <button type="button" class="rc-btn rc-btn-ghost rc-btn-sm" id="rcMailBtn">
+                <i data-lucide="send" style="width:13px;height:13px;"></i>
+                Mail app
+              </button>
+              <a class="rc-btn rc-btn-ghost rc-btn-sm" id="rcLinkedInBtn" href="{{ sourcing_links.linkedin_people_url }}" target="_blank" rel="noopener noreferrer">
+                <i data-lucide="user-search" style="width:13px;height:13px;"></i>
+                LinkedIn
+              </a>
+            </div>
+            <p class="rc-composer-note" id="rcSendTarget">No public email selected yet. Pick one above to enable Gmail and Mail app.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Playbook -->
+    <section class="rc-section" aria-labelledby="rcPlaybookTitle">
+      <div class="rc-section-head">
+        <div>
+          <div class="rc-section-label"><i data-lucide="book-open-check" style="width:13px;height:13px;"></i> Before you hit send</div>
+          <h2 id="rcPlaybookTitle">A short, honest outreach playbook</h2>
+        </div>
+      </div>
+      <div class="rc-playbook">
+        <article class="rc-play-card">
+          <span class="rc-play-num">01</span>
+          <h3>Verify the source first</h3>
+          <p>Open the source link. If the address belongs to a team inbox or an old page, say so in your note and ask for the right owner.</p>
+        </article>
+        <article class="rc-play-card">
+          <span class="rc-play-num">02</span>
+          <h3>One role, one proof point</h3>
+          <p>Name the job, give one verifiable project or result, and ask one question. Under 120 words beats a full cover letter.</p>
+        </article>
+        <article class="rc-play-card">
+          <span class="rc-play-num">03</span>
+          <h3>Follow up once</h3>
+          <p>Wait three working days. Send one short follow-up, then stop. Persistence is good; pressure is not.</p>
+        </article>
+        <aside class="rc-honesty">
+          <span class="rc-honesty-ico"><i data-lucide="shield-check"></i></span>
+          <div>
+            <h3>Why can't this page just scrape LinkedIn?</h3>
+            <p>LinkedIn profiles sit behind an auth wall, and scraping them violates the platform's terms. Instead, this studio gives you X-Ray search links you can open yourself, then checks whether that person has independently published a contact address in a job post, GitHub metadata, or the open web. When nothing is public, the honest answer is “not found” — not a made-up address that bounces.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="rc-footer-cta">
       <div>
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap;">
-          <span style="font-size: 16px; font-weight: 800; color: #ffffff;" id="displayRecruiterName">
-            {{ active_recruiter.name }}
-          </span>
-          <span style="background: rgba(16, 185, 129, 0.25); color: #34d399; font-size: 10.5px; font-weight: 800; padding: 3px 8px; border-radius: 6px;" id="displayEmailBadge">
-            {% if active_recruiter.verified %}✓ Verified Recruiter Contact{% else %}✓ Original Corporate Recruiter Email{% endif %}
-          </span>
-          <span style="font-size: 12px; color: #94a3b8;" id="displayRecruiterRole">
-            {{ active_recruiter.title }}
-          </span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-          <code class="email-code-badge" id="displayOriginalEmail">
-            {{ active_recruiter.email }}
-          </code>
-        </div>
+        <strong>Still deciding whether to apply?</strong>
+        <span>Review the full role, eligibility, and selection process before you reach out.</span>
       </div>
-
-      <div class="email-result-actions" style="display: flex; gap: 8px;">
-        <button type="button" id="btnCopyEmail" onclick="copyOriginalEmail()" class="btn-secondary-pill" style="background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: #93c5fd;">
-          <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
-          <span>Copy Email</span>
-        </button>
-        <button type="button" onclick="composeEmailToRecruiter()" class="btn-gradient-primary" style="padding: 10px 18px; font-size: 13px;">
-          <i data-lucide="send" style="width: 14px; height: 14px;"></i>
-          <span>Send Mail</span>
-        </button>
-        <button type="button" onclick="syncRecruiterToStudio()" class="btn-secondary-pill" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35); color: #38bdf8;" title="Load this recruiter into the DM studio below">
-          <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-          <span>Sync to DM Studio ↓</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- STEP 3: COLD DM & OUTREACH MESSAGE STUDIO -->
-  <div class="step-card" id="stepOutreachStudio">
-    <div class="step-header-tag purple">
-      <i data-lucide="message-square" style="width: 13px; height: 13px;"></i>
-      <span>Step 3 • Cold DM &amp; Outreach Message Studio</span>
-    </div>
-    <h2 class="step-title">
-      Generate Tailored DM, InMail &amp; Cold Email
-    </h2>
-    <p class="step-desc">
-      Recruiters receive hundreds of generic applications. Stand out with concise, high-signal messages customized for <strong style="color: var(--text-primary);">{{ job.title }}</strong> at <strong style="color: var(--text-primary);">{{ clean_company_name }}</strong>.
-    </p>
-
-    <!-- Channel Selector Tabs -->
-    <div class="channel-tabs-container">
-      <button type="button" class="channel-tab-btn active" id="tabConnect" onclick="switchOutreachChannel('connect')">
-        <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i>
-        <span>LinkedIn Connect (&le; 300 Chars)</span>
-      </button>
-      <button type="button" class="channel-tab-btn" id="tabInmail" onclick="switchOutreachChannel('inmail')">
-        <i data-lucide="message-circle" style="width: 14px; height: 14px;"></i>
-        <span>LinkedIn InMail / DM</span>
-      </button>
-      <button type="button" class="channel-tab-btn" id="tabEmail" onclick="switchOutreachChannel('email')">
-        <i data-lucide="mail" style="width: 14px; height: 14px;"></i>
-        <span>Cold Email to Recruiter</span>
-      </button>
-      <button type="button" class="channel-tab-btn" id="tabWhatsapp" onclick="switchOutreachChannel('whatsapp')">
-        <i data-lucide="phone" style="width: 14px; height: 14px;"></i>
-        <span>WhatsApp / Quick Ping</span>
-      </button>
-      <button type="button" class="channel-tab-btn" id="tabFollowup" onclick="switchOutreachChannel('followup')">
-        <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
-        <span>3-Day Follow-Up</span>
-      </button>
-    </div>
-
-    <!-- Tone Selector Row -->
-    <div class="tone-pills-row">
-      <span style="font-size: 11.5px; font-weight: 800; color: #475569; text-transform: uppercase;">
-        Outreach Tone:
-      </span>
-      <button type="button" id="toneBtnConfident" onclick="setOutreachTone('confident')" class="tone-pill-btn active">
-        ⚡ Confident &amp; Direct
-      </button>
-      <button type="button" id="toneBtnFresher" onclick="setOutreachTone('fresher')" class="tone-pill-btn">
-        🎓 Enthusiastic Fresher
-      </button>
-      <button type="button" id="toneBtnImpact" onclick="setOutreachTone('impact')" class="tone-pill-btn">
-        💼 High-Impact Senior
-      </button>
-
-      <!-- Live Dynamic Character Badge -->
-      <div id="outreachCharBadge" style="margin-left: auto; font-size: 11.5px; font-weight: 800; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px;">
-        242 / 300 chars (Safe for Free LinkedIn)
-      </div>
-    </div>
-
-    <!-- Customization Inputs Bar -->
-    <div class="studio-inputs-grid">
-      <div class="studio-input-wrap">
-        <label for="outreachCandidateName">Your Name:</label>
-        <input type="text" id="outreachCandidateName" value="[Your Name]" oninput="renderOutreachTemplates()">
-      </div>
-      <div class="studio-input-wrap">
-        <label for="outreachRecruiterName">Recruiter Name:</label>
-        <input type="text" id="outreachRecruiterName" value="{{ active_recruiter.name|default:'Hiring Team' }}" oninput="renderOutreachTemplates()">
-      </div>
-      <div class="studio-input-wrap">
-        <label for="outreachProjectFocus">Project / Skill Highlight:</label>
-        <input type="text" id="outreachProjectFocus" value="{{ top_skills_text }}" oninput="renderOutreachTemplates()">
-      </div>
-    </div>
-
-    <!-- Cold Email Subject Box (Visible only for Cold Email tab) -->
-    <div id="emailSubjectContainer" style="display: none; margin-bottom: 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 14px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-        <span style="font-size: 11.5px; font-weight: 800; color: #1e40af; text-transform: uppercase;">
-          Email Subject Line:
-        </span>
-        <button type="button" onclick="copyEmailSubjectOnly()" class="btn-secondary-pill" style="padding: 4px 10px; font-size: 11px;">
-          📋 Copy Subject
-        </button>
-      </div>
-      <input type="text" id="outreachEmailSubject" readonly style="width: 100%; background: #ffffff; border: 1px solid #93c5fd; border-radius: 8px; padding: 8px 12px; color: #1e3a8a; font-size: 13px; font-weight: 700; outline: none; box-sizing: border-box;">
-    </div>
-
-    <!-- Message Textarea -->
-    <div class="pitch-box-wrap">
-      <textarea id="outreachMessageText" rows="7" class="pitch-textarea" spellcheck="false"></textarea>
-    </div>
-
-    <!-- Action Buttons Toolbar -->
-    <div class="studio-action-toolbar">
-      <button type="button" id="btnCopyPitch" onclick="copyOutreachMessage()" class="btn-gradient-primary">
-        <i data-lucide="copy" style="width: 15px; height: 15px;"></i>
-        <span id="btnCopyPitchText">📋 Copy Outreach Pitch</span>
-      </button>
-
-      <a href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" id="btnOpenLinkedIn" class="btn-secondary-pill" style="background: #0077b5; color: #ffffff; border-color: #0077b5;" title="Open Recruiter Search on LinkedIn">
-        <i data-lucide="linkedin" style="width: 15px; height: 15px;"></i>
-        <span>Search on LinkedIn ↗</span>
+      <a href="{{ job_detail_url }}" class="rc-btn rc-btn-light">
+        View full job details
+        <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
       </a>
-
-      <button type="button" onclick="launchDirectEmailClient()" class="btn-secondary-pill" title="Open your email client with pitch prefilled">
-        <i data-lucide="send" style="width: 15px; height: 15px;"></i>
-        <span>Draft in Email Client</span>
-      </button>
     </div>
+
   </div>
-
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-  /* ── GLOBAL STATE & RECRUITER DATA ── */
-  let currentChannel = 'connect';
-  let currentTone = 'confident';
-  let debounceTimeout = null;
+(function () {
+  "use strict";
 
-  const jobMeta = {
+  const API_URL = "{{ recruiter_api_url|escapejs }}";
+  const JOB = {
     title: "{{ job.title|escapejs }}",
     company: "{{ clean_company_name|escapejs }}",
-    domain: "{{ company_domain|default:'company.com'|escapejs }}",
-    skills: "{{ top_skills_text|escapejs }}",
-    jobUrl: "{{ job_detail_url|escapejs }}"
+    domain: "{{ company_domain|escapejs }}",
+    url: "{{ job_detail_url|escapejs }}"
   };
 
-  /* ── STEP 2: PROFILE-TO-EMAIL EXTRACTOR LOGIC ── */
-  function handleProfileInputDebounced() {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-      const val = document.getElementById('targetLinkedInUrl')?.value?.trim();
-      if (val && val.includes('linkedin.com/in/')) {
-        fetchOriginalRecruiterEmail();
-      }
-    }, 450);
+  const $ = (id) => document.getElementById(id);
+  const state = {
+    channel: "connect",
+    tone: "direct",
+    bestEmail: "",
+    running: false,
+    controller: null,
+    loadingTimer: null
+  };
+
+  const ICONS = {
+    copy: '<i data-lucide="copy" style="width:13px;height:13px;"></i>',
+    check: '<i data-lucide="check" style="width:13px;height:13px;"></i>'
+  };
+
+  function refreshIcons() {
+    if (window.lucide) window.lucide.createIcons();
   }
 
-  async function fetchOriginalRecruiterEmail() {
-    const input = document.getElementById('targetLinkedInUrl');
-    const url = input ? input.value.trim() : '';
-    if (!url || !url.includes('linkedin.com/in/')) {
-      if (window.showToast) {
-        window.showToast("⚠️ Please enter a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/recruiter-name/)", "error");
-      } else {
-        alert("Please enter a valid LinkedIn profile URL (e.g. https://www.linkedin.com/in/recruiter-name/)");
-      }
+  function setHidden(el, hidden) {
+    if (!el) return;
+    if (hidden) el.setAttribute("hidden", "");
+    else el.removeAttribute("hidden");
+  }
+
+  function showState(name) {
+    ["rcIdle", "rcLoading", "rcResult", "rcError"].forEach((id) => {
+      setHidden($(id), id !== name);
+    });
+  }
+
+  function toast(message, kind) {
+    if (typeof window.showToast === "function") {
+      window.showToast(message, kind || "success");
       return;
     }
-
-    const btn = document.getElementById('btnGetOriginalEmail');
-    if (btn) {
-      btn.innerHTML = '<span>⏳ Resolving OSINT...</span>';
-      btn.disabled = true;
+    // Lightweight fallback so the page still communicates.
+    let host = $("rcToast");
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "rcToast";
+      host.setAttribute("role", "status");
+      host.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;background:#0b1220;color:#fff;padding:10px 14px;border-radius:10px;font-size:12px;font-weight:700;box-shadow:0 12px 30px rgba(0,0,0,.3);max-width:90vw;";
+      document.body.appendChild(host);
     }
+    host.textContent = message;
+    clearTimeout(host._t);
+    host._t = setTimeout(() => host.remove(), 3200);
+  }
 
+  async function copyText(text, button) {
+    if (!text) return;
     try {
-      const resp = await fetch(`/api/jobs/{{ job.uuid }}/recruiter-intel/?linkedin_url=${encodeURIComponent(url)}`);
-      const res = await resp.json();
-      if (res.status === 'ok' && res.data) {
-        const data = res.data;
-
-        // Update Step 2 Card
-        const nameEl = document.getElementById('displayRecruiterName');
-        if (nameEl) nameEl.innerText = data.name;
-
-        const emailEl = document.getElementById('displayOriginalEmail');
-        if (emailEl) emailEl.innerText = data.email;
-
-        const roleEl = document.getElementById('displayRecruiterRole');
-        if (roleEl) roleEl.innerText = data.title || 'Technical Recruiter';
-
-        const badgeEl = document.getElementById('displayEmailBadge');
-        if (badgeEl) badgeEl.innerText = '✓ ' + (data.status || 'Original Recruiter Email');
-
-        // Automatically update Step 3 Recruiter Name input
-        const recInput = document.getElementById('outreachRecruiterName');
-        if (recInput) {
-          recInput.value = data.name;
-        }
-
-        // Update LinkedIn Profile button in Step 3
-        const liBtn = document.getElementById('btnOpenLinkedIn');
-        if (liBtn) {
-          liBtn.href = data.linkedin_url || url;
-          liBtn.innerHTML = '<i data-lucide="linkedin" style="width: 15px; height: 15px;"></i><span>Open Profile ↗</span>';
-          if (window.lucide) window.lucide.createIcons();
-        }
-
-        renderOutreachTemplates();
-
-        if (window.showToast) {
-          window.showToast(`✅ Recruiter resolved: ${data.name} (${data.email})`, "success");
-        }
-      } else {
-        throw new Error(res.message || "Failed to resolve recruiter email");
-      }
+      await navigator.clipboard.writeText(text);
     } catch (err) {
-      if (window.showToast) {
-        window.showToast(`❌ Error: ${err.message}`, "error");
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      area.remove();
+    }
+    if (button) {
+      const original = button.innerHTML;
+      button.classList.add("is-done");
+      button.innerHTML = ICONS.check + '<span style="margin-left:5px;">Copied</span>';
+      setTimeout(() => {
+        button.classList.remove("is-done");
+        button.innerHTML = original;
+        refreshIcons();
+      }, 1800);
+    }
+    toast("Copied to clipboard", "success");
+  }
+
+  function safeHttpUrl(value) {
+    try {
+      const url = new URL(value, window.location.origin);
+      return (url.protocol === "http:" || url.protocol === "https:") ? url.href : "";
+    } catch (err) {
+      return "";
+    }
+  }
+
+  function sourceLabel(source) {
+    return {
+      job_post: "Job post",
+      github_commit: "GitHub commit",
+      github_profile: "GitHub profile",
+      web: "Public web",
+      company_site: "Company site",
+      user: "Provided"
+    }[source] || "Public source";
+  }
+
+  function confidenceLabel(confidence) {
+    return { high: "Trusted source", medium: "Review source", team: "Team inbox" }[confidence] || "Review source";
+  }
+
+  function humanSource(source) {
+    return {
+      job_post: "Job post",
+      github: "GitHub",
+      web_search: "Open web",
+      company_site: "Company site"
+    }[source] || source;
+  }
+
+  // ── Search ────────────────────────────────────────────────────────────
+  function collectQuery() {
+    const linkedin = ($("rcLinkedIn")?.value || "").trim();
+    const name = ($("rcName")?.value || "").trim();
+    const deep = Boolean($("rcDeep")?.checked);
+    if (!linkedin && !name) {
+      showError("Add a recruiter name or a public LinkedIn profile URL first.");
+      return null;
+    }
+    if (linkedin && !/linkedin\.com\/in\//i.test(linkedin)) {
+      showError("That does not look like a LinkedIn profile URL. Use the /in/ profile link, or just enter a name.");
+      return null;
+    }
+    return { linkedin, name, deep };
+  }
+
+  function setProgress(stage) {
+    const order = ["job", "github", "web", "mx"];
+    const index = order.indexOf(stage);
+    document.querySelectorAll("[data-rc-progress]").forEach((el) => {
+      el.classList.toggle("is-active", order.indexOf(el.dataset.rcProgress) === index);
+    });
+    const labels = {
+      job: "Checking the job post…",
+      github: "Checking public GitHub metadata…",
+      web: "Searching the open web and public pages…",
+      mx: "Validating the mail domain…"
+    };
+    const status = $("rcLoadingStatus");
+    if (status && labels[stage]) status.textContent = labels[stage];
+  }
+
+  function startLoading() {
+    state.running = true;
+    showState("rcLoading");
+    setProgress("job");
+    const btn = $("rcSearchBtn");
+    if (btn) btn.disabled = true;
+    if (btn) $("rcSearchBtnText").textContent = "Searching…";
+    const stages = ["github", "web", "mx"];
+    let i = 0;
+    clearInterval(state.loadingTimer);
+    state.loadingTimer = setInterval(() => {
+      if (i < stages.length) setProgress(stages[i]);
+      i += 1;
+    }, 2600);
+  }
+
+  function stopLoading() {
+    state.running = false;
+    clearInterval(state.loadingTimer);
+    const btn = $("rcSearchBtn");
+    if (btn) btn.disabled = false;
+    if ($("rcSearchBtnText")) $("rcSearchBtnText").textContent = "Find public contact details";
+  }
+
+  async function runSearch(force) {
+    if (state.running) return;
+    const query = collectQuery();
+    if (!query) return;
+
+    if (state.controller) state.controller.abort();
+    state.controller = new AbortController();
+    const timeout = setTimeout(() => state.controller.abort(), 40000);
+
+    startLoading();
+    try {
+      const params = new URLSearchParams();
+      if (query.linkedin) params.set("linkedin_url", query.linkedin);
+      if (query.name) params.set("name", query.name);
+      params.set("deep", query.deep ? "1" : "0");
+      if (force) params.set("refresh", "1");
+
+      const response = await fetch(API_URL + "?" + params.toString(), {
+        headers: { "Accept": "application/json" },
+        signal: state.controller.signal
+      });
+      clearTimeout(timeout);
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || payload.status !== "ok" || !payload.data) {
+        throw new Error(payload.message || "The search service returned an error.");
+      }
+      renderResult(payload.data);
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === "AbortError") {
+        showError("The search timed out. Try again with Deep scan off, or search the sources manually below.");
       } else {
-        alert(`Error: ${err.message}`);
+        showError(err.message || "Network error while searching.");
       }
     } finally {
-      if (btn) {
-        btn.innerHTML = '<i data-lucide="zap" style="width: 15px; height: 15px;"></i><span>Get Original Email</span>';
-        btn.disabled = false;
-        if (window.lucide) window.lucide.createIcons();
-      }
+      stopLoading();
     }
   }
 
-  function copyOriginalEmail() {
-    const emailEl = document.getElementById('displayOriginalEmail');
-    const email = emailEl ? emailEl.innerText.trim() : '';
-    if (!email) return;
-
-    navigator.clipboard.writeText(email).then(() => {
-      const btn = document.getElementById('btnCopyEmail');
-      if (btn) {
-        const orig = btn.innerHTML;
-        btn.innerHTML = '<span>✅ Copied!</span>';
-        setTimeout(() => { btn.innerHTML = orig; if (window.lucide) window.lucide.createIcons(); }, 2000);
-      }
-      if (window.showToast) window.showToast(`📋 Copied: ${email}`, "success");
-    });
+  function showError(message) {
+    showState("rcError");
+    const text = $("rcErrorText");
+    if (text) text.textContent = message;
+    refreshIcons();
   }
 
-  function composeEmailToRecruiter() {
-    const emailEl = document.getElementById('displayOriginalEmail');
-    const email = emailEl ? emailEl.innerText.trim() : '';
-    if (!email) return;
+  // ── Render results ────────────────────────────────────────────────────
+  function renderResult(data) {
+    showState("rcResult");
+    const emails = Array.isArray(data.emails) ? data.emails : [];
+    const best = data.best_email || emails[0] || null;
 
-    const candidateName = document.getElementById('outreachCandidateName')?.value?.trim() || 'Candidate';
-    const subject = `Application: ${jobMeta.title} at ${jobMeta.company} - ${candidateName}`;
-    const body = `Hi,\n\nI noticed the opening for ${jobMeta.title} at ${jobMeta.company} and wanted to reach out directly.\n\nWarm regards,\n${candidateName}`;
-    window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-  }
+    const title = $("rcResultTitle");
+    const subtitle = $("rcResultSubtitle");
+    const pill = $("rcStatusPill");
 
-  function syncRecruiterToStudio() {
-    const nameEl = document.getElementById('displayRecruiterName');
-    const name = nameEl ? nameEl.innerText.trim() : '';
-    if (name) {
-      const recInput = document.getElementById('outreachRecruiterName');
-      if (recInput) recInput.value = name;
-      renderOutreachTemplates();
-    }
-    const studioEl = document.getElementById('stepOutreachStudio');
-    if (studioEl) {
-      studioEl.scrollIntoView({ behavior: 'smooth' });
-    }
-    if (window.showToast) {
-      window.showToast("⚡ Recruiter synced to DM Studio below!", "success");
-    }
-  }
-
-  /* ── STEP 3: COLD DM & OUTREACH MESSAGE STUDIO LOGIC ── */
-  function switchOutreachChannel(channel) {
-    currentChannel = channel;
-    const channels = ['connect', 'inmail', 'email', 'whatsapp', 'followup'];
-    channels.forEach(ch => {
-      const btn = document.getElementById('tab' + ch.charAt(0).toUpperCase() + ch.slice(1));
-      if (btn) {
-        if (ch === channel) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      }
-    });
-
-    const subjContainer = document.getElementById('emailSubjectContainer');
-    if (subjContainer) {
-      subjContainer.style.display = (channel === 'email') ? 'block' : 'none';
-    }
-
-    renderOutreachTemplates();
-  }
-
-  function setOutreachTone(tone) {
-    currentTone = tone;
-    const tones = ['confident', 'fresher', 'impact'];
-    tones.forEach(t => {
-      const btn = document.getElementById('toneBtn' + t.charAt(0).toUpperCase() + t.slice(1));
-      if (btn) {
-        if (t === tone) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      }
-    });
-
-    renderOutreachTemplates();
-  }
-
-  function renderOutreachTemplates() {
-    const candidateName = document.getElementById('outreachCandidateName')?.value?.trim() || '[Your Name]';
-    const recruiterName = document.getElementById('outreachRecruiterName')?.value?.trim() || 'Hiring Lead';
-    const projectFocus = document.getElementById('outreachProjectFocus')?.value?.trim() || jobMeta.skills || 'production-ready projects';
-    const company = jobMeta.company;
-    const jobTitle = jobMeta.title;
-
-    let message = '';
-    const charBadge = document.getElementById('outreachCharBadge');
-
-    if (currentChannel === 'connect') {
-      // Strictly under 300 characters for LinkedIn free connection invite!
-      if (currentTone === 'fresher') {
-        message = `Hi ${recruiterName}, aspiring engineer eager to contribute to ${company}'s ${jobTitle} opening. Skilled in ${projectFocus}. Would love to connect and share my portfolio! - ${candidateName}`;
-      } else if (currentTone === 'impact') {
-        message = `Hi ${recruiterName}, saw ${company}'s search for a ${jobTitle}. Built production projects using ${projectFocus}, prioritizing scalable architecture. Would love to connect. - ${candidateName}`;
-      } else {
-        // Confident & Direct
-        message = `Hi ${recruiterName}, I saw your opening for ${jobTitle} at ${company}. With hands-on experience in ${projectFocus}, I'd value connecting and sharing my portfolio. - ${candidateName}`;
-      }
-    } else if (currentChannel === 'inmail') {
-      // Structured 3-paragraph InMail / DM
-      if (currentTone === 'fresher') {
-        message = `Hi ${recruiterName},\n\nI hope you're having a productive week! I recently came across the ${jobTitle} role at ${company} and was immediately drawn to your engineering standards.\n\nAs an early-career engineer with strong practical training in ${projectFocus}, I focus heavily on write-tested, production-clean code with 250+ DSA problems solved.\n\nI have already submitted my formal application through the careers portal, but wanted to reach out directly. Would you be open to reviewing my GitHub or having a brief 5-minute chat?\n\nWarm regards,\n${candidateName}\nPortfolio / GitHub: [Add Link]`;
-      } else if (currentTone === 'impact') {
-        message = `Hi ${recruiterName},\n\nI noticed ${company} is expanding its technical team with the ${jobTitle} position.\n\nMy background centers on building high-reliability systems using ${projectFocus}. Recently, I engineered production architectures with robust REST endpoints and modular components.\n\nGiven ${company}'s engineering scale, I am confident my hands-on background can deliver immediate momentum. I'd love to connect for a quick 5-minute conversation or share my code samples.\n\nBest regards,\n${candidateName}\nLinkedIn / GitHub: [Your Link]`;
-      } else {
-        message = `Hi ${recruiterName},\n\nI hope this finds you well! I noticed ${company} is hiring for the ${jobTitle} position and wanted to reach out.\n\nI specialize in ${projectFocus} and have built scalable, production-ready applications. I believe my hands-on experience aligns closely with what you're looking for in this role.\n\nI have submitted my application via the careers portal, but would welcome the chance to share my portfolio or speak briefly about how I can contribute to ${company}.\n\nBest regards,\n${candidateName}\nPortfolio / Projects: [Add Link]`;
-      }
-    } else if (currentChannel === 'email') {
-      const emailSubject = `Application & Engineering Match: ${jobTitle} - ${candidateName}`;
-      const subjEl = document.getElementById('outreachEmailSubject');
-      if (subjEl) subjEl.value = emailSubject;
-
-      message = `Dear ${recruiterName} / ${company} Talent Acquisition Team,\n\nI am writing to express my strong interest in the ${jobTitle} opening at ${company}.\n\nWhy I am an immediate technical fit:\n• Practical proficiency in core requirements: ${projectFocus}\n• Engineered and deployed scalable, tested projects with production design patterns\n• Dedicated to clean code, maintainable architecture, and fast execution\n\nI have attached my resume and would welcome a brief 5-minute conversation to discuss how my skill set can support ${company}'s milestones.\n\nSincerely,\n${candidateName}\nPortfolio / GitHub: [Add Link]\nPhone: [Your Phone Number]`;
-    } else if (currentChannel === 'whatsapp') {
-      message = `Hi ${recruiterName}! I saw the ${jobTitle} opportunity at ${company}. I specialize in ${projectFocus} and recently shipped production code. I have submitted my formal application and wanted to share my resume directly. Would you be open to taking a quick look? Thank you! - ${candidateName}`;
+    if (data.status === "found" && best) {
+      title.textContent = "A public contact was found";
+      subtitle.textContent = "Verify the source before you send. This address was published publicly.";
+      pill.textContent = "Found";
+      pill.className = "rc-status-pill found";
+    } else if (data.status === "team_only" && best) {
+      title.textContent = "No individual email is public";
+      subtitle.textContent = "This is the employer's recruiting inbox, not a personal address.";
+      pill.textContent = "Team inbox";
+      pill.className = "rc-status-pill team";
     } else {
-      // Follow-up
-      message = `Hi ${recruiterName},\n\nI wanted to follow up briefly regarding the ${jobTitle} opening at ${company}.\n\nI remain very excited about the opportunity to contribute with my background in ${projectFocus}. If you need any additional code samples, test cases, or details from my side, please feel free to let me know.\n\nThank you for your time and consideration!\n\nBest regards,\n${candidateName}`;
+      title.textContent = "No public email found";
+      subtitle.textContent = "Nothing public matched this person in the sources checked. Verify manually with the links below.";
+      pill.textContent = "Not found";
+      pill.className = "rc-status-pill none";
     }
 
-    const textArea = document.getElementById('outreachMessageText');
-    if (textArea) {
-      textArea.value = message;
+    if (data.ignored_namesakes && data.status !== "not_found") {
+      const count = data.ignored_namesakes;
+      const noun = count === 1 ? "address was" : "addresses were";
+      const pronoun = count === 1 ? "it" : "they";
+      subtitle.textContent += " " + count + " same-name " + noun +
+        " hidden because " + pronoun + " could not be linked to " + JOB.company + ".";
     }
 
-    // Update Character Badge
-    if (charBadge) {
-      const len = message.length;
-      if (currentChannel === 'connect') {
-        charBadge.style.display = 'inline-block';
-        if (len <= 300) {
-          charBadge.innerText = `${len} / 300 chars (Safe for Free LinkedIn)`;
-          charBadge.style.color = '#047857';
-          charBadge.style.background = '#ecfdf5';
-          charBadge.style.borderColor = '#a7f3d0';
-        } else {
-          charBadge.innerText = `${len} / 300 chars (Exceeds Limit!)`;
-          charBadge.style.color = '#b91c1c';
-          charBadge.style.background = '#fef2f2';
-          charBadge.style.borderColor = '#fecaca';
-        }
+    const bestWrap = $("rcBestWrap");
+    bestWrap.replaceChildren();
+    if (best) bestWrap.appendChild(buildBestCard(best));
+    const emptyWrap = $("rcEmptyWrap");
+    emptyWrap.replaceChildren();
+    if (!best) {
+      emptyWrap.appendChild(buildEmptyState(data));
+      setHidden(emptyWrap, false);
+    } else {
+      setHidden(emptyWrap, true);
+    }
+
+    const listWrap = $("rcListWrap");
+    const list = $("rcEmailList");
+    list.replaceChildren();
+    const others = emails.filter((item) => !best || item.email !== best.email);
+    if (others.length) {
+      others.forEach((item) => list.appendChild(buildEmailRow(item)));
+      setHidden(listWrap, false);
+    } else {
+      setHidden(listWrap, true);
+    }
+
+    const checkedWrap = $("rcChecked");
+    checkedWrap.replaceChildren();
+    (data.checked_sources || []).forEach((source) => {
+      const chip = document.createElement("span");
+      chip.className = "rc-checked-chip";
+      chip.textContent = humanSource(source);
+      checkedWrap.appendChild(chip);
+    });
+
+    const errorsWrap = $("rcErrorsWrap");
+    const errorsList = $("rcErrors");
+    errorsList.replaceChildren();
+    (data.errors || []).forEach((message) => {
+      const li = document.createElement("li");
+      li.textContent = String(message);
+      errorsList.appendChild(li);
+    });
+    setHidden(errorsWrap, !(data.errors && data.errors.length));
+
+    // Sync the composer with the best result.
+    state.bestEmail = best ? best.email : "";
+    if (best) {
+      const recipient = $("rcRecipientName");
+      if (recipient && data.recruiter && data.recruiter.name) recipient.value = data.recruiter.name;
+      updateSendTarget(best.email);
+    } else {
+      updateSendTarget("");
+    }
+    renderMessage();
+    refreshIcons();
+  }
+
+  function buildConfidence(confidence) {
+    const span = document.createElement("span");
+    span.className = "rc-conf " + (confidence || "medium");
+    span.textContent = confidenceLabel(confidence);
+    return span;
+  }
+
+  function buildBestCard(item) {
+    const card = document.createElement("div");
+    card.className = "rc-best-card";
+
+    const top = document.createElement("div");
+    top.className = "rc-best-top";
+    const label = document.createElement("span");
+    label.className = "rc-best-label";
+    label.textContent = item.label || "Best public contact";
+    top.appendChild(label);
+    top.appendChild(buildConfidence(item.confidence));
+
+    const link = document.createElement("a");
+    link.className = "rc-best-email";
+    link.href = "mailto:" + encodeURIComponent(item.email);
+    link.textContent = item.email;
+    link.title = "Open your mail app";
+
+    const meta = document.createElement("div");
+    meta.className = "rc-best-meta";
+    const source = document.createElement("span");
+    source.textContent = sourceLabel(item.source);
+    meta.appendChild(source);
+    if (item.mx_valid) {
+      const ok = document.createElement("span");
+      ok.className = "rc-ok";
+      ok.textContent = "✓ Mail domain valid";
+      meta.appendChild(ok);
+    }
+    if (item.is_personal === false) {
+      const team = document.createElement("span");
+      team.textContent = "Role inbox";
+      meta.appendChild(team);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "rc-best-actions";
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "rc-btn rc-btn-light rc-btn-sm";
+    copyBtn.innerHTML = ICONS.copy + "<span style=\"margin-left:5px;\">Copy</span>";
+    copyBtn.addEventListener("click", () => copyText(item.email, copyBtn));
+    const gmail = document.createElement("button");
+    gmail.type = "button";
+    gmail.className = "rc-btn rc-btn-glass rc-btn-sm";
+    gmail.innerHTML = '<i data-lucide="mail" style="width:13px;height:13px;"></i><span style="margin-left:5px;">Gmail</span>';
+    gmail.addEventListener("click", () => openGmail(item.email));
+    actions.appendChild(copyBtn);
+    actions.appendChild(gmail);
+
+    card.appendChild(top);
+    card.appendChild(link);
+    card.appendChild(meta);
+    card.appendChild(actions);
+
+    if (item.source_url && safeHttpUrl(item.source_url)) {
+      const sourceLink = document.createElement("a");
+      sourceLink.className = "rc-best-source";
+      sourceLink.href = safeHttpUrl(item.source_url);
+      sourceLink.target = "_blank";
+      sourceLink.rel = "noopener noreferrer";
+      sourceLink.textContent = "View source ↗";
+      card.appendChild(sourceLink);
+    }
+    return card;
+  }
+
+  function buildEmailRow(item) {
+    const row = document.createElement("div");
+    row.className = "rc-email-item";
+
+    const main = document.createElement("div");
+    main.className = "rc-email-main";
+    const link = document.createElement("a");
+    link.className = "rc-email-address";
+    link.href = "mailto:" + encodeURIComponent(item.email);
+    link.textContent = item.email;
+    const sub = document.createElement("div");
+    sub.className = "rc-email-sub";
+    const conf = document.createElement("span");
+    conf.textContent = confidenceLabel(item.confidence);
+    sub.appendChild(conf);
+    const src = document.createElement("span");
+    src.textContent = "· " + sourceLabel(item.source);
+    sub.appendChild(src);
+    if (item.source_url && safeHttpUrl(item.source_url)) {
+      const a = document.createElement("a");
+      a.href = safeHttpUrl(item.source_url);
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = "source ↗";
+      sub.appendChild(a);
+    }
+    main.appendChild(link);
+    main.appendChild(sub);
+
+    const actions = document.createElement("div");
+    actions.className = "rc-email-actions";
+    const copyBtn = document.createElement("button");
+    copyBtn.type = "button";
+    copyBtn.className = "rc-icon-btn";
+    copyBtn.title = "Copy email";
+    copyBtn.setAttribute("aria-label", "Copy " + item.email);
+    copyBtn.innerHTML = '<i data-lucide="copy"></i>';
+    copyBtn.addEventListener("click", () => copyText(item.email, copyBtn));
+    const gmailBtn = document.createElement("button");
+    gmailBtn.type = "button";
+    gmailBtn.className = "rc-icon-btn";
+    gmailBtn.title = "Compose in Gmail";
+    gmailBtn.setAttribute("aria-label", "Compose in Gmail to " + item.email);
+    gmailBtn.innerHTML = '<i data-lucide="mail"></i>';
+    gmailBtn.addEventListener("click", () => openGmail(item.email));
+    actions.appendChild(copyBtn);
+    actions.appendChild(gmailBtn);
+
+    row.appendChild(main);
+    row.appendChild(actions);
+    return row;
+  }
+
+  function buildEmptyState(data) {
+    const box = document.createElement("div");
+    box.className = "rc-empty-note";
+    const heading = document.createElement("h4");
+    heading.innerHTML = '<i data-lucide="triangle-alert" style="width:15px;height:15px;"></i> No public email was found';
+    const copy = document.createElement("p");
+    copy.textContent = data.message || "We checked the job post, public GitHub metadata, and the open web. Nothing public matched this person.";
+    box.appendChild(heading);
+    box.appendChild(copy);
+
+    const actions = document.createElement("div");
+    actions.className = "rc-empty-actions";
+    const links = data.sourcing_links || {};
+    [
+      ["linkedin_people_url", "LinkedIn people search"],
+      ["google_xray_url", "Google X-Ray"],
+      ["gmail_search_url", "Search my Gmail"],
+      ["company_careers_url", "Company careers"]
+    ].forEach(([key, label]) => {
+      const url = safeHttpUrl(links[key] || "");
+      if (!url) return;
+      const a = document.createElement("a");
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.textContent = label + " ↗";
+      actions.appendChild(a);
+    });
+    box.appendChild(actions);
+    return box;
+  }
+
+  function updateSendTarget(email) {
+    const note = $("rcSendTarget");
+    if (!note) return;
+    if (email) {
+      note.textContent = "Ready to send to " + email + ". Opens your own Gmail or mail app; nothing is sent automatically.";
+    } else {
+      note.textContent = "No public email selected yet. Pick one above to enable Gmail and Mail app.";
+    }
+  }
+
+  function openGmail(email) {
+    const subject = "Application: " + JOB.title + " at " + JOB.company;
+    const body = $("rcMessage")?.value || "";
+    const url = "https://mail.google.com/mail/?view=cm&fs=1" +
+      (email ? "&to=" + encodeURIComponent(email) : "") +
+      "&su=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  function openMailApp() {
+    if (!state.bestEmail) {
+      toast("Find or select a public email first.", "error");
+      return;
+    }
+    const subject = "Application: " + JOB.title + " at " + JOB.company;
+    const body = $("rcMessage")?.value || "";
+    window.location.href = "mailto:" + encodeURIComponent(state.bestEmail) +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+  }
+
+  // ── Composer ──────────────────────────────────────────────────────────
+  function recipientName() {
+    return ($("rcRecipientName")?.value || "").trim() || "there";
+  }
+  function candidateName() {
+    return ($("rcCandidateName")?.value || "").trim() || "[Your name]";
+  }
+  function highlight() {
+    return ($("rcHighlight")?.value || "").trim() || "[one relevant project or skill]";
+  }
+
+  function buildMessage() {
+    const recruiter = recipientName();
+    const me = candidateName();
+    const proof = highlight();
+    const role = JOB.title;
+    const company = JOB.company;
+
+    if (state.channel === "connect") {
+      if (state.tone === "fresher") {
+        return "Hi " + recruiter + ", I'm early in my career and keen on the " + role +
+          " role at " + company + ". I've been building with " + proof +
+          ". Could I share my portfolio? - " + me;
+      }
+      if (state.tone === "senior") {
+        return "Hi " + recruiter + ", I saw the " + role + " opening at " + company +
+          ". My recent work covers " + proof + ". I'd value a short conversation about the team. - " + me;
+      }
+      return "Hi " + recruiter + ", I'm applying for the " + role + " role at " + company +
+        ". I've shipped work with " + proof + ". Would you be open to a quick look at my portfolio? - " + me;
+    }
+
+    if (state.channel === "inmail") {
+      return "Hi " + recruiter + ",\n\nI noticed " + company + " is hiring for the " + role +
+        " role. I focus on " + proof + ", and I've attached the most relevant work in my profile.\n\n" +
+        "I've applied through the official portal as well. Would you be open to a five-minute conversation about the team's priorities?\n\n" +
+        "Best,\n" + me;
+    }
+
+    if (state.channel === "email") {
+      return "Subject: Application — " + role + " — " + me + "\n\n" +
+        "Hi " + recruiter + ",\n\nI'm writing about the " + role + " opening at " + company +
+        ". The most relevant part of my background is " + proof + ".\n\n" +
+        "I've submitted the formal application, and I'd be glad to share a short walkthrough of the work or answer any questions.\n\n" +
+        "Thank you for your time,\n" + me + "\n[Portfolio / GitHub]";
+    }
+
+    return "Hi " + recruiter + ",\n\nFollowing up on my note about the " + role + " role at " + company +
+      ". I remain interested and can share additional work samples if useful.\n\n" +
+      "Thanks again for your time,\n" + me;
+  }
+
+  function renderMessage() {
+    const area = $("rcMessage");
+    if (!area) return;
+    area.value = buildMessage();
+    const count = $("rcCount");
+    if (count) {
+      const length = area.value.length;
+      if (state.channel === "connect") {
+        count.textContent = length + " / 300";
+        count.classList.toggle("is-warn", length > 280);
       } else {
-        charBadge.innerText = `${len} characters • Ready to send`;
-        charBadge.style.color = '#1d4ed8';
-        charBadge.style.background = '#eff6ff';
-        charBadge.style.borderColor = '#bfdbfe';
+        count.textContent = length + " characters";
+        count.classList.remove("is-warn");
       }
     }
   }
 
-  function copyOutreachMessage() {
-    const textArea = document.getElementById('outreachMessageText');
-    if (!textArea) return;
-
-    navigator.clipboard.writeText(textArea.value).then(() => {
-      const btnText = document.getElementById('btnCopyPitchText');
-      if (btnText) {
-        const orig = btnText.innerText;
-        btnText.innerText = '✅ Copied to Clipboard!';
-        setTimeout(() => { btnText.innerText = orig; }, 2200);
-      }
-      if (window.showToast) {
-        window.showToast("📋 Pitch copied! Ready to paste into LinkedIn or Email.", "success");
-      }
-    }).catch(err => {
-      prompt("Copy your outreach message manually:", textArea.value);
+  function setChannel(channel) {
+    state.channel = channel;
+    document.querySelectorAll("[data-rc-channel]").forEach((btn) => {
+      const active = btn.dataset.rcChannel === channel;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
     });
+    renderMessage();
   }
 
-  function copyEmailSubjectOnly() {
-    const subjEl = document.getElementById('outreachEmailSubject');
-    if (!subjEl || !subjEl.value) return;
-
-    navigator.clipboard.writeText(subjEl.value).then(() => {
-      if (window.showToast) window.showToast("📋 Email Subject copied!", "success");
+  function setTone(tone) {
+    state.tone = tone;
+    document.querySelectorAll("[data-rc-tone]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.rcTone === tone);
     });
+    renderMessage();
   }
 
-  function launchDirectEmailClient() {
-    const emailEl = document.getElementById('displayOriginalEmail');
-    const targetEmail = (emailEl ? emailEl.innerText.trim() : '') || `recruiter@${jobMeta.domain}`;
-    const subject = document.getElementById('outreachEmailSubject')?.value || `Application: ${jobMeta.title} - ${document.getElementById('outreachCandidateName')?.value || 'Candidate'}`;
-    const body = document.getElementById('outreachMessageText')?.value || '';
+  // ── Wiring ────────────────────────────────────────────────────────────
+  function wire() {
+    // Scroll CTA
+    document.querySelectorAll("[data-rc-scroll]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const el = $(btn.dataset.rcScroll);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        const name = $("rcName");
+        if (name && !name.value && !$("rcLinkedIn")?.value) setTimeout(() => name.focus(), 450);
+      });
+    });
 
-    const mailtoUrl = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl, '_blank');
+    $("rcSearchBtn")?.addEventListener("click", () => runSearch(false));
+    $("rcRetryBtn")?.addEventListener("click", () => runSearch(false));
+
+    $("rcLinkedIn")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") { event.preventDefault(); runSearch(false); }
+    });
+    $("rcName")?.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") { event.preventDefault(); runSearch(false); }
+    });
+
+    document.querySelectorAll("[data-rc-channel]").forEach((btn) => {
+      btn.addEventListener("click", () => setChannel(btn.dataset.rcChannel));
+    });
+    document.querySelectorAll("[data-rc-tone]").forEach((btn) => {
+      btn.addEventListener("click", () => setTone(btn.dataset.rcTone));
+    });
+
+    ["rcCandidateName", "rcRecipientName", "rcHighlight"].forEach((id) => {
+      $(id)?.addEventListener("input", renderMessage);
+    });
+    $("rcMessage")?.addEventListener("input", () => {
+      const count = $("rcCount");
+      if (!count) return;
+      const length = $("rcMessage").value.length;
+      count.textContent = state.channel === "connect" ? length + " / 300" : length + " characters";
+      count.classList.toggle("is-warn", state.channel === "connect" && length > 280);
+    });
+
+    $("rcCopyBtn")?.addEventListener("click", () => {
+      const message = $("rcMessage")?.value || "";
+      copyText(message, $("rcCopyBtn"));
+    });
+    $("rcGmailBtn")?.addEventListener("click", () => {
+      if (!state.bestEmail) {
+        toast("Find a public email first, or copy the message into LinkedIn.", "error");
+        return;
+      }
+      openGmail(state.bestEmail);
+    });
+    $("rcMailBtn")?.addEventListener("click", openMailApp);
+
+    // Restore candidate name; never store anything else.
+    try {
+      const saved = localStorage.getItem("kashiiCandidateName");
+      if (saved && $("rcCandidateName")) $("rcCandidateName").value = saved;
+    } catch (err) {}
+    $("rcCandidateName")?.addEventListener("blur", () => {
+      try {
+        const value = $("rcCandidateName").value.trim();
+        if (value) localStorage.setItem("kashiiCandidateName", value);
+      } catch (err) {}
+    });
+
+    // Auto-fill name from a LinkedIn URL as the user types/pastes.
+    $("rcLinkedIn")?.addEventListener("change", () => {
+      const value = ($("rcLinkedIn")?.value || "").trim();
+      const nameField = $("rcName");
+      if (!value || !nameField || nameField.value.trim()) return;
+      const match = value.match(/linkedin\.com\/in\/([A-Za-z0-9_\-.]+)/i);
+      if (!match) return;
+      const slug = match[1].replace(/-(recruiter|talent|hr|ta|lead|tech|sourcing|hiring|partner|specialist|manager|campus)$/i, "");
+      const parts = slug.split("-").filter((part) => part && !/^\d+$/.test(part) && part.length > 1);
+      if (parts.length) {
+        nameField.value = parts.map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+      }
+    });
+
+    renderMessage();
+    refreshIcons();
   }
 
-  // Initial render on page load
-  document.addEventListener('DOMContentLoaded', function() {
-    renderOutreachTemplates();
-    if (window.lucide) window.lucide.createIcons();
-  });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", wire);
+  } else {
+    wire();
+  }
+})();
 </script>
 {% endblock %}

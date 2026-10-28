@@ -13,6 +13,8 @@ pydantic>=2.0.0
 pypdf>=5.0.0
 python-docx>=1.0.0
 reportlab>=4.0.0
+dnspython>=2.6
+lxml>=5.0
 
 
 

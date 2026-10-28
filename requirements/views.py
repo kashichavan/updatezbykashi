@@ -667,6 +667,7 @@ def job_recruiter_connect_view(request, category_slug=None, uuid=None, pk=None, 
 
     recruiter_intel = get_recruiter_intelligence_for_job(job)
     active_recruiter = recruiter_intel.get('active_recruiter', {})
+    sourcing_links = recruiter_intel.get('sourcing_links', {})
     skills = job.get_skills_list()
     top_skills_text = ", ".join(skills[:3]) if skills else "Full-Stack, Clean Code, Problem Solving"
 
@@ -679,44 +680,111 @@ def job_recruiter_connect_view(request, category_slug=None, uuid=None, pk=None, 
     except Exception:
         job_detail_url = f"/job/{job.uuid}/"
 
+    # Prefill the discovery console from a referral profile when the post has one.
+    initial_linkedin = (request.GET.get('linkedin_url') or job.referrer_linkedin or '').strip()
+    initial_name = (request.GET.get('name') or job.referrer_name or '').strip()
+    if not initial_name and initial_linkedin:
+        from requirements.services.recruiter_finder import parse_linkedin_profile_url
+        parsed = parse_linkedin_profile_url(initial_linkedin)
+        initial_name = (parsed or {}).get('full_name', '')
+
     context = {
         'job': job,
         'job_detail_url': job_detail_url,
         'recruiter_intel': recruiter_intel,
         'active_recruiter': active_recruiter,
+        'sourcing_links': sourcing_links,
         'clean_company_name': recruiter_intel.get('clean_company_name') or job.company_name,
-        'company_domain': recruiter_intel.get('domain'),
-        'google_xray_url': recruiter_intel.get('google_xray_url'),
+        'company_domain': recruiter_intel.get('domain') or '',
+        'google_xray_url': recruiter_intel.get('google_xray_url') or sourcing_links.get('google_xray_url'),
+        'linkedin_recruiter_search_url': sourcing_links.get('linkedin_search_url'),
         'skills_list': skills,
         'top_skills_text': top_skills_text,
+        'initial_name': initial_name,
+        'initial_linkedin': initial_linkedin,
+        'job_contact_emails': recruiter_intel.get('job_contact_emails', []),
+        'recruiter_api_url': reverse('api_recruiter_intel', kwargs={'job_uuid': job.uuid}),
     }
     return render(request, 'content/job_recruiter.html', context)
 
 @require_GET
 def api_recruiter_intel(request, job_uuid=None):
     """
-    Returns live recruiter intelligence.
-    Supports on-demand LinkedIn profile URL scraping to return the original email.
+    Source-linked recruiter discovery API.
+
+    Query params:
+      linkedin_url  Public LinkedIn profile URL (optional).
+      name          Recruiter name (optional if linkedin_url is supplied).
+      deep          1/0 - fetch public pages (default 1).
+      refresh       1/0 - bypass the 6-hour discovery cache.
+
+    Returns only publicly published addresses. Never generates patterns.
     """
     from requirements.services.recruiter_finder import (
+        discover_recruiter_contact,
         get_recruiter_intelligence_for_job,
-        scrape_original_recruiter_email_from_linkedin,
+        parse_linkedin_profile_url,
     )
     from django.http import JsonResponse
+    from django.utils.cache import patch_cache_control
+
     try:
         job = JobPosting.objects.filter(uuid=job_uuid).first()
         if not job and str(job_uuid).isdigit():
             job = JobPosting.objects.filter(id=int(job_uuid)).first()
         if not job:
             return JsonResponse({'status': 'error', 'message': 'Job not found'}, status=404)
-        
-        linkedin_url = request.GET.get('linkedin_url', '').strip()
-        if linkedin_url:
-            resolved = scrape_original_recruiter_email_from_linkedin(linkedin_url, job.company_name)
-            return JsonResponse({'status': 'ok', 'data': resolved})
 
-        intel = get_recruiter_intelligence_for_job(job)
-        return JsonResponse({'status': 'ok', 'data': intel})
+        linkedin_url = (request.GET.get('linkedin_url') or '').strip()
+        name = (request.GET.get('name') or '').strip()
+        deep = request.GET.get('deep', '1') not in ('0', 'false', 'False')
+        refresh = request.GET.get('refresh', '0') in ('1', 'true', 'True')
+
+        if linkedin_url and 'linkedin.com/in/' not in linkedin_url:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Use a public LinkedIn profile URL like https://www.linkedin.com/in/name/'},
+                status=400,
+            )
+        if not name and linkedin_url:
+            parsed = parse_linkedin_profile_url(linkedin_url)
+            name = (parsed or {}).get('full_name', '')
+
+        # No query: return the cheap, local bundle (job-post email + sourcing links).
+        if not linkedin_url and not name:
+            intel = get_recruiter_intelligence_for_job(job)
+            response = JsonResponse({'status': 'ok', 'data': intel})
+            patch_cache_control(response, no_store=True)
+            return response
+
+        # Light abuse protection for the network-backed path.
+        client_ip = (
+            (request.META.get('HTTP_X_FORWARDED_FOR') or '').split(',')[0].strip()
+            or request.META.get('REMOTE_ADDR')
+            or 'unknown'
+        )
+        rate_key = f'recruiter:api:{client_ip}'
+        try:
+            hits = cache.get(rate_key, 0)
+            if hits >= 18:
+                return JsonResponse(
+                    {'status': 'error', 'message': 'Too many searches. Please wait a minute and try again.'},
+                    status=429,
+                )
+            cache.set(rate_key, hits + 1, 60)
+        except Exception:
+            pass
+
+        result = discover_recruiter_contact(
+            name=name,
+            company=job.company_name,
+            linkedin_url=linkedin_url,
+            job=job,
+            deep_search=deep,
+            force_refresh=refresh,
+        )
+        response = JsonResponse({'status': 'ok', 'data': result})
+        patch_cache_control(response, no_store=True)
+        return response
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
