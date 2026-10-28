@@ -4,6 +4,7 @@ Safely runs asynchronous pipeline without external Celery dependency on Render.
 """
 
 import logging
+import re
 import threading
 from typing import Dict, Any, List
 
@@ -21,6 +22,119 @@ def start_generation_pipeline_async(job_uuid: str):
     """Launch the resume generation and repository discovery worker in a daemon thread."""
     thread = threading.Thread(target=run_generation_pipeline, args=(job_uuid,), daemon=True)
     thread.start()
+
+
+_NUMBER_RE = re.compile(r"\d[\d,.]*")
+# Words that only exist to make an ordinary repository sound impressive.
+_PUFFERY = (
+    'enterprise', 'production-grade', 'production ready', 'high-performance',
+    'scalable', 'robust', 'world-class', 'cutting-edge', 'state-of-the-art',
+    'mission-critical', 'best-in-class',
+)
+
+
+def _numbers_in(text: str) -> set:
+    """Digit groups normalised so 14,000 and 14000 compare equal."""
+    return {n.replace(',', '').strip('.') for n in _NUMBER_RE.findall(text or '')}
+
+
+def _repo_source_text(dp) -> str:
+    """Every fact the discovery step actually knows about a repository."""
+    bits = [
+        dp.repo_name or '',
+        dp.description or '',
+        dp.language or '',
+        dp.repo_url or '',
+        ' '.join(dp.tech_stack or []) if isinstance(dp.tech_stack, list) else str(dp.tech_stack or ''),
+        str(dp.stars or ''),
+    ]
+    return ' '.join(bits)
+
+
+def sanitize_project_bullets(bullets: List[str], dp) -> List[str]:
+    """
+    Drop any bullet that claims a number the repository does not support.
+
+    The AI is told not to invent metrics, but it is a language model: the only
+    version of this rule that survives a bad generation is the one enforced here.
+    A bullet with "40% latency reduction" for a repo whose description mentions
+    no number is exactly the line a recruiter asks about in the interview.
+    """
+    allowed = _numbers_in(_repo_source_text(dp))
+    if isinstance(bullets, str):
+        # Some models return one paragraph where a list was requested. Iterating
+        # a string yields characters, which previously put one letter per line
+        # into the exported document.
+        bullets = [part for part in re.split(r"(?<=[.!?])\s+|\n+", bullets) if part.strip()]
+    kept: List[str] = []
+    for bullet in bullets or []:
+        if not isinstance(bullet, str):
+            continue
+        text = bullet.strip()
+        if len(text) < 20:
+            continue
+        unsupported = _numbers_in(text) - allowed
+        if unsupported:
+            continue
+        lowered = text.lower()
+        if any(word in lowered for word in _PUFFERY):
+            continue
+        kept.append(text)
+    return kept
+
+
+def honest_project_title(ai_title: str, dp) -> str:
+    """
+    Keep the AI title only if it still names the repository.
+
+    Left alone the model renames `ansible/awx` into an "Enterprise Ansible
+    Automation Orchestration Platform", which the candidate then has to explain.
+    """
+    fallback = (dp.repo_name or '').split('/')[-1].replace('-', ' ').replace('_', ' ').strip().title()
+    if not ai_title or not isinstance(ai_title, str):
+        return fallback or 'Project'
+    tokens = [t for t in re.split(r'[-_/ ]+', (dp.repo_name or '').split('/')[-1].lower()) if t]
+    lowered = ai_title.lower()
+    if any(token in lowered for token in tokens):
+        return ai_title.strip()
+    return fallback or 'Project'
+
+
+def resolve_target_profile(job) -> Dict[str, Any]:
+    """
+    The role a resume is aimed at.
+
+    A generation job either points at a real JobPosting (started from a job page)
+    or carries a free-form `target_profile` (started on the standalone studio,
+    where the user types or pastes the role). Both paths normalise to this dict so
+    the discovery and synthesis code never has to branch on which one it got.
+    """
+    posting = job.job
+    extra = job.target_profile or {}
+
+    raw_skills = ''
+    if posting and posting.skills_required:
+        raw_skills = posting.skills_required
+    elif extra.get('skills'):
+        value = extra['skills']
+        raw_skills = ', '.join(value) if isinstance(value, (list, tuple)) else str(value)
+
+    title = (posting.title if posting else '') or extra.get('title') or ''
+    company = (posting.company_name if posting else '') or extra.get('company') or ''
+    description = (posting.description if posting else '') or extra.get('description') or ''
+    location = (posting.location if posting else '') or extra.get('location') or ''
+
+    skills_list = [s.strip() for s in raw_skills.split(',') if s.strip()]
+
+    return {
+        'title': title or 'Software Engineer',
+        'company': company,
+        'skills': raw_skills,
+        'description': description,
+        'location': location,
+        'skills_list': skills_list,
+        'has_posting': bool(posting),
+    }
 
 
 def run_generation_pipeline(job_uuid: str):
@@ -45,10 +159,10 @@ def run_generation_pipeline(job_uuid: str):
         job.stage_message = 'Analyzing job requirements and required technology stack...'
         job.save(update_fields=['status', 'progress_pct', 'stage_message', 'updated_at'])
 
-        job_posting = job.job
-        job_title = job_posting.title if job_posting else "Software Engineer"
-        job_skills = job_posting.skills_required if job_posting else ""
-        job_desc = job_posting.description if job_posting else ""
+        target = resolve_target_profile(job)
+        job_title = target['title']
+        job_skills = target['skills']
+        job_desc = target['description']
 
         # Phase 2: Searching public GitHub repositories
         job.status = 'SEARCHING_REPOSITORIES'
@@ -134,8 +248,8 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
     job.save(update_fields=['status', 'progress_pct', 'stage_message', 'updated_at'])
 
     candidate = job.candidate_data or {}
-    job_posting = job.job
-    target_skills_list = job_posting.get_skills_list() if job_posting else []
+    target = resolve_target_profile(job)
+    target_skills_list = target['skills_list']
 
     # Build contact info.
     # Never substitute a placeholder: this document gets sent to recruiters, so a
@@ -188,14 +302,17 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
                     description=dp.description,
                     primary_language=dp.language,
                     topics=dp.tech_stack,
-                    stars=dp.stars
+                    stars=dp.stars,
+                    relationship=dp.candidate_relationship or 'RECOMMENDED',
                 ) or {}
-                bullets = proj_data.get('bullets', [])
+                # Trust nothing the model returns about numbers.
+                bullets = sanitize_project_bullets(proj_data.get('bullets', []), dp)
             except Exception:
+                bullets = []
+            if not bullets:
                 # Describe only what the repository metadata actually supports.
                 # The previous fallback asserted latency wins, test coverage and
                 # a CI/CD pipeline that nobody had verified.
-                bullets = []
                 desc_line = (dp.description or '').strip().split('. ')[0].strip().rstrip('.')
                 if desc_line:
                     bullets.append(desc_line + '.')
@@ -207,7 +324,7 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
                     bullets.append(f"Studied the codebase and its use of {', '.join(stack_bits)}.")
                 if not bullets:
                     bullets = [f"Studied the architecture of {dp.repo_name}."]
-            clean_title = proj_data.get('title') if (isinstance(proj_data, dict) and proj_data.get('title')) else (dp.repo_name.split('/')[-1].replace('-', ' ').title())
+            clean_title = honest_project_title(proj_data.get('title') if isinstance(proj_data, dict) else '', dp)
 
         if dp.candidate_relationship == 'BUILT':
             full_title = f"{clean_title} [Personally Developed]"
@@ -266,15 +383,16 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
     }
 
     # Summary
-    role_title = job_posting.title if job_posting else "Software Engineer"
-    company_target = job_posting.company_name if job_posting else "Top Tech Companies"
+    role_title = target['title']
+    company_target = target['company']
     skill_phrase = ''
     if formatted_skills:
         raw_first = str(next(iter(formatted_skills.values()), ''))
         top_skills = [s.strip() for s in raw_first.split(',') if s.strip()][:4]
         skill_phrase = ', '.join(top_skills)
+    role_target = f"the {role_title} role at {company_target}" if company_target else f"the {role_title} role"
     summary = (
-        f"{'Fresher' if not skill_phrase else 'Early-career engineer'} targeting the {role_title} role at {company_target}."
+        f"{'Fresher' if not skill_phrase else 'Early-career engineer'} targeting {role_target}."
         + (f" Working with {skill_phrase}." if skill_phrase else "")
         + " Built the selected projects listed below and is looking for a first full-time engineering role."
     )

@@ -1,0 +1,1019 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Resume Studio — Build a job-ready resume from real projects | Kashii Updatez{% endblock %}
+{% block meta_description %}Create an ATS-ready resume in four honest steps: your details, the role you are targeting, public repositories you can actually discuss, and a real ATS scorecard. Works for any job, not just the one you were reading.{% endblock %}
+{% block og_title %}AI Resume Studio — Kashii Updatez{% endblock %}
+{% block og_description %}Your details, your target role, real public repositories, and a real ATS score. Export to PDF or DOCX.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/resume_studio.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="rs-page">
+  <div class="rs-wrap">
+
+    <!-- ── Hero ─────────────────────────────────────────────────────── -->
+    <header class="rs-hero">
+      <span class="rs-eyebrow">
+        <i data-lucide="wand-sparkles"></i>
+        AI Resume Studio
+      </span>
+      <h1 class="rs-title">A resume built on <em>real work</em>, scored honestly</h1>
+      <p class="rs-sub">
+        {% if target_job %}
+          You are building for <strong>{{ target_job.title }}</strong> at <strong>{{ target_job.company_name }}</strong>.
+          Change the target below if you meant a different role.
+        {% else %}
+          Pick a posting or type the role yourself. The resume is assembled from public repositories you choose,
+          scored by the same ATS evaluator that grades uploaded resumes, and exported to PDF or DOCX.
+        {% endif %}
+      </p>
+      <div class="rs-points">
+        <span class="rs-point"><i data-lucide="shield-check"></i> Nothing is invented</span>
+        <span class="rs-point"><i data-lucide="github"></i> Real public repos</span>
+        <span class="rs-point"><i data-lucide="gauge"></i> Server-side ATS score</span>
+        <span class="rs-point"><i data-lucide="download"></i> PDF &amp; DOCX</span>
+      </div>
+    </header>
+
+    <div class="rs-grid">
+      <div class="rs-main">
+
+        <!-- ── Step 1: you ──────────────────────────────────────────── -->
+        <section class="rs-card" id="rsStepYou">
+          <div class="rs-step">
+            <span class="rs-num" id="rsNumYou">1</span>
+            <div>
+              <h2>Your details</h2>
+              <p class="rs-step-sub">These go on the page exactly as typed. Blank stays blank.</p>
+            </div>
+            <span class="rs-hint" id="rsHintYou">3 required</span>
+          </div>
+
+          <div class="rs-fields">
+            <div class="rs-field">
+              <label class="rs-label" for="rsName">Full name <span class="rs-req">*</span></label>
+              <input class="rs-input" type="text" id="rsName" autocomplete="name" placeholder="e.g. Kashinath Chavan">
+            </div>
+            <div class="rs-field">
+              <label class="rs-label" for="rsEmail">Email <span class="rs-req">*</span></label>
+              <input class="rs-input" type="email" id="rsEmail" autocomplete="email" inputmode="email" placeholder="you@example.com">
+            </div>
+            <div class="rs-field">
+              <label class="rs-label" for="rsPhone">Phone <span class="rs-req">*</span></label>
+              <input class="rs-input" type="tel" id="rsPhone" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210">
+            </div>
+            <div class="rs-field">
+              <label class="rs-label" for="rsLocation">Location</label>
+              <input class="rs-input" type="text" id="rsLocation" autocomplete="address-level2" placeholder="e.g. Pune, India">
+            </div>
+            <div class="rs-field">
+              <label class="rs-label" for="rsDegree">Degree</label>
+              <input class="rs-input" type="text" id="rsDegree" placeholder="e.g. B.E. in Computer Engineering">
+            </div>
+            <div class="rs-field">
+              <label class="rs-label" for="rsInstitution">College / university</label>
+              <input class="rs-input" type="text" id="rsInstitution" placeholder="e.g. Pune University">
+            </div>
+            <div class="rs-field">
+              <label class="rs-label" for="rsYear">Graduation year</label>
+              <input class="rs-input" type="text" id="rsYear" placeholder="e.g. 2026">
+            </div>
+            <div class="rs-field">
+              <label class="rs-label" for="rsGpa">CGPA / percentage</label>
+              <input class="rs-input" type="text" id="rsGpa" placeholder="e.g. 8.4 / 10">
+            </div>
+            <div class="rs-field is-full">
+              <label class="rs-label" for="rsSkills">Skills you can defend in an interview</label>
+              <textarea class="rs-textarea" id="rsSkills" rows="2"
+                        placeholder="Python, SQL, Git — only the ones you actually use"></textarea>
+              <p class="rs-note">
+                <i data-lucide="list-checks"></i>
+                <span id="rsSkillHint">Add skills yourself. This field is never pre-filled from the posting.</span>
+              </p>
+            </div>
+          </div>
+
+          <p class="rs-note">
+            <i data-lucide="upload-cloud"></i>
+            <span>
+              Already have a resume?
+              <button type="button" id="rsUploadBtn" class="rs-linkish">Upload a PDF or DOCX</button>
+              and these fields fill in from it.
+            </span>
+          </p>
+          <input type="file" id="rsFileInput" accept=".pdf,.docx,.doc" class="rs-hidden">
+          <div id="rsUploadStatus" class="rs-flash rs-hidden">
+            <i data-lucide="loader" class="spin-icon"></i>
+            <span id="rsUploadStatusText">Parsing…</span>
+          </div>
+        </section>
+
+        <!-- ── Step 2: target ──────────────────────────────────────── -->
+        <section class="rs-card" id="rsStepTarget">
+          <div class="rs-step">
+            <span class="rs-num" id="rsNumTarget">2</span>
+            <div>
+              <h2>What role are you aiming at?</h2>
+              <p class="rs-step-sub">A posting on this site, or a role you type yourself.</p>
+            </div>
+            <span class="rs-hint" id="rsHintTarget">Required</span>
+          </div>
+
+          <div class="rs-btn-row" style="margin-bottom:12px;">
+            <button type="button" class="rs-btn rs-btn-quiet rs-btn-sm" id="rsModeJob"
+                    onclick="rsSetTargetMode('job')" aria-pressed="true">
+              <i data-lucide="briefcase"></i><span>Pick a posting</span>
+            </button>
+            <button type="button" class="rs-btn rs-btn-ghost rs-btn-sm" id="rsModeCustom"
+                    onclick="rsSetTargetMode('custom')" aria-pressed="false">
+              <i data-lucide="pencil-line"></i><span>Type it myself</span>
+            </button>
+          </div>
+
+          <!-- Job picker -->
+          <div id="rsJobPicker">
+            <input class="rs-input" type="search" id="rsJobSearch" placeholder="Filter by title, company or skill…"
+                   autocomplete="off" style="margin-bottom:8px;">
+            <div class="rs-joblist" id="rsJobList">
+              {% for j in recent_jobs %}
+                <button type="button" class="rs-jobrow" data-job-uuid="{{ j.uuid }}"
+                        onclick="rsPickJob('{{ j.uuid }}')" aria-pressed="false">
+                  <span style="flex:1;min-width:0;">
+                    <span class="rs-jobrow-title">{{ j.title }}</span>
+                    <span class="rs-jobrow-meta">{{ j.company_name }}{% if j.location %} • {{ j.location }}{% endif %}</span>
+                  </span>
+                  <i data-lucide="chevron-right" style="width:14px;height:14px;flex-shrink:0;color:#64748b;"></i>
+                </button>
+              {% empty %}
+                <p class="rs-empty">
+                  <i data-lucide="briefcase"></i>
+                  <strong>No active postings right now</strong>
+                  Switch to “Type it myself” and describe the role directly.
+                </p>
+              {% endfor %}
+            </div>
+            <p class="rs-note">
+              <i data-lucide="info"></i>
+              <span>Not seeing your role? <button type="button" class="rs-linkish" onclick="rsSetTargetMode('custom')">Type it instead</button> — the studio does not need a posting.</span>
+            </p>
+          </div>
+
+          <!-- Custom target -->
+          <div id="rsCustomTarget" class="rs-hidden">
+            <div class="rs-fields">
+              <div class="rs-field">
+                <label class="rs-label" for="rsTargetTitle">Role title <span class="rs-req">*</span></label>
+                <input class="rs-input" type="text" id="rsTargetTitle" placeholder="e.g. Backend Engineer">
+              </div>
+              <div class="rs-field">
+                <label class="rs-label" for="rsTargetCompany">Company (optional)</label>
+                <input class="rs-input" type="text" id="rsTargetCompany" placeholder="e.g. Zoho">
+              </div>
+              <div class="rs-field is-full">
+                <label class="rs-label" for="rsTargetSkills">Skills this role screens for</label>
+                <textarea class="rs-textarea" id="rsTargetSkills" rows="2"
+                          placeholder="Python, Django, PostgreSQL, REST APIs"></textarea>
+              </div>
+              <div class="rs-field is-full">
+                <label class="rs-label" for="rsTargetDescription">Job description (optional, helps ranking)</label>
+                <textarea class="rs-textarea" id="rsTargetDescription" rows="3"
+                          placeholder="Paste the responsibilities section here."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="rs-chiprow" id="rsTargetChips"></div>
+        </section>
+
+        <!-- ── Step 3: projects ────────────────────────────────────── -->
+        <section class="rs-card" id="rsStepProjects">
+          <div class="rs-step">
+            <span class="rs-num" id="rsNumProjects">3</span>
+            <div>
+              <h2>Projects that prove the fit</h2>
+              <p class="rs-step-sub">Public repositories ranked against the target stack. Tick the ones you can talk about.</p>
+            </div>
+            <span class="rs-hint" id="rsHintProjects">None yet</span>
+          </div>
+
+          <button type="button" class="rs-btn rs-btn-primary rs-btn-block" id="rsFindProjects"
+                  onclick="rsStartDiscovery()">
+            <i data-lucide="git-branch"></i>
+            <span id="rsFindProjectsText">Find matching repositories</span>
+          </button>
+
+          <div class="rs-progress" id="rsDiscoveryProgress">
+            <div class="rs-track"><div class="rs-fill" id="rsDiscoveryBar"></div></div>
+            <div class="rs-progress-meta">
+              <span id="rsDiscoveryStage">Searching public GitHub repositories…</span>
+              <span class="rs-pct" id="rsDiscoveryPct">0%</span>
+            </div>
+          </div>
+
+          <div class="rs-list is-empty" id="rsProjectsList">
+            <p class="rs-empty">
+              <i data-lucide="search"></i>
+              <strong>No repositories yet</strong>
+              Run the search once your details and target are filled in.
+            </p>
+          </div>
+
+          <p class="rs-note">
+            <i data-lucide="shield-check"></i>
+            <span>The “my role” selector goes on the resume as written — <em>Personally Developed</em>, <em>Open Source Contribution</em>, or <em>Practice Case Study</em>. Be accurate; interviewers ask.</span>
+          </p>
+        </section>
+
+        <!-- ── Step 4: generate ────────────────────────────────────── -->
+        <section class="rs-card" id="rsStepGenerate">
+          <div class="rs-step">
+            <span class="rs-num" id="rsNumGenerate">4</span>
+            <div>
+              <h2>Generate and score</h2>
+              <p class="rs-step-sub">Summaries come from your details and the selected repositories.</p>
+            </div>
+            <span class="rs-hint" id="rsHintGenerate">Not generated</span>
+          </div>
+
+          <button type="button" class="rs-btn rs-btn-solid rs-btn-block" id="rsGenerate"
+                  onclick="rsGenerateResume()">
+            <i data-lucide="wand-sparkles"></i>
+            <span id="rsGenerateText">Generate my resume</span>
+          </button>
+
+          <div class="rs-progress" id="rsGenerateProgress">
+            <div class="rs-track"><div class="rs-fill" id="rsGenerateBar"></div></div>
+            <div class="rs-progress-meta">
+              <span id="rsGenerateStage">Synthesizing…</span>
+              <span class="rs-pct" id="rsGeneratePct">0%</span>
+            </div>
+          </div>
+
+          <div id="rsGenerated" class="rs-hidden">
+            <div class="rs-scorecard" style="margin-top:12px;">
+              <div class="rs-gauge" id="rsGauge">
+                <div class="rs-gauge-in">
+                  <span class="rs-gauge-num" id="rsGaugeNum">0</span>
+                  <span class="rs-gauge-cap">ATS</span>
+                </div>
+              </div>
+              <div class="rs-scorecard-main">
+                <div class="rs-scorecard-title" id="rsGrade">—</div>
+                <div class="rs-scorecard-sub" id="rsPassRate"></div>
+                <div class="rs-chiprow" id="rsKeywords"></div>
+              </div>
+            </div>
+
+            <div class="rs-pillars" id="rsPillars"></div>
+
+            <div id="rsMissingWrap" class="rs-hidden">
+              <div class="rs-block-label">Missing so far</div>
+              <div class="rs-flash">
+                <i data-lucide="alert-triangle"></i>
+                <ul id="rsMissing"></ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ── Rail ─────────────────────────────────────────────────── -->
+      <aside class="rs-rail">
+        <div class="rs-rail-card">
+          <p class="rs-rail-title"><i data-lucide="target"></i> Target</p>
+          <div id="rsTargetSummary">
+            {% if target_job %}
+              <div class="rs-target-name">{{ target_job.title }}</div>
+              <div class="rs-target-company">{{ target_job.company_name }}</div>
+            {% else %}
+              <p class="rs-target-empty">No role selected yet. Pick a posting or type one in step 2.</p>
+            {% endif %}
+          </div>
+          <div class="rs-chiprow" id="rsRailChips"></div>
+        </div>
+
+        <div class="rs-rail-card">
+          <p class="rs-rail-title"><i data-lucide="file-text"></i> Your resume</p>
+          <div id="rsRailEmpty">
+            <p class="rs-target-empty">Nothing generated yet. Steps 1–3 take about two minutes.</p>
+          </div>
+          <div id="rsRailResult" class="rs-hidden">
+            <div class="rs-scorecard" style="padding:10px;">
+              <div class="rs-gauge" id="rsGaugeMini" style="width:56px;height:56px;">
+                <div class="rs-gauge-in" style="width:42px;height:42px;">
+                  <span class="rs-gauge-num" id="rsGaugeMiniNum" style="font-size:14px;">0</span>
+                </div>
+              </div>
+              <div class="rs-scorecard-main">
+                <div class="rs-scorecard-title" id="rsGradeMini" style="font-size:12px;">—</div>
+                <div class="rs-scorecard-sub" id="rsPassMini" style="font-size:10.5px;"></div>
+              </div>
+            </div>
+            <div class="rs-btn-row" style="margin-top:10px;">
+              <button type="button" class="rs-btn rs-btn-quiet rs-btn-sm" onclick="rsDownload('pdf')">
+                <i data-lucide="file-down"></i><span>PDF</span>
+              </button>
+              <button type="button" class="rs-btn rs-btn-quiet rs-btn-sm" onclick="rsDownload('docx')">
+                <i data-lucide="file-text"></i><span>DOCX</span>
+              </button>
+            </div>
+            <button type="button" class="rs-btn rs-btn-ghost rs-btn-sm rs-btn-block" style="margin-top:8px;" onclick="rsCopyResume()">
+              <i data-lucide="copy"></i><span>Copy as plain text</span>
+            </button>
+          </div>
+          <a id="rsEditorLink" class="rs-btn rs-btn-primary rs-btn-sm rs-btn-block" style="margin-top:8px;"
+             href="{{ studio_editor_url }}">
+            <i data-lucide="pencil-line"></i><span>Open in the live editor</span>
+          </a>
+        </div>
+
+        <div class="rs-rail-card">
+          <p class="rs-rail-title"><i data-lucide="info"></i> How scoring works</p>
+          <p class="rs-target-empty" style="line-height:1.6;">
+            The score comes from the same six-pillar evaluator used on uploaded resumes: contact completeness,
+            section parseability, action verbs, quantified metrics, stack relevance and system depth.
+            A low score means the resume is missing evidence — not that the tool failed.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+{{ recent_jobs_json|json_script:"rsJobsData" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  'use strict';
+
+  const TARGET_JOB_ID = "{{ target_job.uuid|default:'' }}";
+  const TARGET_JOB = TARGET_JOB_ID ? {
+    uuid: TARGET_JOB_ID,
+    title: "{{ target_job.title|escapejs }}",
+    company: "{{ target_job.company_name|escapejs }}",
+    location: "{{ target_job.location|escapejs }}",
+    skills: "{{ target_job.skills_required|escapejs }}"
+  } : null;
+
+  const JOBS = (() => {
+    try {
+      return JSON.parse(document.getElementById('rsJobsData').textContent || '[]');
+    } catch (e) {
+      return [];
+    }
+  })();
+
+  const state = {
+    mode: 'job',
+    jobId: TARGET_JOB ? TARGET_JOB.uuid : '',
+    custom: { title: '', company: '', skills: '', description: '' },
+    generationId: null,
+    projects: [],
+    resume: null,
+    poll: null
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  /* ── helpers ────────────────────────────────────────────────────── */
+  function esc(value) {
+    if (value === null || value === undefined) return '';
+    return String(value).replace(/[&<>"']/g, (m) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]
+    ));
+  }
+
+  function toast(message, kind) {
+    if (window.showToast) window.showToast(message, kind || 'info');
+    else if (kind === 'error') console.warn(message);
+  }
+
+  function refreshIcons() {
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function skillsFrom(text) {
+    return String(text || '').split(',').map((s) => s.trim()).filter(Boolean);
+  }
+
+  /* ── step 1: profile ────────────────────────────────────────────── */
+  function profile() {
+    return {
+      name: ($('rsName').value || '').trim(),
+      email: ($('rsEmail').value || '').trim(),
+      phone: ($('rsPhone').value || '').trim(),
+      location: ($('rsLocation').value || '').trim(),
+      degree: ($('rsDegree').value || '').trim(),
+      institution: ($('rsInstitution').value || '').trim(),
+      year: ($('rsYear').value || '').trim(),
+      gpa: ($('rsGpa').value || '').trim(),
+      skills: ($('rsSkills').value || '').trim()
+    };
+  }
+
+  // A required field only turns red once the user has touched it (or tried to
+  // move on). Red boxes on a page nobody has typed in yet just look broken.
+  const touched = new Set();
+
+  function syncProfileHints(force) {
+    const p = profile();
+    const missing = ['name', 'email', 'phone'].filter((k) => !p[k]);
+    const hint = $('rsHintYou');
+    hint.textContent = missing.length ? missing.length + ' required' : 'Complete';
+    hint.className = 'rs-hint ' + (missing.length ? 'is-warn' : 'is-ok');
+    $('rsNumYou').classList.toggle('is-done', missing.length === 0);
+    ['rsName', 'rsEmail', 'rsPhone'].forEach((id) => $(id).classList.remove('is-invalid'));
+    if (!p.name && (force || touched.has('rsName'))) $('rsName').classList.add('is-invalid');
+    if (!p.email && (force || touched.has('rsEmail'))) $('rsEmail').classList.add('is-invalid');
+    if (!p.phone && (force || touched.has('rsPhone'))) $('rsPhone').classList.add('is-invalid');
+  }
+
+  ['rsName', 'rsEmail', 'rsPhone'].forEach((id) => {
+    $(id).addEventListener('input', () => {
+      touched.add(id);
+      syncProfileHints();
+    });
+    $(id).addEventListener('blur', () => {
+      touched.add(id);
+      syncProfileHints();
+    });
+  });
+
+  /* ── step 1 upload ──────────────────────────────────────────────── */
+  $('rsUploadBtn').addEventListener('click', () => $('rsFileInput').click());
+
+  $('rsFileInput').addEventListener('change', async (event) => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const status = $('rsUploadStatus');
+    const statusText = $('rsUploadStatusText');
+    status.classList.remove('rs-hidden');
+    statusText.textContent = 'Reading ' + file.name + '…';
+
+    const body = new FormData();
+    body.append('resume_file', file);
+    if (state.jobId) body.append('job_id', state.jobId);
+
+    try {
+      const res = await fetch('/api/resume/upload/', { method: 'POST', body: body });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Could not parse that file');
+
+      const parsed = data.parsed_resume || {};
+      const contact = parsed.contact || {};
+      const setIf = (id, value) => { if (value) $(id).value = value; };
+
+      setIf('rsName', parsed.name);
+      setIf('rsEmail', contact.email);
+      setIf('rsPhone', contact.phone);
+      setIf('rsLocation', contact.location);
+
+      const edu = parsed.education || {};
+      if (Array.isArray(edu) && edu.length) {
+        setIf('rsDegree', edu[0].degree);
+        setIf('rsInstitution', edu[0].institution);
+        setIf('rsYear', edu[0].year);
+        setIf('rsGpa', edu[0].score);
+      } else if (edu && typeof edu === 'object') {
+        setIf('rsDegree', edu.degree);
+        setIf('rsInstitution', edu.institution);
+        setIf('rsYear', edu.year);
+        setIf('rsGpa', edu.gpa);
+      }
+
+      if (parsed.skills) {
+        const skills = typeof parsed.skills === 'string'
+          ? parsed.skills
+          : Object.values(parsed.skills).join(', ');
+        if (skills && !($('rsSkills').value || '').trim()) $('rsSkills').value = skills;
+      }
+
+      syncProfileHints();
+      statusText.textContent = 'Filled in whatever the document actually contained. Check every field.';
+      setTimeout(() => status.classList.add('rs-hidden'), 6000);
+    } catch (err) {
+      statusText.textContent = err.message;
+      toast(err.message, 'error');
+    } finally {
+      event.target.value = '';
+    }
+  });
+
+  /* ── step 2: target ─────────────────────────────────────────────── */
+  function currentTarget() {
+    if (state.mode === 'job') {
+      const job = JOBS.find((j) => j.uuid === state.jobId) || (TARGET_JOB && TARGET_JOB.uuid === state.jobId ? TARGET_JOB : null);
+      if (!job) return null;
+      return {
+        title: job.title,
+        company: job.company,
+        location: job.location || '',
+        skills: job.skills || '',
+        description: job.description || ''
+      };
+    }
+    return {
+      title: ($('rsTargetTitle').value || '').trim(),
+      company: ($('rsTargetCompany').value || '').trim(),
+      location: '',
+      skills: ($('rsTargetSkills').value || '').trim(),
+      description: ($('rsTargetDescription').value || '').trim()
+    };
+  }
+
+  function rsSetTargetMode(mode) {
+    state.mode = mode;
+    $('rsJobPicker').classList.toggle('rs-hidden', mode !== 'job');
+    $('rsCustomTarget').classList.toggle('rs-hidden', mode !== 'custom');
+    $('rsModeJob').setAttribute('aria-pressed', mode === 'job' ? 'true' : 'false');
+    $('rsModeCustom').setAttribute('aria-pressed', mode === 'custom' ? 'true' : 'false');
+    $('rsModeJob').className = 'rs-btn rs-btn-sm ' + (mode === 'job' ? 'rs-btn-quiet' : 'rs-btn-ghost');
+    $('rsModeCustom').className = 'rs-btn rs-btn-sm ' + (mode === 'custom' ? 'rs-btn-quiet' : 'rs-btn-ghost');
+    if (mode === 'custom' && !state.jobId) {
+      // Carry over anything already typed rather than starting blank.
+      const t = currentTarget();
+      if (t && t.title && !$('rsTargetTitle').value) $('rsTargetTitle').value = t.title;
+    }
+    renderTarget();
+  }
+
+  function rsPickJob(uuid) {
+    state.jobId = uuid;
+    state.mode = 'job';
+    document.querySelectorAll('.rs-jobrow').forEach((row) => {
+      row.setAttribute('aria-pressed', row.dataset.jobUuid === uuid ? 'true' : 'false');
+    });
+    renderTarget();
+  }
+
+  function renderTarget() {
+    const target = currentTarget();
+    const summary = $('rsTargetSummary');
+    const chips = $('rsTargetChips');
+    const railChips = $('rsRailChips');
+    const hint = $('rsHintTarget');
+
+    chips.innerHTML = '';
+    railChips.innerHTML = '';
+
+    if (!target || !target.title) {
+      summary.innerHTML = '<p class="rs-target-empty">No role selected yet. Pick a posting or type one in step 2.</p>';
+      hint.textContent = 'Required';
+      hint.className = 'rs-hint is-warn';
+      $('rsNumTarget').classList.remove('is-done');
+      return;
+    }
+
+    summary.innerHTML =
+      '<div class="rs-target-name">' + esc(target.title) + '</div>' +
+      (target.company ? '<div class="rs-target-company">' + esc(target.company) + '</div>' : '') +
+      (target.location ? '<div class="rs-target-company" style="color:#94a3b8;">' + esc(target.location) + '</div>' : '');
+
+    const skills = skillsFrom(target.skills);
+    skills.slice(0, 10).forEach((skill) => {
+      const chip = document.createElement('span');
+      chip.className = 'rs-chip is-blue';
+      chip.textContent = skill;
+      chips.appendChild(chip);
+
+      const rail = document.createElement('span');
+      rail.className = 'rs-chip is-neutral';
+      rail.textContent = skill;
+      railChips.appendChild(rail);
+    });
+
+    if (!skills.length) {
+      const chip = document.createElement('span');
+      chip.className = 'rs-chip is-miss';
+      chip.textContent = 'No skills listed — ranking will be weak';
+      chips.appendChild(chip);
+    }
+
+    $('rsSkillHint').textContent = skills.length
+      ? 'This posting screens for ' + skills.join(', ') + '. Only add the ones that are genuinely yours.'
+      : 'Add skills yourself. This field is never pre-filled from the posting.';
+
+    hint.textContent = skills.length ? skills.length + ' keywords' : 'No keywords';
+    hint.className = 'rs-hint ' + (skills.length ? 'is-ok' : 'is-warn');
+    $('rsNumTarget').classList.add('is-done');
+  }
+
+  $('rsJobSearch').addEventListener('input', (event) => {
+    const q = (event.target.value || '').toLowerCase().trim();
+    const rows = JOBS.map((j) => j.uuid);
+    rows.forEach((uuid) => {
+      const row = document.querySelector('.rs-jobrow[data-job-uuid="' + uuid + '"]');
+      if (!row) return;
+      const job = JOBS.find((j) => j.uuid === uuid);
+      const haystack = (job.title + ' ' + job.company + ' ' + job.skills).toLowerCase();
+      row.classList.toggle('rs-hidden', q.length > 0 && haystack.indexOf(q) === -1);
+    });
+  });
+
+  ['rsTargetTitle', 'rsTargetCompany', 'rsTargetSkills', 'rsTargetDescription'].forEach((id) => {
+    $(id).addEventListener('input', renderTarget);
+  });
+
+  /* ── step 3: discovery ──────────────────────────────────────────── */
+  function setDiscovery(pct, stage, on) {
+    $('rsDiscoveryProgress').classList.toggle('is-on', !!on);
+    $('rsDiscoveryBar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+    if (stage) $('rsDiscoveryStage').textContent = stage;
+    $('rsDiscoveryPct').textContent = Math.round(pct) + '%';
+  }
+
+  async function rsStartDiscovery() {
+    const p = profile();
+    if (!p.name || !p.email || !p.phone) {
+      syncProfileHints(true);
+      toast('Add your name, email and phone first — they go on the resume.', 'warning');
+      $('rsStepYou').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    const target = currentTarget();
+    if (!target || !target.title) {
+      toast('Pick a target role first, or type one yourself.', 'warning');
+      $('rsStepTarget').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    const btn = $('rsFindProjects');
+    btn.disabled = true;
+    $('rsFindProjectsText').textContent = 'Searching…';
+    setDiscovery(8, 'Searching public GitHub repositories…', true);
+
+    const list = $('rsProjectsList');
+    list.classList.remove('is-empty');
+    list.innerHTML = '<p class="rs-empty"><i data-lucide="loader" class="spin-icon"></i><strong>Ranking repositories</strong>Scoring each one against the target stack.</p>';
+    refreshIcons();
+
+    const payload = {
+      mode: 'FRESHER_GITHUB',
+      candidate_data: p
+    };
+    if (state.mode === 'job' && state.jobId) {
+      payload.job_id = state.jobId;
+    } else {
+      payload.target_profile = {
+        title: target.title,
+        company: target.company,
+        skills: target.skills,
+        description: target.description
+      };
+    }
+
+    try {
+      const res = await fetch('/api/resume/generations/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Could not start discovery');
+      state.generationId = data.job_id;
+      rsPollDiscovery(data.job_id);
+    } catch (err) {
+      setDiscovery(0, err.message, true);
+      btn.disabled = false;
+      $('rsFindProjectsText').textContent = 'Find matching repositories';
+      list.innerHTML = '<p class="rs-empty"><strong>Search failed</strong>' + esc(err.message) + '</p>';
+      toast(err.message, 'error');
+    }
+  }
+
+  function rsPollDiscovery(jobId) {
+    if (state.poll) clearInterval(state.poll);
+    const btn = $('rsFindProjects');
+
+    state.poll = setInterval(async () => {
+      try {
+        const res = await fetch('/api/resume/generations/' + jobId + '/');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Status check failed');
+
+        setDiscovery(data.progress_pct || 0, data.stage_message || 'Working…', true);
+
+        if (data.status === 'AWAITING_SELECTION' || data.status === 'COMPLETED') {
+          clearInterval(state.poll);
+          setDiscovery(100, 'Ranked. Tick the ones you can defend.', true);
+          btn.disabled = false;
+          $('rsFindProjectsText').textContent = 'Re-run the search';
+          rsLoadProjects(jobId);
+        } else if (data.status === 'FAILED') {
+          clearInterval(state.poll);
+          setDiscovery(0, data.error_message || 'Discovery failed', true);
+          btn.disabled = false;
+          $('rsFindProjectsText').textContent = 'Try again';
+        }
+      } catch (err) {
+        clearInterval(state.poll);
+        setDiscovery(0, 'Could not read discovery status', true);
+        btn.disabled = false;
+        $('rsFindProjectsText').textContent = 'Try again';
+      }
+    }, 1200);
+  }
+
+  async function rsLoadProjects(jobId) {
+    const list = $('rsProjectsList');
+    try {
+      const res = await fetch('/api/resume/generations/' + jobId + '/projects/');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Could not load projects');
+      state.projects = data.projects || [];
+      renderProjects();
+    } catch (err) {
+      list.classList.remove('is-empty');
+      list.innerHTML = '<p class="rs-empty"><strong>Could not load repositories</strong>' + esc(err.message) + '</p>';
+    }
+  }
+
+  function renderProjects() {
+    const list = $('rsProjectsList');
+    if (!state.projects.length) {
+      list.classList.add('is-empty');
+      list.innerHTML = '<p class="rs-empty"><i data-lucide="search"></i><strong>Nothing matched</strong>Try a different target role or add more skills.</p>';
+      refreshIcons();
+      updateProjectHint();
+      return;
+    }
+
+    list.classList.remove('is-empty');
+    list.innerHTML = '';
+
+    state.projects.forEach((proj) => {
+      const score = Math.round(proj.relevance_score || 0);
+      const card = document.createElement('div');
+      card.className = 'rs-proj' + (proj.is_selected ? ' is-picked' : '');
+
+      const relation = proj.candidate_relationship || 'BUILT';
+      card.innerHTML =
+        '<div class="rs-proj-top">' +
+          '<input type="checkbox" class="rs-check" ' + (proj.is_selected ? 'checked' : '') +
+          ' aria-label="Include ' + esc(proj.repo_name) + '" data-proj-id="' + esc(proj.id) + '">' +
+          '<div class="rs-proj-main">' +
+            '<a class="rs-repo" href="' + esc(proj.repo_url) + '" target="_blank" rel="noopener">' + esc(proj.repo_name) + ' ↗</a>' +
+            '<div class="rs-proj-meta">' +
+              '<span>' + esc(proj.language || 'Unknown stack') + '</span>' +
+              '<span>·</span><span>' + (proj.stars || 0) + ' stars</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="rs-score ' + (score >= 75 ? 'is-high' : '') + '">' + score + '% fit</span>' +
+        '</div>' +
+        (proj.description ? '<p class="rs-proj-desc">' + esc(proj.description) + '</p>' : '') +
+        '<div class="rs-proj-foot">' +
+          '<label for="rsRel_' + esc(proj.id) + '">My role</label>' +
+          '<select id="rsRel_' + esc(proj.id) + '" class="rs-select" style="height:32px;font-size:11.5px;flex:1;min-width:0;" data-proj-id="' + esc(proj.id) + '">' +
+            '<option value="BUILT"' + (relation === 'BUILT' ? ' selected' : '') + '>I built this</option>' +
+            '<option value="CONTRIBUTED"' + (relation === 'CONTRIBUTED' ? ' selected' : '') + '>I contributed</option>' +
+            '<option value="PRACTICE"' + (relation === 'PRACTICE' ? ' selected' : '') + '>I studied it</option>' +
+            '<option value="RECOMMENDED"' + (relation === 'RECOMMENDED' ? ' selected' : '') + '>Reference only</option>' +
+          '</select>' +
+        '</div>';
+
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('.rs-check').forEach((box) => {
+      box.addEventListener('change', () => {
+        const proj = state.projects.find((p) => p.id === box.dataset.projId);
+        if (proj) proj.is_selected = box.checked;
+        box.closest('.rs-proj').classList.toggle('is-picked', box.checked);
+        updateProjectHint();
+      });
+    });
+
+    list.querySelectorAll('.rs-select').forEach((select) => {
+      select.addEventListener('change', () => {
+        const proj = state.projects.find((p) => p.id === select.dataset.projId);
+        if (proj) proj.candidate_relationship = select.value;
+      });
+    });
+
+    refreshIcons();
+    updateProjectHint();
+  }
+
+  function updateProjectHint() {
+    const picked = state.projects.filter((p) => p.is_selected).length;
+    const hint = $('rsHintProjects');
+    hint.textContent = picked ? picked + ' selected' : 'None yet';
+    hint.className = 'rs-hint ' + (picked ? 'is-ok' : 'is-warn');
+    $('rsNumProjects').classList.toggle('is-done', picked > 0);
+  }
+
+  /* ── step 4: generate ───────────────────────────────────────────── */
+  function setGenerate(pct, stage, on) {
+    $('rsGenerateProgress').classList.toggle('is-on', !!on);
+    $('rsGenerateBar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+    if (stage) $('rsGenerateStage').textContent = stage;
+    $('rsGeneratePct').textContent = Math.round(pct) + '%';
+  }
+
+  async function rsGenerateResume() {
+    const p = profile();
+    if (!p.name || !p.email || !p.phone) {
+      syncProfileHints(true);
+      toast('Name, email and phone are required before generating.', 'warning');
+      $('rsStepYou').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    if (!state.generationId) {
+      toast('Run the repository search first — it is what makes this resume specific.', 'warning');
+      return;
+    }
+
+    const btn = $('rsGenerate');
+    btn.disabled = true;
+    $('rsGenerateText').textContent = 'Writing your resume…';
+    setGenerate(20, 'Saving your project choices…', true);
+
+    try {
+      if (state.projects.length) {
+        await fetch('/api/resume/generations/' + state.generationId + '/projects/select/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            selections: state.projects.map((proj) => ({
+              project_id: proj.id,
+              is_selected: !!proj.is_selected,
+              relationship: proj.candidate_relationship || 'BUILT'
+            }))
+          })
+        });
+      }
+
+      setGenerate(55, 'Synthesizing bullets and scoring ATS…', true);
+
+      const res = await fetch('/api/resume/generations/' + state.generationId + '/generate/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Generation failed');
+
+      setGenerate(100, 'Done', true);
+      state.resume = data.resume;
+      renderResume(data.resume, data.ats_eval || {}, data.missing_fields || []);
+      toast('Resume generated. Check the score before you download.', 'success');
+    } catch (err) {
+      setGenerate(0, err.message, true);
+      toast(err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      $('rsGenerateText').textContent = 'Regenerate';
+    }
+  }
+
+  function renderResume(resume, ats, missingFields) {
+    $('rsGenerated').classList.remove('rs-hidden');
+
+    const score = Math.round(ats.score || 0);
+    const color = score >= 80 ? '#34d399' : (score >= 60 ? '#fbbf24' : '#f87171');
+    const ring = 'conic-gradient(' + color + ' 0%, ' + color + ' ' + score + '%, #1e293b ' + score + '%, #1e293b 100%)';
+
+    [$('rsGauge'), $('rsGaugeMini')].forEach((gauge) => { gauge.style.background = ring; });
+    $('rsGaugeNum').textContent = score;
+    $('rsGaugeNum').style.color = color;
+    $('rsGaugeMiniNum').textContent = score;
+    $('rsGaugeMiniNum').style.color = color;
+
+    const grade = ats.grade || 'Scored';
+    $('rsGrade').textContent = grade;
+    $('rsGradeMini').textContent = grade;
+    $('rsPassRate').textContent = ats.pass_rate || '';
+    $('rsPassMini').textContent = ats.pass_rate || '';
+
+    const kw = $('rsKeywords');
+    kw.innerHTML = '';
+    (ats.matched_skills || []).slice(0, 5).forEach((skill) => {
+      const chip = document.createElement('span');
+      chip.className = 'rs-chip is-ok';
+      chip.textContent = '✓ ' + skill;
+      kw.appendChild(chip);
+    });
+    (ats.missing_skills || []).slice(0, 4).forEach((skill) => {
+      const chip = document.createElement('span');
+      chip.className = 'rs-chip is-miss';
+      chip.textContent = '+ ' + skill;
+      kw.appendChild(chip);
+    });
+
+    const pillars = $('rsPillars');
+    pillars.innerHTML = '';
+    (ats.pillars || []).forEach((pillar) => {
+      const pct = Math.round((pillar.score / Math.max(1, pillar.max_score)) * 100);
+      const row = document.createElement('div');
+      row.className = 'rs-pillar';
+      row.innerHTML =
+        '<span class="rs-pillar-name" title="' + esc(pillar.detail || pillar.name) + '">' + esc(pillar.name) + '</span>' +
+        '<span class="rs-pillar-track"><span class="rs-pillar-fill" style="width:' + pct + '%"></span></span>';
+      pillars.appendChild(row);
+    });
+
+    const issues = (missingFields || []).concat((ats.improvements || []).slice(0, 3));
+    if (issues.length) {
+      $('rsMissingWrap').classList.remove('rs-hidden');
+      $('rsMissing').innerHTML = issues.map((i) => '<li>' + esc(i) + '</li>').join('');
+    } else {
+      $('rsMissingWrap').classList.add('rs-hidden');
+    }
+
+    $('rsRailEmpty').classList.add('rs-hidden');
+    $('rsRailResult').classList.remove('rs-hidden');
+    $('rsHintGenerate').textContent = score + '/100';
+    $('rsHintGenerate').className = 'rs-hint is-ok';
+    $('rsNumGenerate').classList.add('is-done');
+
+    if (state.generationId) {
+      $('rsEditorLink').href = '/resume-builder/?gen_id=' + encodeURIComponent(state.generationId) +
+        (state.jobId ? '&job_id=' + encodeURIComponent(state.jobId) : '');
+    }
+    refreshIcons();
+  }
+
+  async function rsDownload(kind) {
+    if (!state.resume) {
+      toast('Generate the resume first.', 'warning');
+      return;
+    }
+    const url = kind === 'docx' ? '/api/resume/download-docx/' : '/api/resume/download-pdf/';
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resume: state.resume })
+      });
+      if (!res.ok) throw new Error('Download failed (' + res.status + ')');
+      const blob = await res.blob();
+      const name = (state.resume.name || 'Candidate').replace(/[^a-zA-Z0-9_-]+/g, '_');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name + '_Resume.' + kind;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  function rsCopyResume() {
+    const r = state.resume;
+    if (!r) return;
+    const lines = [];
+    if (r.name) lines.push(r.name);
+    const c = r.contact || {};
+    const contact = [c.email, c.phone, c.location, c.linkedin, c.github].filter(Boolean).join(' | ');
+    if (contact) lines.push(contact);
+    if (r.summary) lines.push('', 'SUMMARY', r.summary);
+    if (r.skills && Object.keys(r.skills).length) {
+      lines.push('', 'SKILLS');
+      Object.entries(r.skills).forEach(([key, value]) => lines.push(key + ': ' + value));
+    }
+    if (r.projects && r.projects.length) {
+      lines.push('', 'PROJECTS');
+      r.projects.forEach((p) => {
+        lines.push(p.title);
+        if (p.tech_stack) lines.push('Stack: ' + p.tech_stack);
+        (p.bullets || []).forEach((b) => lines.push('• ' + b));
+        lines.push('');
+      });
+    }
+    if (r.education && Object.values(r.education).some(Boolean)) {
+      const e = r.education;
+      lines.push('EDUCATION', [e.degree, e.institution, e.year, e.gpa].filter(Boolean).join(', '));
+    }
+    const text = lines.join('\n');
+    navigator.clipboard.writeText(text)
+      .then(() => toast('Resume copied as plain text.', 'success'))
+      .catch(() => window.prompt('Copy your resume:', text));
+  }
+
+  /* ── wire up ────────────────────────────────────────────────────── */
+  window.rsStartDiscovery = rsStartDiscovery;
+  window.rsGenerateResume = rsGenerateResume;
+  window.rsSetTargetMode = rsSetTargetMode;
+  window.rsPickJob = rsPickJob;
+  window.rsDownload = rsDownload;
+  window.rsCopyResume = rsCopyResume;
+
+  if (TARGET_JOB) {
+    const row = document.querySelector('.rs-jobrow[data-job-uuid="' + TARGET_JOB.uuid + '"]');
+    if (row) row.setAttribute('aria-pressed', 'true');
+  }
+
+  syncProfileHints();
+  renderTarget();
+  refreshIcons();
+})();
+</script>
+{% endblock %}

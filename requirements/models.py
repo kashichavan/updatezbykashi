@@ -776,6 +776,9 @@ class ResumeGenerationJob(models.Model):
     stage_message = models.CharField(max_length=255, default='Job initialized...')
     
     candidate_data = models.JSONField(default=dict, blank=True)
+    # Target role for resumes built on the standalone studio page, where there is
+    # no JobPosting to point at. Keys: title, company, skills, description, location.
+    target_profile = models.JSONField(default=dict, blank=True)
     generated_resume = models.JSONField(default=dict, blank=True)
     ats_evaluation = models.JSONField(default=dict, blank=True)
     error_message = models.TextField(blank=True, default='')

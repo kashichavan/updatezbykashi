@@ -382,27 +382,49 @@ def generate_github_project_bullets(
     primary_language: str = "",
     topics: list[str] = None,
     stars: int = 0,
+    relationship: str = "RECOMMENDED",
 ) -> dict:
-    """Transform a GitHub project repository into a production-grade enterprise project entry with Google XYZ bullets."""
+    """
+    Turn a public repository into one resume project entry.
+
+    The candidate sends this document to real recruiters, so the model is not
+    allowed to embellish: no invented metrics, no "enterprise"/"production-grade"
+    puffery, and the verb has to match what the candidate actually did with the
+    repo (built it, contributed, or studied it).
+    """
+    owns_it = relationship in ("BUILT", "PORTFOLIO")
     system_prompt = (
-        "You are an elite technical resume coach and ex-FAANG hiring manager. "
-        "Transform a GitHub project repository into a production-grade enterprise project entry for a software engineering resume. "
-        "Use the Google XYZ Formula: 'Accomplished [X], measured by [Y], by doing [Z]'. "
-        "Include realistic metrics (e.g. latency reduction %, throughput req/sec, test coverage %, memory footprint). "
-        "Return a valid JSON object with the following keys:\n"
-        "- 'title': A clean, impressive professional project title\n"
-        "- 'role': e.g. 'Creator & Lead Architect' or 'Full Stack Contributor'\n"
-        "- 'tech_stack': comma-separated list of technologies, frameworks, and databases inferred from the repo\n"
-        "- 'bullets': list of 3 high-impact Google XYZ bullet points (30-45 words each) starting with strong action verbs (Architected, Engineered, Optimized, Implemented, Deployed)"
+        "You write one accurate resume entry for a public GitHub repository. "
+        "Facts come only from the repository name, description, language, topics and star count given by the user. "
+        "STRICT RULES — violating any of them makes the resume fraudulent:\n"
+        "1. Never invent numbers. No percentages, request rates, user counts, latency, uptime, coverage, team size or scale. "
+        "If the input contains a number, you may reuse it exactly; otherwise the bullet must have no metric at all.\n"
+        "2. Never claim a business outcome (revenue, churn, cost savings, customers) or an employer.\n"
+        "3. Do not add adjectives like Enterprise, Production-Grade, High-Performance, Scalable, Robust or World-Class. "
+        "Describe the software plainly.\n"
+        "4. The title must be recognisably this repository: use its name and description, not a marketing rename.\n"
+        + (
+            "5. The candidate says they built this repository, so bullets may use first-person achievement verbs "
+            "(Built, Implemented, Added, Designed) restricted to what the description and topics support.\n"
+            if owns_it else
+            "5. The candidate did NOT write this repository — they read it. Bullets must describe the code as studied work: "
+            "'Studied ...', 'Traced ...', 'Reimplemented ...'. Never use achievement verbs that imply authorship.\n"
+        )
+        + "Return a JSON object with keys:\n"
+        "- 'title': the project name, taken from the repository name, plus nothing else\n"
+        "- 'role': 'Creator' if they built it, otherwise 'Independent study'\n"
+        "- 'tech_stack': comma-separated technologies actually evidenced by the language and topics\n"
+        "- 'bullets': 2-3 sentences (15-30 words) that a candidate could defend in an interview, no metrics unless supplied"
     )
 
     topics_str = ", ".join(topics) if topics else "None"
     user_prompt = f"""
 Repository Name: {repo_name}
-Description: {description or 'Open-source software application'}
-Primary Language: {primary_language or 'Python / TypeScript'}
+Description: {description or 'No description provided'}
+Primary Language: {primary_language or 'Unknown'}
 Topics / Tags: {topics_str}
 GitHub Stars: {stars}
+Candidate relationship: {relationship}
 """
 
     messages = [

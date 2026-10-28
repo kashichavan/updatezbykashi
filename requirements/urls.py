@@ -18,6 +18,10 @@ urlpatterns = [
     path('guides/<slug:slug>/', views.guide_detail_view, name='guide_detail'),
     path('tutorials/', views.guides_list_view, name='tutorials_list'),
 
+    # Standalone AI Resume Studio (create a resume without needing a job page)
+    path('resume-studio/', views.resume_studio_view, name='resume_studio'),
+    path('resume-studio/<uuid:job_uuid>/', views.resume_studio_view, name='resume_studio_for_job'),
+
     # ATS 90+ Score Resume Generator & Enterprise Project Matcher
     path('resume/', views.resume_builder_view, name='resume_builder'),
     path('resume-builder/', views.resume_builder_view, name='resume_builder_alias'),

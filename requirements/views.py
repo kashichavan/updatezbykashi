@@ -2969,6 +2969,65 @@ def api_owner_verify_links(request):
     })
 
 
+def resume_studio_view(request, job_uuid=None):
+    """
+    Standalone AI Resume Studio — /resume-studio/
+
+    Resume creation used to exist only inside a job detail page, which meant you
+    could not build one unless you happened to be looking at a posting. This view
+    owns the whole flow: describe yourself, describe the role you are aiming at
+    (or arrive with ?job_id= to inherit a real posting), discover real public
+    repositories, generate, and export.
+
+    No JobPosting is required. When none is supplied the free-form target goes
+    into ResumeGenerationJob.target_profile and the pipeline reads it from there.
+    """
+    from .models import JobPosting
+    import uuid
+
+    # /resume-studio/<uuid>/ carries the posting in the path; /resume-studio/?job_id=
+    # carries it in the query string. Both land on the same target.
+    job_id = job_uuid or request.GET.get('job_id') or request.GET.get('job')
+    target_job = None
+    if job_id:
+        try:
+            target_job = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
+        except (ValueError, AttributeError, TypeError):
+            if str(job_id).isdigit():
+                target_job = JobPosting.objects.filter(pk=int(job_id)).first()
+
+    # Job picker: the studio is usable without one, but most people arrive wanting
+    # to target a specific posting, so offer the active ones. Filtering happens in
+    # the browser — the payload below is small and saves a round trip.
+    recent_jobs = list(
+        JobPosting.objects.filter(status='ACTIVE')
+        .select_related('category')
+        .order_by('-posted_date', '-created_at')[:40]
+    )
+
+    skills_list = target_job.get_skills_list() if target_job else []
+
+    context = {
+        'target_job': target_job,
+        'skills_list': skills_list,
+        'recent_jobs': recent_jobs,
+        'recent_jobs_json': [
+            {
+                'uuid': str(j.uuid),
+                'title': j.title,
+                'company': j.company_name,
+                'location': j.location or '',
+                'skills': j.skills_required or '',
+            }
+            for j in recent_jobs
+        ],
+        'studio_editor_url': (
+            f"/resume-builder/?job_id={target_job.uuid}" if target_job else "/resume-builder/"
+        ),
+    }
+    return render(request, 'content/resume_studio.html', context)
+
+
 def resume_builder_view(request):
     """
     ATS 90+ Score Resume Generator with Enterprise Projects & Role-Specific Tailoring.
@@ -3374,14 +3433,32 @@ def api_ai_github_project(request):
             except Exception:
                 pass  # Fallback to AI generation with given inputs
 
-        # Generate Google XYZ Project Bullets via Groq AI
+        # The user pasted their own repository, so authorship is theirs to claim.
         project_data = generate_github_project_bullets(
             repo_name=repo_name,
             description=description,
             primary_language=primary_lang,
             topics=topics,
             stars=stars,
+            relationship='BUILT',
         )
+
+        # Same guard as the async pipeline: invented metrics never reach the page.
+        from types import SimpleNamespace
+        from .resume_generation_service import sanitize_project_bullets, honest_project_title
+        source = SimpleNamespace(
+            repo_name=f"{owner}/{repo_name}",
+            description=description,
+            language=primary_lang,
+            tech_stack=topics,
+            stars=stars,
+            repo_url=f"https://github.com/{owner}/{repo_name}",
+        )
+        bullets = sanitize_project_bullets(project_data.get('bullets', []), source)
+        if not bullets:
+            bullets = [b for b in [description] if b]
+        project_data['bullets'] = bullets
+        project_data['title'] = honest_project_title(project_data.get('title'), source)
 
         return JsonResponse({'success': True, 'project': project_data})
     except Exception as e:
@@ -3813,7 +3890,9 @@ def api_resume_upload(request):
 
         # Evaluate ATS Scorecard
         ats_eval = evaluate_uploaded_resume_ats(parsed_resume, target_skills_list)
-        ats_eval['score'] = ats_eval.get('overall_score', 85)
+        # evaluate_uploaded_resume_ats already returns a real `score`; the old
+        # `, 85` default showed a confident 85 for resumes it never scored.
+        ats_eval['score'] = ats_eval.get('score', ats_eval.get('overall_score', 0))
 
         # Generate AI-powered suggestions, score adjustments, and concrete changes
         try:
@@ -3872,6 +3951,7 @@ def api_resume_generation_create(request):
     try:
         # Determine content type: JSON or Multipart Form
         candidate_data = {}
+        target_profile = {}
         mode = 'FRESHER_GITHUB'
         job_id = None
 
@@ -3880,6 +3960,7 @@ def api_resume_generation_create(request):
             mode = payload.get('mode', 'FRESHER_GITHUB')
             job_id = payload.get('job_id')
             candidate_data = payload.get('candidate_data', {})
+            target_profile = payload.get('target_profile') or {}
         else:
             mode = request.POST.get('mode', 'FRESHER_GITHUB')
             job_id = request.POST.get('job_id')
@@ -3929,6 +4010,7 @@ def api_resume_generation_create(request):
             job=target_job,
             mode=mode,
             candidate_data=candidate_data,
+            target_profile=target_profile if isinstance(target_profile, dict) else {},
             status='PENDING',
             stage_message='Initializing resume generation pipeline...'
         )

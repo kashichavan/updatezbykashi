@@ -291,7 +291,7 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         c_score += 4
     else:
         c_feedback.append("No LinkedIn profile link detected")
-        improvements.append("Add your customized LinkedIn URL to increase recruiter trust by 40%")
+        improvements.append("Add your LinkedIn profile URL — recruiters look for it")
 
     if contact.get("github") and "github" in contact.get("github").lower():
         c_score += 3
@@ -381,7 +381,10 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
     metric_score = min(20, int((bullets_with_metrics / max(1, len(all_bullets))) * 20))
 
     if metric_score < 14:
-        improvements.append("Add measurable outcomes to project bullets (e.g. 'reduced latency by 35%', 'supported 10,000+ users').")
+        improvements.append(
+            "Quantify bullets only where you actually measured something (records processed, tests passing, "
+            "build time). If you never measured it, leave the number out."
+        )
 
     total_score += metric_score
     pillars.append({
@@ -486,7 +489,9 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         "pillars": pillars,
         "checks": checks,
         "scored_projects": scored_projects,
-        "improvements": improvements[:4] or ["Your resume has strong fundamentals. Edit live to boost score to 95+."],
+        # Nothing to fix is a real result. The old fallback invented praise plus a
+        # guaranteed "95+" score, which contradicted whatever the evaluator found.
+        "improvements": improvements[:4],
         "matched_skills": matched_skills,
         "missing_skills": missing_skills,
         "bullet_count": len(all_bullets),
