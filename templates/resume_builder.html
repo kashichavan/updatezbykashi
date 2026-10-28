@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Live A4 Resume Editor — edit, score and export | Kashii Updatez{% endblock %}
+{% block title %}{% if target_job %}Tailored resume for {{ target_job.title }} at {{ target_job.company_name }} | Kashii Updatez{% else %}Live A4 Resume Editor — edit, score and export | Kashii Updatez{% endif %}{% endblock %}
 {% block meta_description %}Edit your resume directly on an A4 sheet, check it against the same ATS evaluator used for uploaded resumes, and export to PDF or DOCX. The score is calculated from your text.{% endblock %}
 
 {% block content %}
@@ -9,8 +9,20 @@
 
   <!-- Studio Hero Header -->
   <div class="studio-hero">
+    {% if target_job %}
     <div class="studio-badge">
-      <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #2563eb;"></i>
+      <i data-lucide="target" style="width: 14px; height: 14px; color: #1d4ed8;"></i>
+      <span>TAILORING FOR {{ target_job.company_name|upper }}</span>
+    </div>
+    <h1 class="studio-title">
+      Tailoring your resume for <em>{{ target_job.title }}</em>
+    </h1>
+    <p class="studio-subtitle">
+      This posting's own description is already applied to your summary and project bullets. Review the result, make it yours, then export a clean ATS PDF or DOCX.
+    </p>
+    {% else %}
+    <div class="studio-badge">
+      <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #1d4ed8;"></i>
       <span>LIVE A4 RESUME EDITOR &bull; SCORED BY THE ATS EVALUATOR</span>
     </div>
     <h1 class="studio-title">
@@ -19,16 +31,26 @@
     <p class="studio-subtitle">
       Edit any section on the sheet. The score is calculated from your text by the server evaluator, then you can export a clean, 100% vector single-page PDF or DOCX.
     </p>
+    {% endif %}
   </div>
 
   <!-- Unified Studio Command Deck -->
   <div class="studio-command-deck">
     <!-- Zone 1: Role Selector & Experience Level -->
     <div class="deck-zone deck-zone-config">
+      {% if target_job %}
+      <div class="deck-select-wrap">
+        <span class="deck-tag">TAILORING FOR</span>
+        <div class="deck-select-inner" title="{{ target_job.title }} at {{ target_job.company_name }}">
+          <i data-lucide="target" class="deck-icon" style="color: #1d4ed8; width: 15px; height: 15px;"></i>
+          <span class="deck-target-label">{{ target_job.title }}</span>
+        </div>
+      </div>
+      {% else %}
       <div class="deck-select-wrap">
         <label for="roleSelectorSelect" class="deck-tag">TARGET ROLE</label>
         <div class="deck-select-inner">
-          <i data-lucide="layers" class="deck-icon" style="color: #2563eb; width: 15px; height: 15px;"></i>
+          <i data-lucide="layers" class="deck-icon" style="color: #1d4ed8; width: 15px; height: 15px;"></i>
           <select id="roleSelectorSelect" onchange="switchRole(this.value)" class="deck-select-input">
             {% for r_id, r in roles.items %}
               <option value="{{ r_id }}" {% if r_id == selected_role_id %}selected{% endif %}>{{ r.badge }}</option>
@@ -36,6 +58,7 @@
           </select>
         </div>
       </div>
+      {% endif %}
 
       <div class="deck-level-toggle">
         <button type="button" id="btnLevelFresher" onclick="setLevel('fresher')" class="level-pill-btn active">
@@ -52,13 +75,13 @@
     <!-- Zone 2: Live ATS Pulse Meter Widget -->
     <div class="deck-zone deck-zone-pulse">
       <button type="button" onclick="openAtsDiagnosticModal()" class="ats-pulse-card" title="Click to view ATS Score Breakdown &amp; Audit">
-        <div class="ats-pulse-gauge" style="{% if ats_eval.score >= 90 %}background: #dcfce7; border-color: #22c55e;{% elif ats_eval.score >= 80 %}background: #dbeafe; border-color: #3b82f6;{% elif ats_eval.score >= 70 %}background: #fef3c7; border-color: #f59e0b;{% else %}background: #fee2e2; border-color: #ef4444;{% endif %}">
+        <div class="ats-pulse-gauge" style="{% if ats_eval.score >= 90 %}background: #dbeafe; border-color: #15803d;{% elif ats_eval.score >= 80 %}background: #eff6ff; border-color: #1d4ed8;{% elif ats_eval.score >= 70 %}background: #fffbeb; border-color: #b45309;{% else %}background: #fef2f2; border-color: #dc2626;{% endif %}">
           <span id="atsScoreValue" class="ats-gauge-num" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #b91c1c;{% endif %}">{{ ats_eval.score }}</span>
         </div>
         <div class="ats-pulse-text">
           <div class="ats-pulse-top">
             <span class="ats-pulse-label" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #b91c1c;{% endif %}">ATS SCORE</span>
-            <span id="atsGradeText" class="ats-pulse-grade" style="{% if ats_eval.score >= 90 %}color: #16a34a;{% elif ats_eval.score >= 80 %}color: #2563eb;{% elif ats_eval.score >= 70 %}color: #d97706;{% else %}color: #dc2626;{% endif %}">
+            <span id="atsGradeText" class="ats-pulse-grade" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #dc2626;{% endif %}">
               {% if ats_eval.score >= 90 %}✓ {{ ats_eval.grade }}{% elif ats_eval.score >= 80 %}✓ {{ ats_eval.grade }}{% elif ats_eval.score >= 70 %}⚡ {{ ats_eval.grade }}{% else %}⚠️ {{ ats_eval.grade }}{% endif %}
             </span>
           </div>
@@ -81,11 +104,14 @@
         <span>Add Project</span>
       </button>
 
-      <!-- 1-Click AI Boost -->
+      <!-- 1-Click AI Boost (only when no job is targeted; the job banner owns
+           the single tailoring action so the page does not offer two AIs) -->
+      {% if not target_job %}
       <button type="button" id="btnOneClickAiBoost" onclick="runOneClickAiBoost()" class="studio-btn studio-btn-magic" title="AI rewords what you already wrote for this role. It cannot add numbers you did not supply.">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
         <span>AI Rewrite for Role</span>
       </button>
+      {% endif %}
 
       <!-- Download Vector PDF -->
       <button type="button" id="btnDownloadPdf" onclick="downloadResumeAsPdf()" class="studio-btn studio-btn-primary" title="Export 100% vector ATS PDF (Single or Multi-Page)">
@@ -105,11 +131,11 @@
 
   <!-- Target Job Active Tailor Banner (if job selected) -->
   {% if target_job %}
-  <div class="target-job-banner">
+  <div class="target-job-banner" id="targetJobBanner" data-job-id="{{ target_job.uuid }}">
     <div style="flex: 1; min-width: 260px;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
         <span class="target-badge">TARGET JOB</span>
-        <span style="color: #f1f5f9; font-size: 13.5px; font-weight: 800;">{{ target_job.company_name }} &mdash; {{ target_job.title }}</span>
+        <span style="color: #0f172a; font-size: 13.5px; font-weight: 800;">{{ target_job.company_name }} &mdash; {{ target_job.title }}</span>
       </div>
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 5px;">
         {% for s in target_job.get_skills_list|slice:":6" %}
@@ -117,12 +143,16 @@
         {% endfor %}
       </div>
     </div>
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <button type="button" id="btnTargetJobAlter" onclick="autoAlterResumeForTargetJob()" class="studio-btn studio-btn-magic" style="padding: 9px 14px; font-size: 12px;">
+    <div class="target-job-actions">
+      <span class="target-job-status" id="targetJobStatus" role="status" aria-live="polite">
+        <i data-lucide="loader" class="spin-icon" style="width: 12px; height: 12px;"></i>
+        <span>Tailoring to this job…</span>
+      </span>
+      <button type="button" id="btnTargetJobAlter" onclick="autoAlterResumeForTargetJob()" class="studio-btn studio-btn-magic" style="padding: 9px 14px; font-size: 12px;" title="Rewrites your summary and project bullets against this posting's own description. It cannot add numbers you did not supply.">
         <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-        <span>⚡ 1-Click Tailor for {{ target_job.company_name }}</span>
+        <span>⚡ Tailor to this job</span>
       </button>
-      <a href="{{ target_job.get_absolute_url }}" target="_blank" class="studio-btn studio-btn-ghost" style="padding: 8px 12px; font-size: 11.5px; text-decoration: none;">
+      <a href="{{ target_job.get_absolute_url }}" target="_blank" rel="noopener" class="studio-btn studio-btn-ghost" style="padding: 8px 12px; font-size: 11.5px; text-decoration: none;">
         View Job ↗
       </a>
     </div>
@@ -139,7 +169,7 @@
       <div class="inspector-section">
         <div class="inspector-header">
           <div class="inspector-title">
-            <i data-lucide="layers" style="width: 15px; height: 15px; color: #2563eb;"></i>
+            <i data-lucide="layers" style="width: 15px; height: 15px; color: #1d4ed8;"></i>
             <span>Resume Projects</span>
           </div>
           <span class="inspector-pill-counter" id="projectCount">2</span>
@@ -157,7 +187,7 @@
       <!-- Work Experience Manager (in Experienced Mode) -->
       <div id="controlsExperienceSection" style="display: none;" class="inspector-section inspector-exp-box">
         <div class="inspector-header">
-          <div class="inspector-title" style="color: #2563eb;">
+          <div class="inspector-title" style="color: #1d4ed8;">
             <i data-lucide="briefcase" style="width: 15px; height: 15px;"></i>
             <span>Experience (<span id="experienceCount">0</span>)</span>
           </div>
@@ -181,7 +211,7 @@
       <!-- ATS Compliance Checklist -->
       <div class="inspector-section inspector-checklist-section">
         <div class="checklist-header">
-          <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #16a34a;"></i>
+          <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #15803d;"></i>
           <span>ATS AUDIT MATRIX</span>
         </div>
         <ul id="atsChecklist" class="inspector-checklist">
@@ -219,12 +249,12 @@
             <span class="word-app-badge" title="Microsoft Word & Google Docs Compatible Editor">W</span>
             <div class="word-doc-meta">
               <input type="text" id="wordDocTitle" value="ATS_Resume.docx" class="word-doc-title-input" title="Click to rename document" spellcheck="false">
-              <span class="word-save-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: #16a34a;"></i> <span>Saved locally</span></span>
+              <span class="word-save-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: #15803d;"></i> <span>Saved locally</span></span>
             </div>
           </div>
           <div class="word-titlebar-right">
             <button type="button" onclick="downloadResumeAsDocx()" class="word-btn-action" title="Export as Microsoft Word .docx / .doc file">
-              <i data-lucide="file-text" style="width: 13px; height: 13px; color: #2563eb;"></i>
+              <i data-lucide="file-text" style="width: 13px; height: 13px; color: #1d4ed8;"></i>
               <span>Word (.docx)</span>
             </button>
             <button type="button" onclick="downloadResumeAsPdf()" class="word-btn-action word-btn-action-primary" title="Export as 100% vector ATS PDF (Single or Multi-Page)">
@@ -293,7 +323,7 @@
             
             <label class="word-color-picker-label" title="Text Color">
               <span style="font-weight: 800; font-size: 11px;">A</span>
-              <span class="word-color-bar" id="wordColorIndicator" style="background: #0f172a;"></span>
+              <span class="word-color-bar" id="wordColorIndicator" style="background: #f1f5f9;"></span>
               <input type="color" value="#0f172a" onchange="WordEditor.setTextColor(this.value)" class="word-color-input">
             </label>
 
@@ -576,7 +606,7 @@
     font-family: var(--font-serif);
     font-style: italic;
     font-weight: 400;
-    color: #2563eb;
+    color: #1d4ed8;
   }
 
   .studio-subtitle {
@@ -652,6 +682,20 @@
   .deck-select-input option {
     background: #ffffff;
     color: #0f172a;
+  }
+
+  .deck-target-label {
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 800;
+    max-width: 230px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 560px) {
+    .deck-target-label { max-width: 150px; }
   }
 
   .deck-level-toggle {
@@ -743,7 +787,7 @@
   .ats-pulse-grade {
     font-size: 11px;
     font-weight: 800;
-    color: #16a34a;
+    color: #15803d;
   }
   .ats-pulse-sub {
     font-size: 11px;
@@ -779,8 +823,8 @@
 
   .studio-btn-primary {
     background: #2563eb;
-    color: #ffffff;
-    border-color: #2563eb;
+    color: #0f172a;
+    border-color: #1d4ed8;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
   }
   .studio-btn-primary:hover {
@@ -791,14 +835,14 @@
   }
 
   .studio-btn-magic {
-    background: #f5f3ff;
-    color: #6d28d9;
-    border: 1px solid #ddd6fe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
   }
   .studio-btn-magic:hover {
-    background: #ede9fe;
-    color: #5b21b6;
-    border-color: #c4b5fd;
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #93c5fd;
     transform: translateY(-1px);
   }
 
@@ -810,7 +854,7 @@
   }
   .studio-btn-subtle:hover {
     background: #f8fafc;
-    border-color: #94a3b8;
+    border-color: #64748b;
     transform: translateY(-1px);
   }
 
@@ -822,7 +866,7 @@
   .studio-btn-ghost:hover {
     background: #f1f5f9;
     color: #0f172a;
-    border-color: #cbd5e1;
+    border-color: #475569;
   }
 
   /* ── 3. TARGET JOB ACTIVE BANNER ─────────────────────────────────────────── */
@@ -859,6 +903,61 @@
     font-weight: 650;
     padding: 2px 8px;
     border-radius: 6px;
+  }
+
+  .target-job-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .target-job-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #1d4ed8;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 99px;
+    padding: 4px 10px;
+    line-height: 1.2;
+  }
+
+  .target-job-status.is-done {
+    color: #15803d;
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+
+  .target-job-status.is-error {
+    color: #b91c1c;
+    background: #fef2f2;
+    border-color: #fecaca;
+  }
+
+  .target-job-status:empty {
+    display: none;
+  }
+
+  @media (max-width: 560px) {
+    .target-job-actions {
+      width: 100%;
+      justify-content: stretch;
+    }
+    .target-job-status {
+      width: 100%;
+      justify-content: center;
+      text-align: center;
+      padding: 5px 10px;
+    }
+    .target-job-actions .studio-btn {
+      flex: 1;
+      justify-content: center;
+    }
   }
 
   /* ── 4. WORKSPACE GRID & STUDIO INSPECTOR ────────────────────────────────── */
@@ -905,7 +1004,7 @@
 
   .inspector-pill-counter {
     background: #eff6ff;
-    color: #2563eb;
+    color: #1d4ed8;
     border: 1px solid #bfdbfe;
     font-size: 10.5px;
     font-weight: 800;
@@ -918,7 +1017,7 @@
     margin-top: 10px;
     background: #f8fafc;
     border: 1px dashed #cbd5e1;
-    color: #2563eb;
+    color: #1d4ed8;
     font-size: 12px;
     font-weight: 750;
     padding: 9px 12px;
@@ -952,7 +1051,7 @@
   .inspector-link-btn {
     background: none;
     border: none;
-    color: #2563eb;
+    color: #1d4ed8;
     font-size: 11.5px;
     font-weight: 700;
     cursor: pointer;
@@ -986,7 +1085,7 @@
 
   .util-btn-download {
     background: #2563eb;
-    color: #ffffff;
+    color: #0f172a;
     box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
   }
   .util-btn-download:hover {
@@ -1001,7 +1100,7 @@
   .util-btn-copy:hover {
     background: #f8fafc;
     color: #0f172a;
-    border-color: #94a3b8;
+    border-color: #64748b;
   }
 
   .inspector-checklist-section {
@@ -1114,7 +1213,7 @@
     width: 26px;
     height: 26px;
     background: #1d4ed8;
-    color: #ffffff;
+    color: #0f172a;
     font-size: 13px;
     font-weight: 900;
     font-family: Arial, sans-serif;
@@ -1142,7 +1241,7 @@
   }
   .word-doc-title-input:hover, .word-doc-title-input:focus {
     background: #ffffff;
-    border-color: #cbd5e1;
+    border-color: #475569;
   }
 
   .word-save-pill {
@@ -1151,7 +1250,7 @@
     gap: 4px;
     font-size: 11px;
     font-weight: 600;
-    color: #16a34a;
+    color: #15803d;
   }
 
   .word-titlebar-right {
@@ -1177,18 +1276,18 @@
   .word-btn-action:hover {
     background: #f1f5f9;
     color: #0f172a;
-    border-color: #94a3b8;
+    border-color: #64748b;
   }
 
   .word-btn-action-primary {
     background: #2563eb;
-    border-color: #2563eb;
-    color: #ffffff;
+    border-color: #1d4ed8;
+    color: #0f172a;
   }
   .word-btn-action-primary:hover {
     background: #1d4ed8;
     border-color: #1d4ed8;
-    color: #ffffff;
+    color: #0f172a;
   }
 
   .word-btn-icon {
@@ -1247,12 +1346,12 @@
   }
   .word-tool-btn:hover {
     background: #f1f5f9;
-    border-color: #e2e8f0;
+    border-color: #475569;
     color: #0f172a;
   }
   .word-tool-btn.active {
     background: #e0e7ff;
-    color: #2563eb;
+    color: #1d4ed8;
     border-color: #c7d2fe;
   }
 
@@ -1290,7 +1389,7 @@
   }
   .word-color-picker-label:hover {
     background: #f1f5f9;
-    border-color: #e2e8f0;
+    border-color: #475569;
   }
 
   .word-color-bar {
@@ -1486,7 +1585,7 @@
   .word-page-toggle.active-page-toggle {
     background: #2563eb !important;
     border-color: #2563eb !important;
-    color: #ffffff !important;
+    color: #0f172a !important;
     box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
   }
 
@@ -1516,7 +1615,7 @@
     right: 52px;
     font-size: 10px;
     font-weight: 800;
-    color: #94a3b8;
+    color: #64748b;
     letter-spacing: 0.6px;
     text-transform: uppercase;
   }
@@ -1527,7 +1626,7 @@
     right: 52px;
     font-size: 10px;
     font-weight: 800;
-    color: #94a3b8;
+    color: #64748b;
     letter-spacing: 0.6px;
     text-transform: uppercase;
   }
@@ -1546,7 +1645,7 @@
   }
   .word-page-break-tag .page-indicator-pill {
     background: #eff6ff;
-    color: #2563eb;
+    color: #1d4ed8;
     border: 1px solid #bfdbfe;
     padding: 2px 8px;
     border-radius: 99px;
@@ -1556,7 +1655,7 @@
   .word-page-break-delete {
     background: transparent;
     border: none;
-    color: #94a3b8;
+    color: #64748b;
     cursor: pointer;
     font-size: 15px;
     line-height: 1;
@@ -1593,7 +1692,7 @@
     flex-wrap: wrap;
   }
   .word-status-dot {
-    color: #cbd5e1;
+    color: #475569;
   }
   .word-status-pill {
     background: #f1f5f9;
@@ -1642,7 +1741,7 @@
     background: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 4px;
-    color: #2563eb;
+    color: #1d4ed8;
     cursor: pointer;
   }
 
@@ -1671,7 +1770,7 @@
   /* Contact items are independent spans so a blank field can be hidden.
      The separator lives on the item, never as loose text between them. */
   .ats-c-item { display: inline; }
-  .ats-c-item::before { content: '|'; margin: 0 7px; color: #94a3b8; }
+  .ats-c-item::before { content: '|'; margin: 0 7px; color: #64748b; }
   .ats-c-item.is-first::before { content: none; margin: 0; }
 
   .ats-section {
@@ -1960,7 +2059,7 @@
     company: "{{ target_job.company_name|escapejs }}",
     skills: "{{ target_job.skills_required|escapejs }}",
     skills_list: {{ target_job.get_skills_list|safe }},
-    description: "{{ target_job.description|striptags|truncatewords:80|escapejs }}"
+    description: "{{ target_job.description|striptags|truncatechars:4000|escapejs }}"
   }{% else %}null{% endif %};
 
   /* Reverse-Engineered Project ATS Scoring Engine (Jobscan / Resume Worded formula) */
@@ -2048,20 +2147,59 @@
     };
   }
 
-  async function autoAlterResumeForTargetJob() {
-    if (!targetJobData) return;
+  let targetTailorInFlight = false;
+
+  function setTargetTailorStatus(state, message) {
+    const el = document.getElementById('targetJobStatus');
+    if (!el) return;
+    el.classList.toggle('is-done', state === 'done');
+    el.classList.toggle('is-error', state === 'error');
+    const icon = state === 'running'
+      ? '<i data-lucide="loader" class="spin-icon" style="width:12px;height:12px;"></i>'
+      : (state === 'done'
+        ? '<i data-lucide="check" style="width:12px;height:12px;"></i>'
+        : (state === 'error' ? '<i data-lucide="alert-circle" style="width:12px;height:12px;"></i>' : ''));
+    el.innerHTML = icon;
+    const span = document.createElement('span');
+    span.textContent = message;
+    el.appendChild(span);
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  function setTargetTailorButton(label, busy) {
     const btn = document.getElementById('btnTargetJobAlter');
-    if (btn) {
-      btn.disabled = true;
-      btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:15px;height:15px;"></i> Altering Entire Resume for ' + targetJobData.company + '...';
-      if (window.lucide) window.lucide.createIcons();
-    }
+    if (!btn) return;
+    btn.disabled = !!busy;
+    btn.innerHTML = '<i data-lucide="' + (busy ? 'loader' : 'sparkles') + '"' +
+      (busy ? ' class="spin-icon"' : '') +
+      ' style="width:14px;height:14px;"></i><span></span>';
+    const span = btn.querySelector('span');
+    if (span) span.textContent = label;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  /**
+   * Alter the resume against the job the visitor arrived with.
+   *
+   * The page auto-runs this once on load, so arriving from a posting is enough:
+   * no paste-a-JD modal, no second "rewrite" button, no generic "Top Tech
+   * Startup" fallback. The server reads the posting by `job_id`, which also
+   * means it sees the whole description rather than a truncated page copy.
+   */
+  async function autoAlterResumeForTargetJob(opts) {
+    if (!targetJobData || targetTailorInFlight) return;
+    const silent = !!(opts && opts.silent);
+    targetTailorInFlight = true;
+
+    setTargetTailorButton('Tailoring…', true);
+    setTargetTailorStatus('running', 'Tailoring to this job…');
 
     try {
       const res = await fetch('/api/ai/alter-resume/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          job_id: targetJobData.id || '',
           job_title: targetJobData.title,
           company_name: targetJobData.company,
           job_skills: targetJobData.skills,
@@ -2074,11 +2212,18 @@
 
       const json = await res.json();
       if (!json.success) {
-        alert("Alteration failed: " + (json.error || "Server error"));
+        throw new Error(json.error || 'Server error');
+      }
+
+      // Auto-tailoring must never overwrite something the visitor started
+      // typing while the request was in flight.
+      if (silent && typeof sheetEditedSinceLoad !== 'undefined' && sheetEditedSinceLoad) {
+        setTargetTailorStatus('', 'Left your edits alone. Click Tailor to apply it.');
+        setTargetTailorButton('⚡ Tailor to this job', false);
         return;
       }
 
-      const d = json.data;
+      const d = json.data || {};
       if (d.altered_summary) currentResumeData.summary = d.altered_summary;
       if (d.reordered_skills) currentResumeData.skills = d.reordered_skills;
       if (d.altered_projects && d.altered_projects.length > 0) {
@@ -2090,21 +2235,34 @@
 
       const matchScore = (typeof d.match_score === 'number') ? d.match_score : null;
       const doneMsg = matchScore === null
-        ? `✨ Resume rewritten for ${targetJobData.company}.`
-        : `✨ Resume rewritten for ${targetJobData.company}. Estimated job match: ${matchScore}/100.`;
-      if (window.showToast) {
-        window.showToast(doneMsg, "success");
-      } else {
-        alert(doneMsg);
+        ? `Tailored for this job`
+        : `Tailored · job-match ${matchScore}/100`;
+      setTargetTailorStatus('done', doneMsg);
+      setTargetTailorButton('⚡ Tailor again', false);
+      if (!silent) {
+        if (window.showToast) window.showToast(
+          matchScore === null
+            ? 'Resume tailored to this posting. The ATS score was recalculated from your text.'
+            : `Resume tailored to this posting. Estimated job match: ${matchScore}/100.`,
+          'success'
+        );
       }
     } catch (err) {
-      alert("Network error: " + err.message);
-    } finally {
-      if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="sparkles" style="width:16px;height:16px;"></i> <span>⚡ Re-Tailor for ' + targetJobData.company + '</span>';
-        if (window.lucide) window.lucide.createIcons();
+      const reason = (err && err.message) ? err.message : 'network error';
+      console.warn('Target-job tailoring failed:', reason);
+      const shortReason = (function (text) {
+        if (/429|rate limit/i.test(text)) return 'The AI service is busy. Try again in a minute.';
+        if (/\b400\b|JSON|Failed to (generate|validate)/i.test(text)) return 'The AI service returned an unusable answer. Try again.';
+        if (/network|fetch/i.test(text)) return 'Network hiccup. Check your connection and retry.';
+        return text.length > 90 ? text.slice(0, 87) + '…' : text;
+      })(reason);
+      setTargetTailorStatus('error', 'Could not tailor automatically: ' + shortReason);
+      setTargetTailorButton('↻ Retry tailor', false);
+      if (!silent) {
+        if (window.showToast) window.showToast('Tailoring failed: ' + shortReason, 'error');
       }
+    } finally {
+      targetTailorInFlight = false;
     }
   }
 
@@ -2128,6 +2286,11 @@
           currentResumeData = data.resume;
           renderResumeSheet();
           updateAtsScoreDisplay(data.ats_eval);
+          // A new template drops the tailored text; re-apply the posting so the
+          // page never quietly loses the job alignment the visitor arrived for.
+          if (typeof targetJobData !== 'undefined' && targetJobData) {
+            autoAlterResumeForTargetJob({ silent: true });
+          }
         }
       })
       .catch(err => console.error("Error setting level:", err));
@@ -2307,7 +2470,7 @@
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 5px; flex-shrink: 0;">
-            <button type="button" onclick="quickPolishProjectBullet(${idx})" title="Polish bullets with Google XYZ" style="background: #f5f3ff; border: 1px solid #ddd6fe; color: #7c3aed; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
+            <button type="button" onclick="quickPolishProjectBullet(${idx})" title="Polish bullets with Google XYZ" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #7c3aed; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
               ✨
             </button>
             <button type="button" onclick="deleteProject(${idx})" title="Remove project" style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
@@ -3229,8 +3392,8 @@
     e.stopPropagation();
     const zone = document.getElementById('resumeDropZone');
     if (zone) {
-      zone.style.borderColor = '#c084fc';
-      zone.style.background = 'rgba(168, 85, 247, 0.12)';
+      zone.style.borderColor = '#1d4ed8';
+      zone.style.background = 'rgba(37, 99, 235, 0.08)';
     }
   }
 
@@ -3239,8 +3402,8 @@
     e.stopPropagation();
     const zone = document.getElementById('resumeDropZone');
     if (zone) {
-      zone.style.borderColor = 'rgba(168, 85, 247, 0.45)';
-      zone.style.background = 'rgba(15, 23, 42, 0.75)';
+      zone.style.borderColor = 'rgba(37, 99, 235, 0.30)';
+      zone.style.background = '#f8fafc';
     }
   }
 
@@ -3357,15 +3520,15 @@
         const pct = Math.min(100, Math.round((p.score / p.max_score) * 100));
         const barColor = pct >= 80 ? '#34d399' : (pct >= 55 ? '#fbbf24' : '#f87171');
         pHtml += `
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px;">
             <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
-              <span style="color: #cbd5e1;">${p.name}</span>
+              <span style="color: #475569;">${p.name}</span>
               <span style="color: ${barColor};">${p.score} / ${p.max_score}</span>
             </div>
             <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden; margin-bottom: 6px;">
               <div style="background: ${barColor}; height: 100%; width: ${pct}%; transition: width 0.3s ease;"></div>
             </div>
-            <div style="font-size: 11px; color: #94a3b8;">${p.detail}</div>
+            <div style="font-size: 11px; color: #64748b;">${p.detail}</div>
           </div>
         `;
       });
@@ -3390,14 +3553,14 @@
             cHtml += `
               <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 8px 12px; font-size: 12px;">
                 <div style="color: #c084fc; font-weight: 800; margin-bottom: 2px;">⚡ [${c.category || 'Optimization'}]: ${c.issue || ''}</div>
-                <div style="color: #cbd5e1;"><strong style="color:#34d399;">AI Suggested Fix:</strong> ${c.fix || ''}</div>
+                <div style="color: #475569;"><strong style="color:#34d399;">AI Suggested Fix:</strong> ${c.fix || ''}</div>
               </div>
             `;
           });
           bulletsList.forEach(b => {
             cHtml += `
               <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 8px 12px; font-size: 12px;">
-                <div style="color: #94a3b8; font-size: 11px; text-decoration: line-through; margin-bottom: 2px;">Weak: ${b.original || ''}</div>
+                <div style="color: #64748b; font-size: 11px; text-decoration: line-through; margin-bottom: 2px;">Weak: ${b.original || ''}</div>
                 <div style="color: #34d399; font-weight: 700;">Google XYZ Rewrite: ${b.improved || ''}</div>
               </div>
             `;
@@ -3415,7 +3578,7 @@
       let rHtml = '';
       (ats.improvements || []).forEach(imp => {
         rHtml += `
-          <li style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #e2e8f0; line-height: 1.45;">
+          <li style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; color: #475569; line-height: 1.45;">
             <span style="color: #f59e0b; font-weight: 800;">⚡</span>
             <span>${imp}</span>
           </li>
@@ -3706,13 +3869,13 @@
       if (!c.text) return;
       shown += 1;
       const div = document.createElement('div');
-      div.style.cssText = 'background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px;';
+      div.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px;';
       div.innerHTML = `
         <div style="flex: 1;">
-          <div style="font-size: 11px; font-weight: 700; color: #a855f7; text-transform: uppercase; margin-bottom: 4px;">${c.title}</div>
-          <p style="font-size: 13px; color: #f8fafc; line-height: 1.5; margin: 0;">${c.text}</p>
+          <div style="font-size: 11px; font-weight: 700; color: #1d4ed8; text-transform: uppercase; margin-bottom: 4px;">${c.title}</div>
+          <p style="font-size: 13px; color: #0f172a; line-height: 1.5; margin: 0;">${c.text}</p>
         </div>
-        <button type="button" onclick="insertPolishedBullet('${encodeURIComponent(c.text)}')" style="background: #3b82f6; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+        <button type="button" onclick="insertPolishedBullet('${encodeURIComponent(c.text)}')" style="background: #2563eb; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">
           Insert
         </button>
       `;
@@ -3788,15 +3951,15 @@
     choices.forEach(c => {
       if (!c.text) return;
       const div = document.createElement('div');
-      div.style.cssText = 'background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 14px; margin-bottom: 12px;';
+      div.style.cssText = 'background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 12px;';
       div.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span style="font-size: 11px; font-weight: 700; color: #60a5fa; text-transform: uppercase;">${c.title}</span>
-          <button type="button" onclick="applySummaryText('${encodeURIComponent(c.text)}')" style="background: #10b981; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+          <span style="font-size: 11px; font-weight: 700; color: #1d4ed8; text-transform: uppercase;">${c.title}</span>
+          <button type="button" onclick="applySummaryText('${encodeURIComponent(c.text)}')" style="background: #15803d; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
             Apply
           </button>
         </div>
-        <p style="font-size: 13px; color: #e2e8f0; line-height: 1.6; margin: 0;">${c.text}</p>
+        <p style="font-size: 13px; color: #334155; line-height: 1.6; margin: 0;">${c.text}</p>
       `;
       list.appendChild(div);
     });
@@ -3819,6 +3982,11 @@
      ========================================================== */
 
   async function runOneClickAiBoost() {
+    // If a posting is active, the generic "rewrite for role" action must not
+    // quietly fall back to a made-up company. Use the job's own description.
+    if (typeof targetJobData !== 'undefined' && targetJobData) {
+      return autoAlterResumeForTargetJob();
+    }
     const btn = document.getElementById('btnOneClickAiBoost');
     const origHtml = btn ? btn.innerHTML : '';
     if (btn) {
@@ -3827,9 +3995,10 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    const targetJobTitle = (typeof targetJobData !== 'undefined' && targetJobData) ? targetJobData.title : (currentRoleKey.replace('-', ' ') + ' Engineer');
-    const targetJobSkills = (typeof targetJobData !== 'undefined' && targetJobData) ? targetJobData.skills : "Python, SQL, REST APIs, Git, Docker, System Design";
-    const targetJobDesc = (typeof targetJobData !== 'undefined' && targetJobData) ? targetJobData.description : "High performance engineering, scalable architecture, clean code, quantified accomplishments.";
+    const roleLabel = (currentRoleKey || 'software-engineer').replace(/-/g, ' ');
+    const targetJobTitle = roleLabel.replace(/\b\w/g, (c) => c.toUpperCase());
+    const targetJobSkills = "Python, SQL, REST APIs, Git, Docker, System Design";
+    const targetJobDesc = "High performance engineering, scalable architecture, clean code, quantified accomplishments.";
 
     try {
       const res = await fetch('/api/ai/alter-resume/', {
@@ -3837,7 +4006,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           job_title: targetJobTitle,
-          company_name: (typeof targetJobData !== 'undefined' && targetJobData) ? targetJobData.company : "Top Tech Startup",
+          company_name: "",
           job_skills: targetJobSkills,
           job_description: targetJobDesc,
           candidate_summary: currentResumeData.summary,
@@ -3918,9 +4087,9 @@
     if (!Array.isArray(indianDemoCatalog) || indianDemoCatalog.length === 0) {
       if (container) {
         container.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: #94a3b8;">
+          <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: #64748b;">
             <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(245, 158, 11, 0.2); border-top-color: #f59e0b; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
-            <div style="font-size: 13.5px; font-weight: 700; color: #e2e8f0;">Loading verified enterprise project catalog...</div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #475569;">Loading verified enterprise project catalog...</div>
             <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Fetching top Bengaluru &amp; Indian IT projects</div>
           </div>
         `;
@@ -3948,7 +4117,7 @@
                   <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: #f87171;">
                     <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
                     <div style="font-weight: 700;">Failed to load project catalog</div>
-                    <button type="button" onclick="openUnifiedAddProjectModal('bengaluru')" style="margin-top: 12px; background: #f59e0b; color: #000; font-weight: 700; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Retry Loading</button>
+                    <button type="button" onclick="openUnifiedAddProjectModal('bengaluru')" style="margin-top: 12px; background: #2563eb; color: #fff; font-weight: 700; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Retry Loading</button>
                   </div>
                 `;
               }
@@ -3967,9 +4136,9 @@
   function switchProjectModalTab(tabId) {
     document.querySelectorAll('.proj-tab-btn').forEach(btn => {
       const active = btn.getAttribute('data-tab') === tabId;
-      btn.style.background = active ? 'linear-gradient(135deg, #a855f7, #6366f1)' : '#1e293b';
-      btn.style.color = active ? '#ffffff' : '#94a3b8';
-      btn.style.border = active ? '1px solid transparent' : '1px solid #334155';
+      btn.style.background = active ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : '#f1f5f9';
+      btn.style.color = active ? '#ffffff' : '#475569';
+      btn.style.border = active ? '1px solid transparent' : '1px solid #e2e8f0';
     });
     const tabBengaluru = document.getElementById('tabContentBengaluru');
     const tabGithub = document.getElementById('tabContentGithub');
@@ -4028,10 +4197,10 @@
     if (!container) return;
     if (!items || items.length === 0) {
       container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: #94a3b8; font-size: 13px;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: #64748b; font-size: 13px;">
           <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
           <div>No demo projects found matching your filter criteria.</div>
-          <button type="button" onclick="document.getElementById('demoFilterSearch').value='';document.getElementById('demoFilterCity').value='';document.getElementById('demoFilterRole').value='';document.getElementById('demoFilterDifficulty').value='';filterIndianDemoProjects();" style="margin-top: 10px; background: #334155; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;">Reset Filters</button>
+          <button type="button" onclick="document.getElementById('demoFilterSearch').value='';document.getElementById('demoFilterCity').value='';document.getElementById('demoFilterRole').value='';document.getElementById('demoFilterDifficulty').value='';filterIndianDemoProjects();" style="margin-top: 10px; background: #e2e8f0; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;">Reset Filters</button>
         </div>
       `;
       return;
@@ -4043,46 +4212,46 @@
       const cityLabel = p.location_city ? `${p.location_city}, ${p.location_state || 'India'}` : 'Bengaluru, India';
       const roleLabel = (p.target_job_roles && p.target_job_roles.length > 0) ? p.target_job_roles[0] : (p.role || 'Software Engineer');
       const difficulty = p.difficulty_level || 'Intermediate';
-      const diffColor = difficulty === 'Advanced' ? '#f43f5e' : (difficulty === 'Intermediate' ? '#38bdf8' : '#34d399');
+      const diffColor = difficulty === 'Advanced' ? '#dc2626' : (difficulty === 'Intermediate' ? '#0369a1' : '#15803d');
       const bullets = p.bullets || p.resume_bullet_templates || [];
 
       html += `
-        <div class="bengaluru-card" style="background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+        <div class="bengaluru-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
-              <span style="font-size: 10.5px; font-weight: 800; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">
+              <span style="font-size: 10.5px; font-weight: 800; background: rgba(245, 158, 11, 0.12); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.32); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">
                 ${p.company || p.fictional_company_name || 'Portfolio Lab'}
               </span>
               <div style="display: flex; gap: 5px; align-items: center;">
-                <span style="font-size: 10px; font-weight: 700; color: ${diffColor}; background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; border: 1px solid ${diffColor}44;">
+                <span style="font-size: 10px; font-weight: 700; color: ${diffColor}; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid ${diffColor}44;">
                   ${difficulty}
                 </span>
-                <span style="font-size: 11px; font-weight: 700; color: #94a3b8;">${p.domain || p.industry || 'Tech'}</span>
+                <span style="font-size: 11px; font-weight: 700; color: #64748b;">${p.domain || p.industry || 'Tech'}</span>
               </div>
             </div>
 
-            <h4 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin: 0 0 6px; line-height: 1.35;">${p.title}</h4>
+            <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0 0 6px; line-height: 1.35;">${p.title}</h4>
             
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 11px;">
-              <span style="color: #a855f7; font-weight: 600;">📍 ${cityLabel}</span>
+              <span style="color: #1d4ed8; font-weight: 600;">📍 ${cityLabel}</span>
               <span style="color: #64748b;">•</span>
-              <span style="color: #38bdf8; font-weight: 600;">🎯 ${roleLabel}</span>
-              ${p.estimated_duration ? `<span style="color: #64748b;">•</span><span style="color: #94a3b8;">⏱️ ${p.estimated_duration}</span>` : ''}
+              <span style="color: #0369a1; font-weight: 600;">🎯 ${roleLabel}</span>
+              ${p.estimated_duration ? `<span style="color: #64748b;">•</span><span style="color: #64748b;">⏱️ ${p.estimated_duration}</span>` : ''}
             </div>
 
-            <div style="font-size: 11.5px; color: #e2e8f0; font-weight: 600; margin-bottom: 8px; background: rgba(255,255,255,0.04); padding: 5px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
-              <span style="color: #38bdf8;">Stack:</span> ${p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(', ') : p.technical_stack)}
+            <div style="font-size: 11.5px; color: #334155; font-weight: 600; margin-bottom: 8px; background: #f8fafc; padding: 5px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <span style="color: #0369a1;">Stack:</span> ${p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(', ') : p.technical_stack)}
             </div>
 
-            <ul style="margin: 0; padding-left: 16px; font-size: 11.5px; color: #cbd5e1; line-height: 1.45; display: flex; flex-direction: column; gap: 4px;">
+            <ul style="margin: 0; padding-left: 16px; font-size: 11.5px; color: #475569; line-height: 1.45; display: flex; flex-direction: column; gap: 4px;">
               ${bullets.slice(0, 2).map(b => `<li>${b}</li>`).join('')}
             </ul>
           </div>
 
-          <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-              <label style="font-size: 11px; color: #94a3b8; font-weight: 700;">Attribution:</label>
-              <select id="attrRel_${pId}" style="background: #1e293b; border: 1px solid #334155; color: #f8fafc; font-size: 11px; padding: 4px 8px; border-radius: 6px; outline: none; flex: 1;">
+              <label style="font-size: 11px; color: #64748b; font-weight: 700;">Attribution:</label>
+              <select id="attrRel_${pId}" style="background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 11px; padding: 4px 8px; border-radius: 6px; outline: none; flex: 1;">
                 <option value="PORTFOLIO" selected>Personal Portfolio Project</option>
                 <option value="PRACTICE">Guided Practice Case Study</option>
                 <option value="BUILT">Personally Developed</option>
@@ -4090,7 +4259,7 @@
               </select>
             </div>
 
-            <button type="button" onclick="addIndianDemoProjectToResume('${pId}')" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #000; font-weight: 800; font-size: 12px; padding: 9px 14px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">
+            <button type="button" onclick="addIndianDemoProjectToResume('${pId}')" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; font-weight: 800; font-size: 12px; padding: 9px 14px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);">
               <span>⚡ Add to My Resume</span>
             </button>
           </div>
@@ -4271,27 +4440,27 @@
       grid.innerHTML = '';
       data.projects.forEach(p => {
         const item = document.createElement('div');
-        item.style.cssText = 'background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;';
+        item.style.cssText = 'background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;';
         
-        const scoreColor = p.relevance_score >= 85 ? '#34d399' : '#38bdf8';
-        const scoreBg = p.relevance_score >= 85 ? 'rgba(52, 211, 153, 0.12)' : 'rgba(56, 189, 248, 0.12)';
+        const scoreColor = p.relevance_score >= 85 ? '#15803d' : '#0369a1';
+        const scoreBg = p.relevance_score >= 85 ? 'rgba(21, 128, 61, 0.10)' : 'rgba(3, 105, 161, 0.10)';
 
         item.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;">
             <div>
-              <a href="${p.repo_url}" target="_blank" rel="noopener" style="color: #60a5fa; font-weight: 800; font-size: 13px; text-decoration: none;">
+              <a href="${p.repo_url}" target="_blank" rel="noopener" style="color: #1d4ed8; font-weight: 800; font-size: 13px; text-decoration: none;">
                 ${p.repo_name} ↗
               </a>
-              <span style="font-size: 11px; color: #94a3b8; margin-left: 6px;">⭐ ${p.stars}</span>
+              <span style="font-size: 11px; color: #64748b; margin-left: 6px;">⭐ ${p.stars}</span>
             </div>
             <div style="background: ${scoreBg}; border: 1px solid ${scoreColor}; color: ${scoreColor}; padding: 1px 6px; border-radius: 99px; font-size: 10.5px; font-weight: 800;">
               ${p.relevance_score.toFixed(1)}% Match
             </div>
           </div>
-          <div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.35;">${p.description}</div>
+          <div style="font-size: 11.5px; color: #475569; line-height: 1.35;">${p.description}</div>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 4px;">
-            <span style="font-size: 10.5px; color: #94a3b8;">Stack: <strong style="color: #38bdf8;">${(p.tech_stack || []).slice(0, 3).join(', ')}</strong></span>
-            <button type="button" class="btn-import-disc" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer;">
+            <span style="font-size: 10.5px; color: #64748b;">Stack: <strong style="color: #0369a1;">${(p.tech_stack || []).slice(0, 3).join(', ')}</strong></span>
+            <button type="button" class="btn-import-disc" style="background: linear-gradient(135deg, #15803d, #15803d); color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer;">
               + Add to Resume
             </button>
           </div>
@@ -4454,9 +4623,11 @@
 
   // Live in-place contenteditable synchronization
   let sheetSyncTimer = null;
+  let sheetEditedSinceLoad = false;
   const sheetEl = document.getElementById('resumeSheet');
   if (sheetEl) {
     sheetEl.addEventListener('input', () => {
+      sheetEditedSinceLoad = true;
       if (typeof WordEditor !== 'undefined') WordEditor.updateCounts();
       clearTimeout(sheetSyncTimer);
       sheetSyncTimer = setTimeout(() => {
@@ -4474,6 +4645,12 @@
     if (typeof WordEditor !== 'undefined') {
       WordEditor.updateCounts();
     }
+
+    // Arriving from a posting should already be tailored to it. One automatic
+    // pass, then the banner keeps a single "tailor again" action.
+    if (targetJobData) {
+      setTimeout(() => autoAlterResumeForTargetJob({ silent: true }), 350);
+    }
   });
 </script>
 
@@ -4482,46 +4659,46 @@
      ========================================================== -->
 
 <!-- 1. Tailor Resume Modal -->
-<div id="tailorModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 16px; max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 26px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+<div id="tailorModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 26px; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.14);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-      <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="target" style="width: 18px; height: 18px; color: #a855f7;"></i>
+      <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="target" style="width: 18px; height: 18px; color: #1d4ed8;"></i>
         <span>AI Resume Tailor & Matcher</span>
       </h3>
-      <button type="button" onclick="closeTailorModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeTailorModal()" style="background: transparent; border: none; color: #64748b; font-size: 20px; cursor: pointer;">&times;</button>
     </div>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;">
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; line-height: 1.5;">
       Paste the target Job Description below. Groq AI will evaluate your keyword gap, calculate a real ATS match score, and tailor your bullet points to match.
     </p>
-    <textarea id="targetJdInput" rows="5" placeholder="Paste full Job Description or requirements here..." style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #f8fafc; font-size: 13px; line-height: 1.5; outline: none; margin-bottom: 14px; resize: vertical;"></textarea>
-    <button type="button" id="runTailorBtn" onclick="handleRunTailor()" style="width: 100%; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
+    <textarea id="targetJdInput" rows="5" placeholder="Paste full Job Description or requirements here..." style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; color: #0f172a; font-size: 13px; line-height: 1.5; outline: none; margin-bottom: 14px; resize: vertical;"></textarea>
+    <button type="button" id="runTailorBtn" onclick="handleRunTailor()" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
       <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
       <span>Tailor Resume with AI</span>
     </button>
 
     <!-- Results Area -->
-    <div id="tailorResults" style="display: none; border-top: 1px solid #334155; padding-top: 16px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px;">
+    <div id="tailorResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px;">
         <div>
-          <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Match Score</span>
-          <div id="tailorScoreVal" style="font-size: 22px; font-weight: 800; color: #34d399;"></div>
+          <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Match Score</span>
+          <div id="tailorScoreVal" style="font-size: 22px; font-weight: 800; color: #15803d;"></div>
         </div>
-        <div id="tailorGradeVal" style="font-size: 13px; font-weight: 700; color: #60a5fa;"></div>
+        <div id="tailorGradeVal" style="font-size: 13px; font-weight: 700; color: #1d4ed8;"></div>
       </div>
       <div style="margin-bottom: 14px;">
         <span style="font-size: 12px; font-weight: 700; color: #f87171; text-transform: uppercase; display: block; margin-bottom: 6px;">Missing Critical Keywords:</span>
         <div id="tailorMissingKeywords" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
       </div>
       <div style="margin-bottom: 14px;">
-        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 6px;">Actionable Recommendations:</span>
-        <ul id="tailorRecList" style="padding-left: 18px; font-size: 12px; color: #cbd5e1; line-height: 1.6; margin: 0;"></ul>
+        <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px;">Actionable Recommendations:</span>
+        <ul id="tailorRecList" style="padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.6; margin: 0;"></ul>
       </div>
       <div style="margin-bottom: 16px;">
-        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 6px;">Tailored Professional Summary:</span>
-        <p id="tailorSummaryPreview" style="font-size: 13px; color: #e2e8f0; line-height: 1.6; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; margin: 0;"></p>
+        <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px;">Tailored Professional Summary:</span>
+        <p id="tailorSummaryPreview" style="font-size: 13px; color: #334155; line-height: 1.6; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin: 0;"></p>
       </div>
-      <button type="button" onclick="applyTailoredData()" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
+      <button type="button" onclick="applyTailoredData()" style="width: 100%; background: #15803d; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
         Apply Tailored Enhancements to Resume
       </button>
     </div>
@@ -4529,83 +4706,83 @@
 </div>
 
 <!-- 2. Bullet Polish Modal -->
-<div id="bulletPolishModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 16px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+<div id="bulletPolishModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.14);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="wand-2" style="width: 18px; height: 18px; color: #a855f7;"></i>
+      <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="wand-2" style="width: 18px; height: 18px; color: #1d4ed8;"></i>
         <span>Google XYZ Bullet Polisher</span>
       </h3>
-      <button type="button" onclick="closeBulletPolishModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeBulletPolishModal()" style="background: transparent; border: none; color: #64748b; font-size: 20px; cursor: pointer;">&times;</button>
     </div>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;">
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px; line-height: 1.5;">
       Enter a simple sentence describing your work. AI will rewrite it into quantified Google XYZ format: <em>"Accomplished [X] as measured by [Y], by doing [Z]"</em>.
     </p>
-    <textarea id="rawBulletInput" rows="3" placeholder="e.g. I worked on testing APIs with Postman and finding bugs in Jira" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px; color: #f8fafc; font-size: 13px; outline: none; margin-bottom: 12px;"></textarea>
-    <button type="button" id="runPolishBtn" onclick="handleRunPolish()" style="width: 100%; background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+    <textarea id="rawBulletInput" rows="3" placeholder="e.g. I worked on testing APIs with Postman and finding bugs in Jira" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; color: #0f172a; font-size: 13px; outline: none; margin-bottom: 12px;"></textarea>
+    <button type="button" id="runPolishBtn" onclick="handleRunPolish()" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
       <i data-lucide="wand-2" style="width: 14px; height: 14px;"></i>
       <span>Transform to Google XYZ</span>
     </button>
 
-    <div id="bulletResults" style="display: none; border-top: 1px solid #334155; padding-top: 14px;">
-      <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 10px;">Select Polished Bullet:</span>
+    <div id="bulletResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+      <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 10px;">Select Polished Bullet:</span>
       <div id="polishedChoicesList"></div>
     </div>
   </div>
 </div>
 
 <!-- 3. Summary Generator Modal -->
-<div id="summaryModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 16px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);">
+<div id="summaryModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 40px rgba(15, 23, 42, 0.14);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="file-edit" style="width: 18px; height: 18px; color: #60a5fa;"></i>
+      <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="file-edit" style="width: 18px; height: 18px; color: #1d4ed8;"></i>
         <span>AI Summary Pitch Generator</span>
       </h3>
-      <button type="button" onclick="closeSummaryModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeSummaryModal()" style="background: transparent; border: none; color: #64748b; font-size: 20px; cursor: pointer;">&times;</button>
     </div>
-    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 14px; line-height: 1.5;">
+    <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; line-height: 1.5;">
       Generate 3 distinct elevator pitch summaries tailored to your active role.
     </p>
-    <button type="button" id="runSummaryBtn" onclick="handleRunSummary()" style="width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
+    <button type="button" id="runSummaryBtn" onclick="handleRunSummary()" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
       <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
       <span>Generate Summaries</span>
     </button>
 
-    <div id="summaryResults" style="display: none; border-top: 1px solid #334155; padding-top: 14px;">
-      <span style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; display: block; margin-bottom: 10px;">Pick a Summary Variation:</span>
+    <div id="summaryResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+      <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 10px;">Pick a Summary Variation:</span>
       <div id="summaryChoicesList"></div>
     </div>
   </div>
 </div>
 
 <!-- UNIFIED ADD PROJECT MODAL (BENGALURU TECH, GITHUB, OR CUSTOM) -->
-<div id="unifiedAddProjectModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
-  <div style="background: #1e293b; border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 20px; max-width: 820px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); color: #f8fafc; box-sizing: border-box;">
+<div id="unifiedAddProjectModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #ffffff; border: 1px solid rgba(37, 99, 235, 0.30); border-radius: 20px; max-width: 820px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18); color: #0f172a; box-sizing: border-box;">
     
     <!-- Modal Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #f59e0b, #d97706); display: grid; place-items: center; color: #000; font-weight: 900; font-size: 18px;">
+        <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #2563eb, #1d4ed8); display: grid; place-items: center; color: #000; font-weight: 900; font-size: 18px;">
           ⚡
         </div>
         <div>
-          <h3 style="font-size: 18px; font-weight: 800; color: #ffffff; margin: 0;">Add Tech Portfolio Project</h3>
-          <p style="font-size: 12px; color: #94a3b8; margin: 0;">Curated Indian IT industry demo projects, live GitHub repos, or custom entries.</p>
+          <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">Add Tech Portfolio Project</h3>
+          <p style="font-size: 12px; color: #64748b; margin: 0;">Curated Indian IT industry demo projects, live GitHub repos, or custom entries.</p>
         </div>
       </div>
-      <button type="button" onclick="closeUnifiedAddProjectModal()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); width: 32px; height: 32px; border-radius: 50%; color: #cbd5e1; font-size: 16px; cursor: pointer; display: grid; place-items: center;">&times;</button>
+      <button type="button" onclick="closeUnifiedAddProjectModal()" style="background: #f1f5f9; border: 1px solid #cbd5e1; width: 32px; height: 32px; border-radius: 50%; color: #475569; font-size: 16px; cursor: pointer; display: grid; place-items: center;">&times;</button>
     </div>
 
     <!-- 3 Segmented Tabs -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; background: #0f172a; padding: 5px; border-radius: 12px; border: 1px solid #334155;">
-      <button type="button" class="proj-tab-btn" data-tab="bengaluru" onclick="switchProjectModalTab('bengaluru')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; background: #f8fafc; padding: 5px; border-radius: 12px; border: 1px solid #e2e8f0;">
+      <button type="button" class="proj-tab-btn" data-tab="bengaluru" onclick="switchProjectModalTab('bengaluru')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff;">
         <span>🇮🇳 Indian Demo Projects</span>
       </button>
-      <button type="button" class="proj-tab-btn" data-tab="github" onclick="switchProjectModalTab('github')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #1e293b; color: #94a3b8;">
+      <button type="button" class="proj-tab-btn" data-tab="github" onclick="switchProjectModalTab('github')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #ffffff; color: #64748b;">
         <span>🐙 GitHub Repo AI</span>
       </button>
-      <button type="button" class="proj-tab-btn" data-tab="custom" onclick="switchProjectModalTab('custom')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #334155; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #1e293b; color: #94a3b8;">
+      <button type="button" class="proj-tab-btn" data-tab="custom" onclick="switchProjectModalTab('custom')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #ffffff; color: #64748b;">
         <span>✍️ Custom Project</span>
       </button>
     </div>
@@ -4613,20 +4790,20 @@
     <!-- Tab 1: Indian IT Industry Demo Projects -->
     <div id="tabContentBengaluru">
       <!-- Ethical Guidance Banner -->
-      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+      <div style="background: rgba(37, 99, 235, 0.06); border: 1px solid rgba(37, 99, 235, 0.22); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
         <span style="font-size: 20px;">🇮🇳</span>
-        <div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.45;">
-          <strong style="color: #38bdf8;">Curated Indian IT Market Demonstration Library:</strong> 36 realistic portfolio projects across Bengaluru, Pune, Hyderabad, Mumbai, Chennai, Gurugram, and Noida. Includes Google XYZ metric bullet templates. Select ethical attribution (Portfolio, Practice, or Developed) and adjust bullets according to features you have verified.
+        <div style="font-size: 11.5px; color: #475569; line-height: 1.45;">
+          <strong style="color: #0369a1;">Curated Indian IT Market Demonstration Library:</strong> 36 realistic portfolio projects across Bengaluru, Pune, Hyderabad, Mumbai, Chennai, Gurugram, and Noida. Includes Google XYZ metric bullet templates. Select ethical attribution (Portfolio, Practice, or Developed) and adjust bullets according to features you have verified.
         </div>
       </div>
 
       <!-- Filter Controls: City, Role, Search -->
-      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; background: #0f172a; padding: 10px; border-radius: 10px; border: 1px solid #334155;">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0;">
         <div style="flex: 1; min-width: 180px;">
-          <input type="text" id="demoFilterSearch" oninput="filterIndianDemoProjects()" placeholder="Search projects (e.g. Django, Spring, PySpark, K8s, Microservices)..." style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #fff; font-size: 12px; outline: none; box-sizing: border-box;">
+          <input type="text" id="demoFilterSearch" oninput="filterIndianDemoProjects()" placeholder="Search projects (e.g. Django, Spring, PySpark, K8s, Microservices)..." style="width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #0f172a; font-size: 12px; outline: none; box-sizing: border-box;">
         </div>
         <div>
-          <select id="demoFilterCity" onchange="filterIndianDemoProjects()" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #e2e8f0; font-size: 12px; outline: none;">
+          <select id="demoFilterCity" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #334155; font-size: 12px; outline: none;">
             <option value="">🏙️ All Tech Hubs</option>
             <option value="Bengaluru">Bengaluru, Karnataka</option>
             <option value="Hyderabad">Hyderabad, Telangana</option>
@@ -4640,7 +4817,7 @@
           </select>
         </div>
         <div>
-          <select id="demoFilterRole" onchange="filterIndianDemoProjects()" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #e2e8f0; font-size: 12px; outline: none;">
+          <select id="demoFilterRole" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #334155; font-size: 12px; outline: none;">
             <option value="">🎯 All Roles</option>
             <option value="Python">Python / Django</option>
             <option value="Java">Java / Spring Boot</option>
@@ -4651,7 +4828,7 @@
           </select>
         </div>
         <div>
-          <select id="demoFilterDifficulty" onchange="filterIndianDemoProjects()" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 7px 10px; color: #e2e8f0; font-size: 12px; outline: none;">
+          <select id="demoFilterDifficulty" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #334155; font-size: 12px; outline: none;">
             <option value="">⚡ All Levels</option>
             <option value="Beginner">Beginner</option>
             <option value="Intermediate">Intermediate</option>
@@ -4667,65 +4844,65 @@
     <div id="tabContentGithub" style="display: none;">
       
       <!-- Sub-section 1: Dynamic Public Repo Search (5-Factor Ranked) -->
-      <div style="background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+      <div style="background: #f8fafc; border: 1px solid rgba(37, 99, 235, 0.26); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="font-size: 11.5px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">⚡ Discover Public GitHub Repositories for Resume:</label>
-          <span style="font-size: 10.5px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 700;">5-Factor Scored</span>
+          <label style="font-size: 11.5px; font-weight: 800; color: #0369a1; text-transform: uppercase;">⚡ Discover Public GitHub Repositories for Resume:</label>
+          <span style="font-size: 10.5px; background: rgba(37, 99, 235, 0.10); color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 700;">5-Factor Scored</span>
         </div>
         <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-          <input type="text" id="ghSearchKeywords" onkeydown="if(event.key==='Enter'){event.preventDefault();handleSearchPublicGitHub();}" placeholder="Search technologies e.g. Django, FastAPI, React, PostgreSQL..." style="flex: 1; background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
-          <button type="button" id="btnRunGhSearch" onclick="handleSearchPublicGitHub()" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+          <input type="text" id="ghSearchKeywords" onkeydown="if(event.key==='Enter'){event.preventDefault();handleSearchPublicGitHub();}" placeholder="Search technologies e.g. Django, FastAPI, React, PostgreSQL..." style="flex: 1; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #0f172a; font-size: 13px; outline: none;">
+          <button type="button" id="btnRunGhSearch" onclick="handleSearchPublicGitHub()" style="background: linear-gradient(135deg, #2563eb, #2563eb); color: #fff; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 800; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap;">
             <i data-lucide="search" style="width: 14px; height: 14px;"></i>
             <span>Search</span>
           </button>
         </div>
         <!-- Quick Domain Filter Chips -->
         <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px;">
-          <button type="button" onclick="handleSearchPublicGitHub('jhipster/generator-jhipster')" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">⚡ JHipster Cloud</button>
-          <button type="button" onclick="handleSearchPublicGitHub('kubernetes docker devops')" style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">🐳 DevOps &amp; K8s</button>
-          <button type="button" onclick="handleSearchPublicGitHub('spring boot microservice')" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">☕ Spring Boot</button>
-          <button type="button" onclick="handleSearchPublicGitHub('python fastapi microservices')" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">🐍 Python / FastAPI</button>
-          <button type="button" onclick="handleSearchPublicGitHub('react nextjs fullstack')" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">⚛️ React / Fullstack</button>
+          <button type="button" onclick="handleSearchPublicGitHub('jhipster/generator-jhipster')" style="background: rgba(3, 105, 161, 0.10); border: 1px solid rgba(37, 99, 235, 0.26); color: #0369a1; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">⚡ JHipster Cloud</button>
+          <button type="button" onclick="handleSearchPublicGitHub('kubernetes docker devops')" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.20); color: #1d4ed8; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">🐳 DevOps &amp; K8s</button>
+          <button type="button" onclick="handleSearchPublicGitHub('spring boot microservice')" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #15803d; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">☕ Spring Boot</button>
+          <button type="button" onclick="handleSearchPublicGitHub('python fastapi microservices')" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #1d4ed8; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">🐍 Python / FastAPI</button>
+          <button type="button" onclick="handleSearchPublicGitHub('react nextjs fullstack')" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(37, 99, 235, 0.28); color: #b45309; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">⚛️ React / Fullstack</button>
         </div>
         <div id="ghSearchResultsGrid" style="display: none; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; margin-top: 10px; padding-right: 4px;"></div>
       </div>
 
       <!-- Sub-section 2: Direct Single Repo URL Import -->
-      <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px;">
+      <p style="font-size: 12px; color: #64748b; margin: 0 0 8px;">
         Or paste any specific public GitHub repository URL or <code>username/repo</code>:
       </p>
       <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 5px;">GitHub Repo URL / Name:</label>
-        <input type="text" id="ghRepoInput" placeholder="e.g. your-username/your-project or https://github.com/fastapi/fastapi" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 11px 14px; color: #f8fafc; font-size: 13px; outline: none; box-sizing: border-box;">
+        <label style="display: block; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 5px;">GitHub Repo URL / Name:</label>
+        <input type="text" id="ghRepoInput" placeholder="e.g. your-username/your-project or https://github.com/fastapi/fastapi" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 11px 14px; color: #0f172a; font-size: 13px; outline: none; box-sizing: border-box;">
       </div>
       <div style="margin-bottom: 12px;">
-        <label for="ghRepoRelationship" style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 5px;">What did you do with this repo?</label>
-        <select id="ghRepoRelationship" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 13px; outline: none; box-sizing: border-box;">
+        <label for="ghRepoRelationship" style="display: block; font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 5px;">What did you do with this repo?</label>
+        <select id="ghRepoRelationship" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #0f172a; font-size: 13px; outline: none; box-sizing: border-box;">
           <option value="BUILT">I built it</option>
           <option value="CONTRIBUTED">I contributed to it</option>
           <option value="PRACTICE">I rebuilt parts of it to learn</option>
           <option value="RECOMMENDED" selected>I only studied it (reference)</option>
         </select>
-        <p style="font-size: 11px; color: #94a3b8; margin: 5px 0 0; line-height: 1.45;">
+        <p style="font-size: 11px; color: #64748b; margin: 5px 0 0; line-height: 1.45;">
           This decides the wording on the resume. Studying a famous repo and claiming you built it is the first thing an interviewer checks.
         </p>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;">
-        <span style="font-size: 11px; color: #94a3b8;">Try sample:</span>
-        <button type="button" onclick="fillSampleGitHub('encode/django-rest-framework')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django-rest-framework</button>
-        <button type="button" onclick="fillSampleGitHub('tiangolo/fastapi')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">fastapi</button>
-        <button type="button" onclick="fillSampleGitHub('django/django')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django</button>
+        <span style="font-size: 11px; color: #64748b;">Try sample:</span>
+        <button type="button" onclick="fillSampleGitHub('encode/django-rest-framework')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django-rest-framework</button>
+        <button type="button" onclick="fillSampleGitHub('tiangolo/fastapi')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">fastapi</button>
+        <button type="button" onclick="fillSampleGitHub('django/django')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django</button>
       </div>
-      <button type="button" id="btnRunGhImport" onclick="handleRunGitHubImport()" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
+      <button type="button" id="btnRunGhImport" onclick="handleRunGitHubImport()" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
         <span>Extract &amp; Craft Google XYZ Bullets with AI</span>
       </button>
-      <div id="ghPreviewBox" style="display: none; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px;">
-        <div style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 4px;">Crafted Enterprise Project:</div>
-        <h4 id="ghProjTitle" style="font-size: 14.5px; font-weight: 800; color: #f8fafc; margin: 0 0 4px;"></h4>
-        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 6px;"><em id="ghProjRole"></em> &bull; <span id="ghProjTech" style="color: #38bdf8;"></span></div>
-        <ul id="ghProjBullets" style="margin: 0; padding-left: 18px; font-size: 12px; color: #cbd5e1; line-height: 1.5; display: flex; flex-direction: column; gap: 4px;"></ul>
-        <button type="button" onclick="applyGitHubProjectToResume()" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; margin-top: 12px;">
+      <div id="ghPreviewBox" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px;">
+        <div style="font-size: 11px; font-weight: 800; color: #15803d; text-transform: uppercase; margin-bottom: 4px;">Crafted Enterprise Project:</div>
+        <h4 id="ghProjTitle" style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0 0 4px;"></h4>
+        <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;"><em id="ghProjRole"></em> &bull; <span id="ghProjTech" style="color: #0369a1;"></span></div>
+        <ul id="ghProjBullets" style="margin: 0; padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.5; display: flex; flex-direction: column; gap: 4px;"></ul>
+        <button type="button" onclick="applyGitHubProjectToResume()" style="width: 100%; background: #15803d; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; margin-top: 12px;">
           Add to My Resume Sheet
         </button>
       </div>
@@ -4735,25 +4912,25 @@
     <div id="tabContentCustom" style="display: none;">
       <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
         <div>
-          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Project Title</label>
-          <input type="text" id="customProjTitle" placeholder="e.g. Distributed Task Orchestrator & Worker Queue" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Project Title</label>
+          <input type="text" id="customProjTitle" placeholder="e.g. Distributed Task Orchestrator & Worker Queue" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
           <div>
-            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Your Role</label>
-            <input type="text" id="customProjRole" placeholder="e.g. Lead Backend Engineer" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Your Role</label>
+            <input type="text" id="customProjRole" placeholder="e.g. Lead Backend Engineer" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
           </div>
           <div>
-            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Tech Stack</label>
-            <input type="text" id="customProjTech" placeholder="e.g. Python, Redis, Docker, Celery" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+            <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Tech Stack</label>
+            <input type="text" id="customProjTech" placeholder="e.g. Python, Redis, Docker, Celery" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
           </div>
         </div>
         <div>
-          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Accomplishment Bullets (1 per line):</label>
-          <textarea id="customProjBullets" rows="4" placeholder="Built an event ingestion pipeline in Python and Redis&#10;Added atomic locks so the same job cannot run twice&#10;Cut query time with a multi-stage cache — use your real numbers if you measured them" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box; resize: vertical;"></textarea>
+          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Accomplishment Bullets (1 per line):</label>
+          <textarea id="customProjBullets" rows="4" placeholder="Built an event ingestion pipeline in Python and Redis&#10;Added atomic locks so the same job cannot run twice&#10;Cut query time with a multi-stage cache — use your real numbers if you measured them" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #0f172a; font-size: 12.5px; box-sizing: border-box; resize: vertical;"></textarea>
         </div>
       </div>
-      <button type="button" onclick="handleSaveCustomProject()" style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer;">
+      <button type="button" onclick="handleSaveCustomProject()" style="width: 100%; background: #2563eb; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer;">
         Save &amp; Add to Resume
       </button>
     </div>
@@ -4762,147 +4939,147 @@
 </div>
 
 <!-- 7. Work Experience Modal (For Experienced Mode) -->
-<div id="addExperienceModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
-  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 18px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);">
+<div id="addExperienceModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 18px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 50px rgba(15, 23, 42, 0.15);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h3 style="font-size: 18px; font-weight: 800; color: #f8fafc; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #34d399;"></i>
+      <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #15803d;"></i>
         <span>Add Work Experience</span>
       </h3>
-      <button type="button" onclick="closeAddExperienceModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeAddExperienceModal()" style="background: transparent; border: none; color: #64748b; font-size: 22px; cursor: pointer;">&times;</button>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
       <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 8px;">
         <div>
-          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Company Name</label>
-          <input type="text" id="expCompany" placeholder="e.g. Swiggy / Fintech Startup" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Company Name</label>
+          <input type="text" id="expCompany" placeholder="e.g. Swiggy / Fintech Startup" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
         </div>
         <div>
-          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Period</label>
-          <input type="text" id="expPeriod" placeholder="e.g. 2023 – Present" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Period</label>
+          <input type="text" id="expPeriod" placeholder="e.g. 2023 – Present" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
         </div>
       </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
         <div>
-          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Designation / Title</label>
-          <input type="text" id="expRole" placeholder="e.g. Software Engineer II" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Designation / Title</label>
+          <input type="text" id="expRole" placeholder="e.g. Software Engineer II" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
         </div>
         <div>
-          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Location</label>
-          <input type="text" id="expLocation" placeholder="e.g. Bengaluru, India" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+          <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Location</label>
+          <input type="text" id="expLocation" placeholder="e.g. Bengaluru, India" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
         </div>
       </div>
       <div>
-        <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Tech Stack</label>
-        <input type="text" id="expTech" placeholder="e.g. Python, Django, PostgreSQL, Redis, Docker, AWS" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
+        <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Tech Stack</label>
+        <input type="text" id="expTech" placeholder="e.g. Python, Django, PostgreSQL, Redis, Docker, AWS" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; box-sizing: border-box;">
       </div>
       <div>
-        <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Impact Accomplishment Bullets (1 per line):</label>
-        <textarea id="expBullets" rows="4" placeholder="Architected core payment reconciliation microservices processing ₹40Cr+ monthly volume&#10;Decreased p95 API response times from 340ms to 42ms via PostgreSQL indexing and Redis&#10;Mentored 4 junior engineers and set up automated CI/CD reducing release cycle by 50%" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box; resize: vertical;"></textarea>
+        <label style="display: block; font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin-bottom: 4px;">Impact Accomplishment Bullets (1 per line):</label>
+        <textarea id="expBullets" rows="4" placeholder="Architected core payment reconciliation microservices processing ₹40Cr+ monthly volume&#10;Decreased p95 API response times from 340ms to 42ms via PostgreSQL indexing and Redis&#10;Mentored 4 junior engineers and set up automated CI/CD reducing release cycle by 50%" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; color: #0f172a; font-size: 12.5px; box-sizing: border-box; resize: vertical;"></textarea>
       </div>
     </div>
 
-    <button type="button" onclick="handleSaveExperience()" style="width: 100%; background: #10b981; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer;">
+    <button type="button" onclick="handleSaveExperience()" style="width: 100%; background: #15803d; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer;">
       Save &amp; Add Experience
     </button>
   </div>
 </div>
 
 <!-- 8. Reverse-Engineered Project ATS Breakdown & Optimizer Modal -->
-<div id="projectAtsModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
-  <div style="background: #1e293b; border: 1px solid #475569; border-radius: 18px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); color: #f8fafc;">
+<div id="projectAtsModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 18px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18); color: #0f172a;">
     
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); display: grid; place-items: center; color: #38bdf8;">
+        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37, 99, 235, 0.10); border: 1px solid rgba(37, 99, 235, 0.26); display: grid; place-items: center; color: #0369a1;">
           <i data-lucide="shield-check" style="width: 20px; height: 20px;"></i>
         </div>
         <div>
-          <h3 id="projectAtsModalTitle" style="font-size: 16.5px; font-weight: 800; color: #f8fafc; margin: 0;">Project ATS Scorecard</h3>
-          <p style="font-size: 11.5px; color: #94a3b8; margin: 0;">Reverse-Engineered 5-Dimension ATS Evaluation (Jobscan/Resume Worded)</p>
+          <h3 id="projectAtsModalTitle" style="font-size: 16.5px; font-weight: 800; color: #0f172a; margin: 0;">Project ATS Scorecard</h3>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0;">Reverse-Engineered 5-Dimension ATS Evaluation (Jobscan/Resume Worded)</p>
         </div>
       </div>
-      <button type="button" onclick="closeProjectAtsModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeProjectAtsModal()" style="background: transparent; border: none; color: #64748b; font-size: 22px; cursor: pointer;">&times;</button>
     </div>
 
     <!-- Overall Project Score Banner -->
-    <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
       <div>
-        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Project ATS Rating</div>
-        <div id="projectAtsScoreBig" style="font-size: 26px; font-weight: 900; color: #34d399;">— / 100</div>
+        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Project ATS Rating</div>
+        <div id="projectAtsScoreBig" style="font-size: 26px; font-weight: 900; color: #15803d;">— / 100</div>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Recruiter Pass Level</div>
-        <div id="projectAtsGradeBig" style="font-size: 14.5px; font-weight: 800; color: #38bdf8;">Not scored yet</div>
+        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Recruiter Pass Level</div>
+        <div id="projectAtsGradeBig" style="font-size: 14.5px; font-weight: 800; color: #0369a1;">Not scored yet</div>
       </div>
     </div>
 
     <!-- 5 Breakdown Bars -->
     <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
       <!-- Dimension 1: Action Verbs -->
-      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+      <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
-          <span style="color: #cbd5e1;">1. Strong Action Verbs (Architected, Engineered, Scaled)</span>
-          <span id="scoreDimVerbs" style="color: #38bdf8;">— / 25</span>
+          <span style="color: #475569;">1. Strong Action Verbs (Architected, Engineered, Scaled)</span>
+          <span id="scoreDimVerbs" style="color: #0369a1;">— / 25</span>
         </div>
-        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
-          <div id="barDimVerbs" style="background: #38bdf8; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        <div style="background: #e2e8f0; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimVerbs" style="background: #0369a1; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
         </div>
       </div>
 
       <!-- Dimension 2: Google XYZ Formula -->
-      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+      <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
-          <span style="color: #cbd5e1;">2. Google XYZ Formula (Accomplished [X] by doing [Z], measured by [Y])</span>
-          <span id="scoreDimXYZ" style="color: #a855f7;">— / 25</span>
+          <span style="color: #475569;">2. Google XYZ Formula (Accomplished [X] by doing [Z], measured by [Y])</span>
+          <span id="scoreDimXYZ" style="color: #1d4ed8;">— / 25</span>
         </div>
-        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
-          <div id="barDimXYZ" style="background: #a855f7; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        <div style="background: #e2e8f0; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimXYZ" style="background: #2563eb; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
         </div>
       </div>
 
       <!-- Dimension 3: Quantified Numerical Metrics -->
-      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+      <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
-          <span style="color: #cbd5e1;">3. Quantified Numerical Metrics (%, ms, req/sec, scale numbers)</span>
-          <span id="scoreDimMetrics" style="color: #34d399;">— / 20</span>
+          <span style="color: #475569;">3. Quantified Numerical Metrics (%, ms, req/sec, scale numbers)</span>
+          <span id="scoreDimMetrics" style="color: #15803d;">— / 20</span>
         </div>
-        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
-          <div id="barDimMetrics" style="background: #34d399; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        <div style="background: #e2e8f0; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimMetrics" style="background: #15803d; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
         </div>
       </div>
 
       <!-- Dimension 4: Tech Stack Relevance -->
-      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+      <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
-          <span style="color: #cbd5e1;">4. Tech Stack Relevance & Framework Coverage</span>
-          <span id="scoreDimTech" style="color: #fbbf24;">— / 20</span>
+          <span style="color: #475569;">4. Tech Stack Relevance & Framework Coverage</span>
+          <span id="scoreDimTech" style="color: #b45309;">— / 20</span>
         </div>
-        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
-          <div id="barDimTech" style="background: #fbbf24; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        <div style="background: #e2e8f0; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimTech" style="background: #b45309; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
         </div>
       </div>
 
       <!-- Dimension 5: Architecture & System Scale -->
-      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
+      <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
-          <span style="color: #cbd5e1;">5. Architectural Depth (Concurrency, Redis, Caching, CI/CD)</span>
-          <span id="scoreDimArch" style="color: #ec4899;">— / 10</span>
+          <span style="color: #475569;">5. Architectural Depth (Concurrency, Redis, Caching, CI/CD)</span>
+          <span id="scoreDimArch" style="color: #db2777;">— / 10</span>
         </div>
-        <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
-          <div id="barDimArch" style="background: #ec4899; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
+        <div style="background: #e2e8f0; height: 6px; border-radius: 99px; overflow: hidden;">
+          <div id="barDimArch" style="background: #db2777; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
         </div>
       </div>
     </div>
 
     <!-- Polish Action Button -->
     <div style="display: flex; gap: 8px;">
-      <button type="button" id="btnAutoPolishProject" onclick="polishActiveModalProject()" style="flex: 1; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; padding: 11px 16px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+      <button type="button" id="btnAutoPolishProject" onclick="polishActiveModalProject()" style="flex: 1; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; padding: 11px 16px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
         <span>✨ Rewrite Bullets Honestly with Groq AI</span>
       </button>
-      <button type="button" onclick="closeProjectAtsModal()" style="background: #334155; color: #cbd5e1; border: 1px solid #475569; padding: 11px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
+      <button type="button" onclick="closeProjectAtsModal()" style="background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 11px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
         Close
       </button>
     </div>
@@ -4911,52 +5088,52 @@
 </div>
 
 <!-- 9. Uploaded Resume ATS Scorecard & Live Editor Loader Modal -->
-<div id="uploadScoreModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
-  <div style="background: #1e293b; border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 20px; max-width: 640px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 24px 22px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); color: #f8fafc; box-sizing: border-box;">
+<div id="uploadScoreModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #ffffff; border: 1px solid rgba(37, 99, 235, 0.30); border-radius: 20px; max-width: 640px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 24px 22px; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18); color: #0f172a; box-sizing: border-box;">
     
     <!-- Modal Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #a855f7, #6366f1); display: grid; place-items: center; color: #ffffff; flex-shrink: 0; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);">
+        <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #1d4ed8); display: grid; place-items: center; color: #0f172a; flex-shrink: 0; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);">
           <i data-lucide="file-check-2" style="width: 22px; height: 22px;"></i>
         </div>
         <div>
-          <h3 style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0;">ATS Diagnostic Scorecard</h3>
-          <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">
-            <span id="uploadScoreCandName" style="color: #38bdf8; font-weight: 700;">Your resume</span> &bull; 
-            <span id="uploadScoreFilename" style="color: #cbd5e1;">no file selected</span>
+          <h3 style="font-size: 17.5px; font-weight: 800; color: #0f172a; margin: 0;">ATS Diagnostic Scorecard</h3>
+          <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+            <span id="uploadScoreCandName" style="color: #0369a1; font-weight: 700;">Your resume</span> &bull; 
+            <span id="uploadScoreFilename" style="color: #475569;">no file selected</span>
           </div>
         </div>
       </div>
-      <button type="button" onclick="closeUploadScoreModal()" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); width: 32px; height: 32px; border-radius: 50%; color: #cbd5e1; font-size: 16px; cursor: pointer; display: grid; place-items: center;">&times;</button>
+      <button type="button" onclick="closeUploadScoreModal()" style="background: #f1f5f9; border: 1px solid #cbd5e1; width: 32px; height: 32px; border-radius: 50%; color: #475569; font-size: 16px; cursor: pointer; display: grid; place-items: center;">&times;</button>
     </div>
 
     <!-- Overall ATS Match Score Card -->
-    <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 16px 20px; margin-bottom: 16px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 20px; margin-bottom: 16px;">
       <div>
-        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.6px;">Calculated ATS Score</div>
-        <div id="uploadScoreBig" style="font-size: 30px; font-weight: 900; color: #34d399; line-height: 1.15; margin-top: 2px;">— / 100</div>
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.6px;">Calculated ATS Score</div>
+        <div id="uploadScoreBig" style="font-size: 30px; font-weight: 900; color: #15803d; line-height: 1.15; margin-top: 2px;">— / 100</div>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.6px;">Scanner Pass Status</div>
-        <div id="uploadScoreGrade" style="font-size: 15px; font-weight: 800; color: #38bdf8; margin-top: 2px;">Not scored yet</div>
-        <div id="uploadScorePassRate" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">No score until a resume is analysed</div>
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.6px;">Scanner Pass Status</div>
+        <div id="uploadScoreGrade" style="font-size: 15px; font-weight: 800; color: #0369a1; margin-top: 2px;">Not scored yet</div>
+        <div id="uploadScorePassRate" style="font-size: 11px; color: #64748b; margin-top: 2px;">No score until a resume is analysed</div>
       </div>
     </div>
 
     <!-- AI-Suggested Changes & Key Improvements Box -->
-    <div id="uploadScoreAiBox" style="display: none; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;">
-      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #c084fc; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
-        <i data-lucide="sparkles" style="width: 14px; height: 14px; color: #a855f7;"></i>
+    <div id="uploadScoreAiBox" style="display: none; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(37, 99, 235, 0.22); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px;">
+      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #1d4ed8; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        <i data-lucide="sparkles" style="width: 14px; height: 14px; color: #1d4ed8;"></i>
         <span>AI Recruiter Diagnostic &amp; Suggested Changes:</span>
       </div>
-      <div id="uploadScoreAiVerdict" style="font-size: 12px; color: #e2e8f0; line-height: 1.5; margin-bottom: 10px;"></div>
+      <div id="uploadScoreAiVerdict" style="font-size: 12px; color: #334155; line-height: 1.5; margin-bottom: 10px;"></div>
       <div id="uploadScoreAiChanges" style="display: flex; flex-direction: column; gap: 6px;"></div>
     </div>
 
     <!-- 6 Core Diagnostic Pillars Breakdown -->
     <div style="margin-bottom: 16px;">
-      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #c084fc; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #1d4ed8; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
         <i data-lucide="layers" style="width: 14px; height: 14px;"></i>
         <span>6 Reverse-Engineered ATS Pillars:</span>
       </div>
@@ -4964,8 +5141,8 @@
     </div>
 
     <!-- Key Recommendations Box -->
-    <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
-      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #fbbf24; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+    <div style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
+      <div style="font-size: 12px; font-weight: 800; text-transform: uppercase; color: #b45309; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
         <i data-lucide="alert-circle" style="width: 14px; height: 14px;"></i>
         <span>High-Priority ATS Fixes (Live Editable):</span>
       </div>
@@ -4974,11 +5151,11 @@
 
     <!-- Dual Action Buttons: Load into Live Editor -->
     <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px;">
-      <button type="button" onclick="applyUploadedResumeToEditor()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 13px 18px; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);">
+      <button type="button" onclick="applyUploadedResumeToEditor()" style="background: linear-gradient(135deg, #15803d 0%, #15803d 100%); color: #0f172a; border: none; padding: 13px 18px; border-radius: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.30);">
         <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
         <span>⚡ Load into Live Editor &amp; Edit</span>
       </button>
-      <button type="button" onclick="closeUploadScoreModal()" style="background: #334155; color: #cbd5e1; border: 1px solid #475569; padding: 13px 16px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer;">
+      <button type="button" onclick="closeUploadScoreModal()" style="background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 13px 16px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer;">
         Close &amp; Review
       </button>
     </div>

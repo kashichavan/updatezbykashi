@@ -116,12 +116,49 @@
           <div class="rs-step">
             <span class="rs-num" id="rsNumTarget">2</span>
             <div>
-              <h2>What role are you aiming at?</h2>
-              <p class="rs-step-sub">A posting on this site, or a role you type yourself.</p>
+              <h2>{% if target_job %}Your target for this resume{% else %}What role are you aiming at?{% endif %}</h2>
+              <p class="rs-step-sub">
+                {% if target_job %}
+                  This posting's own description and skills are already loaded — nothing to paste.
+                {% else %}
+                  A posting on this site, or a role you type yourself.
+                {% endif %}
+              </p>
             </div>
             <span class="rs-hint" id="rsHintTarget">Required</span>
           </div>
 
+          {% if target_job %}
+          <!-- Arrived from a posting: keep the target visible but compact, and
+               put the whole picker behind one "change" control. -->
+          <div class="rs-target-lock" id="rsTargetLock">
+            <div class="rs-target-lock-main">
+              <span class="rs-target-lock-badge">TARGET LOCKED</span>
+              <div class="rs-target-lock-title">{{ target_job.title }}</div>
+              <div class="rs-target-lock-meta">
+                {{ target_job.company_name }}{% if target_job.location %} • {{ target_job.location }}{% endif %}
+              </div>
+              <div class="rs-chiprow rs-target-lock-chips">
+                {% for s in skills_list|slice:":6" %}
+                  <span class="rs-chip">{{ s }}</span>
+                {% endfor %}
+              </div>
+            </div>
+            <button type="button" class="rs-btn rs-btn-ghost rs-btn-sm" id="rsChangeTargetBtn" onclick="rsUnlockTarget()">
+              <i data-lucide="pencil-line"></i><span>Change target</span>
+            </button>
+          </div>
+          <p class="rs-note" style="margin-top:10px;">
+            <i data-lucide="sparkles"></i>
+            <span>
+              Already have a resume?
+              <a class="rs-linkish" href="/resume-builder/?job_id={{ target_job.uuid }}">Tailor it to this job</a>
+              — this posting's description is applied automatically.
+            </span>
+          </p>
+          {% endif %}
+
+          <div id="rsTargetPickerWrap" class="{% if target_job %}rs-hidden{% endif %}">
           <div class="rs-btn-row" style="margin-bottom:12px;">
             <button type="button" class="rs-btn rs-btn-quiet rs-btn-sm" id="rsModeJob"
                     onclick="rsSetTargetMode('job')" aria-pressed="true">
@@ -184,6 +221,7 @@
               </div>
             </div>
           </div>
+          </div><!-- /#rsTargetPickerWrap -->
 
           <div class="rs-chiprow" id="rsTargetChips"></div>
         </section>
@@ -327,7 +365,7 @@
           </div>
           <a id="rsEditorLink" class="rs-btn rs-btn-primary rs-btn-sm rs-btn-block" style="margin-top:8px;"
              href="{{ studio_editor_url }}">
-            <i data-lucide="pencil-line"></i><span>Open in the live editor</span>
+            <i data-lucide="pencil-line"></i><span>{% if target_job %}Tailor my resume to this job{% else %}Open in the live editor{% endif %}</span>
           </a>
         </div>
 
@@ -374,6 +412,7 @@
     jobId: TARGET_JOB ? TARGET_JOB.uuid : '',
     custom: { title: '', company: '', skills: '', description: '' },
     generationId: null,
+    generationJobId: '',
     projects: [],
     resume: null,
     poll: null
@@ -543,6 +582,17 @@
     renderTarget();
   }
 
+  // Arriving from a posting locks the target; this reveals the picker only when
+  // the visitor actually wants a different role.
+  function rsUnlockTarget() {
+    const lock = $('rsTargetLock');
+    const wrap = $('rsTargetPickerWrap');
+    if (lock) lock.classList.add('rs-hidden');
+    if (wrap) wrap.classList.remove('rs-hidden');
+    renderTarget();
+    refreshIcons();
+  }
+
   function rsPickJob(uuid) {
     state.jobId = uuid;
     state.mode = 'job';
@@ -552,6 +602,25 @@
     renderTarget();
   }
 
+  function syncEditorLink() {
+    const link = $('rsEditorLink');
+    if (!link) return;
+    const label = link.querySelector('span');
+    if (state.mode === 'job' && state.jobId) {
+      let href = '/resume-builder/?job_id=' + encodeURIComponent(state.jobId);
+      if (state.generationId && state.generationJobId === state.jobId) {
+        href += '&gen_id=' + encodeURIComponent(state.generationId);
+      }
+      link.href = href;
+      if (label) label.textContent = 'Tailor my resume to this job';
+      return;
+    }
+    link.href = state.generationId
+      ? '/resume-builder/?gen_id=' + encodeURIComponent(state.generationId)
+      : '/resume-builder/';
+    if (label) label.textContent = 'Open in the live editor';
+  }
+
   function renderTarget() {
     const target = currentTarget();
     const summary = $('rsTargetSummary');
@@ -559,6 +628,7 @@
     const railChips = $('rsRailChips');
     const hint = $('rsHintTarget');
 
+    syncEditorLink();
     chips.innerHTML = '';
     railChips.innerHTML = '';
 
@@ -573,7 +643,7 @@
     summary.innerHTML =
       '<div class="rs-target-name">' + esc(target.title) + '</div>' +
       (target.company ? '<div class="rs-target-company">' + esc(target.company) + '</div>' : '') +
-      (target.location ? '<div class="rs-target-company" style="color:#94a3b8;">' + esc(target.location) + '</div>' : '');
+      (target.location ? '<div class="rs-target-company" style="color:#64748b;">' + esc(target.location) + '</div>' : '');
 
     const skills = skillsFrom(target.skills);
     skills.slice(0, 10).forEach((skill) => {
@@ -677,6 +747,7 @@
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Could not start discovery');
       state.generationId = data.job_id;
+      state.generationJobId = state.jobId || '';
       rsPollDiscovery(data.job_id);
     } catch (err) {
       setDiscovery(0, err.message, true);
@@ -876,8 +947,8 @@
     $('rsGenerated').classList.remove('rs-hidden');
 
     const score = Math.round(ats.score || 0);
-    const color = score >= 80 ? '#34d399' : (score >= 60 ? '#fbbf24' : '#f87171');
-    const ring = 'conic-gradient(' + color + ' 0%, ' + color + ' ' + score + '%, #1e293b ' + score + '%, #1e293b 100%)';
+    const color = score >= 80 ? '#16a34a' : (score >= 60 ? '#b45309' : '#dc2626');
+    const ring = 'conic-gradient(' + color + ' 0%, ' + color + ' ' + score + '%, #e2e8f0 ' + score + '%, #e2e8f0 100%)';
 
     [$('rsGauge'), $('rsGaugeMini')].forEach((gauge) => { gauge.style.background = ring; });
     $('rsGaugeNum').textContent = score;
@@ -1002,6 +1073,7 @@
   window.rsStartDiscovery = rsStartDiscovery;
   window.rsGenerateResume = rsGenerateResume;
   window.rsSetTargetMode = rsSetTargetMode;
+  window.rsUnlockTarget = rsUnlockTarget;
   window.rsPickJob = rsPickJob;
   window.rsDownload = rsDownload;
   window.rsCopyResume = rsCopyResume;

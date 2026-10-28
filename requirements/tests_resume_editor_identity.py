@@ -60,6 +60,21 @@ class EditorShipsNoIdentityTests(TestCase):
         for value in PERSONAL:
             self.assertNotIn(value, html, f"editor exposes {value!r}")
 
+    def test_editor_with_a_job_tailors_automatically_and_offers_one_action(self):
+        res = self.client.get(f'/resume/?job_id={self.job.uuid}')
+        html = page_without_site_schema(res)
+        self.assertIn('id="targetJobBanner"', html)
+        self.assertIn(f'data-job-id="{self.job.uuid}"', html)
+        self.assertIn('autoAlterResumeForTargetJob({ silent: true })', html)
+        # The generic "rewrite for role" button would be a second, vaguer action.
+        self.assertNotIn('id="btnOneClickAiBoost"', html)
+
+    def test_editor_without_a_job_keeps_the_role_rewrite_button(self):
+        res = self.client.get('/resume/')
+        html = page_without_site_schema(res)
+        self.assertIn('id="btnOneClickAiBoost"', html)
+        self.assertNotIn('id="targetJobBanner"', html)
+
     def test_export_without_a_name_does_not_invent_one(self):
         resume = {
             'name': '',

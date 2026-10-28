@@ -3843,6 +3843,25 @@ def api_ai_alter_resume(request):
         job_skills = body.get('job_skills', '')
         job_description = body.get('job_description', '')
 
+        # A real posting always wins over the client copy. The page may hold a
+        # shortened description, and a caller could send anything at all; when a
+        # job is named, tailor against the description stored with that job.
+        job_id = body.get('job_id') or ''
+        if job_id:
+            from .models import JobPosting
+            import uuid
+            posting = None
+            try:
+                posting = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
+            except (ValueError, AttributeError, TypeError):
+                if str(job_id).isdigit():
+                    posting = JobPosting.objects.filter(pk=int(job_id)).first()
+            if posting:
+                job_title = posting.title or job_title
+                company_name = posting.company_name or company_name
+                job_skills = posting.skills_required or job_skills
+                job_description = posting.description or job_description
+
         if not job_description and not job_skills:
             return JsonResponse({'success': False, 'error': 'Job Description or skills are required.'}, status=400)
 

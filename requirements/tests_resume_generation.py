@@ -163,6 +163,16 @@ class ResumeStudioStandaloneTests(TestCase):
         self.assertEqual(res.context['target_job'], self.job)
         self.assertEqual(res.context['skills_list'], ['Python', 'Django', 'PostgreSQL'])
         self.assertIn(str(self.job.uuid), res.context['studio_editor_url'])
+        html = res.content.decode()
+        # The target is locked to the posting instead of showing the whole picker.
+        self.assertIn('id="rsTargetLock"', html)
+        self.assertIn('TARGET LOCKED', html)
+
+    def test_studio_page_without_a_job_shows_the_picker(self):
+        res = self.client.get('/resume-studio/')
+        html = res.content.decode()
+        self.assertNotIn('id="rsTargetLock"', html)
+        self.assertIn('id="rsTargetPickerWrap"', html)
 
     def test_studio_page_ignores_a_malformed_job_id(self):
         res = self.client.get('/resume-studio/?job_id=not-a-uuid')
@@ -435,6 +445,51 @@ class AlteredResumeHonestyTests(TestCase):
         # Nothing returned a score, so the response must not contain one.
         self.assertIsNone(data['match_score'])
         self.assertIsNone(data['altered_summary'])
+
+    def test_a_named_posting_supplies_the_description_and_skills(self):
+        """
+        The browser may hold a shortened copy, and a caller could send anything.
+        When `job_id` is present, tailoring uses the posting itself.
+        """
+        category = Category.objects.create(name="Telephony", slug="telephony")
+        posting = JobPosting.objects.create(
+            title="VoIP Developer",
+            company_name="Talent Corner",
+            category=category,
+            skills_required="FreeSWITCH, SIP, Linux",
+            description="Operate FreeSWITCH and Asterisk telephony systems on Linux.",
+            status='ACTIVE',
+        )
+        fake = {
+            'altered_summary': 'Backend engineer.',
+            'altered_projects': [],
+            'overall_match_score': None,
+        }
+        with patch('requirements.ai_engine.alter_resume_for_job', return_value=fake) as mocked:
+            res = self.client.post(
+                '/api/ai/alter-resume/',
+                data=json.dumps({
+                    'job_id': str(posting.uuid),
+                    'job_title': 'Wrong title',
+                    'company_name': 'Wrong company',
+                    'job_skills': 'WrongSkill',
+                    'job_description': 'A different, unrelated role.',
+                    'candidate_summary': 'Backend engineer.',
+                    'candidate_skills': {'Languages': 'Python'},
+                    'candidate_projects': self.projects,
+                }),
+                content_type='application/json',
+            )
+
+        self.assertEqual(res.status_code, 200)
+        kwargs = mocked.call_args.kwargs
+        self.assertEqual(kwargs['job_title'], 'VoIP Developer')
+        self.assertEqual(kwargs['company_name'], 'Talent Corner')
+        self.assertEqual(kwargs['job_skills'], 'FreeSWITCH, SIP, Linux')
+        self.assertEqual(
+            kwargs['job_description'],
+            'Operate FreeSWITCH and Asterisk telephony systems on Linux.',
+        )
 
 
 class RewriteHonestyTests(TestCase):
