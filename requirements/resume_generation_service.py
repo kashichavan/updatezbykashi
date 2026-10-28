@@ -83,6 +83,95 @@ def sanitize_project_bullets(bullets: List[str], dp) -> List[str]:
     return kept
 
 
+def candidate_corpus(summary: str, skills, projects) -> str:
+    """Everything the candidate already wrote, which is the only allowed source of numbers."""
+    bits = [summary or '']
+    if isinstance(skills, dict):
+        for key, value in skills.items():
+            bits.append(str(key or ''))
+            bits.append(' '.join(value) if isinstance(value, (list, tuple)) else str(value or ''))
+    elif isinstance(skills, str):
+        bits.append(skills)
+    for project in projects or []:
+        if not isinstance(project, dict):
+            continue
+        for field in ('title', 'role', 'tech_stack', 'period'):
+            bits.append(str(project.get(field) or ''))
+        bullets = project.get('bullets') or []
+        bits.append(' '.join(b for b in bullets if isinstance(b, str)))
+    return ' '.join(bits)
+
+
+def sanitize_rewrite(text: str, allowed_source: str) -> str:
+    """
+    Return a rewrite only if every number in it already exists in `allowed_source`.
+
+    Used by the bullet polisher and the job-tailoring suggestions: the model is
+    told not to invent metrics, and this is the check that decides whether its
+    answer is allowed onto the page.
+    """
+    if not isinstance(text, str) or not text.strip():
+        return ''
+    if _numbers_in(text) - _numbers_in(allowed_source):
+        return ''
+    if any(word in text.lower() for word in _PUFFERY):
+        return ''
+    return text.strip()
+
+
+def sanitize_altered_resume(result: dict, summary: str, skills, projects) -> dict:
+    """
+    Keep only the AI's rewrite lines that the candidate's own text supports.
+
+    `alter_resume_for_job` is prompted not to invent metrics, but the prompt is
+    advice. A bullet that says "cut latency by 40%" when the candidate never
+    mentioned 40 is the sentence an interviewer asks about, so any bullet with a
+    number absent from the original material is dropped. If every bullet of an
+    altered project is dropped, the original project is restored instead of
+    shipping a thinner — or more impressive — version of it.
+    """
+    if not isinstance(result, dict):
+        return result
+    allowed = _numbers_in(candidate_corpus(summary, skills, projects))
+
+    altered = result.get('altered_projects')
+    if isinstance(altered, list) and altered:
+        originals = [p for p in (projects or []) if isinstance(p, dict)]
+        cleaned = []
+        for idx, project in enumerate(altered):
+            if not isinstance(project, dict):
+                continue
+            bullets = project.get('bullets') or []
+            if isinstance(bullets, str):
+                bullets = [part for part in re.split(r"(?<=[.!?])\s+|\n+", bullets) if part.strip()]
+            kept = []
+            for bullet in bullets:
+                if not isinstance(bullet, str):
+                    continue
+                text = bullet.strip()
+                if not text:
+                    continue
+                if _numbers_in(text) - allowed:
+                    continue
+                if any(word in text.lower() for word in _PUFFERY):
+                    continue
+                kept.append(text)
+            if kept:
+                project = dict(project)
+                project['bullets'] = kept
+                cleaned.append(project)
+            elif idx < len(originals):
+                cleaned.append(originals[idx])
+        result['altered_projects'] = cleaned
+
+    altered_summary = result.get('altered_summary')
+    if isinstance(altered_summary, str) and altered_summary.strip():
+        if _numbers_in(altered_summary) - allowed:
+            # Keep the candidate's own summary rather than one with a new number.
+            result['altered_summary'] = None
+    return result
+
+
 def honest_project_title(ai_title: str, dp) -> str:
     """
     Keep the AI title only if it still names the repository.

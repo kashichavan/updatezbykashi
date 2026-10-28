@@ -3051,15 +3051,18 @@ def resume_builder_view(request):
             if str(job_id).isdigit():
                 target_job = JobPosting.objects.filter(pk=int(job_id)).first()
 
+    # The role template (summary, skills, education, projects) is a starting
+    # point. The identity is not: a visitor who exports without editing must not
+    # send a recruiter somebody else's name and contact details.
     initial_resume = {
-        'name': 'Kashinath Chavan',
+        'name': '',
         'contact': {
-            'email': 'kashinath@example.com',
-            'phone': '+91 98765 43210',
-            'location': 'Bangalore, India',
-            'linkedin': 'linkedin.com/in/kashinath-chavan',
-            'github': 'github.com/kashichavan',
-            'portfolio': 'kashiiupdatez.online'
+            'email': '',
+            'phone': '',
+            'location': '',
+            'linkedin': '',
+            'github': '',
+            'portfolio': ''
         },
         'summary': role_data['summary'],
         'skills': role_data['technical_skills'],
@@ -3109,8 +3112,8 @@ def resume_builder_view(request):
         'initial_resume_json': json.dumps(initial_resume),
         'demo_projects_json': json.dumps(demo_projects),
         'ats_eval': ats_eval,
-        'page_title': '⚡ 90+ ATS Score Resume Generator — Kashii Updatez',
-        'meta_description': 'Free ATS-compliant resume builder for engineering freshers. Auto-generate enterprise projects, quantified XYZ metrics, and pass Workday, Greenhouse, and Lever filters.',
+        'page_title': 'Live A4 Resume Editor — edit, score and export | Kashii Updatez',
+        'meta_description': 'Edit a single-page resume on screen, score it with the same ATS evaluator used for uploads, and export to PDF or DOCX. No invented metrics or contact details.',
     }
     return render(request, 'resume_builder.html', context)
 
@@ -3128,15 +3131,15 @@ def api_resume_template(request, role):
     if level == 'experienced' and role in EXPERIENCED_ROLE_DEFAULTS:
         exp_data = EXPERIENCED_ROLE_DEFAULTS[role]
         default_resume = {
-            'name': 'Kashinath Chavan',
+            'name': '',
             'profile_level': 'experienced',
             'contact': {
-                'email': 'kashinath@example.com',
-                'phone': '+91 98765 43210',
-                'location': 'Bengaluru, India',
-                'linkedin': 'linkedin.com/in/kashinath-chavan',
-                'github': 'github.com/kashichavan',
-                'portfolio': 'kashiiupdatez.online'
+                'email': '',
+                'phone': '',
+                'location': '',
+                'linkedin': '',
+                'github': '',
+                'portfolio': ''
             },
             'summary': exp_data['summary'],
             'skills': role_data['technical_skills'],
@@ -3145,23 +3148,23 @@ def api_resume_template(request, role):
             'education': {
                 'degree': role_data['education']['degree'],
                 'institution': role_data['education']['institution'],
-                'year': '2019 – 2023',
-                'gpa': '8.6 / 10.0 CGPA',
-                'coursework': 'Distributed Systems, DBMS, Operating Systems, Cloud Architecture'
+                'year': '',
+                'gpa': '',
+                'coursework': role_data['education']['coursework']
             },
             'certifications': role_data['certifications']
         }
     else:
         default_resume = {
-            'name': 'Kashinath Chavan',
+            'name': '',
             'profile_level': 'fresher',
             'contact': {
-                'email': 'kashinath@example.com',
-                'phone': '+91 98765 43210',
-                'location': 'Bengaluru, India',
-                'linkedin': 'linkedin.com/in/kashinath-chavan',
-                'github': 'github.com/kashichavan',
-                'portfolio': 'kashiiupdatez.online'
+                'email': '',
+                'phone': '',
+                'location': '',
+                'linkedin': '',
+                'github': '',
+                'portfolio': ''
             },
             'summary': role_data['summary'],
             'skills': role_data['technical_skills'],
@@ -3417,6 +3420,11 @@ def api_ai_github_project(request):
         primary_lang = body.get('language', '')
         topics = []
         stars = 0
+        # Default to the conservative reading: the user is looking at a public
+        # repository, not claiming they wrote it. The UI asks explicitly.
+        relationship = str(body.get('relationship') or 'RECOMMENDED').upper()
+        if relationship not in ('BUILT', 'CONTRIBUTED', 'PRACTICE', 'RECOMMENDED'):
+            relationship = 'RECOMMENDED'
 
         # Attempt to fetch live from GitHub Public API
         if len(parts) >= 2:
@@ -3433,14 +3441,13 @@ def api_ai_github_project(request):
             except Exception:
                 pass  # Fallback to AI generation with given inputs
 
-        # The user pasted their own repository, so authorship is theirs to claim.
         project_data = generate_github_project_bullets(
             repo_name=repo_name,
             description=description,
             primary_language=primary_lang,
             topics=topics,
             stars=stars,
-            relationship='BUILT',
+            relationship=relationship,
         )
 
         # Same guard as the async pipeline: invented metrics never reach the page.
@@ -3459,6 +3466,7 @@ def api_ai_github_project(request):
             bullets = [b for b in [description] if b]
         project_data['bullets'] = bullets
         project_data['title'] = honest_project_title(project_data.get('title'), source)
+        project_data['relationship'] = relationship
 
         return JsonResponse({'success': True, 'project': project_data})
     except Exception as e:
@@ -3585,10 +3593,11 @@ def api_download_resume_pdf(request):
 
         pdf_bytes = generate_ats_resume_pdf(resume_data)
 
-        # Determine clean filename
-        raw_name = resume_data.get('name') or 'Candidate'
-        clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', raw_name).strip('_') or 'Candidate'
-        filename = f"{clean_name}_ATS_Resume.pdf"
+        # Determine clean filename. With no name entered the file is just
+        # "ATS_Resume.pdf" — no invented label standing in for a person.
+        raw_name = resume_data.get('name') or ''
+        clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', raw_name).strip('_')
+        filename = f"{clean_name + '_' if clean_name else ''}ATS_Resume.pdf"
 
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -3641,9 +3650,9 @@ def api_download_resume_docx(request):
 
         docx_bytes = generate_ats_resume_docx(resume_data)
 
-        raw_name = resume_data.get('name') or 'Candidate'
-        clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', raw_name).strip('_') or 'Candidate'
-        filename = f"{clean_name}_ATS_Resume.docx"
+        raw_name = resume_data.get('name') or ''
+        clean_name = re.sub(r'[^a-zA-Z0-9_-]', '_', raw_name).strip('_')
+        filename = f"{clean_name + '_' if clean_name else ''}ATS_Resume.docx"
 
         response = HttpResponse(
             docx_bytes,
@@ -3700,6 +3709,7 @@ def api_ai_polish_bullet(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     from .ai_engine import polish_resume_bullet
+    from .resume_generation_service import sanitize_rewrite
 
     try:
         body = json.loads(request.body.decode('utf-8'))
@@ -3712,6 +3722,12 @@ def api_ai_polish_bullet(request):
             role=body.get('role', ''),
             tech_stack=body.get('tech_stack', ''),
         )
+        # The user typed one bullet. A rewrite may reword it; it may not add a
+        # percentage or a request rate that was never there.
+        if isinstance(data, dict):
+            for key in ('polished', 'alternative_1', 'alternative_2', 'metric_highlight'):
+                if key in data:
+                    data[key] = sanitize_rewrite(data.get(key), bullet)
         return JsonResponse({'success': True, 'data': data})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -3724,6 +3740,7 @@ def api_ai_tailor_resume(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     from .ai_engine import tailor_resume_to_job
+    from .resume_generation_service import candidate_corpus, sanitize_rewrite
 
     try:
         body = json.loads(request.body.decode('utf-8'))
@@ -3731,12 +3748,30 @@ def api_ai_tailor_resume(request):
         if not jd:
             return JsonResponse({'success': False, 'error': 'Job description is required'}, status=400)
 
+        resume_summary = body.get('resume_summary', '')
+        resume_skills = body.get('resume_skills', [])
+        resume_projects = body.get('resume_projects', [])
+
         data = tailor_resume_to_job(
-            resume_summary=body.get('resume_summary', ''),
-            resume_skills=body.get('resume_skills', []),
-            resume_projects=body.get('resume_projects', []),
+            resume_summary=resume_summary,
+            resume_skills=resume_skills,
+            resume_projects=resume_projects,
             job_description=jd,
         )
+        # Suggestions may rephrase the candidate's material, never add numbers to it.
+        if isinstance(data, dict):
+            corpus = candidate_corpus(resume_summary, resume_skills, resume_projects)
+            if 'tailored_summary' in data:
+                data['tailored_summary'] = sanitize_rewrite(data.get('tailored_summary'), corpus)
+            cleaned = []
+            for item in data.get('suggested_project_improvements') or []:
+                if not isinstance(item, dict):
+                    continue
+                item = dict(item)
+                item['tailored_bullet'] = sanitize_rewrite(item.get('tailored_bullet'), corpus)
+                if item['tailored_bullet']:
+                    cleaned.append(item)
+            data['suggested_project_improvements'] = cleaned
         return JsonResponse({'success': True, 'data': data})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -3749,16 +3784,25 @@ def api_ai_generate_summary(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     from .ai_engine import generate_professional_summary
+    from .resume_generation_service import sanitize_rewrite
 
     try:
         body = json.loads(request.body.decode('utf-8'))
         role = body.get('role', 'Software Engineer')
+        experience_level = body.get('experience_level', 'fresher')
+        key_skills = body.get('key_skills', '')
         data = generate_professional_summary(
             role=role,
-            experience_level=body.get('experience_level', 'fresher'),
-            key_skills=body.get('key_skills', ''),
+            experience_level=experience_level,
+            key_skills=key_skills,
             target_company_type=body.get('target_company_type', 'Product Startup'),
         )
+        # A generated pitch may use the skills supplied; it may not invent a metric.
+        if isinstance(data, dict):
+            source = ' '.join([str(role or ''), str(experience_level or ''), str(key_skills or '')])
+            for key in ('impact_focused', 'technical_specialist', 'fresher_ambitious'):
+                if key in data:
+                    data[key] = sanitize_rewrite(data.get(key), source)
         return JsonResponse({'success': True, 'data': data})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -3790,6 +3834,7 @@ def api_ai_alter_resume(request):
 
     from .ai_engine import alter_resume_for_job
     from .resume_engine import score_project_ats
+    from .resume_generation_service import sanitize_altered_resume
 
     try:
         body = json.loads(request.body.decode('utf-8'))
@@ -3801,14 +3846,22 @@ def api_ai_alter_resume(request):
         if not job_description and not job_skills:
             return JsonResponse({'success': False, 'error': 'Job Description or skills are required.'}, status=400)
 
+        candidate_summary = body.get('candidate_summary', '')
+        candidate_skills = body.get('candidate_skills', {})
+        candidate_projects = body.get('candidate_projects', [])
+
         result = alter_resume_for_job(
-            candidate_summary=body.get('candidate_summary', ''),
-            candidate_skills=body.get('candidate_skills', {}),
-            candidate_projects=body.get('candidate_projects', []),
+            candidate_summary=candidate_summary,
+            candidate_skills=candidate_skills,
+            candidate_projects=candidate_projects,
             job_title=job_title,
             company_name=company_name,
             job_skills=job_skills,
             job_description=job_description,
+        )
+        # Text the model invented may not survive into the exported resume.
+        result = sanitize_altered_resume(
+            result, candidate_summary, candidate_skills, candidate_projects
         )
 
         # Standardize field names for frontends

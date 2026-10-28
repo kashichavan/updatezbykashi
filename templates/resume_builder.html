@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}⚡ 90+ ATS Score Resume Generator & Enterprise Project Matcher — Kashii Updatez{% endblock %}
-{% block meta_description %}Free ATS-compliant resume builder for college students and tech freshers. Auto-generate enterprise projects with quantified Google XYZ metrics, high-impact keywords, and 1-click PDF download.{% endblock %}
+{% block title %}Live A4 Resume Editor — edit, score and export | Kashii Updatez{% endblock %}
+{% block meta_description %}Edit your resume directly on an A4 sheet, check it against the same ATS evaluator used for uploaded resumes, and export to PDF or DOCX. The score is calculated from your text.{% endblock %}
 
 {% block content %}
 <main class="resume-builder-main wrap">
@@ -11,13 +11,13 @@
   <div class="studio-hero">
     <div class="studio-badge">
       <i data-lucide="shield-check" style="width: 14px; height: 14px; color: #2563eb;"></i>
-      <span>ATS 90+ RESUME STUDIO &bull; OPTIMIZED FOR WORKDAY, TALEO &amp; RECRUITERS</span>
+      <span>LIVE A4 RESUME EDITOR &bull; SCORED BY THE ATS EVALUATOR</span>
     </div>
     <h1 class="studio-title">
-      ATS 90+ Score Resume <em>Builder</em>
+      Live A4 Resume <em>Editor</em>
     </h1>
     <p class="studio-subtitle">
-      Directly edit any section on the live A4 sheet. Quantify bullets with Google XYZ metrics and export a clean, 100% vector single-page PDF.
+      Edit any section on the sheet. The score is calculated from your text by the server evaluator, then you can export a clean, 100% vector single-page PDF or DOCX.
     </p>
   </div>
 
@@ -82,9 +82,9 @@
       </button>
 
       <!-- 1-Click AI Boost -->
-      <button type="button" id="btnOneClickAiBoost" onclick="runOneClickAiBoost()" class="studio-btn studio-btn-magic" title="AI automatically quantifies metrics and matches keywords">
+      <button type="button" id="btnOneClickAiBoost" onclick="runOneClickAiBoost()" class="studio-btn studio-btn-magic" title="AI rewords what you already wrote for this role. It cannot add numbers you did not supply.">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-        <span>AI Metrics Boost</span>
+        <span>AI Rewrite for Role</span>
       </button>
 
       <!-- Download Vector PDF -->
@@ -414,12 +414,12 @@
         <!-- Header -->
         <header class="ats-header">
           <h1 id="previewName" class="ats-name">{{ initial_resume.name }}</h1>
-          <div class="ats-contact-line">
-            <span id="previewLocation">{{ initial_resume.contact.location }}</span> &nbsp;|&nbsp;
-            <span id="previewPhone">{{ initial_resume.contact.phone }}</span> &nbsp;|&nbsp;
-            <a id="previewEmail" href="mailto:{{ initial_resume.contact.email }}">{{ initial_resume.contact.email }}</a> &nbsp;|&nbsp;
-            <a id="previewLinkedin" href="https://{{ initial_resume.contact.linkedin }}" target="_blank">{{ initial_resume.contact.linkedin }}</a> &nbsp;|&nbsp;
-            <a id="previewGithub" href="https://{{ initial_resume.contact.github }}" target="_blank">{{ initial_resume.contact.github }}</a>
+          <div class="ats-contact-line" id="previewContactLine">
+            <span class="ats-c-item"><span id="previewLocation">{{ initial_resume.contact.location }}</span></span>
+            <span class="ats-c-item"><span id="previewPhone">{{ initial_resume.contact.phone }}</span></span>
+            <a class="ats-c-item" id="previewEmail" href="mailto:{{ initial_resume.contact.email }}">{{ initial_resume.contact.email }}</a>
+            <a class="ats-c-item" id="previewLinkedin" href="https://{{ initial_resume.contact.linkedin }}" target="_blank">{{ initial_resume.contact.linkedin }}</a>
+            <a class="ats-c-item" id="previewGithub" href="https://{{ initial_resume.contact.github }}" target="_blank">{{ initial_resume.contact.github }}</a>
           </div>
         </header>
 
@@ -458,7 +458,7 @@
                 <div class="ats-entry-header">
                   <div style="display: flex; align-items: baseline; gap: 8px;">
                     <h3 class="ats-project-title">{{ proj.title }}</h3>
-                    <span class="print-hide project-ats-chip" onclick="openProjectAtsModal({{ forloop.counter0 }})" title="Click to view ATS score breakdown">95 ATS</span>
+                    <span class="print-hide project-ats-chip" onclick="openProjectAtsModal({{ forloop.counter0 }})" title="Click to view ATS score breakdown">View ATS</span>
                   </div>
                   <span class="ats-project-role"><em>{{ proj.role }}</em></span>
                 </div>
@@ -481,15 +481,15 @@
             <span id="previewYear" class="ats-date">{{ initial_resume.education.year }}</span>
           </div>
           <p id="previewCollege" class="ats-education-sub" style="margin: 2px 0 0;">
-            {{ initial_resume.education.institution }} &bull; <strong>CGPA: {{ initial_resume.education.gpa }}</strong>
+            {{ initial_resume.education.institution }}{% if initial_resume.education.gpa %} &bull; <strong>CGPA: {{ initial_resume.education.gpa }}</strong>{% endif %}
           </p>
           <p class="ats-education-coursework" style="margin: 3px 0 0; font-size: 12px; color: #334155;">
             <strong>Core Coursework:</strong> {{ initial_resume.education.coursework }}
           </p>
         </section>
 
-        <!-- Certifications -->
-        <section class="ats-section" style="margin-bottom: 0;">
+        <!-- Certifications (hidden until the candidate has one to show) -->
+        <section class="ats-section" id="previewCertificationsSection" style="margin-bottom: 0;{% if not initial_resume.certifications %} display: none;{% endif %}">
           <h2 class="ats-section-title">CERTIFICATIONS & ACHIEVEMENTS</h2>
           <ul id="previewCertifications" class="ats-bullet-list">
             {% for cert in initial_resume.certifications %}
@@ -1668,6 +1668,11 @@
     color: #0f172a;
     text-decoration: none;
   }
+  /* Contact items are independent spans so a blank field can be hidden.
+     The separator lives on the item, never as loose text between them. */
+  .ats-c-item { display: inline; }
+  .ats-c-item::before { content: '|'; margin: 0 7px; color: #94a3b8; }
+  .ats-c-item.is-first::before { content: none; margin: 0; }
 
   .ats-section {
     margin-bottom: 13px;
@@ -2083,10 +2088,14 @@
       renderResumeSheet();
       recalculateAtsScore();
 
+      const matchScore = (typeof d.match_score === 'number') ? d.match_score : null;
+      const doneMsg = matchScore === null
+        ? `✨ Resume rewritten for ${targetJobData.company}.`
+        : `✨ Resume rewritten for ${targetJobData.company}. Estimated job match: ${matchScore}/100.`;
       if (window.showToast) {
-        window.showToast(`✨ Resume altered for ${targetJobData.company}! ATS Match: ${d.match_score || 95}/100`, "success");
+        window.showToast(doneMsg, "success");
       } else {
-        alert(`✨ Resume altered for ${targetJobData.company}! ATS Match: ${d.match_score || 95}/100`);
+        alert(doneMsg);
       }
     } catch (err) {
       alert("Network error: " + err.message);
@@ -2157,8 +2166,22 @@
     renderResumeSheet();
   }
 
+  function syncContactLine() {
+    // A blank field should disappear instead of leaving a stray "| " behind.
+    const line = document.getElementById('previewContactLine');
+    if (!line) return;
+    let first = true;
+    line.querySelectorAll('.ats-c-item').forEach((el) => {
+      const empty = !(el.innerText || '').trim();
+      el.style.display = empty ? 'none' : '';
+      el.classList.toggle('is-first', !empty && first);
+      if (!empty) first = false;
+    });
+  }
+
   function renderResumeSheet() {
     document.getElementById('previewName').innerText = currentResumeData.name;
+    document.getElementById('previewLocation').innerText = currentResumeData.contact.location || '';
     document.getElementById('previewEmail').innerText = currentResumeData.contact.email;
     document.getElementById('previewEmail').href = 'mailto:' + currentResumeData.contact.email;
     document.getElementById('previewPhone').innerText = currentResumeData.contact.phone;
@@ -2166,6 +2189,7 @@
     document.getElementById('previewLinkedin').href = 'https://' + currentResumeData.contact.linkedin;
     document.getElementById('previewGithub').innerText = currentResumeData.contact.github;
     document.getElementById('previewGithub').href = 'https://' + currentResumeData.contact.github;
+    syncContactLine();
 
     document.getElementById('previewSummary').innerText = currentResumeData.summary;
 
@@ -2245,9 +2269,11 @@
     if (pCountEl) pCountEl.innerText = (currentResumeData.projects || []).length;
     renderProjectsControlsList();
 
-    // Render Certifications
+    // Render Certifications; an empty list should not leave a titled empty section.
     let certHtml = (currentResumeData.certifications || []).map(c => `<li>${c}</li>`).join('');
     document.getElementById('previewCertifications').innerHTML = certHtml;
+    const certSection = document.getElementById('previewCertificationsSection');
+    if (certSection) certSection.style.display = certHtml ? '' : 'none';
 
     if (window.lucide) window.lucide.createIcons();
     if (typeof WordEditor !== 'undefined' && WordEditor.updateCounts) {
@@ -2377,7 +2403,7 @@
       alert("Network error: " + err.message);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<i data-lucide="sparkles" style="width:15px;height:15px;"></i> <span>✨ Polish Bullets to 95+ Score with Groq AI</span>';
+      btn.innerHTML = '<i data-lucide="sparkles" style="width:15px;height:15px;"></i> <span>✨ Rewrite Bullets Honestly with Groq AI</span>';
       if (window.lucide) window.lucide.createIcons();
     }
   }
@@ -2493,7 +2519,7 @@
       gradeColor = '#d97706';
     } else {
       if (!grade || grade.includes('80+') || grade.includes('90+') || grade.includes('70+')) grade = 'Needs Work (ATS <70)';
-      if (!passRate) passRate = 'High risk of rejection — boost metrics';
+      if (!passRate) passRate = 'High risk of rejection — add real, measured results or clearer role keywords';
       prefix = '⚠️ ';
       gaugeColor = '#b91c1c';
       gaugeBg = '#fee2e2';
@@ -2911,7 +2937,7 @@
     // 1. Primary: Direct Native .docx from python-docx backend
     try {
       const resumePayload = JSON.parse(JSON.stringify(currentResumeData || {}));
-      const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : (currentResumeData?.name || 'Candidate');
+      const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : (currentResumeData?.name || '');
       if (rawName) resumePayload.name = rawName.trim();
 
       const pEmail = document.getElementById('previewEmail')?.innerText?.trim();
@@ -3078,10 +3104,10 @@
       return;
     }
 
-    // Determine candidate name for clean filename
-    const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : (currentResumeData?.name || 'Candidate');
-    const cleanName = (rawName || 'Candidate').trim().replace(/[^a-zA-Z0-9_-]/g, '_') || 'Resume';
-    const filename = `${cleanName}_ATS_Resume.pdf`;
+    // Determine candidate name for clean filename. No name means no label.
+    const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : (currentResumeData?.name || '');
+    const cleanName = (rawName || '').trim().replace(/[^a-zA-Z0-9_-]/g, '_').replace(/^_+|_+$/g, '');
+    const filename = cleanName ? `${cleanName}_ATS_Resume.pdf` : 'ATS_Resume.pdf';
 
     // 1. Primary: Direct High-Fidelity Vector ATS PDF from ReportLab backend
     try {
@@ -3312,7 +3338,7 @@
 
     // Header info
     document.getElementById('uploadScoreFilename').innerText = data.filename || 'Uploaded Resume';
-    document.getElementById('uploadScoreCandName').innerText = parsed.name || 'Candidate';
+    document.getElementById('uploadScoreCandName').innerText = parsed.name || 'Your resume';
 
     // Score & Grade
     const scoreVal = ats.overall_score || 85;
@@ -3450,11 +3476,11 @@
 
     // 2. Set currentResumeData
     currentResumeData = {
-      name: parsed.name || currentResumeData.name || "Candidate",
+      name: parsed.name || currentResumeData.name || "",
       contact: {
         email: parsedContact.email || prevContact.email || "",
         phone: parsedContact.phone || prevContact.phone || "",
-        location: parsedContact.location || prevContact.location || "Bengaluru, India",
+        location: parsedContact.location || prevContact.location || "",
         linkedin: parsedContact.linkedin || prevContact.linkedin || "",
         github: parsedContact.github || prevContact.github || "",
         portfolio: parsedContact.portfolio || prevContact.portfolio || ""
@@ -3487,7 +3513,7 @@
     }
 
     if (window.showToast) {
-      window.showToast(`🎉 ${parsed.name}'s resume loaded into Live Editor! Edit in-place to reach ATS 95+.`, "success");
+      window.showToast(`🎉 ${parsed.name || 'Your'} resume loaded into the Live Editor. Edit it in place, then export.`, "success");
     } else {
       alert(`🎉 Resume loaded into Live Editor! You can edit any line directly on the resume.`);
     }
@@ -3578,8 +3604,9 @@
   }
 
   function renderTailorResults(data) {
-    document.getElementById('tailorScoreVal').innerText = `${data.match_score} / 100`;
-    document.getElementById('tailorGradeVal').innerText = data.match_grade;
+    const score = (typeof data.match_score === 'number') ? data.match_score : null;
+    document.getElementById('tailorScoreVal').innerText = score === null ? '— / 100' : `${score} / 100`;
+    document.getElementById('tailorGradeVal').innerText = data.match_grade || 'No score returned';
 
     // Missing keywords
     const missingBox = document.getElementById('tailorMissingKeywords');
@@ -3613,16 +3640,15 @@
       currentResumeData.summary = lastTailoredResult.tailored_summary;
     }
 
-    // Append top missing keywords into Skills
-    if (lastTailoredResult.missing_critical_keywords && lastTailoredResult.missing_critical_keywords.length > 0) {
-      if (!currentResumeData.skills['Targeted Skills']) {
-        currentResumeData.skills['Targeted Skills'] = lastTailoredResult.missing_critical_keywords.join(', ');
-      }
-    }
-
+    // Missing keywords stay visible as a checklist. They are not written into
+    // Skills for you: a skill you cannot discuss in the interview is worse than
+    // a missing keyword.
     renderResumeSheet();
     closeTailorModal();
-    alert('✅ Resume tailored! Your summary and skills have been updated to match the job requirements.');
+    const missing = (lastTailoredResult.missing_critical_keywords || []).length;
+    alert(missing
+      ? `✅ Summary updated. ${missing} job keywords are still missing from your resume — add only the ones you actually know.`
+      : '✅ Summary updated.');
   }
 
   // Google XYZ Bullet Polisher
@@ -3675,8 +3701,10 @@
       { title: 'Alternative 2 (Speed & Optimization)', text: data.alternative_2 }
     ];
 
+    let shown = 0;
     choices.forEach((c, idx) => {
       if (!c.text) return;
+      shown += 1;
       const div = document.createElement('div');
       div.style.cssText = 'background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px;';
       div.innerHTML = `
@@ -3690,6 +3718,13 @@
       `;
       list.appendChild(div);
     });
+
+    if (!shown) {
+      const empty = document.createElement('p');
+      empty.style.cssText = 'font-size: 12.5px; color: #fca5a5; line-height: 1.55; margin: 0;';
+      empty.innerText = 'No rewrite passed the honesty check: every suggestion added a number or a claim your bullet does not support. Your original sentence is the accurate version.';
+      list.appendChild(empty);
+    }
 
     document.getElementById('bulletResults').style.display = 'block';
   }
@@ -3788,7 +3823,7 @@
     const origHtml = btn ? btn.innerHTML : '';
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> <span>AI Boosting to 95+...</span>';
+      btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:16px;height:16px;"></i> <span>Rewriting your material...</span>';
       if (window.lucide) window.lucide.createIcons();
     }
 
@@ -3827,11 +3862,16 @@
       renderResumeSheet();
       recalculateAtsScore();
 
-      const newScore = d.match_score || 96;
+      // No invented score: when the model did not return one, say so instead of
+      // printing a number the evaluator never produced.
+      const newScore = (typeof d.match_score === 'number') ? d.match_score : null;
+      const msg = newScore === null
+        ? '✨ AI rewrite applied. The ATS score below was recalculated from your text.'
+        : `✨ AI rewrite applied. Estimated job match: ${newScore}/100 — the ATS score below is recalculated from your text.`;
       if (window.showToast) {
-        window.showToast(`✨ 1-Click AI Boost Applied! ATS Score: ${newScore}/100 with Google XYZ metrics.`, "success");
+        window.showToast(msg, "success");
       } else {
-        alert(`✨ 1-Click AI Boost Applied! ATS Score: ${newScore}/100.`);
+        alert(msg);
       }
     } catch (err) {
       alert("Network error: " + err.message);
@@ -3848,7 +3888,7 @@
     const modal = document.getElementById('uploadScoreModal');
     if (!modal) return;
     document.getElementById('uploadScoreFilename').innerText = 'Live Resume Session';
-    document.getElementById('uploadScoreCandName').innerText = currentResumeData.name || 'Candidate';
+    document.getElementById('uploadScoreCandName').innerText = currentResumeData.name || 'Your resume';
     const scoreVal = document.getElementById('atsScoreValue').innerText.replace(/\s*\/.*$/, '').trim();
     document.getElementById('uploadScoreBig').innerText = `${scoreVal} / 100`;
     document.getElementById('uploadScoreGrade').innerText = document.getElementById('atsGradeText').innerText;
@@ -4142,7 +4182,10 @@
       const res = await fetch('/api/ai/github-project/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repo: input })
+        body: JSON.stringify({
+          repo: input,
+          relationship: (document.getElementById('ghRepoRelationship') || {}).value || 'RECOMMENDED'
+        })
       });
       const data = await res.json();
       if (!data.success) {
@@ -4326,8 +4369,8 @@
 
   function handleSaveCustomProject() {
     const title = document.getElementById('customProjTitle').value.trim();
-    const role = document.getElementById('customProjRole').value.trim() || 'Lead Developer';
-    const tech = document.getElementById('customProjTech').value.trim() || 'Python, SQL, Modern Tech';
+    const role = document.getElementById('customProjRole').value.trim();
+    const tech = document.getElementById('customProjTech').value.trim();
     const bText = document.getElementById('customProjBullets').value.trim();
 
     if (!title) {
@@ -4335,11 +4378,9 @@
       return;
     }
 
-    const bullets = bText ? bText.split('\n').filter(b => b.trim().length > 0) : [
-      `Engineered ${title} using ${tech}, ensuring high test coverage and modular architecture.`,
-      `Optimized data access and query latency by 35% through structured caching and indexing.`,
-      `Implemented CI/CD automated deployment workflow with automated testing on pull requests.`
-    ];
+    // No filler bullets: describing work the user did not do, with numbers they
+    // never measured, is the fastest way to fail the interview this resume earns.
+    const bullets = bText ? bText.split('\n').filter(b => b.trim().length > 0) : [];
 
     if (!currentResumeData.projects) currentResumeData.projects = [];
     currentResumeData.projects.unshift({
@@ -4372,22 +4413,20 @@
 
   function handleSaveExperience() {
     const company = document.getElementById('expCompany').value.trim();
-    const role = document.getElementById('expRole').value.trim() || 'Software Engineer';
-    const location = document.getElementById('expLocation').value.trim() || 'Bengaluru, India';
-    const period = document.getElementById('expPeriod').value.trim() || '2023 – Present';
-    const tech = document.getElementById('expTech').value.trim() || 'Python, Django, AWS, PostgreSQL';
+    const role = document.getElementById('expRole').value.trim();
+    const location = document.getElementById('expLocation').value.trim();
+    const period = document.getElementById('expPeriod').value.trim();
+    const tech = document.getElementById('expTech').value.trim();
     const bText = document.getElementById('expBullets').value.trim();
 
-    if (!company) {
-      alert("Please enter a company name.");
+    if (!company || !role) {
+      alert("Please enter the company name and your role.");
       return;
     }
 
-    const bullets = bText ? bText.split('\n').filter(b => b.trim().length > 0) : [
-      `Architected scalable services handling 10M+ daily events with 99.98% availability.`,
-      `Optimized database query performance, slashing p95 response latency from 320ms to 42ms.`,
-      `Collaborated across cross-functional squads to deliver critical enterprise features on schedule.`
-    ];
+    // Nothing here is filled in for the candidate: a date, a city, a stack or a
+    // metric they did not type is a fact they would have to defend later.
+    const bullets = bText ? bText.split('\n').filter(b => b.trim().length > 0) : [];
 
     if (!currentResumeData.experience) currentResumeData.experience = [];
     currentResumeData.experience.unshift({
@@ -4431,6 +4470,7 @@
       window.lucide.createIcons();
     }
     renderProjectsControlsList();
+    syncContactLine();
     if (typeof WordEditor !== 'undefined') {
       WordEditor.updateCounts();
     }
@@ -4656,11 +4696,23 @@
       </p>
       <div style="margin-bottom: 12px;">
         <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 5px;">GitHub Repo URL / Name:</label>
-        <input type="text" id="ghRepoInput" placeholder="e.g. kashichavan/updatezbykashi or https://github.com/fastapi/fastapi" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 11px 14px; color: #f8fafc; font-size: 13px; outline: none; box-sizing: border-box;">
+        <input type="text" id="ghRepoInput" placeholder="e.g. your-username/your-project or https://github.com/fastapi/fastapi" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 11px 14px; color: #f8fafc; font-size: 13px; outline: none; box-sizing: border-box;">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <label for="ghRepoRelationship" style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 5px;">What did you do with this repo?</label>
+        <select id="ghRepoRelationship" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #f8fafc; font-size: 13px; outline: none; box-sizing: border-box;">
+          <option value="BUILT">I built it</option>
+          <option value="CONTRIBUTED">I contributed to it</option>
+          <option value="PRACTICE">I rebuilt parts of it to learn</option>
+          <option value="RECOMMENDED" selected>I only studied it (reference)</option>
+        </select>
+        <p style="font-size: 11px; color: #94a3b8; margin: 5px 0 0; line-height: 1.45;">
+          This decides the wording on the resume. Studying a famous repo and claiming you built it is the first thing an interviewer checks.
+        </p>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;">
         <span style="font-size: 11px; color: #94a3b8;">Try sample:</span>
-        <button type="button" onclick="fillSampleGitHub('kashichavan/updatezbykashi')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">updatezbykashi</button>
+        <button type="button" onclick="fillSampleGitHub('encode/django-rest-framework')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django-rest-framework</button>
         <button type="button" onclick="fillSampleGitHub('tiangolo/fastapi')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">fastapi</button>
         <button type="button" onclick="fillSampleGitHub('django/django')" style="background: #0f172a; border: 1px solid #334155; color: #60a5fa; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django</button>
       </div>
@@ -4698,7 +4750,7 @@
         </div>
         <div>
           <label style="display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Accomplishment Bullets (1 per line):</label>
-          <textarea id="customProjBullets" rows="4" placeholder="Architected core event ingestion pipeline handling 5,000 req/sec&#10;Engineered atomic locks in Redis preventing duplicate job execution&#10;Reduced latency from 180ms to 25ms using multi-stage database caching" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box; resize: vertical;"></textarea>
+          <textarea id="customProjBullets" rows="4" placeholder="Built an event ingestion pipeline in Python and Redis&#10;Added atomic locks so the same job cannot run twice&#10;Cut query time with a multi-stage cache — use your real numbers if you measured them" style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 12.5px; box-sizing: border-box; resize: vertical;"></textarea>
         </div>
       </div>
       <button type="button" onclick="handleSaveCustomProject()" style="width: 100%; background: #3b82f6; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer;">
@@ -4778,11 +4830,11 @@
     <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
       <div>
         <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Project ATS Rating</div>
-        <div id="projectAtsScoreBig" style="font-size: 26px; font-weight: 900; color: #34d399;">94 / 100</div>
+        <div id="projectAtsScoreBig" style="font-size: 26px; font-weight: 900; color: #34d399;">— / 100</div>
       </div>
       <div style="text-align: right;">
         <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px;">Recruiter Pass Level</div>
-        <div id="projectAtsGradeBig" style="font-size: 14.5px; font-weight: 800; color: #38bdf8;">Top Tier Pass</div>
+        <div id="projectAtsGradeBig" style="font-size: 14.5px; font-weight: 800; color: #38bdf8;">Not scored yet</div>
       </div>
     </div>
 
@@ -4792,7 +4844,7 @@
       <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
           <span style="color: #cbd5e1;">1. Strong Action Verbs (Architected, Engineered, Scaled)</span>
-          <span id="scoreDimVerbs" style="color: #38bdf8;">25 / 25</span>
+          <span id="scoreDimVerbs" style="color: #38bdf8;">— / 25</span>
         </div>
         <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
           <div id="barDimVerbs" style="background: #38bdf8; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
@@ -4803,7 +4855,7 @@
       <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
           <span style="color: #cbd5e1;">2. Google XYZ Formula (Accomplished [X] by doing [Z], measured by [Y])</span>
-          <span id="scoreDimXYZ" style="color: #a855f7;">25 / 25</span>
+          <span id="scoreDimXYZ" style="color: #a855f7;">— / 25</span>
         </div>
         <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
           <div id="barDimXYZ" style="background: #a855f7; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
@@ -4814,7 +4866,7 @@
       <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
           <span style="color: #cbd5e1;">3. Quantified Numerical Metrics (%, ms, req/sec, scale numbers)</span>
-          <span id="scoreDimMetrics" style="color: #34d399;">20 / 20</span>
+          <span id="scoreDimMetrics" style="color: #34d399;">— / 20</span>
         </div>
         <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
           <div id="barDimMetrics" style="background: #34d399; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
@@ -4825,7 +4877,7 @@
       <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
           <span style="color: #cbd5e1;">4. Tech Stack Relevance & Framework Coverage</span>
-          <span id="scoreDimTech" style="color: #fbbf24;">20 / 20</span>
+          <span id="scoreDimTech" style="color: #fbbf24;">— / 20</span>
         </div>
         <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
           <div id="barDimTech" style="background: #fbbf24; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
@@ -4836,7 +4888,7 @@
       <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid #334155; border-radius: 10px; padding: 10px 14px;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
           <span style="color: #cbd5e1;">5. Architectural Depth (Concurrency, Redis, Caching, CI/CD)</span>
-          <span id="scoreDimArch" style="color: #ec4899;">10 / 10</span>
+          <span id="scoreDimArch" style="color: #ec4899;">— / 10</span>
         </div>
         <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden;">
           <div id="barDimArch" style="background: #ec4899; height: 100%; width: 100%; transition: width 0.3s ease;"></div>
@@ -4848,7 +4900,7 @@
     <div style="display: flex; gap: 8px;">
       <button type="button" id="btnAutoPolishProject" onclick="polishActiveModalProject()" style="flex: 1; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); color: #fff; border: none; padding: 11px 16px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-        <span>✨ Polish Bullets to 95+ Score with Groq AI</span>
+        <span>✨ Rewrite Bullets Honestly with Groq AI</span>
       </button>
       <button type="button" onclick="closeProjectAtsModal()" style="background: #334155; color: #cbd5e1; border: 1px solid #475569; padding: 11px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
         Close
@@ -4871,8 +4923,8 @@
         <div>
           <h3 style="font-size: 17.5px; font-weight: 800; color: #ffffff; margin: 0;">ATS Diagnostic Scorecard</h3>
           <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">
-            <span id="uploadScoreCandName" style="color: #38bdf8; font-weight: 700;">Candidate</span> &bull; 
-            <span id="uploadScoreFilename" style="color: #cbd5e1;">resume.pdf</span>
+            <span id="uploadScoreCandName" style="color: #38bdf8; font-weight: 700;">Your resume</span> &bull; 
+            <span id="uploadScoreFilename" style="color: #cbd5e1;">no file selected</span>
           </div>
         </div>
       </div>
@@ -4883,12 +4935,12 @@
     <div style="display: flex; align-items: center; justify-content: space-between; background: #0f172a; border: 1px solid #334155; border-radius: 14px; padding: 16px 20px; margin-bottom: 16px;">
       <div>
         <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.6px;">Calculated ATS Score</div>
-        <div id="uploadScoreBig" style="font-size: 30px; font-weight: 900; color: #34d399; line-height: 1.15; margin-top: 2px;">88 / 100</div>
+        <div id="uploadScoreBig" style="font-size: 30px; font-weight: 900; color: #34d399; line-height: 1.15; margin-top: 2px;">— / 100</div>
       </div>
       <div style="text-align: right;">
         <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.6px;">Scanner Pass Status</div>
-        <div id="uploadScoreGrade" style="font-size: 15px; font-weight: 800; color: #38bdf8; margin-top: 2px;">Strong Competitive Pass</div>
-        <div id="uploadScorePassRate" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">82% Pass Rate on Enterprise Scanners</div>
+        <div id="uploadScoreGrade" style="font-size: 15px; font-weight: 800; color: #38bdf8; margin-top: 2px;">Not scored yet</div>
+        <div id="uploadScorePassRate" style="font-size: 11px; color: #94a3b8; margin-top: 2px;">No score until a resume is analysed</div>
       </div>
     </div>
 

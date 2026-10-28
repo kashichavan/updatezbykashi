@@ -55,7 +55,7 @@
           <div class="rs-fields">
             <div class="rs-field">
               <label class="rs-label" for="rsName">Full name <span class="rs-req">*</span></label>
-              <input class="rs-input" type="text" id="rsName" autocomplete="name" placeholder="e.g. Kashinath Chavan">
+              <input class="rs-input" type="text" id="rsName" autocomplete="name" placeholder="Your full name">
             </div>
             <div class="rs-field">
               <label class="rs-label" for="rsEmail">Email <span class="rs-req">*</span></label>
@@ -63,7 +63,7 @@
             </div>
             <div class="rs-field">
               <label class="rs-label" for="rsPhone">Phone <span class="rs-req">*</span></label>
-              <input class="rs-input" type="tel" id="rsPhone" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210">
+              <input class="rs-input" type="tel" id="rsPhone" autocomplete="tel" inputmode="tel" placeholder="Include your country code">
             </div>
             <div class="rs-field">
               <label class="rs-label" for="rsLocation">Location</label>
@@ -953,10 +953,10 @@
       });
       if (!res.ok) throw new Error('Download failed (' + res.status + ')');
       const blob = await res.blob();
-      const name = (state.resume.name || 'Candidate').replace(/[^a-zA-Z0-9_-]+/g, '_');
+      const clean = (state.resume.name || '').replace(/[^a-zA-Z0-9_-]+/g, '_').replace(/^_+|_+$/g, '');
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = name + '_Resume.' + kind;
+      a.download = (clean ? clean + '_' : '') + 'Resume.' + kind;
       document.body.appendChild(a);
       a.click();
       a.remove();

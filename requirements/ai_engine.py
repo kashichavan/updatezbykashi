@@ -279,16 +279,20 @@ def polish_resume_bullet(bullet: str, role: str = "", tech_stack: str = "") -> d
     """
     system_prompt = (
         "You are a Principal Tech Recruiter and Resume Coach. "
-        "Transform raw, weak resume bullet points into high-impact Google XYZ formula bullets: "
+        "Rewrite one raw resume bullet into the Google XYZ shape: "
         "'Accomplished [X] as measured by [Y], by doing [Z]'. "
-        "Keep them realistic for college students and software engineers with quantified impact (percentages, latency, throughput, bug reduction). "
+        "STRICT RULES — the candidate has to defend every word in an interview: "
+        "1. Never introduce a number. Percentages, request rates, latency, user counts, team size and coverage may only appear if they are already in the raw bullet. "
+        "2. If the raw bullet has no number, write the accomplishment without one. An honest bullet without a metric beats a fabricated one. "
+        "3. Do not add tools, scope, scale or outcomes the raw bullet does not state. "
+        "4. No puffery such as enterprise, production-grade, scalable, robust, world-class. "
         "Return a JSON object with keys:\n"
         "- 'original': the original input text\n"
-        "- 'polished': the best Google XYZ polished bullet\n"
-        "- 'alternative_1': another variation emphasizing architecture/scalability\n"
-        "- 'alternative_2': another variation emphasizing optimization/cost/speed\n"
+        "- 'polished': the best honest rewrite\n"
+        "- 'alternative_1': another variation emphasizing architecture\n"
+        "- 'alternative_2': another variation emphasizing the workflow or collaboration\n"
         "- 'action_verb': the primary strong action verb used\n"
-        "- 'metric_highlight': brief description of the metric (e.g., '65% latency reduction')"
+        "- 'metric_highlight': quote the metric only if one already exists in the raw bullet, otherwise an empty string"
     )
 
     user_prompt = f"""
@@ -325,7 +329,7 @@ def tailor_resume_to_job(
         "- 'matched_keywords': list of strings (skills/keywords present in both)\n"
         "- 'missing_critical_keywords': list of strings (top 5-8 crucial skills from the JD missing from the resume)\n"
         "- 'tailored_summary': string (rewritten summary integrating key JD requirements)\n"
-        "- 'suggested_project_improvements': list of objects with {'project_title': str, 'original_bullet': str, 'tailored_bullet': str, 'reason': str}\n"
+        "- 'suggested_project_improvements': list of objects with {'project_title': str, 'original_bullet': str, 'tailored_bullet': str, 'reason': str} — rewrite only the candidate's own bullets and never add numbers, tools or outcomes they did not state\n"
         "- 'quick_recommendations': list of 3 actionable tips to instantly boost match rate"
     )
 
@@ -354,8 +358,9 @@ def generate_professional_summary(
     """Generate 3 elevator pitches tailored to the candidate's profile."""
     system_prompt = (
         "You are an executive resume writer. Generate 3 distinct professional summaries for a software engineer. "
+        "Never invent numbers, employers, metrics or achievements: use only the role, experience level and skills given. "
         "Return a JSON object with keys:\n"
-        "- 'impact_focused': 2-3 lines emphasizing measurable outcomes, scalability, and delivery\n"
+        "- 'impact_focused': 2-3 lines about the work the candidate does, without invented metrics\n"
         "- 'technical_specialist': 2-3 lines emphasizing deep system knowledge, frameworks, and architecture\n"
         "- 'fresher_ambitious': 2-3 lines tailored for high-potential college graduates with hands-on projects\n"
     )

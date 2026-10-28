@@ -9,7 +9,7 @@ RESUME_ROLES = {
         'role_id': 'python-backend',
         'title': 'Python & Django Backend Engineer',
         'badge': 'Python / Django / FastAPI',
-        'summary': 'Results-driven Backend Software Engineer with deep expertise in Python, Django REST Framework, and distributed microservices. Proven track record of designing high-throughput REST APIs, optimizing relational databases, and reducing API latency by up to 65% through Redis caching and asynchronous job workers.',
+        'summary': 'Results-driven Backend Software Engineer with deep expertise in Python, Django REST Framework, and distributed microservices. Proven track record of designing high-throughput REST APIs, optimizing relational databases, and using Redis caching and asynchronous job workers.',
         'technical_skills': {
             'Languages': 'Python, SQL, JavaScript, Bash',
             'Frameworks': 'Django, Django REST Framework (DRF), FastAPI, Flask',
@@ -23,10 +23,10 @@ RESUME_ROLES = {
                 'role': 'Backend Systems Architect',
                 'tech_stack': 'Python, Django REST Framework, PostgreSQL, Redis, Celery, Docker',
                 'bullets': [
-                    'Architected high-throughput transactional order execution engine handling 2,500+ concurrent requests/sec with zero double-allocation errors.',
-                    'Engineered distributed concurrency lock using Redis Redlock and atomic database transactions, preventing race conditions during flash sale spikes.',
-                    'Optimized relational database queries via Django select_related/prefetch_related and B-tree indexes, slashing p95 latency from 185ms to 24ms.',
-                    'Configured asynchronous background queue using Celery and Redis to reliably process invoice generation, payment webhooks, and audit logs.'
+                    'Built a transactional order execution engine that reserves inventory before payment confirmation.',
+                    'Used a Redis lock with atomic database transactions so two orders cannot claim the same SKU.',
+                    'Tuned relational queries with select_related/prefetch_related and B-tree indexes after profiling slow endpoints.',
+                    'Moved invoice generation, payment webhooks and audit logging onto a Celery queue backed by Redis.',
                 ]
             },
             {
@@ -34,9 +34,9 @@ RESUME_ROLES = {
                 'role': 'Lead Backend Developer',
                 'tech_stack': 'Python, FastAPI, AsyncIO, Redis, Docker, Prometheus',
                 'bullets': [
-                    'Developed asynchronous API reverse proxy enforcing sliding-window rate limiting (10,000 req/min per tenant) using Redis sorted sets.',
-                    'Implemented JWT authentication with HMAC signature verification and role-based access control (RBAC) across 8 internal microservices.',
-                    'Containerized service with multi-stage Docker builds reducing image footprint by 62% and automated CI test pipeline via GitHub Actions.'
+                    'Built an asynchronous API reverse proxy that enforces sliding-window rate limits per tenant with Redis sorted sets.',
+                    'Implemented JWT authentication with HMAC signature verification and role-based access control.',
+                    'Wrote multi-stage Docker builds for the service and ran the test suite in GitHub Actions.',
                 ]
             }
         ],
@@ -44,14 +44,10 @@ RESUME_ROLES = {
             'degree': 'Bachelor of Engineering / B.Tech in Computer Science',
             'institution': 'Engineering College & Technical University',
             'year': '2022 – 2026',
-            'gpa': '8.6 / 10.0 CGPA',
+            'gpa': '',
             'coursework': 'Data Structures & Algorithms, Database Management Systems (DBMS), Operating Systems, Computer Networks'
         },
-        'certifications': [
-            'Python Institute — Certified Associate in Python Programming (PCAP)',
-            'PostgreSQL Professional Query Optimization & Indexing — Verified Certificate',
-            'HackerRank — Python (5 Stars) & SQL (Advanced Problem Solving)'
-        ],
+        'certifications': [],
         'target_ats_keywords': [
             'Python', 'Django', 'Django REST Framework', 'PostgreSQL', 'Redis', 'Celery',
             'Docker', 'REST API', 'Microservices', 'Git', 'CI/CD', 'Scalability', 'Unit Testing'
@@ -62,7 +58,7 @@ RESUME_ROLES = {
         'role_id': 'full-stack',
         'title': 'Full-Stack Software Engineer',
         'badge': 'React / Next.js / Python / Node',
-        'summary': 'Full-Stack Software Engineer adept at building responsive, scalable end-to-end web applications using modern React, TypeScript, and robust Python/Node backends. Passionate about component craftsmanship, sub-second API performance, and fluid user experiences with 98+ Lighthouse scores.',
+        'summary': 'Full-Stack Software Engineer adept at building responsive, scalable end-to-end web applications using modern React, TypeScript, and robust Python/Node backends. Focused on component structure, API performance and accessible, responsive interfaces.',
         'technical_skills': {
             'Languages': 'JavaScript (ES6+), TypeScript, Python, HTML5, CSS3, SQL',
             'Frontend': 'React.js, Next.js, Tailwind CSS, Redux Toolkit, Lucide Icons',
@@ -76,10 +72,10 @@ RESUME_ROLES = {
                 'role': 'Full-Stack Lead Engineer',
                 'tech_stack': 'React.js, TypeScript, Next.js 14, Tailwind CSS, Django REST, WebSockets',
                 'bullets': [
-                    'Engineered real-time document collaboration and activity feeds with WebSocket state synchronization, delivering <50ms broadcast latency.',
-                    'Built modern responsive component library with Tailwind CSS, achieving 98/100 Google Lighthouse mobile performance and WCAG accessibility.',
-                    'Integrated secure OAuth2 and JWT session management with token refreshing, supporting seamless multi-tenant team organizations.',
-                    'Optimized bundle size via route-based dynamic code splitting and image CDN caching, reducing initial bundle transfer from 1.4MB to 310KB.'
+                    'Built real-time document collaboration and activity feeds with WebSocket state synchronization.',
+                    'Built a responsive component library with Tailwind CSS, checked for WCAG contrast and keyboard navigation.',
+                    'Integrated OAuth2 and JWT session management with token refresh for multi-tenant teams.',
+                    'Split the bundle by route and cached images on a CDN to shorten the first load.',
                 ]
             },
             {
@@ -87,8 +83,8 @@ RESUME_ROLES = {
                 'role': 'Full-Stack Developer',
                 'tech_stack': 'React, Node.js, Express, Cloudflare R2 / AWS S3, Redis',
                 'bullets': [
-                    'Implemented chunked file uploading architecture handling assets up to 2GB with automatic network failure retry and pause-resume capability.',
-                    'Generated presigned upload URLs with strict cryptographic hashing, eliminating server disk storage bottlenecks and reducing network transit cost.'
+                    'Implemented chunked uploads with automatic retry and pause/resume, so a dropped connection does not restart the transfer.',
+                    'Generated presigned upload URLs so files go straight to object storage instead of through the app server.',
                 ]
             }
         ],
@@ -96,14 +92,10 @@ RESUME_ROLES = {
             'degree': 'Bachelor of Engineering in Information Technology / Computer Science',
             'institution': 'State Technical University',
             'year': '2022 – 2026',
-            'gpa': '8.5 / 10.0 CGPA',
+            'gpa': '',
             'coursework': 'Object-Oriented Programming, Web Technologies, Software Engineering, Cloud Computing'
         },
-        'certifications': [
-            'Meta Certified Front-End Developer — Coursera Professional Certificate',
-            'Full Stack Web Development Masterclass — Verified SDE Certificate',
-            'HackerRank — Frontend Developer (React) & Problem Solving (Intermediate)'
-        ],
+        'certifications': [],
         'target_ats_keywords': [
             'Full Stack', 'React', 'Next.js', 'TypeScript', 'JavaScript', 'Python',
             'Node.js', 'PostgreSQL', 'Tailwind CSS', 'WebSockets', 'REST APIs', 'Git', 'Agile'
@@ -128,10 +120,10 @@ RESUME_ROLES = {
                 'role': 'Backend Java Developer',
                 'tech_stack': 'Java 17, Spring Boot, Spring Data JPA, Apache Kafka, PostgreSQL, Docker',
                 'bullets': [
-                    'Engineered resilient event-driven payment reconciliation service streaming 12,000+ transaction events/hour via Apache Kafka.',
-                    'Implemented idempotent consumer patterns and database optimistic locking (@Version) to guarantee zero double-crediting in financial operations.',
-                    'Secured inter-service communication using Spring Security with OAuth2 JWT tokens and custom authentication filters.',
-                    'Achieved 91% test coverage using JUnit 5 and Mockito, integrating automated SonarQube static analysis in the CI/CD pipeline.'
+                    'Built an event-driven payment reconciliation service that consumes transaction events from Apache Kafka.',
+                    'Used idempotent consumers and JPA optimistic locking (@Version) so a retried event cannot double-credit an account.',
+                    'Secured inter-service calls with Spring Security, OAuth2 JWT tokens and custom authentication filters.',
+                    'Wrote JUnit 5 and Mockito tests for the reconciliation rules and ran SonarQube analysis in CI.',
                 ]
             },
             {
@@ -139,8 +131,8 @@ RESUME_ROLES = {
                 'role': 'Software Development Engineer',
                 'tech_stack': 'Java 17, Spring Boot, Redis, MySQL, Docker, Maven',
                 'bullets': [
-                    'Implemented two-tier cache-aside pattern with Spring Cache and Redis cluster, decreasing database queries by 68% and improving TPS by 3.8x.',
-                    'Designed multi-tenant relational schema with composite indexes and pagination, handling catalog queries across 500,000 SKUs.'
+                    'Implemented a two-tier cache-aside pattern with Spring Cache and a Redis cluster in front of the catalog database.',
+                    'Designed a multi-tenant schema with composite indexes and pagination for catalog queries.',
                 ]
             }
         ],
@@ -148,14 +140,10 @@ RESUME_ROLES = {
             'degree': 'Bachelor of Engineering in Computer Science & Engineering',
             'institution': 'Institute of Technology & Science',
             'year': '2022 – 2026',
-            'gpa': '8.7 / 10.0 CGPA',
+            'gpa': '',
             'coursework': 'Design & Analysis of Algorithms, Object-Oriented Analysis, System Design, Distributed Systems'
         },
-        'certifications': [
-            'Oracle Certified Associate — Java SE 8 / 11 Programmer',
-            'Spring Framework 6 & Spring Boot 3 Deep Dive — Official Specialist Certificate',
-            'LeetCode — Top 10% in Java Algorithms & Data Structures'
-        ],
+        'certifications': [],
         'target_ats_keywords': [
             'Java', 'Spring Boot', 'Spring Data JPA', 'Microservices', 'Apache Kafka',
             'Hibernate', 'REST API', 'MySQL', 'PostgreSQL', 'Docker', 'JUnit', 'Maven', 'Git'
@@ -180,10 +168,10 @@ RESUME_ROLES = {
                 'role': 'Lead Data Scientist',
                 'tech_stack': 'Python, Scikit-Learn, XGBoost, Pandas, FastAPI, PostgreSQL, PowerBI',
                 'bullets': [
-                    'Engineered predictive classification pipeline analyzing 250,000+ historical user records, achieving 91.8% ROC-AUC using XGBoost.',
-                    'Constructed automated feature engineering pipeline extracting behavioral metrics (RFM analysis, session frequency, ticket velocity).',
-                    'Deployed model inference endpoint via FastAPI with sub-18ms latency, enabling real-time churn intervention in customer workflows.',
-                    'Developed interactive executive dashboard in PowerBI tracking monthly retention rates and projected revenue risk factors.'
+                    'Built a churn classification pipeline on historical user records, evaluated with ROC-AUC on a held-out split.',
+                    'Built a feature engineering pipeline covering RFM, session frequency and ticket velocity.',
+                    'Served the model through a FastAPI inference endpoint so churn scores are available inside customer workflows.',
+                    'Built an executive PowerBI dashboard tracking monthly retention and revenue risk.',
                 ]
             },
             {
@@ -191,8 +179,8 @@ RESUME_ROLES = {
                 'role': 'Data Analyst Engineer',
                 'tech_stack': 'Python, DuckDB, Pandas, Parquet, SQLite, Streamlit',
                 'bullets': [
-                    'Built automated daily ETL pipeline ingesting disparate CSV and JSON sales feeds into partitioned columnar Parquet files, accelerating queries by 5x.',
-                    'Created an open-source Streamlit analytics dashboard with multi-variable cohort filters, identifying $42,000 in unoptimized inventory costs.'
+                    'Built a daily ETL pipeline that lands CSV and JSON sales feeds as partitioned Parquet files.',
+                    'Built a Streamlit dashboard with cohort filters to surface inventory costs that were not being tracked.',
                 ]
             }
         ],
@@ -200,14 +188,10 @@ RESUME_ROLES = {
             'degree': 'Bachelor of Engineering in Data Science / Computer Engineering',
             'institution': 'College of Engineering & Technology',
             'year': '2022 – 2026',
-            'gpa': '8.8 / 10.0 CGPA',
+            'gpa': '',
             'coursework': 'Probability & Statistics, Machine Learning, Data Mining, Applied Linear Algebra, Big Data Systems'
         },
-        'certifications': [
-            'IBM Data Science Professional Certificate — Coursera Verified',
-            'Google Data Analytics Professional Certificate',
-            'HackerRank — SQL (5 Stars) & Python Data Analysis'
-        ],
+        'certifications': [],
         'target_ats_keywords': [
             'Data Analysis', 'Python', 'SQL', 'Pandas', 'NumPy', 'Machine Learning',
             'Scikit-Learn', 'XGBoost', 'PowerBI', 'Tableau', 'ETL', 'Data Visualization', 'Statistics'
@@ -232,10 +216,10 @@ RESUME_ROLES = {
                 'role': 'DevOps & Infrastructure Engineer',
                 'tech_stack': 'Docker, Kubernetes, GitHub Actions, Terraform, AWS, Helm, Prometheus',
                 'bullets': [
-                    'Architected automated CI/CD pipeline using GitHub Actions, cutting staging-to-production deployment duration from 45 mins to 3.5 mins.',
-                    'Provisioned reproducible AWS infrastructure via modular Terraform scripts, enforcing strict least-privilege IAM security policies.',
-                    'Configured Kubernetes Horizontal Pod Autoscaler (HPA) and rolling zero-downtime deployments, maintaining 99.98% platform availability.',
-                    'Instrumented full-stack observability with Prometheus metric exporters and Grafana alert notifications, reducing incident MTTR by 55%.'
+                    'Built a CI/CD pipeline in GitHub Actions that promotes builds from staging to production.',
+                    'Provisioned AWS infrastructure with modular Terraform and least-privilege IAM policies.',
+                    'Configured the Kubernetes Horizontal Pod Autoscaler and rolling deployments to keep releases zero-downtime.',
+                    'Instrumented services with Prometheus exporters and Grafana alerts to shorten incident response.',
                 ]
             },
             {
@@ -243,8 +227,8 @@ RESUME_ROLES = {
                 'role': 'Cloud Security Engineer',
                 'tech_stack': 'Docker, Trivy, GitHub Actions, Bash, Python',
                 'bullets': [
-                    'Integrated automated Trivy vulnerability scanning into CI pull-request checks, blocking builds with critical CVE security flaws.',
-                    'Engineered multi-stage alpine container builds reducing production container image sizes by 74% and eliminating build bloat.'
+                    'Added Trivy vulnerability scanning to pull-request checks so builds with critical CVEs fail.',
+                    'Wrote multi-stage Alpine container builds to keep production images small.',
                 ]
             }
         ],
@@ -252,14 +236,10 @@ RESUME_ROLES = {
             'degree': 'Bachelor of Engineering in Information Science / Computer Science',
             'institution': 'Technological University',
             'year': '2022 – 2026',
-            'gpa': '8.4 / 10.0 CGPA',
+            'gpa': '',
             'coursework': 'Cloud Computing, Computer Systems, Network Security, System Administration, Linux Internals'
         },
-        'certifications': [
-            'AWS Certified Cloud Practitioner (CLF-C02)',
-            'Docker & Kubernetes Certified Masterclass — DevOps Institute',
-            'Linux Foundation — Certified System Administrator Essentials'
-        ],
+        'certifications': [],
         'target_ats_keywords': [
             'DevOps', 'AWS', 'Docker', 'Kubernetes', 'CI/CD', 'GitHub Actions',
             'Terraform', 'Linux', 'Bash', 'Prometheus', 'Grafana', 'Nginx', 'Infrastructure as Code'
@@ -383,7 +363,7 @@ def calculate_ats_score(resume_data, role_key='python-backend'):
         pass_rate = 'Eligible for review — add metrics'
     else:
         grade = 'Needs Work (ATS <70)'
-        pass_rate = 'High risk of rejection — boost metrics'
+        pass_rate = 'High risk of rejection — add real, measured results or clearer role keywords'
 
     return {
         'score': final_score,
@@ -608,108 +588,34 @@ BENGALURU_STARTUP_PROJECTS = [
 # ==============================================================================
 
 EXPERIENCED_ROLE_DEFAULTS = {
+    # Experienced mode starts with the same rule as fresher mode: the tool may
+    # suggest a tone, never a job history. Employers, dates, teams and metrics
+    # belong to the candidate, so experience starts empty and the editor asks
+    # them to add a real role.
     'python-backend': {
-        'title': 'Senior Python & Backend Engineer (SDE-2)',
-        'summary': 'Senior Software Engineer with 3+ years of experience architecting distributed backend services, high-throughput RESTful APIs, and scalable database systems at high-growth Bengaluru product startups. Expert in Python, Django, FastAPI, Redis, and event-driven microservices processing millions of daily transactions.',
-        'experience': [
-            {
-                'company': 'Bengaluru FinTech & SaaS Product Startup',
-                'role': 'Software Development Engineer II (Backend)',
-                'location': 'Bengaluru, India',
-                'period': '2023 – Present',
-                'tech_stack': 'Python, Django REST Framework, FastAPI, PostgreSQL, Redis, Celery, Docker, AWS',
-                'bullets': [
-                    'Architected core transactional payment processing microservices handling ₹40Cr+ monthly GMV with 99.98% system availability.',
-                    'Engineered distributed Redis caching and query indexing layer across 18 PostgreSQL tables, slashing p95 API response latency from 320ms to 38ms.',
-                    'Led migration of monolithic services into 4 decoupled containerized microservices orchestrated via Kubernetes and AWS ECS.',
-                    'Mentored 4 junior engineers, conducted 60+ rigorous code reviews, and established automated CI/CD pipelines reducing defect leakages by 40%.'
-                ]
-            },
-            {
-                'company': 'Hyperlocal E-Commerce Unicorn',
-                'role': 'Software Development Engineer I',
-                'location': 'Bengaluru, India',
-                'period': '2021 – 2023',
-                'tech_stack': 'Python, Flask, MySQL, Redis, Celery, Git, Linux',
-                'bullets': [
-                    'Developed asynchronous order lifecycle notification service serving 200,000+ daily push and SMS events with zero queue backlog.',
-                    'Refactored database query execution plans and eliminated N+1 query bottlenecks, reducing database CPU utilization by 35% during peak traffic.',
-                    'Implemented automated unit and integration test suites achieving 88% code coverage and preventing critical regression bugs.'
-                ]
-            }
-        ]
+        'title': 'Python & Backend Engineer',
+        'summary': 'Backend engineer working with Python, Django REST Framework and relational databases. Comfortable owning a service end to end: schema, API, background jobs and the deployment that runs them.',
+        'experience': []
     },
     'full-stack': {
-        'title': 'Senior Full-Stack Engineer',
-        'summary': 'Full-Stack Software Engineer with 3+ years of experience designing scalable web platforms and responsive interfaces for top Indian consumer tech startups. Expert in React, Next.js, TypeScript, Node.js/Python, and cloud-native microservices.',
-        'experience': [
-            {
-                'company': 'Bengaluru B2B SaaS Unicorn',
-                'role': 'Full-Stack Software Engineer II',
-                'location': 'Bengaluru, India',
-                'period': '2023 – Present',
-                'tech_stack': 'React, Next.js, TypeScript, Node.js, PostgreSQL, Docker, AWS',
-                'bullets': [
-                    'Architected enterprise customer analytics dashboard used by 12,000+ daily business users, optimizing client-side bundle size by 45%.',
-                    'Built high-performance GraphQL and REST API endpoints supporting 4,500 req/sec with robust JWT-based RBAC security.',
-                    'Pioneered design system component library in React and Tailwind, accelerating frontend feature velocity across 3 engineering squads by 50%.'
-                ]
-            }
-        ]
+        'title': 'Full-Stack Engineer',
+        'summary': 'Full-stack engineer building web applications with React, TypeScript and Python or Node backends. Works across the interface, the API and the database behind it.',
+        'experience': []
     },
     'java-sde': {
-        'title': 'Senior Java & Spring Cloud Engineer',
-        'summary': 'Java Software Engineer with 3+ years of experience developing mission-critical financial and e-commerce distributed systems. Deep expertise in Java 17/21, Spring Boot, Spring Cloud, Kafka, and relational databases.',
-        'experience': [
-            {
-                'company': 'Tier-1 Bengaluru E-Commerce Platform',
-                'role': 'Software Development Engineer II (Java)',
-                'location': 'Bengaluru, India',
-                'period': '2023 – Present',
-                'tech_stack': 'Java 17, Spring Boot, Spring Cloud, Apache Kafka, PostgreSQL, Docker',
-                'bullets': [
-                    'Engineered distributed inventory reservation engine processing 80,000+ orders during peak flash sales with zero race conditions.',
-                    'Implemented event-driven choreography with Apache Kafka, reducing inter-service HTTP dependency bottlenecks by 65%.',
-                    'Optimized JVM garbage collection and thread pool configuration, sustaining sub-25ms response latencies across 12 microservices.'
-                ]
-            }
-        ]
+        'title': 'Java & Spring Engineer',
+        'summary': 'Java engineer building Spring Boot services with Spring Data JPA and Kafka. Focused on clear domain models, testable business rules and safe deployments.',
+        'experience': []
     },
     'data-analyst': {
-        'title': 'Senior Data & ML Systems Engineer',
-        'summary': 'Data Engineer with 3+ years of experience building large-scale data ingestion pipelines, real-time analytics platforms, and machine learning model serving architectures at top Bengaluru data-driven tech firms.',
-        'experience': [
-            {
-                'company': 'Bengaluru Mobility & Logistics Unicorn',
-                'role': 'Data Platform Engineer II',
-                'location': 'Bengaluru, India',
-                'period': '2023 – Present',
-                'tech_stack': 'Python, PySpark, Apache Airflow, Snowflake, PostgreSQL, AWS',
-                'bullets': [
-                    'Constructed daily batch and streaming ETL pipelines ingesting 4TB+ telemetry data, reducing pipeline execution latency by 40%.',
-                    'Designed executive KPI dashboards and predictive rider churn models improving quarterly customer retention by 14%.',
-                    'Automated data quality validation and schema enforcement checks using Great Expectations and Airflow DAGs.'
-                ]
-            }
-        ]
+        'title': 'Data & Analytics Engineer',
+        'summary': 'Data professional working with Python, SQL and dashboards. Turns operational data into reports and models the business can act on.',
+        'experience': []
     },
     'devops-cloud': {
-        'title': 'Senior DevOps & Cloud Platform Engineer',
-        'summary': 'DevOps & SRE Engineer with 3+ years of experience managing multi-region cloud infrastructure, Kubernetes clusters, and zero-downtime CI/CD deployment pipelines for high-traffic Bengaluru tech platforms.',
-        'experience': [
-            {
-                'company': 'Bengaluru FinTech Platform',
-                'role': 'DevOps & SRE Engineer II',
-                'location': 'Bengaluru, India',
-                'period': '2023 – Present',
-                'tech_stack': 'AWS, Kubernetes (EKS), Terraform, Docker, GitHub Actions, Prometheus',
-                'bullets': [
-                    'Architected multi-region AWS Kubernetes (EKS) infrastructure with Terraform, delivering 99.99% system availability.',
-                    'Automated zero-downtime blue/green deployment workflows in GitHub Actions, slashing release deployment time from 45min to 6min.',
-                    'Optimized cloud computing costs by 32% through spot instance orchestration, Karpenter autoscaling, and S3 lifecycle tiering.'
-                ]
-            }
-        ]
+        'title': 'DevOps & Cloud Engineer',
+        'summary': 'Cloud and DevOps engineer working with Terraform, Kubernetes, GitHub Actions and observability tooling. Automates the path from commit to production.',
+        'experience': []
     }
 }
 

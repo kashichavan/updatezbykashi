@@ -359,3 +359,140 @@ class ProjectBulletHonestyTests(TestCase):
         )
         self.assertEqual(len(kept), 2)
         self.assertTrue(all(len(b) > 20 for b in kept))
+
+
+class AlteredResumeHonestyTests(TestCase):
+    """The job-tailoring endpoint must not let the model add metrics of its own."""
+
+    def setUp(self):
+        self.client = Client()
+        self.projects = [{
+            'title': 'Order service',
+            'role': 'Backend',
+            'tech_stack': 'Python, Redis',
+            'bullets': ['Cut p95 latency from 185ms to 24ms with Redis caching.'],
+        }]
+
+    def test_invented_metric_bullets_are_dropped(self):
+        fake = {
+            'altered_summary': 'Backend engineer.',
+            'altered_projects': [{
+                'title': 'Order service',
+                'role': 'Backend',
+                'tech_stack': 'Python, Redis',
+                'bullets': [
+                    'Cut checkout latency by 40% with Redis caching.',
+                    'Cut p95 latency from 185ms to 24ms with Redis caching.',
+                ],
+            }],
+            'overall_match_score': 61,
+        }
+        with patch('requirements.ai_engine.alter_resume_for_job', return_value=fake):
+            res = self.client.post(
+                '/api/ai/alter-resume/',
+                data=json.dumps({
+                    'job_title': 'Backend Engineer',
+                    'job_skills': 'Python, Redis',
+                    'job_description': 'Build services.',
+                    'candidate_summary': 'Backend engineer.',
+                    'candidate_skills': {'Languages': 'Python'},
+                    'candidate_projects': self.projects,
+                }),
+                content_type='application/json',
+            )
+        self.assertEqual(res.status_code, 200)
+        bullets = res.json()['data']['altered_projects'][0]['bullets']
+        self.assertEqual(bullets, ['Cut p95 latency from 185ms to 24ms with Redis caching.'])
+
+    def test_project_with_every_bullet_dropped_keeps_the_original(self):
+        fake = {
+            'altered_summary': 'Backend engineer with 40% faster deploys.',
+            'altered_projects': [{
+                'title': 'Order service',
+                'role': 'Backend',
+                'tech_stack': 'Python, Redis',
+                'bullets': ['Engineered a scalable pipeline handling 12,000 req/sec.'],
+            }],
+            'overall_match_score': None,
+        }
+        with patch('requirements.ai_engine.alter_resume_for_job', return_value=fake):
+            res = self.client.post(
+                '/api/ai/alter-resume/',
+                data=json.dumps({
+                    'job_title': 'Backend Engineer',
+                    'job_skills': 'Python, Redis',
+                    'job_description': 'Build services.',
+                    'candidate_summary': 'Backend engineer.',
+                    'candidate_skills': {'Languages': 'Python'},
+                    'candidate_projects': self.projects,
+                }),
+                content_type='application/json',
+            )
+        data = res.json()['data']
+        restored = data['altered_projects'][0]
+        self.assertEqual(restored['title'], self.projects[0]['title'])
+        self.assertEqual(restored['bullets'], self.projects[0]['bullets'])
+        # Nothing returned a score, so the response must not contain one.
+        self.assertIsNone(data['match_score'])
+        self.assertIsNone(data['altered_summary'])
+
+
+class RewriteHonestyTests(TestCase):
+    """Polish and tailor endpoints may reword the candidate's text, not extend it."""
+
+    def setUp(self):
+        self.client = Client()
+
+    def test_polish_drops_variants_with_new_numbers(self):
+        fake = {
+            'original': 'Worked on testing APIs with Postman.',
+            'polished': 'Tested 120 API endpoints with Postman, cutting regression bugs by 40%.',
+            'alternative_1': 'Tested APIs with Postman before release.',
+            'alternative_2': 'Built a Postman collection covering 45 endpoints.',
+            'action_verb': 'Tested',
+            'metric_highlight': '40% bug reduction',
+        }
+        with patch('requirements.ai_engine.polish_resume_bullet', return_value=fake):
+            res = self.client.post(
+                '/api/ai/polish-bullet/',
+                data=json.dumps({'bullet': 'Worked on testing APIs with Postman.'}),
+                content_type='application/json',
+            )
+        data = res.json()['data']
+        self.assertEqual(data['polished'], '')
+        self.assertEqual(data['alternative_1'], 'Tested APIs with Postman before release.')
+        self.assertEqual(data['alternative_2'], '')
+        self.assertEqual(data['metric_highlight'], '')
+
+    def test_tailor_drops_summary_and_bullets_with_new_numbers(self):
+        fake = {
+            'match_score': 74,
+            'match_grade': 'Moderate',
+            'matched_keywords': ['Python'],
+            'missing_critical_keywords': ['Kubernetes'],
+            'tailored_summary': 'Backend engineer who improved throughput by 60%.',
+            'suggested_project_improvements': [{
+                'project_title': 'Order service',
+                'original_bullet': 'Cut p95 latency from 185ms to 24ms.',
+                'tailored_bullet': 'Cut p95 latency from 185ms to 24ms for 10,000 users.',
+                'reason': 'Mentions scale',
+            }],
+            'quick_recommendations': ['Add Kubernetes.'],
+        }
+        with patch('requirements.ai_engine.tailor_resume_to_job', return_value=fake):
+            res = self.client.post(
+                '/api/ai/tailor-resume/',
+                data=json.dumps({
+                    'job_description': 'Backend role with Kubernetes.',
+                    'resume_summary': 'Backend engineer.',
+                    'resume_skills': ['Python'],
+                    'resume_projects': [{
+                        'title': 'Order service',
+                        'bullets': ['Cut p95 latency from 185ms to 24ms.'],
+                    }],
+                }),
+                content_type='application/json',
+            )
+        data = res.json()['data']
+        self.assertEqual(data['tailored_summary'], '')
+        self.assertEqual(data['suggested_project_improvements'], [])
