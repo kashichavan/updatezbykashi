@@ -343,31 +343,60 @@
     cursor: not-allowed;
   }
 
-  .jd-actions-sub {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px 2px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  .jd-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 2px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
   }
-  .jd-mini {
+  @media (min-width: 680px) {
+    .jd-secondary { display: flex; flex-wrap: wrap; gap: 8px; }
+  }
+  @media (max-width: 679px) {
+    .jd-secondary > :last-child { grid-column: 1 / -1; }
+  }
+
+  .jd-pill {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 9px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    background: transparent;
-    color: #9fb0c6;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    background: rgba(255, 255, 255, 0.07);
+    color: #e2e8f0;
     font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
-    transition: background .16s ease, color .16s ease;
+    transition: background .16s ease, border-color .16s ease, color .16s ease, transform .16s cubic-bezier(.16,1,.3,1);
   }
-  .jd-mini svg { width: 14px; height: 14px; }
-  .jd-mini:hover { background: rgba(255, 255, 255, 0.07); color: #ffffff; }
+  .jd-pill svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .jd-pill:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.32);
+    color: #ffffff;
+  }
+  .jd-pill:active { transform: scale(.98); }
+
+  .jd-pill-accent {
+    background: rgba(168, 85, 247, 0.18);
+    border-color: rgba(168, 85, 247, 0.45);
+    color: #f3e8ff;
+  }
+  .jd-pill-accent svg { color: #d8b4fe; }
+  .jd-pill-accent:hover {
+    background: rgba(168, 85, 247, 0.3);
+    border-color: rgba(196, 181, 253, 0.6);
+    color: #ffffff;
+  }
 
   /* ── Panels ───────────────────────────────────────────────────────── */
   .jd-panel,
@@ -1056,16 +1085,26 @@
   }
   .jd-sticky-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
   .jd-sticky-icon {
-    display: grid;
-    place-items: center;
-    width: 38px; height: 38px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 44px;
+    height: 42px;
+    padding: 0 6px;
     border-radius: 10px;
     border: 1px solid rgba(148, 163, 184, 0.28);
     background: rgba(148, 163, 184, 0.12);
     color: #e2e8f0;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    text-decoration: none;
     cursor: pointer;
   }
-  .jd-sticky-icon svg { width: 16px; height: 16px; }
+  .jd-sticky-icon svg { width: 15px; height: 15px; }
   .jd-sticky-apply {
     display: inline-flex;
     align-items: center;
@@ -1085,6 +1124,13 @@
   .jd-sticky-apply:active,
   .jd-sticky-icon:active { transform: scale(.96); }
 
+  @media (max-width: 360px) {
+    .jd-sticky { gap: 8px; padding: 9px 10px; }
+    .jd-sticky-company { display: none; }
+    .jd-sticky-pay { font-size: 12.5px; }
+    .jd-sticky-icon { min-width: 40px; padding: 0 4px; }
+  }
+
   /* The floating DM bubble collides with the sticky apply bar on phones.
      The page already offers WhatsApp, recruiter and share actions. */
   @media (max-width: 1023px) {
@@ -1102,7 +1148,7 @@
 
   /* Focus visibility */
   .jd-btn:focus-visible,
-  .jd-mini:focus-visible,
+  .jd-pill:focus-visible,
   .jd-btn-sm:focus-visible,
   .jd-rail-btn:focus-visible,
   .jd-sticky-apply:focus-visible,
@@ -1202,25 +1248,25 @@
             </a>
           </div>
 
-          <div class="jd-actions-sub">
-            <button type="button" onclick="openJobTailorModal('fresher')" class="jd-mini">
+          <div class="jd-secondary">
+            <button type="button" onclick="openJobTailorModal('fresher')" class="jd-pill jd-pill-accent">
               <i data-lucide="sparkles"></i>
-              <span>Tailor my resume</span>
+              <span>Tailor resume</span>
             </button>
-            <a href="{{ recruiter_connect_url }}" class="jd-mini">
+            <a href="{{ recruiter_connect_url }}" class="jd-pill">
               <i data-lucide="user-check"></i>
-              <span>Recruiter</span>
+              <span>Find recruiter</span>
             </a>
-            <button type="button" onclick="copyFormattedIgStory()" id="btnHeaderCopyStory" class="jd-mini">
-              <i data-lucide="instagram"></i>
-              <span id="headerCopyStoryBtnText">Story</span>
-            </button>
             <a href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply:%20{{ share_url }}"
-               target="_blank" rel="noopener" class="jd-mini">
+               target="_blank" rel="noopener" class="jd-pill">
               <i data-lucide="message-circle"></i>
               <span>WhatsApp</span>
             </a>
-            <button type="button" onclick="copyShareUrl()" class="jd-mini">
+            <button type="button" onclick="copyFormattedIgStory()" id="btnHeaderCopyStory" class="jd-pill">
+              <i data-lucide="instagram"></i>
+              <span id="headerCopyStoryBtnText">Copy story</span>
+            </button>
+            <button type="button" onclick="copyShareUrl()" class="jd-pill">
               <i data-lucide="link"></i>
               <span>Copy link</span>
             </button>
@@ -1564,7 +1610,7 @@
 
           <button type="button" onclick="openJobTailorModal('fresher')" class="jd-rail-btn jd-rail-btn-quiet">
             <i data-lucide="sparkles"></i>
-            <span>Tailor my resume</span>
+            <span>Tailor resume</span>
           </button>
         </div>
 
@@ -1664,9 +1710,11 @@
   <div class="jd-sticky-actions">
     <a href="{{ recruiter_connect_url }}" class="jd-sticky-icon" aria-label="Connect with recruiter">
       <i data-lucide="user-check"></i>
+      <span>Recruiter</span>
     </a>
     <button type="button" onclick="openJobTailorModal('fresher')" class="jd-sticky-icon" aria-label="Tailor my resume">
       <i data-lucide="sparkles"></i>
+      <span>Resume</span>
     </button>
     {% if job.is_expired %}
       <span class="jd-sticky-apply" style="background: rgba(100,116,139,.35); box-shadow:none; color:#94a3b8;">Closed</span>
