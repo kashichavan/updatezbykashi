@@ -39,7 +39,7 @@ function initializeJobFiltersV3(config) {
     const filterJobType = document.getElementById(filterJobTypeModalId);
     const filterSort = document.getElementById(filterSortModalId);
     const jobsGrid = document.getElementById(jobsGridId);
-    const filterCategoriesContainer = document.getElementById('filterCategoriesV3'); // New: Category chips container
+    const filterCategoriesContainer = document.getElementById('filterCategoriesV3'); // Target the new top-level category container
 
     let activeFilters = {
         mainSearch: '',
@@ -55,59 +55,10 @@ function initializeJobFiltersV3(config) {
     // --- Filter Panel Visibility ---
     moreFiltersToggle.addEventListener('click', () => {
         filterPanel.classList.toggle('is-open');
-        if (filterPanel.classList.contains('is-open')) {
-            updateCategoryChipsVisualState(); // Update visual state when panel opens
-        }
     });
 
     filterPanelClose.addEventListener('click', () => {
         filterPanel.classList.remove('is-open');
-    });
-
-    // --- Category Chip Selection ---
-    filterCategoriesContainer.addEventListener('click', (event) => {
-        const clickedChip = event.target.closest('.category-chip-v3');
-        if (!clickedChip) return;
-
-        const categoryValue = clickedChip.dataset.categoryValue;
-
-        if (categoryValue === 'all') {
-            // If 'All Opportunities' is clicked
-            if (!clickedChip.classList.contains('is-active')) {
-                // If it's not active, activate it and deactivate all others
-                activeFilters.categories = [];
-                filterCategoriesContainer.querySelectorAll('.category-chip-v3').forEach(chip => {
-                    chip.classList.remove('is-active');
-                });
-                clickedChip.classList.add('is-active');
-                // 'all' category itself is not added to activeFilters.categories
-            } else {
-                // If 'All Opportunities' is already active and clicked again, do nothing (it's always implicitly active if no other category is selected)
-                return;
-            }
-        } else {
-            // If any other category chip is clicked
-            clickedChip.classList.toggle('is-active');
-
-            // Update activeFilters.categories array
-            if (clickedChip.classList.contains('is-active')) {
-                activeFilters.categories.push(categoryValue);
-            } else {
-                activeFilters.categories = activeFilters.categories.filter(cat => cat !== categoryValue);
-            }
-
-            // If other categories are selected, 'All Opportunities' should be inactive
-            const allOpportunitiesChip = filterCategoriesContainer.querySelector('[data-category-value="all"]');
-            if (activeFilters.categories.length > 0) {
-                allOpportunitiesChip.classList.remove('is-active');
-            } else {
-                // If no other categories are selected, 'All Opportunities' becomes active
-                allOpportunitiesChip.classList.add('is-active');
-            }
-        }
-
-        renderActiveFiltersDisplay();
-        fetchJobsWrapper(activeFilters);
     });
 
     // Close panel if click outside (optional, depending on desired UX)
@@ -217,11 +168,52 @@ function initializeJobFiltersV3(config) {
             } else if (type === 'sortBy') {
                 activeFilters.sortBy = 'newest';
                 filterSort.value = 'newest';
+            } else if (type === 'category') { // Handle category removal
+                activeFilters.categories = activeFilters.categories.filter(cat => cat !== value);
+                updateCategoryChipsVisualState(); // Update visual state after removal
             }
             
             renderActiveFiltersDisplay();
             fetchJobsWrapper(activeFilters);
         }
+    });
+
+    // --- Category Chip Selection (Top-level) ---
+    filterCategoriesContainer.addEventListener('click', (event) => {
+        const clickedChip = event.target.closest('.category-chip-v3');
+        if (!clickedChip) return;
+
+        const categoryValue = clickedChip.dataset.categoryValue;
+
+        if (categoryValue === 'all') {
+            if (!clickedChip.classList.contains('is-active')) {
+                activeFilters.categories = [];
+                filterCategoriesContainer.querySelectorAll('.category-chip-v3').forEach(chip => {
+                    chip.classList.remove('is-active');
+                });
+                clickedChip.classList.add('is-active');
+            } else {
+                return;
+            }
+        } else {
+            clickedChip.classList.toggle('is-active');
+
+            if (clickedChip.classList.contains('is-active')) {
+                activeFilters.categories.push(categoryValue);
+            } else {
+                activeFilters.categories = activeFilters.categories.filter(cat => cat !== categoryValue);
+            }
+
+            const allOpportunitiesChip = filterCategoriesContainer.querySelector('[data-category-value="all"]');
+            if (activeFilters.categories.length > 0) {
+                allOpportunitiesChip.classList.remove('is-active');
+            } else {
+                allOpportunitiesChip.classList.add('is-active');
+            }
+        }
+
+        renderActiveFiltersDisplay();
+        fetchJobsWrapper(activeFilters);
     });
 
     // --- Apply Filters ---
@@ -233,7 +225,6 @@ function initializeJobFiltersV3(config) {
 
         filterPanel.classList.remove('is-open');
         renderActiveFiltersDisplay();
-        updateCategoryChipsVisualState(); // New: Update visual state after applying
         fetchJobsWrapper(activeFilters);
     });
 
@@ -247,7 +238,7 @@ function initializeJobFiltersV3(config) {
             maxExperience: '',
             jobType: 'all',
             sortBy: 'newest',
-            categories: [] // New: Clear categories
+            categories: []
         };
         mainSearchInput.value = '';
         filterLocationInput.value = '';
@@ -260,7 +251,7 @@ function initializeJobFiltersV3(config) {
         filterSort.value = 'newest';
 
         renderActiveFiltersDisplay();
-        updateCategoryChipsVisualState(); // New: Update visual state after clearing
+        updateCategoryChipsVisualState(); // Ensure visual state is updated after clearing
         fetchJobsWrapper(activeFilters);
     });
 
