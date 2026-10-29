@@ -36,11 +36,16 @@ def _execute_backup():
             pass
         _backup_lock.release()
 
+import sys
+
 def trigger_auto_backup_async(force=False):
     """
     Triggers an asynchronous database backup in a detached background thread.
     Throttled to avoid overwhelming memory during rapid operations.
     """
+    if 'test' in sys.argv:
+        return
+
     global _last_backup_time
     now = time.time()
     if not force and (now - _last_backup_time < _MIN_BACKUP_INTERVAL):

@@ -273,12 +273,14 @@ class Command(BaseCommand):
             if groups_to_create:
                 JobGroup.objects.bulk_create(groups_to_create, batch_size=100)
 
-            # Re-map all group M2M associations in bulk
+            # Re-map group M2M associations in bulk ONLY for restored groups (preserves other existing groups!)
+            all_db_groups = {g.id: g for g in JobGroup.objects.all()}
             ThroughModel = JobGroup.jobs.through
-            ThroughModel.objects.all().delete()
+            restored_group_ids = [gid for gid in group_jobs_map.keys() if gid in all_db_groups]
+            if restored_group_ids:
+                ThroughModel.objects.filter(jobgroup_id__in=restored_group_ids).delete()
 
             m2m_relations = []
-            all_db_groups = {g.id: g for g in JobGroup.objects.all()}
             for grp_id, j_pks in group_jobs_map.items():
                 if grp_id in all_db_groups:
                     for j_pk in j_pks:

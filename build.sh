@@ -67,18 +67,22 @@ for i in {1..5}; do
   fi
 done
 
-# 3. Auto-restore full snapshot if fresh or empty database
+# 3. Non-destructive sync of all groups and jobs from snapshot
 python manage.py shell -c "
-from requirements.models import JobPosting
+from requirements.models import JobPosting, JobGroup
 from django.core.management import call_command
 try:
     job_count = JobPosting.objects.count()
-    if job_count == 0:
-        print('==> Fresh database detected (0 jobs)! Restoring latest full snapshot backup (442 objects)...')
+    group_count = JobGroup.objects.count()
+    print(f'==> Database status: {job_count} jobs, {group_count} groups.')
+    if job_count == 0 or group_count == 0:
+        print('==> Restoring full snapshot backup...')
         call_command('restore_snapshot')
         print('==> Full backup snapshot restored successfully!')
     else:
-        print(f'==> Existing database contains {job_count} active job postings.')
+        print('==> Merging snapshot to guarantee all historical and shared groups exist...')
+        call_command('restore_snapshot')
+        print(f'==> Group sync complete! Total groups preserved: {JobGroup.objects.count()}')
 except Exception as e:
     print('==> Snapshot restore encountered error:', e)
     try:

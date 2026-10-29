@@ -623,12 +623,25 @@ class JobGroup(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        # 7-Day Auto-Expiry Policy for Hiring Drives
+        # 30-Day Auto-Expiry Policy for Hiring Drives (protects shared links against early expiry)
         if not self.deadline:
-            self.deadline = timezone.now() + timedelta(days=7)
+            self.deadline = timezone.now() + timedelta(days=30)
         if not self.posted_date:
             self.posted_date = timezone.localtime(timezone.now()).date()
         super().save(*args, **kwargs)
+        try:
+            from .backup_service import trigger_auto_backup_async
+            trigger_auto_backup_async()
+        except Exception:
+            pass
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        try:
+            from .backup_service import trigger_auto_backup_async
+            trigger_auto_backup_async()
+        except Exception:
+            pass
 
     def is_expired(self):
         if not self.deadline:

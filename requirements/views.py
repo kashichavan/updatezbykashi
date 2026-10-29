@@ -2542,12 +2542,8 @@ def api_owner_groups_move_jobs(request):
             for sg in list(source_groups_qs):
                 sg_name = sg.name
                 sg.jobs.remove(*jobs_to_move)
-                remaining_count = sg.jobs.count()
-                if remaining_count == 0:
-                    sg.delete()
-                    source_labels.append(f"'{sg_name}' (auto-deleted empty)")
-                else:
-                    source_labels.append(f"'{sg_name}'")
+                # Preserve empty groups so shared links never return 404
+                source_labels.append(f"'{sg_name}'")
 
         # Add jobs to destination group
         to_group.jobs.add(*jobs_to_move)
@@ -2650,28 +2646,23 @@ def api_owner_groups_auto_organize(request):
     if experienced_jobs:
         exp_group.jobs.add(*experienced_jobs)
 
-    # 3. Clean up any empty groups (0 jobs)
-    from django.db.models import Count
-    empty_groups_qs = JobGroup.objects.annotate(j_count=Count('jobs')).filter(j_count=0)
-    deleted_empty_count = empty_groups_qs.count()
-    empty_groups_qs.delete()
-
+    # Note: Preserving existing groups even if empty to protect shared URLs
     cache.delete('api_owner_groups_json')
 
     return JsonResponse({
         'success': True,
-        'message': f"Auto-segregated {len(active_jobs)} requirements: {len(fresher_jobs)} in Freshers Drive and {len(experienced_jobs)} in Experienced Drive. Cleaned up {deleted_empty_count} empty groups.",
+        'message': f"Auto-segregated {len(active_jobs)} requirements: {len(fresher_jobs)} in Freshers Drive and {len(experienced_jobs)} in Experienced Drive. All shared groups preserved.",
         'total_active': len(active_jobs),
         'fresher_count': len(fresher_jobs),
         'experienced_count': len(experienced_jobs),
-        'deleted_empty_groups': deleted_empty_count,
+        'deleted_empty_groups': 0,
         'fresher_group_id': fresher_group.id,
         'experienced_group_id': exp_group.id,
     })
 
 @csrf_exempt
 def api_owner_group_remove_job(request, group_pk, job_pk):
-    """Removes a single requirement from a group and auto-deletes the group if it becomes empty."""
+    """Removes a single requirement from a group while keeping the group intact to preserve shared URLs."""
     is_auth, owner_user = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'Unauthorized. Owner login required.'}, status=401)
@@ -2680,17 +2671,12 @@ def api_owner_group_remove_job(request, group_pk, job_pk):
     job = get_object_or_404(JobPosting, pk=job_pk)
     group.jobs.remove(job)
 
-    group_name = group.name
-    was_deleted = False
-    if group.jobs.count() == 0:
-        group.delete()
-        was_deleted = True
-
     cache.delete('api_owner_groups_json')
 
     return JsonResponse({
         'success': True,
-        'message': f"Removed '{job.title}' from '{group_name}'." + (" Group had 0 requirements and was auto-deleted." if was_deleted else "")
+        'message': f"Removed '{job.title}' from '{group.name}'.",
+        'group_deleted': False
     })
 
 @csrf_exempt
