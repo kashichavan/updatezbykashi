@@ -1,0 +1,360 @@
+// jobFilterModule.v4.js
+
+function initializeJobFiltersV4(config) {
+    const {
+        keywordsInputId,
+        locationInputId,
+        searchButtonId,
+        moreFiltersToggleId,
+        filterPanelId,
+        filterPanelCloseId,
+        applyFiltersBtnId,
+        clearFiltersBtnId,
+        activeFiltersContainerId,
+        filterCategoriesContainerId,
+        filterCompanyInputId,
+        selectedCompaniesContainerId,
+        filterMinExperienceId,
+        filterMaxExperienceId,
+        filterJobTypeModalId,
+        filterSortModalId,
+        jobsGridId,
+        fetchJobsApiCallback, // User-provided function to fetch jobs from their API
+        renderJobCardCallback // User-provided function to render a single job card
+    } = config;
+
+    const keywordsInput = document.getElementById(keywordsInputId);
+    const locationInput = document.getElementById(locationInputId);
+    const searchButton = document.getElementById(searchButtonId);
+    const moreFiltersToggle = document.getElementById(moreFiltersToggleId);
+    const filterPanel = document.getElementById(filterPanelId);
+    const filterPanelClose = document.getElementById(filterPanelCloseId);
+    const applyFiltersBtn = document.getElementById(applyFiltersBtnId);
+    const clearFiltersBtn = document.getElementById(clearFiltersBtnId);
+    const activeFiltersContainer = document.getElementById(activeFiltersContainerId);
+    const filterCategoriesContainer = document.getElementById(filterCategoriesContainerId);
+
+    const filterCompanyInput = document.getElementById(filterCompanyInputId);
+    const selectedCompaniesContainer = document.getElementById(selectedCompaniesContainerId);
+    const filterMinExperience = document.getElementById(filterMinExperienceId);
+    const filterMaxExperience = document.getElementById(filterMaxExperienceId);
+    const filterJobType = document.getElementById(filterJobTypeModalId);
+    const filterSort = document.getElementById(filterSortModalId);
+    const jobsGrid = document.getElementById(jobsGridId);
+
+    let activeFilters = {
+        keywords: '',
+        location: '',
+        companies: [],
+        minExperience: '',
+        maxExperience: '',
+        jobType: 'all',
+        sortBy: 'newest',
+        categories: []
+    };
+
+    // --- Filter Panel Visibility ---
+    moreFiltersToggle.addEventListener('click', () => {
+        filterPanel.classList.toggle('is-open');
+    });
+
+    filterPanelClose.addEventListener('click', () => {
+        filterPanel.classList.remove('is-open');
+    });
+
+    // Close panel if click outside (optional, depending on desired UX)
+    document.addEventListener('click', (event) => {
+        if (!filterPanel.contains(event.target) && !moreFiltersToggle.contains(event.target) && filterPanel.classList.contains('is-open')) {
+            filterPanel.classList.remove('is-open');
+        }
+    });
+
+    // --- Main Search Inputs & Search Button ---
+    function triggerSearch() {
+        activeFilters.keywords = keywordsInput.value.trim();
+        activeFilters.location = locationInput.value.trim();
+        fetchJobsWrapper(activeFilters);
+        renderActiveFiltersDisplay();
+    }
+
+    searchButton.addEventListener('click', triggerSearch);
+
+    keywordsInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            triggerSearch();
+        }
+    });
+    keywordsInput.addEventListener('blur', () => {
+        if (activeFilters.keywords !== keywordsInput.value.trim()) {
+            triggerSearch();
+        }
+    });
+
+    locationInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            triggerSearch();
+        }
+    });
+    locationInput.addEventListener('blur', () => {
+        if (activeFilters.location !== locationInput.value.trim()) {
+            triggerSearch();
+        }
+    });
+
+    // --- Tag Management Function ---
+    function createTag(text, type, value = text, tagClass = 'active-filter-tag-v4', removeBtnClass = 'remove-tag-btn-v4') {
+        const tag = document.createElement('span');
+        tag.className = tagClass;
+        tag.innerHTML = `${text} <button data-type="${type}" data-value="${value}" class="${removeBtnClass}">✕</button>`;
+        return tag;
+    }
+
+    function renderSelectedTags(container, items, type, tagClass, removeBtnClass) {
+        container.innerHTML = '';
+        items.forEach(item => {
+            container.appendChild(createTag(item, type, item, tagClass, removeBtnClass));
+        });
+    }
+
+    // --- Add Company on Enter/Blur (only company is tag-based now in panel) ---
+    filterCompanyInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && filterCompanyInput.value.trim() !== '') {
+            const value = filterCompanyInput.value.trim();
+            if (!activeFilters.companies.includes(value)) {
+                activeFilters.companies.push(value);
+                renderSelectedTags(selectedCompaniesContainer, activeFilters.companies, 'company', 'active-filter-tag-v4', 'remove-tag-btn-v4');
+            }
+            filterCompanyInput.value = '';
+            event.preventDefault();
+        }
+    });
+    filterCompanyInput.addEventListener('blur', () => {
+        const value = filterCompanyInput.value.trim();
+        if (value !== '' && !activeFilters.companies.includes(value)) {
+            activeFilters.companies.push(value);
+            renderSelectedTags(selectedCompaniesContainer, activeFilters.companies, 'company', 'active-filter-tag-v4', 'remove-tag-btn-v4');
+        }
+        filterCompanyInput.value = '';
+    });
+
+    // --- Remove Tag ---
+    document.addEventListener('click', (event) => {
+        if (event.target.classList.contains('remove-tag-btn-v4')) {
+            const type = event.target.dataset.type;
+            const value = event.target.dataset.value;
+
+            if (type === 'keywords') {
+                activeFilters.keywords = '';
+                keywordsInput.value = '';
+            } else if (type === 'location') {
+                activeFilters.location = '';
+                locationInput.value = '';
+            } else if (type === 'company') {
+                activeFilters.companies = activeFilters.companies.filter(comp => comp !== value);
+                renderSelectedTags(selectedCompaniesContainer, activeFilters.companies, 'company', 'active-filter-tag-v4', 'remove-tag-btn-v4');
+            } else if (type === 'experience') {
+                activeFilters.minExperience = '';
+                activeFilters.maxExperience = '';
+                filterMinExperience.value = '';
+                filterMaxExperience.value = '';
+            } else if (type === 'jobType') {
+                activeFilters.jobType = 'all';
+                filterJobType.value = 'all';
+            } else if (type === 'sortBy') {
+                activeFilters.sortBy = 'newest';
+                filterSort.value = 'newest';
+            } else if (type === 'category') {
+                activeFilters.categories = activeFilters.categories.filter(cat => cat !== value);
+                updateCategoryChipsVisualState();
+            }
+            
+            renderActiveFiltersDisplay();
+            fetchJobsWrapper(activeFilters);
+        }
+    });
+
+    // --- Category Chip Selection (Top-level) ---
+    filterCategoriesContainer.addEventListener('click', (event) => {
+        const clickedChip = event.target.closest('.category-chip-v4'); // Note V4 class
+        if (!clickedChip) return;
+
+        const categoryValue = clickedChip.dataset.categoryValue;
+
+        if (categoryValue === 'all') {
+            if (!clickedChip.classList.contains('is-active')) {
+                activeFilters.categories = [];
+                filterCategoriesContainer.querySelectorAll('.category-chip-v4').forEach(chip => {
+                    chip.classList.remove('is-active');
+                });
+                clickedChip.classList.add('is-active');
+            } else {
+                return;
+            }
+        } else {
+            clickedChip.classList.toggle('is-active');
+
+            if (clickedChip.classList.contains('is-active')) {
+                activeFilters.categories.push(categoryValue);
+            } else {
+                activeFilters.categories = activeFilters.categories.filter(cat => cat !== categoryValue);
+            }
+
+            const allOpportunitiesChip = filterCategoriesContainer.querySelector('[data-category-value="all"]');
+            if (activeFilters.categories.length > 0) {
+                allOpportunitiesChip.classList.remove('is-active');
+            } else {
+                allOpportunitiesChip.classList.add('is-active');
+            }
+        }
+
+        renderActiveFiltersDisplay();
+        fetchJobsWrapper(activeFilters);
+    });
+
+    // --- Apply Filters ---
+    applyFiltersBtn.addEventListener('click', () => {
+        activeFilters.minExperience = filterMinExperience.value.trim();
+        activeFilters.maxExperience = filterMaxExperience.value.trim();
+        activeFilters.jobType = filterJobType.value;
+        activeFilters.sortBy = filterSort.value;
+
+        filterPanel.classList.remove('is-open');
+        renderActiveFiltersDisplay();
+        fetchJobsWrapper(activeFilters);
+    });
+
+    // --- Clear All Filters ---
+    clearFiltersBtn.addEventListener('click', () => {
+        activeFilters = {
+            keywords: '',
+            location: '',
+            companies: [],
+            minExperience: '',
+            maxExperience: '',
+            jobType: 'all',
+            sortBy: 'newest',
+            categories: []
+        };
+        keywordsInput.value = '';
+        locationInput.value = '';
+        filterCompanyInput.value = '';
+        selectedCompaniesContainer.innerHTML = '';
+        filterMinExperience.value = '';
+        filterMaxExperience.value = '';
+        filterJobType.value = 'all';
+        filterSort.value = 'newest';
+
+        renderActiveFiltersDisplay();
+        updateCategoryChipsVisualState();
+        fetchJobsWrapper(activeFilters);
+    });
+
+    // --- Render Active Filters Display Below Search Bar ---
+    function renderActiveFiltersDisplay() {
+        activeFiltersContainer.innerHTML = '';
+
+        const allAppliedFilters = [];
+
+        if (activeFilters.keywords) {
+            allAppliedFilters.push(createTag(activeFilters.keywords, 'keywords', activeFilters.keywords, 'active-filter-tag-v4', 'remove-tag-btn-v4'));
+        }
+        if (activeFilters.location) {
+            allAppliedFilters.push(createTag(activeFilters.location, 'location', activeFilters.location, 'active-filter-tag-v4', 'remove-tag-btn-v4'));
+        }
+
+        activeFilters.companies.forEach(comp => {
+            allAppliedFilters.push(createTag(`Company: ${comp}`, 'company', comp, 'active-filter-tag-v4', 'remove-tag-btn-v4'));
+        });
+        if (activeFilters.minExperience || activeFilters.maxExperience) {
+            let expText = 'Experience: ';
+            if (activeFilters.minExperience && activeFilters.maxExperience) {
+                expText += `${activeFilters.minExperience}-${activeFilters.maxExperience} Yrs`;
+            } else if (activeFilters.minExperience) {
+                expText += `${activeFilters.minExperience}+ Yrs`;
+            } else {
+                expText += `Up to ${activeFilters.maxExperience} Yrs`;
+            }
+            allAppliedFilters.push(createTag(expText, 'experience', '', 'active-filter-tag-v4', 'remove-tag-btn-v4'));
+        }
+        if (activeFilters.jobType !== 'all') {
+            const selectedOption = filterJobType.querySelector(`option[value="${activeFilters.jobType}"]`);
+            if (selectedOption) {
+                allAppliedFilters.push(createTag(`Type: ${selectedOption.text}`, 'jobType', activeFilters.jobType, 'active-filter-tag-v4', 'remove-tag-btn-v4'));
+            }
+        }
+        if (activeFilters.sortBy !== 'newest') {
+            const selectedOption = filterSort.querySelector(`option[value="${activeFilters.sortBy}"]`);
+            if (selectedOption) {
+                allAppliedFilters.push(createTag(`Sort: ${selectedOption.text}`, 'sortBy', activeFilters.sortBy, 'active-filter-tag-v4', 'remove-tag-btn-v4'));
+            }
+        }
+
+        activeFilters.categories.forEach(cat => {
+            const chipElement = filterCategoriesContainer.querySelector(`[data-category-value="${cat}"]`);
+            const displayText = chipElement ? chipElement.textContent.trim() : cat;
+            allAppliedFilters.push(createTag(`Category: ${displayText}`, 'category', cat, 'active-filter-tag-v4', 'remove-tag-btn-v4'));
+        });
+
+        allAppliedFilters.forEach(tag => activeFiltersContainer.appendChild(tag));
+
+        if (allAppliedFilters.length === 0 && !activeFilters.keywords && !activeFilters.location && activeFilters.categories.length === 0) {
+            activeFiltersContainer.innerHTML = '<span style="color: var(--v4-color-text-muted);">No filters applied.</span>';
+        }
+    }
+
+    // --- Update Category Chips Visual State ---
+    function updateCategoryChipsVisualState() {
+        const allChips = filterCategoriesContainer.querySelectorAll('.category-chip-v4');
+        const allOpportunitiesChip = filterCategoriesContainer.querySelector('[data-category-value="all"]');
+
+        allChips.forEach(chip => {
+            const categoryValue = chip.dataset.categoryValue;
+            if (activeFilters.categories.includes(categoryValue)) {
+                chip.classList.add('is-active');
+            } else {
+                chip.classList.remove('is-active');
+            }
+        });
+
+        if (activeFilters.categories.length === 0) {
+            allOpportunitiesChip.classList.add('is-active');
+        } else {
+            allOpportunitiesChip.classList.remove('is-active');
+        }
+    }
+
+    // --- Job Rendering Logic ---
+    function showLoadingIndicator() {
+        jobsGrid.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--v4-color-text-muted); font-size: 17px;">Loading exquisite opportunities...</div>';
+    }
+
+    function renderJobs(jobs) {
+        jobsGrid.innerHTML = '';
+        if (jobs.length === 0) {
+            jobsGrid.innerHTML = '<div style="text-align: center; padding: 50px; color: var(--v4-color-text-muted); font-size: 17px;">No impeccable opportunities found matching your criteria.</div>';
+            return;
+        }
+        jobs.forEach(job => {
+            const jobCard = renderJobCardCallback(job); // Use user-provided callback
+            jobsGrid.appendChild(jobCard);
+        });
+    }
+
+    async function fetchJobsWrapper(filters) {
+        showLoadingIndicator();
+        console.log('Fetching jobs with filters (V4):', filters);
+        try {
+            const jobs = await fetchJobsApiCallback(filters); // Call user-provided API function
+            renderJobs(jobs);
+            console.log('Jobs rendered successfully (V4).');
+        } catch (error) {
+            console.error('Error fetching jobs (V4):', error);
+            jobsGrid.innerHTML = '<div style="text-align: center; padding: 50px; color: #dc2626; font-size: 17px;">Failed to load opportunities. Please refine your search.</div>';
+        }
+    }
+
+    // Initial fetch of jobs on page load
+    fetchJobsWrapper(activeFilters);
+    renderActiveFiltersDisplay();
+    updateCategoryChipsVisualState();
+}
