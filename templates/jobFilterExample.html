@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Board - Filter Example</title>
+  <style>
+    /* Basic styles for demonstration - integrate into your existing CSS */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8fafc;
+      color: #333;
+    }
+
+    .search-and-filters {
+      margin-bottom: 20px;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+
+    .main-search-area {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+    }
+
+    .search-box.expanded {
+      flex-grow: 1;
+    }
+
+    .search-box:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .search-box svg {
+      color: #64748b;
+      margin-right: 8px;
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 15px;
+      padding: 2px 0;
+    }
+
+    .vp-tab {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background-color: #ffffff;
+      color: #475569;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vp-tab:hover {
+      border-color: #a7b9d0;
+      background-color: #f0f4f8;
+    }
+
+    /* Modal Styles */
+    .filters-modal {
+      display: none; /* Hidden by default */
+      position: fixed; /* Stay in place */
+      z-index: 1000; /* Sit on top */
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 10% auto; /* 10% from the top and centered */
+      padding: 30px;
+      border: 1px solid #888;
+      width: 90%; /* Could be more or less, depending on screen size */
+      max-width: 600px;
+      border-radius: 10px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .close-btn {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      position: absolute;
+      right: 20px;
+      top: 15px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+      color: #333;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .filter-group {
+        margin-bottom: 15px;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .filter-group input[type="text"],
+    .filter-group input[type="number"],
+    .filter-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        background: #e0f2fe; /* Light blue */
+        color: #0284c7; /* Darker blue */
+        padding: 4px 10px;
+        border-radius: 5px;
+        font-size: 13px;
+        margin-right: 6px;
+        margin-bottom: 6px;
+        border: 1px solid #bfdbfe;
+        font-weight: 600;
+    }
+
+    .filter-tag .remove-tag-btn {
+        background: none;
+        border: none;
+        color: #0284c7;
+        margin-left: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0;
+    }
+
+    /* Job Card Specific Styles - Adapt to your theme */
+    .vp-catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 24px;
+    }
+    .job-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s;
+        text-decoration: none;
+        color: inherit;
+        padding: 20px;
+        position: relative;
+    }
+    .job-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px -4px rgba(0,0,0,0.1);
+        border-color: #3b82f6;
+    }
+    .job-card .company-badge,
+    .job-card .type-badge {
+        padding: 4px 10px;
+        border-radius: 5px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .job-card .company-badge {
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+    }
+    .job-card .type-badge {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+    }
+    .job-card h4 {
+        font-weight: 700;
+        font-size: 18px;
+        margin: 0 0 8px;
+        color: #1a202c;
+    }
+    .job-card p {
+        font-size: 13px;
+        color: #64748b;
+        margin: 0 0 12px;
+        flex-grow: 1;
+    }
+
+    @media (max-width: 768px) {
+        .vp-catalog-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main Search & More Filters Button -->
+  <div class="search-and-filters">
+    <div class="main-search-area">
+      <div class="search-box expanded" style="flex-grow: 1;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" id="mainSearchInput" placeholder="Search by job title, company, location, or skills...">
+      </div>
+      <button id="moreFiltersBtn" class="vp-tab" style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; border-color: rgba(99, 102, 241, 0.3); font-weight: 600; white-space: nowrap;">⚙️ More Filters</button>
+    </div>
+
+    <div id="activeFiltersContainer" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; min-height: 24px;">
+      <!-- Active filter tags will be rendered here by JavaScript -->
+      <span style="color: #94a3b8; font-size: 13px;">No filters applied.</span>
+    </div>
+  </div>
+
+  <!-- Job Listing Grid -->
+  <main>
+    <div id="jobsGrid" class="vp-catalog-grid">
+      <!-- Job Cards rendered via JS -->
+      <div style="text-align: center; padding: 40px; color: #64748b; font-size: 16px;">Loading jobs...</div>
+    </div>
+  </main>
+
+  <!-- More Filters Modal/Drawer (place this at the end of your <body>) -->
+  <div id="moreFiltersModal" class="filters-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; overflow-y: auto;">
+    <div class="modal-content" style="background: #fff; margin: 50px auto; padding: 25px; border-radius: 8px; max-width: 600px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative;">
+      <h3 style="margin-top: 0; margin-bottom: 20px; color: #333;">Advanced Filters</h3>
+      <button id="btnCloseMoreFiltersModal" class="close-btn" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #777;">✕</button>
+
+      <div class="filter-group" style="margin-bottom: 20px;">
+        <label for="filterLocation" style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Location</label>
+        <input type="text" id="filterLocation" placeholder="e.g., Bangalore, Remote" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        <div id="selectedLocations" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;"></div>
+      </div>
+      <div class="filter-group" style="margin-bottom: 20px;">
+        <label for="filterCompany" style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Company</label>
+        <input type="text" id="filterCompany" placeholder="e.g., Google, Microsoft" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        <div id="selectedCompanies" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;"></div>
+      </div>
+      <div class="filter-group" style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Experience (Years)</label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="number" id="filterMinExperience" placeholder="Min" min="0" max="20" style="width: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+          <span>-</span>
+          <input type="number" id="filterMaxExperience" placeholder="Max" min="0" max="20" style="width: 80px; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+        </div>
+      </div>
+      <div class="filter-group" style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Job Type</label>
+        <select id="filterJobTypeModal" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+          <option value="all">All Types</option>
+          <option value="INTERNSHIP">Internships</option>
+          <option value="FULL_TIME">Full-Time</option>
+          <option value="PART_TIME">Part-Time</option>
+          <option value="FREELANCE">Freelance</option>
+        </select>
+      </div>
+      <div class="filter-group" style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #555;">Sort By</label>
+        <select id="filterSortModal" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+          <option value="newest">Newest First</option>
+          <option value="deadline">Closing Soon</option>
+        </select>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px;">
+        <button id="clearFiltersBtn" class="vp-tab" style="background: rgba(220, 38, 38, 0.08); color: #dc2626; border-color: rgba(220, 38, 38, 0.3); font-weight: 600;">Clear All</button>
+        <button id="applyFiltersBtn" class="vp-tab active" style="background: rgba(16, 185, 129, 0.08); color: #059669; border-color: rgba(16, 185, 129, 0.3); font-weight: 600;">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/jobFilterModule.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- Define your custom job fetching function ---
+      async function myBackendFetchJobs(filters) {
+        // THIS IS WHERE YOU INTEGRATE WITH YOUR ACTUAL BACKEND API
+        // Example: Simulate an API call with dummy data
+        console.log("Fetching jobs with filters:", filters);
+
+        const dummyJobs = [
+          {
+              title: 'Software Engineer Intern',
+              company: 'Acme Corp.',
+              jobType: 'Internship',
+              description: 'Work on exciting projects with a dynamic team.',
+              skills: ['JavaScript', 'React'],
+              postedDate: '2 days ago',
+              location: 'Remote',
+              experienceYears: 0,
+              link: '#'
+          },
+          {
+              title: 'Full Stack Developer',
+              company: 'Global Tech',
+              jobType: 'Full-Time',
+              description: 'Build scalable web applications.',
+              skills: ['Python', 'Django', 'AWS'],
+              postedDate: '5 days ago',
+              location: 'Bangalore, India',
+              experienceYears: 3,
+              link: '#'
+          },
+          {
+              title: 'Data Scientist',
+              company: 'Data Minds',
+                            jobType: 'Full-Time',
+              description: 'Analyze complex datasets and build predictive models.',
+              skills: ['Python', 'R', 'Machine Learning'],
+              postedDate: '1 day ago',
+              location: 'Hyderabad, India',
+              experienceYears: 2,
+              link: '#'
+          }
+          // Add more dummy jobs here
+        ];
+
+        // Simulate filtering logic (you'd typically do this on the backend)
+        const filteredJobs = dummyJobs.filter(job => {
+            const matchesMainSearch = !filters.mainSearch ||
+                job.title.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.company.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.location.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.skills.some(skill => skill.toLowerCase().includes(filters.mainSearch.toLowerCase()));
+
+            const matchesLocations = filters.locations.length === 0 ||
+                filters.locations.some(loc => job.location.toLowerCase().includes(loc.toLowerCase()));
+
+            const matchesCompanies = filters.companies.length === 0 ||
+                filters.companies.some(comp => job.company.toLowerCase().includes(comp.toLowerCase()));
+            
+            const jobExperience = job.experienceYears !== undefined ? job.experienceYears : -1;
+            const minExp = filters.minExperience ? parseInt(filters.minExperience) : 0;
+            const maxExp = filters.maxExperience ? parseInt(filters.maxExperience) : 999; 
+
+            const matchesExperience = (jobExperience >= minExp) && (jobExperience <= maxExp);
+
+            const matchesJobType = filters.jobType === 'all' || job.jobType.toLowerCase() === filters.jobType.toLowerCase();
+
+            return matchesMainSearch && matchesLocations && matchesCompanies && matchesExperience && matchesJobType;
+        });
+
+        // Simulate sorting
+        const sortedJobs = filteredJobs.sort((a, b) => {
+            if (filters.sortBy === 'deadline') {
+                return a.postedDate.localeCompare(b.postedDate); // Example sorting
+            } else { // 'newest'
+                return b.postedDate.localeCompare(a.postedDate);
+            }
+        });
+
+        return new Promise(resolve => setTimeout(() => resolve(sortedJobs), 500)); // Simulate API delay
+      }
+
+      // --- Define your custom job card rendering function ---
+      function myCustomRenderJobCard(job) {
+        const jobCard = document.createElement('a');
+        jobCard.href = job.link || '#';
+        jobCard.target = '_blank';
+        jobCard.rel = 'noopener';
+        jobCard.className = 'job-card';
+        jobCard.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <span class="company-badge">${job.company || 'N/A'}</span>
+                <span class="type-badge">${job.jobType || 'N/A'}</span>
+            </div>
+            <h4 style="font-weight: 700; font-size: 18px; margin: 0 0 8px;">${job.title || 'Job Title'}</h4>
+            <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; flex-grow: 1;">${job.description || 'No description available.'}</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto;">
+                ${(job.skills || []).map(skill => `<span style="background: #f0f9ff; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">${skill}</span>`).join('')}
+            </div>
+            <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #64748b;">
+                <span>📅 ${job.postedDate || 'N/A'}</span>
+                <span>📍 ${job.location || 'N/A'}</span>
+            </div>
+        `;
+        return jobCard;
+      }
+
+      // --- Initialize the Job Filters Module ---
+      initializeJobFilters({
+        mainSearchInputId: 'mainSearchInput',
+        moreFiltersBtnId: 'moreFiltersBtn',
+        moreFiltersModalId: 'moreFiltersModal',
+        btnCloseMoreFiltersModalId: 'btnCloseMoreFiltersModal',
+        applyFiltersBtnId: 'applyFiltersBtn',
+        clearFiltersBtnId: 'clearFiltersBtn',
+        activeFiltersContainerId: 'activeFiltersContainer',
+        filterLocationInputId: 'filterLocation',
+        selectedLocationsContainerId: 'selectedLocations',
+        filterCompanyInputId: 'filterCompany',
+        selectedCompaniesContainerId: 'selectedCompanies',
+        filterMinExperienceId: 'filterMinExperience',
+        filterMaxExperienceId: 'filterMaxExperience',
+        filterJobTypeModalId: 'filterJobTypeModal',
+        filterSortModalId: 'filterSortModal',
+        jobsGridId: 'jobsGrid',
+        fetchJobsApiCallback: myBackendFetchJobs, 
+        renderJobCardCallback: myCustomRenderJobCard 
+      });
+    });
+  </script>
+</body>
+</html>
