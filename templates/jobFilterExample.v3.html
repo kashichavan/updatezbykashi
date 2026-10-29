@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Board - V3 Impeccable Filter Example</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/jobFilterStyles.v3.css' %}"> <!-- Link to our NEW V3 styles -->
+  
+  <!-- Lucide Icons for consistent icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <div class="search-container-v3">
+    <!-- Main Search Input and Toggle for Filter Panel -->
+    <div class="search-input-wrapper-v3">
+      <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      <input type="text" id="mainSearchInputV3" placeholder="Search job titles, companies, locations, skills...">
+      <button id="moreFiltersToggleV3" class="more-filters-toggle-v3" title="Toggle Advanced Filters">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01.293.707l3 3A1 1 0 0122 12v6a1 1 0 01-1 1H3a1 1 0 01-1-1v-6a1 1 0 01.293-.707l3-3A1 1 0 013 6.586V4z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 11v-4a3 3 0 016 0v4m-3 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        Filters
+      </button>
+    </div>
+
+    <!-- Active Filter Tags Display -->
+    <div id="activeFiltersContainerV3" class="active-filters-container-v3">
+      <span style="color: var(--v3-color-text-muted);">No filters applied.</span>
+    </div>
+
+    <!-- Filter Panel (Slides down from search bar) -->
+    <div id="filterPanelV3" class="filter-panel-v3">
+        <div class="filter-panel-header-v3">
+            <h4>Advanced Search Filters</h4>
+            <button id="filterPanelCloseV3" class="filter-panel-close-v3">✕</button>
+        </div>
+
+        <div class="filter-grid-v3">
+            <div class="filter-group-v3">
+                <label for="filterLocationV3">Location</label>
+                <input type="text" id="filterLocationV3" placeholder="e.g., Remote, Bangalore">
+                <div id="selectedLocationsV3" class="selected-tags-container-v3"></div>
+            </div>
+            <div class="filter-group-v3">
+                <label for="filterCompanyV3">Company</label>
+                <input type="text" id="filterCompanyV3" placeholder="e.g., Stripe, Google">
+                <div id="selectedCompaniesV3" class="selected-tags-container-v3"></div>
+            </div>
+            <div class="filter-group-v3">
+                <label>Experience (Years)</label>
+                <div class="u-flex u-gap-sm">
+                    <input type="number" id="filterMinExperienceV3" placeholder="Min" min="0" max="20">
+                    <span>-</span>
+                    <input type="number" id="filterMaxExperienceV3" placeholder="Max" min="0" max="20">
+                </div>
+            </div>
+            <div class="filter-group-v3">
+                <label for="filterJobTypeV3">Job Type</label>
+                <select id="filterJobTypeV3">
+                    <option value="all">All Types</option>
+                    <option value="INTERNSHIP">Internship</option>
+                    <option value="FULL_TIME">Full-Time</option>
+                    <option value="PART_TIME">Part-Time</option>
+                    <option value="FREELANCE">Freelance</option>
+                </select>
+            </div>
+            <div class="filter-group-v3">
+                <label for="filterSortV3">Sort By</label>
+                <select id="filterSortV3">
+                    <option value="newest">Newest First</option>
+                    <option value="deadline">Closing Soon</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-panel-actions-v3">
+            <button id="clearFiltersBtnV3" class="btn-v3 btn-clear-v3">Clear All</button>
+            <button id="applyFiltersBtnV3" class="btn-v3 btn-apply-v3">Apply Filters</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- Job Listing Grid -->
+  <main>
+    <div id="jobsGridV3" class="jobs-grid-v3">
+      <div style="text-align: center; padding: 40px; color: var(--v3-color-text-muted); font-size: 16px;">Loading jobs...</div>
+    </div>
+  </main>
+
+  <script src="{% static 'js/jobFilterModule.v3.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+      // --- Define your custom job fetching function (V3) ---
+      async function myBackendFetchJobsV3(filters) {
+        console.log("Fetching jobs with filters (V3):", filters);
+
+        const dummyJobs = [
+          {
+              title: 'Product Designer',
+              company: 'Linear',
+              jobType: 'Full-Time',
+              description: 'Design intuitive and beautiful user interfaces for our product suite.',
+              skills: ['Figma', 'User Research', 'Prototyping', 'Interaction Design'],
+              postedDate: '8 hours ago',
+              location: 'Remote',
+              experienceYears: 3,
+              link: '#'
+          },
+          {
+              title: 'Staff Software Engineer',
+              company: 'Stripe',
+              jobType: 'Full-Time',
+              description: 'Build and scale critical payment infrastructure.',
+              skills: ['Go', 'Java', 'Distributed Systems', 'API Design'],
+              postedDate: '1 day ago',
+              location: 'Dublin, Ireland',
+              experienceYears: 7,
+              link: '#'
+          },
+          {
+              title: 'Machine Learning Intern',
+              company: 'Google AI',
+              jobType: 'Internship',
+              description: 'Contribute to cutting-edge research in machine learning algorithms.',
+              skills: ['Python', 'TensorFlow', 'Deep Learning', 'Research'],
+              postedDate: '2 days ago',
+              location: 'Mountain View, USA',
+              experienceYears: 0,
+              link: '#'
+          },
+          {
+            title: 'iOS Developer',
+            company: 'Apple',
+            jobType: 'Full-Time',
+            description: 'Develop and maintain high-performance iOS applications.',
+            skills: ['Swift', 'Objective-C', 'Xcode', 'UIKit'],
+            postedDate: '3 days ago',
+            location: 'Cupertino, USA',
+            experienceYears: 4,
+            link: '#'
+          },
+          {
+            title: 'Data Engineer',
+            company: 'Netflix',
+            jobType: 'Full-Time',
+            description: 'Build and optimize data pipelines for large-scale streaming data.',
+            skills: ['Spark', 'Scala', 'AWS', 'Kafka'],
+            postedDate: '5 days ago',
+            location: 'Los Gatos, USA',
+            experienceYears: 6,
+            link: '#'
+          },
+          {
+            title: 'Frontend Developer',
+            company: 'Vercel',
+            jobType: 'Full-Time',
+            description: 'Work on Next.js framework and improve developer experience.',
+            skills: ['React', 'Next.js', 'TypeScript', 'Vercel'],
+            postedDate: '4 days ago',
+            location: 'Remote',
+            experienceYears: 3,
+            link: '#'
+          }
+        ];
+
+        // Simulate filtering logic
+        const filteredJobs = dummyJobs.filter(job => {
+            const matchesMainSearch = !filters.mainSearch ||
+                job.title.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.company.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.location.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.skills.some(skill => skill.toLowerCase().includes(filters.mainSearch.toLowerCase()));
+
+            const matchesLocations = filters.locations.length === 0 ||
+                filters.locations.some(loc => job.location.toLowerCase().includes(loc.toLowerCase()));
+
+            const matchesCompanies = filters.companies.length === 0 ||
+                filters.companies.some(comp => job.company.toLowerCase().includes(comp.toLowerCase()));
+            
+            const jobExperience = job.experienceYears !== undefined ? job.experienceYears : -1;
+            const minExp = filters.minExperience ? parseInt(filters.minExperience) : 0;
+            const maxExp = filters.maxExperience ? parseInt(filters.maxExperience) : 999; 
+
+            const matchesExperience = (jobExperience >= minExp) && (jobExperience <= maxExp);
+
+            const matchesJobType = filters.jobType === 'all' || job.jobType.toLowerCase() === filters.jobType.toLowerCase();
+
+            return matchesMainSearch && matchesLocations && matchesCompanies && matchesExperience && matchesJobType;
+        });
+
+        // Simulate sorting
+        const sortedJobs = filteredJobs.sort((a, b) => {
+            if (filters.sortBy === 'deadline') {
+                return a.postedDate.localeCompare(b.postedDate);
+            } else { // 'newest'
+                return b.postedDate.localeCompare(a.postedDate);
+            }
+        });
+
+        return new Promise(resolve => setTimeout(() => resolve(sortedJobs), 700)); // Simulate API delay
+      }
+
+      // --- Define your custom job card rendering function (V3) ---
+      function myCustomRenderJobCardV3(job) {
+        const jobCard = document.createElement('a');
+        jobCard.href = job.link || '#';
+        jobCard.target = '_blank';
+        jobCard.rel = 'noopener';
+        jobCard.className = 'job-card-v3'; // Use new V3 class name
+        jobCard.innerHTML = `
+            <div class="job-header-v3">
+                <span class="company-badge-v3">${job.company || 'N/A'}</span>
+                <span class="type-badge-v3">${job.jobType || 'N/A'}</span>
+            </div>
+            <h4>${job.title || 'Job Title'}</h4>
+            <p>${job.description || 'No description available.'}</p>
+            <div class="skills-v3">
+                ${(job.skills || []).map(skill => `<span class="skill-tag-v3">${skill}</span>`).join('')}
+            </div>
+            <div class="job-meta-v3">
+                <span>📅 ${job.postedDate || 'N/A'}</span>
+                <span>📍 ${job.location || 'N/A'}</span>
+            </div>
+        `;
+        return jobCard;
+      }
+
+      // --- Initialize the Job Filters Module (V3) ---
+      initializeJobFiltersV3({
+        mainSearchInputId: 'mainSearchInputV3',
+        moreFiltersToggleId: 'moreFiltersToggleV3',
+        filterPanelId: 'filterPanelV3',
+        filterPanelCloseId: 'filterPanelCloseV3',
+        applyFiltersBtnId: 'applyFiltersBtnV3',
+        clearFiltersBtnId: 'clearFiltersBtnV3',
+        activeFiltersContainerId: 'activeFiltersContainerV3',
+        filterLocationInputId: 'filterLocationV3',
+        selectedLocationsContainerId: 'selectedLocationsV3',
+        filterCompanyInputId: 'filterCompanyV3',
+        selectedCompaniesContainerId: 'selectedCompaniesV3',
+        filterMinExperienceId: 'filterMinExperienceV3',
+        filterMaxExperienceId: 'filterMaxExperienceV3',
+        filterJobTypeModalId: 'filterJobTypeV3',
+        filterSortModalId: 'filterSortV3',
+        jobsGridId: 'jobsGridV3',
+        fetchJobsApiCallback: myBackendFetchJobsV3, 
+        renderJobCardCallback: myCustomRenderJobCardV3 
+      });
+    });
+  </script>
+</body>
+</html>
