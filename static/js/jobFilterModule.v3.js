@@ -39,6 +39,7 @@ function initializeJobFiltersV3(config) {
     const filterJobType = document.getElementById(filterJobTypeModalId);
     const filterSort = document.getElementById(filterSortModalId);
     const jobsGrid = document.getElementById(jobsGridId);
+    const filterCategoriesContainer = document.getElementById('filterCategoriesV3'); // New: Category chips container
 
     let activeFilters = {
         mainSearch: '',
@@ -47,16 +48,66 @@ function initializeJobFiltersV3(config) {
         minExperience: '',
         maxExperience: '',
         jobType: 'all',
-        sortBy: 'newest'
+        sortBy: 'newest',
+        categories: [] // New: to store active category filters
     };
 
     // --- Filter Panel Visibility ---
     moreFiltersToggle.addEventListener('click', () => {
         filterPanel.classList.toggle('is-open');
+        if (filterPanel.classList.contains('is-open')) {
+            updateCategoryChipsVisualState(); // Update visual state when panel opens
+        }
     });
 
     filterPanelClose.addEventListener('click', () => {
         filterPanel.classList.remove('is-open');
+    });
+
+    // --- Category Chip Selection ---
+    filterCategoriesContainer.addEventListener('click', (event) => {
+        const clickedChip = event.target.closest('.category-chip-v3');
+        if (!clickedChip) return;
+
+        const categoryValue = clickedChip.dataset.categoryValue;
+
+        if (categoryValue === 'all') {
+            // If 'All Opportunities' is clicked
+            if (!clickedChip.classList.contains('is-active')) {
+                // If it's not active, activate it and deactivate all others
+                activeFilters.categories = [];
+                filterCategoriesContainer.querySelectorAll('.category-chip-v3').forEach(chip => {
+                    chip.classList.remove('is-active');
+                });
+                clickedChip.classList.add('is-active');
+                // 'all' category itself is not added to activeFilters.categories
+            } else {
+                // If 'All Opportunities' is already active and clicked again, do nothing (it's always implicitly active if no other category is selected)
+                return;
+            }
+        } else {
+            // If any other category chip is clicked
+            clickedChip.classList.toggle('is-active');
+
+            // Update activeFilters.categories array
+            if (clickedChip.classList.contains('is-active')) {
+                activeFilters.categories.push(categoryValue);
+            } else {
+                activeFilters.categories = activeFilters.categories.filter(cat => cat !== categoryValue);
+            }
+
+            // If other categories are selected, 'All Opportunities' should be inactive
+            const allOpportunitiesChip = filterCategoriesContainer.querySelector('[data-category-value="all"]');
+            if (activeFilters.categories.length > 0) {
+                allOpportunitiesChip.classList.remove('is-active');
+            } else {
+                // If no other categories are selected, 'All Opportunities' becomes active
+                allOpportunitiesChip.classList.add('is-active');
+            }
+        }
+
+        renderActiveFiltersDisplay();
+        fetchJobsWrapper(activeFilters);
     });
 
     // Close panel if click outside (optional, depending on desired UX)
@@ -182,6 +233,7 @@ function initializeJobFiltersV3(config) {
 
         filterPanel.classList.remove('is-open');
         renderActiveFiltersDisplay();
+        updateCategoryChipsVisualState(); // New: Update visual state after applying
         fetchJobsWrapper(activeFilters);
     });
 
@@ -194,7 +246,8 @@ function initializeJobFiltersV3(config) {
             minExperience: '',
             maxExperience: '',
             jobType: 'all',
-            sortBy: 'newest'
+            sortBy: 'newest',
+            categories: [] // New: Clear categories
         };
         mainSearchInput.value = '';
         filterLocationInput.value = '';
@@ -207,6 +260,7 @@ function initializeJobFiltersV3(config) {
         filterSort.value = 'newest';
 
         renderActiveFiltersDisplay();
+        updateCategoryChipsVisualState(); // New: Update visual state after clearing
         fetchJobsWrapper(activeFilters);
     });
 
@@ -250,10 +304,39 @@ function initializeJobFiltersV3(config) {
             }
         }
 
+        activeFilters.categories.forEach(cat => {
+            // Find the display text for the category from the actual chips
+            const chipElement = filterCategoriesContainer.querySelector(`[data-category-value="${cat}"]`);
+            const displayText = chipElement ? chipElement.textContent.trim() : cat;
+            allAppliedFilters.push(createTag(`Category: ${displayText}`, 'category', cat, 'active-filter-tag-v3', 'remove-tag-btn-v3'));
+        });
+
         allAppliedFilters.forEach(tag => activeFiltersContainer.appendChild(tag));
 
-        if (allAppliedFilters.length === 0 && !activeFilters.mainSearch) {
+        if (allAppliedFilters.length === 0 && !activeFilters.mainSearch && activeFilters.categories.length === 0) {
             activeFiltersContainer.innerHTML = '<span style="color: var(--v3-color-text-muted);">No filters applied.</span>';
+        }
+    }
+
+    // --- Update Category Chips Visual State ---
+    function updateCategoryChipsVisualState() {
+        const allChips = filterCategoriesContainer.querySelectorAll('.category-chip-v3');
+        const allOpportunitiesChip = filterCategoriesContainer.querySelector('[data-category-value="all"]');
+
+        allChips.forEach(chip => {
+            const categoryValue = chip.dataset.categoryValue;
+            if (activeFilters.categories.includes(categoryValue)) {
+                chip.classList.add('is-active');
+            } else {
+                chip.classList.remove('is-active');
+            }
+        });
+
+        // Ensure 'All Opportunities' state is correct
+        if (activeFilters.categories.length === 0) {
+            allOpportunitiesChip.classList.add('is-active');
+        } else {
+            allOpportunitiesChip.classList.remove('is-active');
         }
     }
 
@@ -290,4 +373,5 @@ function initializeJobFiltersV3(config) {
     // Initial fetch of jobs on page load
     fetchJobsWrapper(activeFilters);
     renderActiveFiltersDisplay();
+    updateCategoryChipsVisualState(); // New: Set initial visual state for category chips
 }

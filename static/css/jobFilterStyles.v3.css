@@ -423,6 +423,42 @@ body {
     font-family: var(--v3-font-mono);
 }
 
+/* Category Chips in Filter Panel */
+.category-chip-v3 {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-radius: var(--v3-border-radius-pill);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: var(--v3-color-bg-subtle);
+    color: var(--v3-color-text-muted);
+    border: 1px solid var(--v3-color-border-default);
+}
+
+.category-chip-v3:hover {
+    background-color: var(--v3-color-primary-light);
+    color: var(--v3-color-primary-dark);
+    border-color: var(--v3-color-primary);
+    box-shadow: var(--v3-shadow-sm);
+}
+
+.category-chip-v3.is-active {
+    background-color: var(--v3-color-primary);
+    color: var(--v3-color-bg-surface);
+    border-color: var(--v3-color-primary-dark);
+    font-weight: 600;
+    box-shadow: var(--v3-shadow-md);
+}
+
+.category-chip-v3.is-active:hover {
+    background-color: var(--v3-color-primary-dark);
+    border-color: var(--v3-color-primary-dark);
+    box-shadow: var(--v3-shadow-lg);
+}
+
 /* Responsive Adjustments */
 @media (max-width: 960px) {
     .jobs-grid-v3 {
