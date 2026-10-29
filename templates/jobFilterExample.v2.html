@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Board - New Advanced Filter Example</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/jobFilterStyles.css' %}"> <!-- Link to our new styles -->
+  <!-- You can also add your existing site's global CSS here -->
+
+  <!-- Lucide Icons for consistent icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- New Enhanced Search & Filters Section -->
+  <div class="search-and-filters-v2">
+    <div class="main-search-area-v2">
+      <div class="search-box-v2">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+        <input type="text" id="mainSearchInputV2" placeholder="Search job titles, companies, locations, skills...">
+      </div>
+      <button id="moreFiltersBtnV2" class="more-filters-btn-v2">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01.293.707l3 3A1 1 0 0122 12v6a1 1 0 01-1 1H3a1 1 0 01-1-1v-6a1 1 0 01.293-.707l3-3A1 1 0 013 6.586V4z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 11v-4a3 3 0 016 0v4m-3 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+        </svg>
+        More Filters
+      </button>
+    </div>
+
+    <div id="activeFiltersContainerV2" class="active-filters-container-v2">
+      <span style="color: var(--color-text-muted);">No filters applied.</span>
+    </div>
+  </div>
+
+  <!-- Job Listing Grid -->
+  <main>
+    <div id="jobsGridV2" class="jobs-grid-v2">
+      <div style="text-align: center; padding: 40px; color: var(--color-text-muted); font-size: 16px;">Loading jobs...</div>
+    </div>
+  </main>
+
+  <!-- More Filters Modal/Drawer (place this at the end of your <body>) -->
+  <div id="moreFiltersModalV2" class="filters-modal-v2">
+    <div class="modal-content-v2">
+      <h3>Advanced Filters</h3>
+      <button id="btnCloseMoreFiltersModalV2" class="close-btn-v2">✕</button>
+
+      <div class="filter-grid-v2">
+        <div class="filter-group-v2">
+          <label for="filterLocationV2">Location</label>
+          <input type="text" id="filterLocationV2" placeholder="e.g., Bangalore, Remote">
+          <div id="selectedLocationsV2" class="selected-tags-container-v2"></div>
+        </div>
+        <div class="filter-group-v2">
+          <label for="filterCompanyV2">Company</label>
+          <input type="text" id="filterCompanyV2" placeholder="e.g., Google, Microsoft">
+          <div id="selectedCompaniesV2" class="selected-tags-container-v2"></div>
+        </div>
+        <div class="filter-group-v2">
+          <label>Experience (Years)</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="number" id="filterMinExperienceV2" placeholder="Min" min="0" max="20">
+            <span>-</span>
+            <input type="number" id="filterMaxExperienceV2" placeholder="Max" min="0" max="20">
+          </div>
+        </div>
+        <div class="filter-group-v2">
+          <label for="filterJobTypeV2">Job Type</label>
+          <select id="filterJobTypeV2">
+            <option value="all">All Types</option>
+            <option value="INTERNSHIP">Internships</option>
+            <option value="FULL_TIME">Full-Time</option>
+            <option value="PART_TIME">Part-Time</option>
+            <option value="FREELANCE">Freelance</option>
+          </select>
+        </div>
+        <div class="filter-group-v2">
+            <label for="filterSortV2">Sort By</label>
+            <select id="filterSortV2">
+              <option value="newest">Newest First</option>
+              <option value="deadline">Closing Soon</option>
+            </select>
+          </div>
+      </div>
+
+      <div class="modal-actions-v2">
+        <button id="clearFiltersBtnV2" class="btn-clear-v2">Clear All</button>
+        <button id="applyFiltersBtnV2" class="btn-apply-v2">Apply Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/jobFilterModule.v2.js' %}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+
+      // --- Define your custom job fetching function ---
+      async function myBackendFetchJobsV2(filters) {
+        // THIS IS WHERE YOU INTEGRATE WITH YOUR ACTUAL BACKEND API
+        console.log("Fetching jobs with filters (V2):", filters);
+
+        // Example: Simulate an API call with dummy data
+        const dummyJobs = [
+          {
+              title: 'Senior Frontend Engineer',
+              company: 'InnovateTech',
+              jobType: 'Full-Time',
+              description: 'Lead frontend development for our flagship product using React and TypeScript.',
+              skills: ['React', 'TypeScript', 'GraphQL', 'UX/UI'],
+              postedDate: '1 day ago',
+              location: 'Remote',
+              experienceYears: 5,
+              link: '#'
+          },
+          {
+              title: 'AI Research Scientist Intern',
+              company: 'DeepMind Labs',
+              jobType: 'Internship',
+              description: 'Contribute to cutting-edge AI research in large language models.',
+              skills: ['Python', 'TensorFlow', 'PyTorch', 'NLP'],
+              postedDate: '3 days ago',
+              location: 'London, UK',
+              experienceYears: 0,
+              link: '#'
+          },
+          {
+              title: 'Cloud Security Architect',
+              company: 'SecureCloud Solutions',
+              jobType: 'Full-Time',
+              description: 'Design and implement robust cloud security strategies for enterprise clients.',
+              skills: ['AWS', 'Azure', 'Kubernetes', 'Security Audits'],
+              postedDate: '5 days ago',
+              location: 'New York, USA',
+              experienceYears: 7,
+              link: '#'
+          },
+          {
+              title: 'Junior UX Designer',
+              company: 'UserCentric Studios',
+              jobType: 'Full-Time',
+              description: 'Create intuitive and engaging user experiences for mobile and web applications.',
+              skills: ['Figma', 'User Research', 'Wireframing'],
+              postedDate: '2 days ago',
+              location: 'Bangalore, India',
+              experienceYears: 1,
+              link: '#'
+          },
+          {
+            title: 'Growth Marketing Manager',
+            company: 'ScaleUp Inc.',
+            jobType: 'Full-Time',
+            description: 'Develop and execute growth strategies across various channels.',
+            skills: ['SEO', 'SEM', 'Content Marketing', 'Analytics'],
+            postedDate: '4 days ago',
+            location: 'Remote',
+            experienceYears: 4,
+            link: '#'
+          }
+        ];
+
+        // Simulate filtering logic
+        const filteredJobs = dummyJobs.filter(job => {
+            const matchesMainSearch = !filters.mainSearch ||
+                job.title.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.company.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.location.toLowerCase().includes(filters.mainSearch.toLowerCase()) ||
+                job.skills.some(skill => skill.toLowerCase().includes(filters.mainSearch.toLowerCase()));
+
+            const matchesLocations = filters.locations.length === 0 ||
+                filters.locations.some(loc => job.location.toLowerCase().includes(loc.toLowerCase()));
+
+            const matchesCompanies = filters.companies.length === 0 ||
+                filters.companies.some(comp => job.company.toLowerCase().includes(comp.toLowerCase()));
+            
+            const jobExperience = job.experienceYears !== undefined ? job.experienceYears : -1;
+            const minExp = filters.minExperience ? parseInt(filters.minExperience) : 0;
+            const maxExp = filters.maxExperience ? parseInt(filters.maxExperience) : 999; 
+
+            const matchesExperience = (jobExperience >= minExp) && (jobExperience <= maxExp);
+
+            const matchesJobType = filters.jobType === 'all' || job.jobType.toLowerCase() === filters.jobType.toLowerCase();
+
+            return matchesMainSearch && matchesLocations && matchesCompanies && matchesExperience && matchesJobType;
+        });
+
+        // Simulate sorting
+        const sortedJobs = filteredJobs.sort((a, b) => {
+            if (filters.sortBy === 'deadline') {
+                return a.postedDate.localeCompare(b.postedDate);
+            } else { // 'newest'
+                return b.postedDate.localeCompare(a.postedDate);
+            }
+        });
+
+        return new Promise(resolve => setTimeout(() => resolve(sortedJobs), 700)); // Simulate API delay
+      }
+
+      // --- Define your custom job card rendering function (V2) ---
+      function myCustomRenderJobCardV2(job) {
+        const jobCard = document.createElement('a');
+        jobCard.href = job.link || '#';
+        jobCard.target = '_blank';
+        jobCard.rel = 'noopener';
+        jobCard.className = 'job-card-v2'; // Use new class name
+        jobCard.innerHTML = `
+            <div class="job-header-v2">
+                <span class="company-badge-v2">${job.company || 'N/A'}</span>
+                <span class="type-badge-v2">${job.jobType || 'N/A'}</span>
+            </div>
+            <h4>${job.title || 'Job Title'}</h4>
+            <p>${job.description || 'No description available.'}</p>
+            <div class="skills-v2">
+                ${(job.skills || []).map(skill => `<span class="skill-tag-v2">${skill}</span>`).join('')}
+            </div>
+            <div class="job-meta-v2">
+                <span>📅 ${job.postedDate || 'N/A'}</span>
+                <span>📍 ${job.location || 'N/A'}</span>
+            </div>
+        `;
+        return jobCard;
+      }
+
+      // --- Initialize the Job Filters Module (V2) ---
+      initializeJobFiltersV2({
+        mainSearchInputId: 'mainSearchInputV2',
+        moreFiltersBtnId: 'moreFiltersBtnV2',
+        moreFiltersModalId: 'moreFiltersModalV2',
+        btnCloseMoreFiltersModalId: 'btnCloseMoreFiltersModalV2',
+        applyFiltersBtnId: 'applyFiltersBtnV2',
+        clearFiltersBtnId: 'clearFiltersBtnV2',
+        activeFiltersContainerId: 'activeFiltersContainerV2',
+        filterLocationInputId: 'filterLocationV2',
+        selectedLocationsContainerId: 'selectedLocationsV2',
+        filterCompanyInputId: 'filterCompanyV2',
+        selectedCompaniesContainerId: 'selectedCompaniesV2',
+        filterMinExperienceId: 'filterMinExperienceV2',
+        filterMaxExperienceId: 'filterMaxExperienceV2',
+        filterJobTypeModalId: 'filterJobTypeV2',
+        filterSortModalId: 'filterSortV2',
+        jobsGridId: 'jobsGridV2',
+        fetchJobsApiCallback: myBackendFetchJobsV2, 
+        renderJobCardCallback: myCustomRenderJobCardV2 
+      });
+    });
+  </script>
+</body>
+</html>
