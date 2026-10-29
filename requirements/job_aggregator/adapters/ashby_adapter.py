@@ -16,6 +16,7 @@ from ..normalizer import (
     classify_experience_tier,
     parse_job_timestamps
 )
+from requirements.skill_extractor import extract_technical_skills
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,12 @@ class AshbyPublicSourceAdapter(BaseJobSourceAdapter):
                         'job_type': 'INTERNSHIP' if exp_tier == 'INTERNSHIP' else 'FULL_TIME',
                         'industry_domain': domain,
                         'experience_tier': exp_tier,
-                        'skills_required': f"{domain.capitalize()}, Problem Solving",
+                        'skills_required': extract_technical_skills(
+                            title=raw_title,
+                            raw_skills="",
+                            description=item.get('descriptionHtml') or f"Exciting role at {company_display}.",
+                            category_slug=domain.lower()
+                        ),
                         'stipend_salary': 'Competitive Package',
                         'eligibility': 'Open to all matching qualifications',
                         'source_published_at': pub_dt,

@@ -24,6 +24,7 @@ from ..normalizer import (
     classify_experience_tier,
     parse_job_timestamps
 )
+from requirements.skill_extractor import extract_technical_skills
 
 logger = logging.getLogger(__name__)
 
@@ -173,20 +174,12 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
                 domain = classify_industry_domain(raw_title, "", "")
                 exp_tier = classify_experience_tier(raw_title, "", "")
 
-                skills_str = f"{domain.capitalize()}, Problem Solving"
-                tl = raw_title.lower()
-                if 'test' in tl or 'qa' in tl:
-                    skills_str = "Manual Testing, Automation, Selenium, Test Cases, SDET"
-                elif 'hr' in tl or 'recruiter' in tl:
-                    skills_str = "Talent Acquisition, Candidate Screening, HR Operations, Interview Scheduling"
-                elif 'mba' in tl or 'business analyst' in tl or 'management trainee' in tl:
-                    skills_str = "Business Analysis, Market Research, Strategy, Excel, Stakeholder Communication"
-                elif 'python' in tl:
-                    skills_str = "Python, Django, FastAPI, SQL, REST APIs"
-                elif 'react' in tl or 'frontend' in tl:
-                    skills_str = "React, JavaScript, TypeScript, CSS, Redux"
-                elif 'data' in tl:
-                    skills_str = "Python, SQL, Power BI, Excel, Data Analytics"
+                skills_str = extract_technical_skills(
+                    title=raw_title,
+                    raw_skills="",
+                    description=f"{raw_title} at {raw_comp}",
+                    category_slug=domain.lower()
+                )
 
                 results.append({
                     'source_name': self.source_name,

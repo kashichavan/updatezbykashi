@@ -1085,8 +1085,15 @@ def api_owner_bulk_parse_and_post(request):
                 if exp_m: elig_parts.append(f"Exp: {exp_m.group(1).strip()}")
                 eligibility = " • ".join(elig_parts) if elig_parts else "Open to all freshers & graduating batches."
 
+                from .skill_extractor import extract_technical_skills
                 skills_m = re.search(r'(?:Skills|Tech Stack):\s*([^\r\n]+)', block, re.IGNORECASE)
-                skills_required = skills_m.group(1).strip() if skills_m else "Software Engineering, Problem Solving, Communication"
+                raw_sk = skills_m.group(1).strip() if skills_m else ""
+                skills_required = extract_technical_skills(
+                    title=title,
+                    raw_skills=raw_sk,
+                    description=block,
+                    category_slug="software-engineering"
+                )
 
                 loc_m = re.search(r'(?:Location\(s\)?|Location):\s*([^\r\n]+)', block, re.IGNORECASE)
                 location = loc_m.group(1).strip() if loc_m else "Remote / Hybrid"
@@ -1329,8 +1336,15 @@ def api_owner_parse_and_post(request):
                 eligibility_parts.append(f"Experience: {exp_match.group(1).strip()}")
             eligibility = " • ".join(eligibility_parts) if eligibility_parts else "Open to final year students and fresh graduates."
 
+            from .skill_extractor import extract_technical_skills
             skills_match = re.search(r'(?:Skills|Tech Stack):\s*(.+)', raw_text, re.IGNORECASE)
-            skills_required = skills_match.group(1).strip() if skills_match else "Software Engineering, Problem Solving, Communication"
+            raw_sk = skills_match.group(1).strip() if skills_match else ""
+            skills_required = extract_technical_skills(
+                title=title,
+                raw_skills=raw_sk,
+                description=raw_text,
+                category_slug="software-engineering"
+            )
 
             loc_match = re.search(r'(?:Location):\s*(.+)', raw_text, re.IGNORECASE)
             location = loc_match.group(1).strip() if loc_match else "Remote"

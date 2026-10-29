@@ -17,6 +17,7 @@ from ..normalizer import (
     classify_experience_tier,
     parse_job_timestamps
 )
+from requirements.skill_extractor import extract_technical_skills
 
 logger = logging.getLogger(__name__)
 
@@ -355,17 +356,9 @@ class IndianStartupSourceAdapter(BaseJobSourceAdapter):
         return out
 
     def _derive_skills(self, title: str, domain: str) -> str:
-        tl = title.lower()
-        if "test" in tl or "qa" in tl:
-            return "Manual Testing, Automation, Selenium, Test Cases, SDET"
-        elif "hr" in tl or "recruiter" in tl or "talent" in tl:
-            return "Talent Acquisition, Candidate Screening, HR Operations, Interview Scheduling"
-        elif "mba" in tl or "business analyst" in tl or "management trainee" in tl or "strategy" in tl:
-            return "Business Analysis, Market Research, Strategy, Excel, Stakeholder Communication"
-        elif "python" in tl:
-            return "Python, Django, FastAPI, SQL, REST APIs"
-        elif "react" in tl or "frontend" in tl:
-            return "React, JavaScript, TypeScript, CSS, Redux"
-        elif "data" in tl or "analytics" in tl:
-            return "Python, SQL, Power BI, Excel, Data Analytics"
-        return f"{domain.capitalize()}, Problem Solving, System Design"
+        return extract_technical_skills(
+            title=title,
+            raw_skills="",
+            description=title,
+            category_slug=domain.lower()
+        )

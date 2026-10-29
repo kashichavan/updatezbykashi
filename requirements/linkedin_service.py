@@ -276,13 +276,15 @@ def _heuristic_linkedin_parse(raw_text: str, source_url: str = "") -> Dict[str, 
         title = "Software Engineer / Tech Opportunity"
 
     # Skills Extraction
+    from .skill_extractor import extract_technical_skills
     skills_match = re.search(r'(?:Skills|Tech Stack|Required|Technologies)\s*[:\-–]\s*(.+)', raw_text, re.I)
-    if skills_match:
-        skills = skills_match.group(1).split("\n")[0].strip()
-    else:
-        core_tech = ["Python", "Java", "React", "Node.js", "Django", "SQL", "AWS", "Docker", "REST APIs", "C++", "Spring Boot", "Git"]
-        found_skills = [t for t in core_tech if re.search(r'\b' + re.escape(t) + r'\b', raw_text, re.I)]
-        skills = ", ".join(found_skills) if found_skills else "Software Engineering, Problem Solving, Git"
+    raw_skills = skills_match.group(1).split("\n")[0].strip() if skills_match else ""
+    skills = extract_technical_skills(
+        title=title,
+        raw_skills=raw_skills,
+        description=raw_text,
+        category_slug="software-engineering"
+    )
 
     # Location Extraction
     loc_match = re.search(r'(?:Location|City|Base)\s*[:\-–]\s*(.+)', raw_text, re.I)

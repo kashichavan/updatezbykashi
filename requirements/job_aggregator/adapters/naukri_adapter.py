@@ -29,6 +29,7 @@ from ..normalizer import (
     classify_experience_tier,
     parse_job_timestamps,
 )
+from requirements.skill_extractor import extract_technical_skills
 
 logger = logging.getLogger(__name__)
 
@@ -444,15 +445,20 @@ class NaukriSourceAdapter(BaseJobSourceAdapter):
                 else:
                     apply_url = f"https://www.naukri.com/job-listings-{job_id}"
 
-                # Skills
-                skills_raw = item.get("tagsAndSkills", "")
-                skills_list = [s.strip() for s in skills_raw.split(",") if s.strip()] if isinstance(skills_raw, str) else []
-                skills_str = ", ".join(skills_list) if skills_list else "Software Engineering, Problem Solving"
-
                 # Description cleanup
                 raw_desc = item.get("jobDescription", "")
                 clean_desc = re.sub(r'<[^>]+>', ' ', raw_desc)
                 clean_desc = html.unescape(re.sub(r'\s+', ' ', clean_desc)).strip()
+
+                # Skills: high-precision extraction from Naukri tags, title, and description
+                skills_raw = item.get("tagsAndSkills", "")
+                skills_str = extract_technical_skills(
+                    title=title,
+                    raw_skills=skills_raw if isinstance(skills_raw, str) else ", ".join(skills_raw) if isinstance(skills_raw, list) else "",
+                    description=clean_desc,
+                    category_slug="software-engineering"
+                )
+
                 if not clean_desc or len(clean_desc) < 30:
                     clean_desc = (
                         f"{title} position at {comp_name}. Experience requirement: {raw_exp}. "

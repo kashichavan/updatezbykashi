@@ -20,6 +20,7 @@ from requirements.jobdexo_service import (
     fetch_multi_section_jobdexo_urls,
     extract_jobdexo_detail
 )
+from requirements.skill_extractor import extract_technical_skills
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,12 @@ class JobdexoSourceAdapter(BaseJobSourceAdapter):
                 raw_comp = detail.get('company', '')
                 raw_loc = detail.get('location', '')
                 raw_desc = detail.get('description', '')
-                raw_skills = detail.get('skills', '')
+                raw_skills = extract_technical_skills(
+                    title=raw_title,
+                    raw_skills=detail.get('skills', ''),
+                    description=f"{raw_desc} {detail.get('eligibility', '')}",
+                    category_slug='software-engineering'
+                )
 
                 # Location normalization
                 norm_city, is_remote, is_valid_india = normalize_indian_location(raw_loc)

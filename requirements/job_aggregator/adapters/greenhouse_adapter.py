@@ -17,6 +17,7 @@ from ..normalizer import (
     classify_experience_tier,
     parse_job_timestamps
 )
+from requirements.skill_extractor import extract_technical_skills
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,12 @@ class GreenhousePublicSourceAdapter(BaseJobSourceAdapter):
                         'job_type': 'INTERNSHIP' if exp_tier == 'INTERNSHIP' else 'FULL_TIME',
                         'industry_domain': domain,
                         'experience_tier': exp_tier,
-                        'skills_required': f"{domain.capitalize()}, Problem Solving, Communication",
+                        'skills_required': extract_technical_skills(
+                            title=raw_title,
+                            raw_skills="",
+                            description=raw_content or f"Exciting career opportunity at {company_display}.",
+                            category_slug=domain.lower()
+                        ),
                         'stipend_salary': 'Best in Industry (Competitive Startup Package)',
                         'eligibility': 'Open to candidates matching job qualifications',
                         'source_published_at': pub_dt,

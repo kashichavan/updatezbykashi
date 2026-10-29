@@ -31,21 +31,29 @@ USER_AGENTS = [
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15',
 ]
 
-# Streamlined Jobdexo Discovery Sections (High-Yield, Low-Memory)
+# Comprehensive Jobdexo Multi-Page Discovery Endpoints
 JOBDEXO_SOURCE_ENDPOINTS = [
     'https://jobdexo.com/',
     'https://jobdexo.com/?page=2',
+    'https://jobdexo.com/?page=3',
+    'https://jobdexo.com/?page=4',
+    'https://jobdexo.com/?page=5',
+    'https://jobdexo.com/?page=6',
+    'https://jobdexo.com/?page=7',
+    'https://jobdexo.com/?page=8',
     'https://jobdexo.com/?type=fulltime',
     'https://jobdexo.com/?type=internship',
     'https://jobdexo.com/?type=remote',
     'https://jobdexo.com/?q=developer',
+    'https://jobdexo.com/?q=software',
+    'https://jobdexo.com/?q=engineer',
 ]
 
 
-def fetch_url_html(url, retries=1, backoff=1.5):
+def fetch_url_html(url, retries=2, backoff=1.5):
     """
     Safely fetch HTML content from a URL with browser emulation headers,
-    rate-limit handling, and exponential backoff retry for HTTP 429.
+    rate-limit handling, resilient 12s timeout, and exponential backoff retry.
     """
     for attempt in range(retries + 1):
         try:
@@ -64,17 +72,12 @@ def fetch_url_html(url, retries=1, backoff=1.5):
                     'Sec-Ch-Ua-Platform': '"macOS"',
                 }
             )
-            with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=7) as response:
+            with urllib.request.urlopen(req, context=SSL_CONTEXT, timeout=12) as response:
                 return response.read().decode('utf-8', errors='ignore')
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < retries:
                 sleep_time = backoff * (attempt + 1) + random.uniform(0.5, 1.5)
                 time.sleep(sleep_time)
-                continue
-            raise
-        except Exception:
-            if attempt < retries:
-                time.sleep(backoff)
                 continue
             raise
         except Exception:
@@ -315,19 +318,13 @@ def extract_jobdexo_detail(url):
         if loc_m:
             location = html.unescape(loc_m.group(1).strip())
 
-    # 8. Skills
-    skills_tags = re.findall(r'<span class=[\"\']jd-skill[\"\']>([^<]+)</span>', page_html)
-    skills = ", ".join([html.unescape(s.strip()) for s in skills_tags if s.strip()])
-    if not skills:
-        skills = "Problem Solving, Software Engineering, Communication"
-
-    # 9. Eligibility
+    # 8. Eligibility
     eligibility = "Open to all freshers & eligible graduating batches."
     elig_m = re.search(r'<div class=[\"\']jd-card-title[\"\']>\s*✅\s*Eligibility Criteria\s*</div>\s*<div class=[\"\']jd-prose[\"\']>([^<]+)</div>', page_html, re.IGNORECASE)
     if elig_m:
         eligibility = html.unescape(elig_m.group(1).strip())
 
-    # 10. Description
+    # 9. Description
     description = ""
     if schema_data.get('description'):
         raw_desc = schema_data.get('description').strip()
@@ -340,6 +337,17 @@ def extract_jobdexo_detail(url):
             raw_desc = re.sub(r'<br\s*/?>', '\n', desc_m.group(1))
             raw_desc = re.sub(r'<[^>]+>', '', raw_desc)
             description = html.unescape(raw_desc.strip())
+
+    # 10. Skills: High-precision extraction combining HTML tags, description, and title
+    from .skill_extractor import extract_technical_skills
+    skills_tags = re.findall(r'<span class=[\"\']jd-skill[\"\']>([^<]+)</span>', page_html)
+    raw_skills_text = ", ".join([html.unescape(s.strip()) for s in skills_tags if s.strip()])
+    skills = extract_technical_skills(
+        title=clean_title,
+        raw_skills=raw_skills_text,
+        description=f"{description}\n{eligibility}",
+        category_slug="software-engineering"
+    )
 
     if not description:
         description = f"{company} is hiring for {clean_title}.\nLocation: {location}\nSalary: {salary}\nKey Skills: {skills}"
@@ -472,19 +480,16 @@ def is_job_duplicate_in_db(job_data, seen_in_batch=None):
 
     # 2. Database Canonical Apply URL Match (Official ATS career link)
     if clean_apply and 'jobdexo.com' not in clean_apply:
-        if JobPosting.objects.filter(apply_url__iexact=clean_apply).exists():
-            return True
-        # Also check without trailing slash or protocol
-        domain_path = re.sub(r'^https?:\/\/', '', clean_apply).rstrip('/')
-        if JobPosting.objects.filter(apply_url__icontains=domain_path).exists():
+        base_apply = clean_apply.split('?')[0].rstrip('/')
+        if JobPosting.objects.filter(Q(apply_url__iexact=clean_apply) | Q(apply_url__iexact=base_apply)).exists():
             return True
 
     # 3. Exact (Normalized Company + Normalized Title) Match
-    if raw_comp and raw_comp.strip():
+    if raw_comp and raw_comp.strip() and len(raw_comp.strip()) >= 2:
+        clean_c = raw_comp.strip()
         existing_same_company = JobPosting.objects.filter(
-            Q(company_name__iexact=raw_comp) | 
-            Q(company_name__iexact=raw_comp.replace(' ', '')) |
-            Q(company_name__icontains=raw_comp)
+            Q(company_name__iexact=clean_c) | 
+            Q(company_name__iexact=clean_c.replace(' ', ''))
         )
     else:
         existing_same_company = []
@@ -710,26 +715,27 @@ def classify_opportunity_category(job_data, cat_map):
     return cat_map.get('software-engineering')
 
 
-def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
+def auto_import_from_jobdexo(urls=None, limit=20, group_name=None):
     """
     Standard Ingestion Engine:
-    1. Fetches candidate Jobdexo URLs.
+    1. Fetches candidate Jobdexo URLs across multiple discovery pages.
     2. Performs fast pre-check to skip already-imported URLs.
     3. Scrapes Schema.org metadata and official career ATS apply links in parallel.
     4. Applies multi-tier strict deduplication.
     5. Intelligently classifies into IT vs Non-IT vs Data & AI vs Internships.
-    6. Bundles into a 7-day shareable group.
+    6. Bundles into a 30-day shareable group.
     """
     cat_map = get_or_create_standard_categories()
 
     if not urls:
-        urls = fetch_multi_section_jobdexo_urls(limit=max(120, limit * 10))
+        fetch_limit = 150 if (not limit or limit <= 0) else max(80, limit * 4)
+        urls = fetch_multi_section_jobdexo_urls(limit=fetch_limit)
 
     created_jobs = []
     created_job_instances = []
     seen_in_batch = set()
     now = timezone.now()
-    deadline = now + timedelta(days=7)
+    deadline = now + timedelta(days=30)
 
     # Filter out empty or duplicate candidate URLs
     valid_candidate_urls = []
@@ -738,10 +744,10 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
         if u_clean and u_clean not in valid_candidate_urls:
             valid_candidate_urls.append(u_clean)
 
-    # Fetch details concurrently using ThreadPoolExecutor (throttled to 2 workers to prevent memory spikes)
+    # Fetch details concurrently using ThreadPoolExecutor (4 workers for fast non-blocking I/O)
     extracted_jobs = []
     if valid_candidate_urls:
-        max_workers = min(2, len(valid_candidate_urls))
+        max_workers = min(4, len(valid_candidate_urls))
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_url = {executor.submit(extract_jobdexo_detail, u): u for u in valid_candidate_urls}
             for future in as_completed(future_to_url):
@@ -760,7 +766,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
                 continue
 
             job_posted_date = job_data.get('posted_date', now.date())
-            job_deadline = timezone.now() + timedelta(days=7)
+            job_deadline = timezone.now() + timedelta(days=30)
             job_category = classify_opportunity_category(job_data, cat_map)
 
             # Create standard verified job posting
@@ -796,7 +802,7 @@ def auto_import_from_jobdexo(urls=None, limit=10, group_name=None):
             })
             created_job_instances.append(job)
 
-            if len(created_jobs) >= limit:
+            if limit and limit > 0 and len(created_jobs) >= limit:
                 break
 
         except Exception:

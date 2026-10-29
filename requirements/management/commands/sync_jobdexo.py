@@ -6,13 +6,14 @@ class Command(BaseCommand):
     help = 'Automatically fetch and sync fresh verified job opportunities from Jobdexo into Kashii Updatez.'
 
     def add_arguments(self, parser):
-        parser.add_argument('--count', type=int, default=5, help='Number of latest jobs to fetch from Jobdexo (default: 5)')
+        parser.add_argument('--count', type=int, default=25, help='Number of latest jobs to fetch from Jobdexo (default: 25, 0 for all)')
+        parser.add_argument('--all', action='store_true', help='Fetch all available fresh opportunities across all discovery pages')
         parser.add_argument('--group-name', type=str, default='', help='Optional custom name for the created requirement group')
         parser.add_argument('--urls', nargs='+', type=str, default=[], help='Specific Jobdexo URLs to import')
         parser.add_argument('--resolve-all', action='store_true', help='Resolve all legacy apply URLs (can be slow)')
 
     def handle(self, *args, **options):
-        count = options['count']
+        count = 0 if options.get('all') else options['count']
         custom_name = options['group_name']
         urls = options['urls']
         resolve_all = options.get('resolve_all', False)
@@ -23,7 +24,8 @@ class Command(BaseCommand):
             resolved_companies = resolve_all_jobdexo_company_names()
             self.stdout.write(self.style.SUCCESS(f"✅ Resolved {resolved['updated']} legacy apply links & {resolved_companies['updated']} company names!"))
 
-        self.stdout.write(self.style.NOTICE(f"🚀 Starting Jobdexo Sync (fetching up to {count} latest jobs)..."))
+        limit_desc = "all available" if count == 0 else f"up to {count}"
+        self.stdout.write(self.style.NOTICE(f"🚀 Starting Jobdexo Sync (fetching {limit_desc} latest jobs)..."))
 
         result = auto_import_from_jobdexo(
             urls=urls if urls else None,

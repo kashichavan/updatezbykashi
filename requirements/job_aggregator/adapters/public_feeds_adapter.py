@@ -16,6 +16,7 @@ from ..normalizer import (
     classify_experience_tier,
     parse_job_timestamps
 )
+from requirements.skill_extractor import extract_technical_skills
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,12 @@ class PublicFeedsSourceAdapter(BaseJobSourceAdapter):
                 apply_url = item.get('url', '')
 
                 tags = item.get('tags', [])
-                skills_str = ", ".join(tags) if tags else f"{domain.capitalize()}, Problem Solving"
+                skills_str = extract_technical_skills(
+                    title=raw_title,
+                    raw_skills=", ".join(tags) if isinstance(tags, list) else str(tags),
+                    description=raw_desc,
+                    category_slug=domain.lower()
+                )
 
                 results.append({
                     'source_name': self.source_name,
