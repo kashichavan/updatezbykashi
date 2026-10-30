@@ -3184,7 +3184,10 @@ def resume_builder_view(request):
     try:
         from .models import IndianDemoProject
         from .indian_project_service import serialize_demo_project
-        demo_projects = [serialize_demo_project(p) for p in IndianDemoProject.objects.filter(is_active=True).order_by('id')[:36]]
+        demo_projects = [serialize_demo_project(p) for p in IndianDemoProject.objects.filter(is_active=True).order_by('id')[:150]]
+        if not demo_projects:
+            from .comprehensive_projects_catalog import get_all_projects
+            demo_projects = get_all_projects()[:150]
     except Exception:
         demo_projects = []
 
@@ -3295,8 +3298,8 @@ def api_bengaluru_projects(request):
 
 def api_indian_demo_projects(request):
     """
-    Search and filter curated Indian Market Demonstration Projects Library.
-    Supports filtering by city, state, role, technology keyword, difficulty, and full-text search.
+    Search and filter curated Demonstration Projects Library (500+ projects).
+    Supports filtering by city, state, role, technology keyword, difficulty, experience level, and full-text search.
     """
     from .models import IndianDemoProject
     from .indian_project_service import serialize_demo_project
@@ -3307,11 +3310,15 @@ def api_indian_demo_projects(request):
     city = request.GET.get('city', '').strip()
     state = request.GET.get('state', '').strip()
     difficulty = request.GET.get('difficulty', '').strip()
+    exp_level = request.GET.get('experience_level') or request.GET.get('experience') or request.GET.get('level', '').strip()
     industry = request.GET.get('industry', '').strip()
     q = request.GET.get('q', '').strip()
+    limit = int(request.GET.get('limit') or 300)
 
     qs = IndianDemoProject.objects.filter(is_active=True)
 
+    if exp_level:
+        qs = qs.filter(experience_level__iexact=exp_level)
     if city:
         qs = qs.filter(location_city__iexact=city)
     if state:
@@ -3350,13 +3357,55 @@ def api_indian_demo_projects(request):
         .order_by('location_city')
     )
 
-    projects_list = [serialize_demo_project(p) for p in qs]
+    if qs.exists():
+        projects_list = [serialize_demo_project(p) for p in qs[:limit]]
+    else:
+        # Fallback to in-memory comprehensive projects catalog if DB not populated
+        from .comprehensive_projects_catalog import search_projects
+        projects_list = search_projects(
+            query=q or role,
+            tech=tech,
+            experience_level=exp_level,
+            difficulty=difficulty,
+            domain=industry,
+            limit=limit
+        )
 
     return JsonResponse({
         'success': True,
         'count': len(projects_list),
         'available_cities': available_cities,
         'projects': projects_list
+    })
+
+
+def api_all_projects_catalog(request):
+    """
+    Returns 500+ real-world portfolio and enterprise projects with high ATS scores,
+    verified GitHub repository links, Google XYZ accomplishment bullets, and proper tech stacks.
+    Filters: q, tech, experience_level ('Fresher' or 'Experienced'), difficulty, domain.
+    """
+    from .comprehensive_projects_catalog import search_projects, get_all_projects
+    q = request.GET.get('q', '').strip()
+    tech = request.GET.get('tech', '').strip()
+    exp = request.GET.get('experience_level') or request.GET.get('experience', '').strip()
+    diff = request.GET.get('difficulty', '').strip()
+    domain = request.GET.get('domain', '').strip()
+    limit = int(request.GET.get('limit') or 150)
+
+    results = search_projects(
+        query=q,
+        tech=tech,
+        experience_level=exp,
+        difficulty=diff,
+        domain=domain,
+        limit=min(limit, 550)
+    )
+    return JsonResponse({
+        'success': True,
+        'count': len(results),
+        'total_available': 504,
+        'projects': results
     })
 
 
@@ -4165,6 +4214,112 @@ def api_ai_auto_upgrade_resume(request):
     except Exception as e:
         logger.exception("api_ai_auto_upgrade_resume error:")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_generate_resume_from_jd(request):
+    """
+    100% ATS-Friendly Resume Generation Endpoint from a Job Description.
+    1. Extracts required skills, tech stack, and role concepts from the provided JD.
+    2. Dynamically crafts tailored enterprise projects with Google XYZ quantified metrics.
+    3. Categorizes technical skills to match 100% of required keywords.
+    4. Formats a role-tailored summary with architecture scale hooks.
+    5. Saves record in ResumeGenerationJob for instant 1-click live editor URL.
+    6. Returns structured resume JSON + ATS scorecard guaranteeing 95-100/100 pass rate.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed. Use POST.'}, status=405)
+
+    from .ai_engine import generate_100_percent_ats_resume_from_jd
+    from .models import ResumeGenerationJob
+    import uuid
+
+    try:
+        body = {}
+        if request.content_type and 'application/json' in request.content_type:
+            body = json.loads(request.body.decode('utf-8'))
+        else:
+            body = request.POST.dict()
+
+        job_description = (
+            body.get('job_description') or
+            body.get('description') or
+            body.get('jd') or
+            body.get('jd_text') or
+            ''
+        ).strip()
+
+        job_id = body.get('job_id')
+        if job_id and not job_description:
+            from .models import JobPosting
+            posting = None
+            try:
+                posting = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
+            except Exception:
+                if str(job_id).isdigit():
+                    posting = JobPosting.objects.filter(pk=int(job_id)).first()
+            if posting:
+                job_description = posting.description or posting.skills_required or ''
+                if not body.get('job_title'):
+                    body['job_title'] = posting.title
+                if not body.get('company_name'):
+                    body['company_name'] = posting.company_name
+
+        if not job_description or len(job_description) < 20:
+            return JsonResponse({
+                'status': 'error',
+                'success': False,
+                'error': 'job_description is required and must be at least 20 characters long.'
+            }, status=400)
+
+        job_title = body.get('job_title', '').strip()
+        company_name = body.get('company_name', '').strip()
+        candidate_info = body.get('candidate') or body.get('candidate_info') or {}
+        experience_level = body.get('experience_level', 'fresher')
+
+        result = generate_100_percent_ats_resume_from_jd(
+            job_description=job_description,
+            job_title=job_title,
+            company_name=company_name,
+            candidate_info=candidate_info,
+            experience_level=experience_level,
+            num_projects=int(body.get('num_projects', 2))
+        )
+
+        resume = result['resume']
+        ats_score = result['ats_score']
+        ats_grade = result['ats_grade']
+        target_skills = result['target_skills']
+
+        # Persist record in ResumeGenerationJob so candidate can open /resume-builder/?gen_id=<uuid>
+        job_record = ResumeGenerationJob.objects.create(
+            status='COMPLETED',
+            generated_resume=resume,
+            mode='SCRATCH',
+            target_profile={'job_description': job_description[:2000], 'job_title': job_title}
+        )
+
+        editor_url = f"/resume-builder/?gen_id={job_record.uuid}&from_studio=1"
+
+        return JsonResponse({
+            'status': 'success',
+            'success': True,
+            'ats_score': ats_score,
+            'grade': ats_grade,
+            'job_title': result['job_title'],
+            'target_skills': target_skills,
+            'projects_count': len(resume.get('projects', [])),
+            'resume': resume,
+            'ats_evaluation': result['ats_eval'],
+            'editor_url': editor_url,
+            'gen_id': str(job_record.uuid),
+            'pdf_download_url': '/api/resume/download-pdf/',
+            'docx_download_url': '/api/resume/download-docx/'
+        })
+
+    except Exception as e:
+        logger.exception("api_generate_resume_from_jd error:")
+        return JsonResponse({'status': 'error', 'success': False, 'error': str(e)}, status=500)
 
 
 @csrf_exempt

@@ -37,6 +37,8 @@ urlpatterns = [
     path('api/resume/bengaluru-projects/', views.api_bengaluru_projects, name='api_bengaluru_projects'),
     path('api/projects/indian-demo/', views.api_indian_demo_projects, name='api_indian_demo_projects'),
     path('api/projects/indian-demo/match/', views.api_match_indian_projects_for_job, name='api_match_indian_projects_for_job'),
+    path('api/projects/catalog/', views.api_all_projects_catalog, name='api_all_projects_catalog'),
+    path('api/projects/500-library/', views.api_all_projects_catalog, name='api_500_projects_library'),
     path('api/resume/attach-indian-project/', views.api_resume_attach_indian_project, name='api_resume_attach_indian_project'),
     path('api/resume/upload/', views.api_resume_upload, name='api_resume_upload'),
     
@@ -68,6 +70,8 @@ urlpatterns = [
     path('api/ai/generate-summary/', views.api_ai_generate_summary, name='api_ai_generate_summary'),
     path('api/ai/github-project/', views.api_ai_github_project, name='api_ai_github_project'),
     path('api/ai/auto-upgrade-resume/', views.api_ai_auto_upgrade_resume, name='api_ai_auto_upgrade_resume'),
+    path('api/resume/from-job-description/', views.api_generate_resume_from_jd, name='api_generate_resume_from_jd'),
+    path('api/ai/resume-from-jd/', views.api_generate_resume_from_jd, name='api_ai_resume_from_jd'),
     path('api/jobs/<uuid:job_uuid>/recruiter-intel/', views.api_recruiter_intel, name='api_recruiter_intel'),
 
     # Mandatory Legal & Compliance Pages (AdSense Policy Requirements)

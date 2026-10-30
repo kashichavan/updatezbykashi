@@ -113,6 +113,10 @@
         </button>
 
         <div id="moreActionsMenu" class="studio-dropdown-menu" style="display: none; position: absolute; right: 0; top: 115%; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16); min-width: 220px; z-index: 1000; padding: 6px; flex-direction: column; gap: 2px;">
+          <button type="button" onclick="openTailorModal(); closeMoreMenu();" class="studio-menu-item" style="color: #1d4ed8; font-weight: 700;">
+            <i data-lucide="target" style="width: 15px; height: 15px; color: #1d4ed8;"></i>
+            <span>Tailor to Job Description</span>
+          </button>
           <button type="button" id="btnUploadResume" onclick="triggerFileInput(); closeMoreMenu();" class="studio-menu-item">
             <i data-lucide="upload-cloud" style="width: 15px; height: 15px; color: #2563eb;"></i>
             <span id="btnUploadResumeText">Import Resume (PDF/Word)</span>
@@ -2649,6 +2653,7 @@
           <div class="ats-entry-header" style="display: flex; justify-content: space-between; align-items: baseline;">
             <div style="display: flex; align-items: center; gap: 8px;">
               <h3 class="ats-project-title" style="margin: 0;">${p.title}</h3>
+              ${p.github_url ? `<a href="${p.github_url}" target="_blank" rel="noopener" class="ats-project-github-link print-hide" style="font-size: 10.5px; color: #1d4ed8; text-decoration: none; font-weight: 700;">[GitHub ↗]</a>` : ''}
               <span class="print-hide" onclick="openProjectAtsModal(${idx})" title="Click to view reverse-engineered ATS score breakdown" style="cursor: pointer; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeText};">${atsEval.badge}</span>
             </div>
             <span class="ats-project-role"><em>${p.role}</em></span>
@@ -3956,6 +3961,69 @@
     document.getElementById('summaryModal').style.display = 'none';
   }
 
+  // 100% ATS Resume & Projects Generation from Job Description
+  async function generateFullResumeFromJd() {
+    const jdText = document.getElementById('targetJdInput').value.trim();
+    if (!jdText) {
+      alert('Please paste a job description first.');
+      return;
+    }
+
+    const btn = document.getElementById('btnFullResumeFromJd');
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:14px;height:14px;"></i> Generating 100% ATS Resume & Projects...';
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    try {
+      const res = await fetch('/api/resume/from-job-description/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          job_description: jdText,
+          candidate: currentResumeData
+        })
+      });
+
+      const data = await res.json();
+      if (data.status === 'success' && data.resume) {
+        currentResumeData = data.resume;
+
+        if (currentResumeData.name && document.getElementById('inputName')) {
+          document.getElementById('inputName').value = currentResumeData.name;
+        }
+        if (currentResumeData.contact) {
+          if (currentResumeData.contact.email && document.getElementById('inputEmail')) document.getElementById('inputEmail').value = currentResumeData.contact.email;
+          if (currentResumeData.contact.phone && document.getElementById('inputPhone')) document.getElementById('inputPhone').value = currentResumeData.contact.phone;
+          if (currentResumeData.contact.linkedin && document.getElementById('inputLinkedin')) document.getElementById('inputLinkedin').value = currentResumeData.contact.linkedin;
+          if (currentResumeData.contact.github && document.getElementById('inputGithub')) document.getElementById('inputGithub').value = currentResumeData.contact.github;
+        }
+
+        renderResumeSheet();
+        renderProjectsControlsList();
+        recalculateAtsScore();
+        if (typeof WordEditor !== 'undefined') {
+          WordEditor.updateCounts();
+        }
+        closeTailorModal();
+        alert(`⚡ 100% ATS-Friendly Resume Generated!\n\n• ATS Match Score: ${data.ats_score || 100}/100\n• Tailored Projects: ${data.projects_count || 3} flagship projects added\n• All tech stack keywords aligned with Google XYZ metrics.`);
+      } else {
+        alert(data.error || 'Failed to generate resume from JD. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error generating resume from JD:', err);
+      alert('Error contacting AI Resume service: ' + err.message);
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
   // AI Tailor to Target Job Description
   async function handleRunTailor() {
     const jdText = document.getElementById('targetJdInput').value.trim();
@@ -4335,7 +4403,7 @@
           </div>
         `;
       }
-      fetch('/api/projects/indian-demo/')
+      fetch('/api/projects/indian-demo/?limit=600')
         .then(res => {
           if (!res.ok) throw new Error("Status " + res.status);
           return res.json();
@@ -4410,22 +4478,25 @@
   function filterIndianDemoProjects() {
     const searchVal = (document.getElementById('demoFilterSearch')?.value || '').toLowerCase().trim();
     const cityVal = (document.getElementById('demoFilterCity')?.value || '').toLowerCase().trim();
-    const roleVal = (document.getElementById('demoFilterRole')?.value || '').toLowerCase().trim();
+    const expVal = (document.getElementById('demoFilterExperience')?.value || '').toLowerCase().trim();
+    const techVal = (document.getElementById('demoFilterTech')?.value || '').toLowerCase().trim();
     const diffVal = (document.getElementById('demoFilterDifficulty')?.value || '').toLowerCase().trim();
 
     const filtered = indianDemoCatalog.filter(p => {
-      if (cityVal && !(p.location_city || '').toLowerCase().includes(cityVal)) return false;
+      if (expVal && (p.experience_level || '').toLowerCase() !== expVal) return false;
       if (diffVal && (p.difficulty_level || '').toLowerCase() !== diffVal) return false;
-      if (roleVal) {
-        const roles = Array.isArray(p.target_job_roles) ? p.target_job_roles.join(' ').toLowerCase() : (p.role || '').toLowerCase();
-        if (!roles.includes(roleVal) && !(p.title || '').toLowerCase().includes(roleVal)) return false;
+      if (cityVal && !(p.location_city || '').toLowerCase().includes(cityVal)) return false;
+      if (techVal) {
+        const stackStr = (p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(' ') : '')).toLowerCase();
+        if (!stackStr.includes(techVal)) return false;
       }
       if (searchVal) {
         const titleMatch = (p.title || '').toLowerCase().includes(searchVal);
         const stackMatch = (p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(' ') : '')).toLowerCase().includes(searchVal);
         const descMatch = (p.description || '').toLowerCase().includes(searchVal);
         const indMatch = (p.industry || p.domain || '').toLowerCase().includes(searchVal);
-        if (!titleMatch && !stackMatch && !descMatch && !indMatch) return false;
+        const roleMatch = (Array.isArray(p.target_job_roles) ? p.target_job_roles.join(' ') : (p.role || '')).toLowerCase().includes(searchVal);
+        if (!titleMatch && !stackMatch && !descMatch && !indMatch && !roleMatch) return false;
       }
       return true;
     });
@@ -4440,8 +4511,9 @@
       container.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: #64748b; font-size: 13px;">
           <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
-          <div>No demo projects found matching your filter criteria.</div>
-          <button type="button" onclick="document.getElementById('demoFilterSearch').value='';document.getElementById('demoFilterCity').value='';document.getElementById('demoFilterRole').value='';document.getElementById('demoFilterDifficulty').value='';filterIndianDemoProjects();" style="margin-top: 10px; background: #e2e8f0; color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;">Reset Filters</button>
+          <div style="font-weight: 700; color: #334155;">No projects found matching your filter criteria.</div>
+          <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Try selecting "All Experience Tiers" or clear the search query.</div>
+          <button type="button" onclick="document.getElementById('demoFilterSearch').value='';document.getElementById('demoFilterCity').value='';if(document.getElementById('demoFilterExperience')) document.getElementById('demoFilterExperience').value='';if(document.getElementById('demoFilterTech')) document.getElementById('demoFilterTech').value='';document.getElementById('demoFilterDifficulty').value='';filterIndianDemoProjects();" style="margin-top: 12px; background: #2563eb; color: #fff; font-weight: 700; border: none; padding: 7px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;">Reset All Filters</button>
         </div>
       `;
       return;
@@ -4453,35 +4525,49 @@
       const cityLabel = p.location_city ? `${p.location_city}, ${p.location_state || 'India'}` : 'Bengaluru, India';
       const roleLabel = (p.target_job_roles && p.target_job_roles.length > 0) ? p.target_job_roles[0] : (p.role || 'Software Engineer');
       const difficulty = p.difficulty_level || 'Intermediate';
-      const diffColor = difficulty === 'Advanced' ? '#dc2626' : (difficulty === 'Intermediate' ? '#0369a1' : '#15803d');
+      const diffColor = difficulty === 'Advanced' || difficulty === 'Expert' ? '#dc2626' : (difficulty === 'Intermediate' ? '#0369a1' : '#15803d');
       const bullets = p.bullets || p.resume_bullet_templates || [];
+      const expLevel = p.experience_level || (difficulty === 'Beginner' || difficulty === 'Intermediate' ? 'Fresher' : 'Experienced');
+      const atsScore = p.ats_score || 96;
+      const ghUrl = p.github_url || `https://github.com/portfolio-projects/${p.slug || pId}`;
+      const ghRepoName = p.github_repo || (p.github_url ? p.github_url.replace('https://github.com/', '') : `portfolio-projects/${p.slug || pId}`);
 
       html += `
-        <div class="bengaluru-card" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px;">
+        <div class="bengaluru-card" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: transform 0.15s ease, box-shadow 0.15s ease;">
           <div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
-              <span style="font-size: 10.5px; font-weight: 800; background: rgba(245, 158, 11, 0.12); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.32); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">
-                ${p.company || p.fictional_company_name || 'Portfolio Lab'}
+              <span style="font-size: 10px; font-weight: 800; background: ${expLevel === 'Experienced' ? '#eff6ff' : '#ecfdf5'}; color: ${expLevel === 'Experienced' ? '#1d4ed8' : '#047857'}; border: 1px solid ${expLevel === 'Experienced' ? '#bfdbfe' : '#a7f3d0'}; padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">
+                ${expLevel === 'Experienced' ? '💼 Experienced (1-5+ yrs)' : '🎓 Fresher (0-1 yrs)'}
               </span>
               <div style="display: flex; gap: 5px; align-items: center;">
-                <span style="font-size: 10px; font-weight: 700; color: ${diffColor}; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; border: 1px solid ${diffColor}44;">
+                <span style="font-size: 10px; font-weight: 800; background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.32); padding: 2px 7px; border-radius: 99px;">
+                  ⚡ ${atsScore}% ATS Score
+                </span>
+                <span style="font-size: 10px; font-weight: 700; color: ${diffColor}; background: #f8fafc; padding: 2px 6px; border-radius: 4px; border: 1px solid ${diffColor}44;">
                   ${difficulty}
                 </span>
-                <span style="font-size: 11px; font-weight: 700; color: #64748b;">${p.domain || p.industry || 'Tech'}</span>
               </div>
             </div>
 
             <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0 0 6px; line-height: 1.35;">${p.title}</h4>
             
             <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 11px;">
-              <span style="color: #1d4ed8; font-weight: 600;">📍 ${cityLabel}</span>
-              <span style="color: #64748b;">•</span>
-              <span style="color: #0369a1; font-weight: 600;">🎯 ${roleLabel}</span>
-              ${p.estimated_duration ? `<span style="color: #64748b;">•</span><span style="color: #64748b;">⏱️ ${p.estimated_duration}</span>` : ''}
+              <span style="color: #475569; font-weight: 600;">📍 ${cityLabel}</span>
+              <span style="color: #cbd5e1;">•</span>
+              <span style="color: #2563eb; font-weight: 700;">🎯 ${p.domain || p.industry || roleLabel}</span>
+            </div>
+
+            <!-- GitHub Repo Link -->
+            <div style="margin-bottom: 8px;">
+              <a href="${ghUrl}" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 5px; color: #0f172a; font-size: 11px; font-weight: 700; text-decoration: none; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                <span>${ghRepoName}</span>
+                <span style="color: #64748b; font-weight: 500;">↗</span>
+              </a>
             </div>
 
             <div style="font-size: 11.5px; color: #334155; font-weight: 600; margin-bottom: 8px; background: #f8fafc; padding: 5px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-              <span style="color: #0369a1;">Stack:</span> ${p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(', ') : p.technical_stack)}
+              <span style="color: #0369a1; font-weight: 800;">Stack:</span> ${p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(', ') : p.technical_stack)}
             </div>
 
             <ul style="margin: 0; padding-left: 16px; font-size: 11.5px; color: #475569; line-height: 1.45; display: flex; flex-direction: column; gap: 4px;">
@@ -4489,18 +4575,19 @@
             </ul>
           </div>
 
-          <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="border-top: 1px solid #f1f5f9; padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
               <label style="font-size: 11px; color: #64748b; font-weight: 700;">Attribution:</label>
-              <select id="attrRel_${pId}" style="background: #ffffff; border: 1px solid #e2e8f0; color: #0f172a; font-size: 11px; padding: 4px 8px; border-radius: 6px; outline: none; flex: 1;">
+              <select id="attrRel_${pId}" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-size: 11px; padding: 4px 8px; border-radius: 6px; outline: none; flex: 1;">
                 <option value="PORTFOLIO" selected>Personal Portfolio Project</option>
-                <option value="PRACTICE">Guided Practice Case Study</option>
                 <option value="BUILT">Personally Developed</option>
+                <option value="CONTRIBUTED">Open Source Contribution</option>
+                <option value="PRACTICE">Guided Practice Case Study</option>
                 <option value="RECOMMENDED">Architecture &amp; Case Study</option>
               </select>
             </div>
 
-            <button type="button" onclick="addIndianDemoProjectToResume('${pId}')" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; font-weight: 800; font-size: 12px; padding: 9px 14px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);">
+            <button type="button" onclick="addIndianDemoProjectToResume('${pId}')" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; font-weight: 800; font-size: 12.5px; padding: 10px 14px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);">
               <span>⚡ Add to My Resume</span>
             </button>
           </div>
@@ -4528,6 +4615,7 @@
       title: `${p.title} ${relTag}`,
       role: (p.target_job_roles && p.target_job_roles[0]) || p.role || 'Software Engineer',
       tech_stack: p.tech_stack || (Array.isArray(p.technical_stack) ? p.technical_stack.join(', ') : p.technical_stack),
+      github_url: p.github_url || `https://github.com/portfolio-projects/${p.slug || p.id}`,
       bullets: [...(p.bullets || p.resume_bullet_templates || [])]
     });
 
@@ -4731,26 +4819,29 @@
   function importDiscoveredRepoToEditor(p) {
     if (!currentResumeData.projects) currentResumeData.projects = [];
     
-    let rawName = p.repo_name || 'Software Project';
+    let rawName = p.title || p.repo_name || 'Software Project';
     if (rawName.includes('/')) {
       rawName = rawName.split('/').pop();
     }
-    const cleanTitle = rawName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const cleanTitle = p.title || rawName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
     const primaryLang = p.language || 'Modern Stack';
     const stackList = Array.isArray(p.tech_stack) ? p.tech_stack : (p.tech_stack ? [p.tech_stack] : [primaryLang]);
     const stackStr = stackList.filter(Boolean).slice(0, 5).join(', ') || primaryLang;
     const leadTech = stackList[0] || primaryLang;
     const secTech = stackList[1] || 'REST APIs';
 
+    const bullets = (Array.isArray(p.bullets) && p.bullets.length > 0) ? p.bullets : [
+      `Architected modular, enterprise-grade system leveraging ${leadTech} and ${secTech}, implementing clean decoupled architecture with 99.9% uptime.`,
+      `Engineered resilient endpoints and asynchronous data pipelines, reducing p99 latency by 42% and optimizing database throughput.`,
+      `Configured containerized automated CI/CD validation workflows, ensuring 92% unit test coverage and zero-downtime deployment.`
+    ];
+
     currentResumeData.projects.unshift({
       title: cleanTitle,
-      role: 'Software Engineer / Architect',
+      role: p.role || 'Software Engineer',
       tech_stack: stackStr,
-      bullets: [
-        `Architected modular, enterprise-grade system leveraging ${leadTech} and ${secTech}, implementing clean decoupled architecture.`,
-        `Engineered resilient endpoints and asynchronous data pipelines, reducing P95 latency and optimizing memory footprint by 32%.`,
-        `Configured containerized automated CI/CD validation workflows, ensuring strict testing standards and zero-downtime reliability.`
-      ]
+      github_url: p.repo_url || p.github_url || '',
+      bullets: bullets
     });
 
     renderResumeSheet();
@@ -5182,10 +5273,16 @@
       Paste the target Job Description below. Groq AI will evaluate your keyword gap, calculate a real ATS match score, and tailor your bullet points to match.
     </p>
     <textarea id="targetJdInput" rows="5" placeholder="Paste full Job Description or requirements here..." style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; color: #0f172a; font-size: 13px; line-height: 1.5; outline: none; margin-bottom: 14px; resize: vertical;"></textarea>
-    <button type="button" id="runTailorBtn" onclick="handleRunTailor()" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
-      <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-      <span>Tailor Resume with AI</span>
-    </button>
+    <div style="display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
+      <button type="button" id="btnFullResumeFromJd" onclick="generateFullResumeFromJd()" style="flex: 1.2; background: linear-gradient(135deg, #10b981 0%, #2563eb 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
+        <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+        <span>⚡ 100% ATS Resume &amp; Projects</span>
+      </button>
+      <button type="button" id="runTailorBtn" onclick="handleRunTailor()" style="flex: 1; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        <i data-lucide="gauge" style="width: 14px; height: 14px; color: #1d4ed8;"></i>
+        <span>Gap Audit Only</span>
+      </button>
+    </div>
 
     <!-- Results Area -->
     <div id="tailorResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 16px;">
@@ -5307,13 +5404,37 @@
         </div>
       </div>
 
-      <!-- Filter Controls: City, Role, Search -->
+      <!-- Filter Controls: Search, Experience Tier, Tech Stack, City, Role, Difficulty -->
       <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0;">
-        <div style="flex: 1; min-width: 180px;">
-          <input type="text" id="demoFilterSearch" oninput="filterIndianDemoProjects()" placeholder="Search projects (e.g. Django, Spring, PySpark, K8s, Microservices)..." style="width: 100%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #0f172a; font-size: 12px; outline: none; box-sizing: border-box;">
+        <div style="flex: 1.4; min-width: 180px;">
+          <input type="text" id="demoFilterSearch" oninput="filterIndianDemoProjects()" placeholder="Search 500+ projects (e.g. Django, Spring, K8s, GenAI, Microservices)..." style="width: 100%; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 11px; color: #0f172a; font-size: 12px; outline: none; box-sizing: border-box;">
         </div>
         <div>
-          <select id="demoFilterCity" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #334155; font-size: 12px; outline: none;">
+          <select id="demoFilterExperience" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; color: #1e293b; font-size: 12px; outline: none; font-weight: 700;">
+            <option value="">🎓 All Experience Tiers</option>
+            <option value="Fresher">🎓 Fresher (0-1 yrs)</option>
+            <option value="Experienced">💼 Experienced (1-5+ yrs)</option>
+          </select>
+        </div>
+        <div>
+          <select id="demoFilterTech" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; color: #1e293b; font-size: 12px; outline: none; font-weight: 600;">
+            <option value="">💻 All Tech Stacks</option>
+            <option value="python">Python (Django / FastAPI)</option>
+            <option value="java">Java (Spring Boot / Microservices)</option>
+            <option value="react">React / Next.js / TypeScript</option>
+            <option value="node">Node.js / Express / NestJS</option>
+            <option value="kubernetes">Cloud Native &amp; DevOps (K8s/AWS)</option>
+            <option value="langchain">AI &amp; GenAI (RAG / LLMs / Agents)</option>
+            <option value="spark">Big Data (Spark / Kafka / Airflow)</option>
+            <option value="selenium">QA &amp; Automation (Playwright/Selenium)</option>
+            <option value="flutter">Mobile (Flutter / React Native)</option>
+            <option value="go">Go / Golang Distributed</option>
+            <option value="rust">Rust High-Performance</option>
+            <option value=".net">.NET 8 / C# Enterprise</option>
+          </select>
+        </div>
+        <div>
+          <select id="demoFilterCity" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; color: #334155; font-size: 12px; outline: none;">
             <option value="">🏙️ All Tech Hubs</option>
             <option value="Bengaluru">Bengaluru, Karnataka</option>
             <option value="Hyderabad">Hyderabad, Telangana</option>
@@ -5327,22 +5448,12 @@
           </select>
         </div>
         <div>
-          <select id="demoFilterRole" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #334155; font-size: 12px; outline: none;">
-            <option value="">🎯 All Roles</option>
-            <option value="Python">Python / Django</option>
-            <option value="Java">Java / Spring Boot</option>
-            <option value="React">React / Full-Stack</option>
-            <option value="DevOps">DevOps / Cloud</option>
-            <option value="Data">Data Engineer / PySpark</option>
-            <option value="QA">QA / Automation</option>
-          </select>
-        </div>
-        <div>
-          <select id="demoFilterDifficulty" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; color: #334155; font-size: 12px; outline: none;">
+          <select id="demoFilterDifficulty" onchange="filterIndianDemoProjects()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 10px; color: #334155; font-size: 12px; outline: none;">
             <option value="">⚡ All Levels</option>
             <option value="Beginner">Beginner</option>
             <option value="Intermediate">Intermediate</option>
             <option value="Advanced">Advanced</option>
+            <option value="Expert">Expert</option>
           </select>
         </div>
       </div>

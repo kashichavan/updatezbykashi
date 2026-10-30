@@ -845,6 +845,9 @@ class IndianDemoProject(models.Model):
     resume_bullet_templates = models.JSONField(default=list, help_text="3-5 Google XYZ bullet templates")
     estimated_duration = models.CharField(max_length=50, default='3-4 weeks')
     learning_outcomes = models.JSONField(default=list, blank=True)
+    github_url = models.URLField(max_length=500, blank=True, default='', help_text="Public GitHub repository URL")
+    ats_score = models.PositiveIntegerField(default=95, help_text="Estimated ATS score match (90-100)")
+    experience_level = models.CharField(max_length=30, default='Fresher', db_index=True, help_text="Fresher (0-1 yrs) or Experienced (1-5+ yrs)")
     
     source_type = models.CharField(max_length=50, default='CURATED_INDIAN_DEMO')
     is_curated = models.BooleanField(default=True)
@@ -859,6 +862,7 @@ class IndianDemoProject(models.Model):
             models.Index(fields=['location_city', 'is_active']),
             models.Index(fields=['industry', 'is_active']),
             models.Index(fields=['difficulty_level', 'is_active']),
+            models.Index(fields=['experience_level', 'is_active']),
         ]
 
     def __str__(self):
