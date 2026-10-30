@@ -387,10 +387,25 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
                 bullets = sanitize_project_bullets(proj_data.get('bullets', []), dp)
             except Exception:
                 bullets = []
+            if (not bullets or len(bullets) < 2) and dp.candidate_relationship in ('BUILT', 'PORTFOLIO'):
+                try:
+                    from .ai_engine import generate_project_ats_bullets
+                    clean_name = (dp.repo_name or '').split('/')[-1].replace('-', ' ').replace('_', ' ').strip().title()
+                    stack_str = ', '.join(dp.tech_stack) if isinstance(dp.tech_stack, list) else (dp.tech_stack or dp.language or 'Python, REST APIs, Docker')
+                    gen_res = generate_project_ats_bullets(
+                        title=clean_name,
+                        tech_stack=stack_str,
+                        role='Creator',
+                        description=dp.description or f"{clean_name} built with {stack_str}",
+                        target_skills=target_skills_list
+                    )
+                    if gen_res and gen_res.get('bullets'):
+                        bullets = gen_res['bullets']
+                except Exception as ex:
+                    logger.warning(f"Fallback to repo metadata for {dp.repo_name}: {ex}")
+
             if not bullets:
-                # Describe only what the repository metadata actually supports.
-                # The previous fallback asserted latency wins, test coverage and
-                # a CI/CD pipeline that nobody had verified.
+                # Describe what the repository metadata actually supports.
                 desc_line = (dp.description or '').strip().split('. ')[0].strip().rstrip('.')
                 if desc_line:
                     bullets.append(desc_line + '.')

@@ -3041,6 +3041,79 @@ def resume_studio_view(request, job_uuid=None):
     return render(request, 'content/resume_studio.html', context)
 
 
+def resume_analysis_view(request):
+    """
+    AI Resume Analysis & ATS Score Checker — /ai-resume-analysis/ & /resume-checker/
+    Inspired by Jobsuit AI's interactive resume score checker:
+    Provides instant 0-100 ATS evaluation, section breakdown, keyword gap audit,
+    Before vs After metrics comparison, and 1-click AI project enhancements.
+    """
+    target_roles = [
+        {
+            'id': 'python-backend',
+            'title': 'Python & Django Backend Engineer',
+            'badge': 'Python / Django / Redis',
+            'skills': 'Python, Django, FastAPI, PostgreSQL, Redis, Docker, Celery',
+        },
+        {
+            'id': 'full-stack',
+            'title': 'Full-Stack Software Engineer',
+            'badge': 'React / Next.js / Node',
+            'skills': 'React, Next.js, Node.js, TypeScript, PostgreSQL, Docker',
+        },
+        {
+            'id': 'java-developer',
+            'title': 'Java & Spring Boot Engineer',
+            'badge': 'Java / Spring / Microservices',
+            'skills': 'Java, Spring Boot, Microservices, MySQL, Kafka, Docker',
+        },
+        {
+            'id': 'data-engineer',
+            'title': 'Data Engineer / PySpark Specialist',
+            'badge': 'PySpark / Kafka / SQL',
+            'skills': 'Python, PySpark, SQL, Apache Kafka, Airflow, AWS S3',
+        },
+        {
+            'id': 'devops-cloud',
+            'title': 'DevOps & Cloud Engineer',
+            'badge': 'Docker / K8s / AWS',
+            'skills': 'Docker, Kubernetes, AWS, Terraform, CI/CD, Linux',
+        },
+        {
+            'id': 'qa-automation',
+            'title': 'QA Automation & SDET',
+            'badge': 'Selenium / Pytest / CI',
+            'skills': 'Selenium, Cypress, Python, Pytest, Postman, CI/CD',
+        },
+    ]
+
+    action_verbs_categories = [
+        {
+            'category': 'Architecture & Systems Design',
+            'verbs': ['Architected', 'Designed', 'Engineered', 'Orchestrated', 'Spearheaded', 'Structured', 'Pioneered', 'Formulated']
+        },
+        {
+            'category': 'Building & Implementation',
+            'verbs': ['Developed', 'Built', 'Implemented', 'Deployed', 'Automated', 'Integrated', 'Constructed', 'Delivered']
+        },
+        {
+            'category': 'Optimization & High Concurrency',
+            'verbs': ['Optimized', 'Scaled', 'Slashing', 'Accelerated', 'Refactored', 'Enhanced', 'Boosted', 'Streamlined']
+        },
+        {
+            'category': 'Reliability & Security Hardening',
+            'verbs': ['Hardened', 'Resolved', 'Enforced', 'Audited', 'Mitigated', 'Standardized', 'Secured', 'Debugged']
+        }
+    ]
+
+    return render(request, 'content/resume_analysis.html', {
+        'target_roles': target_roles,
+        'action_verbs_categories': action_verbs_categories,
+        'page_title': '⚡ Free AI Resume Checker & ATS Score Analysis — Kashii Updatez',
+        'meta_description': 'Check your resume score in seconds with Kashii AI. Get instant ATS feedback, keyword gap analysis, section-by-section scoring, Google XYZ action verbs, and 1-click AI project upgrades.',
+    })
+
+
 def resume_builder_view(request):
     """
     ATS 90+ Score Resume Generator with Enterprise Projects & Role-Specific Tailoring.
@@ -3475,12 +3548,12 @@ def api_ai_github_project(request):
             repo_url=f"https://github.com/{owner}/{repo_name}",
         )
         bullets = sanitize_project_bullets(project_data.get('bullets', []), source)
-        if not bullets or len(bullets) < 2:
+        if (not bullets or len(bullets) < 2) and relationship in ('BUILT', 'PORTFOLIO'):
             from .ai_engine import generate_project_ats_bullets
             gen_res = generate_project_ats_bullets(
                 title=project_data.get('title') or repo_name,
                 tech_stack=project_data.get('tech_stack') or primary_lang or 'Python, REST APIs, Docker',
-                role='Creator' if relationship in ('BUILT', 'PORTFOLIO') else 'Software Engineer',
+                role='Creator',
                 description=description
             )
             bullets = gen_res.get('bullets', [])
@@ -3786,6 +3859,11 @@ def api_ai_polish_bullet(request):
             role=body.get('role', ''),
             tech_stack=body.get('tech_stack', ''),
         )
+        if isinstance(data, dict):
+            from .resume_generation_service import sanitize_rewrite
+            for key in ('polished', 'alternative_1', 'alternative_2', 'metric_highlight'):
+                if key in data:
+                    data[key] = sanitize_rewrite(data.get(key), bullet) or ''
         polished = data.get('polished', '')
         alts = [b for b in (data.get('alternative_1'), data.get('alternative_2')) if b]
         bullets_list = data.get('bullets', ([polished] if polished else []))
@@ -3989,40 +4067,74 @@ def api_ai_alter_resume(request):
 @csrf_exempt
 def api_resume_upload(request):
     """
-    Upload and parse PDF / Word (.docx) resume.
+    Upload and parse PDF / Word (.docx) resume or raw resume text.
     Returns structured resume data + reverse-engineered ATS score breakdown.
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-    resume_file = request.FILES.get('resume_file') or request.FILES.get('file')
-    if not resume_file:
-        return JsonResponse({'success': False, 'error': 'No resume file uploaded.'}, status=400)
-
-    # Check file size (max 8MB)
-    if resume_file.size > 8 * 1024 * 1024:
-        return JsonResponse({'success': False, 'error': 'File size exceeds 8MB limit.'}, status=400)
-
     from .resume_parser import extract_text_from_file_bytes, parse_resume_into_structured_json, evaluate_uploaded_resume_ats
 
-    try:
-        file_bytes = resume_file.read()
-        raw_text = extract_text_from_file_bytes(file_bytes, resume_file.name)
-        if not raw_text or len(raw_text.strip()) < 30:
-            return JsonResponse({
-                'success': False,
-                'error': 'Could not extract readable text from document. Please ensure it is a text-based PDF or Word document.'
-            }, status=400)
+    resume_file = request.FILES.get('resume_file') or request.FILES.get('file')
+    filename = 'resume.pdf'
+    file_size = 0
+    raw_text = ''
 
+    if resume_file:
+        # Check file size (max 8MB)
+        if resume_file.size > 8 * 1024 * 1024:
+            return JsonResponse({'success': False, 'error': 'File size exceeds 8MB limit.'}, status=400)
+        filename = resume_file.name
+        file_size = resume_file.size
+        try:
+            file_bytes = resume_file.read()
+            raw_text = extract_text_from_file_bytes(file_bytes, resume_file.name)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Could not read file: {str(e)}'}, status=400)
+    else:
+        # Check for pasted text in POST or JSON body
+        if request.content_type == 'application/json':
+            try:
+                body = json.loads(request.body.decode('utf-8'))
+                raw_text = body.get('raw_text', '') or body.get('text', '') or body.get('resume_text', '')
+            except Exception:
+                pass
+        if not raw_text:
+            raw_text = request.POST.get('raw_text', '') or request.POST.get('text', '') or request.POST.get('resume_text', '')
+        filename = 'pasted_resume.txt'
+        file_size = len(raw_text.encode('utf-8')) if raw_text else 0
+
+    if not raw_text or len(raw_text.strip()) < 30:
+        return JsonResponse({
+            'success': False,
+            'error': 'Please upload a PDF/Word resume or paste your resume text (at least 30 characters).'
+        }, status=400)
+
+    try:
         # Parse into structured resume
         parsed_resume = parse_resume_into_structured_json(raw_text)
 
         # Check for target job or target skills
         job_skills = request.POST.get('job_skills', '')
         job_id = request.POST.get('job_id', '')
+        target_role = request.POST.get('target_role', '')
+
+        if not job_skills and not job_id and not target_role and request.content_type == 'application/json':
+            try:
+                b = json.loads(request.body.decode('utf-8'))
+                job_skills = b.get('job_skills', '')
+                job_id = b.get('job_id', '')
+                target_role = b.get('target_role', '')
+            except Exception:
+                pass
+
         target_skills_list = []
         if job_skills:
             target_skills_list = [s.strip() for s in job_skills.split(',') if s.strip()]
+        elif target_role:
+            from .resume_engine import RESUME_ROLES
+            if target_role in RESUME_ROLES:
+                target_skills_list = RESUME_ROLES[target_role].get('target_ats_keywords', [])
         elif job_id:
             from .models import JobPosting
             import uuid
@@ -4070,8 +4182,8 @@ def api_resume_upload(request):
 
         return JsonResponse({
             'success': True,
-            'filename': resume_file.name,
-            'file_size': resume_file.size,
+            'filename': filename,
+            'file_size': file_size,
             'parsed_resume': parsed_resume,
             'ats_eval': ats_eval,
             'raw_text_length': len(raw_text)

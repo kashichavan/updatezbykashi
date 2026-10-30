@@ -1,0 +1,867 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block og_title %}⚡ Free AI Resume Checker & ATS Score Analysis — Kashii Updatez{% endblock %}
+{% block og_description %}Get instant 0-100 ATS resume scoring, keyword gap analysis, Google XYZ bullet recommendations, and 1-click AI project enhancements.{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --rs-blue: #2563eb;
+    --rs-blue-dark: #1d4ed8;
+    --rs-emerald: #10b981;
+    --rs-amber: #f59e0b;
+    --rs-rose: #ef4444;
+    --rs-slate-50: #f8fafc;
+    --rs-slate-100: #f1f5f9;
+    --rs-slate-200: #e2e8f0;
+    --rs-slate-700: #334155;
+    --rs-slate-900: #0f172a;
+  }
+
+  .analysis-hero {
+    padding: 56px 0 36px;
+    text-align: center;
+    position: relative;
+  }
+  .analysis-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    background: rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.22);
+    color: var(--rs-blue);
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .analysis-title {
+    font-size: clamp(28px, 4.5vw, 46px);
+    font-weight: 850;
+    color: var(--rs-slate-900);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    max-width: 820px;
+    margin: 0 auto 16px;
+  }
+  .analysis-title span.grad {
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .analysis-subtitle {
+    font-size: clamp(14px, 1.8vw, 17px);
+    color: #64748b;
+    max-width: 680px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+  }
+
+  /* Main Card */
+  .upload-card {
+    background: #ffffff;
+    border: 1px solid var(--rs-slate-200);
+    border-radius: 20px;
+    box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(15, 23, 42, 0.02);
+    padding: 28px;
+    max-width: 860px;
+    margin: 0 auto 40px;
+  }
+
+  /* Segmented tabs */
+  .segment-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    background: var(--rs-slate-100);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+  }
+  .segment-btn {
+    border: none;
+    background: transparent;
+    padding: 10px 16px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 750;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+  }
+  .segment-btn.active {
+    background: #ffffff;
+    color: var(--rs-blue);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  }
+
+  /* Dropzone */
+  .drop-zone {
+    border: 2px dashed rgba(37, 99, 235, 0.35);
+    background: rgba(37, 99, 235, 0.02);
+    border-radius: 14px;
+    padding: 38px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--rs-blue);
+    background: rgba(37, 99, 235, 0.06);
+    transform: translateY(-1px);
+  }
+  .drop-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--rs-blue);
+    display: inline-grid;
+    place-items: center;
+    margin-bottom: 12px;
+  }
+
+  /* Target Role Selectors */
+  .role-picker {
+    margin-top: 22px;
+  }
+  .role-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .role-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .role-pill {
+    background: var(--rs-slate-50);
+    border: 1px solid var(--rs-slate-200);
+    color: #334155;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .role-pill:hover, .role-pill.active {
+    background: #eff6ff;
+    border-color: var(--rs-blue);
+    color: var(--rs-blue);
+  }
+
+  /* Action Button */
+  .btn-analyze {
+    margin-top: 24px;
+    width: 100%;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 11px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    transition: all 0.2s ease;
+  }
+  .btn-analyze:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  }
+  .btn-analyze:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Results Section */
+  .results-container {
+    display: none;
+    animation: fadeIn 0.35s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Gauge Card */
+  .score-banner-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 20px;
+    padding: 32px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    flex-wrap: wrap;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+    margin-bottom: 28px;
+  }
+  .gauge-wrap {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    flex-shrink: 0;
+  }
+  .gauge-wrap svg {
+    transform: rotate(-90deg);
+  }
+  .gauge-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.12);
+    stroke-width: 10;
+  }
+  .gauge-meter {
+    fill: none;
+    stroke: #10b981;
+    stroke-width: 10;
+    stroke-linecap: round;
+    stroke-dasharray: 377;
+    stroke-dashoffset: 377;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
+  }
+  .gauge-center-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .gauge-score-num {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    font-family: var(--font-sans), sans-serif;
+  }
+  .gauge-score-denom {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 3px;
+  }
+
+  /* Before vs After Card (Jobsuit signature) */
+  .transform-card {
+    background: #ffffff;
+    border: 1px solid var(--rs-slate-200);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 28px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+  }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 14px;
+  }
+  @media (max-width: 768px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+  .compare-box {
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .compare-box.bad {
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+  }
+  .compare-box.good {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+  }
+  .compare-tag {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+  }
+  .compare-tag.bad {
+    background: #ffe4e6;
+    color: #be123c;
+  }
+  .compare-tag.good {
+    background: #dcfce7;
+    color: #15803d;
+  }
+
+  /* 4 Pillars */
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .pillar-card {
+    background: #ffffff;
+    border: 1px solid var(--rs-slate-200);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+  }
+  .pillar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .pillar-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--rs-slate-900);
+  }
+  .pillar-bar-bg {
+    height: 6px;
+    background: var(--rs-slate-100);
+    border-radius: 99px;
+    overflow: hidden;
+    margin: 8px 0;
+  }
+  .pillar-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--rs-blue);
+    transition: width 0.8s ease;
+  }
+
+  /* Projects Audit Section */
+  .project-audit-item {
+    background: var(--rs-slate-50);
+    border: 1px solid var(--rs-slate-200);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    transition: border-color 0.2s ease;
+  }
+  .project-audit-item:hover {
+    border-color: #cbd5e1;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap" style="max-width: 980px; margin: 0 auto; padding: 0 16px 60px;">
+
+  <!-- Hero Header -->
+  <section class="analysis-hero">
+    <div class="analysis-badge">
+      <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
+      <span>Instant AI Resume Score &amp; ATS Audit</span>
+    </div>
+    <h1 class="analysis-title">
+      Most resumes get rejected by ATS.<br>
+      <span class="grad">See where yours stands in seconds.</span>
+    </h1>
+    <p class="analysis-subtitle">
+      Check your resume score (0–100), spot missing keywords, eliminate weak unquantified bullets, and upgrade your project descriptions with Google XYZ action verbs.
+    </p>
+  </section>
+
+  <!-- Upload / Text Input Card -->
+  <div class="upload-card">
+    <div class="segment-tabs">
+      <button type="button" class="segment-btn active" id="tabUploadBtn" onclick="switchInputTab('file')">
+        <i data-lucide="file-up" style="width: 16px; height: 16px;"></i>
+        <span>Upload PDF or Word</span>
+      </button>
+      <button type="button" class="segment-btn" id="tabTextBtn" onclick="switchInputTab('text')">
+        <i data-lucide="align-left" style="width: 16px; height: 16px;"></i>
+        <span>Paste Resume Text</span>
+      </button>
+    </div>
+
+    <!-- Dropzone View -->
+    <div id="fileUploadContainer">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display: none;" onchange="handleFileSelected(this.files[0])">
+        <div class="drop-icon">
+          <i data-lucide="upload-cloud" style="width: 26px; height: 26px;"></i>
+        </div>
+        <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0 0 6px;">
+          Click to upload or drag &amp; drop your resume
+        </h3>
+        <p style="font-size: 12px; color: #64748b; margin: 0;">
+          Supports text-based PDF, DOCX (Word), or TXT up to 8MB. 100% private.
+        </p>
+        <div id="selectedFileName" style="display: none; margin-top: 12px; font-size: 12px; font-weight: 750; color: #2563eb; background: #eff6ff; padding: 6px 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px;">
+          <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
+          <span id="selectedFileNameText"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Text Paste View -->
+    <div id="textPasteContainer" style="display: none;">
+      <textarea id="rawResumeText" rows="9" placeholder="Paste your resume content here (summary, work experience, projects, skills, education)..." style="width: 100%; background: #ffffff; border: 1.5px solid var(--rs-slate-200); border-radius: 12px; padding: 14px; color: #0f172a; font-size: 13px; line-height: 1.55; box-sizing: border-box; resize: vertical; outline: none;"></textarea>
+    </div>
+
+    <!-- Target Role Preset Selector -->
+    <div class="role-picker">
+      <div class="role-label">
+        <span>Target Role (Optimizes ATS Keywords):</span>
+        <span style="font-size: 11px; color: #2563eb; cursor: pointer;" onclick="document.getElementById('customRoleInput').style.display = document.getElementById('customRoleInput').style.display === 'none' ? 'block' : 'none'">+ Custom Role</span>
+      </div>
+      <div class="role-pills" id="rolePillsContainer">
+        {% for r in target_roles %}
+          <button type="button" class="role-pill {% if forloop.first %}active{% endif %}" data-role-id="{{ r.id }}" onclick="selectTargetRole('{{ r.id }}')">
+            {{ r.title }}
+          </button>
+        {% endfor %}
+      </div>
+      <input type="text" id="customRoleInput" placeholder="Type custom role or target tech stack (e.g. Flutter, Golang, Kubernetes)..." style="display: none; width: 100%; margin-top: 10px; background: #ffffff; border: 1px solid var(--rs-slate-200); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; box-sizing: border-box; outline: none;">
+    </div>
+
+    <!-- Action Button -->
+    <button type="button" id="btnAnalyzeScore" class="btn-analyze" onclick="runResumeAnalysis()">
+      <i data-lucide="zap" style="width: 18px; height: 18px;"></i>
+      <span>Analyze My Resume Score</span>
+    </button>
+  </div>
+
+  <!-- Results Dashboard -->
+  <section id="resultsSection" class="results-container">
+    
+    <!-- Top Scorecard Banner -->
+    <div class="score-banner-card">
+      <div style="flex: 1; min-width: 250px;">
+        <span style="font-size: 11.5px; font-weight: 800; background: rgba(255, 255, 255, 0.15); padding: 3px 10px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; margin-bottom: 10px;">
+          ATS Compatibility Assessment
+        </span>
+        <h2 id="resultGradeText" style="font-size: 26px; font-weight: 850; margin: 0 0 8px; line-height: 1.2;">
+          Evaluating your resume...
+        </h2>
+        <p id="resultPassRateText" style="font-size: 13.5px; color: #94a3b8; margin: 0 0 18px; line-height: 1.5;">
+          Checking keyword density, formatting, and Google XYZ metrics against top applicant tracking systems.
+        </p>
+
+        <!-- CTAs -->
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button type="button" id="btnOpenInStudio" onclick="proceedToStudioWithResume()" style="background: #2563eb; color: #ffffff; border: none; padding: 10px 18px; border-radius: 9px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
+            <i data-lucide="edit-3" style="width: 15px; height: 15px;"></i>
+            <span>⚡ Fix &amp; Polish in Live Resume Studio ↗</span>
+          </button>
+          <button type="button" onclick="openActionVerbsModal()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
+            <span>250+ Tech Action Verbs</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Circular SVG Gauge -->
+      <div class="gauge-wrap">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <circle class="gauge-bg" cx="70" cy="70" r="60"></circle>
+          <circle id="gaugeMeterCircle" class="gauge-meter" cx="70" cy="70" r="60"></circle>
+        </svg>
+        <div class="gauge-center-text">
+          <span class="gauge-score-num" id="gaugeScoreNumber">0</span>
+          <span class="gauge-score-denom">/ 100 ATS</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Before vs After Card (Jobsuit Signature) -->
+    <div class="transform-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">
+          💡 Impact Transformation: Before vs. After
+        </h3>
+        <span style="font-size: 11px; font-weight: 800; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 6px;">Google XYZ Formula</span>
+      </div>
+      <p style="font-size: 12.5px; color: #64748b; margin: 5px 0 0;">
+        Recruiters and ATS scanners look for quantifiable achievements rather than generic duties.
+      </p>
+
+      <div class="compare-grid">
+        <div class="compare-box bad">
+          <span class="compare-tag bad">❌ Common Rejection Pattern (Score: 25)</span>
+          <p style="font-size: 12.5px; color: #881337; margin: 0; line-height: 1.5; font-style: italic;">
+            “Managed backend code and assisted with features. Helped optimize database queries and launches.”
+          </p>
+          <div style="margin-top: 8px; font-size: 11px; color: #9f1239;">
+            &bull; No strong leadership verb &bull; Zero quantified metrics &bull; Vague technologies
+          </div>
+        </div>
+        <div class="compare-box good">
+          <span class="compare-tag good">✅ ATS 95+ Score Formula (Google XYZ)</span>
+          <p style="font-size: 12.5px; color: #14532d; margin: 0; line-height: 1.5; font-weight: 600;">
+            “Architected asynchronous task queue with Redis and Celery, reducing p99 API latency by 45% and maintaining 99.9% uptime under 15,000+ RPS.”
+          </p>
+          <div style="margin-top: 8px; font-size: 11px; color: #166534;">
+            &bull; Active verb (Architected) &bull; Measurable proof (45%, 15k+ RPS) &bull; Core stack (Redis, Celery)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 Core ATS Pillars -->
+    <div class="pillars-grid" id="pillarsGrid"></div>
+
+    <!-- Keywords Gap Analysis -->
+    <div class="transform-card" style="margin-bottom: 28px;">
+      <h3 style="font-size: 15px; font-weight: 800; color: #0f172a; margin: 0 0 10px;">
+        🎯 ATS Keyword Match &amp; Technology Gap Analysis
+      </h3>
+      <div style="margin-bottom: 12px;">
+        <span style="font-size: 11px; font-weight: 800; color: #15803d; text-transform: uppercase;">Matched Skills in Resume:</span>
+        <div id="matchedKeywordsRow" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"></div>
+      </div>
+      <div>
+        <span style="font-size: 11px; font-weight: 800; color: #dc2626; text-transform: uppercase;">Missing High-Yield Job Keywords:</span>
+        <div id="missingKeywordsRow" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"></div>
+      </div>
+    </div>
+
+    <!-- Project-by-Project Audit & 1-Click AI Upgrade -->
+    <div class="transform-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">
+            💼 Project Accomplishment Audit &amp; AI Enhancer
+          </h3>
+          <p style="font-size: 12.5px; color: #64748b; margin: 3px 0 0;">
+            Click <strong>“✨ Upgrade Bullets with AI”</strong> to rewrite projects into high-scoring Google XYZ bullets with metrics.
+          </p>
+        </div>
+      </div>
+
+      <div id="projectsAuditList"></div>
+    </div>
+
+  </section>
+
+</div>
+
+<!-- Action Verbs Cheatsheet Modal -->
+<div id="actionVerbsModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(6px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #ffffff; border-radius: 18px; max-width: 680px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 24px; box-shadow: 0 25px 50px rgba(15,23,42,0.2); box-sizing: border-box;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 20px;">⚡</span>
+        <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">250+ Software Engineering Action Verbs</h3>
+      </div>
+      <button type="button" onclick="closeActionVerbsModal()" style="background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer;">&times;</button>
+    </div>
+    <p style="font-size: 12.5px; color: #64748b; margin: 0 0 16px;">
+      Click any action verb to copy it instantly and replace passive words like “Worked on” or “Responsible for”.
+    </p>
+
+    {% for cat in action_verbs_categories %}
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 800; color: #2563eb; text-transform: uppercase; margin-bottom: 6px;">{{ cat.category }}</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          {% for v in cat.verbs %}
+            <button type="button" onclick="copyVerb('{{ v }}')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.borderColor='#2563eb';this.style.color='#2563eb';" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#334155';">
+              + {{ v }}
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  'use strict';
+
+  let currentFile = null;
+  let activeInputMode = 'file';
+  let selectedRoleId = 'python-backend';
+  let parsedResumeData = null;
+  let currentAtsEval = null;
+
+  window.switchInputTab = function(mode) {
+    activeInputMode = mode;
+    document.getElementById('tabUploadBtn').classList.toggle('active', mode === 'file');
+    document.getElementById('tabTextBtn').classList.toggle('active', mode === 'text');
+    document.getElementById('fileUploadContainer').style.display = (mode === 'file') ? 'block' : 'none';
+    document.getElementById('textPasteContainer').style.display = (mode === 'text') ? 'block' : 'none';
+  };
+
+  window.selectTargetRole = function(roleId) {
+    selectedRoleId = roleId;
+    document.querySelectorAll('.role-pill').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.roleId === roleId);
+    });
+  };
+
+  window.handleFileSelected = function(file) {
+    if (!file) return;
+    currentFile = file;
+    const badge = document.getElementById('selectedFileName');
+    const badgeText = document.getElementById('selectedFileNameText');
+    badgeText.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+    badge.style.display = 'inline-flex';
+  };
+
+  // Drag and drop handlers
+  const dropZone = document.getElementById('dropZone');
+  if (dropZone) {
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      }, false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+      }, false);
+    });
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files && files[0]) handleFileSelected(files[0]);
+    }, false);
+  }
+
+  window.runResumeAnalysis = async function() {
+    const btn = document.getElementById('btnAnalyzeScore');
+    const customRole = document.getElementById('customRoleInput').value.trim();
+
+    const formData = new FormData();
+    if (activeInputMode === 'file') {
+      if (!currentFile) {
+        alert("Please select or drop a resume file first (PDF, Word, or TXT).");
+        return;
+      }
+      formData.append('resume_file', currentFile);
+    } else {
+      const text = document.getElementById('rawResumeText').value.trim();
+      if (!text || text.length < 30) {
+        alert("Please paste at least 30 characters of resume text.");
+        return;
+      }
+      formData.append('raw_text', text);
+    }
+
+    if (customRole) {
+      formData.append('job_skills', customRole);
+    } else {
+      formData.append('target_role', selectedRoleId);
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader" class="spin-icon" style="width:18px;height:18px;"></i> <span>Evaluating Resume &amp; Calculating ATS Score...</span>';
+    if (window.lucide) window.lucide.createIcons();
+
+    try {
+      const res = await fetch('/api/resume/upload/', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (!data.success) {
+        alert("Analysis failed: " + (data.error || "Server error"));
+        return;
+      }
+
+      parsedResumeData = data.parsed_resume;
+      currentAtsEval = data.ats_eval;
+      renderAnalysisDashboard(data);
+    } catch (err) {
+      alert("Error analyzing resume: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i data-lucide="zap" style="width: 18px; height: 18px;"></i> <span>Analyze My Resume Score</span>';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  };
+
+  function renderAnalysisDashboard(data) {
+    const results = document.getElementById('resultsSection');
+    results.style.display = 'block';
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    const evalData = data.ats_eval || {};
+    const score = Math.round(evalData.score || 0);
+
+    // Score Number & Animation
+    document.getElementById('gaugeScoreNumber').textContent = score;
+    const meter = document.getElementById('gaugeMeterCircle');
+    const circumference = 377; // 2 * pi * 60
+    const offset = circumference - (circumference * (score / 100));
+    meter.style.strokeDashoffset = offset;
+
+    const strokeColor = score >= 85 ? '#10b981' : (score >= 65 ? '#f59e0b' : '#ef4444');
+    meter.style.stroke = strokeColor;
+
+    // Grade and Summary
+    const gradeEl = document.getElementById('resultGradeText');
+    gradeEl.textContent = evalData.grade || (score >= 85 ? 'Strong ATS Pass' : 'High Risk of ATS Rejection');
+    gradeEl.style.color = strokeColor;
+
+    const passRateEl = document.getElementById('resultPassRateText');
+    passRateEl.textContent = evalData.pass_rate || `${score}% match against top applicant tracking algorithms.`;
+
+    // 4 Pillars
+    const pillarsContainer = document.getElementById('pillarsGrid');
+    pillarsContainer.innerHTML = '';
+    (evalData.pillars || []).forEach(p => {
+      const pColor = p.status === 'pass' ? '#10b981' : (p.status === 'warn' ? '#f59e0b' : '#ef4444');
+      const pPct = Math.round((p.score / (p.max_score || 20)) * 100);
+      const card = document.createElement('div');
+      card.className = 'pillar-card';
+      card.innerHTML = `
+        <div class="pillar-header">
+          <span class="pillar-title">${p.name}</span>
+          <span style="font-size:11px;font-weight:800;color:${pColor};">${p.score}/${p.max_score}</span>
+        </div>
+        <div class="pillar-bar-bg">
+          <div class="pillar-bar-fill" style="width: ${pPct}%; background: ${pColor};"></div>
+        </div>
+        <div style="font-size: 11px; color: #64748b; line-height: 1.35; margin-top: 4px;">
+          ${p.detail}
+        </div>
+      `;
+      pillarsContainer.appendChild(card);
+    });
+
+    // Keywords
+    const matchedRow = document.getElementById('matchedKeywordsRow');
+    matchedRow.innerHTML = '';
+    (evalData.matched_skills || []).forEach(k => {
+      matchedRow.innerHTML += `<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:700;">✓ ${k}</span>`;
+    });
+    if (!evalData.matched_skills || !evalData.matched_skills.length) {
+      matchedRow.innerHTML = '<span style="font-size:11.5px;color:#94a3b8;">No exact skill keywords matched.</span>';
+    }
+
+    const missingRow = document.getElementById('missingKeywordsRow');
+    missingRow.innerHTML = '';
+    (evalData.missing_skills || []).forEach(k => {
+      missingRow.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:700;">+ ${k}</span>`;
+    });
+    if (!evalData.missing_skills || !evalData.missing_skills.length) {
+      missingRow.innerHTML = '<span style="font-size:11.5px;color:#15803d;font-weight:700;">✓ No critical keyword gaps identified!</span>';
+    }
+
+    // Projects Audit
+    const projContainer = document.getElementById('projectsAuditList');
+    projContainer.innerHTML = '';
+    const projects = (parsedResumeData && parsedResumeData.projects) ? parsedResumeData.projects : [];
+    if (!projects.length) {
+      projContainer.innerHTML = '<p style="font-size:12px;color:#94a3b8;">No software engineering projects identified in uploaded text.</p>';
+    } else {
+      projects.forEach((proj, idx) => {
+        const item = document.createElement('div');
+        item.className = 'project-audit-item';
+        const bulletsList = (proj.bullets || []).map(b => `<li style="margin-bottom: 4px;">${b}</li>`).join('');
+        
+        item.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
+            <div>
+              <h4 style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0 0 3px;">${proj.title || 'Portfolio Project'}</h4>
+              <div style="font-size: 11.5px; color: #64748b;">Technologies: <strong style="color: #0369a1;">${proj.tech_stack || 'Python, Databases, APIs'}</strong></div>
+            </div>
+            <button type="button" onclick="upgradeProjectBullets(${idx})" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; padding: 6px 12px; border-radius: 7px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">
+              <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
+              <span>✨ Upgrade Bullets with AI</span>
+            </button>
+          </div>
+          <ul id="projBulletsList_${idx}" style="font-size: 12px; color: #475569; line-height: 1.5; padding-left: 18px; margin: 0;">
+            ${bulletsList}
+          </ul>
+        `;
+        projContainer.appendChild(item);
+      });
+    }
+
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // 1-Click AI Project Upgrade
+  window.upgradeProjectBullets = async function(idx) {
+    if (!parsedResumeData || !parsedResumeData.projects || !parsedResumeData.projects[idx]) return;
+    const proj = parsedResumeData.projects[idx];
+    const ul = document.getElementById(`projBulletsList_${idx}`);
+    if (ul) ul.innerHTML = '<li style="color:#2563eb;">⚡ Generating 4 quantified Google XYZ bullets with AI...</li>';
+
+    try {
+      const res = await fetch('/api/ai/generate-project-bullets/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: proj.title,
+          tech_stack: proj.tech_stack,
+          role: proj.role || 'Software Engineer',
+          description: (proj.bullets || []).join('\n'),
+          target_skills: (currentAtsEval && currentAtsEval.missing_skills) ? currentAtsEval.missing_skills : []
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.bullets) {
+        proj.bullets = data.bullets;
+        if (data.tech_stack) proj.tech_stack = data.tech_stack;
+        if (ul) {
+          ul.innerHTML = data.bullets.map(b => `<li style="margin-bottom: 4px; color: #0f172a; font-weight: 550;">${b}</li>`).join('');
+        }
+        if (window.showToast) window.showToast("✨ Upgraded project with 100/100 ATS Google XYZ bullets!", "success");
+      }
+    } catch (err) {
+      alert("Error upgrading bullets: " + err.message);
+    }
+  };
+
+  window.proceedToStudioWithResume = function() {
+    if (!parsedResumeData) {
+      alert("Please upload and analyze a resume first.");
+      return;
+    }
+    // Store in sessionStorage for the live editor
+    sessionStorage.setItem('kashii_live_resume_data', JSON.stringify(parsedResumeData));
+    localStorage.setItem('kashii_live_resume_data', JSON.stringify(parsedResumeData));
+    window.location.href = '/resume-builder/?from_studio=1';
+  };
+
+  window.openActionVerbsModal = function() {
+    document.getElementById('actionVerbsModal').style.display = 'flex';
+  };
+  window.closeActionVerbsModal = function() {
+    document.getElementById('actionVerbsModal').style.display = 'none';
+  };
+  window.copyVerb = function(verb) {
+    navigator.clipboard.writeText(verb);
+    if (window.showToast) window.showToast(`Copied "${verb}" to clipboard!`, 'success');
+    else alert(`Copied "${verb}" to clipboard!`);
+  };
+
+})();
+</script>
+{% endblock %}
