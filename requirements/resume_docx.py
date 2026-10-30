@@ -21,6 +21,15 @@ def add_horizontal_rule(paragraph):
     pPr.append(pBdr)
 
 
+def clean_bullet_text(text: str) -> str:
+    if not text:
+        return ""
+    t = str(text).strip()
+    t = re.sub(r'^(?:[\u2022\u25cf\u25aa\u25b8\u2013\u2014\-\*\>]|\&bull\;|\&#8226\;|\&middot\;|\&#183\;|\d+[\.\)])\s*', '', t)
+    t = re.sub(r'^(?:[\u2022\u25cf\u25aa\u25b8\u2013\u2014\-\*\>]|\&bull\;|\&#8226\;|\&middot\;|\&#183\;)\s*', '', t)
+    return t.strip()
+
+
 def generate_ats_resume_docx(resume_data: Dict[str, Any]) -> bytes:
     """
     Generates a true 100% native Microsoft Word .docx ATS-compliant resume.
@@ -167,10 +176,13 @@ def generate_ats_resume_docx(resume_data: Dict[str, Any]) -> bytes:
                 r_ts.font.size = Pt(9)
 
             for b in (exp.get('bullets') or []):
+                cb = clean_bullet_text(b)
+                if not cb:
+                    continue
                 p_b = doc.add_paragraph(style='List Bullet')
                 p_b.paragraph_format.space_before = Pt(0)
                 p_b.paragraph_format.space_after = Pt(1.5)
-                r_b = p_b.add_run(b)
+                r_b = p_b.add_run(cb)
                 r_b.font.size = Pt(9.5)
 
     # 6. Enterprise / Flagship Software Projects
@@ -205,10 +217,13 @@ def generate_ats_resume_docx(resume_data: Dict[str, Any]) -> bytes:
                 r_pts.font.size = Pt(9)
 
             for b in (proj.get('bullets') or []):
+                cb = clean_bullet_text(b)
+                if not cb:
+                    continue
                 p_pb = doc.add_paragraph(style='List Bullet')
                 p_pb.paragraph_format.space_before = Pt(0)
                 p_pb.paragraph_format.space_after = Pt(1.5)
-                r_pb = p_pb.add_run(b)
+                r_pb = p_pb.add_run(cb)
                 r_pb.font.size = Pt(9.5)
 
     # 7. Education Block

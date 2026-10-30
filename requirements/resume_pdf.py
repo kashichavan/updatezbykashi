@@ -188,6 +188,73 @@ def sanitize_text(val):
     return text
 
 
+def clean_bullet_text(text: str) -> str:
+    """
+    Strips leading bullet symbols, dashes, asterisks, and numbers so ReportLab's
+    built-in bulletText='•' never renders a duplicate symbol (e.g. '• •', '• -').
+    """
+    if not text:
+        return ""
+    t = str(text).strip()
+    t = re.sub(r'^(?:[\u2022\u25cf\u25aa\u25b8\u2013\u2014\-\*\>]|\&bull\;|\&#8226\;|\&middot\;|\&#183\;|\d+[\.\)])\s*', '', t)
+    t = re.sub(r'^(?:[\u2022\u25cf\u25aa\u25b8\u2013\u2014\-\*\>]|\&bull\;|\&#8226\;|\&middot\;|\&#183\;)\s*', '', t)
+    return t.strip()
+
+
+def clean_contact_field(val: str) -> str:
+    if not val:
+        return ""
+    t = str(val).strip()
+    return re.sub(r'^[\|\u2022\:\-\,\s]+|[\|\u2022\:\-\,\s]+$', '', t).strip()
+
+
+def format_url_link(raw_url: str) -> tuple[str, str]:
+    if not raw_url:
+        return "", ""
+    url = str(raw_url).strip()
+    url = re.sub(r'^[\|\u2022\:\-\,\s]+|[\|\u2022\:\-\,\s]+$', '', url).strip()
+    if not url:
+        return "", ""
+    if not url.startswith('http://') and not url.startswith('https://'):
+        href = f"https://{url}"
+        display = url
+    else:
+        href = url
+        display = re.sub(r'^https?://(?:www\.)?', '', url).rstrip('/')
+    return href, display
+
+
+def clean_project_title(title: str) -> str:
+    if not title:
+        return ""
+    t = str(title).strip()
+    t = re.sub(r'\[GitHub\s*↗\]', '', t, flags=re.IGNORECASE)
+    t = re.sub(r'View\s*ATS', '', t, flags=re.IGNORECASE)
+    t = re.sub(r'ATS\s*\d+%', '', t, flags=re.IGNORECASE)
+    return re.sub(r'^[\|\u2022\:\-\,\s]+|[\|\u2022\:\-\,\s]+$', '', t).strip()
+
+
+def clean_tech_stack(tech: str) -> str:
+    if not tech:
+        return ""
+    t = str(tech).strip()
+    t = re.sub(r'^(?:Technologies|Tech Stack|Core Stack|Stack)\s*:\s*', '', t, flags=re.IGNORECASE)
+    return re.sub(r'^[\|\u2022\:\-\,\s]+|[\|\u2022\:\-\,\s]+$', '', t).strip()
+
+
+def clean_institution_and_gpa(institution: str, gpa: str) -> tuple[str, str]:
+    inst = str(institution or '').strip()
+    g = str(gpa or '').strip()
+    if not g and ('•' in inst or '\u2022' in inst or '|' in inst):
+        parts = re.split(r'[•\u2022|]', inst, maxsplit=1)
+        inst = parts[0].strip()
+        g = parts[1].strip()
+    inst = re.sub(r'[•\u2022|,\s]+$', '', inst).strip()
+    g = re.sub(r'^(?:CGPA|GPA)\s*:\s*', '', g, flags=re.IGNORECASE).strip()
+    g = re.sub(r'^[•\u2022|,\s]+', '', g).strip()
+    return inst, g
+
+
 def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
     """Internal renderer generating PDF bytes with specific scale factor and template themes."""
     buffer = io.BytesIO()
@@ -388,19 +455,24 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
     contact = data.get('contact') or {}
     if isinstance(contact, dict):
         c_parts = []
-        if contact.get('location'):
-            c_parts.append(sanitize_text(contact.get('location')))
-        if contact.get('phone'):
-            c_parts.append(sanitize_text(contact.get('phone')))
-        if contact.get('email'):
-            c_parts.append(f'<a href="mailto:{sanitize_text(contact.get("email"))}"><font color="#1d4ed8">{sanitize_text(contact.get("email"))}</font></a>')
-        if contact.get('linkedin'):
-            c_parts.append(f'<a href="https://{sanitize_text(contact.get("linkedin"))}"><font color="#1d4ed8">{sanitize_text(contact.get("linkedin"))}</font></a>')
-        if contact.get('github'):
-            c_parts.append(f'<a href="https://{sanitize_text(contact.get("github"))}"><font color="#1d4ed8">{sanitize_text(contact.get("github"))}</font></a>')
+        loc = clean_contact_field(contact.get('location', ''))
+        if loc:
+            c_parts.append(sanitize_text(loc))
+        phone = clean_contact_field(contact.get('phone', ''))
+        if phone:
+            c_parts.append(sanitize_text(phone))
+        email = clean_contact_field(contact.get('email', ''))
+        if email:
+            c_parts.append(f'<a href="mailto:{sanitize_text(email)}"><font color="#1d4ed8">{sanitize_text(email)}</font></a>')
+        li_href, li_disp = format_url_link(contact.get('linkedin', ''))
+        if li_href:
+            c_parts.append(f'<a href="{sanitize_text(li_href)}"><font color="#1d4ed8">{sanitize_text(li_disp)}</font></a>')
+        gh_href, gh_disp = format_url_link(contact.get('github', ''))
+        if gh_href:
+            c_parts.append(f'<a href="{sanitize_text(gh_href)}"><font color="#1d4ed8">{sanitize_text(gh_disp)}</font></a>')
         c_line = ' &nbsp;|&nbsp; '.join(c_parts)
     elif isinstance(contact, str):
-        c_line = sanitize_text(contact)
+        c_line = sanitize_text(clean_contact_field(contact))
     else:
         c_line = ''
 
@@ -471,10 +543,10 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
             if not isinstance(exp, dict):
                 continue
             exp_flowables = []
-            company = sanitize_text(exp.get('company', ''))
-            role = sanitize_text(exp.get('role', ''))
-            duration = sanitize_text(exp.get('period') or exp.get('duration') or '')
-            location = sanitize_text(exp.get('location', ''))
+            company = sanitize_text(clean_project_title(exp.get('company', '')))
+            role = sanitize_text(clean_project_title(exp.get('role', '')))
+            duration = sanitize_text(clean_contact_field(exp.get('period') or exp.get('duration') or ''))
+            location = sanitize_text(clean_contact_field(exp.get('location', '')))
 
             exp_flowables.append(create_split_header(f'<b>{company}</b>', duration, is_date=True))
 
@@ -486,7 +558,7 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
             if sub_line_parts:
                 exp_flowables.append(Paragraph(' &bull; '.join(sub_line_parts), tech_style))
 
-            tech_stack = sanitize_text(exp.get('tech_stack', ''))
+            tech_stack = sanitize_text(clean_tech_stack(exp.get('tech_stack', '')))
             if tech_stack:
                 exp_flowables.append(Paragraph(f'<b>Core Stack:</b> {tech_stack}', tech_style))
                 exp_flowables.append(Spacer(1, 1.5))
@@ -495,8 +567,9 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
             if isinstance(bullets, str):
                 bullets = [bullets]
             for b in bullets:
-                if b and str(b).strip():
-                    exp_flowables.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
+                clean_b = clean_bullet_text(b)
+                if clean_b:
+                    exp_flowables.append(Paragraph(sanitize_text(clean_b), bullet_style, bulletText='•'))
                     exp_flowables.append(Spacer(1, bullet_gap))
             exp_flowables.append(Spacer(1, spacer_gap * 0.5))
 
@@ -513,15 +586,22 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
             if not isinstance(proj, dict):
                 continue
             proj_flowables = []
-            title = sanitize_text(proj.get('title', ''))
-            role = sanitize_text(proj.get('role', ''))
-            duration = sanitize_text(proj.get('period') or proj.get('duration') or '')
-            tech_stack = sanitize_text(proj.get('tech_stack', ''))
+            title = sanitize_text(clean_project_title(proj.get('title', '')))
+            role = sanitize_text(clean_project_title(proj.get('role', '')))
+            duration = sanitize_text(clean_contact_field(proj.get('period') or proj.get('duration') or ''))
+            tech_stack = sanitize_text(clean_tech_stack(proj.get('tech_stack', '')))
             gh_url = proj.get('github_url', '')
 
-            title_html = f'<b>{title}</b>'
+            p_color = cfg.get('project_title_color', colors.HexColor('#0f172a'))
+            p_hex = p_color.hexval() if hasattr(p_color, 'hexval') else str(p_color)
+            if not p_hex.startswith('#'):
+                p_hex = '#' + p_hex
+
+            title_html = f'<font color="{p_hex}"><b>{title}</b></font>'
             if gh_url:
-                title_html += f' &nbsp;<a href="{gh_url}"><font color="#1d4ed8" size="-1.5"><b>[GitHub ↗]</b></font></a>'
+                gh_href, _ = format_url_link(gh_url)
+                if gh_href:
+                    title_html += f' &nbsp;<a href="{sanitize_text(gh_href)}"><font color="#1d4ed8" size="-1.5"><b>[GitHub ↗]</b></font></a>'
 
             if duration:
                 proj_flowables.append(create_split_header(f'{title_html} &nbsp;|&nbsp; <i>{role}</i>' if role else title_html, duration, is_date=True))
@@ -538,8 +618,9 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
             if isinstance(bullets, str):
                 bullets = [bullets]
             for b in bullets:
-                if b and str(b).strip():
-                    proj_flowables.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
+                clean_b = clean_bullet_text(b)
+                if clean_b:
+                    proj_flowables.append(Paragraph(sanitize_text(clean_b), bullet_style, bulletText='•'))
                     proj_flowables.append(Spacer(1, bullet_gap))
             proj_flowables.append(Spacer(1, spacer_gap * 0.5))
 
@@ -555,10 +636,13 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
         edu_flowables = []
         for edu in edu_items:
             if isinstance(edu, dict):
-                degree = sanitize_text(edu.get('degree', ''))
-                year = sanitize_text(edu.get('year', ''))
-                institution = sanitize_text(edu.get('institution', ''))
-                gpa = sanitize_text(edu.get('gpa', ''))
+                degree = sanitize_text(clean_contact_field(edu.get('degree', '')))
+                year = sanitize_text(clean_contact_field(edu.get('year', '')))
+                inst_raw = edu.get('institution', '')
+                gpa_raw = edu.get('gpa', '')
+                institution, gpa = clean_institution_and_gpa(inst_raw, gpa_raw)
+                institution = sanitize_text(institution)
+                gpa = sanitize_text(gpa)
                 coursework = sanitize_text(edu.get('coursework', ''))
 
                 edu_flowables.append(create_split_header(f'<b>{degree}</b>', year, is_date=True))
@@ -575,7 +659,7 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
                     edu_flowables.append(Paragraph(f'<b>Core Coursework:</b> {coursework}', tech_style))
                 edu_flowables.append(Spacer(1, 2.5))
             elif isinstance(edu, str) and edu.strip():
-                edu_flowables.append(Paragraph(sanitize_text(edu), body_style))
+                edu_flowables.append(Paragraph(sanitize_text(clean_contact_field(edu)), body_style))
         edu_flowables.append(Spacer(1, spacer_gap * 0.5))
 
         if total_lines <= 27:
@@ -588,8 +672,9 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
         add_section_header('CERTIFICATIONS & ACHIEVEMENTS')
         cert_flowables = []
         for cert in certs:
-            if cert and str(cert).strip():
-                cert_flowables.append(Paragraph(sanitize_text(cert), bullet_style, bulletText='•'))
+            clean_c = clean_bullet_text(cert)
+            if clean_c:
+                cert_flowables.append(Paragraph(sanitize_text(clean_c), bullet_style, bulletText='•'))
                 cert_flowables.append(Spacer(1, bullet_gap))
         story.append(KeepTogether(cert_flowables))
 
@@ -625,6 +710,8 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
                 reader_p3 = pypdf.PdfReader(io.BytesIO(pdf_bytes_p3))
                 if len(reader_p3.pages) == 1:
                     return pdf_bytes_p3
+                # If still multi-page, return the tightest version (p3) rather than the loosest (p1)
+                return pdf_bytes_p3
         except Exception:
             pass
 

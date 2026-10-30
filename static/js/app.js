@@ -925,6 +925,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (popoverJobType) popoverJobType.style.display = 'none';
       if (popoverSpecialism) popoverSpecialism.style.display = 'none';
 
+      document.querySelectorAll('.rel_filter_dropdown_wrapper').forEach(w => w.classList.remove('is-open'));
+
       if (btnFilterLocation) { btnFilterLocation.classList.remove('is-open'); btnFilterLocation.setAttribute('aria-expanded', 'false'); }
       if (btnFilterJobType) { btnFilterJobType.classList.remove('is-open'); btnFilterJobType.setAttribute('aria-expanded', 'false'); }
       if (btnFilterSpecialism) { btnFilterSpecialism.classList.remove('is-open'); btnFilterSpecialism.setAttribute('aria-expanded', 'false'); }
@@ -946,6 +948,8 @@ document.addEventListener('DOMContentLoaded', () => {
           popoverLocation.style.display = 'block';
           btnFilterLocation.classList.add('is-open');
           btnFilterLocation.setAttribute('aria-expanded', 'true');
+          const wrap = btnFilterLocation.closest('.rel_filter_dropdown_wrapper');
+          if (wrap) wrap.classList.add('is-open');
         }
       });
     }
@@ -959,6 +963,8 @@ document.addEventListener('DOMContentLoaded', () => {
           popoverJobType.style.display = 'block';
           btnFilterJobType.classList.add('is-open');
           btnFilterJobType.setAttribute('aria-expanded', 'true');
+          const wrap = btnFilterJobType.closest('.rel_filter_dropdown_wrapper');
+          if (wrap) wrap.classList.add('is-open');
         }
       });
     }
@@ -972,6 +978,8 @@ document.addEventListener('DOMContentLoaded', () => {
           popoverSpecialism.style.display = 'block';
           btnFilterSpecialism.classList.add('is-open');
           btnFilterSpecialism.setAttribute('aria-expanded', 'true');
+          const wrap = btnFilterSpecialism.closest('.rel_filter_dropdown_wrapper');
+          if (wrap) wrap.classList.add('is-open');
         }
       });
     }
@@ -1034,20 +1042,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnResetModal = document.getElementById('btnResetModalFilters');
     const btnApplyModal = document.getElementById('btnApplyModalFilters');
 
+    let modalDraftState = {
+      city: '',
+      jobType: 'all',
+      category: 'all',
+      sort: 'newest'
+    };
+
+    function syncModalChipVisuals() {
+      if (!modalAllFilters) return;
+      modalAllFilters.querySelectorAll('#modalLocationChips [data-city]').forEach(x => {
+        x.classList.toggle('active', x.dataset.city === modalDraftState.city);
+      });
+      modalAllFilters.querySelectorAll('#modalJobTypeChips [data-job-type]').forEach(x => {
+        x.classList.toggle('active', x.dataset.jobType === modalDraftState.jobType);
+      });
+      modalAllFilters.querySelectorAll('#modalCategoryChips [data-category]').forEach(x => {
+        x.classList.toggle('active', x.dataset.category === modalDraftState.category);
+      });
+      modalAllFilters.querySelectorAll('#modalSortChips [data-sort]').forEach(x => {
+        x.classList.toggle('active', x.dataset.sort === modalDraftState.sort);
+      });
+    }
+
     function openModal() {
       if (modalAllFilters) {
-        modalAllFilters.querySelectorAll('#modalLocationChips [data-city]').forEach(x => {
-          x.classList.toggle('active', x.dataset.city === (state.city || ''));
-        });
-        modalAllFilters.querySelectorAll('#modalJobTypeChips [data-job-type]').forEach(x => {
-          x.classList.toggle('active', x.dataset.jobType === (state.jobType || 'all'));
-        });
-        modalAllFilters.querySelectorAll('#modalCategoryChips [data-category]').forEach(x => {
-          x.classList.toggle('active', x.dataset.category === (state.category || 'all'));
-        });
-        modalAllFilters.querySelectorAll('#modalSortChips [data-sort]').forEach(x => {
-          x.classList.toggle('active', (state.sort || 'newest') === x.dataset.sort);
-        });
+        modalDraftState.city = state.city || '';
+        modalDraftState.jobType = state.jobType || 'all';
+        modalDraftState.category = state.category || 'all';
+        modalDraftState.sort = state.sort || 'newest';
+
+        syncModalChipVisuals();
         modalAllFilters.style.display = 'flex';
         document.body.style.overflow = 'hidden';
       }
@@ -1069,44 +1094,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
       modalAllFilters.querySelectorAll('#modalLocationChips [data-city]').forEach(b => {
         b.addEventListener('click', () => {
-          modalAllFilters.querySelectorAll('#modalLocationChips [data-city]').forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          state.city = b.dataset.city;
+          modalDraftState.city = b.dataset.city;
+          syncModalChipVisuals();
         });
       });
 
       modalAllFilters.querySelectorAll('#modalJobTypeChips [data-job-type]').forEach(b => {
         b.addEventListener('click', () => {
-          modalAllFilters.querySelectorAll('#modalJobTypeChips [data-job-type]').forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          state.jobType = b.dataset.jobType;
+          modalDraftState.jobType = b.dataset.jobType;
+          syncModalChipVisuals();
         });
       });
 
       modalAllFilters.querySelectorAll('#modalCategoryChips [data-category]').forEach(b => {
         b.addEventListener('click', () => {
-          modalAllFilters.querySelectorAll('#modalCategoryChips [data-category]').forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          state.category = b.dataset.category;
+          modalDraftState.category = b.dataset.category;
+          syncModalChipVisuals();
         });
       });
 
       modalAllFilters.querySelectorAll('#modalSortChips [data-sort]').forEach(b => {
         b.addEventListener('click', () => {
-          modalAllFilters.querySelectorAll('#modalSortChips [data-sort]').forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          state.sort = b.dataset.sort;
-          if (sortSelect) {
-            if (b.dataset.sort === 'deadline') sortSelect.value = 'Proximity';
-            else if (b.dataset.sort === 'relevance') sortSelect.value = 'Relevance';
-            else sortSelect.value = 'Date';
-          }
+          modalDraftState.sort = b.dataset.sort;
+          syncModalChipVisuals();
         });
       });
     }
 
     if (btnApplyModal) {
       btnApplyModal.addEventListener('click', () => {
+        state.city = modalDraftState.city;
+        state.jobType = modalDraftState.jobType;
+        state.category = modalDraftState.category;
+        state.sort = modalDraftState.sort;
+        if (sortSelect) {
+          if (state.sort === 'deadline') sortSelect.value = 'Proximity';
+          else if (state.sort === 'relevance') sortSelect.value = 'Relevance';
+          else sortSelect.value = 'Date';
+        }
         closeModal();
         state.page = 1;
         loadJobs();
@@ -1115,12 +1140,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnResetModal) {
       btnResetModal.addEventListener('click', () => {
+        modalDraftState = {
+          city: '',
+          jobType: 'all',
+          category: isCategoryPage ? currentCategory : 'all',
+          sort: 'newest'
+        };
         state.city = '';
         state.jobType = 'all';
         state.category = isCategoryPage ? currentCategory : 'all';
         state.sort = 'newest';
-        state.page = 1;
+        if (sortSelect) sortSelect.value = 'Date';
         closeModal();
+        state.page = 1;
         loadJobs();
       });
     }

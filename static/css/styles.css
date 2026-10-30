@@ -2611,7 +2611,8 @@ html.entry-done #entry {
   gap: 16px;
   margin-bottom: 28px;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Must be visible so popovers are never clipped */
+  z-index: 40;
   transition: var(--transition-spring);
 }
 
@@ -2790,6 +2791,10 @@ html.entry-done #entry {
 .rel_filter_dropdown_wrapper {
   position: relative;
   display: inline-block;
+}
+
+.rel_filter_dropdown_wrapper.is-open {
+  z-index: 60;
 }
 
 /* ── Filter Pill Buttons — perfectly matches .vp-sidebar-btn style ── */

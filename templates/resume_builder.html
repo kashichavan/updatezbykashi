@@ -2860,9 +2860,10 @@
 
   async function recalculateAtsScore() {
     try {
+      const liveResume = typeof extractFullResumeFromDom === 'function' ? extractFullResumeFromDom() : currentResumeData;
       const payload = {
         role: currentRoleKey,
-        resume: currentResumeData
+        resume: liveResume
       };
       if (typeof targetJobData !== 'undefined' && targetJobData) {
         if (targetJobData.id) payload.job_id = targetJobData.id;
@@ -3368,6 +3369,19 @@
     return Object.keys(skillsObj).length > 0 ? skillsObj : (currentResumeData?.skills || {});
   }
 
+  function cleanDomBullet(str) {
+    if (!str) return '';
+    let t = str.trim();
+    t = t.replace(/^(?:[•\u2022\u25cf\u25aa\u25b8\u2013\u2014\-\*\>]|\&bull\;|\&#8226\;|\&middot\;|\&#183\;|\d+[\.\)])\s*/, '');
+    t = t.replace(/^(?:[•\u2022\u25cf\u25aa\u25b8\u2013\u2014\-\*\>]|\&bull\;|\&#8226\;|\&middot\;|\&#183\;)\s*/, '');
+    return t.trim();
+  }
+
+  function cleanDomContactVal(raw) {
+    if (!raw) return '';
+    return raw.replace(/^[\|\u2022\:\-\,\s]+|[\|\u2022\:\-\,\s]+$/g, '').trim();
+  }
+
   function extractExperienceFromDom() {
     const expSection = document.getElementById('previewExperienceSection');
     if (expSection && expSection.style.display === 'none') {
@@ -3383,19 +3397,22 @@
     entries.forEach((entry, idx) => {
       const origExp = (currentResumeData?.experience && currentResumeData.experience[idx]) || {};
       const titleEl = entry.querySelector('.ats-project-title');
-      const company = titleEl ? titleEl.innerText.trim() : (origExp.company || '');
+      const company = titleEl ? cleanDomContactVal(titleEl.innerText) : (origExp.company || '');
       const dateEl = entry.querySelector('.ats-date');
-      const period = dateEl ? dateEl.innerText.trim() : (origExp.period || '');
+      const period = dateEl ? cleanDomContactVal(dateEl.innerText) : (origExp.period || '');
       
       const roleEl = entry.querySelector('em') || entry.querySelector('.ats-project-role');
-      const role = roleEl ? roleEl.innerText.trim() : (origExp.role || '');
+      const role = roleEl ? cleanDomContactVal(roleEl.innerText) : (origExp.role || '');
+
+      const locEl = entry.querySelector('span[style*="color:#64748b"], .ats-location');
+      const location = locEl ? cleanDomContactVal(locEl.innerText) : (origExp.location || '');
       
       const techEl = entry.querySelector('.ats-project-tech');
       let tech_stack = origExp.tech_stack || '';
       if (techEl) {
         const cloneTech = techEl.cloneNode(true);
         cloneTech.querySelectorAll('strong').forEach(s => s.remove());
-        tech_stack = cloneTech.innerText.replace(/^(Core Stack:|Technologies:)?\s*/i, '').trim();
+        tech_stack = cloneTech.innerText.replace(/^(Core Stack:|Technologies:|Tech Stack:)?\s*/i, '').trim();
       }
       
       const bulletEls = entry.querySelectorAll('ul.ats-bullet-list li');
@@ -3404,12 +3421,12 @@
         bulletEls.forEach(li => {
           const cloneLi = li.cloneNode(true);
           cloneLi.querySelectorAll('.print-hide').forEach(el => el.remove());
-          const t = cloneLi.innerText.trim();
+          const t = cleanDomBullet(cloneLi.innerText);
           if (t) bullets.push(t);
         });
       }
       if (bullets.length === 0 && origExp.bullets) {
-        bullets = origExp.bullets;
+        bullets = origExp.bullets.map(b => cleanDomBullet(b)).filter(Boolean);
       }
       
       if (company || role) {
@@ -3417,7 +3434,7 @@
           company,
           role,
           period,
-          location: origExp.location || '',
+          location,
           tech_stack,
           bullets
         });
@@ -3442,13 +3459,13 @@
       if (titleEl) {
         const cloneTitle = titleEl.cloneNode(true);
         cloneTitle.querySelectorAll('.print-hide').forEach(el => el.remove());
-        title = cloneTitle.innerText.trim();
+        title = cloneTitle.innerText.replace(/\[GitHub\s*↗\]/i, '').replace(/View\s*ATS/i, '').replace(/ATS\s*\d+%/i, '').trim();
       }
       
       const roleEl = entry.querySelector('.ats-project-role') || entry.querySelector('em');
       let role = origProj.role || 'Full Stack Engineer';
       if (roleEl) {
-        role = roleEl.innerText.trim();
+        role = cleanDomContactVal(roleEl.innerText);
       }
       
       const techEl = entry.querySelector('.ats-project-tech');
@@ -3456,7 +3473,7 @@
       if (techEl) {
         const cloneTech = techEl.cloneNode(true);
         cloneTech.querySelectorAll('strong').forEach(s => s.remove());
-        tech_stack = cloneTech.innerText.replace(/^(Technologies:|Tech Stack:)?\s*/i, '').trim();
+        tech_stack = cloneTech.innerText.replace(/^(Technologies:|Tech Stack:|Core Stack:)?\s*/i, '').trim();
       }
       
       let github_url = origProj.github_url || '';
@@ -3471,12 +3488,12 @@
         bulletEls.forEach(li => {
           const cloneLi = li.cloneNode(true);
           cloneLi.querySelectorAll('.print-hide').forEach(el => el.remove());
-          const t = cloneLi.innerText.trim();
+          const t = cleanDomBullet(cloneLi.innerText);
           if (t) bullets.push(t);
         });
       }
       if (bullets.length === 0 && origProj.bullets) {
-        bullets = origProj.bullets;
+        bullets = origProj.bullets.map(b => cleanDomBullet(b)).filter(Boolean);
       }
       
       if (title) {
@@ -3552,14 +3569,14 @@
   }
 
   function extractFullResumeFromDom() {
-    const rawName = document.getElementById('previewName')?.innerText?.trim() || currentResumeData?.name || '';
+    const rawName = cleanDomContactVal(document.getElementById('previewName')?.innerText?.trim() || currentResumeData?.name || '');
     
     const contact = {
-      email: document.getElementById('previewEmail')?.innerText?.trim() || currentResumeData?.contact?.email || '',
-      phone: document.getElementById('previewPhone')?.innerText?.trim() || currentResumeData?.contact?.phone || '',
-      location: document.getElementById('previewLocation')?.innerText?.trim() || currentResumeData?.contact?.location || '',
-      linkedin: document.getElementById('previewLinkedin')?.innerText?.trim() || currentResumeData?.contact?.linkedin || '',
-      github: document.getElementById('previewGithub')?.innerText?.trim() || currentResumeData?.contact?.github || ''
+      email: cleanDomContactVal(document.getElementById('previewEmail')?.innerText?.trim() || currentResumeData?.contact?.email || ''),
+      phone: cleanDomContactVal(document.getElementById('previewPhone')?.innerText?.trim() || currentResumeData?.contact?.phone || ''),
+      location: cleanDomContactVal(document.getElementById('previewLocation')?.innerText?.trim() || currentResumeData?.contact?.location || ''),
+      linkedin: cleanDomContactVal(document.getElementById('previewLinkedin')?.innerText?.trim() || currentResumeData?.contact?.linkedin || ''),
+      github: cleanDomContactVal(document.getElementById('previewGithub')?.innerText?.trim() || currentResumeData?.contact?.github || '')
     };
 
     const summary = document.getElementById('previewSummary')?.innerText?.trim() || currentResumeData?.summary || '';
@@ -3597,6 +3614,11 @@
       template,
       page_mode: typeof activeDocPageMode !== 'undefined' ? activeDocPageMode : 'single'
     };
+
+    // Keep in-memory currentResumeData synchronized
+    if (typeof currentResumeData === 'object' && currentResumeData) {
+      Object.assign(currentResumeData, payload);
+    }
 
     return payload;
   }
