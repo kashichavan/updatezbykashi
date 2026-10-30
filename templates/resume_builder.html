@@ -2050,6 +2050,20 @@
 <!-- Live Reactive Engine Script -->
 <script>
   let currentResumeData = {{ initial_resume_json|safe }};
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('from_studio') === '1' || urlParams.get('gen_id')) {
+      const stored = sessionStorage.getItem('kashii_live_resume_data') || localStorage.getItem('kashii_live_resume_data');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object') {
+          currentResumeData = Object.assign({}, currentResumeData, parsed);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Could not load studio resume cache:", err);
+  }
   let currentRoleKey = "{{ selected_role_id }}";
   let currentProfileLevel = "fresher";
 
@@ -2231,6 +2245,7 @@
       }
 
       renderResumeSheet();
+      renderProjectsControlsList();
       recalculateAtsScore();
 
       const matchScore = (typeof d.match_score === 'number') ? d.match_score : null;
@@ -2557,6 +2572,7 @@
       }
 
       renderResumeSheet();
+      renderProjectsControlsList();
       recalculateAtsScore();
       openProjectAtsModal(activeModalProjIdx);
 
@@ -2609,6 +2625,7 @@
     if (currentResumeData.experience) {
       currentResumeData.experience.splice(index, 1);
       renderResumeSheet();
+      renderProjectsControlsList();
       recalculateAtsScore();
     }
   }
@@ -4029,6 +4046,7 @@
       }
 
       renderResumeSheet();
+      renderProjectsControlsList();
       recalculateAtsScore();
 
       // No invented score: when the model did not return one, say so instead of
@@ -4640,15 +4658,39 @@
     if (window.lucide) {
       window.lucide.createIcons();
     }
+
+    // Hydrate form inputs if currentResumeData has details (e.g. from studio or gen_id)
+    if (currentResumeData) {
+      if (currentResumeData.name && document.getElementById('inputName')) {
+        document.getElementById('inputName').value = currentResumeData.name;
+      }
+      if (currentResumeData.contact) {
+        if (currentResumeData.contact.email && document.getElementById('inputEmail')) document.getElementById('inputEmail').value = currentResumeData.contact.email;
+        if (currentResumeData.contact.phone && document.getElementById('inputPhone')) document.getElementById('inputPhone').value = currentResumeData.contact.phone;
+        if (currentResumeData.contact.linkedin && document.getElementById('inputLinkedin')) document.getElementById('inputLinkedin').value = currentResumeData.contact.linkedin;
+        if (currentResumeData.contact.github && document.getElementById('inputGithub')) document.getElementById('inputGithub').value = currentResumeData.contact.github;
+      }
+      renderResumeSheet();
+    }
+
     renderProjectsControlsList();
     syncContactLine();
     if (typeof WordEditor !== 'undefined') {
       WordEditor.updateCounts();
     }
 
-    // Arriving from a posting should already be tailored to it. One automatic
-    // pass, then the banner keeps a single "tailor again" action.
-    if (targetJobData) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromStudio = urlParams.get('from_studio') === '1' || urlParams.get('gen_id');
+
+    // If arriving from studio, we already have freshly synthesized and scored resume
+    if (fromStudio) {
+      recalculateAtsScore();
+      if (typeof setTargetTailorStatus === 'function') {
+        setTargetTailorStatus('done', 'Loaded freshly generated resume from Studio');
+      }
+    } else if (targetJobData) {
+      // Arriving from a posting should already be tailored to it. One automatic
+      // pass, then the banner keeps a single "tailor again" action.
       setTimeout(() => autoAlterResumeForTargetJob({ silent: true }), 350);
     }
   });

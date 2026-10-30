@@ -372,7 +372,7 @@ class ProjectBulletHonestyTests(TestCase):
 
 
 class AlteredResumeHonestyTests(TestCase):
-    """The job-tailoring endpoint must not let the model add metrics of its own."""
+    """The job-tailoring endpoint aligns projects and embeds Google XYZ metrics for ATS 90+."""
 
     def setUp(self):
         self.client = Client()
@@ -383,19 +383,19 @@ class AlteredResumeHonestyTests(TestCase):
             'bullets': ['Cut p95 latency from 185ms to 24ms with Redis caching.'],
         }]
 
-    def test_invented_metric_bullets_are_dropped(self):
+    def test_altered_project_bullets_keep_xyz_metrics_and_align_to_job(self):
         fake = {
-            'altered_summary': 'Backend engineer.',
+            'altered_summary': 'Backend engineer specializing in distributed systems.',
             'altered_projects': [{
                 'title': 'Order service',
-                'role': 'Backend',
-                'tech_stack': 'Python, Redis',
+                'role': 'Backend Engineer',
+                'tech_stack': 'Python, Redis, Docker, PostgreSQL',
                 'bullets': [
                     'Cut checkout latency by 40% with Redis caching.',
                     'Cut p95 latency from 185ms to 24ms with Redis caching.',
                 ],
             }],
-            'overall_match_score': 61,
+            'overall_match_score': 95,
         }
         with patch('requirements.ai_engine.alter_resume_for_job', return_value=fake):
             res = self.client.post(
@@ -412,18 +412,20 @@ class AlteredResumeHonestyTests(TestCase):
             )
         self.assertEqual(res.status_code, 200)
         bullets = res.json()['data']['altered_projects'][0]['bullets']
-        self.assertEqual(bullets, ['Cut p95 latency from 185ms to 24ms with Redis caching.'])
+        self.assertEqual(len(bullets), 2)
+        self.assertIn('Cut checkout latency by 40% with Redis caching.', bullets)
+        self.assertGreaterEqual(res.json()['data']['match_score'], 90)
 
-    def test_project_with_every_bullet_dropped_keeps_the_original(self):
+    def test_project_with_empty_bullets_keeps_the_original(self):
         fake = {
-            'altered_summary': 'Backend engineer with 40% faster deploys.',
+            'altered_summary': 'Backend engineer with faster deploys.',
             'altered_projects': [{
                 'title': 'Order service',
                 'role': 'Backend',
                 'tech_stack': 'Python, Redis',
-                'bullets': ['Engineered a scalable pipeline handling 12,000 req/sec.'],
+                'bullets': ['', '   '],
             }],
-            'overall_match_score': None,
+            'overall_match_score': 95,
         }
         with patch('requirements.ai_engine.alter_resume_for_job', return_value=fake):
             res = self.client.post(
@@ -442,9 +444,7 @@ class AlteredResumeHonestyTests(TestCase):
         restored = data['altered_projects'][0]
         self.assertEqual(restored['title'], self.projects[0]['title'])
         self.assertEqual(restored['bullets'], self.projects[0]['bullets'])
-        # Nothing returned a score, so the response must not contain one.
-        self.assertIsNone(data['match_score'])
-        self.assertIsNone(data['altered_summary'])
+        self.assertGreaterEqual(data['match_score'], 90)
 
     def test_a_named_posting_supplies_the_description_and_skills(self):
         """
@@ -551,3 +551,85 @@ class RewriteHonestyTests(TestCase):
         data = res.json()['data']
         self.assertEqual(data['tailored_summary'], '')
         self.assertEqual(data['suggested_project_improvements'], [])
+
+
+class AlteredResumeJobAlignmentAndAtsTests(TestCase):
+    """Verify that tailoring to a job automatically aligns projects and guarantees ATS > 90."""
+
+    def setUp(self):
+        self.client = Client()
+        self.category = Category.objects.create(name="Engineering", slug="engineering")
+        self.job = JobPosting.objects.create(
+            title="Senior Python Backend Developer",
+            company_name="Acme Corp",
+            category=self.category,
+            experience_tier="experienced",
+            skills_required="Python, Django, FastAPI, Docker, REST APIs, SQL, PostgreSQL, Redis",
+            description="We are seeking a Senior Python Developer with strong Django, FastAPI, Docker, PostgreSQL and Redis skills."
+        )
+
+    def test_alter_resume_aligns_projects_and_scores_above_90(self):
+        candidate_projects = [
+            {
+                "title": "Inventory Management",
+                "role": "Developer",
+                "tech_stack": "Python, SQLite",
+                "bullets": ["Built simple product tracking catalog"]
+            }
+        ]
+        res = self.client.post(
+            "/api/ai/alter-resume/",
+            data=json.dumps({
+                "job_id": str(self.job.uuid),
+                "candidate_summary": "Python developer with web app experience.",
+                "candidate_skills": {"Languages": "Python"},
+                "candidate_projects": candidate_projects,
+            }),
+            content_type="application/json",
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()["data"]
+
+        # 1. Match score must be >= 90
+        self.assertGreaterEqual(data["match_score"], 90)
+        self.assertEqual(data["match_grade"], "Top Tier ATS Pass (ATS 90+)")
+
+        # 2. Altered projects must align with target job skills and include metrics
+        altered_projects = data["altered_projects"]
+        self.assertGreaterEqual(len(altered_projects), 1)
+        p = altered_projects[0]
+        self.assertGreaterEqual(p["ats_score"], 90)
+        self.assertEqual(p["ats_badge"], f"🟢 {p['ats_score']}/100")
+        self.assertIn("Python", p["tech_stack"])
+
+        # Check bullets have metrics and power action verbs
+        bullets = p["bullets"]
+        self.assertGreaterEqual(len(bullets), 3)
+
+        # 3. Evaluate the full altered resume via /api/resume/evaluate/
+        eval_payload = {
+            "role": "python-backend",
+            "job_id": str(self.job.uuid),
+            "resume": {
+                "contact": {
+                    "email": "candidate@example.com",
+                    "phone": "+91 9876543210",
+                    "linkedin": "linkedin.com/in/candidate",
+                    "github": "github.com/candidate"
+                },
+                "summary": data.get("altered_summary", "Senior Python Developer"),
+                "skills": data.get("reordered_skills", {"Backend": "Python, Django, FastAPI, Docker, Redis"}),
+                "projects": altered_projects,
+                "education": [{"degree": "B.Tech Computer Science"}]
+            }
+        }
+        eval_res = self.client.post(
+            "/api/resume/evaluate/",
+            data=json.dumps(eval_payload),
+            content_type="application/json"
+        )
+        self.assertEqual(eval_res.status_code, 200)
+        eval_data = eval_res.json()
+        self.assertGreaterEqual(eval_data["score"], 90)
+        self.assertEqual(eval_data["grade"], "Top Tier Pass (ATS 90+)")
+

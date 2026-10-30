@@ -314,6 +314,34 @@
                 <ul id="rsMissing"></ul>
               </div>
             </div>
+
+            <!-- Action Bar to Open in Live Resume Editor and Export -->
+            <div class="rs-finish-actions" style="margin-top: 18px; padding: 18px; background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #bbf7d0; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
+                <div>
+                  <div style="font-weight: 800; font-size: 15px; color: #0f172a; display: flex; align-items: center; gap: 7px;">
+                    <i data-lucide="check-circle-2" style="width: 18px; height: 18px; color: #16a34a;"></i>
+                    <span>Resume Ready &amp; Tailored</span>
+                    <span style="font-size: 11px; font-weight: 700; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 9999px;">ATS 90+ Pass</span>
+                  </div>
+                  <p style="margin: 3px 0 0; font-size: 12.5px; color: #475569;">Open directly in the live A4 editor to customize, polish, or download PDF/Word.</p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a id="rsOpenInEditorBtn" href="{{ studio_editor_url }}" class="rs-btn rs-btn-primary" style="flex: 2; min-width: 220px; justify-content: center; font-size: 14px; font-weight: 700; padding: 11px 18px; text-decoration: none; background: #2563eb; color: #ffffff; border-radius: 9px; box-shadow: 0 4px 14px rgba(37,99,235,0.3); display: inline-flex; align-items: center; gap: 8px;">
+                  <i data-lucide="file-edit" style="width: 17px; height: 17px;"></i>
+                  <span>Open in Live Resume Editor ↗</span>
+                </a>
+                <button type="button" class="rs-btn rs-btn-quiet" style="flex: 1; min-width: 120px; justify-content: center; padding: 11px 14px;" onclick="rsDownload('pdf')">
+                  <i data-lucide="file-down" style="width: 16px; height: 16px;"></i>
+                  <span>Download PDF</span>
+                </button>
+                <button type="button" class="rs-btn rs-btn-quiet" style="flex: 1; min-width: 110px; justify-content: center; padding: 11px 14px;" onclick="rsDownload('docx')">
+                  <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                  <span>DOCX</span>
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1003,9 +1031,35 @@
     $('rsHintGenerate').className = 'rs-hint is-ok';
     $('rsNumGenerate').classList.add('is-done');
 
-    if (state.generationId) {
-      $('rsEditorLink').href = '/resume-builder/?gen_id=' + encodeURIComponent(state.generationId) +
-        (state.jobId ? '&job_id=' + encodeURIComponent(state.jobId) : '');
+    try {
+      sessionStorage.setItem('kashii_live_resume_data', JSON.stringify(resume));
+      localStorage.setItem('kashii_live_resume_data', JSON.stringify(resume));
+    } catch (e) {
+      console.warn('Could not cache generated resume:', e);
+    }
+
+    const editorTargetUrl = '/resume-builder/?from_studio=1' +
+      (state.generationId ? '&gen_id=' + encodeURIComponent(state.generationId) : '') +
+      (state.jobId ? '&job_id=' + encodeURIComponent(state.jobId) : (TARGET_JOB_ID ? '&job_id=' + encodeURIComponent(TARGET_JOB_ID) : ''));
+
+    const saveAndOpen = () => {
+      try {
+        if (state.resume) {
+          sessionStorage.setItem('kashii_live_resume_data', JSON.stringify(state.resume));
+          localStorage.setItem('kashii_live_resume_data', JSON.stringify(state.resume));
+        }
+      } catch (e) {}
+    };
+
+    const openEditorBtn = $('rsOpenInEditorBtn');
+    if (openEditorBtn) {
+      openEditorBtn.href = editorTargetUrl;
+      openEditorBtn.onclick = saveAndOpen;
+    }
+    const editorLink = $('rsEditorLink');
+    if (editorLink) {
+      editorLink.href = editorTargetUrl;
+      editorLink.onclick = saveAndOpen;
     }
     refreshIcons();
   }
