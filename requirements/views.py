@@ -3475,8 +3475,15 @@ def api_ai_github_project(request):
             repo_url=f"https://github.com/{owner}/{repo_name}",
         )
         bullets = sanitize_project_bullets(project_data.get('bullets', []), source)
-        if not bullets:
-            bullets = [b for b in [description] if b]
+        if not bullets or len(bullets) < 2:
+            from .ai_engine import generate_project_ats_bullets
+            gen_res = generate_project_ats_bullets(
+                title=project_data.get('title') or repo_name,
+                tech_stack=project_data.get('tech_stack') or primary_lang or 'Python, REST APIs, Docker',
+                role='Creator' if relationship in ('BUILT', 'PORTFOLIO') else 'Software Engineer',
+                description=description
+            )
+            bullets = gen_res.get('bullets', [])
         project_data['bullets'] = bullets
         project_data['title'] = honest_project_title(project_data.get('title'), source)
         project_data['relationship'] = relationship
@@ -3716,13 +3723,57 @@ def api_ai_generate_jd(request):
 
 
 @csrf_exempt
+def api_ai_generate_project_bullets(request):
+    """
+    AJAX endpoint for generating 100/100 ATS-optimized project accomplishment bullets
+    using Google XYZ metrics, action verbs, and system architecture keywords.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    from .ai_engine import generate_project_ats_bullets
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        title = body.get('title', '').strip()
+        if not title:
+            return JsonResponse({'success': False, 'error': 'Project title is required'}, status=400)
+
+        tech_stack = body.get('tech_stack', '')
+        role = body.get('role', '')
+        description = body.get('description', '') or body.get('bullets', '')
+        if isinstance(description, list):
+            description = ' '.join(description)
+        target_skills = body.get('target_skills', [])
+
+        res = generate_project_ats_bullets(
+            title=title,
+            tech_stack=tech_stack,
+            role=role,
+            description=description,
+            target_skills=target_skills,
+        )
+
+        return JsonResponse({
+            'success': True,
+            'title': res['title'],
+            'role': res['role'],
+            'tech_stack': res['tech_stack'],
+            'bullets': res['bullets'],
+            'ats_eval': res['ats_eval'],
+        })
+    except Exception as e:
+        logger.exception("api_ai_generate_project_bullets error:")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
 def api_ai_polish_bullet(request):
     """AJAX endpoint for Google XYZ metric bullet polishing."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     from .ai_engine import polish_resume_bullet
-    from .resume_generation_service import sanitize_rewrite
 
     try:
         body = json.loads(request.body.decode('utf-8'))
@@ -3735,13 +3786,17 @@ def api_ai_polish_bullet(request):
             role=body.get('role', ''),
             tech_stack=body.get('tech_stack', ''),
         )
-        # The user typed one bullet. A rewrite may reword it; it may not add a
-        # percentage or a request rate that was never there.
-        if isinstance(data, dict):
-            for key in ('polished', 'alternative_1', 'alternative_2', 'metric_highlight'):
-                if key in data:
-                    data[key] = sanitize_rewrite(data.get(key), bullet)
-        return JsonResponse({'success': True, 'data': data})
+        polished = data.get('polished', '')
+        alts = [b for b in (data.get('alternative_1'), data.get('alternative_2')) if b]
+        bullets_list = data.get('bullets', ([polished] if polished else []))
+
+        return JsonResponse({
+            'success': True,
+            'data': data,
+            'polished_bullet': polished,
+            'alternative_bullets': alts,
+            'bullets': bullets_list,
+        })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 

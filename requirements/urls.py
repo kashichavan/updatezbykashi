@@ -58,6 +58,7 @@ urlpatterns = [
     path('ai-job-description/', views.job_description_generator_view, name='ai_jd_alias'),
     path('api/ai/generate-jd/', views.api_ai_generate_jd, name='api_ai_generate_jd'),
     path('api/ai/polish-bullet/', views.api_ai_polish_bullet, name='api_ai_polish_bullet'),
+    path('api/ai/generate-project-bullets/', views.api_ai_generate_project_bullets, name='api_ai_generate_project_bullets'),
     path('api/ai/tailor-resume/', views.api_ai_tailor_resume, name='api_ai_tailor_resume'),
     path('api/ai/alter-resume/', views.api_ai_alter_resume, name='api_ai_alter_resume'),
     path('api/ai/generate-summary/', views.api_ai_generate_summary, name='api_ai_generate_summary'),

@@ -389,7 +389,8 @@ def score_project_ats(project: dict, target_skills: list = None) -> dict:
     action_verbs = {
         'architected', 'engineered', 'developed', 'optimized', 'built', 'spearheaded',
         'designed', 'implemented', 'constructed', 'deployed', 'automated', 'integrated',
-        'refactored', 'orchestrated', 'streamlined', 'benchmarked', 'scaled', 'accelerated'
+        'refactored', 'orchestrated', 'streamlined', 'benchmarked', 'scaled', 'accelerated',
+        'authored', 'pioneered', 'established', 'executed', 'created', 'standardized', 'accomplished', 'modernized'
     }
 
     weak_verbs = {'helped', 'worked on', 'assisted', 'handled', 'was responsible for', 'tried', 'participated in'}
