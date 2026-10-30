@@ -20,70 +20,110 @@
     <!-- Desktop / Tablet Navigation Links -->
     <nav class="nav-links" aria-label="Primary Navigation">
       <a href="/?today=true" class="nav-pill-today {% if request.GET.today %}active{% endif %}">
-        <i data-lucide="flame" class="nav-icon" style="width: 16px; height: 16px;"></i>
+        <i data-lucide="flame" class="nav-icon" style="width: 15px; height: 15px;"></i>
         <span class="nav-label-long">Today's Requirements</span>
         <span class="nav-label-short">Today</span>
       </a>
       
       <a href="/" class="{% if request.path == '/' and not request.GET.today and not request.GET.experience %}active{% endif %}">
-        <i data-lucide="briefcase" class="nav-icon" style="width: 16px; height: 16px;"></i>
+        <i data-lucide="briefcase" class="nav-icon" style="width: 15px; height: 15px;"></i>
         <span>Feed</span>
       </a>
 
-      <a href="/?experience=fresher" class="{% if request.GET.experience == 'fresher' %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i data-lucide="graduation-cap" class="nav-icon" style="width: 16px; height: 16px; color: #10b981;"></i>
-        <span class="nav-label-long">Freshers <span style="background: rgba(16, 185, 129, 0.18); color: #059669; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 800;">0-1 Y</span></span>
+      <a href="/?experience=fresher" class="{% if request.GET.experience == 'fresher' %}active{% endif %}">
+        <i data-lucide="graduation-cap" class="nav-icon" style="width: 15px; height: 15px; color: #10b981;"></i>
+        <span class="nav-label-long">Freshers <span class="nav-sub-badge badge-green">0-1 Y</span></span>
         <span class="nav-label-short">Freshers</span>
       </a>
 
-      <a href="/?experience=experienced" class="{% if request.GET.experience == 'experienced' %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i data-lucide="award" class="nav-icon" style="width: 16px; height: 16px; color: #6366f1;"></i>
-        <span class="nav-label-long">Experienced <span style="background: rgba(99, 102, 241, 0.18); color: #4f46e5; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 800;">1+ Y</span></span>
+      <a href="/?experience=experienced" class="{% if request.GET.experience == 'experienced' %}active{% endif %}">
+        <i data-lucide="award" class="nav-icon" style="width: 15px; height: 15px; color: #6366f1;"></i>
+        <span class="nav-label-long">Experienced <span class="nav-sub-badge badge-indigo">1+ Y</span></span>
         <span class="nav-label-short">Exp (1+)</span>
       </a>
 
-      <a href="/resume-builder/" class="{% if '/resume' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i data-lucide="file-text" class="nav-icon" style="width: 16px; height: 16px; color: #34d399;"></i>
-        <span class="nav-label-long">AI Resume Builder <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">Instant</span></span>
+      <a href="/resume-builder/" class="{% if '/resume' in request.path and '/resume-analysis' not in request.path and '/resume-checker' not in request.path %}active{% endif %}">
+        <i data-lucide="file-text" class="nav-icon" style="width: 15px; height: 15px; color: #10b981;"></i>
+        <span class="nav-label-long">Resume Builder <span class="nav-sub-badge badge-emerald">Instant</span></span>
         <span class="nav-label-short">Resume</span>
       </a>
 
-      <a href="/ai-resume-analysis/" class="{% if '/resume-analysis' in request.path or '/resume-checker' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i data-lucide="gauge" class="nav-icon" style="width: 16px; height: 16px; color: #38bdf8;"></i>
-        <span class="nav-label-long">ATS Score Checker <span style="background: rgba(56, 189, 248, 0.2); color: #0284c7; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 800;">Free</span></span>
-        <span class="nav-label-short">ATS Score</span>
+      <a href="/ai-resume-analysis/" class="{% if '/resume-analysis' in request.path or '/resume-checker' in request.path %}active{% endif %}">
+        <i data-lucide="gauge" class="nav-icon" style="width: 15px; height: 15px; color: #0284c7;"></i>
+        <span class="nav-label-long">ATS Score <span class="nav-sub-badge badge-sky">Free</span></span>
+        <span class="nav-label-short">ATS</span>
       </a>
 
-      <a href="/debugger/" class="{% if '/debugger' in request.path %}active{% endif %}">
-        <i data-lucide="terminal" class="nav-icon" style="width: 16px; height: 16px;"></i>
-        <span class="nav-label-long">Code Debugger</span>
-        <span class="nav-label-short">Debugger</span>
-      </a>
+      <!-- More Tools Dropdown -->
+      <div class="nav-dropdown" id="navMoreDropdown">
+        <button class="nav-dropdown-trigger {% if '/debugger' in request.path or '/sql' in request.path or '/job-description-generator' in request.path or '/jd-generator' in request.path or '/about' in request.path %}active{% endif %}" id="btnNavMore" aria-haspopup="true" aria-expanded="false" type="button">
+          <i data-lucide="layout-grid" class="nav-icon" style="width: 15px; height: 15px;"></i>
+          <span class="nav-label-long">More Tools</span>
+          <span class="nav-label-short">More</span>
+          <svg class="dropdown-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        
+        <div class="nav-dropdown-menu" id="navMoreMenu" role="menu" aria-labelledby="btnNavMore">
+          <div class="dropdown-group-title">DEVELOPER LABS &amp; AI</div>
 
-      <a href="/sql/" class="{% if '/sql' in request.path %}active{% endif %}">
-        <i data-lucide="database" class="nav-icon" style="width: 16px; height: 16px;"></i>
-        <span class="nav-label-long">SQL Debugger</span>
-        <span class="nav-label-short">SQL</span>
-      </a>
+          <a href="/debugger/" class="dropdown-item {% if '/debugger' in request.path %}active{% endif %}" role="menuitem">
+            <span class="dropdown-item-icon icon-code">
+              <i data-lucide="terminal" style="width: 16px; height: 16px;"></i>
+            </span>
+            <div class="dropdown-item-text">
+              <div class="dropdown-item-title">Visual Code Debugger <span class="dropdown-badge badge-amber">IDE</span></div>
+              <div class="dropdown-item-desc">Step-by-step code execution &amp; memory visualizer</div>
+            </div>
+          </a>
+          
+          <a href="/sql/" class="dropdown-item {% if '/sql' in request.path %}active{% endif %}" role="menuitem">
+            <span class="dropdown-item-icon icon-sql">
+              <i data-lucide="database" style="width: 16px; height: 16px;"></i>
+            </span>
+            <div class="dropdown-item-text">
+              <div class="dropdown-item-title">SQL Debugger IDE <span class="dropdown-badge badge-purple">SQL</span></div>
+              <div class="dropdown-item-desc">Interactive in-browser SQL playground &amp; query runner</div>
+            </div>
+          </a>
 
-      <a href="/tools/job-description-generator/" class="{% if '/job-description-generator' in request.path or '/jd-generator' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i data-lucide="sparkles" class="nav-icon" style="width: 16px; height: 16px; color: #c084fc;"></i>
-        <span class="nav-label-long">AI JD Generator <span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">AI</span></span>
-        <span class="nav-label-short">AI JD</span>
-      </a>
-      
-      <a href="/about/" class="{% if request.path == '/about/' %}active{% endif %}">
-        <i data-lucide="user" class="nav-icon" style="width: 16px; height: 16px;"></i>
-        <span>About</span>
-      </a>
+          <a href="/tools/job-description-generator/" class="dropdown-item {% if '/job-description-generator' in request.path or '/jd-generator' in request.path %}active{% endif %}" role="menuitem">
+            <span class="dropdown-item-icon icon-ai">
+              <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+            </span>
+            <div class="dropdown-item-text">
+              <div class="dropdown-item-title">AI JD Generator <span class="dropdown-badge badge-violet">AI</span></div>
+              <div class="dropdown-item-desc">Tailored job descriptions and hiring requirements</div>
+            </div>
+          </a>
 
-      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" style="color: #dc2626; font-weight: 800;">
-        <svg class="nav-icon" style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="#dc2626">
-          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-        </svg>
-        <span class="nav-label-long">YouTube (@pythonkashi)</span>
-        <span class="nav-label-short">YouTube</span>
-      </a>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-group-title">COMMUNITY &amp; ABOUT</div>
+
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener noreferrer" class="dropdown-item" role="menuitem">
+            <span class="dropdown-item-icon icon-yt">
+              <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="#dc2626">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+              </svg>
+            </span>
+            <div class="dropdown-item-text">
+              <div class="dropdown-item-title" style="color: #dc2626;">YouTube (@pythonkashi) <span class="dropdown-badge badge-red">WATCH</span></div>
+              <div class="dropdown-item-desc">Free tech tutorials, interview prep &amp; career guidance</div>
+            </div>
+          </a>
+
+          <a href="/about/" class="dropdown-item {% if request.path == '/about/' %}active{% endif %}" role="menuitem">
+            <span class="dropdown-item-icon icon-user">
+              <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+            </span>
+            <div class="dropdown-item-text">
+              <div class="dropdown-item-title">About Founder (Kashii)</div>
+              <div class="dropdown-item-desc">Learn about the mission &amp; direct hiring platform</div>
+            </div>
+          </a>
+        </div>
+      </div>
     </nav>
 
     <!-- Mobile Quick Today Action Pill (Visible on small screens where desktop nav is hidden) -->
@@ -232,6 +272,18 @@
             </div>
             <span class="drawer-badge" style="background: rgba(56, 189, 248, 0.2); color: #0284c7; font-weight: 800;">Free</span>
           </a>
+
+          <a href="/tools/job-description-generator/" class="drawer-link {% if '/job-description-generator' in request.path or '/jd-generator' in request.path %}active{% endif %}">
+            <div class="drawer-link-left">
+              <span class="drawer-link-icon" style="color: #c084fc;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </span>
+              <span class="drawer-link-label">AI JD Generator</span>
+            </div>
+            <span class="drawer-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-weight: 700;">AI</span>
+          </a>
         </nav>
       </div>
 
@@ -317,3 +369,56 @@
 
   </aside>
 </div>
+
+<!-- Header Dropdown & Nav Accessibility Script -->
+<script>
+(function() {
+  function initNavMoreDropdown() {
+    var dropdown = document.getElementById('navMoreDropdown');
+    var trigger = document.getElementById('btnNavMore');
+    var menu = document.getElementById('navMoreMenu');
+    if (!dropdown || !trigger || !menu) return;
+
+    // Toggle on trigger button click (supports touch laptops & keyboards)
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var willOpen = !dropdown.classList.contains('is-open');
+      if (willOpen) {
+        dropdown.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+      } else {
+        dropdown.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && dropdown.classList.contains('is-open')) {
+        dropdown.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.focus();
+      }
+    });
+
+    // Re-render icons if Lucide is ready
+    if (window.lucide && typeof window.lucide.createIcons === 'function') {
+      try { window.lucide.createIcons(); } catch(err) {}
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNavMoreDropdown);
+  } else {
+    initNavMoreDropdown();
+  }
+})();
+</script>
