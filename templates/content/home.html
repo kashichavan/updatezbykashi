@@ -121,43 +121,105 @@
     </div>
   </section>
 
-  <!-- Clean Category & Search Filter Bar -->
-  <section id="catalogSection" class="vp-filter-bar">
-    <div class="vp-tabs">
-      <button class="vp-tab {% if request.GET.today %}active{% endif %}" id="btnFilterToday" data-today="true" style="background: rgba(220, 38, 38, 0.08); color: #dc2626; border-color: rgba(220, 38, 38, 0.3); font-weight: 800;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="Today"> 🔥 Today's Requirements</button>
-      <button class="vp-tab {% if not request.GET.today and not request.GET.experience and not request.GET.category %}active{% endif %}" data-category="all"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="14" height="14" alt="All"> All Opportunities</button>
-      <button class="vp-tab {% if request.GET.experience == 'fresher' %}active{% endif %}" data-category="freshers" style="background: rgba(16, 185, 129, 0.08); color: #059669; border-color: rgba(16, 185, 129, 0.3); font-weight: 800;"><span>🎓</span> Fresher Hiring (0-1 Yrs)</button>
-      <button class="vp-tab {% if request.GET.experience == 'experienced' %}active{% endif %}" data-category="experienced" style="background: rgba(99, 102, 241, 0.08); color: #4f46e5; border-color: rgba(99, 102, 241, 0.3); font-weight: 800;"><span>💼</span> Experienced (1-5+ Yrs)</button>
-      <button class="vp-tab" data-category="qa-testing"><span>🧪</span> QA &amp; Testing</button>
-      <button class="vp-tab" data-category="hr-recruitment"><span>👥</span> HR &amp; Hiring</button>
-      <button class="vp-tab" data-category="mba-business"><span>📈</span> MBA &amp; Business</button>
-      <button class="vp-tab" data-category="software-tech"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software &amp; Tech</button>
-      <button class="vp-tab" data-category="non-it"><span>📞</span> Non IT &amp; Ops</button>
+  <!-- Search Keyword Bar Section -->
+  <div class="rel_header_search_wrapper">
+    <div class="rel_header_search_container">
+      <svg height="20" width="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" class="rel_header_search_icon" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      <input aria-label="job title or keyword" data-locator-id="joblisting_search_keywordsearch" id="header-keyword-search" class="rel_form-field__control--input-text rel_truncate rel_bg-transparent rel_outline-none" placeholder="job title or keyword" autocomplete="off" role="combobox" aria-invalid="false" aria-expanded="false" aria-autocomplete="list" type="text" value="" name="keyword" data-di-id="#header-keyword-search">
+      <button type="button" id="headerSearchClearBtn" class="rel_icon-button" style="display: none; color: var(--muted); padding: 4px;" aria-label="Clear search">
+        <svg height="16" width="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
     </div>
+  </div>
 
-    <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">
-      <div class="search-box">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input type="text" id="searchInput" placeholder="Search latest software requirements...">
-      </div>
+  <!-- Filter & Sort Bar Section -->
+  <section id="catalogSection" class="rel_filter_section" style="margin-bottom: 24px;">
+    <!-- Inline SVG sprite definitions -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <defs>
+        <symbol id="view-list" viewBox="0 0 16 16">
+          <rect x="2" y="3" width="12" height="2" rx="0.6" fill="currentColor"/>
+          <rect x="2" y="7" width="12" height="2" rx="0.6" fill="currentColor"/>
+          <rect x="2" y="11" width="12" height="2" rx="0.6" fill="currentColor"/>
+        </symbol>
+        <symbol id="view-grid" viewBox="0 0 16 16">
+          <rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+        </symbol>
+        <symbol id="check" viewBox="0 0 12 12">
+          <path d="M2 6.5L4.5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="chevron-down" viewBox="0 0 20 20">
+          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="filter" viewBox="0 0 16 16">
+          <path d="M2 3.5h12M4 8h8M6.5 12.5h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="close" viewBox="0 0 20 20">
+          <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+      </defs>
+    </svg>
 
-      <div class="filter-selects" style="display: flex; gap: 6px;">
-        <select id="filterCategory" style="display: none;">
-          <option value="all">All Categories</option>
-        </select>
+    <div class="rel_base rel_grid rel_gap-4 md:rel_gap-6"><button data-rs-popover-trigger="saved-jobs-login-popover" aria-hidden="true" type="button" data-locator-id="jobListing_savedjobs_loginpopover" style="display: none;"></button><div class="rel_flex rel_items-start rel_justify-between rel_gap-10 md:rel_mb-4 sortbar-row"><h1 class="rel_base rel_text-heading-sm" id="jobsFoundHeading">208 jobs found in bengaluru.</h1><div class="max-lg:rel_hidden rel_flex rel_items-center rel_gap-10 rel_shrink-0"><div data-locator-id="joblisting_toggle_sortview" class="rel_base rel_isolate rel_flex rel_w-fit rel_flex-wrap rel_items-center rel_justify-center rel_gap-1 rel_rounded-full rel_p-1 rel_outline rel_outline-1 rel_-outline-offset-1 rel_outline-[var(--border-trigger-idle)]"><button data-locator-id="joblisting_toggle_listview" type="button" aria-pressed="false" class="rel_group rel_flex rel_h-[32px] rel_w-fit rel_items-center rel_justify-center rel_gap-1 rel_rounded-full rel_border-2 rel_border-transparent rel_px-2 rel_py-1 focus-visible:rel_z-10 focus-visible:rel_outline-none focus-visible:rel_outline-[length:var(--outline-focus-ring-weight)] focus-visible:rel_outline-offset-[var(--outline-focus-ring-weight)] focus-visible:rel_outline-[var(--border-trigger-focus-ring)] rel_cursor-pointer hover:rel_border-trigger-hover"><span class="rel_sr-only">display jobs in list view</span><svg height="16" width="16" aria-hidden="true" focusable="false" class="rel_base rel_icon-on-bg-trigger-idle-variant" data-di-res-id="db614bd1-94862a2d" data-di-rand="1793360716070"><use href="/jobs-app/src/assets/img/randstad.svg#view-list" xlink:href="#view-list"></use></svg></button><button data-locator-id="joblisting_toggle_sortview" type="button" aria-pressed="true" class="rel_group rel_flex rel_h-[32px] rel_w-fit rel_items-center rel_justify-center rel_gap-1 rel_rounded-full rel_border-2 rel_border-transparent rel_px-2 rel_py-1 focus-visible:rel_z-10 focus-visible:rel_outline-none focus-visible:rel_outline-[length:var(--outline-focus-ring-weight)] focus-visible:rel_outline-offset-[var(--outline-focus-ring-weight)] focus-visible:rel_outline-[var(--border-trigger-focus-ring)] rel_bg-trigger-active"><svg height="12" width="12" aria-hidden="true" focusable="false" class="rel_base rel_icon-on-bg-trigger-active-variant" data-di-res-id="db614bd1-8d269ee1" data-di-rand="1793360716070"><use href="/jobs-app/src/assets/img/randstad.svg#check" xlink:href="#check"></use></svg><span class="rel_sr-only">display jobs in card view</span><svg height="16" width="16" aria-hidden="true" focusable="false" class="rel_base rel_icon-on-bg-trigger-active-variant" data-di-res-id="db614bd1-89637304" data-di-rand="1793360716070"><use href="/jobs-app/src/assets/img/randstad.svg#view-grid" xlink:href="#view-grid"></use></svg></button></div><div class="rel_base rel_flex rel_flex-col rel_gap-2 rel_form-field"><div class="rel_base rel_flex rel_flex-col rel_gap-2 rel_form-field"><div class="rel_relative rel_w-full rel_text-on-bg-components-forms-input-user-input"><select aria-label="sort:" data-locator-id="joblisting_search_sortby" id="sorter" class="rel_form-field__control rel_form-field__control--input-text rel_appearance-none rel_font-normal rel_text-paragraph-default" autocomplete="off" required="" aria-readonly="false" style="padding-right: 48px;"><option value="">sort by ...</option><option value="Date">date</option><option value="Proximity">proximity</option><option value="Relevance">relevancy</option></select><span class="rel_absolute rel_top-0 rel_flex rel_h-full rel_cursor-text rel_items-center rel_gap-3 rel_right-0 rel_pl-3 rel_pr-[var(--components-forms-padding-input-left-right)] rel_pointer-events-none"><svg height="20" width="20" aria-hidden="true" focusable="false" class="rel_base rel_icon-on-bg-[var(--components-forms-icon-on-bg-input-accent)]" data-di-res-id="db614bd1-7af368c7" data-di-rand="1793360716070"><use href="/jobs-app/src/assets/img/randstad.svg#chevron-down" xlink:href="#chevron-down"></use></svg></span></div></div></div></div></div><div class="rel_flex rel_justify-between rel_gap-4 filters-row"><div class="rel_base rel_flex rel_flex-wrap rel_items-center rel_gap-4"><div class="lg:rel_hidden"><button type="button" data-rs-modal-trigger="mobile-filters" class="rel_base rel_inline-flex rel_h-[40px] rel_max-w-full rel_cursor-pointer rel_items-center rel_gap-2 rel_rounded-full rel_border-[length:var(--border-weight-default)] rel_px-3 rel_py-1 rel_text-paragraph-md focus-visible:rel_outline focus-visible:rel_outline-[length:var(--outline-focus-ring-weight)] focus-visible:rel_outline-offset-[var(--outline-focus-ring-weight)] focus-visible:rel_outline-[var(--border-link-focus-ring)] rel_text-on-bg-trigger-idle-variant hover:[box-shadow:inset_0_0_0_1px_var(--border-trigger-hover)] active:rel_bg-[var(--bg-trigger-pressed)]" aria-expanded="false" aria-label="mobile-filter" aria-haspopup="dialog" data-locator-id="jobListing_searchFilters_filters"><svg height="16" width="16" aria-hidden="true" focusable="false" class="rel_base" data-di-res-id="8ed89689-d1c6a697" data-di-rand="1793360706387"><use href="/jobs-app/src/assets/img/randstad.svg#filter" xlink:href="#filter"></use></svg><span class="rel_truncate">filter</span></button></div><div class="max-lg:rel_hidden rel_flex rel_items-center rel_flex-wrap rel_gap-4"><p class="rel_text-on-bg-default-default rel_text-paragraph-md">filters:</p><div class="rel_base rel_filter_dropdown_wrapper"><button data-locator-id="searchjobs_filters_location" type="button" class="rel_base rel_inline-flex rel_h-[40px] rel_max-w-full rel_cursor-pointer rel_items-center rel_gap-2 rel_rounded-full rel_border-[length:var(--border-weight-default)] rel_px-3 rel_py-1 rel_text-paragraph-md focus-visible:rel_outline focus-visible:rel_outline-[length:var(--outline-focus-ring-weight)] focus-visible:rel_outline-offset-[var(--outline-focus-ring-weight)] focus-visible:rel_outline-[var(--border-link-focus-ring)] rel_border-none rel_bg-[var(--components-filter-button-bg-selected-idle)] rel_text-[color:var(--components-filter-button-on-bg-selected-idle)] hover:rel_bg-[var(--components-filter-button-bg-selected-hover)]" aria-expanded="false" aria-label="location, 1" aria-haspopup="dialog"><span aria-hidden="true" class="rel_base rel_inline-flex rel_items-center rel_rounded-full rel_text-paragraph-xs rel_justify-center rel_bg-feedback-info rel_text-on-bg-feedback-info rel_size-[20px] rel_flex-shrink-0"><span class="rel_truncate" id="locationFilterBadgeCount">1</span></span><span class="rel_truncate" aria-hidden="true" id="locationFilterBtnText">location</span><svg height="16" width="16" aria-hidden="true" focusable="false" class="rel_base rel_shrink-0 rel_transition-transform" data-di-res-id="8ed89689-cb7af571" data-di-rand="1793360706387"><use href="/jobs-app/src/assets/img/randstad.svg#chevron-down" xlink:href="#chevron-down"></use></svg></button><div id="popoverLocation" class="rel_popover" style="display: none;"><div class="rel_popover_header"><span class="rel_popover_title">Location</span><button type="button" class="rel_popover_close" data-close-popover="popoverLocation">&times;</button></div><div class="rel_popover_options"><button type="button" class="rel_filter_option active" data-city="Bengaluru">Bengaluru</button><button type="button" class="rel_filter_option" data-city="Hyderabad">Hyderabad</button><button type="button" class="rel_filter_option" data-city="Pune">Pune</button><button type="button" class="rel_filter_option" data-city="Mumbai">Mumbai</button><button type="button" class="rel_filter_option" data-city="Delhi NCR">Delhi NCR</button><button type="button" class="rel_filter_option" data-city="Remote">Remote</button><button type="button" class="rel_filter_option" data-city="">All Locations</button></div></div></div><div class="rel_base rel_filter_dropdown_wrapper"><button data-locator-id="searchjobs_filters_jobType" type="button" class="rel_base rel_inline-flex rel_h-[40px] rel_max-w-full rel_cursor-pointer rel_items-center rel_gap-2 rel_rounded-full rel_border-[length:var(--border-weight-default)] rel_px-3 rel_py-1 rel_text-paragraph-md focus-visible:rel_outline focus-visible:rel_outline-[length:var(--outline-focus-ring-weight)] focus-visible:rel_outline-offset-[var(--outline-focus-ring-weight)] focus-visible:rel_outline-[var(--border-link-focus-ring)] rel_text-on-bg-trigger-idle-variant hover:[box-shadow:inset_0_0_0_1px_var(--border-trigger-hover)] active:rel_bg-[var(--bg-trigger-pressed)]" aria-expanded="false" aria-haspopup="dialog"><span class="rel_truncate" id="jobTypeFilterBtnText">job types</span><svg height="16" width="16" aria-hidden="true" focusable="false" class="rel_base rel_shrink-0 rel_transition-transform" data-di-res-id="8ed89689-4a980693" data-di-rand="1793360706387"><use href="/jobs-app/src/assets/img/randstad.svg#chevron-down" xlink:href="#chevron-down"></use></svg></button><div id="popoverJobType" class="rel_popover" style="display: none;"><div class="rel_popover_header"><span class="rel_popover_title">Job Type</span><button type="button" class="rel_popover_close" data-close-popover="popoverJobType">&times;</button></div><div class="rel_popover_options"><button type="button" class="rel_filter_option active" data-job-type="all">All Types</button><button type="button" class="rel_filter_option" data-job-type="FULL_TIME">Full-Time</button><button type="button" class="rel_filter_option" data-job-type="INTERNSHIP">Internships</button></div></div></div><div class="rel_base rel_filter_dropdown_wrapper"><button data-locator-id="searchjobs_filters_specialism" type="button" class="rel_base rel_inline-flex rel_h-[40px] rel_max-w-full rel_cursor-pointer rel_items-center rel_gap-2 rel_rounded-full rel_border-[length:var(--border-weight-default)] rel_px-3 rel_py-1 rel_text-paragraph-md focus-visible:rel_outline focus-visible:rel_outline-[length:var(--outline-focus-ring-weight)] focus-visible:rel_outline-offset-[var(--outline-focus-ring-weight)] focus-visible:rel_outline-[var(--border-link-focus-ring)] rel_text-on-bg-trigger-idle-variant hover:[box-shadow:inset_0_0_0_1px_var(--border-trigger-hover)] active:rel_bg-[var(--bg-trigger-pressed)]" aria-expanded="false" aria-haspopup="dialog"><span class="rel_truncate" id="specialismFilterBtnText">professional field</span><svg height="16" width="16" aria-hidden="true" focusable="false" class="rel_base rel_shrink-0 rel_transition-transform" data-di-res-id="8ed89689-429f1ee7" data-di-rand="1793360706387"><use href="/jobs-app/src/assets/img/randstad.svg#chevron-down" xlink:href="#chevron-down"></use></svg></button><div id="popoverSpecialism" class="rel_popover" style="display: none;"><div class="rel_popover_header"><span class="rel_popover_title">Professional Field</span><button type="button" class="rel_popover_close" data-close-popover="popoverSpecialism">&times;</button></div><div class="rel_popover_options"><button type="button" class="rel_filter_option active" data-category="all">All Fields</button><button type="button" class="rel_filter_option" data-category="software-tech">Software &amp; Tech</button><button type="button" class="rel_filter_option" data-category="freshers">Fresher Hiring (0-1 Yrs)</button><button type="button" class="rel_filter_option" data-category="experienced">Experienced (1-5+ Yrs)</button><button type="button" class="rel_filter_option" data-category="qa-testing">QA &amp; Testing</button><button type="button" class="rel_filter_option" data-category="hr-recruitment">HR &amp; Hiring</button><button type="button" class="rel_filter_option" data-category="mba-business">MBA &amp; Business</button><button type="button" class="rel_filter_option" data-category="non-it">Non IT &amp; Ops</button></div></div></div><button data-locator-id="searchjobs_filters_allFilters" type="button" class="rel_base rel_inline-flex rel_h-[40px] rel_max-w-full rel_cursor-pointer rel_items-center rel_gap-2 rel_rounded-full rel_border-[length:var(--border-weight-default)] rel_px-3 rel_py-1 rel_text-paragraph-md focus-visible:rel_outline focus-visible:rel_outline-[length:var(--outline-focus-ring-weight)] focus-visible:rel_outline-offset-[var(--outline-focus-ring-weight)] focus-visible:rel_outline-[var(--border-link-focus-ring)] rel_text-on-bg-trigger-idle-variant hover:[box-shadow:inset_0_0_0_1px_var(--border-trigger-hover)] active:rel_bg-[var(--bg-trigger-pressed)]" aria-expanded="false" aria-label="all filters, 1" aria-haspopup="dialog"><svg height="16" width="16" aria-hidden="true" focusable="false" class="rel_base" data-di-res-id="8ed89689-4036ac45" data-di-rand="1793360706387"><use href="/jobs-app/src/assets/img/randstad.svg#filter" xlink:href="#filter"></use></svg><span class="rel_truncate" aria-hidden="true">all filters</span><span aria-hidden="true" class="rel_base rel_inline-flex rel_items-center rel_rounded-full rel_text-paragraph-xs rel_justify-center rel_bg-feedback-info rel_text-on-bg-feedback-info rel_size-[20px] rel_flex-shrink-0"><span class="rel_truncate" id="allFiltersBadgeCount">1</span></span></button></div></div><div class="rel_flex rel_items-center rel_gap-6"><div class="rel_flex rel_items-center rel_gap-4"></div><div class="rel_flex rel_items-center hidden--until-l"><button data-locator-id="searchjobs_search_savedSearchAlertButton" class="rel_base rel_button rel_button--primary rel_button--md button-saved-jobs-alerts rel_mx-auto" type="button"><span class="rel_truncate">save this search &amp; get alerts</span></button></div></div></div><div class="rel_flex rel_flex-wrap rel_items-center rel_gap-4 selected-tags-row" data-locator-id="searchjobs_filters_selectedFilters" id="selectedFiltersRow"><p class="rel_text-on-bg-default-default rel_text-paragraph-md">selected filters:</p><span class="rel_base rel_tag rel_inline-flex rel_items-center rel_gap-1 rel_py-1 rel_tag--primary rel_h-6 rel_px-2 rel_text-paragraph-xs rel_pr-1" id="selectedCityTag"><span class="rel_truncate" id="selectedCityTagName">bengaluru, karnataka</span><button data-locator-id="searchjobs_filters_selectedFiltersRemoveButton" class="rel_base rel_icon-button rel_icon-button--tertiary rel_icon-button--xs" aria-label="clear filter bengaluru, karnataka" type="button" id="btnClearCityTag"><svg height="20" width="20" aria-hidden="true" focusable="false" class="rel_base" data-di-res-id="8ed89689-4332f495" data-di-rand="1793360706387"><use href="/jobs-app/src/assets/img/randstad.svg#close" xlink:href="#close"></use></svg></button></span><button type="button" class="rel_base rel_text-on-bg-default-link-idle rel_text-link-paragraph hover:rel_text-on-bg-default-link-hover hover:rel_no-underline active:rel_text-on-bg-default-link-pressed active:rel_underline hover:rel_cursor-pointer" title="clear all" data-locator-id="jobListing_searchFilters_clearallfilters" id="btnClearAllFilters">clear all</button></div><div class="lg:rel_hidden rel_flex rel_items-center rel_w-full rel_mt-4"><div class="rel_flex rel_items-center"><button data-locator-id="searchjobs_search_savedSearchAlertButton" class="rel_base rel_button rel_button--primary rel_button--md button-saved-jobs-alerts rel_mx-auto" type="button"><span class="rel_truncate">save this search &amp; get alerts</span></button></div></div></div>
 
-        <select id="filterJobType">
-          <option value="all">All Types</option>
-          <option value="INTERNSHIP">Internships</option>
-          <option value="FULL_TIME">Full-Time</option>
-        </select>
-
-        <select id="filterSort">
-          <option value="newest">Newest First</option>
-          <option value="deadline">Closing Soon</option>
-        </select>
+    <!-- All Filters / Mobile Filters Modal -->
+    <div id="modalAllFilters" class="rel_modal_backdrop" style="display: none;" role="dialog" aria-modal="true" aria-label="All Filters">
+      <div class="rel_modal_container">
+        <div class="rel_modal_header">
+          <h3 class="rel_modal_title">Filters</h3>
+          <button type="button" class="rel_popover_close" id="btnCloseAllFilters">&times;</button>
+        </div>
+        <div class="rel_modal_body">
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Location</span>
+            <div class="rel_filter_chips" id="modalLocationChips">
+              <button type="button" class="rel_chip active" data-city="Bengaluru">Bengaluru</button>
+              <button type="button" class="rel_chip" data-city="Hyderabad">Hyderabad</button>
+              <button type="button" class="rel_chip" data-city="Pune">Pune</button>
+              <button type="button" class="rel_chip" data-city="Mumbai">Mumbai</button>
+              <button type="button" class="rel_chip" data-city="Delhi NCR">Delhi NCR</button>
+              <button type="button" class="rel_chip" data-city="Remote">Remote</button>
+              <button type="button" class="rel_chip" data-city="">All Locations</button>
+            </div>
+          </div>
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Job Type</span>
+            <div class="rel_filter_chips" id="modalJobTypeChips">
+              <button type="button" class="rel_chip active" data-job-type="all">All Types</button>
+              <button type="button" class="rel_chip" data-job-type="FULL_TIME">Full-Time</button>
+              <button type="button" class="rel_chip" data-job-type="INTERNSHIP">Internships</button>
+            </div>
+          </div>
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Professional Field</span>
+            <div class="rel_filter_chips" id="modalCategoryChips">
+              <button type="button" class="rel_chip active" data-category="all">All Fields</button>
+              <button type="button" class="rel_chip" data-category="software-tech">Software &amp; Tech</button>
+              <button type="button" class="rel_chip" data-category="freshers">Freshers (0-1 Y)</button>
+              <button type="button" class="rel_chip" data-category="experienced">Experienced (1+ Y)</button>
+              <button type="button" class="rel_chip" data-category="qa-testing">QA &amp; Testing</button>
+              <button type="button" class="rel_chip" data-category="hr-recruitment">HR &amp; Hiring</button>
+              <button type="button" class="rel_chip" data-category="mba-business">MBA &amp; Business</button>
+              <button type="button" class="rel_chip" data-category="non-it">Non IT</button>
+            </div>
+          </div>
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Sort By</span>
+            <div class="rel_filter_chips" id="modalSortChips">
+              <button type="button" class="rel_chip active" data-sort="newest">Newest First</button>
+              <button type="button" class="rel_chip" data-sort="deadline">Closing Soon</button>
+            </div>
+          </div>
+        </div>
+        <div class="rel_modal_footer">
+          <button type="button" class="rel_modal_btn_reset" id="btnResetModalFilters">Reset</button>
+          <button type="button" class="rel_modal_btn_apply" id="btnApplyModalFilters">Apply Filters</button>
+        </div>
       </div>
     </div>
   </section>

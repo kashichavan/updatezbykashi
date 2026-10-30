@@ -214,6 +214,19 @@ def ads_txt_view(request):
     return response
 
 
+def randstad_svg_view(request):
+    """Serve the SVG sprite for job listing filter and sort icons."""
+    svg_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'randstad.svg')
+    if os.path.exists(svg_path):
+        with open(svg_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    else:
+        content = '<svg xmlns="http://www.w3.org/2000/svg"></svg>'
+    response = HttpResponse(content, content_type="image/svg+xml; charset=utf-8")
+    response['Cache-Control'] = 'public, max-age=86400'
+    return response
+
+
 def index_view(request):
     try:
         sync_expired_jobs()

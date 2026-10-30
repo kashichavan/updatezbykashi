@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import (
 from requirements.views import (
     ads_txt_verification_view,
     ads_txt_view,
+    randstad_svg_view,
     api_ping,
     sitemap_xml_view,
     robots_txt_view,
@@ -19,6 +20,9 @@ from api.ninja_api import api as ninja_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Job Listing SVG Sprite Assets
+    path('jobs-app/src/assets/img/randstad.svg', randstad_svg_view, name='randstad_svg'),
 
     # Keep-Alive & Healthcheck Endpoint
     path('api/ping', api_ping, name='api_ping'),
