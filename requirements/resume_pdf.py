@@ -15,6 +15,87 @@ from reportlab.pdfgen import canvas
 
 PAGE_W, PAGE_H = A4
 
+TEMPLATES_CONFIG = {
+    'modern': {
+        'font_name': 'Helvetica',
+        'font_bold': 'Helvetica-Bold',
+        'font_oblique': 'Helvetica-Oblique',
+        'name_color': colors.HexColor('#1e3a8a'),
+        'sec_title_color': colors.HexColor('#1e3a8a'),
+        'rule_color': colors.HexColor('#2563eb'),
+        'rule_thickness': 1.4,
+        'project_title_color': colors.HexColor('#1e3a8a'),
+        'body_color': colors.HexColor('#1e293b'),
+        'bullet_color': colors.HexColor('#2563eb'),
+        'header_align': 1,
+    },
+    'classic': {
+        'font_name': 'Times-Roman',
+        'font_bold': 'Times-Bold',
+        'font_oblique': 'Times-Italic',
+        'name_color': colors.HexColor('#0f172a'),
+        'sec_title_color': colors.HexColor('#0f172a'),
+        'rule_color': colors.HexColor('#475569'),
+        'rule_thickness': 0.8,
+        'project_title_color': colors.HexColor('#0f172a'),
+        'body_color': colors.HexColor('#1e293b'),
+        'bullet_color': colors.HexColor('#0f172a'),
+        'header_align': 1,
+    },
+    'bold': {
+        'font_name': 'Helvetica',
+        'font_bold': 'Helvetica-Bold',
+        'font_oblique': 'Helvetica-Oblique',
+        'name_color': colors.HexColor('#0f172a'),
+        'sec_title_color': colors.HexColor('#1d4ed8'),
+        'rule_color': colors.HexColor('#1d4ed8'),
+        'rule_thickness': 1.8,
+        'project_title_color': colors.HexColor('#1d4ed8'),
+        'body_color': colors.HexColor('#1e293b'),
+        'bullet_color': colors.HexColor('#1d4ed8'),
+        'header_align': 0,
+    },
+    'minimalist': {
+        'font_name': 'Helvetica',
+        'font_bold': 'Helvetica-Bold',
+        'font_oblique': 'Helvetica-Oblique',
+        'name_color': colors.HexColor('#0f172a'),
+        'sec_title_color': colors.HexColor('#64748b'),
+        'rule_color': colors.HexColor('#e2e8f0'),
+        'rule_thickness': 0.6,
+        'project_title_color': colors.HexColor('#0f172a'),
+        'body_color': colors.HexColor('#334155'),
+        'bullet_color': colors.HexColor('#64748b'),
+        'header_align': 0,
+    },
+    'executive': {
+        'font_name': 'Helvetica',
+        'font_bold': 'Helvetica-Bold',
+        'font_oblique': 'Helvetica-Oblique',
+        'name_color': colors.HexColor('#0f172a'),
+        'sec_title_color': colors.HexColor('#334155'),
+        'rule_color': colors.HexColor('#cbd5e1'),
+        'rule_thickness': 1.0,
+        'project_title_color': colors.HexColor('#0f172a'),
+        'body_color': colors.HexColor('#1e293b'),
+        'bullet_color': colors.HexColor('#334155'),
+        'header_align': 0,
+    },
+    'standard': {
+        'font_name': 'Helvetica',
+        'font_bold': 'Helvetica-Bold',
+        'font_oblique': 'Helvetica-Oblique',
+        'name_color': colors.HexColor('#0f172a'),
+        'sec_title_color': colors.HexColor('#0f172a'),
+        'rule_color': colors.HexColor('#0f172a'),
+        'rule_thickness': 0.8,
+        'project_title_color': colors.HexColor('#0f172a'),
+        'body_color': colors.HexColor('#1e293b'),
+        'bullet_color': colors.HexColor('#0f172a'),
+        'header_align': 1,
+    }
+}
+
 
 class NumberedCanvas(canvas.Canvas):
     """
@@ -107,13 +188,8 @@ def sanitize_text(val):
     return text
 
 
-def generate_ats_resume_pdf(data: dict) -> bytes:
-    """
-    Generates an ATS-compliant PDF resume from a structured resume dictionary.
-    Guarantees vector-only output with 100% extractable text and zero rasterization.
-    Dynamically balances typography, margins, and line heights so standard resumes
-    elegantly fill the A4 sheet with zero awkward white-space or misalignments.
-    """
+def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
+    """Internal renderer generating PDF bytes with specific scale factor and template themes."""
     buffer = io.BytesIO()
 
     summary = data.get('summary') or ''
@@ -128,6 +204,9 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
     certs = data.get('certifications') or []
     if isinstance(certs, str):
         certs = [certs]
+
+    template_key = str(data.get('template') or 'standard').lower()
+    cfg = TEMPLATES_CONFIG.get(template_key, TEMPLATES_CONFIG['standard'])
 
     # Calculate content volume for intelligent dynamic A4 budget
     total_lines = 0
@@ -146,50 +225,60 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
     if certs:
         total_lines += len(certs) * 1.1
 
-    page_mode = str(data.get('page_mode') or 'auto').lower()
-
-    # Optimal scaling to ensure full-page A4 balance or clean multi-page pagination
-    is_multi_target = (page_mode == 'multi') or (page_mode == 'auto' and total_lines > 25)
+    page_mode = str(data.get('page_mode') or 'single').lower()
+    is_multi_target = (page_mode == 'multi') or (page_mode == 'auto' and total_lines > 34)
 
     if not is_multi_target:
-        # Standard Single-Page A4 Budget
+        # Standard Single-Page A4 Budget with scaling
         if total_lines <= 20:
-            top_margin = 36
-            bottom_margin = 36
-            side_margin = 36
-            name_size = 22.0
-            sec_title_size = 11.5
-            body_size = 9.8
-            body_leading = 14.2
-            bullet_size = 9.5
-            bullet_leading = 14.0
-            spacer_gap = 10.5
-            bullet_gap = 4.0
-        else:
-            top_margin = 25
-            bottom_margin = 25
-            side_margin = 34
-            name_size = 19.5
-            sec_title_size = 10.8
-            body_size = 8.8
-            body_leading = 12.2
-            bullet_size = 8.5
-            bullet_leading = 11.8
-            spacer_gap = 6.0
-            bullet_gap = 2.5
+            top_margin = int(28 * scale_factor)
+            bottom_margin = int(28 * scale_factor)
+            side_margin = int(32 * scale_factor)
+            name_size = 20.0 * scale_factor
+            sec_title_size = 11.2 * scale_factor
+            body_size = 9.4 * scale_factor
+            body_leading = 13.5 * scale_factor
+            bullet_size = 9.0 * scale_factor
+            bullet_leading = 13.0 * scale_factor
+            spacer_gap = 7.5 * scale_factor
+            bullet_gap = 3.0 * scale_factor
+        elif total_lines <= 27:
+            top_margin = int(22 * scale_factor)
+            bottom_margin = int(22 * scale_factor)
+            side_margin = int(30 * scale_factor)
+            name_size = 18.5 * scale_factor
+            sec_title_size = 10.6 * scale_factor
+            body_size = 8.8 * scale_factor
+            body_leading = 12.0 * scale_factor
+            bullet_size = 8.5 * scale_factor
+            bullet_leading = 11.6 * scale_factor
+            spacer_gap = 5.2 * scale_factor
+            bullet_gap = 2.2 * scale_factor
+        else: # High density 1-page fit (3-4 flagship projects)
+            top_margin = int(18 * scale_factor)
+            bottom_margin = int(18 * scale_factor)
+            side_margin = int(26 * scale_factor)
+            name_size = 17.0 * scale_factor
+            sec_title_size = 10.0 * scale_factor
+            body_size = 8.1 * scale_factor
+            body_leading = 10.6 * scale_factor
+            bullet_size = 7.9 * scale_factor
+            bullet_leading = 10.2 * scale_factor
+            spacer_gap = 3.8 * scale_factor
+            bullet_gap = 1.6 * scale_factor
     else:
         # Multi-Page A4 Budget (Executive readability across 2+ A4 sheets)
-        top_margin = 34
-        bottom_margin = 38
-        side_margin = 36
-        name_size = 21.0
-        sec_title_size = 11.5
-        body_size = 9.6
-        body_leading = 13.8
-        bullet_size = 9.2
-        bullet_leading = 13.4
-        spacer_gap = 9.5
-        bullet_gap = 3.6
+        top_margin = int(32 * scale_factor)
+        bottom_margin = int(36 * scale_factor)
+        side_margin = int(34 * scale_factor)
+        name_size = 20.5 * scale_factor
+        sec_title_size = 11.2 * scale_factor
+        body_size = 9.4 * scale_factor
+        body_leading = 13.4 * scale_factor
+        bullet_size = 9.0 * scale_factor
+        bullet_leading = 13.0 * scale_factor
+        spacer_gap = 8.5 * scale_factor
+        bullet_gap = 3.2 * scale_factor
 
     printable_w = PAGE_W - (side_margin * 2)
 
@@ -204,24 +293,28 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
 
     styles = getSampleStyleSheet()
 
+    font_regular = cfg['font_name']
+    font_bold = cfg['font_bold']
+    font_oblique = cfg['font_oblique']
+
     name_style = ParagraphStyle(
         'ATSName',
         parent=styles['Normal'],
-        fontName='Helvetica-Bold',
+        fontName=font_bold,
         fontSize=name_size,
-        leading=name_size + 4,
-        alignment=1, # Centered
-        textColor=colors.HexColor('#0f172a'),
+        leading=name_size + 3.5,
+        alignment=cfg.get('header_align', 1),
+        textColor=cfg.get('name_color', colors.HexColor('#0f172a')),
         keepWithNext=True
     )
 
     contact_style = ParagraphStyle(
         'ATSContact',
         parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=body_size - 0.3,
-        leading=body_size + 3.5,
-        alignment=1, # Centered
+        fontName=font_regular,
+        fontSize=body_size - 0.2,
+        leading=body_size + 3.2,
+        alignment=cfg.get('header_align', 1),
         textColor=colors.HexColor('#334155'),
         keepWithNext=True
     )
@@ -229,10 +322,10 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
     sec_title_style = ParagraphStyle(
         'ATSSecTitle',
         parent=styles['Normal'],
-        fontName='Helvetica-Bold',
+        fontName=font_bold,
         fontSize=sec_title_size,
-        leading=sec_title_size + 3,
-        textColor=colors.HexColor('#0f172a'),
+        leading=sec_title_size + 2.5,
+        textColor=cfg.get('sec_title_color', colors.HexColor('#0f172a')),
         spaceBefore=spacer_gap,
         keepWithNext=True
     )
@@ -240,48 +333,48 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
     body_style = ParagraphStyle(
         'ATSBody',
         parent=styles['Normal'],
-        fontName='Helvetica',
+        fontName=font_regular,
         fontSize=body_size,
         leading=body_leading,
-        textColor=colors.HexColor('#1e293b')
+        textColor=cfg.get('body_color', colors.HexColor('#1e293b'))
     )
 
     right_align_style = ParagraphStyle(
         'ATSRightAlign',
         parent=body_style,
         alignment=2, # Right
-        fontName='Helvetica-Bold',
-        textColor=colors.HexColor('#0f172a')
+        fontName=font_bold,
+        textColor=cfg.get('sec_title_color', colors.HexColor('#0f172a'))
     )
 
     right_role_style = ParagraphStyle(
         'ATSRightRole',
         parent=body_style,
         alignment=2, # Right
-        fontName='Helvetica-Oblique',
-        textColor=colors.HexColor('#334155')
+        fontName=font_oblique,
+        textColor=colors.HexColor('#475569')
     )
 
     tech_style = ParagraphStyle(
         'ATSTech',
         parent=body_style,
         fontSize=body_size - 0.2,
-        leading=body_leading - 0.5,
+        leading=body_leading - 0.4,
         textColor=colors.HexColor('#334155')
     )
 
     bullet_style = ParagraphStyle(
         'ATSBullet',
         parent=styles['Normal'],
-        fontName='Helvetica',
+        fontName=font_regular,
         fontSize=bullet_size,
         leading=bullet_leading,
-        textColor=colors.HexColor('#1e293b'),
-        leftIndent=13,
+        textColor=cfg.get('body_color', colors.HexColor('#1e293b')),
+        leftIndent=12,
         bulletIndent=2,
-        bulletFontName='Helvetica',
+        bulletFontName=font_regular,
         bulletFontSize=bullet_size,
-        bulletColor=colors.HexColor('#0f172a')
+        bulletColor=cfg.get('bullet_color', colors.HexColor('#0f172a'))
     )
 
     story = []
@@ -289,19 +382,22 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
     # 1. Candidate Name
     raw_name = data.get('name') or 'CANDIDATE NAME'
     story.append(Paragraph(sanitize_text(raw_name).upper(), name_style))
-    story.append(Spacer(1, 4))
+    story.append(Spacer(1, 3))
 
     # 2. Contact Details Bar
     contact = data.get('contact') or {}
     if isinstance(contact, dict):
-        c_parts = [
-            sanitize_text(contact.get('location')),
-            sanitize_text(contact.get('phone')),
-            sanitize_text(contact.get('email')),
-            sanitize_text(contact.get('linkedin')),
-            sanitize_text(contact.get('github'))
-        ]
-        c_parts = [p for p in c_parts if p]
+        c_parts = []
+        if contact.get('location'):
+            c_parts.append(sanitize_text(contact.get('location')))
+        if contact.get('phone'):
+            c_parts.append(sanitize_text(contact.get('phone')))
+        if contact.get('email'):
+            c_parts.append(f'<a href="mailto:{sanitize_text(contact.get("email"))}"><font color="#1d4ed8">{sanitize_text(contact.get("email"))}</font></a>')
+        if contact.get('linkedin'):
+            c_parts.append(f'<a href="https://{sanitize_text(contact.get("linkedin"))}"><font color="#1d4ed8">{sanitize_text(contact.get("linkedin"))}</font></a>')
+        if contact.get('github'):
+            c_parts.append(f'<a href="https://{sanitize_text(contact.get("github"))}"><font color="#1d4ed8">{sanitize_text(contact.get("github"))}</font></a>')
         c_line = ' &nbsp;|&nbsp; '.join(c_parts)
     elif isinstance(contact, str):
         c_line = sanitize_text(contact)
@@ -316,10 +412,10 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
         story.append(Paragraph(title, sec_title_style))
         story.append(HRFlowable(
             width='100%',
-            thickness=0.8,
-            color=colors.HexColor('#0f172a'),
-            spaceBefore=2,
-            spaceAfter=spacer_gap * 0.55
+            thickness=cfg.get('rule_thickness', 0.8),
+            color=cfg.get('rule_color', colors.HexColor('#0f172a')),
+            spaceBefore=1.5,
+            spaceAfter=spacer_gap * 0.5
         ))
 
     # Helper for Two-Column Split Headers (Pixel-aligned to margins)
@@ -328,7 +424,7 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
             return Paragraph(left_html, body_style)
 
         r_style = right_align_style if is_date else right_role_style
-        right_w = 110 if is_date else 170
+        right_w = 110 if is_date else 180
         left_w = printable_w - right_w
         table = Table(
             [[
@@ -350,7 +446,7 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
     if summary and str(summary).strip():
         add_section_header('PROFESSIONAL SUMMARY')
         story.append(Paragraph(sanitize_text(summary), body_style))
-        story.append(Spacer(1, spacer_gap * 0.7))
+        story.append(Spacer(1, spacer_gap * 0.6))
 
     # 4. Technical Skills
     if skills:
@@ -360,13 +456,13 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
                 if sk and str(sk).strip():
                     line = f'<b>{sanitize_text(cat)}:</b> {sanitize_text(sk)}'
                     story.append(Paragraph(line, body_style))
-                    story.append(Spacer(1, 2.5))
+                    story.append(Spacer(1, 2.0))
         elif isinstance(skills, list):
             line = f'<b>Core Skills:</b> {sanitize_text(", ".join(skills))}'
             story.append(Paragraph(line, body_style))
         elif isinstance(skills, str):
             story.append(Paragraph(sanitize_text(skills), body_style))
-        story.append(Spacer(1, spacer_gap * 0.7))
+        story.append(Spacer(1, spacer_gap * 0.6))
 
     # 5. Professional Work Experience (if any)
     if exp_list:
@@ -380,10 +476,8 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
             duration = sanitize_text(exp.get('period') or exp.get('duration') or '')
             location = sanitize_text(exp.get('location', ''))
 
-            # Line 1: Company (Left) | Duration (Right)
             exp_flowables.append(create_split_header(f'<b>{company}</b>', duration, is_date=True))
 
-            # Line 2: Role • Location
             sub_line_parts = []
             if role:
                 sub_line_parts.append(f'<i>{role}</i>')
@@ -395,7 +489,7 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
             tech_stack = sanitize_text(exp.get('tech_stack', ''))
             if tech_stack:
                 exp_flowables.append(Paragraph(f'<b>Core Stack:</b> {tech_stack}', tech_style))
-                exp_flowables.append(Spacer(1, 1.8))
+                exp_flowables.append(Spacer(1, 1.5))
 
             bullets = exp.get('bullets', [])
             if isinstance(bullets, str):
@@ -404,10 +498,12 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
                 if b and str(b).strip():
                     exp_flowables.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
                     exp_flowables.append(Spacer(1, bullet_gap))
-            exp_flowables.append(Spacer(1, spacer_gap * 0.6))
+            exp_flowables.append(Spacer(1, spacer_gap * 0.5))
 
-            # Keep individual experience entry cohesive on a single page
-            story.append(KeepTogether(exp_flowables))
+            if total_lines <= 27:
+                story.append(KeepTogether(exp_flowables))
+            else:
+                story.extend(exp_flowables)
 
     # 6. Enterprise / Flagship Software Projects
     if proj_list:
@@ -421,18 +517,22 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
             role = sanitize_text(proj.get('role', ''))
             duration = sanitize_text(proj.get('period') or proj.get('duration') or '')
             tech_stack = sanitize_text(proj.get('tech_stack', ''))
+            gh_url = proj.get('github_url', '')
 
-            # Left: Project Title (Bold), Right: Role (Italics) or Date
+            title_html = f'<b>{title}</b>'
+            if gh_url:
+                title_html += f' &nbsp;<a href="{gh_url}"><font color="#1d4ed8" size="-1.5"><b>[GitHub ↗]</b></font></a>'
+
             if duration:
-                proj_flowables.append(create_split_header(f'<b>{title}</b> &nbsp;|&nbsp; <i>{role}</i>' if role else f'<b>{title}</b>', duration, is_date=True))
+                proj_flowables.append(create_split_header(f'{title_html} &nbsp;|&nbsp; <i>{role}</i>' if role else title_html, duration, is_date=True))
             elif role:
-                proj_flowables.append(create_split_header(f'<b>{title}</b>', f'<i>{role}</i>', is_date=False))
+                proj_flowables.append(create_split_header(title_html, f'<i>{role}</i>', is_date=False))
             else:
-                proj_flowables.append(Paragraph(f'<b>{title}</b>', body_style))
+                proj_flowables.append(Paragraph(title_html, body_style))
 
             if tech_stack:
                 proj_flowables.append(Paragraph(f'<b>Technologies:</b> {tech_stack}', tech_style))
-                proj_flowables.append(Spacer(1, 1.8))
+                proj_flowables.append(Spacer(1, 1.5))
 
             bullets = proj.get('bullets', [])
             if isinstance(bullets, str):
@@ -441,10 +541,12 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
                 if b and str(b).strip():
                     proj_flowables.append(Paragraph(sanitize_text(b), bullet_style, bulletText='•'))
                     proj_flowables.append(Spacer(1, bullet_gap))
-            proj_flowables.append(Spacer(1, spacer_gap * 0.6))
+            proj_flowables.append(Spacer(1, spacer_gap * 0.5))
 
-            # Keep individual project entry cohesive on a single page
-            story.append(KeepTogether(proj_flowables))
+            if total_lines <= 27:
+                story.append(KeepTogether(proj_flowables))
+            else:
+                story.extend(proj_flowables)
 
     # 7. Education
     if education_raw:
@@ -471,11 +573,15 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
 
                 if coursework:
                     edu_flowables.append(Paragraph(f'<b>Core Coursework:</b> {coursework}', tech_style))
-                edu_flowables.append(Spacer(1, 3.0))
+                edu_flowables.append(Spacer(1, 2.5))
             elif isinstance(edu, str) and edu.strip():
                 edu_flowables.append(Paragraph(sanitize_text(edu), body_style))
-        edu_flowables.append(Spacer(1, spacer_gap * 0.7))
-        story.append(KeepTogether(edu_flowables))
+        edu_flowables.append(Spacer(1, spacer_gap * 0.5))
+
+        if total_lines <= 27:
+            story.append(KeepTogether(edu_flowables))
+        else:
+            story.extend(edu_flowables)
 
     # 8. Certifications & Achievements
     if certs:
@@ -489,3 +595,37 @@ def generate_ats_resume_pdf(data: dict) -> bytes:
 
     doc.build(story, canvasmaker=make_numbered_canvas(raw_name))
     return buffer.getvalue()
+
+
+def generate_ats_resume_pdf(data: dict) -> bytes:
+    """
+    Generates an ATS-compliant PDF resume from a structured resume dictionary.
+    Guarantees vector-only output with 100% extractable text, zero rasterization,
+    full template fidelity, and self-healing single-page fitting.
+    """
+    import pypdf
+
+    page_mode = str(data.get('page_mode') or 'single').lower()
+
+    # Pass 1: Standard render
+    pdf_bytes = _render_ats_pdf_buffer(data, scale_factor=1.0)
+
+    # If single-page mode requested, verify page count and auto-scale if slightly overflowed
+    if page_mode == 'single':
+        try:
+            reader = pypdf.PdfReader(io.BytesIO(pdf_bytes))
+            if len(reader.pages) > 1:
+                # Pass 2: Compact scale
+                pdf_bytes_p2 = _render_ats_pdf_buffer(data, scale_factor=0.91)
+                reader_p2 = pypdf.PdfReader(io.BytesIO(pdf_bytes_p2))
+                if len(reader_p2.pages) == 1:
+                    return pdf_bytes_p2
+                # Pass 3: Ultra-dense scale for heavy resumes (4+ projects)
+                pdf_bytes_p3 = _render_ats_pdf_buffer(data, scale_factor=0.83)
+                reader_p3 = pypdf.PdfReader(io.BytesIO(pdf_bytes_p3))
+                if len(reader_p3.pages) == 1:
+                    return pdf_bytes_p3
+        except Exception:
+            pass
+
+    return pdf_bytes

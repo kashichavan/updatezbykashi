@@ -266,9 +266,11 @@ def index_view(request):
                 Q(title__icontains='architect')
             ).exclude(job_type='INTERNSHIP').exclude(experience_tier__in=['INTERNSHIP', 'FRESHER'])
 
+        initial_jobs_count = jobs_qs.count()
         initial_jobs = list(jobs_qs.order_by('-posted_date', '-created_at')[:18])
     except Exception as e:
         logger.warning(f"Error fetching initial_jobs: {e}")
+        initial_jobs_count = 0
 
     try:
         from blog.models import BlogPost
@@ -279,6 +281,7 @@ def index_view(request):
     return render(request, 'content/home.html', {
         'youtube_videos': videos,
         'initial_jobs': initial_jobs,
+        'initial_jobs_count': initial_jobs_count,
         'recent_posts': recent_posts,
     })
 
@@ -1887,6 +1890,22 @@ def api_jobs(request):
 
             if sort == 'deadline':
                 qs = qs.order_by('deadline')
+            elif sort in ['relevance', 'Relevance', 'relevancy']:
+                if query:
+                    from django.db.models import Case, When, Value, IntegerField
+                    qs = qs.annotate(
+                        relevance_rank=Case(
+                            When(title__iexact=query, then=Value(10)),
+                            When(title__istartswith=query, then=Value(8)),
+                            When(title__icontains=query, then=Value(6)),
+                            When(skills_required__icontains=query, then=Value(4)),
+                            When(company_name__icontains=query, then=Value(3)),
+                            default=Value(1),
+                            output_field=IntegerField()
+                        )
+                    ).order_by('-relevance_rank', '-posted_date', '-created_at')
+                else:
+                    qs = qs.order_by('-posted_date', '-created_at')
 
             try:
                 page_int = int(page)

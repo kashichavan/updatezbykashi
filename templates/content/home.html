@@ -170,20 +170,20 @@
 
       <!-- Sortbar Row: Heading & Controls -->
       <div class="sortbar-row">
-        <h1 class="rel_base rel_text-heading-sm" id="jobsFoundHeading">Loading opportunities...</h1>
+        <h1 class="rel_base rel_text-heading-sm" id="jobsFoundHeading">{% if initial_jobs_count %}{{ initial_jobs_count }} jobs found.{% else %}Loading opportunities...{% endif %}</h1>
 
         <div class="rel_flex rel_items-center rel_gap-4">
           <!-- View Switcher -->
           <div class="view-toggle-container" data-locator-id="joblisting_toggle_sortview">
             <button data-locator-id="joblisting_toggle_listview" type="button" aria-pressed="false" class="view-toggle-btn" title="Display in list view">
               <span class="rel_sr-only">display jobs in list view</span>
-              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="/jobs-app/src/assets/img/randstad.svg#view-list" xlink:href="#view-list"></use></svg>
+              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#view-list" xlink:href="#view-list"></use></svg>
               <span>List</span>
             </button>
             <button data-locator-id="joblisting_toggle_sortview" type="button" aria-pressed="true" class="view-toggle-btn active rel_bg-trigger-active" title="Display in card view">
-              <svg height="11" width="11" aria-hidden="true" focusable="false"><use href="/jobs-app/src/assets/img/randstad.svg#check" xlink:href="#check"></use></svg>
+              <svg height="11" width="11" aria-hidden="true" focusable="false"><use href="#check" xlink:href="#check"></use></svg>
               <span class="rel_sr-only">display jobs in card view</span>
-              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="/jobs-app/src/assets/img/randstad.svg#view-grid" xlink:href="#view-grid"></use></svg>
+              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#view-grid" xlink:href="#view-grid"></use></svg>
               <span>Cards</span>
             </button>
           </div>
@@ -196,7 +196,7 @@
               <option value="Proximity">Sort by: Closing Soon</option>
             </select>
             <span class="sorter-chevron">
-              <svg height="18" width="18" aria-hidden="true" focusable="false"><use href="/jobs-app/src/assets/img/randstad.svg#chevron-down" xlink:href="#chevron-down"></use></svg>
+              <svg height="18" width="18" aria-hidden="true" focusable="false"><use href="#chevron-down" xlink:href="#chevron-down"></use></svg>
             </span>
           </div>
         </div>
@@ -208,7 +208,7 @@
           <!-- Mobile Filters Trigger -->
           <div class="lg:rel_hidden">
             <button type="button" data-rs-modal-trigger="mobile-filters" class="filter-trigger-btn" aria-expanded="false" aria-label="Mobile Filters">
-              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="/jobs-app/src/assets/img/randstad.svg#filter" xlink:href="#filter"></use></svg>
+              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
               <span>Filters</span>
             </button>
           </div>
@@ -286,7 +286,7 @@
 
           <!-- All Filters Button -->
           <button data-locator-id="searchjobs_filters_allFilters" type="button" class="filter-trigger-btn" aria-expanded="false" aria-label="all filters">
-            <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="/jobs-app/src/assets/img/randstad.svg#filter" xlink:href="#filter"></use></svg>
+            <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
             <span>all filters</span>
             <span class="filter-badge-counter" id="allFiltersBadgeCount" style="display: none;">0</span>
           </button>
@@ -382,6 +382,7 @@
             <span class="rel_filter_group_title">Sort By</span>
             <div class="rel_filter_chips" id="modalSortChips">
               <button type="button" class="rel_chip active" data-sort="newest">Newest First</button>
+              <button type="button" class="rel_chip" data-sort="relevance">Relevancy</button>
               <button type="button" class="rel_chip" data-sort="deadline">Closing Soon</button>
             </div>
           </div>

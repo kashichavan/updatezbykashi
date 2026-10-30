@@ -135,7 +135,7 @@
           </button>
           <button type="button" onclick="window.print(); closeMoreMenu();" class="studio-menu-item">
             <i data-lucide="printer" style="width: 15px; height: 15px; color: #475569;"></i>
-            <span>Print Document</span>
+            <span>Print / Browser PDF</span>
           </button>
           {% if not target_job %}
           <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
@@ -3329,6 +3329,278 @@
     WordEditor.updateToolbarState();
   });
 
+  /* ==========================================================
+     LIVE RESUME DOM EXTRACTION ENGINE (Exact WYSIWYG Sync)
+     ========================================================== */
+
+  function extractSkillsFromDom() {
+    const container = document.getElementById('previewSkills');
+    if (!container) return currentResumeData?.skills || {};
+    const lines = container.querySelectorAll('.ats-skill-line, p');
+    const skillsObj = {};
+    if (lines && lines.length > 0) {
+      lines.forEach(line => {
+        const strongEl = line.querySelector('strong');
+        let cat = '';
+        let val = '';
+        if (strongEl) {
+          cat = strongEl.innerText.replace(/:$/, '').trim();
+          const clone = line.cloneNode(true);
+          const s = clone.querySelector('strong');
+          if (s) s.remove();
+          val = clone.innerText.replace(/^:\s*/, '').trim();
+        } else {
+          const text = line.innerText.trim();
+          const colonIdx = text.indexOf(':');
+          if (colonIdx !== -1) {
+            cat = text.substring(0, colonIdx).trim();
+            val = text.substring(colonIdx + 1).trim();
+          } else if (text) {
+            cat = 'Core Competencies';
+            val = text;
+          }
+        }
+        if (cat && val) {
+          skillsObj[cat] = val;
+        }
+      });
+    }
+    return Object.keys(skillsObj).length > 0 ? skillsObj : (currentResumeData?.skills || {});
+  }
+
+  function extractExperienceFromDom() {
+    const expSection = document.getElementById('previewExperienceSection');
+    if (expSection && expSection.style.display === 'none') {
+      return [];
+    }
+    const container = document.getElementById('previewExperience');
+    if (!container) return currentResumeData?.experience || [];
+    const entries = container.querySelectorAll('.ats-project-entry');
+    if (!entries || entries.length === 0) {
+      return currentResumeData?.experience || [];
+    }
+    const experienceList = [];
+    entries.forEach((entry, idx) => {
+      const origExp = (currentResumeData?.experience && currentResumeData.experience[idx]) || {};
+      const titleEl = entry.querySelector('.ats-project-title');
+      const company = titleEl ? titleEl.innerText.trim() : (origExp.company || '');
+      const dateEl = entry.querySelector('.ats-date');
+      const period = dateEl ? dateEl.innerText.trim() : (origExp.period || '');
+      
+      const roleEl = entry.querySelector('em') || entry.querySelector('.ats-project-role');
+      const role = roleEl ? roleEl.innerText.trim() : (origExp.role || '');
+      
+      const techEl = entry.querySelector('.ats-project-tech');
+      let tech_stack = origExp.tech_stack || '';
+      if (techEl) {
+        const cloneTech = techEl.cloneNode(true);
+        cloneTech.querySelectorAll('strong').forEach(s => s.remove());
+        tech_stack = cloneTech.innerText.replace(/^(Core Stack:|Technologies:)?\s*/i, '').trim();
+      }
+      
+      const bulletEls = entry.querySelectorAll('ul.ats-bullet-list li');
+      let bullets = [];
+      if (bulletEls && bulletEls.length > 0) {
+        bulletEls.forEach(li => {
+          const cloneLi = li.cloneNode(true);
+          cloneLi.querySelectorAll('.print-hide').forEach(el => el.remove());
+          const t = cloneLi.innerText.trim();
+          if (t) bullets.push(t);
+        });
+      }
+      if (bullets.length === 0 && origExp.bullets) {
+        bullets = origExp.bullets;
+      }
+      
+      if (company || role) {
+        experienceList.push({
+          company,
+          role,
+          period,
+          location: origExp.location || '',
+          tech_stack,
+          bullets
+        });
+      }
+    });
+    return experienceList.length > 0 ? experienceList : (currentResumeData?.experience || []);
+  }
+
+  function extractProjectsFromDom() {
+    const container = document.getElementById('previewProjects');
+    if (!container) return currentResumeData?.projects || [];
+    const entries = container.querySelectorAll('.ats-project-entry');
+    if (!entries || entries.length === 0) {
+      return currentResumeData?.projects || [];
+    }
+    const projectList = [];
+    entries.forEach((entry, idx) => {
+      const origProj = (currentResumeData?.projects && currentResumeData.projects[idx]) || {};
+      
+      const titleEl = entry.querySelector('.ats-project-title');
+      let title = origProj.title || '';
+      if (titleEl) {
+        const cloneTitle = titleEl.cloneNode(true);
+        cloneTitle.querySelectorAll('.print-hide').forEach(el => el.remove());
+        title = cloneTitle.innerText.trim();
+      }
+      
+      const roleEl = entry.querySelector('.ats-project-role') || entry.querySelector('em');
+      let role = origProj.role || 'Full Stack Engineer';
+      if (roleEl) {
+        role = roleEl.innerText.trim();
+      }
+      
+      const techEl = entry.querySelector('.ats-project-tech');
+      let tech_stack = origProj.tech_stack || '';
+      if (techEl) {
+        const cloneTech = techEl.cloneNode(true);
+        cloneTech.querySelectorAll('strong').forEach(s => s.remove());
+        tech_stack = cloneTech.innerText.replace(/^(Technologies:|Tech Stack:)?\s*/i, '').trim();
+      }
+      
+      let github_url = origProj.github_url || '';
+      const gitLink = entry.querySelector('a.ats-project-github-link') || entry.querySelector('a[href*="github.com"]');
+      if (gitLink && gitLink.getAttribute('href')) {
+        github_url = gitLink.getAttribute('href');
+      }
+      
+      const bulletEls = entry.querySelectorAll('ul.ats-bullet-list li');
+      let bullets = [];
+      if (bulletEls && bulletEls.length > 0) {
+        bulletEls.forEach(li => {
+          const cloneLi = li.cloneNode(true);
+          cloneLi.querySelectorAll('.print-hide').forEach(el => el.remove());
+          const t = cloneLi.innerText.trim();
+          if (t) bullets.push(t);
+        });
+      }
+      if (bullets.length === 0 && origProj.bullets) {
+        bullets = origProj.bullets;
+      }
+      
+      if (title) {
+        projectList.push({
+          title,
+          role,
+          tech_stack,
+          bullets,
+          github_url,
+          ats_score: origProj.ats_score || 96
+        });
+      }
+    });
+    return projectList.length > 0 ? projectList : (currentResumeData?.projects || []);
+  }
+
+  function extractEducationFromDom() {
+    const origEdu = currentResumeData?.education || {};
+    const degreeEl = document.getElementById('previewDegree');
+    const yearEl = document.getElementById('previewYear');
+    const collegeEl = document.getElementById('previewCollege');
+    const courseworkEl = document.querySelector('.ats-education-coursework');
+    
+    const degree = degreeEl ? degreeEl.innerText.trim() : (origEdu.degree || '');
+    const year = yearEl ? yearEl.innerText.trim() : (origEdu.year || '');
+    
+    let institution = origEdu.institution || '';
+    let gpa = origEdu.gpa || '';
+    if (collegeEl) {
+      const text = collegeEl.innerText.trim();
+      if (text.includes('•') || text.includes('\u2022')) {
+        const parts = text.split(/[•\u2022]/);
+        institution = parts[0].trim();
+        gpa = (parts[1] || '').replace(/CGPA:\s*/i, '').replace(/GPA:\s*/i, '').trim();
+      } else {
+        institution = text;
+      }
+    }
+    
+    let coursework = origEdu.coursework || '';
+    if (courseworkEl) {
+      const clone = courseworkEl.cloneNode(true);
+      clone.querySelectorAll('strong').forEach(s => s.remove());
+      coursework = clone.innerText.replace(/^(Core Coursework:)?\s*/i, '').trim();
+    }
+    
+    return {
+      degree,
+      year,
+      institution,
+      gpa,
+      coursework
+    };
+  }
+
+  function extractCertificationsFromDom() {
+    const container = document.getElementById('previewCertifications');
+    const section = document.getElementById('previewCertificationsSection');
+    if (!container || (section && section.style.display === 'none')) {
+      return [];
+    }
+    const certEls = container.querySelectorAll('li');
+    const certs = [];
+    if (certEls && certEls.length > 0) {
+      certEls.forEach(li => {
+        const cloneLi = li.cloneNode(true);
+        cloneLi.querySelectorAll('.print-hide').forEach(el => el.remove());
+        const t = cloneLi.innerText.trim();
+        if (t) certs.push(t);
+      });
+    }
+    return certs.length > 0 ? certs : (currentResumeData?.certifications || []);
+  }
+
+  function extractFullResumeFromDom() {
+    const rawName = document.getElementById('previewName')?.innerText?.trim() || currentResumeData?.name || '';
+    
+    const contact = {
+      email: document.getElementById('previewEmail')?.innerText?.trim() || currentResumeData?.contact?.email || '',
+      phone: document.getElementById('previewPhone')?.innerText?.trim() || currentResumeData?.contact?.phone || '',
+      location: document.getElementById('previewLocation')?.innerText?.trim() || currentResumeData?.contact?.location || '',
+      linkedin: document.getElementById('previewLinkedin')?.innerText?.trim() || currentResumeData?.contact?.linkedin || '',
+      github: document.getElementById('previewGithub')?.innerText?.trim() || currentResumeData?.contact?.github || ''
+    };
+
+    const summary = document.getElementById('previewSummary')?.innerText?.trim() || currentResumeData?.summary || '';
+    const skills = extractSkillsFromDom();
+    const experience = extractExperienceFromDom();
+    const projects = extractProjectsFromDom();
+    const education = extractEducationFromDom();
+    const certifications = extractCertificationsFromDom();
+
+    // Active template detection
+    let template = 'standard';
+    const sheet = document.getElementById('resumeSheet');
+    if (sheet) {
+      const validTemplates = ['modern', 'classic', 'minimalist', 'bold', 'executive'];
+      for (const t of validTemplates) {
+        if (sheet.classList.contains(`template-${t}`)) {
+          template = t;
+          break;
+        }
+      }
+    }
+    if (template === 'standard') {
+      template = localStorage.getItem('kashii_resume_template') || 'standard';
+    }
+
+    const payload = {
+      name: rawName,
+      contact,
+      summary,
+      skills,
+      experience,
+      projects,
+      education,
+      certifications,
+      template,
+      page_mode: typeof activeDocPageMode !== 'undefined' ? activeDocPageMode : 'single'
+    };
+
+    return payload;
+  }
+
   // Export clean Microsoft Word document
   async function downloadResumeAsDocx() {
     const sheet = document.getElementById('resumeSheet');
@@ -3344,25 +3616,7 @@
 
     // 1. Primary: Direct Native .docx from python-docx backend
     try {
-      const resumePayload = JSON.parse(JSON.stringify(currentResumeData || {}));
-      const rawName = document.getElementById('previewName') ? document.getElementById('previewName').innerText : (currentResumeData?.name || '');
-      if (rawName) resumePayload.name = rawName.trim();
-
-      const pEmail = document.getElementById('previewEmail')?.innerText?.trim();
-      const pPhone = document.getElementById('previewPhone')?.innerText?.trim();
-      const pLoc = document.getElementById('previewLocation')?.innerText?.trim();
-      const pLink = document.getElementById('previewLinkedin')?.innerText?.trim();
-      const pGit = document.getElementById('previewGithub')?.innerText?.trim();
-
-      if (!resumePayload.contact) resumePayload.contact = {};
-      if (pEmail) resumePayload.contact.email = pEmail;
-      if (pPhone) resumePayload.contact.phone = pPhone;
-      if (pLoc) resumePayload.contact.location = pLoc;
-      if (pLink) resumePayload.contact.linkedin = pLink;
-      if (pGit) resumePayload.contact.github = pGit;
-
-      const pSummary = document.getElementById('previewSummary')?.innerText?.trim();
-      if (pSummary) resumePayload.summary = pSummary;
+      const resumePayload = extractFullResumeFromDom();
 
       const res = await fetch('/api/resume/download-docx/', {
         method: 'POST',
@@ -3519,26 +3773,8 @@
 
     // 1. Primary: Direct High-Fidelity Vector ATS PDF from ReportLab backend
     try {
-      // Sync latest live DOM values to currentResumeData copy
-      const resumePayload = JSON.parse(JSON.stringify(currentResumeData || {}));
-      resumePayload.page_mode = activeDocPageMode;
-      if (rawName) resumePayload.name = rawName.trim();
-      
-      const pEmail = document.getElementById('previewEmail')?.innerText?.trim();
-      const pPhone = document.getElementById('previewPhone')?.innerText?.trim();
-      const pLoc = document.getElementById('previewLocation')?.innerText?.trim();
-      const pLink = document.getElementById('previewLinkedin')?.innerText?.trim();
-      const pGit = document.getElementById('previewGithub')?.innerText?.trim();
-
-      if (!resumePayload.contact) resumePayload.contact = {};
-      if (pEmail) resumePayload.contact.email = pEmail;
-      if (pPhone) resumePayload.contact.phone = pPhone;
-      if (pLoc) resumePayload.contact.location = pLoc;
-      if (pLink) resumePayload.contact.linkedin = pLink;
-      if (pGit) resumePayload.contact.github = pGit;
-
-      const pSummary = document.getElementById('previewSummary')?.innerText?.trim();
-      if (pSummary) resumePayload.summary = pSummary;
+      // Synchronize 100% of live DOM edits into payload
+      const resumePayload = extractFullResumeFromDom();
 
       const res = await fetch('/api/resume/download-pdf/', {
         method: 'POST',
@@ -3585,10 +3821,10 @@
         }
         sheet.classList.add('ats-exporting');
         const opt = {
-          margin:       [10, 12, 10, 12],
+          margin:       0,
           filename:     filename,
           image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0 },
+          html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, scrollX: 0, windowWidth: 794 },
           jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak:    { mode: ['css', 'legacy'], before: '.word-page-break' }
         };

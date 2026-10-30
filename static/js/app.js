@@ -16,18 +16,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const isYesterdayOnly = urlParams.get('yesterday') === 'true' || urlParams.get('yesterday') === '1';
   const isPreviousOnly = urlParams.get('previous') === 'true' || urlParams.get('previous') === '1';
   const expParam = (urlParams.get('experience') || urlParams.get('exp') || '').toLowerCase().trim();
-  if (expParam in ['fresher', 'freshers', '0-1']) {
+  if (['fresher', 'freshers', '0-1'].includes(expParam)) {
     currentCategory = 'freshers';
-  } else if (expParam in ['experienced', 'experience', '1+', 'lateral']) {
+  } else if (['experienced', 'experience', '1+', 'lateral'].includes(expParam)) {
     currentCategory = 'experienced';
   }
 
+  // Saved view preference (cards vs list)
+  const savedViewMode = localStorage.getItem('kashii_job_view_mode') || 'grid';
+
+  // CRITICAL: Default state MUST have zero filters applied on initial page load
   const state = {
     searchQuery: urlParams.get('q') || urlParams.get('keyword') || '',
-    category: currentCategory,
-    city: 'Bengaluru',
-    jobType: 'all',
-    sort: 'newest',
+    category: isCategoryPage ? currentCategory : (urlParams.get('category') || 'all'),
+    city: urlParams.get('city') || urlParams.get('location') || '', // Default: '' (All Locations)
+    jobType: urlParams.get('job_type') || urlParams.get('type') || 'all', // Default: 'all' (All Types)
+    sort: urlParams.get('sort') || 'newest', // Default: 'newest'
     isTodayOnly: isTodayOnly,
     isYesterdayOnly: isYesterdayOnly,
     isPreviousOnly: isPreviousOnly,
@@ -39,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     categories: [],
     activeJobId: null,
     timerInterval: null,
-    viewMode: 'grid',
+    viewMode: savedViewMode,
   };
 
   // DOM Elements
@@ -352,7 +356,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Failed to load jobs:', err);
-      jobsGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #ef4444; font-weight: 700;">Error loading opportunities feed.</div>`;
+      if (jobsFoundHeading) jobsFoundHeading.textContent = 'Unable to load opportunities.';
+      jobsGrid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1.5px solid #fecaca; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.06);">
+          <div style="font-size: 36px; margin-bottom: 10px;">⚠️</div>
+          <h3 style="color: #b91c1c; font-size: 18px; font-weight: 800; margin-bottom: 6px;">Unable to load opportunities feed</h3>
+          <p style="color: #64748b; font-size: 13.5px; margin-bottom: 16px;">We encountered a network or server issue while fetching the listings.</p>
+          <button type="button" id="btnRetryLoadJobs" class="rel_modal_btn_apply" style="padding: 8px 22px; cursor: pointer;">Retry Now</button>
+        </div>`;
+      const btnRetry = document.getElementById('btnRetryLoadJobs');
+      if (btnRetry) {
+        btnRetry.addEventListener('click', (e) => {
+          e.preventDefault();
+          loadJobs();
+        });
+      }
     }
   }
 
@@ -388,10 +406,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!jobs || jobs.length === 0) {
       jobsGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: #ffffff; border-radius: 16px; border: 1px solid var(--subtle-border);">
-          <h3 style="font-family: var(--font-serif); font-size: 20px; margin-bottom: 6px;">No active opportunities</h3>
-          <p style="color: var(--muted); font-size: 14px;">Postings older than 7 days automatically deactivate.</p>
+        <div class="empty-jobs-container" style="grid-column: 1 / -1; text-align: center; padding: 4rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1px solid var(--subtle-border, #e2e8f0); box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);">
+          <div style="font-size: 38px; margin-bottom: 12px;">🔍</div>
+          <h3 style="font-family: var(--font-serif); font-size: 20px; font-weight: 800; color: var(--ink, #0f172a); margin-bottom: 8px;">No jobs found matching your filters.</h3>
+          <p style="color: var(--muted, #64748b); font-size: 14px; max-width: 440px; margin: 0 auto 18px; line-height: 1.5;">Try selecting a different location, removing specific job type criteria, or clearing all filters.</p>
+          <button type="button" id="btnEmptyClearFilters" class="rel_modal_btn_apply" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; cursor: pointer;">
+            <span>Clear All Filters</span>
+          </button>
         </div>`;
+      const btnEmptyClear = document.getElementById('btnEmptyClearFilters');
+      if (btnEmptyClear) {
+        btnEmptyClear.addEventListener('click', (e) => {
+          e.preventDefault();
+          clearAllFiltersAction();
+        });
+      }
       return;
     }
 
@@ -655,9 +684,37 @@ document.addEventListener('DOMContentLoaded', () => {
     detailModal.classList.add('active');
   }
 
+  const CATEGORY_LABELS = {
+    'all': 'All Fields',
+    'software-tech': 'Software & Tech',
+    'freshers': 'Fresher Hiring (0-1 Yrs)',
+    'experienced': 'Experienced (1-5+ Yrs)',
+    'qa-testing': 'QA & Testing',
+    'hr-recruitment': 'HR & Hiring',
+    'mba-business': 'MBA & Business',
+    'non-it': 'Non IT & Ops'
+  };
+
+  function clearAllFiltersAction() {
+    state.city = '';
+    state.category = isCategoryPage ? currentCategory : 'all';
+    state.jobType = 'all';
+    state.searchQuery = '';
+    state.isTodayOnly = false;
+    state.isYesterdayOnly = false;
+    state.isPreviousOnly = false;
+    state.sort = 'newest';
+    state.page = 1;
+    if (searchInput) searchInput.value = '';
+    const clearBtn = document.getElementById('headerSearchClearBtn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (sortSelect) sortSelect.value = 'Date';
+    loadJobs();
+  }
+
   function updateHeadingAndTags() {
     if (jobsFoundHeading) {
-      const locText = state.city ? ` in ${state.city.toLowerCase()}` : '';
+      const locText = state.city ? ` in ${state.city}` : '';
       if (state.searchQuery) {
         jobsFoundHeading.textContent = `${state.totalCount} jobs found for "${state.searchQuery}"${locText}.`;
       } else {
@@ -691,14 +748,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let activeFilterCount = 0;
 
-    // 1. City Filter Sync
+    // 1. City Filter Sync (Default: '' All Locations)
     if (state.city) {
       activeFilterCount++;
       if (locationBtnText) locationBtnText.textContent = state.city.toLowerCase();
       if (locationBadge) { locationBadge.textContent = '1'; locationBadge.style.display = 'inline-flex'; }
       if (btnLocation) btnLocation.classList.add('is-active');
       if (selectedCityTag && selectedCityTagName) {
-        selectedCityTagName.textContent = `${state.city.toLowerCase()}, karnataka`;
+        selectedCityTagName.textContent = state.city;
         selectedCityTag.style.display = 'inline-flex';
       }
     } else {
@@ -708,11 +765,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (selectedCityTag) selectedCityTag.style.display = 'none';
     }
 
-    // 2. Job Type Filter Sync
+    // 2. Job Type Filter Sync (Default: 'all' All Types)
     if (state.jobType && state.jobType !== 'all') {
       activeFilterCount++;
-      const typeLabel = state.jobType === 'FULL_TIME' ? 'full-time' : 'internships';
-      if (jobTypeBtnText) jobTypeBtnText.textContent = typeLabel;
+      const typeLabel = state.jobType === 'FULL_TIME' ? 'Full-Time' : 'Internships';
+      if (jobTypeBtnText) jobTypeBtnText.textContent = typeLabel.toLowerCase();
       if (jobTypeBadge) { jobTypeBadge.textContent = '1'; jobTypeBadge.style.display = 'inline-flex'; }
       if (btnJobType) btnJobType.classList.add('is-active');
       if (selectedJobTypeTag && selectedJobTypeTagName) {
@@ -726,14 +783,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (selectedJobTypeTag) selectedJobTypeTag.style.display = 'none';
     }
 
-    // 3. Category / Specialism Filter Sync
+    // 3. Category / Specialism Filter Sync (Default: 'all' All Fields)
     if (state.category && state.category !== 'all') {
       activeFilterCount++;
-      if (specialismBtnText) specialismBtnText.textContent = state.category;
+      const catLabel = CATEGORY_LABELS[state.category] || state.category;
+      if (specialismBtnText) specialismBtnText.textContent = catLabel.toLowerCase();
       if (specialismBadge) { specialismBadge.textContent = '1'; specialismBadge.style.display = 'inline-flex'; }
       if (btnSpecialism) btnSpecialism.classList.add('is-active');
       if (selectedSpecialismTag && selectedSpecialismTagName) {
-        selectedSpecialismTagName.textContent = state.category;
+        selectedSpecialismTagName.textContent = catLabel;
         selectedSpecialismTag.style.display = 'inline-flex';
       }
     } else {
@@ -746,7 +804,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4. Keyword Search Tag Sync
     if (state.searchQuery) {
       if (selectedKeywordTag && selectedKeywordTagName) {
-        selectedKeywordTagName.textContent = `keyword: "${state.searchQuery}"`;
+        selectedKeywordTagName.textContent = `"${state.searchQuery}"`;
         selectedKeywordTag.style.display = 'inline-flex';
       }
     } else {
@@ -762,6 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnAllFilters.classList.toggle('is-active', activeFilterCount > 0);
     }
 
+    // Hide entire selected row when zero active filters and no keyword
     const hasAnyActive = activeFilterCount > 0 || !!state.searchQuery;
     if (selectedFiltersRow) {
       selectedFiltersRow.style.display = hasAnyActive ? 'flex' : 'none';
@@ -777,33 +836,78 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('#popoverSpecialism [data-category]').forEach(opt => {
       opt.classList.toggle('active', opt.dataset.category === (state.category || 'all'));
     });
+
+    // Sync options active classes in All Filters Modal
+    const modalAllFilters = document.getElementById('modalAllFilters');
+    if (modalAllFilters) {
+      modalAllFilters.querySelectorAll('#modalLocationChips [data-city]').forEach(x => {
+        x.classList.toggle('active', x.dataset.city === (state.city || ''));
+      });
+      modalAllFilters.querySelectorAll('#modalJobTypeChips [data-job-type]').forEach(x => {
+        x.classList.toggle('active', x.dataset.jobType === (state.jobType || 'all'));
+      });
+      modalAllFilters.querySelectorAll('#modalCategoryChips [data-category]').forEach(x => {
+        x.classList.toggle('active', x.dataset.category === (state.category || 'all'));
+      });
+      modalAllFilters.querySelectorAll('#modalSortChips [data-sort]').forEach(x => {
+        x.classList.toggle('active', (state.sort || 'newest') === x.dataset.sort);
+      });
+    }
+
+    // Sync sorter dropdown display
+    if (sortSelect) {
+      if (state.sort === 'deadline') sortSelect.value = 'Proximity';
+      else if (state.sort === 'relevance') sortSelect.value = 'Relevance';
+      else sortSelect.value = 'Date';
+    }
   }
 
   function setupViewToggle() {
     const btnList = document.querySelector('[data-locator-id="joblisting_toggle_listview"]');
     const btnGrid = document.querySelector('[data-locator-id="joblisting_toggle_sortview"]');
 
-    if (btnList && btnGrid) {
+    function applyView(mode) {
+      state.viewMode = mode;
+      localStorage.setItem('kashii_job_view_mode', mode);
+      if (mode === 'list') {
+        if (btnList) {
+          btnList.setAttribute('aria-pressed', 'true');
+          btnList.classList.add('active', 'rel_bg-trigger-active');
+        }
+        if (btnGrid) {
+          btnGrid.setAttribute('aria-pressed', 'false');
+          btnGrid.classList.remove('active', 'rel_bg-trigger-active');
+        }
+        if (jobsGrid) jobsGrid.classList.add('is-list-view');
+      } else {
+        if (btnGrid) {
+          btnGrid.setAttribute('aria-pressed', 'true');
+          btnGrid.classList.add('active', 'rel_bg-trigger-active');
+        }
+        if (btnList) {
+          btnList.setAttribute('aria-pressed', 'false');
+          btnList.classList.remove('active', 'rel_bg-trigger-active');
+        }
+        if (jobsGrid) jobsGrid.classList.remove('is-list-view');
+      }
+    }
+
+    if (btnList) {
       btnList.addEventListener('click', (e) => {
         e.preventDefault();
-        state.viewMode = 'list';
-        btnList.setAttribute('aria-pressed', 'true');
-        btnList.classList.add('active');
-        btnGrid.setAttribute('aria-pressed', 'false');
-        btnGrid.classList.remove('active');
-        if (jobsGrid) jobsGrid.classList.add('is-list-view');
-      });
-
-      btnGrid.addEventListener('click', (e) => {
-        e.preventDefault();
-        state.viewMode = 'grid';
-        btnGrid.setAttribute('aria-pressed', 'true');
-        btnGrid.classList.add('active');
-        btnList.setAttribute('aria-pressed', 'false');
-        btnList.classList.remove('active');
-        if (jobsGrid) jobsGrid.classList.remove('is-list-view');
+        applyView('list');
       });
     }
+
+    if (btnGrid) {
+      btnGrid.addEventListener('click', (e) => {
+        e.preventDefault();
+        applyView('grid');
+      });
+    }
+
+    // Apply saved or default view
+    applyView(state.viewMode);
   }
 
   function setupFilterPopovers() {
@@ -878,6 +982,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Global Escape Key Listener for dismissing modals and popovers
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Esc' || e.keyCode === 27) {
+        closeAllPopovers();
+        closeModal();
+        closeAlertsModal();
+      }
+    });
+
     if (popoverLocation) {
       popoverLocation.querySelectorAll('[data-city]').forEach(opt => {
         opt.addEventListener('click', (e) => {
@@ -922,10 +1035,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnApplyModal = document.getElementById('btnApplyModalFilters');
 
     function openModal() {
-      if (modalAllFilters) modalAllFilters.style.display = 'flex';
+      if (modalAllFilters) {
+        modalAllFilters.querySelectorAll('#modalLocationChips [data-city]').forEach(x => {
+          x.classList.toggle('active', x.dataset.city === (state.city || ''));
+        });
+        modalAllFilters.querySelectorAll('#modalJobTypeChips [data-job-type]').forEach(x => {
+          x.classList.toggle('active', x.dataset.jobType === (state.jobType || 'all'));
+        });
+        modalAllFilters.querySelectorAll('#modalCategoryChips [data-category]').forEach(x => {
+          x.classList.toggle('active', x.dataset.category === (state.category || 'all'));
+        });
+        modalAllFilters.querySelectorAll('#modalSortChips [data-sort]').forEach(x => {
+          x.classList.toggle('active', (state.sort || 'newest') === x.dataset.sort);
+        });
+        modalAllFilters.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+      }
     }
     function closeModal() {
-      if (modalAllFilters) modalAllFilters.style.display = 'none';
+      if (modalAllFilters) {
+        modalAllFilters.style.display = 'none';
+        document.body.style.overflow = '';
+      }
     }
 
     if (btnAllFilters) btnAllFilters.addEventListener('click', openModal);
@@ -965,7 +1096,11 @@ document.addEventListener('DOMContentLoaded', () => {
           modalAllFilters.querySelectorAll('#modalSortChips [data-sort]').forEach(x => x.classList.remove('active'));
           b.classList.add('active');
           state.sort = b.dataset.sort;
-          if (sortSelect) sortSelect.value = b.dataset.sort === 'newest' ? 'Date' : 'Relevance';
+          if (sortSelect) {
+            if (b.dataset.sort === 'deadline') sortSelect.value = 'Proximity';
+            else if (b.dataset.sort === 'relevance') sortSelect.value = 'Relevance';
+            else sortSelect.value = 'Date';
+          }
         });
       });
     }
@@ -982,17 +1117,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btnResetModal.addEventListener('click', () => {
         state.city = '';
         state.jobType = 'all';
-        state.category = 'all';
+        state.category = isCategoryPage ? currentCategory : 'all';
+        state.sort = 'newest';
         state.page = 1;
-        if (modalAllFilters) {
-          modalAllFilters.querySelectorAll('.rel_chip').forEach(c => c.classList.remove('active'));
-          const defCity = modalAllFilters.querySelector('#modalLocationChips [data-city=""]');
-          const defType = modalAllFilters.querySelector('#modalJobTypeChips [data-job-type="all"]');
-          const defCat = modalAllFilters.querySelector('#modalCategoryChips [data-category="all"]');
-          if (defCity) defCity.classList.add('active');
-          if (defType) defType.classList.add('active');
-          if (defCat) defCat.classList.add('active');
-        }
         closeModal();
         loadJobs();
       });
@@ -1023,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnClearSpecialismTag) {
       btnClearSpecialismTag.addEventListener('click', (e) => {
         e.preventDefault();
-        state.category = 'all';
+        state.category = isCategoryPage ? currentCategory : 'all';
         state.page = 1;
         loadJobs();
       });
@@ -1046,18 +1173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnClearAllFilters) {
       btnClearAllFilters.addEventListener('click', (e) => {
         e.preventDefault();
-        state.city = '';
-        state.category = 'all';
-        state.jobType = 'all';
-        state.searchQuery = '';
-        state.isTodayOnly = false;
-        state.sort = 'newest';
-        state.page = 1;
-        if (searchInput) searchInput.value = '';
-        const clearBtn = document.getElementById('headerSearchClearBtn');
-        if (clearBtn) clearBtn.style.display = 'none';
-        if (sortSelect) sortSelect.value = 'Date';
-        loadJobs();
+        clearAllFiltersAction();
       });
     }
 
@@ -1066,10 +1182,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const val = e.target.value;
         if (val === 'Date' || val === '' || val === 'newest') {
           state.sort = 'newest';
-        } else if (val === 'Proximity' || val === 'Relevance') {
+        } else if (val === 'Relevance' || val === 'relevance') {
+          state.sort = 'relevance';
+        } else if (val === 'Proximity' || val === 'deadline') {
           state.sort = 'deadline';
         } else {
-          state.sort = val;
+          state.sort = 'newest';
         }
         state.page = 1;
         loadJobs();
@@ -1089,14 +1207,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.searchQuery) parts.push(`Query: "${state.searchQuery}"`);
         if (state.city) parts.push(`Location: ${state.city}`);
         if (state.jobType && state.jobType !== 'all') parts.push(state.jobType === 'FULL_TIME' ? 'Full-Time' : 'Internships');
-        if (state.category && state.category !== 'all') parts.push(state.category);
-        alertCriteriaEl.textContent = parts.length > 0 ? parts.join(' • ') : 'All Verified Software & Tech Opportunities';
+        if (state.category && state.category !== 'all') parts.push(CATEGORY_LABELS[state.category] || state.category);
+        alertCriteriaEl.textContent = parts.length > 0 ? parts.join(' • ') : 'All Verified Opportunities (Zero Filters)';
       }
       modalJobAlerts.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
     }
 
     function closeAlertsModal() {
-      if (modalJobAlerts) modalJobAlerts.style.display = 'none';
+      if (modalJobAlerts) {
+        modalJobAlerts.style.display = 'none';
+        document.body.style.overflow = '';
+      }
     }
 
     document.querySelectorAll('[data-locator-id="searchjobs_search_savedSearchAlertButton"], .button-saved-jobs-alerts').forEach(btn => {

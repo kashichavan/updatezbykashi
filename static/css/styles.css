@@ -2885,3 +2885,68 @@ html.entry-done #entry {
   min-width: 220px !important;
   margin-top: 0 !important;
 }
+
+/* ==========================================================================
+   RESPONSIVE ENHANCEMENTS FOR JOB LISTING, SORTBAR, POPOVERS & MODALS
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .sortbar-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .sortbar-row > div {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  #jobsFoundHeading {
+    font-size: 19px !important;
+  }
+  .vp-catalog-grid.is-list-view .vp-product-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    padding: 16px !important;
+  }
+  .vp-catalog-grid.is-list-view .vp-card-header {
+    min-width: 100% !important;
+  }
+  .vp-catalog-grid.is-list-view .card-action-grid {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .rel_modal_backdrop {
+    padding: 0 !important;
+    align-items: flex-end !important;
+  }
+  .rel_modal_container {
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 88vh !important;
+  }
+  .filters-row {
+    gap: 8px !important;
+  }
+  .filter-trigger-btn {
+    height: 36px !important;
+    padding: 0 12px !important;
+    font-size: 12.5px !important;
+  }
+  .button-saved-jobs-alerts {
+    height: 38px !important;
+    font-size: 12.5px !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .rel_popover {
+    max-width: min(290px, calc(100vw - 24px)) !important;
+  }
+  .filters-left-group > div:nth-last-child(-n+2) .rel_popover {
+    left: auto !important;
+    right: 0 !important;
+  }
+}
