@@ -165,176 +165,177 @@
       </defs>
     </svg>
 
-    <div class="rel_base rel_grid rel_gap-4 md:rel_gap-6">
-      <button data-rs-popover-trigger="saved-jobs-login-popover" aria-hidden="true" type="button" data-locator-id="jobListing_savedjobs_loginpopover" style="display: none;"></button>
+    <div class="jl-filter-shell">
 
       <!-- Sortbar Row: Heading & Controls -->
       <div class="sortbar-row">
-        <h1 class="rel_base rel_text-heading-sm" id="jobsFoundHeading">{% if initial_jobs_count %}{{ initial_jobs_count }} jobs found.{% else %}Loading opportunities...{% endif %}</h1>
+        <h1 class="jl-jobs-heading" id="jobsFoundHeading">{% if initial_jobs_count %}{{ initial_jobs_count }} jobs found.{% else %}Loading opportunities...{% endif %}</h1>
 
-        <div class="rel_flex rel_items-center rel_gap-4">
+        <div class="sortbar-controls">
           <!-- View Switcher -->
           <div class="view-toggle-container" data-locator-id="joblisting_toggle_sortview">
-            <button data-locator-id="joblisting_toggle_listview" type="button" aria-pressed="false" class="view-toggle-btn" title="Display in list view">
-              <span class="rel_sr-only">display jobs in list view</span>
-              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#view-list" xlink:href="#view-list"></use></svg>
-              <span>List</span>
+            <button data-locator-id="joblisting_toggle_listview" type="button" aria-pressed="false" class="view-toggle-btn" title="List view">
+              <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#view-list" xlink:href="#view-list"></use></svg>
+              <span class="vt-label">List</span>
             </button>
-            <button data-locator-id="joblisting_toggle_sortview" type="button" aria-pressed="true" class="view-toggle-btn active rel_bg-trigger-active" title="Display in card view">
-              <svg height="11" width="11" aria-hidden="true" focusable="false"><use href="#check" xlink:href="#check"></use></svg>
-              <span class="rel_sr-only">display jobs in card view</span>
-              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#view-grid" xlink:href="#view-grid"></use></svg>
-              <span>Cards</span>
+            <button data-locator-id="joblisting_toggle_sortview" type="button" aria-pressed="true" class="view-toggle-btn active rel_bg-trigger-active" title="Card view">
+              <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#view-grid" xlink:href="#view-grid"></use></svg>
+              <span class="vt-label">Cards</span>
             </button>
           </div>
 
           <!-- Sorter Dropdown -->
           <div class="sorter-select-wrapper">
             <select aria-label="sort:" data-locator-id="joblisting_search_sortby" id="sorter">
-              <option value="Date" selected>Sort by: Newest</option>
-              <option value="Relevance">Sort by: Relevancy</option>
-              <option value="Proximity">Sort by: Closing Soon</option>
+              <option value="Date" selected>Newest First</option>
+              <option value="Relevance">Most Relevant</option>
+              <option value="Proximity">Closing Soon</option>
             </select>
             <span class="sorter-chevron">
-              <svg height="18" width="18" aria-hidden="true" focusable="false"><use href="#chevron-down" xlink:href="#chevron-down"></use></svg>
+              <svg height="16" width="16" aria-hidden="true" focusable="false"><use href="#chevron-down" xlink:href="#chevron-down"></use></svg>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- Filters Row: Filter Dropdowns & Alert Action -->
+      <!-- Filters Row -->
       <div class="filters-row">
         <div class="filters-left-group">
-          <!-- Mobile Filters Trigger -->
-          <div class="lg:rel_hidden">
-            <button type="button" data-rs-modal-trigger="mobile-filters" class="filter-trigger-btn" aria-expanded="false" aria-label="Mobile Filters">
-              <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
-              <span>Filters</span>
-            </button>
-          </div>
-
-          <span class="filters-label max-lg:rel_hidden">filters:</span>
 
           <!-- Location Filter Popover -->
-          <div class="rel_base rel_filter_dropdown_wrapper">
+          <div class="rel_filter_dropdown_wrapper">
             <button data-locator-id="searchjobs_filters_location" type="button" class="filter-trigger-btn" aria-expanded="false" aria-haspopup="dialog">
-              <span class="filter-badge-counter" id="locationFilterBadgeCount" style="display: none;">0</span>
-              <span id="locationFilterBtnText">location</span>
-              <svg height="14" width="14" fill="none" stroke="currentColor" stroke-width="2" class="rel_chevron"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <span id="locationFilterBtnText">Location</span>
+              <span class="filter-badge-counter" id="locationFilterBadgeCount" style="display:none;">1</span>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2.5" class="rel_chevron" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div id="popoverLocation" class="rel_popover" style="display: none;">
               <div class="rel_popover_header">
-                <span class="rel_popover_title">Location</span>
-                <button type="button" class="rel_popover_close" data-close-popover="popoverLocation">&times;</button>
+                <span class="rel_popover_title">Filter by Location</span>
+                <button type="button" class="rel_popover_close" data-close-popover="popoverLocation">×</button>
               </div>
               <div class="rel_popover_options">
-                <button type="button" class="rel_filter_option active" data-city="">All Locations</button>
-                <button type="button" class="rel_filter_option" data-city="Bengaluru">Bengaluru</button>
-                <button type="button" class="rel_filter_option" data-city="Hyderabad">Hyderabad</button>
-                <button type="button" class="rel_filter_option" data-city="Pune">Pune</button>
-                <button type="button" class="rel_filter_option" data-city="Mumbai">Mumbai</button>
-                <button type="button" class="rel_filter_option" data-city="Delhi NCR">Delhi NCR</button>
-                <button type="button" class="rel_filter_option" data-city="Remote">Remote</button>
+                <button type="button" class="rel_filter_option active" data-city="">🌐 All Locations</button>
+                <button type="button" class="rel_filter_option" data-city="Bengaluru">🏙️ Bengaluru</button>
+                <button type="button" class="rel_filter_option" data-city="Hyderabad">🏙️ Hyderabad</button>
+                <button type="button" class="rel_filter_option" data-city="Pune">🏙️ Pune</button>
+                <button type="button" class="rel_filter_option" data-city="Mumbai">🏙️ Mumbai</button>
+                <button type="button" class="rel_filter_option" data-city="Delhi NCR">🏙️ Delhi NCR</button>
+                <button type="button" class="rel_filter_option" data-city="Remote">🌐 Remote</button>
               </div>
             </div>
           </div>
 
           <!-- Job Type Filter Popover -->
-          <div class="rel_base rel_filter_dropdown_wrapper">
+          <div class="rel_filter_dropdown_wrapper">
             <button data-locator-id="searchjobs_filters_jobType" type="button" class="filter-trigger-btn" aria-expanded="false" aria-haspopup="dialog">
-              <span class="filter-badge-counter" id="jobTypeFilterBadgeCount" style="display: none;">0</span>
-              <span id="jobTypeFilterBtnText">job types</span>
-              <svg height="14" width="14" fill="none" stroke="currentColor" stroke-width="2" class="rel_chevron"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span id="jobTypeFilterBtnText">Job Type</span>
+              <span class="filter-badge-counter" id="jobTypeFilterBadgeCount" style="display:none;">1</span>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2.5" class="rel_chevron" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div id="popoverJobType" class="rel_popover" style="display: none;">
               <div class="rel_popover_header">
-                <span class="rel_popover_title">Job Type</span>
-                <button type="button" class="rel_popover_close" data-close-popover="popoverJobType">&times;</button>
+                <span class="rel_popover_title">Filter by Type</span>
+                <button type="button" class="rel_popover_close" data-close-popover="popoverJobType">×</button>
               </div>
               <div class="rel_popover_options">
-                <button type="button" class="rel_filter_option active" data-job-type="all">All Types</button>
-                <button type="button" class="rel_filter_option" data-job-type="FULL_TIME">Full-Time</button>
-                <button type="button" class="rel_filter_option" data-job-type="INTERNSHIP">Internships</button>
+                <button type="button" class="rel_filter_option active" data-job-type="all">✨ All Types</button>
+                <button type="button" class="rel_filter_option" data-job-type="FULL_TIME">💼 Full-Time</button>
+                <button type="button" class="rel_filter_option" data-job-type="INTERNSHIP">🎓 Internships</button>
               </div>
             </div>
           </div>
 
-          <!-- Professional Field / Specialism Filter Popover -->
-          <div class="rel_base rel_filter_dropdown_wrapper">
+          <!-- Professional Field Filter Popover -->
+          <div class="rel_filter_dropdown_wrapper">
             <button data-locator-id="searchjobs_filters_specialism" type="button" class="filter-trigger-btn" aria-expanded="false" aria-haspopup="dialog">
-              <span class="filter-badge-counter" id="specialismFilterBadgeCount" style="display: none;">0</span>
-              <span id="specialismFilterBtnText">professional field</span>
-              <svg height="14" width="14" fill="none" stroke="currentColor" stroke-width="2" class="rel_chevron"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+              <span id="specialismFilterBtnText">Field</span>
+              <span class="filter-badge-counter" id="specialismFilterBadgeCount" style="display:none;">1</span>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2.5" class="rel_chevron" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div id="popoverSpecialism" class="rel_popover" style="display: none;">
               <div class="rel_popover_header">
                 <span class="rel_popover_title">Professional Field</span>
-                <button type="button" class="rel_popover_close" data-close-popover="popoverSpecialism">&times;</button>
+                <button type="button" class="rel_popover_close" data-close-popover="popoverSpecialism">×</button>
               </div>
               <div class="rel_popover_options">
-                <button type="button" class="rel_filter_option active" data-category="all">All Fields</button>
-                <button type="button" class="rel_filter_option" data-category="software-tech">Software &amp; Tech</button>
-                <button type="button" class="rel_filter_option" data-category="freshers">Fresher Hiring (0-1 Yrs)</button>
-                <button type="button" class="rel_filter_option" data-category="experienced">Experienced (1-5+ Yrs)</button>
-                <button type="button" class="rel_filter_option" data-category="qa-testing">QA &amp; Testing</button>
-                <button type="button" class="rel_filter_option" data-category="hr-recruitment">HR &amp; Hiring</button>
-                <button type="button" class="rel_filter_option" data-category="mba-business">MBA &amp; Business</button>
-                <button type="button" class="rel_filter_option" data-category="non-it">Non IT &amp; Ops</button>
+                <button type="button" class="rel_filter_option active" data-category="all">✨ All Fields</button>
+                <button type="button" class="rel_filter_option" data-category="software-tech">💻 Software &amp; Tech</button>
+                <button type="button" class="rel_filter_option" data-category="freshers">🎓 Fresher (0-1 Yrs)</button>
+                <button type="button" class="rel_filter_option" data-category="experienced">🏆 Experienced (1-5+ Yrs)</button>
+                <button type="button" class="rel_filter_option" data-category="qa-testing">🧪 QA &amp; Testing</button>
+                <button type="button" class="rel_filter_option" data-category="hr-recruitment">👥 HR &amp; Hiring</button>
+                <button type="button" class="rel_filter_option" data-category="mba-business">📈 MBA &amp; Business</button>
+                <button type="button" class="rel_filter_option" data-category="non-it">📞 Non IT &amp; Ops</button>
               </div>
             </div>
           </div>
 
           <!-- All Filters Button -->
-          <button data-locator-id="searchjobs_filters_allFilters" type="button" class="filter-trigger-btn" aria-expanded="false" aria-label="all filters">
-            <svg height="15" width="15" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
-            <span>all filters</span>
-            <span class="filter-badge-counter" id="allFiltersBadgeCount" style="display: none;">0</span>
+          <button data-locator-id="searchjobs_filters_allFilters" type="button" class="filter-trigger-btn filter-all-btn" aria-expanded="false" aria-label="All filters">
+            <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
+            <span>All Filters</span>
+            <span class="filter-badge-counter" id="allFiltersBadgeCount" style="display:none;">0</span>
           </button>
         </div>
 
-        <!-- Alert Button (Desktop) -->
-        <div class="max-lg:rel_hidden">
-          <button data-locator-id="searchjobs_search_savedSearchAlertButton" class="button-saved-jobs-alerts" type="button" title="Save this search and receive instant job alerts">
-            <svg height="15" width="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-            <span>save this search &amp; get alerts</span>
+        <!-- Alert / Mobile Filters Right Side -->
+        <div class="filters-right-group">
+          <!-- Mobile Filters Trigger (hidden on desktop) -->
+          <button type="button" data-rs-modal-trigger="mobile-filters" class="filter-trigger-btn filter-mobile-only" aria-expanded="false" aria-label="Open filters">
+            <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
+            <span>Filters</span>
+          </button>
+
+          <!-- Save Search Alert Button (desktop) -->
+          <button data-locator-id="searchjobs_search_savedSearchAlertButton" class="button-saved-jobs-alerts filter-desktop-only" type="button" title="Get instant job alerts">
+            <svg height="14" width="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path></svg>
+            <span>Get Job Alerts</span>
           </button>
         </div>
       </div>
 
       <!-- Selected Active Filters Row -->
       <div class="selected-tags-row" id="selectedFiltersRow" style="display: none;">
-        <span class="selected-tags-label">selected filters:</span>
+        <span class="selected-tags-label">Active:</span>
 
         <span class="filter-active-tag" id="selectedCityTag" style="display: none;">
           <span id="selectedCityTagName"></span>
-          <button type="button" id="btnClearCityTag" aria-label="Clear city filter">&times;</button>
+          <button type="button" id="btnClearCityTag" aria-label="Clear city filter">×</button>
         </span>
 
         <span class="filter-active-tag" id="selectedJobTypeTag" style="display: none;">
           <span id="selectedJobTypeTagName"></span>
-          <button type="button" id="btnClearJobTypeTag" aria-label="Clear job type filter">&times;</button>
+          <button type="button" id="btnClearJobTypeTag" aria-label="Clear job type filter">×</button>
         </span>
 
         <span class="filter-active-tag" id="selectedSpecialismTag" style="display: none;">
           <span id="selectedSpecialismTagName"></span>
-          <button type="button" id="btnClearSpecialismTag" aria-label="Clear field filter">&times;</button>
+          <button type="button" id="btnClearSpecialismTag" aria-label="Clear field filter">×</button>
         </span>
 
         <span class="filter-active-tag" id="selectedKeywordTag" style="display: none;">
           <span id="selectedKeywordTagName"></span>
-          <button type="button" id="btnClearKeywordTag" aria-label="Clear keyword filter">&times;</button>
+          <button type="button" id="btnClearKeywordTag" aria-label="Clear keyword filter">×</button>
         </span>
 
-        <button type="button" id="btnClearAllFilters" title="Clear all active filters">clear all</button>
-      </div>
-
-      <!-- Alert Button (Mobile) -->
-      <div class="lg:rel_hidden rel_flex rel_items-center rel_w-full rel_mt-2">
-        <button data-locator-id="searchjobs_search_savedSearchAlertButton" class="button-saved-jobs-alerts rel_w-full" style="justify-content: center;" type="button">
-          <svg height="15" width="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-          <span>save this search &amp; get alerts</span>
+        <button type="button" id="btnClearAllFilters" class="clear-all-btn" title="Clear all active filters">
+          <svg height="11" width="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><use href="#close" xlink:href="#close"></use></svg>
+          Clear all
         </button>
       </div>
+
+      <!-- Mobile Save Alert Strip -->
+      <div class="filter-mobile-alert-strip filter-mobile-only">
+        <button data-locator-id="searchjobs_search_savedSearchAlertButton" class="button-saved-jobs-alerts" type="button">
+          <svg height="14" width="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span>Get Free Job Alerts</span>
+        </button>
+      </div>
+
     </div>
 
     <!-- All Filters Modal -->
