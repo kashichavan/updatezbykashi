@@ -67,6 +67,7 @@ urlpatterns = [
     path('api/ai/alter-resume/', views.api_ai_alter_resume, name='api_ai_alter_resume'),
     path('api/ai/generate-summary/', views.api_ai_generate_summary, name='api_ai_generate_summary'),
     path('api/ai/github-project/', views.api_ai_github_project, name='api_ai_github_project'),
+    path('api/ai/auto-upgrade-resume/', views.api_ai_auto_upgrade_resume, name='api_ai_auto_upgrade_resume'),
     path('api/jobs/<uuid:job_uuid>/recruiter-intel/', views.api_recruiter_intel, name='api_recruiter_intel'),
 
     # Mandatory Legal & Compliance Pages (AdSense Policy Requirements)

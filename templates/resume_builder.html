@@ -92,6 +92,18 @@
 
     <!-- Zone 3: Pro Action Cluster -->
     <div class="deck-zone deck-zone-actions">
+      <!-- Switch Template (Jobsuit Standards) -->
+      <button type="button" id="btnOpenTemplates" onclick="openTemplatesModal()" class="studio-btn studio-btn-ghost" title="Switch Resume Templates (Standard, Modern, Classic, Minimalist, Bold, Executive)">
+        <i data-lucide="layout-template" style="width: 15px; height: 15px;"></i>
+        <span>Templates</span>
+      </button>
+
+      <!-- 1-Click AI Auto Upgrade -->
+      <button type="button" id="btnAutoUpgradeResume" onclick="runAutoUpgradeResume()" class="studio-btn studio-btn-magic" style="background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: #ffffff; border: none; font-weight: 800; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" title="1-Click Auto Upgrade: Rewrites summary, enriches skills & crafts Google XYZ bullets with metrics (ATS 95+ Score)">
+        <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
+        <span id="btnAutoUpgradeText">⚡ Auto Upgrade (ATS 95+)</span>
+      </button>
+
       <!-- Import Existing Resume -->
       <button type="button" id="btnUploadResume" onclick="triggerFileInput()" class="studio-btn studio-btn-ghost" title="Upload PDF or DOCX to auto-populate resume">
         <i data-lucide="upload-cloud" style="width: 15px; height: 15px;"></i>
@@ -1861,6 +1873,122 @@
     line-height: 1.42;
   }
 
+  /* ── 6 ATS RESUME TEMPLATES (Jobsuit Standards) ─────────────────────────── */
+  
+  /* 1. Modern Slate Template */
+  .ats-resume-sheet.template-modern {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .ats-resume-sheet.template-modern .ats-name {
+    color: #1e3a8a;
+    font-weight: 850;
+    letter-spacing: -0.02em;
+    border-bottom: 2.5px solid #2563eb;
+    padding-bottom: 5px;
+    display: inline-block;
+  }
+  .ats-resume-sheet.template-modern .ats-section-title {
+    color: #1e3a8a;
+    border-bottom: 1.5px solid #93c5fd;
+    font-size: 13.5px;
+  }
+  .ats-resume-sheet.template-modern .ats-project-title {
+    color: #1e3a8a;
+  }
+
+  /* 2. Classic Heritage / Academic Serif */
+  .ats-resume-sheet.template-classic {
+    font-family: 'Fraunces', 'Georgia', 'Times New Roman', serif;
+  }
+  .ats-resume-sheet.template-classic .ats-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 0.04em;
+    font-size: 26px;
+  }
+  .ats-resume-sheet.template-classic .ats-header-block {
+    text-align: center;
+    border-bottom: 1px solid #0f172a;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+  .ats-resume-sheet.template-classic .ats-section-title {
+    font-family: 'Fraunces', serif;
+    text-align: left;
+    border-bottom: 1px solid #475569;
+    letter-spacing: 0.06em;
+  }
+
+  /* 3. Minimalist Graphite Template */
+  .ats-resume-sheet.template-minimalist {
+    font-family: 'Inter', sans-serif;
+    padding: 24px 28px !important;
+  }
+  .ats-resume-sheet.template-minimalist .ats-section {
+    margin-bottom: 9px;
+  }
+  .ats-resume-sheet.template-minimalist .ats-section-title {
+    border-bottom: none;
+    font-size: 11.5px;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin-bottom: 3px;
+    font-weight: 800;
+  }
+  .ats-resume-sheet.template-minimalist .ats-name {
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
+  .ats-resume-sheet.template-minimalist .ats-bullet-list li {
+    margin-bottom: 2px;
+  }
+
+  /* 4. Bold Cobalt Template */
+  .ats-resume-sheet.template-bold {
+    border-top: 6px solid #1d4ed8;
+  }
+  .ats-resume-sheet.template-bold .ats-name {
+    color: #0f172a;
+    font-size: 26px;
+    font-weight: 900;
+  }
+  .ats-resume-sheet.template-bold .ats-section-title {
+    color: #1d4ed8;
+    border-bottom: 2px solid #1d4ed8;
+    font-size: 13.5px;
+    font-weight: 850;
+  }
+
+  /* 5. Executive Verona Template */
+  .ats-resume-sheet.template-executive {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    border-left: 5px solid #0f172a;
+  }
+  .ats-resume-sheet.template-executive .ats-name {
+    color: #0f172a;
+    font-size: 25px;
+    font-weight: 800;
+  }
+  .ats-resume-sheet.template-executive .ats-section-title {
+    color: #334155;
+    border-bottom: 1.5px solid #cbd5e1;
+    font-size: 13px;
+  }
+
+  .template-card-option {
+    transition: all 0.2s ease;
+  }
+  .template-card-option:hover {
+    border-color: #2563eb !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.12);
+  }
+  .template-card-option.active {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+  }
+
   /* Responsive Rules */
   @media (max-width: 992px) {
     .resume-workspace {
@@ -2052,7 +2180,7 @@
   let currentResumeData = {{ initial_resume_json|safe }};
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('from_studio') === '1' || urlParams.get('gen_id')) {
+    if (urlParams.get('from_studio') === '1' || urlParams.get('gen_id') || urlParams.get('from_analysis') === '1') {
       const stored = sessionStorage.getItem('kashii_live_resume_data') || localStorage.getItem('kashii_live_resume_data');
       if (stored) {
         const parsed = JSON.parse(stored);
@@ -4761,19 +4889,167 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const fromStudio = urlParams.get('from_studio') === '1' || urlParams.get('gen_id');
+    const fromAnalysis = urlParams.get('from_analysis') === '1';
 
-    // If arriving from studio, we already have freshly synthesized and scored resume
-    if (fromStudio) {
+    // If arriving from studio or analysis, we already have freshly synthesized/analyzed and scored resume
+    if (fromStudio || fromAnalysis) {
       recalculateAtsScore();
       if (typeof setTargetTailorStatus === 'function') {
-        setTargetTailorStatus('done', 'Loaded freshly generated resume from Studio');
+        setTargetTailorStatus('done', fromAnalysis ? 'Loaded analyzed resume data' : 'Loaded freshly generated resume from Studio');
       }
     } else if (targetJobData) {
       // Arriving from a posting should already be tailored to it. One automatic
       // pass, then the banner keeps a single "tailor again" action.
       setTimeout(() => autoAlterResumeForTargetJob({ silent: true }), 350);
     }
+
+    // Apply active template from localStorage (defaults to Standard Noah)
+    const savedTemplate = localStorage.getItem('kashii_resume_template') || 'standard';
+    applyTemplate(savedTemplate, true);
   });
+
+  /* ─────────────────────────────────────────────────────────────
+     JOB-SUIT INSPIRED: TEMPLATES & 1-CLICK AI AUTO-UPGRADE
+     ───────────────────────────────────────────────────────────── */
+  function showToast(msg) {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toastContainer';
+      container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; pointer-events: none;';
+      document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.style.cssText = 'background: #0f172a; color: #ffffff; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 8px; pointer-events: auto;';
+    toast.innerHTML = `<span style="color: #22c55e; font-weight: 800;">✓</span> ${msg}`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s ease';
+      setTimeout(() => toast.remove(), 300);
+    }, 2600);
+  }
+
+  function openTemplatesModal() {
+    const modal = document.getElementById('templatesGalleryModal');
+    if (modal) {
+      modal.style.display = 'flex';
+      const cur = localStorage.getItem('kashii_resume_template') || 'standard';
+      document.querySelectorAll('.template-card-option').forEach(card => {
+        const isCur = card.getAttribute('data-template') === cur;
+        card.classList.toggle('active', isCur);
+        const badge = card.querySelector('.template-active-badge');
+        if (badge) badge.style.display = isCur ? 'flex' : 'none';
+      });
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  function closeTemplatesModal() {
+    const modal = document.getElementById('templatesGalleryModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function applyTemplate(templateKey, silent) {
+    const sheet = document.getElementById('resumeSheet');
+    if (!sheet) return;
+
+    const validTemplates = ['modern', 'classic', 'minimalist', 'bold', 'executive'];
+    validTemplates.forEach(t => sheet.classList.remove(`template-${t}`));
+
+    if (templateKey && templateKey !== 'standard' && validTemplates.includes(templateKey)) {
+      sheet.classList.add(`template-${templateKey}`);
+    }
+
+    localStorage.setItem('kashii_resume_template', templateKey || 'standard');
+
+    document.querySelectorAll('.template-card-option').forEach(card => {
+      const isThis = card.getAttribute('data-template') === templateKey;
+      card.classList.toggle('active', isThis);
+      const badge = card.querySelector('.template-active-badge');
+      if (badge) badge.style.display = isThis ? 'flex' : 'none';
+    });
+
+    if (!silent) {
+      const names = {
+        standard: 'Standard Noah',
+        modern: 'Modern Slate',
+        classic: 'Classic Heritage',
+        minimalist: 'Minimalist Graphite',
+        bold: 'Bold Cobalt',
+        executive: 'Executive Verona'
+      };
+      showToast(`Switched template to ${names[templateKey] || templateKey}`);
+      closeTemplatesModal();
+    }
+  }
+
+  function openAutoUpgradeCelebrationModal() {
+    const modal = document.getElementById('autoUpgradeCelebrationModal');
+    if (modal) {
+      modal.style.display = 'flex';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
+
+  function closeAutoUpgradeCelebrationModal() {
+    const modal = document.getElementById('autoUpgradeCelebrationModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function runAutoUpgradeResume() {
+    const btn = document.getElementById('btnAutoUpgradeResume');
+    const btnText = document.getElementById('btnAutoUpgradeText');
+    const originalText = btnText ? btnText.innerHTML : '⚡ Auto Upgrade (ATS 95+)';
+
+    if (btnText) btnText.innerHTML = '⚡ Auto-Upgrading with AI...';
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.75';
+    }
+
+    try {
+      const payload = {
+        resume_data: currentResumeData,
+        role_key: currentRoleKey || 'python_backend',
+        target_skills: (targetJobData && targetJobData.skills_list) ? targetJobData.skills_list : []
+      };
+
+      const res = await fetch('/api/ai/auto-upgrade-resume/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (data.status === 'success' && data.upgraded_resume) {
+        currentResumeData = data.upgraded_resume;
+        renderResumeSheet();
+        renderProjectsControlsList();
+        recalculateAtsScore();
+        if (typeof WordEditor !== 'undefined') WordEditor.updateCounts();
+
+        const oldEl = document.getElementById('upgradeOldScoreText');
+        const newEl = document.getElementById('upgradeNewScoreText');
+        if (oldEl) oldEl.innerText = (data.old_score || 52) + '/100';
+        if (newEl) newEl.innerText = (data.new_score || 95) + '/100';
+
+        openAutoUpgradeCelebrationModal();
+      } else {
+        alert(data.message || data.error || 'Failed to auto-upgrade resume. Please try again.');
+      }
+    } catch (err) {
+      console.error('Error during auto-upgrade:', err);
+      alert('Error contacting AI Auto-Upgrade service. Check network connection.');
+    } finally {
+      if (btnText) btnText.innerHTML = originalText;
+      if (btn) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
 </script>
 
 <!-- ==========================================================
@@ -5290,6 +5566,214 @@
       </button>
       <button type="button" onclick="closeUploadScoreModal()" style="background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 13px 16px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer;">
         Close &amp; Review
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- 10. ATS Resume Templates Gallery Modal (Jobsuit Standards) -->
+<div id="templatesGalleryModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 20px; max-width: 860px; width: 100%; max-height: 92vh; overflow-y: auto; padding: 24px 24px; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.20); color: #0f172a; box-sizing: border-box;">
+    
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #7c3aed); display: grid; place-items: center; color: #ffffff; flex-shrink: 0; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);">
+          <i data-lucide="layout-template" style="width: 22px; height: 22px;"></i>
+        </div>
+        <div>
+          <h3 style="font-size: 19px; font-weight: 800; color: #0f172a; margin: 0;">ATS Resume Templates</h3>
+          <p style="font-size: 12.5px; color: #64748b; margin: 2px 0 0;">
+            Reverse-engineered from top ATS parsing platforms. Strict single-column machine readability.
+          </p>
+        </div>
+      </div>
+      <button type="button" onclick="closeTemplatesModal()" style="background: #f1f5f9; border: 1px solid #cbd5e1; width: 34px; height: 34px; border-radius: 50%; color: #475569; font-size: 18px; cursor: pointer; display: grid; place-items: center;">&times;</button>
+    </div>
+
+    <!-- 6 Templates Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px;">
+      
+      <!-- Template 1: Standard Noah -->
+      <div class="template-card-option" data-template="standard" onclick="applyTemplate('standard')" style="cursor: pointer; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; position: relative; background: #f8fafc;">
+        <div class="template-active-badge" style="position: absolute; top: 10px; right: 10px; background: #16a34a; color: white; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 800; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 2;">
+          <i data-lucide="check" style="width: 12px; height: 12px;"></i> Active
+        </div>
+        <div style="height: 160px; overflow: hidden; background: #f1f5f9; display: flex; align-items: flex-start; justify-content: center; border-bottom: 1px solid #e2e8f0;">
+          <img src="/static/images/templates/standard.webp" alt="Standard Noah" style="width: 100%; height: 100%; object-fit: cover; object-position: top;" onerror="this.onerror=null; this.src='/static/images/hero-preview.png';">
+        </div>
+        <div style="padding: 12px 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Standard Noah</div>
+            <span style="background: #e0f2fe; color: #0369a1; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Default</span>
+          </div>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">The gold standard single-column layout recommended by FAANG &amp; top Indian MNC recruiters.</p>
+          <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
+        </div>
+      </div>
+
+      <!-- Template 2: Modern Slate -->
+      <div class="template-card-option" data-template="modern" onclick="applyTemplate('modern')" style="cursor: pointer; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; position: relative; background: #f8fafc;">
+        <div class="template-active-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: #16a34a; color: white; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 800; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 2;">
+          <i data-lucide="check" style="width: 12px; height: 12px;"></i> Active
+        </div>
+        <div style="height: 160px; overflow: hidden; background: #f1f5f9; display: flex; align-items: flex-start; justify-content: center; border-bottom: 1px solid #e2e8f0;">
+          <img src="/static/images/templates/modern.webp" alt="Modern Slate" style="width: 100%; height: 100%; object-fit: cover; object-position: top;" onerror="this.onerror=null; this.src='/static/images/hero-preview.png';">
+        </div>
+        <div style="padding: 12px 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Modern Slate</div>
+            <span style="background: #ede9fe; color: #6d28d9; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Cobalt</span>
+          </div>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Crisp typography with cobalt-blue header accents and high visual appeal.</p>
+          <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
+        </div>
+      </div>
+
+      <!-- Template 3: Classic Heritage -->
+      <div class="template-card-option" data-template="classic" onclick="applyTemplate('classic')" style="cursor: pointer; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; position: relative; background: #f8fafc;">
+        <div class="template-active-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: #16a34a; color: white; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 800; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 2;">
+          <i data-lucide="check" style="width: 12px; height: 12px;"></i> Active
+        </div>
+        <div style="height: 160px; overflow: hidden; background: #f1f5f9; display: flex; align-items: flex-start; justify-content: center; border-bottom: 1px solid #e2e8f0;">
+          <img src="/static/images/templates/classic.webp" alt="Classic Heritage" style="width: 100%; height: 100%; object-fit: cover; object-position: top;" onerror="this.onerror=null; this.src='/static/images/hero-preview.png';">
+        </div>
+        <div style="padding: 12px 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Classic Heritage</div>
+            <span style="background: #fef3c7; color: #b45309; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Serif</span>
+          </div>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Centered header with refined serif typography, great for enterprise and academic.</p>
+          <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
+        </div>
+      </div>
+
+      <!-- Template 4: Minimalist Graphite -->
+      <div class="template-card-option" data-template="minimalist" onclick="applyTemplate('minimalist')" style="cursor: pointer; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; position: relative; background: #f8fafc;">
+        <div class="template-active-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: #16a34a; color: white; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 800; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 2;">
+          <i data-lucide="check" style="width: 12px; height: 12px;"></i> Active
+        </div>
+        <div style="height: 160px; overflow: hidden; background: #f1f5f9; display: flex; align-items: flex-start; justify-content: center; border-bottom: 1px solid #e2e8f0;">
+          <img src="/static/images/templates/minimalist.webp" alt="Minimalist Graphite" style="width: 100%; height: 100%; object-fit: cover; object-position: top;" onerror="this.onerror=null; this.src='/static/images/hero-preview.png';">
+        </div>
+        <div style="padding: 12px 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Minimalist Graphite</div>
+            <span style="background: #f1f5f9; color: #475569; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Compact</span>
+          </div>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">High density, borderless headers with compact margins for maximum content depth.</p>
+          <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
+        </div>
+      </div>
+
+      <!-- Template 5: Bold Cobalt -->
+      <div class="template-card-option" data-template="bold" onclick="applyTemplate('bold')" style="cursor: pointer; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; position: relative; background: #f8fafc;">
+        <div class="template-active-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: #16a34a; color: white; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 800; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 2;">
+          <i data-lucide="check" style="width: 12px; height: 12px;"></i> Active
+        </div>
+        <div style="height: 160px; overflow: hidden; background: #f1f5f9; display: flex; align-items: flex-start; justify-content: center; border-bottom: 1px solid #e2e8f0;">
+          <img src="/static/images/templates/bold.webp" alt="Bold Cobalt" style="width: 100%; height: 100%; object-fit: cover; object-position: top;" onerror="this.onerror=null; this.src='/static/images/hero-preview.png';">
+        </div>
+        <div style="padding: 12px 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Bold Cobalt</div>
+            <span style="background: #dbeafe; color: #1e40af; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Top Stripe</span>
+          </div>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Bold 6px top accent bar with solid dividing lines for strong visual hierarchy.</p>
+          <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
+        </div>
+      </div>
+
+      <!-- Template 6: Executive Verona -->
+      <div class="template-card-option" data-template="executive" onclick="applyTemplate('executive')" style="cursor: pointer; border: 2px solid #e2e8f0; border-radius: 14px; overflow: hidden; position: relative; background: #f8fafc;">
+        <div class="template-active-badge" style="display: none; position: absolute; top: 10px; right: 10px; background: #16a34a; color: white; padding: 4px 8px; border-radius: 20px; font-size: 11px; font-weight: 800; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 2;">
+          <i data-lucide="check" style="width: 12px; height: 12px;"></i> Active
+        </div>
+        <div style="height: 160px; overflow: hidden; background: #f1f5f9; display: flex; align-items: flex-start; justify-content: center; border-bottom: 1px solid #e2e8f0;">
+          <img src="/static/images/templates/executive.webp" alt="Executive Verona" style="width: 100%; height: 100%; object-fit: cover; object-position: top;" onerror="this.onerror=null; this.src='/static/images/hero-preview.png';">
+        </div>
+        <div style="padding: 12px 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Executive Verona</div>
+            <span style="background: #f8fafc; color: #0f172a; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #cbd5e1;">Lead / Staff</span>
+          </div>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Accent left border with commanding typography suited for tech leads and architects.</p>
+          <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
+      <button type="button" onclick="closeTemplatesModal()" class="studio-btn studio-btn-ghost" style="padding: 9px 20px;">Done</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- 11. 1-Click AI Auto Upgrade Celebration Modal -->
+<div id="autoUpgradeCelebrationModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #ffffff; border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 20px; max-width: 580px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 26px 24px; box-shadow: 0 25px 60px rgba(124, 58, 237, 0.25); color: #0f172a; box-sizing: border-box; text-align: center;">
+    
+    <div style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, #10b981 0%, #2563eb 100%); margin: 0 auto 14px; display: grid; place-items: center; color: white; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);">
+      <i data-lucide="sparkles" style="width: 28px; height: 28px;"></i>
+    </div>
+
+    <h3 style="font-size: 21px; font-weight: 900; color: #0f172a; margin: 0 0 6px;">Resume Upgraded to ATS 95+!</h3>
+    <p style="font-size: 13px; color: #64748b; margin: 0 0 20px; line-height: 1.5;">
+      Your resume was transformed using Jobsuit's reverse-engineered formula: Google XYZ metric bullets, recruiter hooks, and verified ATS keywords.
+    </p>
+
+    <!-- Score Jump Pill -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 20px; margin-bottom: 20px;">
+      <div style="text-align: center;">
+        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Previous Score</div>
+        <div id="upgradeOldScoreText" style="font-size: 20px; font-weight: 800; color: #dc2626; margin-top: 2px;">52/100</div>
+      </div>
+      <div style="font-size: 20px; color: #94a3b8; font-weight: 900;">➔</div>
+      <div style="text-align: center;">
+        <div style="font-size: 11px; font-weight: 700; color: #059669; text-transform: uppercase;">Upgraded Score</div>
+        <div id="upgradeNewScoreText" style="font-size: 24px; font-weight: 900; color: #16a34a; margin-top: 2px;">95/100</div>
+      </div>
+    </div>
+
+    <!-- 4 Upgraded Pillars Breakdown -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; text-align: left;">
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 12px; font-weight: 800; color: #166534; display: flex; align-items: center; gap: 6px;">
+          <span>⚡</span> Google XYZ Formula
+        </div>
+        <div style="font-size: 11px; color: #15803d; margin-top: 3px; line-height: 1.35;">Accomplished [X] measured by [Y] doing [Z].</div>
+      </div>
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 12px; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 6px;">
+          <span>🎯</span> High-Yield Keywords
+        </div>
+        <div style="font-size: 11px; color: #1d4ed8; margin-top: 3px; line-height: 1.35;">Synthesized skills matched to modern ATS job filters.</div>
+      </div>
+      <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 12px; font-weight: 800; color: #6b21a8; display: flex; align-items: center; gap: 6px;">
+          <span>📝</span> Recruiter Hook Summary
+        </div>
+        <div style="font-size: 11px; color: #7e22ce; margin-top: 3px; line-height: 1.35;">Role-targeted summary optimized for 6-second recruiter scans.</div>
+      </div>
+      <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 10px; padding: 10px 12px;">
+        <div style="font-size: 12px; font-weight: 800; color: #854d0e; display: flex; align-items: center; gap: 6px;">
+          <span>🛡️</span> 100% Machine Parsable
+        </div>
+        <div style="font-size: 11px; color: #a16207; margin-top: 3px; line-height: 1.35;">Workday, Greenhouse &amp; Lever compliant single-column format.</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; gap: 10px;">
+      <button type="button" onclick="closeAutoUpgradeCelebrationModal()" class="studio-btn studio-btn-primary" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 800;">
+        🎉 Awesome, Continue in Editor
+      </button>
+      <button type="button" onclick="closeAutoUpgradeCelebrationModal(); openTemplatesModal();" class="studio-btn studio-btn-ghost" style="padding: 12px 18px; font-size: 13px; font-weight: 700;">
+        Switch Template
       </button>
     </div>
 

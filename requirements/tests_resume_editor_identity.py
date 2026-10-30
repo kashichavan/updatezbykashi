@@ -158,3 +158,68 @@ class GitHubImportHonestyTests(TestCase):
     def test_unknown_relationship_falls_back_to_studied(self):
         res, gen = self._import({'repo': 'me/my-project', 'relationship': 'IINVENTEDTHISTOKEN'})
         self.assertEqual(gen.call_args.kwargs['relationship'], 'RECOMMENDED')
+
+
+class AutoUpgradeAndAnalysisViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_resume_analysis_page_loads(self):
+        res = self.client.get('/ai-resume-analysis/')
+        self.assertEqual(res.status_code, 200)
+        content = res.content.decode()
+        self.assertIn('AI Resume Checker', content)
+        self.assertIn('gaugeScoreNumber', content)
+
+    def test_auto_upgrade_api(self):
+        raw_resume = {
+            'name': 'Priya Sharma',
+            'summary': 'Software developer looking for opportunities.',
+            'skills': {
+                'Languages': 'Python, JavaScript',
+                'Frameworks': 'Django'
+            },
+            'experience': [],
+            'projects': [
+                {
+                    'title': 'E-Commerce Platform',
+                    'role': 'Full-Stack Developer',
+                    'tech_stack': 'Python, Django, PostgreSQL, Redis',
+                    'bullets': [
+                        'Built an ecommerce app with Django',
+                        'Added redis caching and postgres'
+                    ]
+                }
+            ],
+            'education': [
+                {
+                    'institution': 'VTU Belagavi',
+                    'degree': 'B.E. Computer Science',
+                    'year': '2024',
+                    'gpa': '8.6 CGPA'
+                }
+            ],
+            'contact': {
+                'email': 'priya@example.com',
+                'phone': '+91 9123456789',
+                'location': 'Bengaluru, India',
+                'linkedin': 'linkedin.com/in/priya',
+                'github': 'github.com/priya'
+            }
+        }
+        res = self.client.post(
+            '/api/ai/auto-upgrade-resume/',
+            data=json.dumps({
+                'resume_data': raw_resume,
+                'role_key': 'python_backend',
+                'target_skills': ['Python', 'Django', 'Redis', 'PostgreSQL', 'Docker', 'REST API']
+            }),
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data.get('status'), 'success')
+        self.assertGreaterEqual(data.get('new_score', 0), 80)
+        upgraded = data.get('upgraded_resume', {})
+        self.assertTrue(len(upgraded.get('projects', [])[0].get('bullets', [])) >= 2)
+
