@@ -665,41 +665,118 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    const selectedFiltersRow = document.getElementById('selectedFiltersRow');
     const selectedCityTag = document.getElementById('selectedCityTag');
     const selectedCityTagName = document.getElementById('selectedCityTagName');
+    const selectedJobTypeTag = document.getElementById('selectedJobTypeTag');
+    const selectedJobTypeTagName = document.getElementById('selectedJobTypeTagName');
+    const selectedSpecialismTag = document.getElementById('selectedSpecialismTag');
+    const selectedSpecialismTagName = document.getElementById('selectedSpecialismTagName');
+    const selectedKeywordTag = document.getElementById('selectedKeywordTag');
+    const selectedKeywordTagName = document.getElementById('selectedKeywordTagName');
+
     const locationBadge = document.getElementById('locationFilterBadgeCount');
+    const jobTypeBadge = document.getElementById('jobTypeFilterBadgeCount');
+    const specialismBadge = document.getElementById('specialismFilterBadgeCount');
     const allFiltersBadge = document.getElementById('allFiltersBadgeCount');
+
     const locationBtnText = document.getElementById('locationFilterBtnText');
     const jobTypeBtnText = document.getElementById('jobTypeFilterBtnText');
     const specialismBtnText = document.getElementById('specialismFilterBtnText');
 
+    const btnLocation = document.querySelector('[data-locator-id="searchjobs_filters_location"]');
+    const btnJobType = document.querySelector('[data-locator-id="searchjobs_filters_jobType"]');
+    const btnSpecialism = document.querySelector('[data-locator-id="searchjobs_filters_specialism"]');
+    const btnAllFilters = document.querySelector('[data-locator-id="searchjobs_filters_allFilters"]');
+
     let activeFilterCount = 0;
+
+    // 1. City Filter Sync
     if (state.city) {
       activeFilterCount++;
-      if (selectedCityTag) selectedCityTag.style.display = 'inline-flex';
-      if (selectedCityTagName) selectedCityTagName.textContent = `${state.city.toLowerCase()}, karnataka`;
       if (locationBtnText) locationBtnText.textContent = state.city.toLowerCase();
+      if (locationBadge) { locationBadge.textContent = '1'; locationBadge.style.display = 'inline-flex'; }
+      if (btnLocation) btnLocation.classList.add('is-active');
+      if (selectedCityTag && selectedCityTagName) {
+        selectedCityTagName.textContent = `${state.city.toLowerCase()}, karnataka`;
+        selectedCityTag.style.display = 'inline-flex';
+      }
     } else {
-      if (selectedCityTag) selectedCityTag.style.display = 'none';
       if (locationBtnText) locationBtnText.textContent = 'location';
+      if (locationBadge) locationBadge.style.display = 'none';
+      if (btnLocation) btnLocation.classList.remove('is-active');
+      if (selectedCityTag) selectedCityTag.style.display = 'none';
     }
 
+    // 2. Job Type Filter Sync
     if (state.jobType && state.jobType !== 'all') {
       activeFilterCount++;
-      if (jobTypeBtnText) jobTypeBtnText.textContent = state.jobType === 'FULL_TIME' ? 'full-time' : 'internships';
+      const typeLabel = state.jobType === 'FULL_TIME' ? 'full-time' : 'internships';
+      if (jobTypeBtnText) jobTypeBtnText.textContent = typeLabel;
+      if (jobTypeBadge) { jobTypeBadge.textContent = '1'; jobTypeBadge.style.display = 'inline-flex'; }
+      if (btnJobType) btnJobType.classList.add('is-active');
+      if (selectedJobTypeTag && selectedJobTypeTagName) {
+        selectedJobTypeTagName.textContent = typeLabel;
+        selectedJobTypeTag.style.display = 'inline-flex';
+      }
     } else {
       if (jobTypeBtnText) jobTypeBtnText.textContent = 'job types';
+      if (jobTypeBadge) jobTypeBadge.style.display = 'none';
+      if (btnJobType) btnJobType.classList.remove('is-active');
+      if (selectedJobTypeTag) selectedJobTypeTag.style.display = 'none';
     }
 
+    // 3. Category / Specialism Filter Sync
     if (state.category && state.category !== 'all') {
       activeFilterCount++;
       if (specialismBtnText) specialismBtnText.textContent = state.category;
+      if (specialismBadge) { specialismBadge.textContent = '1'; specialismBadge.style.display = 'inline-flex'; }
+      if (btnSpecialism) btnSpecialism.classList.add('is-active');
+      if (selectedSpecialismTag && selectedSpecialismTagName) {
+        selectedSpecialismTagName.textContent = state.category;
+        selectedSpecialismTag.style.display = 'inline-flex';
+      }
     } else {
       if (specialismBtnText) specialismBtnText.textContent = 'professional field';
+      if (specialismBadge) specialismBadge.style.display = 'none';
+      if (btnSpecialism) btnSpecialism.classList.remove('is-active');
+      if (selectedSpecialismTag) selectedSpecialismTag.style.display = 'none';
     }
 
-    if (locationBadge) locationBadge.textContent = state.city ? '1' : '0';
-    if (allFiltersBadge) allFiltersBadge.textContent = activeFilterCount.toString();
+    // 4. Keyword Search Tag Sync
+    if (state.searchQuery) {
+      if (selectedKeywordTag && selectedKeywordTagName) {
+        selectedKeywordTagName.textContent = `keyword: "${state.searchQuery}"`;
+        selectedKeywordTag.style.display = 'inline-flex';
+      }
+    } else {
+      if (selectedKeywordTag) selectedKeywordTag.style.display = 'none';
+    }
+
+    // 5. All Filters Badge & Overall Selected Row
+    if (allFiltersBadge) {
+      allFiltersBadge.textContent = activeFilterCount.toString();
+      allFiltersBadge.style.display = activeFilterCount > 0 ? 'inline-flex' : 'none';
+    }
+    if (btnAllFilters) {
+      btnAllFilters.classList.toggle('is-active', activeFilterCount > 0);
+    }
+
+    const hasAnyActive = activeFilterCount > 0 || !!state.searchQuery;
+    if (selectedFiltersRow) {
+      selectedFiltersRow.style.display = hasAnyActive ? 'flex' : 'none';
+    }
+
+    // Sync options active classes in popovers
+    document.querySelectorAll('#popoverLocation [data-city]').forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.city === (state.city || ''));
+    });
+    document.querySelectorAll('#popoverJobType [data-job-type]').forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.jobType === (state.jobType || 'all'));
+    });
+    document.querySelectorAll('#popoverSpecialism [data-category]').forEach(opt => {
+      opt.classList.toggle('active', opt.dataset.category === (state.category || 'all'));
+    });
   }
 
   function setupViewToggle() {
@@ -711,9 +788,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         state.viewMode = 'list';
         btnList.setAttribute('aria-pressed', 'true');
-        btnList.classList.add('rel_bg-trigger-active');
+        btnList.classList.add('active');
         btnGrid.setAttribute('aria-pressed', 'false');
-        btnGrid.classList.remove('rel_bg-trigger-active');
+        btnGrid.classList.remove('active');
         if (jobsGrid) jobsGrid.classList.add('is-list-view');
       });
 
@@ -721,9 +798,9 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         state.viewMode = 'grid';
         btnGrid.setAttribute('aria-pressed', 'true');
-        btnGrid.classList.add('rel_bg-trigger-active');
+        btnGrid.classList.add('active');
         btnList.setAttribute('aria-pressed', 'false');
-        btnList.classList.remove('rel_bg-trigger-active');
+        btnList.classList.remove('active');
         if (jobsGrid) jobsGrid.classList.remove('is-list-view');
       });
     }
@@ -735,10 +812,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const popoverSpecialism = document.getElementById('popoverSpecialism');
     const modalAllFilters = document.getElementById('modalAllFilters');
 
+    const btnFilterLocation = document.querySelector('[data-locator-id="searchjobs_filters_location"]');
+    const btnFilterJobType = document.querySelector('[data-locator-id="searchjobs_filters_jobType"]');
+    const btnFilterSpecialism = document.querySelector('[data-locator-id="searchjobs_filters_specialism"]');
+
     function closeAllPopovers() {
       if (popoverLocation) popoverLocation.style.display = 'none';
       if (popoverJobType) popoverJobType.style.display = 'none';
       if (popoverSpecialism) popoverSpecialism.style.display = 'none';
+
+      if (btnFilterLocation) { btnFilterLocation.classList.remove('is-open'); btnFilterLocation.setAttribute('aria-expanded', 'false'); }
+      if (btnFilterJobType) { btnFilterJobType.classList.remove('is-open'); btnFilterJobType.setAttribute('aria-expanded', 'false'); }
+      if (btnFilterSpecialism) { btnFilterSpecialism.classList.remove('is-open'); btnFilterSpecialism.setAttribute('aria-expanded', 'false'); }
     }
 
     document.querySelectorAll('[data-close-popover]').forEach(btn => {
@@ -748,33 +833,42 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    const btnFilterLocation = document.querySelector('[data-locator-id="searchjobs_filters_location"]');
     if (btnFilterLocation && popoverLocation) {
       btnFilterLocation.addEventListener('click', (e) => {
         e.stopPropagation();
         const isOpen = popoverLocation.style.display === 'block';
         closeAllPopovers();
-        popoverLocation.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+          popoverLocation.style.display = 'block';
+          btnFilterLocation.classList.add('is-open');
+          btnFilterLocation.setAttribute('aria-expanded', 'true');
+        }
       });
     }
 
-    const btnFilterJobType = document.querySelector('[data-locator-id="searchjobs_filters_jobType"]');
     if (btnFilterJobType && popoverJobType) {
       btnFilterJobType.addEventListener('click', (e) => {
         e.stopPropagation();
         const isOpen = popoverJobType.style.display === 'block';
         closeAllPopovers();
-        popoverJobType.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+          popoverJobType.style.display = 'block';
+          btnFilterJobType.classList.add('is-open');
+          btnFilterJobType.setAttribute('aria-expanded', 'true');
+        }
       });
     }
 
-    const btnFilterSpecialism = document.querySelector('[data-locator-id="searchjobs_filters_specialism"]');
     if (btnFilterSpecialism && popoverSpecialism) {
       btnFilterSpecialism.addEventListener('click', (e) => {
         e.stopPropagation();
         const isOpen = popoverSpecialism.style.display === 'block';
         closeAllPopovers();
-        popoverSpecialism.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+          popoverSpecialism.style.display = 'block';
+          btnFilterSpecialism.classList.add('is-open');
+          btnFilterSpecialism.setAttribute('aria-expanded', 'true');
+        }
       });
     }
 
@@ -788,8 +882,6 @@ document.addEventListener('DOMContentLoaded', () => {
       popoverLocation.querySelectorAll('[data-city]').forEach(opt => {
         opt.addEventListener('click', (e) => {
           e.preventDefault();
-          popoverLocation.querySelectorAll('[data-city]').forEach(b => b.classList.remove('active'));
-          opt.classList.add('active');
           state.city = opt.dataset.city;
           state.page = 1;
           closeAllPopovers();
@@ -802,8 +894,6 @@ document.addEventListener('DOMContentLoaded', () => {
       popoverJobType.querySelectorAll('[data-job-type]').forEach(opt => {
         opt.addEventListener('click', (e) => {
           e.preventDefault();
-          popoverJobType.querySelectorAll('[data-job-type]').forEach(b => b.classList.remove('active'));
-          opt.classList.add('active');
           state.jobType = opt.dataset.jobType;
           state.page = 1;
           closeAllPopovers();
@@ -816,8 +906,6 @@ document.addEventListener('DOMContentLoaded', () => {
       popoverSpecialism.querySelectorAll('[data-category]').forEach(opt => {
         opt.addEventListener('click', (e) => {
           e.preventDefault();
-          popoverSpecialism.querySelectorAll('[data-category]').forEach(b => b.classList.remove('active'));
-          opt.classList.add('active');
           state.category = opt.dataset.category;
           state.page = 1;
           closeAllPopovers();
@@ -826,6 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // All Filters Modal Handlers
     const btnAllFilters = document.querySelector('[data-locator-id="searchjobs_filters_allFilters"]');
     const btnMobileFilters = document.querySelector('[data-rs-modal-trigger="mobile-filters"]');
     const btnCloseAllFilters = document.getElementById('btnCloseAllFilters');
@@ -909,11 +998,45 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Individual Tag Clear Handlers
     const btnClearCityTag = document.getElementById('btnClearCityTag');
     if (btnClearCityTag) {
       btnClearCityTag.addEventListener('click', (e) => {
         e.preventDefault();
         state.city = '';
+        state.page = 1;
+        loadJobs();
+      });
+    }
+
+    const btnClearJobTypeTag = document.getElementById('btnClearJobTypeTag');
+    if (btnClearJobTypeTag) {
+      btnClearJobTypeTag.addEventListener('click', (e) => {
+        e.preventDefault();
+        state.jobType = 'all';
+        state.page = 1;
+        loadJobs();
+      });
+    }
+
+    const btnClearSpecialismTag = document.getElementById('btnClearSpecialismTag');
+    if (btnClearSpecialismTag) {
+      btnClearSpecialismTag.addEventListener('click', (e) => {
+        e.preventDefault();
+        state.category = 'all';
+        state.page = 1;
+        loadJobs();
+      });
+    }
+
+    const btnClearKeywordTag = document.getElementById('btnClearKeywordTag');
+    if (btnClearKeywordTag) {
+      btnClearKeywordTag.addEventListener('click', (e) => {
+        e.preventDefault();
+        state.searchQuery = '';
+        if (searchInput) searchInput.value = '';
+        const clearBtn = document.getElementById('headerSearchClearBtn');
+        if (clearBtn) clearBtn.style.display = 'none';
         state.page = 1;
         loadJobs();
       });
@@ -931,7 +1054,9 @@ document.addEventListener('DOMContentLoaded', () => {
         state.sort = 'newest';
         state.page = 1;
         if (searchInput) searchInput.value = '';
-        if (sortSelect) sortSelect.value = '';
+        const clearBtn = document.getElementById('headerSearchClearBtn');
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (sortSelect) sortSelect.value = 'Date';
         loadJobs();
       });
     }
@@ -951,12 +1076,68 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    document.querySelectorAll('[data-locator-id="searchjobs_search_savedSearchAlertButton"]').forEach(btn => {
+    // Job Alerts Modal Wireup
+    const modalJobAlerts = document.getElementById('modalJobAlerts');
+    const btnCloseJobAlerts = document.getElementById('btnCloseJobAlerts');
+    const formJobAlerts = document.getElementById('formJobAlerts');
+    const alertCriteriaEl = document.getElementById('jobAlertCurrentCriteria');
+
+    function openAlertsModal() {
+      if (!modalJobAlerts) return;
+      if (alertCriteriaEl) {
+        const parts = [];
+        if (state.searchQuery) parts.push(`Query: "${state.searchQuery}"`);
+        if (state.city) parts.push(`Location: ${state.city}`);
+        if (state.jobType && state.jobType !== 'all') parts.push(state.jobType === 'FULL_TIME' ? 'Full-Time' : 'Internships');
+        if (state.category && state.category !== 'all') parts.push(state.category);
+        alertCriteriaEl.textContent = parts.length > 0 ? parts.join(' • ') : 'All Verified Software & Tech Opportunities';
+      }
+      modalJobAlerts.style.display = 'flex';
+    }
+
+    function closeAlertsModal() {
+      if (modalJobAlerts) modalJobAlerts.style.display = 'none';
+    }
+
+    document.querySelectorAll('[data-locator-id="searchjobs_search_savedSearchAlertButton"], .button-saved-jobs-alerts').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        showToast('🔔 Search saved! You will receive daily alerts for matching jobs.', 'success');
+        openAlertsModal();
       });
     });
+
+    if (btnCloseJobAlerts) btnCloseJobAlerts.addEventListener('click', closeAlertsModal);
+    if (modalJobAlerts) {
+      modalJobAlerts.addEventListener('click', (e) => {
+        if (e.target === modalJobAlerts) closeAlertsModal();
+      });
+    }
+
+    if (formJobAlerts) {
+      formJobAlerts.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const contactInput = document.getElementById('jobAlertContactInput');
+        const contactVal = contactInput ? contactInput.value.trim() : '';
+        if (!contactVal) {
+          alert('Please enter your email or WhatsApp number.');
+          return;
+        }
+        try {
+          localStorage.setItem('saved_job_alerts', JSON.stringify({
+            contact: contactVal,
+            criteria: alertCriteriaEl ? alertCriteriaEl.textContent : '',
+            savedAt: new Date().toISOString()
+          }));
+        } catch(err){}
+        closeAlertsModal();
+        if (window.showToast) {
+          window.showToast("🎉 Search saved! You will receive daily alerts for matching jobs.", "success");
+        } else {
+          alert("🎉 Search saved! You will receive daily alerts for matching jobs.");
+        }
+        if (contactInput) contactInput.value = '';
+      });
+    }
   }
 
   function setupHomePageListeners() {
