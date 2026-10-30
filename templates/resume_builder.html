@@ -40,17 +40,17 @@
     <div class="deck-zone deck-zone-config">
       {% if target_job %}
       <div class="deck-select-wrap">
-        <span class="deck-tag">TAILORING FOR</span>
+        <span class="deck-tag">TARGET</span>
         <div class="deck-select-inner" title="{{ target_job.title }} at {{ target_job.company_name }}">
-          <i data-lucide="target" class="deck-icon" style="color: #1d4ed8; width: 15px; height: 15px;"></i>
+          <i data-lucide="target" class="deck-icon" style="color: #1d4ed8; width: 14px; height: 14px;"></i>
           <span class="deck-target-label">{{ target_job.title }}</span>
         </div>
       </div>
       {% else %}
       <div class="deck-select-wrap">
-        <label for="roleSelectorSelect" class="deck-tag">TARGET ROLE</label>
+        <label for="roleSelectorSelect" class="deck-tag">ROLE</label>
         <div class="deck-select-inner">
-          <i data-lucide="layers" class="deck-icon" style="color: #1d4ed8; width: 15px; height: 15px;"></i>
+          <i data-lucide="layers" class="deck-icon" style="color: #1d4ed8; width: 14px; height: 14px;"></i>
           <select id="roleSelectorSelect" onchange="switchRole(this.value)" class="deck-select-input">
             {% for r_id, r in roles.items %}
               <option value="{{ r_id }}" {% if r_id == selected_role_id %}selected{% endif %}>{{ r.badge }}</option>
@@ -62,74 +62,86 @@
 
       <div class="deck-level-toggle">
         <button type="button" id="btnLevelFresher" onclick="setLevel('fresher')" class="level-pill-btn active">
-          <i data-lucide="graduation-cap" style="width: 14px; height: 14px;"></i>
           <span>Fresher</span>
         </button>
         <button type="button" id="btnLevelExp" onclick="setLevel('experienced')" class="level-pill-btn">
-          <i data-lucide="briefcase" style="width: 14px; height: 14px;"></i>
           <span>Experienced</span>
         </button>
       </div>
     </div>
 
-    <!-- Zone 2: Live ATS Pulse Meter Widget -->
+    <!-- Zone 2: Clean Compact ATS Score Chip -->
     <div class="deck-zone deck-zone-pulse">
-      <button type="button" onclick="openAtsDiagnosticModal()" class="ats-pulse-card" title="Click to view ATS Score Breakdown &amp; Audit">
-        <div class="ats-pulse-gauge" style="{% if ats_eval.score >= 90 %}background: #dbeafe; border-color: #15803d;{% elif ats_eval.score >= 80 %}background: #eff6ff; border-color: #1d4ed8;{% elif ats_eval.score >= 70 %}background: #fffbeb; border-color: #b45309;{% else %}background: #fef2f2; border-color: #dc2626;{% endif %}">
-          <span id="atsScoreValue" class="ats-gauge-num" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #b91c1c;{% endif %}">{{ ats_eval.score }}</span>
-        </div>
-        <div class="ats-pulse-text">
-          <div class="ats-pulse-top">
-            <span class="ats-pulse-label" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #b91c1c;{% endif %}">ATS SCORE</span>
-            <span id="atsGradeText" class="ats-pulse-grade" style="{% if ats_eval.score >= 90 %}color: #15803d;{% elif ats_eval.score >= 80 %}color: #1d4ed8;{% elif ats_eval.score >= 70 %}color: #b45309;{% else %}color: #dc2626;{% endif %}">
-              {% if ats_eval.score >= 90 %}✓ {{ ats_eval.grade }}{% elif ats_eval.score >= 80 %}✓ {{ ats_eval.grade }}{% elif ats_eval.score >= 70 %}⚡ {{ ats_eval.grade }}{% else %}⚠️ {{ ats_eval.grade }}{% endif %}
-            </span>
-          </div>
-          <div class="ats-pulse-sub" id="atsPassRateText">{{ ats_eval.pass_rate }} &bull; Click to Audit &rarr;</div>
-        </div>
+      <button type="button" onclick="openAtsDiagnosticModal()" class="ats-pulse-chip" title="Click to view ATS Score Breakdown &amp; Audit">
+        <span class="ats-chip-circle">
+          <span id="atsScoreValue" class="ats-gauge-num">{{ ats_eval.score }}</span>
+        </span>
+        <span class="ats-chip-label">
+          <span style="font-size: 10px; font-weight: 800; color: #15803d; letter-spacing: 0.5px;">ATS:</span>
+          <strong id="atsGradeText" style="font-size: 11.5px; font-weight: 800; color: #15803d;">{{ ats_eval.grade }}</strong>
+        </span>
+        <span id="atsPassRateText" style="display: none;">{{ ats_eval.pass_rate }}</span>
       </button>
     </div>
 
-    <!-- Zone 3: Pro Action Cluster -->
+    <!-- Zone 3: 3 Clear Core Action Buttons + 1 Clean More Menu -->
     <div class="deck-zone deck-zone-actions">
-      <!-- Switch Template (Jobsuit Standards) -->
-      <button type="button" id="btnOpenTemplates" onclick="openTemplatesModal()" class="studio-btn studio-btn-ghost" title="Switch Resume Templates (Standard, Modern, Classic, Minimalist, Bold, Executive)">
-        <i data-lucide="layout-template" style="width: 15px; height: 15px;"></i>
+      <!-- 1. Templates Gallery -->
+      <button type="button" id="btnOpenTemplates" onclick="openTemplatesModal()" class="studio-btn studio-btn-ghost" title="Choose from 6 ATS templates (Standard, Modern, Classic, Minimalist, Bold, Executive)">
+        <i data-lucide="layout-template" style="width: 14px; height: 14px;"></i>
         <span>Templates</span>
       </button>
 
-      <!-- 1-Click AI Auto Upgrade -->
+      <!-- 2. 1-Click AI Auto Upgrade -->
       <button type="button" id="btnAutoUpgradeResume" onclick="runAutoUpgradeResume()" class="studio-btn studio-btn-magic" style="background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: #ffffff; border: none; font-weight: 800; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" title="1-Click Auto Upgrade: Rewrites summary, enriches skills & crafts Google XYZ bullets with metrics (ATS 95+ Score)">
-        <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-        <span id="btnAutoUpgradeText">⚡ Auto Upgrade (ATS 95+)</span>
+        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+        <span id="btnAutoUpgradeText">⚡ Auto Upgrade</span>
       </button>
 
-      <!-- Import Existing Resume -->
-      <button type="button" id="btnUploadResume" onclick="triggerFileInput()" class="studio-btn studio-btn-ghost" title="Upload PDF or DOCX to auto-populate resume">
-        <i data-lucide="upload-cloud" style="width: 15px; height: 15px;"></i>
-        <span id="btnUploadResumeText">Import</span>
+      <!-- 3. Primary CTA: Download PDF -->
+      <button type="button" id="btnDownloadPdf" onclick="downloadResumeAsPdf()" class="studio-btn studio-btn-primary" title="Export 100% vector ATS PDF">
+        <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+        <span id="downloadPdfBtnText">Download PDF</span>
       </button>
 
-      <!-- Add Project -->
-      <button type="button" onclick="openUnifiedAddProjectModal()" class="studio-btn studio-btn-subtle" title="Add project from GitHub or scratch with Google XYZ metrics">
-        <i data-lucide="plus" style="width: 15px; height: 15px;"></i>
-        <span>Add Project</span>
-      </button>
+      <!-- 4. Clean More Options Dropdown -->
+      <div class="studio-dropdown-wrap" style="position: relative;">
+        <button type="button" id="btnMoreActions" onclick="toggleMoreMenu(event)" class="studio-btn studio-btn-ghost" title="More options" style="padding: 8px 12px;">
+          <i data-lucide="more-horizontal" style="width: 15px; height: 15px;"></i>
+          <span>More</span>
+          <i data-lucide="chevron-down" style="width: 12px; height: 12px; opacity: 0.7;"></i>
+        </button>
 
-      <!-- 1-Click AI Boost (only when no job is targeted; the job banner owns
-           the single tailoring action so the page does not offer two AIs) -->
-      {% if not target_job %}
-      <button type="button" id="btnOneClickAiBoost" onclick="runOneClickAiBoost()" class="studio-btn studio-btn-magic" title="AI rewords what you already wrote for this role. It cannot add numbers you did not supply.">
-        <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-        <span>AI Rewrite for Role</span>
-      </button>
-      {% endif %}
-
-      <!-- Download Vector PDF -->
-      <button type="button" id="btnDownloadPdf" onclick="downloadResumeAsPdf()" class="studio-btn studio-btn-primary" title="Export 100% vector ATS PDF (Single or Multi-Page)">
-        <i data-lucide="arrow-down-to-line" style="width: 16px; height: 16px;"></i>
-        <span id="downloadPdfBtnText">Download A4 PDF</span>
-      </button>
+        <div id="moreActionsMenu" class="studio-dropdown-menu" style="display: none; position: absolute; right: 0; top: 115%; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16); min-width: 220px; z-index: 1000; padding: 6px; flex-direction: column; gap: 2px;">
+          <button type="button" id="btnUploadResume" onclick="triggerFileInput(); closeMoreMenu();" class="studio-menu-item">
+            <i data-lucide="upload-cloud" style="width: 15px; height: 15px; color: #2563eb;"></i>
+            <span id="btnUploadResumeText">Import Resume (PDF/Word)</span>
+          </button>
+          <button type="button" onclick="openUnifiedAddProjectModal(); closeMoreMenu();" class="studio-menu-item">
+            <i data-lucide="plus" style="width: 15px; height: 15px; color: #059669;"></i>
+            <span>Add Project</span>
+          </button>
+          <button type="button" onclick="downloadResumeAsDocx(); closeMoreMenu();" class="studio-menu-item">
+            <i data-lucide="file-text" style="width: 15px; height: 15px; color: #1d4ed8;"></i>
+            <span>Download Word (.docx)</span>
+          </button>
+          <button type="button" onclick="copyResumeText(); closeMoreMenu();" class="studio-menu-item">
+            <i data-lucide="copy" style="width: 15px; height: 15px; color: #475569;"></i>
+            <span>Copy Plaintext for Portals</span>
+          </button>
+          <button type="button" onclick="window.print(); closeMoreMenu();" class="studio-menu-item">
+            <i data-lucide="printer" style="width: 15px; height: 15px; color: #475569;"></i>
+            <span>Print Document</span>
+          </button>
+          {% if not target_job %}
+          <div style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+          <button type="button" id="btnOneClickAiBoost" onclick="runOneClickAiBoost(); closeMoreMenu();" class="studio-menu-item" style="color: #6d28d9; font-weight: 700;">
+            <i data-lucide="sparkles" style="width: 14px; height: 14px; color: #7c3aed;"></i>
+            <span>AI Rewrite for Role</span>
+          </button>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
     <!-- Hidden file input for upload -->
@@ -210,11 +222,7 @@
 
       <!-- Quick Action Utilities -->
       <div class="inspector-section inspector-utilities-section">
-        <button type="button" onclick="downloadResumeAsPdf()" class="inspector-util-btn util-btn-download">
-          <i data-lucide="download" style="width: 14px; height: 14px;"></i>
-          <span>Download Clean A4 PDF</span>
-        </button>
-        <button type="button" onclick="copyResumeText()" class="inspector-util-btn util-btn-copy">
+        <button type="button" onclick="copyResumeText()" class="inspector-util-btn util-btn-copy" style="width: 100%;">
           <i data-lucide="copy" style="width: 14px; height: 14px;"></i>
           <span>Copy Plaintext for Portals</span>
         </button>
@@ -265,17 +273,8 @@
             </div>
           </div>
           <div class="word-titlebar-right">
-            <button type="button" onclick="downloadResumeAsDocx()" class="word-btn-action" title="Export as Microsoft Word .docx / .doc file">
-              <i data-lucide="file-text" style="width: 13px; height: 13px; color: #1d4ed8;"></i>
-              <span>Word (.docx)</span>
-            </button>
-            <button type="button" onclick="downloadResumeAsPdf()" class="word-btn-action word-btn-action-primary" title="Export as 100% vector ATS PDF (Single or Multi-Page)">
-              <i data-lucide="download" style="width: 13px; height: 13px;"></i>
-              <span>Download PDF</span>
-            </button>
-            <button type="button" onclick="window.print()" class="word-btn-icon" title="Print Document">
-              <i data-lucide="printer" style="width: 14px; height: 14px;"></i>
-            </button>
+            <span class="single-page-badge" style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px;">📄 1-Page ATS</span>
+            <span class="word-count-badge" id="wordCountLive" style="font-size: 11.5px; color: #64748b; font-weight: 600;">~340 words</span>
           </div>
         </div>
 
@@ -805,6 +804,68 @@
     font-size: 11px;
     color: #475569;
     margin-top: 1px;
+  }
+
+  /* Compact ATS Score Chip */
+  .ats-pulse-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .ats-pulse-chip:hover {
+    border-color: #86efac;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
+  }
+  .ats-chip-circle {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #dcfce7;
+    border: 1.5px solid #22c55e;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+  .ats-chip-circle .ats-gauge-num {
+    font-size: 11.5px;
+    font-weight: 850;
+    color: #15803d;
+    line-height: 1;
+  }
+  .ats-chip-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  /* Dropdown Menu Items */
+  .studio-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .studio-menu-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
   }
 
   /* Zone 3: Pro Action Cluster */
@@ -2485,7 +2546,36 @@
     });
   }
 
+  const DUMMY_FALLBACK_CONTACT = {
+    name: 'Rahul Sharma',
+    email: 'rahul.sharma@example.com',
+    phone: '+91 98765 01234',
+    location: 'Bengaluru, India',
+    linkedin: 'linkedin.com/in/rahulsharma-dev',
+    github: 'github.com/rahulsharma-dev'
+  };
+
   function renderResumeSheet() {
+    if (!currentResumeData.name || !currentResumeData.name.trim()) {
+      currentResumeData.name = DUMMY_FALLBACK_CONTACT.name;
+    }
+    if (!currentResumeData.contact) currentResumeData.contact = {};
+    if (!currentResumeData.contact.email || !currentResumeData.contact.email.trim()) {
+      currentResumeData.contact.email = DUMMY_FALLBACK_CONTACT.email;
+    }
+    if (!currentResumeData.contact.phone || !currentResumeData.contact.phone.trim()) {
+      currentResumeData.contact.phone = DUMMY_FALLBACK_CONTACT.phone;
+    }
+    if (!currentResumeData.contact.location || !currentResumeData.contact.location.trim()) {
+      currentResumeData.contact.location = DUMMY_FALLBACK_CONTACT.location;
+    }
+    if (!currentResumeData.contact.linkedin || !currentResumeData.contact.linkedin.trim()) {
+      currentResumeData.contact.linkedin = DUMMY_FALLBACK_CONTACT.linkedin;
+    }
+    if (!currentResumeData.contact.github || !currentResumeData.contact.github.trim()) {
+      currentResumeData.contact.github = DUMMY_FALLBACK_CONTACT.github;
+    }
+
     document.getElementById('previewName').innerText = currentResumeData.name;
     document.getElementById('previewLocation').innerText = currentResumeData.contact.location || '';
     document.getElementById('previewEmail').innerText = currentResumeData.contact.email;
@@ -5050,6 +5140,28 @@
       if (window.lucide) window.lucide.createIcons();
     }
   }
+
+  /* More Actions Dropdown Menu */
+  function toggleMoreMenu(e) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('moreActionsMenu');
+    if (!menu) return;
+    const isShown = menu.style.display === 'flex';
+    menu.style.display = isShown ? 'none' : 'flex';
+    if (!isShown && window.lucide) window.lucide.createIcons();
+  }
+
+  function closeMoreMenu() {
+    const menu = document.getElementById('moreActionsMenu');
+    if (menu) menu.style.display = 'none';
+  }
+
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.studio-dropdown-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      closeMoreMenu();
+    }
+  });
 </script>
 
 <!-- ==========================================================

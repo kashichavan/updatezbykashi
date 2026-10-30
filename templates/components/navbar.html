@@ -42,9 +42,9 @@
         <span class="nav-label-short">Exp (1+)</span>
       </a>
 
-      <a href="/resume-studio/" class="{% if request.path == '/resume-studio/' or '/resume-builder' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
-        <i data-lucide="file-badge" class="nav-icon" style="width: 16px; height: 16px; color: #34d399;"></i>
-        <span class="nav-label-long">Resume Studio <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">New</span></span>
+      <a href="/resume-builder/" class="{% if '/resume' in request.path %}active{% endif %}" style="display: inline-flex; align-items: center; gap: 6px;">
+        <i data-lucide="file-text" class="nav-icon" style="width: 16px; height: 16px; color: #34d399;"></i>
+        <span class="nav-label-long">AI Resume Builder <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 700;">Instant</span></span>
         <span class="nav-label-short">Resume</span>
       </a>
 
@@ -209,16 +209,16 @@
             <span class="drawer-badge badge-sql">SQL</span>
           </a>
 
-          <a href="/resume-studio/" class="drawer-link {% if request.path == '/resume-studio/' or '/resume-builder' in request.path %}active{% endif %}">
+          <a href="/resume-builder/" class="drawer-link {% if '/resume' in request.path %}active{% endif %}">
             <div class="drawer-link-left">
               <span class="drawer-link-icon" style="color: #34d399;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </span>
-              <span class="drawer-link-label">AI Resume Studio</span>
+              <span class="drawer-link-label">AI Resume Builder</span>
             </div>
-            <span class="drawer-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">New</span>
+            <span class="drawer-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 700;">Instant</span>
           </a>
 
           <a href="/ai-resume-analysis/" class="drawer-link {% if '/resume-analysis' in request.path or '/resume-checker' in request.path %}active{% endif %}">
