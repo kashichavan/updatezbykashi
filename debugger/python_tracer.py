@@ -23,10 +23,12 @@ class PythonExecutionTracer:
     FORBIDDEN_AST_NODES = ()
 
     MAX_STEPS = 500
+    MAX_EXECUTION_SECONDS = 2.0
 
     FORBIDDEN_FUNCTIONS = {
         'eval', 'exec', '__import__', 'compile', 'open', 'breakpoint',
-        'help', 'exit', 'quit', 'globals', 'locals', 'vars'
+        'help', 'exit', 'quit', 'globals', 'locals', 'vars',
+        'getattr', 'setattr', 'delattr', 'hasattr', 'memoryview'
     }
 
     ALLOWED_MODULES = {
@@ -78,6 +80,9 @@ class PythonExecutionTracer:
                 if node.attr.startswith('__') and node.attr.endswith('__'):
                     if node.attr not in ('__name__', '__doc__', '__init__', '__str__', '__repr__', '__len__', '__getitem__', '__setitem__'):
                         return False, f"Security Restriction: Dunder attribute '{node.attr}' is restricted."
+            elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+                if node.value in ('__subclasses__', '__bases__', '__globals__', '__builtins__', '__code__', '__closure__', '__mro__'):
+                    return False, f"Security Restriction: Reflection token '{node.value}' is restricted."
 
         return True, "Valid"
 
@@ -199,6 +204,9 @@ class PythonExecutionTracer:
 
     def trace_callback(self, frame, event, arg):
         """Callback handler invoked by sys.settrace on every execution step."""
+        if hasattr(self, '_start_time') and (time.time() - self._start_time > self.MAX_EXECUTION_SECONDS):
+            raise TimeoutError(f"Execution time limit exceeded ({self.MAX_EXECUTION_SECONDS}s). Execution stopped.")
+
         if len(self.steps) >= self.MAX_STEPS:
             raise RuntimeError(f"Execution step limit exceeded ({self.MAX_STEPS} steps). Execution stopped.")
 
@@ -316,6 +324,7 @@ class PythonExecutionTracer:
         safe_builtins['__import__'] = _restricted_import
 
         start_time = time.time()
+        self._start_time = start_time
         try:
             compiled = compile(self.code_str, '<string>', 'exec')
             sys.settrace(self.trace_callback)

@@ -18,3 +18,23 @@ class AuthBearer(HttpBearer):
 
 # Instance for use in NinjaAPI routers
 auth_bearer = AuthBearer()
+
+class OwnerAuthBearer(HttpBearer):
+    """
+    Enforces that the caller is authenticated AND possesses is_staff or is_superuser status.
+    Blocks Broken Object Level Authorization (BOLA) and horizontal privilege escalation.
+    """
+    def authenticate(self, request, token):
+        jwt_authenticator = JWTAuthentication()
+        try:
+            validated_token = jwt_authenticator.get_validated_token(token)
+            user = jwt_authenticator.get_user(validated_token)
+            if user and user.is_active and (user.is_staff or user.is_superuser):
+                request.auth = validated_token
+                return user
+            return None
+        except Exception:
+            return None
+
+owner_auth_bearer = OwnerAuthBearer()
+

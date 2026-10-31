@@ -1,4 +1,5 @@
 import re
+import ast
 
 
 class JavaScriptExecutionTracer:
@@ -258,9 +259,44 @@ class JavaScriptExecutionTracer:
         # Remove JS-only semicolons
         resolved_expr = resolved_expr.rstrip(';').strip()
 
+        # Secure AST-based evaluation of arithmetic and literal expressions (replaces unsafe eval)
         try:
-            result = eval(resolved_expr, {"__builtins__": {}})  # nosec safe eval
-            return str(result)
+            parsed = ast.parse(resolved_expr, mode='eval')
+            def _eval_node(node):
+                if isinstance(node, ast.Expression):
+                    return _eval_node(node.body)
+                elif isinstance(node, ast.Constant):
+                    if isinstance(node.value, (int, float, str, bool)):
+                        return node.value
+                    return None
+                elif isinstance(node, ast.BinOp):
+                    left = _eval_node(node.left)
+                    right = _eval_node(node.right)
+                    if left is None or right is None:
+                        return None
+                    if isinstance(node.op, ast.Add):
+                        if isinstance(left, str) or isinstance(right, str):
+                            return str(left) + str(right)
+                        return left + right
+                    elif isinstance(node.op, ast.Sub) and isinstance(left, (int, float)) and isinstance(right, (int, float)):
+                        return left - right
+                    elif isinstance(node.op, ast.Mult) and isinstance(left, (int, float)) and isinstance(right, (int, float)):
+                        return left * right
+                    elif isinstance(node.op, ast.Div) and isinstance(left, (int, float)) and isinstance(right, (int, float)):
+                        return left / right if right != 0 else 0
+                    elif isinstance(node.op, ast.Mod) and isinstance(left, (int, float)) and isinstance(right, (int, float)):
+                        return left % right if right != 0 else 0
+                    return None
+                elif isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+                    val = _eval_node(node.operand)
+                    if isinstance(val, (int, float)):
+                        return -val
+                    return None
+                return None
+
+            eval_res = _eval_node(parsed)
+            if eval_res is not None:
+                return str(eval_res)
         except Exception:
             pass
 

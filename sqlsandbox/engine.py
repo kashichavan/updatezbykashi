@@ -487,13 +487,18 @@ INSERT INTO accounts VALUES
     }
 }
 
+SAFE_PRAGMAS = {'table_info', 'table_list', 'foreign_key_list', 'foreign_keys', 'case_sensitive_like'}
+
 def _sandbox_authorizer(action, arg1, arg2, dbname, source):
     """
     Strict SQLite Security Authorizer.
-    Blocks ATTACH and DETACH actions to prevent sandbox escape or attaching disk databases.
+    Blocks ATTACH, DETACH, and dangerous PRAGMAs to prevent sandbox escapes or disk tampering.
     """
     if action in (sqlite3.SQLITE_ATTACH, sqlite3.SQLITE_DETACH):
         return sqlite3.SQLITE_DENY
+    if action == sqlite3.SQLITE_PRAGMA:
+        if arg1 and arg1.lower() not in SAFE_PRAGMAS:
+            return sqlite3.SQLITE_DENY
     return sqlite3.SQLITE_OK
 
 def get_sandboxed_connection(dataset_id='scott_tiger'):

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from ninja import Router, Query, Schema
 from typing import List, Optional, Dict, Any
-from api.auth import AuthBearer
+from api.auth import OwnerAuthBearer
 from ninja.errors import HttpError
 from django.db.models import Count # For potential future use with real models
 import random # For simulating job/group data
@@ -134,7 +134,7 @@ def get_mock_groups(jobs: List[OwnerJobSchema]) -> List[OwnerGroupSchema]:
 
 # --- API Endpoints ---
 
-@router.get("/jobs", response=OwnerJobsResponseSchema, auth=AuthBearer(), summary="List owner jobs")
+@router.get("/jobs", response=OwnerJobsResponseSchema, auth=OwnerAuthBearer(), summary="List owner jobs")
 def get_owner_jobs(
     request,
     page: int = Query(1, ge=1),
@@ -189,7 +189,7 @@ def get_owner_jobs(
         total_pages=(total + page_size - 1) // page_size
     )
 
-@router.get("/groups", response=OwnerGroupsResponseSchema, auth=AuthBearer(), summary="List owner job groups")
+@router.get("/groups", response=OwnerGroupsResponseSchema, auth=OwnerAuthBearer(), summary="List owner job groups")
 def get_owner_groups(
     request,
     page: int = Query(1, ge=1),
@@ -223,7 +223,7 @@ def get_owner_groups(
         total_pages=(total + page_size - 1) // page_size
     )
 
-@router.post("/groups/auto-organize", response=AutoOrganizeResponseSchema, auth=AuthBearer(), summary="Auto-organize jobs into groups")
+@router.post("/groups/auto-organize", response=AutoOrganizeResponseSchema, auth=OwnerAuthBearer(), summary="Auto-organize jobs into groups")
 def auto_organize_groups(request):
     """
     Trigger an automated process to organize unassigned jobs into predefined groups based on criteria.

@@ -58,9 +58,6 @@ DEFAULT_YOUTUBE_VIDEOS = [
 ]
 
 def is_authenticated_owner(request):
-    if hasattr(request, 'user') and request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
-        return True, request.user
-
     auth_header = request.headers.get('Authorization', '')
     if auth_header.startswith('Bearer '):
         token = auth_header.split(' ')[1]
@@ -73,6 +70,18 @@ def is_authenticated_owner(request):
                 return True, user
         except Exception:
             pass
+
+    if hasattr(request, 'user') and request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        # Anti-CSRF Origin/Referer verification for cookie-authenticated browser sessions
+        if request.method in ('POST', 'PUT', 'DELETE', 'PATCH'):
+            origin = request.headers.get('Origin', '')
+            referer = request.headers.get('Referer', '')
+            host = request.get_host()
+            if origin and not any(h in origin for h in [host, 'localhost', '127.0.0.1']):
+                return False, None
+            if referer and not any(h in referer for h in [host, 'localhost', '127.0.0.1']):
+                return False, None
+        return True, request.user
 
     return False, None
 
@@ -183,9 +192,16 @@ def api_ping(request):
 
 def api_cron_sync_jobs(request):
     """
-    Public cron trigger endpoint for automated Jobdexo, Naukri & LinkedIn synchronization.
-    Can be pinged by UptimeRobot, GitHub Actions, or cron-job.org.
+    Cron trigger endpoint for automated Jobdexo, Naukri & LinkedIn synchronization.
+    Supports token protection via CRON_SECRET_TOKEN environment variable.
     """
+    cron_secret = os.environ.get('CRON_SECRET_TOKEN', '').strip()
+    if cron_secret:
+        import secrets
+        provided_token = request.headers.get('X-Cron-Key') or request.GET.get('token') or request.GET.get('key') or ''
+        if not secrets.compare_digest(provided_token, cron_secret):
+            return JsonResponse({'error': 'Unauthorized cron invocation.'}, status=401)
+
     force = request.GET.get('force') == '1' or request.GET.get('force') == 'true'
     try:
         limit = min(50, max(1, int(request.GET.get('limit', 25))))
@@ -866,26 +882,17 @@ def owner_view(request):
                     user = authenticate(request, username=u_obj.username, password=password)
 
         if user is None:
-            master_keys = [
-                os.environ.get('OWNER_ADMIN_KEY', ''),
-                os.environ.get('DJANGO_SECRET_KEY', ''),
-                'kashi@2026',
-                'KashiUpdatez@2026',
-                'kashii7777',
-                'kashichavan7777',
-            ]
-            valid_master_keys = [k.strip() for k in master_keys if k.strip()]
-            if '@' in raw_username:
-                target_user = User.objects.filter(email__iexact=raw_username, is_active=True).first()
-            else:
-                target_user = User.objects.filter(username__iexact=raw_username, is_active=True).first()
-
-            if target_user and password in valid_master_keys and (target_user.is_staff or target_user.is_superuser):
-                target_user.set_password(password)
-                target_user.is_staff = True
-                target_user.is_superuser = True
-                target_user.save()
-                user = target_user
+            # Secure Emergency Recovery (Strictly via OWNER_ADMIN_MASTER_KEY environment variable with timing-attack defense)
+            emergency_key = os.environ.get('OWNER_ADMIN_MASTER_KEY', '').strip()
+            if emergency_key and len(emergency_key) >= 16:
+                import secrets
+                if secrets.compare_digest(password, emergency_key):
+                    if '@' in raw_username:
+                        target_user = User.objects.filter(email__iexact=raw_username, is_active=True).first()
+                    else:
+                        target_user = User.objects.filter(username__iexact=raw_username, is_active=True).first()
+                    if target_user and (target_user.is_staff or target_user.is_superuser):
+                        user = target_user
 
         if user is not None and user.is_active and (user.is_staff or user.is_superuser):
             login(request, user)
@@ -1602,39 +1609,20 @@ def api_admin_login(request):
                     if u_obj:
                         user = authenticate(request, username=u_obj.username, password=password)
 
-            # 3. Master Owner Passkey & Recovery Resilience
+            # 3. Secure Emergency Recovery (Strictly via OWNER_ADMIN_MASTER_KEY environment variable)
             if user is None:
-                target_user = None
-                if '@' in raw_username:
-                    target_user = User.objects.filter(email__iexact=raw_username, is_active=True).first()
-                else:
-                    target_user = User.objects.filter(username__iexact=raw_username, is_active=True).first()
+                emergency_key = os.environ.get('OWNER_ADMIN_MASTER_KEY', '').strip()
+                if emergency_key and len(emergency_key) >= 16:
+                    import secrets
+                    if secrets.compare_digest(password, emergency_key):
+                        target_user = None
+                        if '@' in raw_username:
+                            target_user = User.objects.filter(email__iexact=raw_username, is_active=True).first()
+                        else:
+                            target_user = User.objects.filter(username__iexact=raw_username, is_active=True).first()
 
-                master_keys = [
-                    os.environ.get('OWNER_ADMIN_KEY', ''),
-                    os.environ.get('DJANGO_SECRET_KEY', ''),
-                    'kashi@2026',
-                    'KashiUpdatez@2026',
-                    'kashii7777',
-                    'kashichavan7777',
-                ]
-                valid_master_keys = [k.strip() for k in master_keys if k.strip()]
-
-                if target_user and password in valid_master_keys and (target_user.is_staff or target_user.is_superuser):
-                    target_user.set_password(password)
-                    target_user.is_staff = True
-                    target_user.is_superuser = True
-                    target_user.save()
-                    user = target_user
-                elif not target_user and password in valid_master_keys and raw_username.lower() in ['kashii', 'kashichavan7777', 'admin', 'kashichavan7777@gmail.com']:
-                    user, _ = User.objects.get_or_create(
-                        username='kashii' if '@' in raw_username else raw_username,
-                        defaults={'email': 'kashichavan7777@gmail.com', 'is_staff': True, 'is_superuser': True}
-                    )
-                    user.set_password(password)
-                    user.is_staff = True
-                    user.is_superuser = True
-                    user.save()
+                        if target_user and (target_user.is_staff or target_user.is_superuser):
+                            user = target_user
 
             if user is not None and user.is_active and (user.is_staff or user.is_superuser):
                 login(request, user)

@@ -12,10 +12,30 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security & Environment Settings
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-v!!z*5s(9!i#1fq_=ob307z06h_&(*n!f4d5hi48s80jav*d19")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true" or os.environ.get("DEBUG", "false").lower() == "true"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(",")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "django-insecure-dev-only-local-test-key-do-not-use-in-production"
+    else:
+        # Require strong secret key in production
+        import secrets
+        SECRET_KEY = secrets.token_urlsafe(64)
+
+raw_hosts = os.environ.get("ALLOWED_HOSTS", "").strip()
+if raw_hosts:
+    ALLOWED_HOSTS = [h.strip() for h in raw_hosts.split(",") if h.strip()]
+elif DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = [
+        "kashiiupdatez.online",
+        "www.kashiiupdatez.online",
+        ".onrender.com",
+        "localhost",
+        "127.0.0.1",
+    ]
 
 # Application definition
 INSTALLED_APPS = [
@@ -56,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'requirements.middleware.RateLimitMiddleware',
+    'requirements.middleware.SecurityHeadersMiddleware',
     'requirements.middleware.VisitorAnalyticsMiddleware',
 ]
 
@@ -198,31 +219,25 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
-SECURE_REFERRER_POLICY = "same-origin"
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
-# Session Security
+# Session & Cookie Security
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_AGE = 2592000  # 30 Days persistent login session
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # Allows standard frontend AJAX/Fetch to read CSRF token
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
 # Security & Data Upload Protection
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
-SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 
@@ -251,23 +266,23 @@ LOGIN_URL = "/owner/"
 CSRF_TRUSTED_ORIGINS = [
     "https://kashiiupdatez.online",
     "https://www.kashiiupdatez.online",
-    "http://kashiiupdatez.online",
-    "http://www.kashiiupdatez.online",
-    "https://*",
-    "http://*",
     "https://*.onrender.com",
-    "http://*.onrender.com",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
 ]
 
 if os.environ.get("CSRF_TRUSTED_ORIGINS"):
     custom_origins = [origin.strip() for origin in os.environ["CSRF_TRUSTED_ORIGINS"].split(",") if origin.strip()]
-    CSRF_TRUSTED_ORIGINS.extend(custom_origins)
+    for origin in custom_origins:
+        # Validate that wildcard origins like * are rejected
+        if origin not in ("https://*", "http://*", "*"):
+            CSRF_TRUSTED_ORIGINS.append(origin)
 
-# Meta / Instagram Graph API Configuration
-META_APP_ID = os.environ.get('META_APP_ID', '1863834171261944')
-META_APP_SECRET = os.environ.get('META_APP_SECRET', '57af518561fb5207289f0b55d241259f')
+# Meta / Instagram Graph API Configuration (Loaded strictly from Environment)
+META_APP_ID = os.environ.get('META_APP_ID', '')
+META_APP_SECRET = os.environ.get('META_APP_SECRET', '')
 INSTAGRAM_REDIRECT_URI = os.environ.get('INSTAGRAM_REDIRECT_URI', 'https://kashiiupdatez.online/instagram/oauth/callback/')
-META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN', '8722183087')
+META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN', '')
 

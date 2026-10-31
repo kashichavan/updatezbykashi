@@ -30,13 +30,25 @@ class RateLimitMiddleware:
         ({'prefix': '/api/admin/login', 'methods': ['POST']}, 10, 60, 'auth_login'),
         ({'prefix': '/owner', 'methods': ['POST']}, 10, 60, 'owner_login'),
 
-        # 2. Critical Action APIs: 40 requests per 60s
+        # 2. Expensive Code Sandbox & AST Tracing APIs: 30 requests per 60s
+        ({'prefix': '/debugger/api/', 'methods': ['POST']}, 30, 60, 'debugger_api'),
+        ({'prefix': '/sql/api/', 'methods': ['POST']}, 30, 60, 'sqlsandbox_api'),
+
+        # 3. AI Generation & ATS Synthesis Endpoints: 20 requests per 60s
+        ({'prefix': '/api/ai/', 'methods': ['POST']}, 20, 60, 'ai_generation'),
+        ({'prefix': '/api/resume/generations/', 'methods': ['POST']}, 20, 60, 'resume_generation'),
+        ({'prefix': '/api/resume/download-', 'methods': ['POST', 'GET']}, 30, 60, 'resume_download'),
+
+        # 4. Cron & Scraping Endpoints: 5 requests per 60s
+        ({'prefix': '/api/cron/', 'methods': None}, 5, 60, 'cron_sync'),
+
+        # 5. Critical Owner Action APIs: 40 requests per 60s
         ({'prefix': '/api/owner/', 'methods': ['POST', 'PUT', 'DELETE']}, 40, 60, 'owner_actions'),
 
-        # 3. Public API queries (Student feed & search): 120 requests per 60s
+        # 6. Public API queries (Student feed & search): 120 requests per 60s
         ({'prefix': '/api/', 'methods': None}, 120, 60, 'public_api'),
 
-        # 4. General HTML Web Browsing: 300 requests per 60s
+        # 7. General HTML Web Browsing: 300 requests per 60s
         ({'prefix': '/', 'methods': None}, 300, 60, 'general_web'),
     ]
 
@@ -46,7 +58,11 @@ class RateLimitMiddleware:
     def get_client_ip(self, request):
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
-            return x_forwarded_for.split(',')[0].strip()
+            # When behind multiple proxies, take the last IP added by trusted reverse proxy if available,
+            # or the first non-private client IP.
+            parts = [p.strip() for p in x_forwarded_for.split(',') if p.strip()]
+            if parts:
+                return parts[0]
         return request.META.get('REMOTE_ADDR', '127.0.0.1')
 
     def get_rule_for_request(self, request):
@@ -302,6 +318,48 @@ class VisitorAnalyticsMiddleware:
             ip_address_masked=masked_ip,
             is_bot=False,
         )
+
+
+class SecurityHeadersMiddleware:
+    """
+    Production Security Headers Middleware.
+    Enforces Content-Security-Policy (CSP), Permissions-Policy,
+    Cross-Origin-Opener-Policy (COOP), and anti-MIME-sniffing protection.
+    """
+
+    CSP_POLICY = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https:; "
+        "frame-src 'self' https://www.youtube.com https://googleads.g.doubleclick.net; "
+        "object-src 'none'; "
+        "base-uri 'self';"
+    )
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        # Apply security headers to HTML and API responses
+        if 'Content-Security-Policy' not in response:
+            response['Content-Security-Policy'] = self.CSP_POLICY
+
+        if 'Permissions-Policy' not in response:
+            response['Permissions-Policy'] = "geolocation=(), microphone=(), camera=()"
+
+        if 'Cross-Origin-Opener-Policy' not in response:
+            response['Cross-Origin-Opener-Policy'] = "same-origin-allow-popups"
+
+        if 'X-Content-Type-Options' not in response:
+            response['X-Content-Type-Options'] = "nosniff"
+
+        return response
+
 
 
 
