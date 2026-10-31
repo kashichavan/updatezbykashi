@@ -3,31 +3,41 @@
    ========================================================================== */
 
 :root {
-  /* Natural Human-Crafted Brand Palette (Zero AI-slop neon synthetic gradients) */
-  --blue-primary: #2563eb;
-  --blue-hover: #1d4ed8;
-  --blue-dark: #1e40af;
-  --blue-light: #eff6ff;
-  --blue-border: #bfdbfe;
+  /* Brand Identity: Warm Orange Accent (Human-Crafted, Anti-AI Aesthetic) */
+  --brand-orange: #ea580c;
+  --brand-orange-hover: #c2410c;
+  --brand-orange-dark: #9a3412;
+  --brand-orange-light: #fff7ed;
+  --brand-orange-border: #fed7aa;
+  --brand-orange-subtle: #ffedd5;
+  --brand-orange-glow: rgba(234, 88, 12, 0.16);
+
+  /* Primary Brand Aliases (seamlessly updates components site-wide) */
+  --blue-primary: var(--brand-orange);
+  --blue-hover: var(--brand-orange-hover);
+  --blue-dark: var(--brand-orange-dark);
+  --blue-light: var(--brand-orange-light);
+  --blue-border: var(--brand-orange-border);
   
-  --ink: #0f172a;
+  --ink: #090d16;
   --ink-secondary: #334155;
-  --paper: #f8fafc;
+  --paper: #fafafa;
   --paper-elevated: #ffffff;
   --subtle-border: #e2e8f0;
+  --subtle-border-dark: #cbd5e1;
   --muted: #64748b;
   --muted-light: #94a3b8;
   
-  /* Authentic Editorial Typography (Fraunces & Playfair Serif + Plus Jakarta Sans) */
-  --font-serif: 'Fraunces', 'Playfair Display', Georgia, serif;
+  /* Authentic Editorial Typography (Tight tracking & clean display sans) */
+  --font-serif: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-code: 'Fira Code', 'Consolas', monospace;
 
-  /* Specular Illumination & Depth Layering */
+  /* Specular Illumination & Depth Layering (Linear / Raycast standard) */
   --specular-inner: inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --specular-inner-dark: inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  --card-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
-  --hover-shadow: 0 20px 36px -10px rgba(37, 99, 235, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04);
+  --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px -4px rgba(15, 23, 42, 0.05);
+  --hover-shadow: 0 12px 28px -6px rgba(234, 88, 12, 0.14), 0 4px 12px rgba(15, 23, 42, 0.04);
   --modal-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
 
   /* Radius & Spring Transitions */
@@ -47,6 +57,15 @@
   padding: 0;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 html, body {
   overflow-x: hidden;
   max-width: 100vw;
@@ -56,13 +75,13 @@ html, body {
 
 body {
   font-family: var(--font-sans);
-  background-color: #f8fafc;
+  background-color: #fafafa;
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(14, 165, 233, 0.04) 0%, transparent 45%),
-    linear-gradient(rgba(226, 232, 240, 0.35) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(226, 232, 240, 0.35) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+    radial-gradient(circle at 15% 15%, rgba(234, 88, 12, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(249, 115, 22, 0.02) 0%, transparent 45%),
+    linear-gradient(rgba(226, 232, 240, 0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(226, 232, 240, 0.4) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
   background-attachment: fixed;
   color: var(--ink);
   line-height: 1.5;
@@ -385,23 +404,27 @@ a {
 }
 
 .brand {
-  font-family: var(--font-serif);
-  font-size: 22px;
-  font-weight: 800;
+  font-family: var(--font-sans);
+  font-size: 21px;
+  font-weight: 850;
   color: var(--ink);
-  letter-spacing: -0.5px;
-  display: flex;
+  letter-spacing: -0.035em;
+  display: inline-flex;
   align-items: center;
   white-space: nowrap;
   flex-shrink: 0;
   text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brand:hover {
+  transform: translateY(-0.5px);
 }
 
 .brand span {
-  color: var(--blue-primary);
-  font-weight: 400;
-  font-style: italic;
-  margin-left: 0;
+  color: var(--brand-orange, #ea580c);
+  font-weight: 750;
+  margin-left: 1px;
 }
 
 .vp-sidebar-btn {
@@ -462,22 +485,23 @@ a {
 
 .nav-links a.active {
   color: #ffffff !important;
-  background: var(--blue-primary) !important;
-  border-color: var(--blue-primary) !important;
-  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.35);
+  background: var(--brand-orange, #ea580c) !important;
+  border-color: var(--brand-orange, #ea580c) !important;
+  box-shadow: 0 4px 14px -2px rgba(234, 88, 12, 0.4), var(--specular-inner);
 }
 
 .nav-pill-today {
-  background: rgba(220, 38, 38, 0.08) !important;
-  color: #dc2626 !important;
-  border: 1px solid rgba(220, 38, 38, 0.2) !important;
+  background: var(--brand-orange-light, #fff7ed) !important;
+  color: var(--brand-orange, #ea580c) !important;
+  border: 1px solid var(--brand-orange-border, #fed7aa) !important;
   font-weight: 800 !important;
 }
 
 .nav-pill-today:hover, .nav-pill-today.active {
-  background: #dc2626 !important;
+  background: var(--brand-orange, #ea580c) !important;
   color: #ffffff !important;
-  border-color: #dc2626 !important;
+  border-color: var(--brand-orange, #ea580c) !important;
+  box-shadow: 0 4px 14px -2px rgba(234, 88, 12, 0.4), var(--specular-inner) !important;
 }
 
 /* Nav Sub Badges */
@@ -767,20 +791,21 @@ a {
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: var(--brand-orange-light, #fff7ed);
+  color: var(--brand-orange, #ea580c);
+  border: 1px solid var(--brand-orange-border, #fed7aa);
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 800;
   text-decoration: none;
-  transition: var(--transition);
+  transition: var(--transition-spring);
 }
 
 .mobile-today-badge.active, .mobile-today-badge:hover {
-  background: #dc2626;
+  background: var(--brand-orange, #ea580c);
   color: #ffffff;
-  border-color: #dc2626;
+  border-color: var(--brand-orange, #ea580c);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35);
 }
 
 /* Medium / Laptop Responsive State (881px to 1199px) */
@@ -1269,7 +1294,7 @@ a {
   left: 30%;
   width: 380px;
   height: 250px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 80%);
+  background: radial-gradient(circle, rgba(234, 88, 12, 0.08) 0%, rgba(249, 115, 22, 0.04) 50%, transparent 80%);
   pointer-events: none;
   filter: blur(50px);
 }
@@ -1706,9 +1731,9 @@ a {
 }
 
 .vp-product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 38px -10px rgba(37, 99, 235, 0.13), 0 4px 12px rgba(15, 23, 42, 0.04), var(--specular-inner);
-  border-color: rgba(147, 197, 253, 0.9);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -10px rgba(234, 88, 12, 0.12), 0 4px 12px rgba(15, 23, 42, 0.04), var(--specular-inner);
+  border-color: rgba(254, 215, 170, 0.9);
 }
 
 .vp-product-card:hover::before {
@@ -2142,6 +2167,14 @@ a {
   text-decoration: none;
   transition: var(--transition-spring);
   box-sizing: border-box;
+}
+
+button.mobile-nav-item {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: inherit;
 }
 
 .mobile-nav-item span {
@@ -2616,7 +2649,7 @@ html.entry-done #entry {
   transition: var(--transition-spring);
 }
 
-/* Subtle blue top accent line — matches .vp-product-card::before on hover */
+/* Subtle orange top accent line — matches .vp-product-card::before on hover */
 .jl-filter-shell::before {
   content: '';
   position: absolute;
@@ -2624,7 +2657,7 @@ html.entry-done #entry {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--blue-primary), #60a5fa);
+  background: linear-gradient(90deg, var(--brand-orange, #ea580c), #fb923c);
   opacity: 1;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }

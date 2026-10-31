@@ -9,16 +9,16 @@
 {% block extra_css %}
 <style>
   :root {
-    --rs-blue: #2563eb;
-    --rs-blue-dark: #1d4ed8;
+    --rs-blue: var(--brand-orange, #ea580c);
+    --rs-blue-dark: var(--brand-orange-hover, #c2410c);
     --rs-emerald: #10b981;
     --rs-amber: #f59e0b;
     --rs-rose: #ef4444;
-    --rs-slate-50: #f8fafc;
+    --rs-slate-50: #fafafa;
     --rs-slate-100: #f1f5f9;
     --rs-slate-200: #e2e8f0;
     --rs-slate-700: #334155;
-    --rs-slate-900: #0f172a;
+    --rs-slate-900: #090d16;
   }
 
   .analysis-hero {
@@ -32,9 +32,9 @@
     gap: 7px;
     padding: 4px 12px;
     border-radius: 9999px;
-    background: rgba(37, 99, 235, 0.08);
-    border: 1px solid rgba(37, 99, 235, 0.22);
-    color: var(--rs-blue);
+    background: var(--brand-orange-light, #fff7ed);
+    border: 1px solid var(--brand-orange-border, #fed7aa);
+    color: var(--brand-orange, #ea580c);
     font-size: 11.5px;
     font-weight: 800;
     letter-spacing: 0.04em;
@@ -51,7 +51,7 @@
     margin: 0 auto 16px;
   }
   .analysis-title span.grad {
-    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+    background: linear-gradient(135deg, var(--brand-orange, #ea580c) 0%, #f97316 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
