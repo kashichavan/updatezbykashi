@@ -151,40 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    const mobileNavMenuBtn = document.getElementById('mobileNavMenuBtn');
-    if (mobileNavMenuBtn && drawerOverlay) {
-      mobileNavMenuBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        drawerOverlay.classList.add('is-open');
-        if (drawerSearchInput) {
-          setTimeout(() => drawerSearchInput.focus(), 120);
-        }
-      });
-    }
-
-    // Keyboard Shortcuts: 'Escape' to dismiss, '/' to search
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (drawerOverlay && drawerOverlay.classList.contains('is-open')) {
-          drawerOverlay.classList.remove('is-open');
-        }
-        const modalAllFilters = document.getElementById('modalAllFilters');
-        if (modalAllFilters && modalAllFilters.style.display !== 'none') {
-          modalAllFilters.style.display = 'none';
-        }
-        const modalJobAlerts = document.getElementById('modalJobAlerts');
-        if (modalJobAlerts && modalJobAlerts.style.display !== 'none') {
-          modalJobAlerts.style.display = 'none';
-        }
-      } else if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
-        e.preventDefault();
-        if (searchInput) {
-          searchInput.focus();
-          searchInput.select();
-        }
-      }
-    });
-
     if (btnCloseDrawer && drawerOverlay) {
       btnCloseDrawer.addEventListener('click', (e) => {
         e.preventDefault();
@@ -577,19 +543,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
       try { window.lucide.createIcons(); } catch(e){}
     }
-
-    // Motion.dev staggered card entrance physics
-    if (window.motion && typeof window.motion.animate === 'function' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      try {
-        window.motion.animate(
-          '.vp-product-card',
-          { opacity: [0, 1], y: [16, 0] },
-          { delay: window.motion.stagger(0.035), duration: 0.35, easing: [0.16, 1, 0.3, 1] }
-        );
-      } catch (animErr) {
-        // Fallback to CSS animation
-      }
-    }
   }
 
   // --- RENDER PAGINATION CONTROLS ---
@@ -762,29 +715,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateHeadingAndTags() {
     if (jobsFoundHeading) {
       const locText = state.city ? ` in ${state.city}` : '';
-      const targetCount = state.totalCount || 0;
-      const querySuffix = state.searchQuery ? ` for "${state.searchQuery}"` : '';
-
-      if (window.anime && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        const prevCount = parseInt(jobsFoundHeading.getAttribute('data-prev-count') || '0', 10);
-        const counterObj = { count: prevCount };
-        window.anime({
-          targets: counterObj,
-          count: targetCount,
-          round: 1,
-          easing: 'easeOutExpo',
-          duration: 600,
-          update: function() {
-            jobsFoundHeading.textContent = `${counterObj.count} jobs found${querySuffix}${locText}.`;
-          },
-          complete: function() {
-            jobsFoundHeading.setAttribute('data-prev-count', targetCount);
-            jobsFoundHeading.textContent = `${targetCount} jobs found${querySuffix}${locText}.`;
-          }
-        });
+      if (state.searchQuery) {
+        jobsFoundHeading.textContent = `${state.totalCount} jobs found for "${state.searchQuery}"${locText}.`;
       } else {
-        jobsFoundHeading.textContent = `${targetCount} jobs found${querySuffix}${locText}.`;
-        jobsFoundHeading.setAttribute('data-prev-count', targetCount);
+        jobsFoundHeading.textContent = `${state.totalCount} jobs found${locText}.`;
       }
     }
 

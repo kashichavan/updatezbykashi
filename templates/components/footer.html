@@ -94,28 +94,26 @@
 </style>
 
 
-<!-- Mobile Bottom Navigation Bar (Mobile First - 5 Key Workflows) -->
-<nav class="mobile-bottom-nav" aria-label="Mobile Bottom Navigation">
-  <a href="/" class="mobile-nav-item {% if request.path == '/' and not request.GET.today %}active{% endif %}">
+<!-- Mobile Bottom Navigation Bar (Mobile First) -->
+<nav class="mobile-bottom-nav">
+  <a href="/" class="mobile-nav-item {% if request.path == '/' %}active{% endif %}">
     <i data-lucide="briefcase" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
     <span>Feed</span>
   </a>
-  <a href="/?today=true" class="mobile-nav-item {% if request.GET.today %}active{% endif %}">
-    <i data-lucide="flame" class="mobile-nav-icon" style="width: 20px; height: 20px; color: var(--brand-orange, #ea580c);"></i>
-    <span>Today</span>
+  <a href="/about/" class="mobile-nav-item {% if request.path == '/about/' %}active{% endif %}">
+    <i data-lucide="user" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
+    <span>About</span>
   </a>
-  <a href="/resume-builder/" class="mobile-nav-item {% if '/resume' in request.path and '/resume-analysis' not in request.path and '/resume-checker' not in request.path %}active{% endif %}">
-    <i data-lucide="file-text" class="mobile-nav-icon" style="width: 20px; height: 20px; color: #10b981;"></i>
-    <span>Resume</span>
+  <a href="/youtube/" class="mobile-nav-item {% if request.path == '/youtube/' %}active{% endif %}">
+    <svg class="mobile-nav-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="#dc2626">
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    </svg>
+    <span>YouTube</span>
   </a>
-  <a href="/ai-resume-analysis/" class="mobile-nav-item {% if '/resume-analysis' in request.path or '/resume-checker' in request.path %}active{% endif %}">
-    <i data-lucide="gauge" class="mobile-nav-icon" style="width: 20px; height: 20px; color: #0284c7;"></i>
-    <span>ATS Score</span>
+  <a href="/debugger/" class="mobile-nav-item {% if '/debugger' in request.path %}active{% endif %}">
+    <i data-lucide="terminal" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
+    <span>Debugger</span>
   </a>
-  <button type="button" class="mobile-nav-item" id="mobileNavMenuBtn" aria-label="Open Navigation Menu">
-    <i data-lucide="menu" class="mobile-nav-icon" style="width: 20px; height: 20px;"></i>
-    <span>Menu</span>
-  </button>
 </nav>
 
 <!-- Debugger Desktop-Only Popup (mobile) -->
