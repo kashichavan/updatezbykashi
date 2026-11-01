@@ -12,8 +12,8 @@ Use this skill when setting up, troubleshooting, or updating Meta Instagram Grap
 ## App Credentials & Webhook Setup
 
 - **App ID**: `1699121034511579`
-- **App Secret**: `57af518561fb5207289f0b55d241259f`
-- **Verify Token**: `8722183087`
+- **App Secret**: set `META_APP_SECRET` in `.env`
+- **Verify Token**: set `META_VERIFY_TOKEN` in `.env`
 - **OAuth Callback URL**: `https://kashiiupdatez.online/instagram/oauth/callback/`
 - **Webhook Endpoint**: `https://kashiiupdatez.online/instagram/api/instagram/webhook/`
 

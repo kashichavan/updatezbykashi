@@ -6,7 +6,7 @@ Capabilities:
    - Prominently displays Experience Requirement (Freshers vs Experienced color-coded).
    - Company name, Role title, Stipend/Salary, Location, Eligibility, and Key Skills.
    - Embedded scannable QR Code linking directly to the job application page.
-   - Instagram Link Sticker Call-To-Action banner.
+   - QR call-to-action banner. The Content Publishing API cannot add link stickers.
 2. Official Meta Graph API integration (Instagram Content Publishing API).
    - Creates Media Container (media_type=STORIES) with public image_url.
    - Publishes Media Container to @ikashii_07 Instagram Professional/Creator account.
@@ -17,6 +17,7 @@ Capabilities:
 import os
 import io
 import re
+import time
 import logging
 import requests
 import qrcode
@@ -58,7 +59,7 @@ def generate_job_story_image(job, base_url="https://kashiiupdatez.online") -> io
     - Prominently highlights Experience Requirement (Freshers Eligible vs Experienced).
     - Bold company badge, role title, salary, location, and eligibility.
     - Embedded high-res scannable QR code for instant direct apply.
-    - Link sticker CTA footer banner.
+    - QR call-to-action footer banner.
     """
     canvas_w, canvas_h = 1080, 1920
     img = Image.new('RGB', (canvas_w, canvas_h), color='#090d16')
@@ -126,7 +127,7 @@ def generate_job_story_image(job, base_url="https://kashiiupdatez.online") -> io
     # 4. Top Header: Category Badge & Creator Handle
     pad_x = 120
     draw.rounded_rectangle([pad_x, 240, pad_x + 380, 305], radius=32, fill=(234, 88, 12))
-    draw.text((pad_x + 22, 258), "🔥 URGENT REQUIREMENT", fill=(255, 255, 255), font=font_badge)
+    draw.text((pad_x + 22, 258), "URGENT REQUIREMENT", fill=(255, 255, 255), font=font_badge)
     
     # Creator handle right-aligned
     handle_text = f"@{getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')}"
@@ -174,8 +175,8 @@ def generate_job_story_image(job, base_url="https://kashiiupdatez.online") -> io
             outline=(16, 185, 129),
             width=2
         )
-        draw.text((pad_x + 24, exp_box_top + 16), "🎯 EXPERIENCE REQUIREMENT", fill=(110, 231, 183), font=font_exp_head)
-        draw.text((pad_x + 24, exp_box_top + 54), f"{exp_display.upper()} · FRESHERS ELIGIBLE 🚀", fill=(255, 255, 255), font=font_exp_val)
+        draw.text((pad_x + 24, exp_box_top + 16), "EXPERIENCE REQUIREMENT", fill=(110, 231, 183), font=font_exp_head)
+        draw.text((pad_x + 24, exp_box_top + 54), f"{exp_display.upper()} · FRESHERS ELIGIBLE", fill=(255, 255, 255), font=font_exp_val)
     else:
         # High-Contrast Indigo / Violet Box for Experienced Professionals
         draw.rounded_rectangle(
@@ -185,8 +186,8 @@ def generate_job_story_image(job, base_url="https://kashiiupdatez.online") -> io
             outline=(99, 102, 241),
             width=2
         )
-        draw.text((pad_x + 24, exp_box_top + 16), "🎯 EXPERIENCE REQUIREMENT", fill=(199, 210, 254), font=font_exp_head)
-        draw.text((pad_x + 24, exp_box_top + 54), f"{exp_display.upper()} · EXPERIENCED PROS 💼", fill=(255, 255, 255), font=font_exp_val)
+        draw.text((pad_x + 24, exp_box_top + 16), "EXPERIENCE REQUIREMENT", fill=(199, 210, 254), font=font_exp_head)
+        draw.text((pad_x + 24, exp_box_top + 54), f"{exp_display.upper()} · EXPERIENCED PROS", fill=(255, 255, 255), font=font_exp_val)
 
     # 7. Key Specs Card Inset (Salary, Location, Eligibility, Skills)
     specs_top = exp_box_bottom + 25
@@ -250,8 +251,8 @@ def generate_job_story_image(job, base_url="https://kashiiupdatez.online") -> io
     # Row 4: Key Skills Chips
     skills_list = job.get_skills_list() if hasattr(job, 'get_skills_list') else []
     skills_chips = ", ".join(skills_list[:4]) if skills_list else (job.skills_required or "Software Development, Problem Solving")
-    if len(skills_chips) > 52:
-        skills_chips = skills_chips[:49] + "..."
+    if len(skills_chips) > 42:
+        skills_chips = skills_chips[:39] + "..."
     draw.text((pad_x + 30, specs_top + 318), f"KEY SKILLS: {skills_chips}", fill=(147, 197, 253), font=font_skills)
 
     # 8. Apply Link & Scannable QR Code Section
@@ -292,25 +293,25 @@ def generate_job_story_image(job, base_url="https://kashiiupdatez.online") -> io
 
     # Text next to QR code
     text_x = pad_x + 235
-    draw.text((text_x, qr_card_top + 38), "SCAN QR CODE TO APPLY ↗", fill=(255, 255, 255), font=font_qr_title)
+    draw.text((text_x, qr_card_top + 38), "SCAN QR CODE TO APPLY", fill=(255, 255, 255), font=font_qr_title)
     draw.text((text_x, qr_card_top + 80), "Screenshot or scan with phone camera", fill=(148, 163, 184), font=font_qr_sub)
-    draw.text((text_x, qr_card_top + 115), "Or tap the Link Sticker below!", fill=(110, 231, 183), font=font_qr_sub)
+    draw.text((text_x, qr_card_top + 115), "Opens the full job details", fill=(110, 231, 183), font=font_qr_sub)
     
-    # Display short URL
-    uuid_str = str(job.uuid)[:8] if job.uuid else "direct"
-    short_display = f"kashiiupdatez.online/job/{uuid_str}"
+    # Display site name (the QR code holds the full job URL)
+    short_display = "kashiiupdatez.online"
     draw.text((text_x, qr_card_top + 160), short_display, fill=(56, 189, 248), font=font_qr_sub)
 
     # 9. Link Sticker Call-To-Action Button (Instagram Gradient)
     btn_y = qr_card_bottom + 25
     draw.rounded_rectangle([pad_x, btn_y, 960, btn_y + 110], radius=55, fill=(234, 88, 12))
-    draw.text((540, btn_y + 55), "🔗 TAP LINK STICKER OR SCAN QR TO APPLY", fill=(255, 255, 255), font=font_btn, anchor="mm")
+    draw.text((540, btn_y + 55), "SCAN THE QR CODE TO APPLY", fill=(255, 255, 255), font=font_btn, anchor="mm")
 
     # 10. Footer Attribution
     draw.text((540, btn_y + 155), "kashiiupdatez.online · 100% Verified 7-Day Opportunities", fill=(148, 163, 184), font=font_footer, anchor="mm")
 
     buf = io.BytesIO()
-    img.save(buf, format='PNG', optimize=True)
+    # Instagram's Content Publishing API accepts JPEG only.
+    img.save(buf, format='JPEG', quality=92, optimize=True)
     buf.seek(0)
     return buf
 
@@ -329,8 +330,30 @@ class InstagramStoryPublisher:
     def __init__(self, access_token=None, account_id=None, api_version=None):
         self.access_token = access_token or getattr(settings, 'INSTAGRAM_ACCESS_TOKEN', '')
         self.account_id = account_id or getattr(settings, 'INSTAGRAM_ACCOUNT_ID', '17841475393977759')
-        self.api_version = api_version or getattr(settings, 'INSTAGRAM_API_VERSION', 'v18.0')
-        self.base_graph_url = f"https://graph.facebook.com/{self.api_version}"
+        self.api_version = api_version or getattr(settings, 'INSTAGRAM_API_VERSION', 'v26.0')
+        # Instagram Login tokens (IG...) only work on graph.instagram.com;
+        # Facebook Login tokens (EA...) only work on graph.facebook.com.
+        host = 'graph.instagram.com' if self.access_token.startswith('IG') else 'graph.facebook.com'
+        self.base_graph_url = f"https://{host}/{self.api_version}"
+
+    def _wait_for_container(self, container_id, attempts=10, delay=3):
+        """Waits for Meta to fetch the image. Returns (ready, last_status)."""
+        status = 'UNKNOWN'
+        for attempt in range(attempts):
+            resp = requests.get(
+                f"{self.base_graph_url}/{container_id}",
+                params={'fields': 'status_code,status', 'access_token': self.access_token},
+                timeout=30,
+            )
+            data = resp.json()
+            status = data.get('status_code') or data.get('error', {}).get('message', 'UNKNOWN')
+            if status == 'FINISHED':
+                return True, status
+            if status in ('ERROR', 'EXPIRED'):
+                return False, data.get('status') or status
+            if attempt < attempts - 1:
+                time.sleep(delay)
+        return False, status
 
     def publish_job_story(self, job, base_url="https://kashiiupdatez.online") -> dict:
         """
@@ -388,6 +411,22 @@ class InstagramStoryPublisher:
 
             container_id = c_data['id']
             logger.info(f"[Meta IG Story] Container #{container_id} created. Triggering publish...")
+
+            ready, container_status = self._wait_for_container(container_id)
+            if not ready:
+                error_detail = f"Container {container_id} not ready: {container_status}"
+                logger.error(f"[Meta IG Story Error] {error_detail}")
+                job.insta_story_error = error_detail
+                job.save(update_fields=['insta_story_error'])
+                return {
+                    'success': False,
+                    'error': 'CONTAINER_NOT_READY',
+                    'message': error_detail,
+                    'container_id': container_id,
+                    'story_image_url': story_image_url,
+                    'story_text': story_text,
+                    'job_id': job.id,
+                }
 
             # Step 2: Publish Media Container
             publish_url = f"{self.base_graph_url}/{self.account_id}/media_publish"

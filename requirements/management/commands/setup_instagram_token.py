@@ -1,154 +1,171 @@
+"""
+Connects @ikashii_07: python manage.py setup_instagram_token
+
+Paste a token when prompted (hidden input, so it stays out of shell history):
+  IG...  from Instagram > API setup with Instagram login > Generate access tokens
+  EA...  from Graph API Explorer, Facebook Login
+
+The token is upgraded to long-lived, checked against the configured account,
+and only then written to .env.
+"""
+import getpass
 import os
 import re
+import sys
+
 import requests
-from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
+TIMEOUT = 20
+
+
+def graph_error(data):
+    return data.get('error', {}).get('message', str(data)) if isinstance(data, dict) else str(data)
 
 
 class Command(BaseCommand):
-    help = "Validates, exchanges for a 60-day long-lived token, and auto-saves Instagram credentials to .env."
+    help = "Upgrades an Instagram/Meta token to long-lived, verifies the account, and saves it to .env."
 
     def add_arguments(self, parser):
-        parser.add_argument('token', type=str, help='Meta Access Token from Graph API Explorer or Facebook Login')
-        parser.add_argument('--app-id', type=str, default=None, help='Override Meta App ID')
-        parser.add_argument('--app-secret', type=str, default=None, help='Override Meta App Secret')
+        parser.add_argument('token', nargs='?', default=None,
+                            help='Optional. Leave out to be prompted, which keeps it out of shell history.')
+        parser.add_argument('--from-stdin', action='store_true',
+                            help='Read the token, then an optional Instagram app secret, one per line.')
 
     def handle(self, *args, **options):
-        input_token = options['token'].strip()
-        app_id = (options['app_id'] or getattr(settings, 'META_APP_ID', '')).strip()
-        app_secret = (options['app_secret'] or getattr(settings, 'META_APP_SECRET', '')).strip()
-        api_ver = getattr(settings, 'INSTAGRAM_API_VERSION', 'v18.0')
-        base_graph_url = f"https://graph.facebook.com/{api_ver}"
+        self.stdin_lines = sys.stdin.read().splitlines() if options['from_stdin'] else None
+        if self.stdin_lines is not None:
+            token = self.stdin_lines[0].strip() if self.stdin_lines else ''
+        else:
+            token = (options['token'] or getpass.getpass('Paste access token (hidden): ')).strip()
+        if not token:
+            raise CommandError('No token provided.')
 
-        self.stdout.write(self.style.NOTICE("\n======================================================="))
-        self.stdout.write(self.style.NOTICE("🚀 META / INSTAGRAM TOKEN AUTO-SETUP WIZARD"))
-        self.stdout.write(self.style.NOTICE("=======================================================\n"))
-
-        # ── Step 1: Validate input token with Meta ──
-        self.stdout.write("🔍 [1/4] Inspecting access token with Meta Graph API...")
-        try:
-            me_resp = requests.get(
-                f"{base_graph_url}/me",
-                params={'access_token': input_token, 'fields': 'id,name'},
-                timeout=15
-            )
-            me_data = me_resp.json()
-            if 'error' in me_data:
-                err_msg = me_data['error'].get('message', 'Unknown error')
-                raise CommandError(f"Token validation failed: {err_msg}")
-            
-            user_id = me_data.get('id')
-            user_name = me_data.get('name', 'User')
-            self.stdout.write(self.style.SUCCESS(f"  ✓ Valid token authenticated for: {user_name} (ID: {user_id})"))
-        except requests.RequestException as e:
-            raise CommandError(f"Network error contacting Meta: {e}")
-
-        # ── Step 2: Attempt Long-Lived Token Exchange (60 Days) ──
-        active_token = input_token
-        if app_id and app_secret:
-            self.stdout.write("\n🔄 [2/4] Exchanging for 60-Day Long-Lived Token...")
-            try:
-                ex_resp = requests.get(
-                    f"{base_graph_url}/oauth/access_token",
-                    params={
-                        'grant_type': 'fb_exchange_token',
-                        'client_id': app_id,
-                        'client_secret': app_secret,
-                        'fb_exchange_token': input_token,
-                    },
-                    timeout=20
-                )
-                ex_data = ex_resp.json()
-                if 'access_token' in ex_data:
-                    active_token = ex_data['access_token']
-                    expires_in = ex_data.get('expires_in', 5184000) // 86400
-                    self.stdout.write(self.style.SUCCESS(f"  ✓ Successfully upgraded to Long-Lived Token! Valid for ~{expires_in} days."))
-                else:
-                    self.stdout.write(self.style.WARNING(f"  ⚠ Note: Token exchange response: {ex_data.get('error', {}).get('message', 'proceeding with user token')}"))
-            except Exception as ex_err:
-                self.stdout.write(self.style.WARNING(f"  ⚠ Exchange skipped ({ex_err}), using direct token."))
-
-        # ── Step 3: Discover Connected Instagram Business Accounts & Pages ──
-        self.stdout.write("\n📡 [3/4] Discovering Instagram Business Accounts linked to Pages...")
-        ig_user_id = None
-        ig_username = None
-        page_token = None
+        self.version = settings.INSTAGRAM_API_VERSION
+        self.expected_id = str(settings.INSTAGRAM_ACCOUNT_ID)
+        self.expected_handle = settings.INSTAGRAM_ACCOUNT_HANDLE
 
         try:
-            pages_resp = requests.get(
-                f"{base_graph_url}/me/accounts",
-                params={
-                    'access_token': active_token,
-                    'fields': 'id,name,access_token,instagram_business_account{id,username}'
-                },
-                timeout=15
-            )
-            pages_data = pages_resp.json()
-            pages_list = pages_data.get('data', [])
-
-            for p in pages_list:
-                p_name = p.get('name')
-                ig_info = p.get('instagram_business_account')
-                if ig_info:
-                    ig_user_id = ig_info.get('id')
-                    ig_username = ig_info.get('username')
-                    page_token = p.get('access_token') or active_token
-                    self.stdout.write(self.style.SUCCESS(f"  ✓ Found Page '{p_name}' linked to Instagram: @{ig_username} (ID: {ig_user_id})"))
-                    if ig_username == 'ikashii_07':
-                        break
-
-            if not ig_user_id:
-                # Direct check if user token itself is direct Instagram User ID
-                self.stdout.write(self.style.WARNING("  ⚠ No Instagram Business Account returned from /me/accounts."))
-                self.stdout.write("  Defaulting to configured INSTAGRAM_ACCOUNT_ID: 17841475393977759 (@ikashii_07)")
-                ig_user_id = getattr(settings, 'INSTAGRAM_ACCOUNT_ID', '17841475393977759')
-                ig_username = getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')
-
-        except Exception as p_err:
-            self.stdout.write(self.style.WARNING(f"  ⚠ Error reading /me/accounts: {p_err}"))
-            ig_user_id = getattr(settings, 'INSTAGRAM_ACCOUNT_ID', '17841475393977759')
-            ig_username = getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')
-
-        # Use page access token if available, as Page tokens for posting do not expire
-        final_token = page_token or active_token
-
-        # ── Step 4: Automatically Write to .env ──
-        self.stdout.write("\n💾 [4/4] Writing configuration directly to .env...")
-        env_path = os.path.join(settings.BASE_DIR, '.env')
-
-        env_content = ""
-        if os.path.exists(env_path):
-            with open(env_path, 'r', encoding='utf-8') as f:
-                env_content = f.read()
-
-        updates = {
-            'INSTAGRAM_ACCESS_TOKEN': final_token,
-            'INSTAGRAM_ACCOUNT_ID': str(ig_user_id),
-            'INSTAGRAM_ACCOUNT_HANDLE': str(ig_username or 'ikashii_07'),
-            'INSTAGRAM_AUTO_POST_STORY': 'True',
-        }
-        if app_id:
-            updates['META_APP_ID'] = app_id
-        if app_secret:
-            updates['META_APP_SECRET'] = app_secret
-
-        for key, val in updates.items():
-            pattern = rf'^{key}=.*$'
-            new_line = f"{key}={val}"
-            if re.search(pattern, env_content, flags=re.MULTILINE):
-                env_content = re.sub(pattern, new_line, env_content, flags=re.MULTILINE)
+            if token.startswith('IG'):
+                final_token, ig_id, username, host = self.instagram_login(token)
             else:
-                env_content += f"\n{new_line}"
+                final_token, ig_id, username, host = self.facebook_login(token)
+            self.check_publishing(final_token, ig_id, host)
+        except requests.RequestException as exc:
+            # str(exc) can contain the request URL, and so the token.
+            raise CommandError(f'Network error contacting Meta: {type(exc).__name__}')
 
-        with open(env_path, 'w', encoding='utf-8') as f:
-            f.write(env_content)
+        self.write_env({
+            'INSTAGRAM_ACCESS_TOKEN': final_token,
+            'INSTAGRAM_ACCOUNT_ID': ig_id,
+            'INSTAGRAM_ACCOUNT_HANDLE': username,
+        })
+        self.stdout.write(self.style.SUCCESS(f'Connected @{username} ({ig_id}). Token saved to .env.'))
 
-        self.stdout.write(self.style.SUCCESS(f"  ✓ Updated {env_path} successfully!"))
-        self.stdout.write(self.style.SUCCESS(f"  ✓ INSTAGRAM_ACCOUNT_ID = {ig_user_id}"))
-        self.stdout.write(self.style.SUCCESS(f"  ✓ INSTAGRAM_ACCOUNT_HANDLE = {ig_username}"))
-        self.stdout.write(self.style.SUCCESS("  ✓ INSTAGRAM_AUTO_POST_STORY = True"))
-        self.stdout.write(self.style.SUCCESS("  ✓ INSTAGRAM_ACCESS_TOKEN = Saved securely."))
+    def instagram_login(self, token):
+        host = 'graph.instagram.com'
+        self.stdout.write('[1/3] Instagram Login token. Reading account...')
+        resp = requests.get(f'https://{host}/{self.version}/me', timeout=TIMEOUT, params={
+            'fields': 'user_id,username,account_type', 'access_token': token})
+        me = resp.json()
+        if resp.status_code != 200:
+            raise CommandError(f'Token rejected: {graph_error(me)}')
+        ig_id, username = str(me.get('user_id')), me.get('username', '')
+        self.check_account(ig_id, username)
+        self.stdout.write(f"      @{username}, {me.get('account_type')}")
 
-        self.stdout.write(self.style.NOTICE("\n======================================================="))
-        self.stdout.write(self.style.SUCCESS("🎉 SETUP COMPLETE! Instagram Stories Automation is LIVE!"))
-        self.stdout.write(self.style.NOTICE("=======================================================\n"))
+        self.stdout.write('[2/3] Upgrading to a 60-day token...')
+        secret = settings.INSTAGRAM_APP_SECRET or self.prompt_secret()
+        if not secret:
+            self.stdout.write(self.style.WARNING(
+                '      Skipped. Dashboard tokens may already be long-lived; this was not confirmed.'))
+            return token, ig_id, username, host
+        resp = requests.get(f'https://{host}/access_token', timeout=TIMEOUT, params={
+            'grant_type': 'ig_exchange_token', 'client_secret': secret, 'access_token': token})
+        data = resp.json()
+        if 'access_token' in data:
+            self.stdout.write(f"      Valid for {data.get('expires_in', 0) // 86400} days.")
+            return data['access_token'], ig_id, username, host
+        self.stdout.write(self.style.WARNING(
+            f'      Not upgraded ({graph_error(data)}). Keeping the pasted token; '
+            'it may already be long-lived, which was not confirmed.'))
+        return token, ig_id, username, host
+
+    def prompt_secret(self):
+        if self.stdin_lines is not None:
+            return self.stdin_lines[1].strip() if len(self.stdin_lines) > 1 else ''
+        return getpass.getpass('Instagram app secret (Business login settings, hidden; Enter to skip): ').strip()
+
+    def facebook_login(self, token):
+        host = 'graph.facebook.com'
+        base = f'https://{host}/{self.version}'
+        app_id, secret = settings.META_APP_ID, settings.META_APP_SECRET
+        if not (app_id and secret):
+            raise CommandError('META_APP_ID and META_APP_SECRET must be set in .env.')
+
+        self.stdout.write('[1/3] Facebook token. Checking permissions...')
+        resp = requests.get(f'{base}/debug_token', timeout=TIMEOUT, params={
+            'input_token': token, 'access_token': f'{app_id}|{secret}'})
+        info = resp.json().get('data', {})
+        if resp.status_code != 200 or not info.get('is_valid'):
+            raise CommandError(f"Token rejected: {info.get('error', {}).get('message') or graph_error(resp.json())}")
+        if info.get('type') != 'USER':
+            raise CommandError(f"Expected a User token, got {info.get('type')}. "
+                               'Choose "User Token" in Graph API Explorer.')
+        required = {'instagram_basic', 'instagram_content_publish', 'pages_show_list', 'pages_read_engagement'}
+        missing = required - set(info.get('scopes', []))
+        if missing:
+            raise CommandError(f"Token is missing: {', '.join(sorted(missing))}. Add them and regenerate.")
+
+        self.stdout.write('[2/3] Upgrading, then finding the linked Page...')
+        resp = requests.get(f'{base}/oauth/access_token', timeout=TIMEOUT, params={
+            'grant_type': 'fb_exchange_token', 'client_id': app_id,
+            'client_secret': secret, 'fb_exchange_token': token})
+        data = resp.json()
+        if 'access_token' not in data:
+            raise CommandError(f'Long-lived exchange failed: {graph_error(data)}')
+
+        resp = requests.get(f'{base}/me/accounts', timeout=TIMEOUT, params={
+            'fields': 'name,access_token,instagram_business_account{id,username}',
+            'access_token': data['access_token']})
+        pages = resp.json()
+        if resp.status_code != 200:
+            raise CommandError(f'Could not list Pages: {graph_error(pages)}')
+        for page in pages.get('data', []):
+            ig = page.get('instagram_business_account') or {}
+            if str(ig.get('id')) == self.expected_id:
+                self.stdout.write(f"      Page '{page.get('name')}' is linked to @{ig.get('username')}.")
+                return page['access_token'], self.expected_id, ig.get('username', ''), host
+        raise CommandError(
+            f"No Page available to this token is linked to @{self.expected_handle}. Link the account to a "
+            'Facebook Page in Instagram settings, then select that Page when authorizing. .env was not changed.')
+
+    def check_account(self, ig_id, username):
+        if ig_id != self.expected_id:
+            raise CommandError(
+                f'Token belongs to @{username} ({ig_id}), expected @{self.expected_handle} '
+                f'({self.expected_id}). .env was not changed.')
+
+    def check_publishing(self, token, ig_id, host):
+        self.stdout.write('[3/3] Confirming publishing access...')
+        resp = requests.get(f'https://{host}/{self.version}/{ig_id}/content_publishing_limit', timeout=TIMEOUT,
+                            params={'fields': 'quota_usage', 'access_token': token})
+        if resp.status_code != 200:
+            raise CommandError(f'Publishing access check failed: {graph_error(resp.json())}. .env was not changed.')
+
+    def write_env(self, updates):
+        path = os.path.join(settings.BASE_DIR, '.env')
+        content = ''
+        if os.path.exists(path):
+            with open(path, encoding='utf-8') as fh:
+                content = fh.read()
+        for key, value in updates.items():
+            line = f'{key}={value}'
+            content, count = re.subn(rf'^{key}=.*$', lambda _m: line, content, flags=re.MULTILINE)
+            if not count:
+                content = f"{content.rstrip()}\n{line}\n"
+        tmp = f'{path}.tmp'
+        with open(os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), 'w', encoding='utf-8') as fh:
+            fh.write(content)
+        os.replace(tmp, path)

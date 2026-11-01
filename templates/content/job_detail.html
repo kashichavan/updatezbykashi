@@ -1875,10 +1875,12 @@
           </span>
         </div>
         
+        {% if user.is_staff or user.is_superuser %}
         <button type="button" id="btnPublishIgStory" onclick="publishStoryToInstagram({{ job.id }})" class="button" style="width: 100%; background: linear-gradient(135deg, #e1306c, #833ab4); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 11px; border-radius: 10px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
           <i data-lucide="send" style="width: 16px; height: 16px;"></i>
           <span id="btnPublishIgStoryText">{% if job.insta_story_published %}🚀 Re-Push Story to @ikashii_07{% else %}🚀 Push Story to @ikashii_07 (Meta API){% endif %}</span>
         </button>
+        {% endif %}
 
         <div id="igPublishStatusMsg" style="display: none; font-size: 11px; margin-top: 8px; padding: 8px 10px; border-radius: 8px; line-height: 1.4;"></div>
       </div>

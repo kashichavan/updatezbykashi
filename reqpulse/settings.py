@@ -280,13 +280,16 @@ if os.environ.get("CSRF_TRUSTED_ORIGINS"):
         if origin not in ("https://*", "http://*", "*"):
             CSRF_TRUSTED_ORIGINS.append(origin)
 
-# Meta / Instagram Graph API Configuration (From instagram_automation / Environment)
-META_APP_ID = os.environ.get('META_APP_ID', '17841475393977759')
-META_APP_SECRET = os.environ.get('META_APP_SECRET', '57af518561fb5207289f0b55d241259f')
+# Meta / Instagram Graph API Configuration (From Meta App 1063466270010969 / Environment)
+META_APP_ID = os.environ.get('META_APP_ID', '')
+META_APP_SECRET = os.environ.get('META_APP_SECRET', '')
+# Instagram Login uses its own ID/secret, shown under Instagram > API setup with Instagram login.
+INSTAGRAM_APP_ID = os.environ.get('INSTAGRAM_APP_ID', '')
+INSTAGRAM_APP_SECRET = os.environ.get('INSTAGRAM_APP_SECRET', '')
 INSTAGRAM_ACCOUNT_ID = os.environ.get('INSTAGRAM_ACCOUNT_ID', '17841475393977759')
 INSTAGRAM_ACCOUNT_HANDLE = os.environ.get('INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')
 INSTAGRAM_ACCESS_TOKEN = os.environ.get('INSTAGRAM_ACCESS_TOKEN', '')
-INSTAGRAM_API_VERSION = os.environ.get('INSTAGRAM_API_VERSION', 'v18.0')
+INSTAGRAM_API_VERSION = os.environ.get('INSTAGRAM_API_VERSION', 'v26.0')
 INSTAGRAM_AUTO_POST_STORY = os.environ.get('INSTAGRAM_AUTO_POST_STORY', 'false').lower() in ('true', '1', 'yes')
 INSTAGRAM_REDIRECT_URI = os.environ.get('INSTAGRAM_REDIRECT_URI', 'https://kashiiupdatez.online/instagram/oauth/callback/')
 META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN', '')

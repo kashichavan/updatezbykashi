@@ -2084,7 +2084,7 @@ def api_job_detail(request, pk):
 def api_job_ig_story_image(request, pk):
     """
     Renders and serves high-resolution 1080x1920 (9:16) Instagram Story image
-    with prominent Experience highlight, scannable QR code, and Link Sticker CTA.
+    with prominent Experience highlight and scannable QR code.
     """
     from django.http import HttpResponse
     from .services.instagram_story import generate_job_story_image
@@ -2093,7 +2093,7 @@ def api_job_ig_story_image(request, pk):
     host_url = request.build_absolute_uri('/').rstrip('/')
     buf = generate_job_story_image(job, base_url=host_url)
 
-    response = HttpResponse(buf.getvalue(), content_type='image/png')
+    response = HttpResponse(buf.getvalue(), content_type='image/jpeg')
     response['Cache-Control'] = 'public, max-age=3600'
     return response
 
@@ -2106,6 +2106,10 @@ def api_publish_job_ig_story(request, pk):
     """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'METHOD_NOT_ALLOWED', 'message': 'POST method required.'}, status=405)
+
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'success': False, 'error': 'UNAUTHORIZED', 'message': 'Owner login required.'}, status=401)
 
     from .services.instagram_story import InstagramStoryPublisher
 
