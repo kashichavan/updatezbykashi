@@ -3557,10 +3557,16 @@ def api_ats_score_eval(request):
                     if job:
                         target_skills = job.get_skills_list()
 
-        # If job skills are available, calculate job-specific ATS evaluation
+        # Every score on the site comes from this one evaluator, so the editor,
+        # the upload scorecard and Auto Upgrade always agree on the same resume.
+        if not target_skills:
+            from .resume_engine import RESUME_ROLES
+            role_info = RESUME_ROLES.get(role, RESUME_ROLES['python-backend'])
+            target_skills = role_info.get('target_ats_keywords', [])
+
         if target_skills:
             eval_res = evaluate_uploaded_resume_ats(resume_data, target_skills)
-            score = eval_res.get('overall_score', 85)
+            score = eval_res.get('overall_score', 0)
             # Build checks array for backward compatibility
             checks = []
             for p in eval_res.get('pillars', []):
@@ -3575,7 +3581,7 @@ def api_ats_score_eval(request):
                 'score': score,
                 'overall_score': score,
                 'grade': eval_res.get('grade', 'Competitive'),
-                'pass_rate': eval_res.get('pass_rate', '82% Enterprise Pass Rate'),
+                'pass_rate': eval_res.get('pass_rate', ''),
                 'checks': checks,
                 'pillars': eval_res.get('pillars', []),
                 'improvements': eval_res.get('improvements', []),
@@ -3869,6 +3875,19 @@ def api_ai_tailor_resume(request):
                 if item['tailored_bullet']:
                     cleaned.append(item)
             data['suggested_project_improvements'] = cleaned
+
+            # The match figure is counted from the text, not taken from the model.
+            from .skill_extractor import extract_technical_skills
+            keywords = [k.strip() for k in extract_technical_skills(description=jd, max_skills=12).split(',') if k.strip()]
+            if keywords:
+                resume_text = f"{corpus} {' '.join(map(str, resume_skills))}".lower()
+                found = [k for k in keywords if k.lower() in resume_text]
+                data['match_score'] = round(100 * len(found) / len(keywords))
+                data['match_grade'] = f"{len(found)} of {len(keywords)} job keywords found"
+                data['missing_critical_keywords'] = [k for k in keywords if k not in found]
+            else:
+                data['match_score'] = None
+                data['match_grade'] = 'No clear skills found in this job description'
         return JsonResponse({'success': True, 'data': data})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -4018,91 +4037,70 @@ def api_ai_alter_resume(request):
 @csrf_exempt
 def api_ai_auto_upgrade_resume(request):
     """
-    1-Click AI Auto Upgrade Resume Engine.
-    Transforms an entire resume into a 95-100 ATS score document:
-    1. Upgrades Professional Summary with role-tailored keywords.
-    2. Reorders & enriches Technical Skills with high-frequency ATS keywords.
-    3. Transforms every project into 4 Google XYZ accomplishment bullets with metrics.
-    4. Recalculates live ATS scorecard.
+    Rewrites project bullets and fills an empty summary without inventing anything.
+
+    Skills, projects, numbers and technologies the candidate did not supply are
+    never added. Missing keywords are returned so the candidate can decide. The
+    score is the same evaluator the editor shows, so it can stay flat or drop.
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
     from .ai_engine import generate_project_ats_bullets
     from .resume_engine import RESUME_ROLES
+    from .resume_generation_service import sanitize_rewrite
     from .resume_parser import evaluate_uploaded_resume_ats
 
     try:
         body = json.loads(request.body.decode('utf-8'))
         resume = body.get('resume') or body.get('resume_data') or {}
         role_key = body.get('role') or body.get('role_key') or 'python-backend'
-        target_skills = body.get('target_skills', [])
+        job_skills = body.get('target_skills') or []
 
         role_info = RESUME_ROLES.get(role_key, RESUME_ROLES['python-backend'])
-        if not target_skills:
-            target_skills = role_info.get('target_ats_keywords', [])
+        target_skills = job_skills or role_info.get('target_ats_keywords', [])
 
-        old_eval = evaluate_uploaded_resume_ats(resume, target_skills)
-        old_score = old_eval.get('score', 50)
+        def score_resume(data):
+            result = evaluate_uploaded_resume_ats(data, target_skills)
+            return result.get('overall_score', 0), result
 
-        # 1. Upgrade Summary
-        summary = resume.get('summary', '').strip()
-        if not summary or len(summary) < 40 or 'passionate' in summary.lower() or 'student' in summary.lower() or 'looking' in summary.lower():
+        old_score, _ = score_resume(resume)
+
+        summary = str(resume.get('summary') or '').strip()
+        if len(summary) < 40:
             resume['summary'] = role_info.get('summary', summary)
-        else:
-            primary_skills = ', '.join(target_skills[:5])
-            resume['summary'] = (
-                f"Results-oriented {role_info.get('title', 'Software Engineer')} with deep expertise in {primary_skills}. "
-                f"Proven track record of designing high-throughput REST APIs, implementing Redis caching architectures, "
-                f"and deploying scalable, containerized microservices with 99.9% uptime reliability under peak concurrency."
-            )
 
-        # 2. Enrich Skills
-        current_skills = resume.get('skills', {})
-        if isinstance(current_skills, dict):
-            template_skills = role_info.get('technical_skills', {})
-            for cat, tech in template_skills.items():
-                if cat not in current_skills or not current_skills[cat]:
-                    current_skills[cat] = tech
-            resume['skills'] = current_skills
-
-        # 3. Upgrade every Project to 95-100 ATS Google XYZ bullets
-        projects = resume.get('projects', [])
         upgraded_projects = []
         bullets_enhanced_count = 0
+        for project in resume.get('projects') or []:
+            title = project.get('title', 'Project')
+            tech_stack = project.get('tech_stack', '')
+            role = project.get('role', '')
+            raw_bullets = project.get('bullets') or []
+            originals = [b for b in raw_bullets if isinstance(b, str) and b.strip()] if isinstance(raw_bullets, list) else [str(raw_bullets)]
+            description = ' '.join(originals)
 
-        for p in projects:
-            title = p.get('title', 'Software Engineering System')
-            tech_stack = p.get('tech_stack', '') or ', '.join(target_skills[:4])
-            role = p.get('role', 'Software Engineer / Architect')
-            desc = ' '.join(p.get('bullets', [])) if isinstance(p.get('bullets'), list) else str(p.get('bullets') or '')
-
-            gen = generate_project_ats_bullets(
+            generated = generate_project_ats_bullets(
                 title=title,
                 tech_stack=tech_stack,
                 role=role,
-                description=desc,
-                target_skills=target_skills
+                description=description,
+                target_skills=target_skills,
             )
-            upgraded_p = dict(p)
-            upgraded_p['title'] = gen.get('title', title)
-            upgraded_p['tech_stack'] = gen.get('tech_stack', tech_stack)
-            upgraded_p['bullets'] = gen.get('bullets', p.get('bullets', []))
-            bullets_enhanced_count += len(upgraded_p['bullets'])
-            upgraded_projects.append(upgraded_p)
+            allowed = ' '.join([str(title), str(tech_stack), str(role), description])
+            rewritten = [sanitize_rewrite(b, allowed) for b in generated.get('bullets', [])]
+            rewritten = [b for b in rewritten if b]
 
-        # If candidate has no projects, add 2 top-tier role projects from RESUME_ROLES
-        if not upgraded_projects and role_info.get('enterprise_projects'):
-            upgraded_projects = list(role_info['enterprise_projects'][:2])
-            bullets_enhanced_count += sum(len(p.get('bullets', [])) for p in upgraded_projects)
-
+            upgraded = dict(project)
+            # A partial rewrite would silently drop what the candidate wrote.
+            if len(rewritten) >= max(len(originals), 2) or not originals:
+                upgraded['bullets'] = rewritten
+                bullets_enhanced_count += len(rewritten)
+            upgraded_projects.append(upgraded)
         resume['projects'] = upgraded_projects
 
-        # 4. Recalculate ATS Score
-        new_eval = evaluate_uploaded_resume_ats(resume, target_skills)
-        new_score = new_eval.get('score', 95)
-        if new_score < 90:
-            new_score = max(new_score, 94)
+        new_score, new_eval = score_resume(resume)
+        resume_text = json.dumps(resume, default=str).lower()
 
         return JsonResponse({
             'status': 'success',
@@ -4111,8 +4109,9 @@ def api_ai_auto_upgrade_resume(request):
             'old_score': old_score,
             'new_score': new_score,
             'bullets_enhanced': bullets_enhanced_count,
-            'grade': new_eval.get('grade', 'Top Tier ATS Pass'),
-            'ats_eval': new_eval
+            'missing_keywords': [s for s in target_skills if str(s).lower() not in resume_text][:8],
+            'grade': new_eval.get('grade', ''),
+            'ats_eval': new_eval,
         })
     except Exception as e:
         logger.exception("api_ai_auto_upgrade_resume error:")
@@ -4190,6 +4189,17 @@ def api_generate_resume_from_jd(request):
         )
 
         resume = result['resume']
+        from .ai_engine import _generate_ats_fallback_bullets
+        from .resume_generation_service import sanitize_rewrite
+        allowed_source = f"{job_description} {json.dumps(candidate_info or {}, default=str)}"
+        for project in resume.get('projects') or []:
+            kept = [sanitize_rewrite(b, allowed_source) for b in project.get('bullets') or []]
+            kept = [b for b in kept if b]
+            project['bullets'] = kept or _generate_ats_fallback_bullets(
+                project.get('title', ''), project.get('tech_stack', ''), project.get('role', ''))
+        if not sanitize_rewrite(resume.get('summary'), allowed_source):
+            skills_text = ', '.join(result['target_skills'][:4])
+            resume['summary'] = f"Candidate targeting {result['job_title']} roles, with skills in {skills_text}."
         ats_score = result['ats_score']
         ats_grade = result['ats_grade']
         target_skills = result['target_skills']
@@ -4327,11 +4337,10 @@ def api_resume_upload(request):
                 job_description=job_desc,
                 target_role=job_title
             )
+            # The evaluator's score stays the only score, so it matches the editor.
+            ai_critique.pop('overall_score', None)
+            ai_critique.pop('grade', None)
             ats_eval['ai_critique'] = ai_critique
-            if ai_critique.get('overall_score'):
-                ats_eval['ai_score'] = ai_critique['overall_score']
-            if ai_critique.get('grade'):
-                ats_eval['ai_grade'] = ai_critique['grade']
             if ai_critique.get('top_changes_to_make'):
                 ats_eval['ai_changes'] = ai_critique['top_changes_to_make']
             if ai_critique.get('rewritten_bullets'):

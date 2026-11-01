@@ -448,16 +448,16 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
     # Grade & Rating Label
     if total_score >= 90:
         grade = "Top Tier Pass (ATS 90+)"
-        pass_rate = "96% Pass Rate on Workday, Taleo, Greenhouse, & Lever"
+        pass_rate = "Strong on every check"
     elif total_score >= 75:
         grade = "Strong Competitive Pass"
-        pass_rate = "82% Pass Rate on Enterprise ATS Scanners"
+        pass_rate = "Good. A few improvements left"
     elif total_score >= 60:
         grade = "Needs Polish"
-        pass_rate = "58% Pass Rate — Missing Quantified XYZ Metrics"
+        pass_rate = "Add real, measurable results to improve"
     else:
         grade = "High Risk of ATS Rejection"
-        pass_rate = "32% Pass Rate — Lacks Keyword Density & Action Verbs"
+        pass_rate = "Add role keywords and stronger action verbs"
 
     # Evaluate each project with reverse-engineered ATS score
     scored_projects = []

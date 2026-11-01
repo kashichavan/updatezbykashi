@@ -470,7 +470,7 @@
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           <button type="button" id="btnOpenInStudio" onclick="proceedToStudioWithResume()" style="background: #2563eb; color: #ffffff; border: none; padding: 10px 18px; border-radius: 9px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 14px rgba(37,99,235,0.4);">
             <i data-lucide="edit-3" style="width: 15px; height: 15px;"></i>
-            <span>⚡ Fix &amp; Polish in Live Resume Studio ↗</span>
+            <span>Fix this in the resume editor</span>
           </button>
           <button type="button" onclick="openActionVerbsModal()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
             <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
@@ -506,7 +506,7 @@
 
       <div class="compare-grid">
         <div class="compare-box bad">
-          <span class="compare-tag bad">❌ Common Rejection Pattern (Score: 25)</span>
+          <span class="compare-tag bad">Weak example</span>
           <p style="font-size: 12.5px; color: #881337; margin: 0; line-height: 1.5; font-style: italic;">
             “Managed backend code and assisted with features. Helped optimize database queries and launches.”
           </p>
@@ -515,7 +515,7 @@
           </div>
         </div>
         <div class="compare-box good">
-          <span class="compare-tag good">✅ ATS 95+ Score Formula (Google XYZ)</span>
+          <span class="compare-tag good">Strong example (use your own real numbers)</span>
           <p style="font-size: 12.5px; color: #14532d; margin: 0; line-height: 1.5; font-weight: 600;">
             “Architected asynchronous task queue with Redis and Celery, reducing p99 API latency by 45% and maintaining 99.9% uptime under 15,000+ RPS.”
           </p>
@@ -552,7 +552,7 @@
             💼 Project Accomplishment Audit &amp; AI Enhancer
           </h3>
           <p style="font-size: 12.5px; color: #64748b; margin: 3px 0 0;">
-            Click <strong>“✨ Upgrade Bullets with AI”</strong> to rewrite projects into high-scoring Google XYZ bullets with metrics.
+            Click <strong>Rewrite bullets with AI</strong> for clearer wording. Your facts stay the same.
           </p>
         </div>
       </div>
@@ -596,6 +596,16 @@
 
 {% block extra_js %}
 <script>
+  function esc(value) {
+    const holder = document.createElement('div');
+    holder.textContent = value == null ? '' : String(value);
+    return holder.innerHTML;
+  }
+  window.alert = (message) => {
+    const text = String(message);
+    if (window.showToast) window.showToast(text, /fail|error|could not|unable/i.test(text) ? 'error' : 'success');
+  };
+
 (function() {
   'use strict';
 
@@ -757,7 +767,7 @@
     const matchedRow = document.getElementById('matchedKeywordsRow');
     matchedRow.innerHTML = '';
     (evalData.matched_skills || []).forEach(k => {
-      matchedRow.innerHTML += `<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:700;">✓ ${k}</span>`;
+      matchedRow.innerHTML += `<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:700;">✓ ${esc(k)}</span>`;
     });
     if (!evalData.matched_skills || !evalData.matched_skills.length) {
       matchedRow.innerHTML = '<span style="font-size:11.5px;color:#94a3b8;">No exact skill keywords matched.</span>';
@@ -766,7 +776,7 @@
     const missingRow = document.getElementById('missingKeywordsRow');
     missingRow.innerHTML = '';
     (evalData.missing_skills || []).forEach(k => {
-      missingRow.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:700;">+ ${k}</span>`;
+      missingRow.innerHTML += `<span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:700;">+ ${esc(k)}</span>`;
     });
     if (!evalData.missing_skills || !evalData.missing_skills.length) {
       missingRow.innerHTML = '<span style="font-size:11.5px;color:#15803d;font-weight:700;">✓ No critical keyword gaps identified!</span>';
@@ -782,17 +792,17 @@
       projects.forEach((proj, idx) => {
         const item = document.createElement('div');
         item.className = 'project-audit-item';
-        const bulletsList = (proj.bullets || []).map(b => `<li style="margin-bottom: 4px;">${b}</li>`).join('');
+        const bulletsList = (proj.bullets || []).map(b => `<li style="margin-bottom: 4px;">${esc(b)}</li>`).join('');
         
         item.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
             <div>
-              <h4 style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0 0 3px;">${proj.title || 'Portfolio Project'}</h4>
-              <div style="font-size: 11.5px; color: #64748b;">Technologies: <strong style="color: #0369a1;">${proj.tech_stack || 'Python, Databases, APIs'}</strong></div>
+              <h4 style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0 0 3px;">${esc(proj.title || 'Project')}</h4>
+              <div style="font-size: 11.5px; color: #64748b;">Technologies: <strong style="color: #0369a1;">${esc(proj.tech_stack || 'Not listed')}</strong></div>
             </div>
             <button type="button" onclick="upgradeProjectBullets(${idx})" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; padding: 6px 12px; border-radius: 7px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">
               <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
-              <span>✨ Upgrade Bullets with AI</span>
+              <span>Rewrite bullets with AI</span>
             </button>
           </div>
           <ul id="projBulletsList_${idx}" style="font-size: 12px; color: #475569; line-height: 1.5; padding-left: 18px; margin: 0;">
@@ -811,7 +821,7 @@
     if (!parsedResumeData || !parsedResumeData.projects || !parsedResumeData.projects[idx]) return;
     const proj = parsedResumeData.projects[idx];
     const ul = document.getElementById(`projBulletsList_${idx}`);
-    if (ul) ul.innerHTML = '<li style="color:#2563eb;">⚡ Generating 4 quantified Google XYZ bullets with AI...</li>';
+    if (ul) ul.innerHTML = '<li style="color:#2563eb;">Rewriting your bullets...</li>';
 
     try {
       const res = await fetch('/api/ai/generate-project-bullets/', {
@@ -832,7 +842,7 @@
         if (ul) {
           ul.innerHTML = data.bullets.map(b => `<li style="margin-bottom: 4px; color: #0f172a; font-weight: 550;">${b}</li>`).join('');
         }
-        if (window.showToast) window.showToast("✨ Upgraded project with 100/100 ATS Google XYZ bullets!", "success");
+        if (window.showToast) window.showToast("Bullets rewritten from your own text.", "success");
       }
     } catch (err) {
       alert("Error upgrading bullets: " + err.message);

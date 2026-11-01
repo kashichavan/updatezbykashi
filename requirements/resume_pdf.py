@@ -497,7 +497,8 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
 
         r_style = right_align_style if is_date else right_role_style
         right_w = 110 if is_date else 180
-        left_w = printable_w - right_w
+        # The document frame has 6pt padding on each side, which body text respects.
+        left_w = printable_w - 12 - right_w
         table = Table(
             [[
                 Paragraph(left_html, body_style),

@@ -1,0 +1,389 @@
+/* Shared control polish on top of styles.css. The `html` prefix outranks the
+   <style> blocks that page templates place in the body. */
+
+:focus-visible {
+  outline: 2px solid var(--blue-primary);
+  outline-offset: 2px;
+}
+
+html .button,
+html .btn,
+html .studio-btn {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  gap: 8px;
+  justify-content: center;
+}
+
+html .button:disabled,
+html .btn:disabled,
+html .studio-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+html .studio-btn-ghost {
+  background: var(--paper-elevated);
+  border-color: var(--subtle-border);
+  color: var(--ink-secondary);
+}
+
+html .studio-btn-ghost:hover {
+  border-color: var(--blue-border);
+  color: var(--blue-hover);
+}
+
+html .level-pill-btn,
+html .segment-btn:not(.active) {
+  color: var(--ink-secondary);
+}
+
+html .level-pill-btn.active {
+  color: var(--ink);
+}
+
+@media (max-width: 768px) {
+  html .button,
+  html .btn,
+  html .studio-btn {
+    min-height: 44px;
+  }
+
+  html input:not([type="checkbox"]):not([type="radio"]),
+  html textarea {
+    font-size: 16px;
+  }
+
+  html .level-pill-btn {
+    min-height: 40px;
+  }
+
+  html .word-tool-btn,
+  html .word-zoom-btn,
+  html .flash-close {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  html .vp-sidebar-btn,
+  html .pag-btn,
+  html .pag-page-btn,
+  html .filter-trigger-btn,
+  html .view-toggle-btn,
+  html .jd-share-btn,
+  html .rs-btn,
+  html .rs-jobrow,
+  html .role-pill,
+  html .word-pill-action,
+  html .word-page-toggle,
+  html .button-saved-jobs-alerts,
+  html .inspector-action-full,
+  html .inspector-util-btn {
+    min-height: 40px;
+  }
+
+  /* Resume builder: the two main actions full width, then Templates and More. */
+  html .deck-zone-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  html .deck-zone-actions > .studio-btn,
+  html .deck-zone-actions > .studio-dropdown-wrap,
+  html .deck-zone-actions > .studio-dropdown-wrap > .studio-btn {
+    width: 100%;
+  }
+
+  html #btnDownloadPdf,
+  html #btnAutoUpgradeResume {
+    grid-column: 1 / -1;
+  }
+
+  html #btnDownloadPdf {
+    order: -2;
+  }
+
+  html #btnAutoUpgradeResume {
+    order: -1;
+  }
+
+  /* The chat pill covered page content, so it shrinks to an icon on phones. */
+  html .floating-chat-widget {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    justify-content: center;
+    border-radius: var(--radius-full);
+  }
+
+  html .floating-chat-widget .chat-label {
+    display: none;
+  }
+
+  /* Job pages already have a sticky apply bar in that corner. */
+  html body:has(.jd-sticky) .floating-chat-widget {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html .button,
+  html .btn,
+  html .studio-btn {
+    transition: none;
+  }
+
+  html .button:active,
+  html .studio-btn:active,
+  html .studio-btn:hover {
+    transform: none;
+  }
+}
+
+/* Toasts may carry multi-line messages from the resume tools. */
+html .toast {
+  white-space: pre-line;
+}
+
+/* Resume builder: three-step guide */
+.rb-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.rb-step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 12px;
+  align-content: space-between;
+  padding: 16px;
+  background: var(--paper-elevated);
+  border: 1px solid var(--subtle-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--specular-inner), var(--card-shadow);
+}
+
+.rb-step-num {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--blue-light);
+  border: 1px solid var(--blue-border);
+  color: var(--blue-hover);
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-step.is-done .rb-step-num {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.rb-step-copy strong {
+  display: block;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.rb-step-copy span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.rb-step-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+}
+
+html .rb-step-actions .studio-btn {
+  flex: 1;
+}
+
+/* Resume builder: scorecard fixes */
+.rb-fix-card {
+  background: var(--paper-elevated);
+  border: 1px solid var(--subtle-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.rb-fix-title {
+  margin-bottom: 3px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.rb-fix-body,
+.rb-fix-before {
+  color: var(--ink-secondary);
+}
+
+.rb-fix-after {
+  margin-top: 3px;
+  color: #047857;
+  font-weight: 700;
+}
+
+/* Resume builder: upgrade result */
+.rb-keywords {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  background: var(--paper);
+  border: 1px solid var(--subtle-border);
+  border-radius: var(--radius-md);
+  color: var(--ink-secondary);
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.rb-keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.rb-keyword-list span {
+  padding: 3px 9px;
+  background: var(--blue-light);
+  border: 1px solid var(--blue-border);
+  border-radius: var(--radius-full);
+  color: var(--blue-dark);
+  font-weight: 700;
+}
+
+/* Resume builder: details dialog */
+.rb-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.rb-modal[hidden] {
+  display: none;
+}
+
+.rb-modal-card {
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 24px;
+  background: var(--paper-elevated);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--modal-shadow);
+}
+
+.rb-modal-card h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.rb-modal-card p {
+  margin: 4px 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rb-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rb-field {
+  display: grid;
+  gap: 5px;
+  color: var(--ink-secondary);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.rb-field-wide {
+  grid-column: 1 / -1;
+}
+
+.rb-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  background: var(--paper);
+  border: 1px solid var(--subtle-border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.rb-field input:focus {
+  background: var(--paper-elevated);
+  border-color: var(--blue-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--blue-light);
+}
+
+.rb-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+html .rb-modal-actions .studio-btn-primary {
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  .rb-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .rb-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rb-field-wide {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 900px) {
+  /* The numbered steps explain the page, so the long intro can go on phones. */
+  html .studio-hero .studio-subtitle {
+    display: none;
+  }
+}

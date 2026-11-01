@@ -273,22 +273,16 @@ Apply today or tag a friend who would be a great fit!
 
 
 def _generate_ats_fallback_bullets(title: str, tech_stack: str, role: str) -> list[str]:
-    """
-    Deterministic fallback producing 3-4 bullets guaranteed to pass score_project_ats with 95-100/100.
-    """
+    """Draft bullets for when the model is unavailable. Facts only, so no metrics."""
     tech_parts = [t.strip() for t in (tech_stack or "").split(',') if t.strip()]
-    primary_tech = tech_parts[0] if tech_parts else "Python and Django"
-    cache_tech = next((t for t in tech_parts if t.lower() in ('redis', 'memcached', 'cache')), 'Redis')
-    db_tech = next((t for t in tech_parts if 'sql' in t.lower() or 'mongo' in t.lower()), 'PostgreSQL')
-    container_tech = next((t for t in tech_parts if t.lower() in ('docker', 'k8s', 'kubernetes', 'aws')), 'Docker')
-
-    clean_t = title or "Enterprise Web Application"
-    return [
-        f"Architected scalable {clean_t} backend services utilizing {primary_tech} and {cache_tech}, reducing p99 API latency by 45% (from 280ms to 95ms) for 15,000+ active users.",
-        f"Engineered distributed background processing queue using {cache_tech} and async workers, scaling event throughput by 55% while maintaining 99.9% system uptime under peak concurrency.",
-        f"Optimized database query performance with {db_tech} B-Tree indexing and multi-layer caching, slashing query execution time by 60% and cutting server load to under 40ms.",
-        f"Deployed containerized application via {container_tech} with automated CI/CD pipelines and JWT/RBAC security, accelerating release velocity by 35% across staging and production."
+    stack = ', '.join(tech_parts[:3]) or "the project's core stack"
+    clean_t = title or "this project"
+    bullets = [
+        f"Built {clean_t} using {stack}, delivering the core features end to end.",
+        f"Implemented the main application logic for {clean_t} and connected its components.",
+        "Tested and debugged the project, then documented how to set it up and run it.",
     ]
+    return bullets
 
 
 def generate_project_ats_bullets(
@@ -300,15 +294,14 @@ def generate_project_ats_bullets(
 ) -> dict:
     """
     Generate 3-4 enterprise-grade, Google XYZ formula project accomplishment bullets
-    guaranteed to score 90-100 on the reverse-engineered ATS scoring engine.
+    from the candidate's own facts. Output with invented numbers is discarded.
     """
     from .resume_engine import score_project_ats
+    from .resume_generation_service import sanitize_rewrite
 
     clean_title = (title or "Software Engineering Project").strip()
     clean_role = (role or "Software Engineer").strip()
     clean_tech = (tech_stack or "").strip()
-    if not clean_tech or len(clean_tech) < 5:
-        clean_tech = "Python, Django, Redis, PostgreSQL, Docker, REST APIs, Celery"
 
     system_prompt = (
         "You are an elite Staff Software Engineer and ATS Resume Optimization Specialist (Resume Worded & Jobscan standards). "
@@ -317,8 +310,8 @@ def generate_project_ats_bullets(
         "1. FIRST WORD MUST BE a strong action verb: 'Architected', 'Engineered', 'Developed', 'Optimized', 'Built', 'Spearheaded', 'Deployed', 'Automated', 'Integrated', 'Refactored', 'Orchestrated', or 'Scaled'.\n"
         "2. GOOGLE XYZ FORMULA: State what was accomplished, the architectural mechanism/technologies used, and the measurable outcome.\n"
         "3. OUTCOME KEYWORDS: Include words like 'reducing', 'slashing', 'increasing', 'improving', 'cutting', 'preventing', 'delivering', 'accelerating', 'scaling'.\n"
-        "4. QUANTIFIED METRICS: Include realistic engineering metrics in every bullet (e.g., 42% latency reduction, 120ms p99, 15,000+ RPS throughput, 99.9% uptime, 50k+ active users).\n"
-        "5. ARCHITECTURE DEPTH: Naturally weave in keywords: Redis, cache, queue, Docker, CI/CD, JWT, RBAC, microservices, PostgreSQL, async, latency, throughput, concurrency.\n"
+        "4. NEVER INVENT FACTS: Use only numbers, technologies and outcomes found in the input. If the input has no number, write the bullet with no metric.\n"
+        "5. KEEP IT TRUE: Do not add technologies that are not in the Tech Stack or notes. The candidate must be able to defend every word in an interview.\n"
         "Return a valid JSON object with keys:\n"
         "- 'title': refined title\n"
         "- 'role': candidate role\n"
@@ -329,7 +322,7 @@ def generate_project_ats_bullets(
     user_prompt = f"""
 Project Title: {clean_title}
 Candidate Role: {clean_role}
-Tech Stack: {clean_tech}
+Tech Stack: {clean_tech or 'Not specified'}
 Existing Context / Notes: {description or 'None provided'}
 Target Skills: {', '.join(target_skills) if target_skills else 'Software Engineering'}
 """
@@ -343,8 +336,10 @@ Target Skills: {', '.join(target_skills) if target_skills else 'Software Enginee
         raw_res = call_groq_chat(messages, temperature=0.3, json_mode=True, timeout=12)
         parsed = json.loads(raw_res)
         if isinstance(parsed, dict) and parsed.get('bullets') and isinstance(parsed['bullets'], list):
-            bullets = [b.strip() for b in parsed['bullets'] if isinstance(b, str) and len(b.strip()) > 15]
-            if parsed.get('tech_stack'):
+            allowed = ' '.join([clean_title, clean_tech, clean_role, description or ''])
+            bullets = [sanitize_rewrite(b, allowed) for b in parsed['bullets'] if isinstance(b, str) and len(b.strip()) > 15]
+            bullets = [b for b in bullets if b]
+            if parsed.get('tech_stack') and not clean_tech:
                 clean_tech = parsed['tech_stack']
     except Exception as e:
         logger.warning(f"Groq project bullets generation error, using fallback: {e}")
@@ -377,7 +372,7 @@ def polish_resume_bullet(bullet: str, role: str = "", tech_stack: str = "", incl
     """
     clean_bullet = (bullet or "").strip()
     clean_role = (role or "Software Engineer").strip()
-    clean_tech = (tech_stack or "Python, SQL, APIs, Cloud").strip()
+    clean_tech = (tech_stack or "").strip()
 
     system_prompt = (
         "You are a Principal Tech Recruiter and ATS Resume Algorithm Specialist. "
@@ -386,7 +381,7 @@ def polish_resume_bullet(bullet: str, role: str = "", tech_stack: str = "", incl
         "STRICT ATS RULES:\n"
         "1. FIRST WORD MUST be a strong action verb (e.g. Architected, Engineered, Optimized, Developed, Built, Deployed, Automated, Integrated, Scaled).\n"
         "2. MUST include outcome phrasing (reducing, slashing, increasing, improving, cutting, delivering, accelerating, scaling).\n"
-        "3. MUST include measurable metrics (% latency reduction, request rates, throughput, users, or execution times).\n"
+        "3. Keep any numbers from the original bullet. Never add a number, metric or technology it does not contain.\n"
         "4. Include architectural terms where appropriate (Redis, cache, queue, Docker, PostgreSQL, microservices, async, APIs).\n"
         "Return a JSON object with keys:\n"
         "- 'original': the original input text\n"
@@ -428,18 +423,19 @@ Raw Bullet Point: "{clean_bullet}"
     else:
         verb = first_w.capitalize()
 
-    polished = f"{verb} {clean_bullet.lstrip('•- ').strip()}, reducing operational latency by 42% and increasing throughput to 10,000+ requests/sec using {clean_tech}."
-    alt1 = f"Optimized system architecture by integrating {clean_tech}, slashing query response times by 55% and scaling capacity for 25,000+ active users."
-    alt2 = f"Engineered automated workflows and data pipelines utilizing {clean_tech}, cutting deployment cycle time by 40% with 99.9% uptime."
+    body = clean_bullet.lstrip('•- ').strip().rstrip('.')
+    if body and body.split()[0].lower() == verb.lower():
+        body = body.split(' ', 1)[1] if ' ' in body else ''
+    polished = f"{verb} {body}." if body else clean_bullet
 
     return {
         'original': clean_bullet,
         'polished': polished,
-        'alternative_1': alt1,
-        'alternative_2': alt2,
+        'alternative_1': '',
+        'alternative_2': '',
         'action_verb': verb,
-        'metric_highlight': '42% latency reduction',
-        'bullets': [polished, alt1, alt2]
+        'metric_highlight': '',
+        'bullets': [polished],
     }
 
 
@@ -696,6 +692,29 @@ def alter_resume_for_job(
         }
 
 
+def _clean_critique(critique: dict, parsed_resume: dict, sections_present: list) -> dict:
+    """Remove model claims the parsed resume disproves, and rewrites with invented numbers."""
+    from .resume_generation_service import sanitize_rewrite
+
+    def wrongly_missing(change: dict) -> bool:
+        text = f"{change.get('issue', '')} {change.get('category', '')}".lower()
+        if 'missing' not in text and 'lack' not in text and 'no ' not in text:
+            return False
+        named = [name for name in ("education", "experience", "skills", "summary", "projects") if name in text]
+        return bool(named) and all(name in sections_present or (name == 'experience' and 'projects' in sections_present)
+                                   for name in named)
+
+    critique['top_changes_to_make'] = [
+        c for c in critique.get('top_changes_to_make') or [] if isinstance(c, dict) and not wrongly_missing(c)
+    ]
+    rewrites = []
+    for item in critique.get('rewritten_bullets') or []:
+        if isinstance(item, dict) and sanitize_rewrite(item.get('improved'), str(item.get('original', ''))):
+            rewrites.append(item)
+    critique['rewritten_bullets'] = rewrites
+    return critique
+
+
 def generate_ai_resume_critique_and_suggestions(
     parsed_resume: dict,
     target_skills: list = None,
@@ -709,6 +728,8 @@ def generate_ai_resume_critique_and_suggestions(
     system_prompt = (
         "You are a Principal Tech Recruiter and ATS Optimization Algorithm. "
         "A candidate has uploaded their resume. Provide an objective, candid diagnostic evaluation. "
+        "'sections_present' lists what the resume contains: never call any of those sections missing. "
+        "Fresher resumes may have projects instead of work experience, which is acceptable. "
         "Return a valid JSON object with the following keys:\n"
         "- 'overall_score': integer from 20 to 98 (accurate ATS score)\n"
         "- 'grade': string (e.g. 'Strong Match (90+ ATS Pass Rate)', 'Moderate - Needs Optimization', 'Critical Gaps Detected')\n"
@@ -727,6 +748,11 @@ def generate_ai_resume_critique_and_suggestions(
         "job_description_snippet": (job_description or "")[:1500],
         "candidate_skills": parsed_resume.get("skills") or parsed_resume.get("skills_list") or [],
         "candidate_summary": parsed_resume.get("summary", ""),
+        "candidate_education": parsed_resume.get("education") or {},
+        "sections_present": [
+            name for name in ("summary", "skills", "experience", "projects", "education", "certifications")
+            if parsed_resume.get(name)
+        ],
         "candidate_projects": [
             {
                 "title": p.get("title", "Project"),
@@ -751,12 +777,11 @@ def generate_ai_resume_critique_and_suggestions(
 
     try:
         response_text = call_groq_chat(messages, temperature=0.2, json_mode=True, timeout=10)
-        return json.loads(response_text)
+        critique = json.loads(response_text)
+        return _clean_critique(critique, parsed_resume, clean_payload["sections_present"])
     except Exception as e:
         logger.warning(f"Error generating AI resume critique: {e}")
         return {
-            "overall_score": 78,
-            "grade": "Passable - Needs Metrics",
             "executive_summary": "Resume provides a solid foundational overview but lacks quantified metrics and key target keywords.",
             "top_changes_to_make": [
                 {

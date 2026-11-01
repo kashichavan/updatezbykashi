@@ -219,7 +219,14 @@ class AutoUpgradeAndAnalysisViewTests(TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertEqual(data.get('status'), 'success')
-        self.assertGreaterEqual(data.get('new_score', 0), 80)
+        # The score comes straight from the evaluator; there is no floor.
+        from requirements.resume_parser import evaluate_uploaded_resume_ats
+        expected = evaluate_uploaded_resume_ats(
+            data['upgraded_resume'],
+            ['Python', 'Django', 'Redis', 'PostgreSQL', 'Docker', 'REST API'],
+        )['overall_score']
+        self.assertEqual(data.get('new_score'), expected)
+        self.assertIn('missing_keywords', data)
         upgraded = data.get('upgraded_resume', {})
         self.assertTrue(len(upgraded.get('projects', [])[0].get('bullets', [])) >= 2)
 
@@ -331,5 +338,69 @@ class AutoUpgradeAndAnalysisViewTests(TestCase):
             self.assertGreaterEqual(p.get('ats_score', 0), 90)
 
 
+class ResumeHonestyTests(TestCase):
+    def post_upgrade(self, resume, generated):
+        with patch('requirements.ai_engine.generate_project_ats_bullets', return_value=generated):
+            return self.client.post(
+                '/api/ai/auto-upgrade-resume/',
+                data=json.dumps({'resume_data': resume, 'role_key': 'python-backend'}),
+                content_type='application/json',
+            ).json()
 
+    def test_auto_upgrade_keeps_original_bullets_when_rewrite_invents_numbers(self):
+        original = ['Built a todo app with Django', 'Added login with sessions']
+        resume = {
+            'name': 'Asha', 'contact': {}, 'summary': 'A' * 50, 'skills': {},
+            'projects': [{'title': 'Todo', 'tech_stack': 'Django', 'bullets': original}],
+        }
+        data = self.post_upgrade(resume, {'bullets': [
+            'Built a todo app, reducing latency by 42% for 15,000 users.',
+            'Added login, cutting failures by 60%.',
+        ]})
+        self.assertEqual(data['upgraded_resume']['projects'][0]['bullets'], original)
+        self.assertEqual(data['bullets_enhanced'], 0)
+
+    def test_auto_upgrade_does_not_add_skills_or_projects_or_rewrite_summary(self):
+        summary = 'Final year student who built two Django apps for college events.'
+        resume = {'name': 'Asha', 'contact': {}, 'summary': summary, 'skills': {'Languages': 'Python'}, 'projects': []}
+        data = self.post_upgrade(resume, {'bullets': []})['upgraded_resume']
+        self.assertEqual(data['summary'], summary)
+        self.assertEqual(data['skills'], {'Languages': 'Python'})
+        self.assertEqual(data['projects'], [])
+
+    def test_critique_drops_false_missing_section_claims(self):
+        from requirements.ai_engine import _clean_critique
+        critique = _clean_critique({
+            'top_changes_to_make': [
+                {'category': 'Structure', 'issue': 'Missing Experience and Education sections', 'fix': 'Add them'},
+                {'category': 'Keywords', 'issue': 'Few target keywords', 'fix': 'Add real ones'},
+            ],
+            'rewritten_bullets': [{'original': 'Built an API', 'improved': 'Built an API serving 9,000 users'}],
+        }, {}, ['education', 'projects'])
+        self.assertEqual([c['category'] for c in critique['top_changes_to_make']], ['Keywords'])
+        self.assertEqual(critique['rewritten_bullets'], [])
+
+    def test_fallback_bullets_contain_no_numbers(self):
+        from requirements.ai_engine import _generate_ats_fallback_bullets
+        text = ' '.join(_generate_ats_fallback_bullets('Todo', 'Django', 'Developer'))
+        self.assertNotRegex(text, r'\d')
+
+    def test_tailor_match_is_counted_from_the_text(self):
+        model_output = {'match_score': 98, 'match_grade': 'Excellent', 'tailored_summary': '',
+                        'missing_critical_keywords': ['Invented'], 'suggested_project_improvements': []}
+        with patch('requirements.ai_engine.tailor_resume_to_job', return_value=model_output):
+            data = self.client.post(
+                '/api/ai/tailor-resume/',
+                data=json.dumps({
+                    'job_description': 'Backend role using Python, Django, Redis and Docker.',
+                    'resume_summary': 'Python developer',
+                    'resume_skills': ['Python', 'Django'],
+                    'resume_projects': [],
+                }),
+                content_type='application/json',
+            ).json()['data']
+        self.assertLess(data['match_score'], 98)
+        self.assertIn('job keywords found', data['match_grade'])
+        self.assertIn('Redis', data['missing_critical_keywords'])
+        self.assertNotIn('Python', data['missing_critical_keywords'])
 

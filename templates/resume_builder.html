@@ -34,6 +34,42 @@
     {% endif %}
   </div>
 
+  <!-- Three-step guide -->
+  <section class="rb-steps" aria-label="Build your resume in 3 steps">
+    <div class="rb-step" id="rbStep1">
+      <span class="rb-step-num" aria-hidden="true">1</span>
+      <div class="rb-step-copy">
+        <strong>Add your details</strong>
+        <span>Import a PDF or Word file, or fill in a short form.</span>
+      </div>
+      <div class="rb-step-actions">
+        <button type="button" class="studio-btn studio-btn-primary" onclick="triggerFileInput()"><i data-lucide="upload-cloud" style="width: 15px; height: 15px;"></i><span>Import</span></button>
+        <button type="button" class="studio-btn studio-btn-ghost" onclick="openDetailsModal()">Fill in</button>
+      </div>
+    </div>
+    <div class="rb-step" id="rbStep2">
+      <span class="rb-step-num" aria-hidden="true">2</span>
+      <div class="rb-step-copy">
+        <strong>Improve it</strong>
+        <span>Click any text on the page to edit. The score updates as you type.</span>
+      </div>
+      <div class="rb-step-actions">
+        <button type="button" class="studio-btn studio-btn-ghost" onclick="document.getElementById('resumeSheet').scrollIntoView({behavior: 'smooth', block: 'start'})">Go to page</button>
+      </div>
+    </div>
+    <div class="rb-step" id="rbStep3">
+      <span class="rb-step-num" aria-hidden="true">3</span>
+      <div class="rb-step-copy">
+        <strong>Download</strong>
+        <span>Get a one-page PDF or an editable Word file.</span>
+      </div>
+      <div class="rb-step-actions">
+        <button type="button" class="studio-btn studio-btn-primary" onclick="downloadResumeAsPdf()"><i data-lucide="download" style="width: 15px; height: 15px;"></i><span>PDF</span></button>
+        <button type="button" class="studio-btn studio-btn-ghost" onclick="downloadResumeAsDocx()">Word</button>
+      </div>
+    </div>
+  </section>
+
   <!-- Unified Studio Command Deck -->
   <div class="studio-command-deck">
     <!-- Zone 1: Role Selector & Experience Level -->
@@ -95,7 +131,7 @@
       <!-- 2. 1-Click AI Auto Upgrade -->
       <button type="button" id="btnAutoUpgradeResume" onclick="runAutoUpgradeResume()" class="studio-btn studio-btn-magic" style="background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: #ffffff; border: none; font-weight: 800; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);" title="1-Click Auto Upgrade: Rewrites summary, enriches skills & crafts Google XYZ bullets with metrics (ATS 95+ Score)">
         <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-        <span id="btnAutoUpgradeText">⚡ Auto Upgrade</span>
+        <span id="btnAutoUpgradeText">Auto Upgrade</span>
       </button>
 
       <!-- 3. Primary CTA: Download PDF -->
@@ -133,6 +169,7 @@
             <i data-lucide="copy" style="width: 15px; height: 15px; color: #475569;"></i>
             <span>Copy Plaintext for Portals</span>
           </button>
+          <button type="button" onclick="startOverResume(); closeMoreMenu();" class="studio-menu-item"><i data-lucide="rotate-ccw" style="width: 15px; height: 15px; color: #b91c1c;"></i><span>Start over</span></button>
           <button type="button" onclick="window.print(); closeMoreMenu();" class="studio-menu-item">
             <i data-lucide="printer" style="width: 15px; height: 15px; color: #475569;"></i>
             <span>Print / Browser PDF</span>
@@ -178,7 +215,7 @@
       </span>
       <button type="button" id="btnTargetJobAlter" onclick="autoAlterResumeForTargetJob()" class="studio-btn studio-btn-magic" style="padding: 9px 14px; font-size: 12px;" title="Rewrites your summary and project bullets against this posting's own description. It cannot add numbers you did not supply.">
         <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
-        <span>⚡ Tailor to this job</span>
+        <span>Tailor to this job</span>
       </button>
       <a href="{{ target_job.get_absolute_url }}" target="_blank" rel="noopener" class="studio-btn studio-btn-ghost" style="padding: 8px 12px; font-size: 11.5px; text-decoration: none;">
         View Job ↗
@@ -208,7 +245,7 @@
 
         <button type="button" onclick="openUnifiedAddProjectModal()" class="inspector-action-full">
           <i data-lucide="plus" style="width: 15px; height: 15px;"></i>
-          <span>+ Add Enterprise Project</span>
+          <span>Add Enterprise Project</span>
         </button>
       </div>
 
@@ -273,7 +310,7 @@
             <span class="word-app-badge" title="Microsoft Word & Google Docs Compatible Editor">W</span>
             <div class="word-doc-meta">
               <input type="text" id="wordDocTitle" value="ATS_Resume.docx" class="word-doc-title-input" title="Click to rename document" spellcheck="false">
-              <span class="word-save-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: #15803d;"></i> <span>Saved locally</span></span>
+              <span class="word-save-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: #15803d;"></i> <span><span id="wordSaveText">Saved on this device</span></span></span>
             </div>
           </div>
           <div class="word-titlebar-right">
@@ -900,7 +937,7 @@
 
   .studio-btn-primary {
     background: #2563eb;
-    color: #0f172a;
+    color: #ffffff;
     border-color: #1d4ed8;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
   }
@@ -1662,7 +1699,7 @@
   .word-page-toggle.active-page-toggle {
     background: #2563eb !important;
     border-color: #2563eb !important;
-    color: #0f172a !important;
+    color: #ffffff !important;
     box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
   }
 
@@ -2426,7 +2463,7 @@
       // typing while the request was in flight.
       if (silent && typeof sheetEditedSinceLoad !== 'undefined' && sheetEditedSinceLoad) {
         setTargetTailorStatus('', 'Left your edits alone. Click Tailor to apply it.');
-        setTargetTailorButton('⚡ Tailor to this job', false);
+        setTargetTailorButton('Tailor to this job', false);
         return;
       }
 
@@ -2446,7 +2483,7 @@
         ? `Tailored for this job`
         : `Tailored · job-match ${matchScore}/100`;
       setTargetTailorStatus('done', doneMsg);
-      setTargetTailorButton('⚡ Tailor again', false);
+      setTargetTailorButton('Tailor again', false);
       if (!silent) {
         if (window.showToast) window.showToast(
           matchScore === null
@@ -2475,6 +2512,13 @@
   }
 
   function setLevel(level) {
+    if (!isSampleIdentity()) {
+      currentProfileLevel = level;
+      document.getElementById('btnLevelFresher')?.classList.toggle('active', level === 'fresher');
+      document.getElementById('btnLevelExp')?.classList.toggle('active', level === 'experienced');
+      if (window.showToast) window.showToast('Your resume was kept as it is.', 'success');
+      return;
+    }
     currentProfileLevel = level;
     const btnFresher = document.getElementById('btnLevelFresher');
     const btnExp = document.getElementById('btnLevelExp');
@@ -2493,7 +2537,7 @@
 
           currentResumeData = data.resume;
           renderResumeSheet();
-          updateAtsScoreDisplay(data.ats_eval);
+          recalculateAtsScore();
           // A new template drops the tailored text; re-apply the posting so the
           // page never quietly loses the job alignment the visitor arrived for.
           if (typeof targetJobData !== 'undefined' && targetJobData) {
@@ -2506,6 +2550,11 @@
 
   function switchRole(roleKey) {
     currentRoleKey = roleKey;
+    if (!isSampleIdentity()) {
+      recalculateAtsScore();
+      if (window.showToast) window.showToast('Scoring for the new role. Your resume was kept as it is.', 'success');
+      return;
+    }
     document.querySelectorAll('.btn-role-tab').forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-role') === roleKey);
     });
@@ -2522,7 +2571,7 @@
 
           currentResumeData = data.resume;
           renderResumeSheet();
-          updateAtsScoreDisplay(data.ats_eval);
+          recalculateAtsScore();
         }
       })
       .catch(err => console.error("Error switching role:", err));
@@ -2550,35 +2599,9 @@
     });
   }
 
-  const DUMMY_FALLBACK_CONTACT = {
-    name: 'Rahul Sharma',
-    email: 'rahul.sharma@example.com',
-    phone: '+91 98765 01234',
-    location: 'Bengaluru, India',
-    linkedin: 'linkedin.com/in/rahulsharma-dev',
-    github: 'github.com/rahulsharma-dev'
-  };
-
   function renderResumeSheet() {
-    if (!currentResumeData.name || !currentResumeData.name.trim()) {
-      currentResumeData.name = DUMMY_FALLBACK_CONTACT.name;
-    }
-    if (!currentResumeData.contact) currentResumeData.contact = {};
-    if (!currentResumeData.contact.email || !currentResumeData.contact.email.trim()) {
-      currentResumeData.contact.email = DUMMY_FALLBACK_CONTACT.email;
-    }
-    if (!currentResumeData.contact.phone || !currentResumeData.contact.phone.trim()) {
-      currentResumeData.contact.phone = DUMMY_FALLBACK_CONTACT.phone;
-    }
-    if (!currentResumeData.contact.location || !currentResumeData.contact.location.trim()) {
-      currentResumeData.contact.location = DUMMY_FALLBACK_CONTACT.location;
-    }
-    if (!currentResumeData.contact.linkedin || !currentResumeData.contact.linkedin.trim()) {
-      currentResumeData.contact.linkedin = DUMMY_FALLBACK_CONTACT.linkedin;
-    }
-    if (!currentResumeData.contact.github || !currentResumeData.contact.github.trim()) {
-      currentResumeData.contact.github = DUMMY_FALLBACK_CONTACT.github;
-    }
+    sanitizeResumeData(currentResumeData);
+    currentResumeData.contact = currentResumeData.contact || {};
 
     document.getElementById('previewName').innerText = currentResumeData.name;
     document.getElementById('previewLocation').innerText = currentResumeData.contact.location || '';
@@ -2711,7 +2734,7 @@
             <button type="button" onclick="quickPolishProjectBullet(${idx})" title="Polish bullets with Google XYZ" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #7c3aed; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
               ✨
             </button>
-            <button type="button" onclick="deleteProject(${idx})" title="Remove project" style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
+            <button type="button" onclick="deleteProject(${idx})" title="Remove project" style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; transition: transform 0.15s ease;">
               ✕
             </button>
           </div>
@@ -2804,13 +2827,13 @@
       recalculateAtsScore();
       openProjectAtsModal(activeModalProjIdx);
 
-      if (window.showToast) window.showToast("✨ Upgraded project with 100/100 ATS Google XYZ bullets!", "success");
-      else alert("✨ Upgraded project with 100/100 ATS Google XYZ bullets!");
+      if (window.showToast) window.showToast("Bullets rewritten from your own text.", "success");
+      else alert("Bullets rewritten from your own text.");
     } catch (err) {
       alert("Network error: " + err.message);
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '<i data-lucide="sparkles" style="width:15px;height:15px;"></i> <span>✨ Generate ATS 95+ Bullets with AI</span>';
+      btn.innerHTML = '<i data-lucide="sparkles" style="width:15px;height:15px;"></i> <span>Generate bullets with AI</span>';
       if (window.lucide) window.lucide.createIcons();
     }
   }
@@ -2830,7 +2853,7 @@
               ${e.role} &bull; ${e.period}
             </div>
           </div>
-          <button type="button" onclick="deleteExperience(${idx})" title="Remove experience" style="background: #fef2f2; border: 1px solid #fecaca; color: #ef4444; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; flex-shrink: 0;">
+          <button type="button" onclick="deleteExperience(${idx})" title="Remove experience" style="background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; width: 26px; height: 26px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 11px; flex-shrink: 0;">
             ✕
           </button>
         </div>
@@ -2904,7 +2927,7 @@
 
     if (score >= 90) {
       if (!grade || grade.includes('80+') || grade.includes('<70') || grade.includes('70+')) grade = 'Top Tier (ATS 90+)';
-      if (!passRate) passRate = 'Guaranteed Pass on Workday, Taleo & Greenhouse';
+      if (!passRate) passRate = 'Strong on every check';
       prefix = '✓ ';
       gaugeColor = '#15803d';
       gaugeBg = '#dcfce7';
@@ -2912,7 +2935,7 @@
       gradeColor = '#16a34a';
     } else if (score >= 80) {
       if (!grade || grade.includes('90+') || grade.includes('<70') || grade.includes('70+')) grade = 'Competitive (ATS 80+)';
-      if (!passRate) passRate = 'Passes Enterprise ATS Filters';
+      if (!passRate) passRate = 'Good. A few improvements left';
       prefix = '✓ ';
       gaugeColor = '#1d4ed8';
       gaugeBg = '#dbeafe';
@@ -3625,6 +3648,7 @@
 
   // Export clean Microsoft Word document
   async function downloadResumeAsDocx() {
+    if (needsDetailsBeforeDownload('docx')) return;
     const sheet = document.getElementById('resumeSheet');
     if (!sheet) {
       alert("Resume sheet not found");
@@ -3777,6 +3801,7 @@
   }
 
   async function downloadResumeAsPdf() {
+    if (needsDetailsBeforeDownload('pdf')) return;
     const btnText = document.getElementById('downloadPdfBtnText');
     const origText = btnText ? btnText.innerText : '4. Download PDF';
     if (btnText) btnText.innerText = '⏳ Generating Vector PDF...';
@@ -3955,6 +3980,7 @@
 
     const formData = new FormData();
     formData.append('resume_file', file);
+    formData.append('target_role', currentRoleKey || 'python-backend');
     if (typeof targetJobData !== 'undefined' && targetJobData) {
       if (targetJobData.id) formData.append('job_id', targetJobData.id);
       if (targetJobData.skills) formData.append('job_skills', targetJobData.skills);
@@ -3975,6 +4001,7 @@
       lastUploadedData = data;
       // 1. Immediately apply parsed data directly into the Live Editor & A4 sheet
       applyUploadedResumeToEditor();
+      saveResumeDraft();
       // 2. Open the comprehensive ATS scorecard modal with detailed pillars
       renderUploadScoreModal(data);
 
@@ -4021,17 +4048,17 @@
       let pHtml = '';
       (ats.pillars || []).forEach(p => {
         const pct = Math.min(100, Math.round((p.score / p.max_score) * 100));
-        const barColor = pct >= 80 ? '#34d399' : (pct >= 55 ? '#fbbf24' : '#f87171');
+        const barColor = pct >= 80 ? '#15803d' : (pct >= 55 ? '#b45309' : '#dc2626');
         pHtml += `
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px;">
+          <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px;">
             <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
-              <span style="color: #475569;">${p.name}</span>
+              <span style="color: #0f172a;">${escapeResumeHtml(p.name)}</span>
               <span style="color: ${barColor};">${p.score} / ${p.max_score}</span>
             </div>
-            <div style="background: #334155; height: 6px; border-radius: 99px; overflow: hidden; margin-bottom: 6px;">
+            <div style="background: #e2e8f0; height: 6px; border-radius: 99px; overflow: hidden; margin-bottom: 6px;">
               <div style="background: ${barColor}; height: 100%; width: ${pct}%; transition: width 0.3s ease;"></div>
             </div>
-            <div style="font-size: 11px; color: #64748b;">${p.detail}</div>
+            <div style="font-size: 11.5px; color: #475569;">${escapeResumeHtml(p.detail)}</div>
           </div>
         `;
       });
@@ -4054,17 +4081,17 @@
           let cHtml = '';
           changesList.forEach(c => {
             cHtml += `
-              <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 8px; padding: 8px 12px; font-size: 12px;">
-                <div style="color: #c084fc; font-weight: 800; margin-bottom: 2px;">⚡ [${c.category || 'Optimization'}]: ${c.issue || ''}</div>
-                <div style="color: #475569;"><strong style="color:#34d399;">AI Suggested Fix:</strong> ${c.fix || ''}</div>
+              <div class="rb-fix-card">
+                <div class="rb-fix-title">${escapeResumeHtml(c.category || 'Improve')}: ${escapeResumeHtml(c.issue || '')}</div>
+                <div class="rb-fix-body"><strong>How to fix:</strong> ${escapeResumeHtml(c.fix || '')}</div>
               </div>
             `;
           });
           bulletsList.forEach(b => {
             cHtml += `
-              <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 8px 12px; font-size: 12px;">
-                <div style="color: #64748b; font-size: 11px; text-decoration: line-through; margin-bottom: 2px;">Weak: ${b.original || ''}</div>
-                <div style="color: #34d399; font-weight: 700;">Google XYZ Rewrite: ${b.improved || ''}</div>
+              <div class="rb-fix-card">
+                <div class="rb-fix-before">Before: ${escapeResumeHtml(b.original || '')}</div>
+                <div class="rb-fix-after">Suggested: ${escapeResumeHtml(b.improved || '')}</div>
               </div>
             `;
           });
@@ -4121,11 +4148,13 @@
     const inGithub = document.getElementById('inputGithub');
     if (inGithub && parsed.contact && parsed.contact.github) inGithub.value = parsed.contact.github;
 
-    const prevContact = (currentResumeData && currentResumeData.contact) ? currentResumeData.contact : {};
+    // Sample content must never fill the gaps in someone's real resume.
+    const base = isSampleIdentity() ? {} : (currentResumeData || {});
+    const prevContact = base.contact || {};
     const parsedContact = (parsed && parsed.contact) ? parsed.contact : {};
 
     // Sanitize project bullets
-    const rawProjects = (parsed.projects && parsed.projects.length > 0) ? parsed.projects : (currentResumeData.projects || []);
+    const rawProjects = (parsed.projects && parsed.projects.length > 0) ? parsed.projects : (base.projects || []);
     const cleanProjects = rawProjects.map(p => {
       const pCopy = Object.assign({}, p);
       pCopy.bullets = (p.bullets || []).map(b => (typeof b === 'string' ? b : (b.text || b.bullet || JSON.stringify(b))));
@@ -4133,7 +4162,7 @@
     });
 
     // Sanitize experience bullets
-    const rawExp = parsed.experience || currentResumeData.experience || [];
+    const rawExp = parsed.experience || base.experience || [];
     const cleanExp = rawExp.map(e => {
       const eCopy = Object.assign({}, e);
       eCopy.bullets = (e.bullets || []).map(b => (typeof b === 'string' ? b : (b.text || b.bullet || JSON.stringify(b))));
@@ -4142,7 +4171,7 @@
 
     // 2. Set currentResumeData
     currentResumeData = {
-      name: parsed.name || currentResumeData.name || "",
+      name: parsed.name || base.name || "",
       contact: {
         email: parsedContact.email || prevContact.email || "",
         phone: parsedContact.phone || prevContact.phone || "",
@@ -4151,12 +4180,12 @@
         github: parsedContact.github || prevContact.github || "",
         portfolio: parsedContact.portfolio || prevContact.portfolio || ""
       },
-      summary: parsed.summary || currentResumeData.summary || "",
-      skills: (parsed.skills && Object.keys(parsed.skills).length > 0) ? parsed.skills : (currentResumeData.skills || {}),
+      summary: parsed.summary || base.summary || "",
+      skills: (parsed.skills && Object.keys(parsed.skills).length > 0) ? parsed.skills : (base.skills || {}),
       projects: cleanProjects,
       experience: cleanExp,
-      education: (parsed.education && parsed.education.length > 0) ? parsed.education : (currentResumeData.education || []),
-      certifications: parsed.certifications || currentResumeData.certifications || []
+      education: (parsed.education && parsed.education.length > 0) ? parsed.education : (base.education || []),
+      certifications: parsed.certifications || base.certifications || []
     };
 
     // Auto-detect profile level
@@ -4266,7 +4295,7 @@
           WordEditor.updateCounts();
         }
         closeTailorModal();
-        alert(`⚡ 100% ATS-Friendly Resume Generated!\n\n• ATS Match Score: ${data.ats_score || 100}/100\n• Tailored Projects: ${data.projects_count || 3} flagship projects added\n• All tech stack keywords aligned with Google XYZ metrics.`);
+        alert(`Draft ready, built from the job description. Replace anything that is not true of you before sending it.`);
       } else {
         alert(data.error || 'Failed to generate resume from JD. Please try again.');
       }
@@ -4296,9 +4325,10 @@
     if (window.lucide) window.lucide.createIcons();
 
     // Flatten skills from object
+    const liveResume = readLiveResume();
     let skillList = [];
-    if (currentResumeData && currentResumeData.skills) {
-      Object.values(currentResumeData.skills).forEach(val => {
+    if (liveResume.skills) {
+      Object.values(liveResume.skills).forEach(val => {
         val.split(',').forEach(s => skillList.push(s.trim()));
       });
     }
@@ -4308,9 +4338,9 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          resume_summary: currentResumeData.summary,
+          resume_summary: liveResume.summary,
           resume_skills: skillList,
-          resume_projects: currentResumeData.projects,
+          resume_projects: liveResume.projects,
           job_description: jdText
         })
       });
@@ -4334,7 +4364,7 @@
 
   function renderTailorResults(data) {
     const score = (typeof data.match_score === 'number') ? data.match_score : null;
-    document.getElementById('tailorScoreVal').innerText = score === null ? '— / 100' : `${score} / 100`;
+    document.getElementById('tailorScoreVal').innerText = score === null ? '—' : `${score}%`;
     document.getElementById('tailorGradeVal').innerText = data.match_grade || 'No score returned';
 
     // Missing keywords
@@ -4357,7 +4387,12 @@
     });
 
     // Summary preview
-    document.getElementById('tailorSummaryPreview').innerText = data.tailored_summary;
+    const summaryText = data.tailored_summary || '';
+    const summaryEl = document.getElementById('tailorSummaryPreview');
+    summaryEl.innerText = summaryText || 'No summary change suggested. Your summary already fits, or a rewrite could not stay true to it.';
+    document.querySelectorAll('#tailorModal [onclick="applyTailoredData()"]').forEach((btn) => {
+      btn.style.display = summaryText ? '' : 'none';
+    });
 
     document.getElementById('tailorResults').style.display = 'block';
   }
@@ -4365,6 +4400,7 @@
   function applyTailoredData() {
     if (!lastTailoredResult) return;
 
+    currentResumeData = Object.assign({}, currentResumeData, readLiveResume());
     if (lastTailoredResult.tailored_summary) {
       currentResumeData.summary = lastTailoredResult.tailored_summary;
     }
@@ -4373,6 +4409,8 @@
     // Skills for you: a skill you cannot discuss in the interview is worse than
     // a missing keyword.
     renderResumeSheet();
+    saveResumeDraft();
+    recalculateAtsScore();
     closeTailorModal();
     const missing = (lastTailoredResult.missing_critical_keywords || []).length;
     alert(missing
@@ -5183,7 +5221,7 @@
         badgeContainer.style.display = 'block';
       }
 
-      if (window.showToast) window.showToast("✨ AI generated 4 high-impact Google XYZ bullets (ATS 95+ score)!", "success");
+      if (window.showToast) window.showToast("Draft bullets ready. Add your real numbers before saving.", "success");
     } catch (err) {
       alert("Network error: " + err.message);
     } finally {
@@ -5389,6 +5427,189 @@
     if (modal) modal.style.display = 'none';
   }
 
+  /* ── Resume safety, autosave and guided steps ───────────────────── */
+  const RESUME_DRAFT_KEY = 'kashii_resume_draft_v1';
+  let pendingDownload = null;
+  let draftSaveTimer = null;
+
+  function escapeResumeHtml(value) {
+    const holder = document.createElement('div');
+    holder.textContent = value == null ? '' : String(value);
+    return holder.innerHTML;
+  }
+
+  function cleanResumeString(value) {
+    return value
+      .replace(/<(?!\/?(?:b|i|u|strong|em|br)\b)[^>]*>/gi, '')
+      .replace(/<(\/?(?:b|i|u|strong|em|br))\b[^>]*>/gi, '<$1>');
+  }
+
+  // Uploaded files and AI output end up in innerHTML, so only inline text tags survive.
+  function sanitizeResumeData(node) {
+    if (!node || typeof node !== 'object') return;
+    Object.keys(node).forEach((key) => {
+      const value = node[key];
+      if (typeof value === 'string') {
+        node[key] = cleanResumeString(value);
+        if (/_url$/.test(key) && node[key] && !/^https?:\/\//i.test(node[key])) node[key] = '';
+      } else if (value && typeof value === 'object') {
+        sanitizeResumeData(value);
+      }
+    });
+  }
+
+  function readLiveResume() {
+    const live = extractFullResumeFromDom();
+    const nameEl = document.getElementById('previewName');
+    if (nameEl && nameEl.textContent.trim()) live.name = nameEl.textContent.trim();
+    return live;
+  }
+
+  function isSampleIdentity() {
+    const contact = (currentResumeData && currentResumeData.contact) || {};
+    const name = String((currentResumeData && currentResumeData.name) || '').trim().toLowerCase();
+    return name === 'rahul sharma' || /@example\.com$/i.test(contact.email || '');
+  }
+
+  function saveResumeDraft() {
+    try {
+      const data = readLiveResume();
+      currentResumeData = Object.assign({}, currentResumeData, data);
+      localStorage.setItem(RESUME_DRAFT_KEY, JSON.stringify({ role: currentRoleKey, data, savedAt: Date.now() }));
+      const label = document.getElementById('wordSaveText');
+      if (label) label.textContent = 'Saved on this device';
+    } catch (err) {
+      const label = document.getElementById('wordSaveText');
+      if (label) label.textContent = 'Not saved. Download a copy.';
+    }
+    updateResumeSteps();
+  }
+
+  function queueResumeDraftSave() {
+    const label = document.getElementById('wordSaveText');
+    if (label) label.textContent = 'Saving...';
+    clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(saveResumeDraft, 700);
+  }
+
+  function restoreResumeDraft() {
+    const params = new URLSearchParams(window.location.search);
+    const arrivedWithResume = params.has('gen_id') || params.has('from_studio') || params.has('from_analysis');
+    if (arrivedWithResume || (typeof targetJobData !== 'undefined' && targetJobData)) return;
+    try {
+      const stored = JSON.parse(localStorage.getItem(RESUME_DRAFT_KEY) || 'null');
+      if (!stored || !stored.data) return;
+      currentResumeData = Object.assign({}, currentResumeData, stored.data);
+      if (stored.role) {
+        currentRoleKey = stored.role;
+        const select = document.getElementById('roleSelectorSelect');
+        if (select) select.value = stored.role;
+      }
+      renderResumeSheet();
+      renderProjectsControlsList();
+      recalculateAtsScore();
+    } catch (err) {
+      localStorage.removeItem(RESUME_DRAFT_KEY);
+    }
+  }
+
+  function startOverResume() {
+    if (!window.confirm('Clear your saved resume and start again?')) return;
+    localStorage.removeItem(RESUME_DRAFT_KEY);
+    window.location.href = window.location.pathname;
+  }
+
+  function updateResumeSteps() {
+    document.getElementById('rbStep1')?.classList.toggle('is-done', !isSampleIdentity());
+  }
+
+  function openDetailsModal(hint) {
+    const contact = currentResumeData.contact || {};
+    const sample = isSampleIdentity();
+    const values = {
+      dName: currentResumeData.name, dEmail: contact.email, dPhone: contact.phone,
+      dLocation: contact.location, dLinkedin: contact.linkedin, dGithub: contact.github,
+    };
+    Object.keys(values).forEach((id) => {
+      document.getElementById(id).value = sample ? '' : (values[id] || '');
+    });
+    document.getElementById('detailsHint').textContent = hint ||
+      'These appear at the top of your resume. Leave a field blank to hide it.';
+    document.getElementById('detailsModal').hidden = false;
+    document.getElementById('dName').focus();
+  }
+
+  function closeDetailsModal() {
+    document.getElementById('detailsModal').hidden = true;
+    pendingDownload = null;
+  }
+
+  function saveDetailsModal(event) {
+    event.preventDefault();
+    const read = (id) => document.getElementById(id).value.trim();
+    const live = readLiveResume();
+    live.name = read('dName');
+    live.contact = Object.assign({}, live.contact, {
+      email: read('dEmail'), phone: read('dPhone'), location: read('dLocation'),
+      linkedin: read('dLinkedin'), github: read('dGithub'),
+    });
+    currentResumeData = Object.assign({}, currentResumeData, live);
+    [['inputName', live.name], ['inputEmail', live.contact.email], ['inputPhone', live.contact.phone],
+     ['inputLinkedin', live.contact.linkedin], ['inputGithub', live.contact.github]].forEach(([id, value]) => {
+      const input = document.getElementById(id);
+      if (input) input.value = value;
+    });
+    renderResumeSheet();
+    const nextDownload = pendingDownload;
+    closeDetailsModal();
+    saveResumeDraft();
+    recalculateAtsScore();
+    if (nextDownload === 'pdf') downloadResumeAsPdf();
+    if (nextDownload === 'docx') downloadResumeAsDocx();
+  }
+
+  function needsDetailsBeforeDownload(kind) {
+    if (!isSampleIdentity()) return false;
+    pendingDownload = kind;
+    openDetailsModal('This page still has sample details. Add yours so the download is your resume.');
+    return true;
+  }
+
+  function showUpgradeResult(data) {
+    const change = data.new_score - data.old_score;
+    const count = data.bullets_enhanced || 0;
+    document.getElementById('upgradeTitle').textContent =
+      change > 0 ? `Score up by ${change} points` : (count ? 'Bullets rewritten' : 'No changes made');
+    document.getElementById('upgradeMessage').textContent = count
+      ? `${count} bullets were rewritten from what you wrote. No numbers, skills or projects were added. Real results, like users or time saved, raise your score most.`
+      : 'Your bullets were kept because a rewrite could not stay true to them. Add real results to raise your score.';
+    const keywords = data.missing_keywords || [];
+    const list = document.getElementById('upgradeKeywordList');
+    list.replaceChildren(...keywords.map((word) => {
+      const chip = document.createElement('span');
+      chip.textContent = word;
+      return chip;
+    }));
+    document.getElementById('upgradeKeywords').hidden = !keywords.length;
+  }
+
+  window.addEventListener('load', () => {
+    restoreResumeDraft();
+    recalculateAtsScore();
+    updateResumeSteps();
+    document.getElementById('resumeSheet')?.addEventListener('input', queueResumeDraftSave);
+    document.getElementById('resumeSheet')?.addEventListener('focusout', queueResumeDraftSave);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !document.getElementById('detailsModal').hidden) closeDetailsModal();
+    });
+  });
+
+  // Blocking browser popups interrupt editing, so messages use the site's toasts.
+  window.alert = (message) => {
+    const text = String(message);
+    if (window.showToast) window.showToast(text, /fail|error|could not|unable|not found/i.test(text) ? 'error' : 'success');
+  };
+
   function applyTemplate(templateKey, silent) {
     const sheet = document.getElementById('resumeSheet');
     if (!sheet) return;
@@ -5439,7 +5660,7 @@
   async function runAutoUpgradeResume() {
     const btn = document.getElementById('btnAutoUpgradeResume');
     const btnText = document.getElementById('btnAutoUpgradeText');
-    const originalText = btnText ? btnText.innerHTML : '⚡ Auto Upgrade (ATS 95+)';
+    const originalText = btnText ? btnText.innerHTML : 'Auto Upgrade';
 
     if (btnText) btnText.innerHTML = '⚡ Auto-Upgrading with AI...';
     if (btn) {
@@ -5449,8 +5670,8 @@
 
     try {
       const payload = {
-        resume_data: currentResumeData,
-        role_key: currentRoleKey || 'python_backend',
+        resume_data: readLiveResume(),
+        role_key: currentRoleKey || 'python-backend',
         target_skills: (targetJobData && targetJobData.skills_list) ? targetJobData.skills_list : []
       };
 
@@ -5467,11 +5688,13 @@
         renderProjectsControlsList();
         recalculateAtsScore();
         if (typeof WordEditor !== 'undefined') WordEditor.updateCounts();
+        saveResumeDraft();
 
         const oldEl = document.getElementById('upgradeOldScoreText');
         const newEl = document.getElementById('upgradeNewScoreText');
-        if (oldEl) oldEl.innerText = (data.old_score || 52) + '/100';
-        if (newEl) newEl.innerText = (data.new_score || 95) + '/100';
+        if (oldEl) oldEl.innerText = data.old_score + '/100';
+        if (newEl) newEl.innerText = data.new_score + '/100';
+        showUpgradeResult(data);
 
         openAutoUpgradeCelebrationModal();
       } else {
@@ -5534,7 +5757,7 @@
     <div style="display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;">
       <button type="button" id="btnFullResumeFromJd" onclick="generateFullResumeFromJd()" style="flex: 1.2; background: linear-gradient(135deg, #10b981 0%, #2563eb 100%); color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 13.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-        <span>⚡ 100% ATS Resume &amp; Projects</span>
+        <span>Draft a resume from this job</span>
       </button>
       <button type="button" id="runTailorBtn" onclick="handleRunTailor()" style="flex: 1; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
         <i data-lucide="gauge" style="width: 14px; height: 14px; color: #1d4ed8;"></i>
@@ -5809,13 +6032,13 @@
             <label style="font-size: 11.5px; font-weight: 700; color: #475569; text-transform: uppercase; margin: 0;">Accomplishment Bullets (1 per line):</label>
             <button type="button" id="btnAiGenCustomBullets" onclick="generateAiCustomProjectBullets()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 11.5px; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);">
               <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>
-              <span>✨ Generate ATS 95+ Bullets with AI</span>
+              <span>Generate bullets with AI</span>
             </button>
           </div>
-          <textarea id="customProjBullets" rows="5" placeholder="Click '✨ Generate ATS 95+ Bullets with AI' or type bullets manually:&#10;• Architected scalable microservices backend using Python &amp; Redis, reducing p99 latency by 45%&#10;• Engineered distributed Celery queues handling 15,000+ RPS with 99.9% uptime&#10;• Optimized PostgreSQL queries and B-Tree indexes, slashing query execution time by 60%" style="width: 100%; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; color: #0f172a; font-size: 12.5px; line-height: 1.5; box-sizing: border-box; resize: vertical; outline: none;"></textarea>
+          <textarea id="customProjBullets" rows="5" placeholder="Click 'Generate bullets with AI' or type bullets manually:&#10;• Architected scalable microservices backend using Python &amp; Redis, reducing p99 latency by 45%&#10;• Engineered distributed Celery queues handling 15,000+ RPS with 99.9% uptime&#10;• Optimized PostgreSQL queries and B-Tree indexes, slashing query execution time by 60%" style="width: 100%; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; color: #0f172a; font-size: 12.5px; line-height: 1.5; box-sizing: border-box; resize: vertical; outline: none;"></textarea>
           <div id="customProjAtsBadgeContainer" style="display: none; margin-top: 6px;">
             <span id="customProjAtsBadge" style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 5px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #065f46;">
-              🟢 100/100 ATS Score (Google XYZ &amp; Metrics Included)
+              Draft ready. Add your real numbers before saving.
             </span>
           </div>
         </div>
@@ -5967,7 +6190,7 @@
     <div style="display: flex; gap: 8px;">
       <button type="button" id="btnAutoPolishProject" onclick="polishActiveModalProject()" style="flex: 1; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border: none; padding: 11px 16px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
         <i data-lucide="sparkles" style="width: 15px; height: 15px;"></i>
-        <span>✨ Generate ATS 95+ Bullets with AI</span>
+        <span>Generate bullets with AI</span>
       </button>
       <button type="button" onclick="closeProjectAtsModal()" style="background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; padding: 11px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;">
         Close
@@ -6066,7 +6289,7 @@
         <div>
           <h3 style="font-size: 19px; font-weight: 800; color: #0f172a; margin: 0;">ATS Resume Templates</h3>
           <p style="font-size: 12.5px; color: #64748b; margin: 2px 0 0;">
-            Reverse-engineered from top ATS parsing platforms. Strict single-column machine readability.
+            Six single-column layouts that ATS software can read. Your text stays the same when you switch.
           </p>
         </div>
       </div>
@@ -6161,7 +6384,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Bold Cobalt</div>
             <span style="background: #dbeafe; color: #1e40af; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Top Stripe</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Bold 6px top accent bar with solid dividing lines for strong visual hierarchy.</p>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Cobalt headings with solid dividing lines for a clear hierarchy.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>
@@ -6179,7 +6402,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Executive Verona</div>
             <span style="background: #f8fafc; color: #0f172a; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #cbd5e1;">Lead / Staff</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Accent left border with commanding typography suited for tech leads and architects.</p>
+          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Strong section rules and clear hierarchy, suited to senior engineers.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>
@@ -6202,56 +6425,31 @@
       <i data-lucide="sparkles" style="width: 28px; height: 28px;"></i>
     </div>
 
-    <h3 style="font-size: 21px; font-weight: 900; color: #0f172a; margin: 0 0 6px;">Resume Upgraded to ATS 95+!</h3>
-    <p style="font-size: 13px; color: #64748b; margin: 0 0 20px; line-height: 1.5;">
-      Your resume was transformed using Jobsuit's reverse-engineered formula: Google XYZ metric bullets, recruiter hooks, and verified ATS keywords.
-    </p>
+    <h3 id="upgradeTitle" style="font-size: 21px; font-weight: 900; color: #0f172a; margin: 0 0 6px;">Resume improved</h3>
+    <p id="upgradeMessage" style="font-size: 13px; color: #475569; margin: 0 0 20px; line-height: 1.5;"></p>
 
     <!-- Score Jump Pill -->
     <div style="display: flex; align-items: center; justify-content: center; gap: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 14px 20px; margin-bottom: 20px;">
       <div style="text-align: center;">
         <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Previous Score</div>
-        <div id="upgradeOldScoreText" style="font-size: 20px; font-weight: 800; color: #dc2626; margin-top: 2px;">52/100</div>
+        <div id="upgradeOldScoreText" style="font-size: 20px; font-weight: 800; color: #dc2626; margin-top: 2px;">--/100</div>
       </div>
       <div style="font-size: 20px; color: #94a3b8; font-weight: 900;">➔</div>
       <div style="text-align: center;">
         <div style="font-size: 11px; font-weight: 700; color: #059669; text-transform: uppercase;">Upgraded Score</div>
-        <div id="upgradeNewScoreText" style="font-size: 24px; font-weight: 900; color: #16a34a; margin-top: 2px;">95/100</div>
+        <div id="upgradeNewScoreText" style="font-size: 24px; font-weight: 900; color: #16a34a; margin-top: 2px;">--/100</div>
       </div>
     </div>
 
-    <!-- 4 Upgraded Pillars Breakdown -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; text-align: left;">
-      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px 12px;">
-        <div style="font-size: 12px; font-weight: 800; color: #166534; display: flex; align-items: center; gap: 6px;">
-          <span>⚡</span> Google XYZ Formula
-        </div>
-        <div style="font-size: 11px; color: #15803d; margin-top: 3px; line-height: 1.35;">Accomplished [X] measured by [Y] doing [Z].</div>
-      </div>
-      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 10px 12px;">
-        <div style="font-size: 12px; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 6px;">
-          <span>🎯</span> High-Yield Keywords
-        </div>
-        <div style="font-size: 11px; color: #1d4ed8; margin-top: 3px; line-height: 1.35;">Synthesized skills matched to modern ATS job filters.</div>
-      </div>
-      <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 10px; padding: 10px 12px;">
-        <div style="font-size: 12px; font-weight: 800; color: #6b21a8; display: flex; align-items: center; gap: 6px;">
-          <span>📝</span> Recruiter Hook Summary
-        </div>
-        <div style="font-size: 11px; color: #7e22ce; margin-top: 3px; line-height: 1.35;">Role-targeted summary optimized for 6-second recruiter scans.</div>
-      </div>
-      <div style="background: #fefce8; border: 1px solid #fef08a; border-radius: 10px; padding: 10px 12px;">
-        <div style="font-size: 12px; font-weight: 800; color: #854d0e; display: flex; align-items: center; gap: 6px;">
-          <span>🛡️</span> 100% Machine Parsable
-        </div>
-        <div style="font-size: 11px; color: #a16207; margin-top: 3px; line-height: 1.35;">Workday, Greenhouse &amp; Lever compliant single-column format.</div>
-      </div>
+    <div id="upgradeKeywords" class="rb-keywords" hidden>
+      <strong>Add these only if you really know them:</strong>
+      <div id="upgradeKeywordList" class="rb-keyword-list"></div>
     </div>
 
     <!-- Actions -->
     <div style="display: flex; gap: 10px;">
       <button type="button" onclick="closeAutoUpgradeCelebrationModal()" class="studio-btn studio-btn-primary" style="flex: 1; padding: 12px; font-size: 14px; font-weight: 800;">
-        🎉 Awesome, Continue in Editor
+        Continue editing
       </button>
       <button type="button" onclick="closeAutoUpgradeCelebrationModal(); openTemplatesModal();" class="studio-btn studio-btn-ghost" style="padding: 12px 18px; font-size: 13px; font-weight: 700;">
         Switch Template
@@ -6259,5 +6457,37 @@
     </div>
 
   </div>
+</div>
+
+<!-- Your details dialog -->
+<div id="detailsModal" class="rb-modal" role="dialog" aria-modal="true" aria-labelledby="detailsTitle" hidden>
+  <form class="rb-modal-card" onsubmit="saveDetailsModal(event)">
+    <h3 id="detailsTitle">Your details</h3>
+    <p id="detailsHint">These appear at the top of your resume. Leave a field blank to hide it.</p>
+    <div class="rb-form-grid">
+      <label class="rb-field rb-field-wide">Full name
+        <input id="dName" type="text" autocomplete="name" required maxlength="80">
+      </label>
+      <label class="rb-field">Email
+        <input id="dEmail" type="email" autocomplete="email" maxlength="120">
+      </label>
+      <label class="rb-field">Phone
+        <input id="dPhone" type="tel" autocomplete="tel" maxlength="30">
+      </label>
+      <label class="rb-field rb-field-wide">City
+        <input id="dLocation" type="text" autocomplete="address-level2" maxlength="80">
+      </label>
+      <label class="rb-field">LinkedIn
+        <input id="dLinkedin" type="text" placeholder="linkedin.com/in/you" maxlength="150">
+      </label>
+      <label class="rb-field">GitHub
+        <input id="dGithub" type="text" placeholder="github.com/you" maxlength="150">
+      </label>
+    </div>
+    <div class="rb-modal-actions">
+      <button type="submit" class="studio-btn studio-btn-primary">Save details</button>
+      <button type="button" class="studio-btn studio-btn-ghost" onclick="closeDetailsModal()">Cancel</button>
+    </div>
+  </form>
 </div>
 {% endblock %}
