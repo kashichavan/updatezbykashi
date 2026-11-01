@@ -2308,9 +2308,9 @@
     title: "{{ target_job.title|escapejs }}",
     company: "{{ target_job.company_name|escapejs }}",
     skills: "{{ target_job.skills_required|escapejs }}",
-    skills_list: {{ target_job.get_skills_list|safe }},
+    skills_list: {{ target_job_skills_json|safe }},
     description: "{{ target_job.description|striptags|truncatechars:4000|escapejs }}"
-  }{% else %}null{% endif %};
+  }{% elif target_profile_json %}{{ target_profile_json|safe }}{% else %}null{% endif %};
 
   // Project scores come from the AI review of the whole resume.
   const aiProjectScores = new Map();

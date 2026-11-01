@@ -16,6 +16,7 @@ from django.utils.text import slugify
 from django.core.cache import cache
 from .models import Category, JobPosting, GuideArticle, ContactInquiry, JobGroup
 from .jobdexo_service import auto_import_from_jobdexo, cleanup_all_database_duplicates
+from .resume_engine import has_keyword
 from .company_resolver import resolve_company_name
 
 DEFAULT_YOUTUBE_VIDEOS = [
@@ -3063,17 +3064,33 @@ def resume_analysis_view(request):
     })
 
 
+def _script_json(value):
+    """JSON for an inline script. A `</script>` inside a job or resume cannot close the tag."""
+    return json.dumps(value, default=str).replace('<', '\\u003c')
+
+
+def _editor_target(profile):
+    """A typed-in role, in the shape the editor uses for a job, so edits score against it."""
+    skills = profile.get('skills') or ''
+    skills_list = skills if isinstance(skills, list) else [s.strip() for s in str(skills).split(',') if s.strip()]
+    return {
+        'id': '',
+        'title': str(profile.get('title') or ''),
+        'company': str(profile.get('company') or ''),
+        'skills': ', '.join(map(str, skills_list)),
+        'skills_list': skills_list,
+        'description': str(profile.get('description') or '')[:4000],
+    }
+
+
 def resume_builder_view(request):
     """
     ATS 90+ Score Resume Generator with Enterprise Projects & Role-Specific Tailoring.
     Generates single-column ATS compliant resumes engineered to pass Workday, Taleo, Greenhouse, and Lever.
     """
-    from .resume_engine import RESUME_ROLES, calculate_ats_score
+    from .resume_engine import RESUME_ROLES, calculate_ats_score, pick_role_for_skills
     from .models import JobPosting
     import uuid
-
-    selected_role_id = request.GET.get('role', 'python-backend')
-    role_data = RESUME_ROLES.get(selected_role_id, RESUME_ROLES['python-backend'])
 
     # Optional target job parameter (?job_id=<uuid>)
     job_id = request.GET.get('job_id') or request.GET.get('job')
@@ -3085,6 +3102,13 @@ def resume_builder_view(request):
         except (ValueError, AttributeError):
             if str(job_id).isdigit():
                 target_job = JobPosting.objects.filter(pk=int(job_id)).first()
+
+    # A job page opens the template closest to that job. Starting every posting on
+    # Python meant a Java role opened with Django projects on the page.
+    job_skills = target_job.get_skills_list() if target_job else []
+    fitted_role = pick_role_for_skills(job_skills)
+    selected_role_id = request.GET.get('role') or fitted_role or 'python-backend'
+    role_data = RESUME_ROLES.get(selected_role_id, RESUME_ROLES['python-backend'])
 
     # The role template fills the body as an example. Identity stays blank so
     # nobody's resume ships with a stranger's name, phone or profile links.
@@ -3104,10 +3128,18 @@ def resume_builder_view(request):
         'education': role_data['education'],
         'certifications': role_data['certifications']
     }
+    if target_job:
+        # Heading for a real application, so no sample college or graduation year.
+        initial_resume['education'] = {key: '' for key in role_data['education']}
+        if not fitted_role and not request.GET.get('role'):
+            # No template shares a skill with this job. An empty page is more
+            # useful than unrelated projects the candidate has to delete.
+            initial_resume.update(summary='', skills={}, projects=[])
 
     # Optional generation pipeline record (?gen_id=<uuid>)
     gen_id = request.GET.get('gen_id') or request.GET.get('generation_id')
     ats_eval = None
+    target_profile = None
     if gen_id:
         from .models import ResumeGenerationJob
         try:
@@ -3116,6 +3148,8 @@ def resume_builder_view(request):
                 initial_resume = gen_record.generated_resume
                 if not target_job and gen_record.job:
                     target_job = gen_record.job
+                if not target_job and gen_record.target_profile:
+                    target_profile = gen_record.target_profile
                 if gen_record.ats_evaluation:
                     ats_eval = gen_record.ats_evaluation
         except Exception:
@@ -3146,8 +3180,10 @@ def resume_builder_view(request):
         'selected_role_id': selected_role_id,
         'target_job': target_job,
         'initial_resume': initial_resume,
-        'initial_resume_json': json.dumps(initial_resume),
-        'demo_projects_json': json.dumps(demo_projects),
+        'initial_resume_json': _script_json(initial_resume),
+        'demo_projects_json': _script_json(demo_projects),
+        'target_job_skills_json': _script_json(target_job.get_skills_list() if target_job else []),
+        'target_profile_json': _script_json(_editor_target(target_profile)) if target_profile else '',
         'ats_eval': ats_eval,
         'page_title': 'Live A4 Resume Editor — edit, score and export | Kashii Updatez',
         'meta_description': 'Edit a single-page resume on screen, score it with the same ATS evaluator used for uploads, and export to PDF or DOCX. No invented metrics or contact details.',
@@ -3896,8 +3932,8 @@ def api_ai_tailor_resume(request):
             from .skill_extractor import extract_technical_skills
             keywords = [k.strip() for k in extract_technical_skills(description=jd, max_skills=12).split(',') if k.strip()]
             if keywords:
-                resume_text = f"{corpus} {' '.join(map(str, resume_skills))}".lower()
-                found = [k for k in keywords if k.lower() in resume_text]
+                resume_text = f"{corpus} {' '.join(map(str, resume_skills))}"
+                found = [k for k in keywords if has_keyword(k, resume_text)]
                 data['match_score'] = round(100 * len(found) / len(keywords))
                 data['match_grade'] = f"{len(found)} of {len(keywords)} job keywords found"
                 data['missing_critical_keywords'] = [k for k in keywords if k not in found]
@@ -4032,8 +4068,8 @@ def api_ai_alter_resume(request):
         final_text = json.dumps(
             [result.get('altered_summary'), result.get('altered_skills'), result.get('altered_projects')],
             default=str,
-        ).lower()
-        found = [k for k in keywords if k.lower() in final_text]
+        )
+        found = [k for k in keywords if has_keyword(k, final_text)]
         match_score = round(100 * len(found) / len(keywords)) if keywords else None
         result['match_score'] = match_score
         result['overall_match_score'] = match_score
@@ -4129,7 +4165,6 @@ def api_ai_auto_upgrade_resume(request):
         resume['projects'] = upgraded_projects
 
         new_score, new_eval = score_resume(resume)
-        resume_text = json.dumps(resume, default=str).lower()
 
         return JsonResponse({
             'status': 'success',
@@ -4138,7 +4173,7 @@ def api_ai_auto_upgrade_resume(request):
             'old_score': old_score,
             'new_score': new_score,
             'bullets_enhanced': bullets_enhanced_count,
-            'missing_keywords': [s for s in target_skills if str(s).lower() not in resume_text][:8],
+            'missing_keywords': new_eval.get('missing_skills', [])[:8],
             'grade': new_eval.get('grade', ''),
             'ats_eval': new_eval,
         })

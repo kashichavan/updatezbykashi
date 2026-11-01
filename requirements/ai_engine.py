@@ -16,6 +16,8 @@ import re
 import requests
 from django.conf import settings
 
+from .resume_engine import has_keyword, resume_text
+
 logger = logging.getLogger(__name__)
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
@@ -737,7 +739,7 @@ def generate_ai_resume_critique_and_suggestions(
                 }
             ],
             "missing_critical_skills": target_skills[:5] if target_skills else ["Docker", "REST APIs", "CI/CD"],
-            "matched_skills": [s for s in (target_skills or []) if any(s.lower() in str(parsed_resume).lower() for s in [s])],
+            "matched_skills": [s for s in (target_skills or []) if has_keyword(s, resume_text(parsed_resume))],
             "rewritten_bullets": [],
             "quick_wins": [
                 "Quantify your top project accomplishment with an estimated metric",
@@ -852,7 +854,7 @@ def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: 
             'detail': str(item.get('detail') or '')[:220],
         })
 
-    resume_text = json.dumps(_resume_for_ai(resume), default=str).lower()
+    plain_resume = resume_text(_resume_for_ai(resume))
     project_count = len(resume.get('projects') or [])
     project_scores = {}
     for item in data.get('projects') or []:
@@ -871,7 +873,7 @@ def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: 
         # The model can name a skill the resume already shows, so check it here.
         'missing_skills': [
             str(skill)[:40] for skill in (data.get('missing_skills') or [])
-            if isinstance(skill, str) and skill.lower() not in resume_text
+            if isinstance(skill, str) and not has_keyword(skill, plain_resume)
         ][:6],
         'project_scores': project_scores,
     }

@@ -4,6 +4,8 @@ Tailored for college students, freshers, and off-campus tech drives.
 All projects use Google XYZ formula: Action Verb + Accomplished [X] + Measured by [Y] + Using [Z].
 """
 
+import re
+
 RESUME_ROLES = {
     'python-backend': {
         'role_id': 'python-backend',
@@ -248,130 +250,106 @@ RESUME_ROLES = {
 }
 
 
+# Tokens containing a slash that are one skill. Anything else with a slash, such
+# as "Python/Java", means either one.
+_ONE_SKILL_WITH_SLASH = {'ci/cd', 'tcp/ip', 'ui/ux', 'a/b testing', 'pl/sql', 'i/o'}
+_SKILL_ALIASES = {
+    'javascript': ('js',), 'typescript': ('ts',), 'kubernetes': ('k8s',),
+    'postgresql': ('postgres',), 'postgres': ('postgresql',),
+    'node.js': ('node', 'nodejs'), 'nodejs': ('node.js', 'node'), 'node': ('node.js', 'nodejs'),
+    'react': ('react.js', 'reactjs'), 'react.js': ('react', 'reactjs'), 'reactjs': ('react', 'react.js'),
+    'next.js': ('nextjs',), 'nextjs': ('next.js',), 'vue': ('vue.js', 'vuejs'), 'vue.js': ('vue', 'vuejs'),
+    'golang': ('go',), 'rest api': ('restful', 'rest apis'), 'restful api': ('rest api', 'restful'),
+    'ci/cd': ('continuous integration',), 'machine learning': ('ml',), 'artificial intelligence': ('ai',),
+    'dsa': ('data structures',), 'data structures & algorithms': ('dsa', 'data structures'),
+}
+# Ordinary English words, so they only count in the capitalisation a skill uses.
+_CASE_SENSITIVE_SKILLS = {'go', 'c', 'r', 'd', 'j', 'ai', 'ml', 'ts', 'js'}
+_SKILL_PREFIXES = ('core ', 'advanced ', 'basic ', 'strong ', 'modern ')
+
+
+def _skill_variants(skill: str) -> set:
+    name = ' '.join(str(skill or '').lower().split())
+    for prefix in _SKILL_PREFIXES:
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+    parts = [name] if name in _ONE_SKILL_WITH_SLASH or '/' not in name else [p.strip() for p in name.split('/')]
+    variants = set()
+    for part in parts:
+        if part:
+            variants.add(part)
+            variants.update(_SKILL_ALIASES.get(part, ()))
+            variants.update(_SKILL_ALIASES.get(part.rstrip('s'), ()))
+    return variants
+
+
+def has_keyword(skill: str, text: str) -> bool:
+    """
+    True when `text` really names the skill.
+
+    A plain substring test said a JavaScript resume knows Java and that a resume
+    with "experience" in it knows R. Skills match as whole words instead, in the
+    forms people actually write them.
+    """
+    if not text:
+        return False
+    lowered = text.lower()
+    for variant in _skill_variants(skill):
+        haystack, needle = (text, variant.upper() if len(variant) < 3 and variant != 'go' else variant.capitalize()) \
+            if variant in _CASE_SENSITIVE_SKILLS else (lowered, variant)
+        stem = needle[:-1] if needle.endswith('s') and len(needle) > 3 else needle
+        if re.search(rf'(?<![A-Za-z0-9+#.]){re.escape(stem)}s?(?![A-Za-z0-9+#])', haystack):
+            return True
+    return False
+
+
+# Parts of a resume the candidate did not write as a claim about themselves.
+_NOT_RESUME_CONTENT = {
+    'contact', 'github', 'github_url', 'url', 'candidate_relationship', 'profile_level',
+    'ats_score', 'ats_badge', 'ats_grade', 'breakdown',
+}
+
+
+def resume_text(resume) -> str:
+    """The words on the resume, without JSON keys, profile links or score fields."""
+    if isinstance(resume, str):
+        return resume
+    if isinstance(resume, dict):
+        return ' '.join(
+            resume_text(value) if key not in ('skills',) else skills_text(value)
+            for key, value in resume.items() if key not in _NOT_RESUME_CONTENT
+        )
+    if isinstance(resume, (list, tuple)):
+        return ' '.join(resume_text(item) for item in resume)
+    return ''
+
+
+def skills_text(skills) -> str:
+    """Group names like "Languages" are headings, so only the skills themselves count."""
+    if isinstance(skills, dict):
+        return ' , '.join(resume_text(value) for value in skills.values())
+    return resume_text(skills)
+
+
+def pick_role_for_skills(skills) -> str:
+    """The role template closest to a job's skills, or '' if none shares any."""
+    best, best_hits = '', 0
+    for role_id, role in RESUME_ROLES.items():
+        text = ' '.join([' '.join(role['target_ats_keywords']), skills_text(role['technical_skills'])])
+        hits = sum(1 for skill in skills or [] if has_keyword(skill, text))
+        if hits > best_hits:
+            best, best_hits = role_id, hits
+    return best
+
+
 def calculate_ats_score(resume_data, role_key='python-backend'):
-    """
-    Evaluates resume against strict ATS compliance rules.
-    Returns:
-      score: int (0 to 100)
-      checks: list of dicts with rule, passed, score, tips
-    """
+    """Score a resume against a role, using the same evaluator as every other page."""
+    from .resume_parser import evaluate_uploaded_resume_ats
+
     role = RESUME_ROLES.get(role_key, RESUME_ROLES['python-backend'])
-    checks = []
-    total_score = 0
-
-    # 1. Contact Details Completeness (10 pts)
-    contact = resume_data.get('contact', {})
-    has_email = bool(contact.get('email'))
-    has_phone = bool(contact.get('phone'))
-    has_linkedin = bool(contact.get('linkedin'))
-    has_github = bool(contact.get('github'))
-    contact_pts = (2.5 if has_email else 0) + (2.5 if has_phone else 0) + (2.5 if has_linkedin else 0) + (2.5 if has_github else 0)
-    total_score += int(contact_pts)
-    checks.append({
-        'rule': 'Contact Information Completeness',
-        'passed': contact_pts >= 7.5,
-        'points': int(contact_pts),
-        'max_points': 10,
-        'detail': 'Email, Phone, LinkedIn, and GitHub profile links.'
-    })
-
-    # 2. Single-Column Layout & Header Standards (20 pts)
-    total_score += 20
-    checks.append({
-        'rule': 'ATS Semantic Single-Column Layout',
-        'passed': True,
-        'points': 20,
-        'max_points': 20,
-        'detail': 'No multi-column tables, textboxes, or graphics that break ATS parsers (Taleo, Workday, Greenhouse).'
-    })
-
-    # 3. Action Verb Starting Words (20 pts)
-    action_verbs = {
-        'architected', 'engineered', 'developed', 'optimized', 'built', 'spearheaded',
-        'designed', 'implemented', 'constructed', 'deployed', 'automated', 'integrated'
-    }
-    bullets = []
-    for proj in resume_data.get('projects', []):
-        bullets.extend(proj.get('bullets', []))
-    for exp in resume_data.get('experience', []):
-        bullets.extend(exp.get('bullets', []))
-
-    action_verb_count = sum(1 for b in bullets if any(b.strip().lower().startswith(v) for v in action_verbs))
-    action_pts = 20 if action_verb_count >= 4 else (action_verb_count * 5)
-    total_score += action_pts
-    checks.append({
-        'rule': 'Google XYZ Formula & Strong Action Verbs',
-        'passed': action_pts >= 15,
-        'points': action_pts,
-        'max_points': 20,
-        'detail': f'{action_verb_count} bullets start with high-impact power action verbs.'
-    })
-
-    # 4. Quantified Metrics & Hard Numbers (25 pts)
-    import re
-    metric_regex = re.compile(r'(\d+[\.,]?\d*\s*(%|ms|kb|mb|gb|req|k|x|skus|cve|users|tps))|\b(\d{2,})\b', re.IGNORECASE)
-    metric_count = sum(1 for b in bullets if metric_regex.search(b))
-    metric_pts = 25 if metric_count >= 4 else (metric_count * 6)
-    total_score += metric_pts
-    checks.append({
-        'rule': 'Quantified Impact & Numerical Achievements',
-        'passed': metric_pts >= 20,
-        'points': metric_pts,
-        'max_points': 25,
-        'detail': f'{metric_count} accomplishments contain verifiable metrics (percentages, throughput, latency).'
-    })
-
-    # 5. Core Role Keyword Density (15 pts)
-    text_content = (
-        resume_data.get('summary', '') + ' ' +
-        str(resume_data.get('skills', '')) + ' ' +
-        ' '.join(bullets)
-    ).lower()
-
-    target_keywords = role['target_ats_keywords']
-    matched_keywords = [kw for kw in target_keywords if kw.lower() in text_content]
-    match_ratio = len(matched_keywords) / max(1, len(target_keywords))
-    keyword_pts = int(match_ratio * 15)
-    total_score += keyword_pts
-    checks.append({
-        'rule': 'ATS Scanner Keyword Match Density',
-        'passed': match_ratio >= 0.7,
-        'points': keyword_pts,
-        'max_points': 15,
-        'detail': f'{len(matched_keywords)} / {len(target_keywords)} key ATS keywords matched for {role["title"]}.'
-    })
-
-    # 6. Section Hierarchy & Education (10 pts)
-    total_score += 10
-    checks.append({
-        'rule': 'Standard Section Hierarchy',
-        'passed': True,
-        'points': 10,
-        'max_points': 10,
-        'detail': 'Summary, Technical Skills, Enterprise Projects, Education, Certifications.'
-    })
-
-    final_score = min(100, max(0, total_score))
-    if final_score >= 90:
-        grade = 'Top Tier (ATS 90+)'
-        pass_rate = 'Guaranteed Pass on Workday, Taleo & Greenhouse'
-    elif final_score >= 80:
-        grade = 'Competitive (ATS 80+)'
-        pass_rate = 'Passes Enterprise ATS Filters'
-    elif final_score >= 70:
-        grade = 'Moderate (ATS 70+)'
-        pass_rate = 'Eligible for review — add metrics'
-    else:
-        grade = 'Needs Work (ATS <70)'
-        pass_rate = 'High risk of rejection — add real, measured results or clearer role keywords'
-
-    return {
-        'score': final_score,
-        'checks': checks,
-        'matched_keywords': matched_keywords,
-        'grade': grade,
-        'pass_rate': pass_rate
-    }
+    result = evaluate_uploaded_resume_ats(resume_data, role['target_ats_keywords'])
+    result['matched_keywords'] = result['matched_skills']
+    return result
 
 
 def score_project_ats(project: dict, target_skills: list = None) -> dict:
@@ -384,8 +362,6 @@ def score_project_ats(project: dict, target_skills: list = None) -> dict:
     4. Target Tech Stack Relevance (20 pts)
     5. Architecture & System Depth (10 pts)
     """
-    import re
-
     action_verbs = {
         'architected', 'engineered', 'developed', 'optimized', 'built', 'spearheaded',
         'designed', 'implemented', 'constructed', 'deployed', 'automated', 'integrated',
@@ -439,11 +415,12 @@ def score_project_ats(project: dict, target_skills: list = None) -> dict:
 
     # 4. Target Tech Stack Relevance (20 pts)
     tech_stack = project.get('tech_stack', '').lower()
-    all_text = (project.get('title', '') + ' ' + tech_stack + ' ' + ' '.join(bullets)).lower()
+    all_text_raw = ' '.join([project.get('title', ''), project.get('tech_stack', ''), ' '.join(bullets)])
+    all_text = all_text_raw.lower()
 
     relevance_score = 15
     if target_skills:
-        matched = sum(1 for s in target_skills if s.lower() in all_text)
+        matched = sum(1 for s in target_skills if has_keyword(s, all_text_raw))
         relevance_score = min(20, int((matched / max(1, len(target_skills))) * 20) + 5)
     elif len(tech_stack) > 10:
         relevance_score = 20

@@ -206,6 +206,7 @@ class Command(BaseCommand):
             existing_groups_by_id = {g.id: g for g in existing_groups.values()}
 
             groups_to_create = []
+            groups_to_expire = []
             group_jobs_map = {}
 
             for item in data_by_model.get('requirements.jobgroup', []):
@@ -216,9 +217,13 @@ class Command(BaseCommand):
                 jobs_pks = f.get('jobs', [])
 
                 # The slug is the shared link, so it alone decides whether a group
-                # exists. An existing group is left exactly as it is: matching on
-                # id here used to rename an unrelated group and break its link.
+                # exists. Matching on id here used to rename an unrelated group and
+                # break its link. An existing group only has its expiry refreshed.
                 if slug in existing_groups:
+                    target_grp = existing_groups[slug]
+                    target_grp.deadline = listing_deadline(target_grp.posted_date, default_deadline)
+                    target_grp.is_active = target_grp.deadline > now
+                    groups_to_expire.append(target_grp)
                     continue
                 else:
                     new_grp = JobGroup(
@@ -233,6 +238,9 @@ class Command(BaseCommand):
                     )
                     groups_to_create.append(new_grp)
                     group_jobs_map[slug] = jobs_pks
+
+            if groups_to_expire:
+                JobGroup.objects.bulk_update(groups_to_expire, fields=['deadline', 'is_active'], batch_size=100)
 
             if groups_to_create:
                 JobGroup.objects.bulk_create(groups_to_create, batch_size=100)

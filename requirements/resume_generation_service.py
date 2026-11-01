@@ -12,7 +12,7 @@ from django.utils import timezone
 from .models import ResumeGenerationJob, DiscoveredProject, JobPosting
 from .github_discovery import search_github_repositories
 from .resume_parser import evaluate_uploaded_resume_ats, parse_resume_into_structured_json
-from .resume_engine import score_project_ats, RESUME_ROLES
+from .resume_engine import has_keyword, score_project_ats, RESUME_ROLES
 from .ai_engine import generate_github_project_bullets, alter_resume_for_job
 
 logger = logging.getLogger(__name__)
@@ -210,6 +210,25 @@ def honest_project_title(ai_title: str, dp) -> str:
     if any(token in lowered for token in tokens):
         return ai_title.strip()
     return fallback or 'Project'
+
+
+def skills_for_job(skills, target_skills):
+    """The candidate's skills with what this job asks for first. Nothing is added or removed."""
+    def ordered(value):
+        items = [s.strip() for s in value.split(',') if s.strip()] if isinstance(value, str) else list(value)
+        items.sort(key=lambda item: not any(has_keyword(wanted, str(item)) for wanted in target_skills))
+        return ', '.join(items) if isinstance(value, str) else items
+
+    return {group: ordered(value) for group, value in skills.items()}
+
+
+def clean_experience(entries) -> List[dict]:
+    """The candidate's work history, as supplied, minus empty rows."""
+    kept = []
+    for entry in entries if isinstance(entries, list) else []:
+        if isinstance(entry, dict) and any(entry.get(k) for k in ('company', 'role', 'bullets')):
+            kept.append(entry)
+    return kept
 
 
 def resolve_target_profile(job) -> Dict[str, Any]:
@@ -499,6 +518,7 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
 
     if not formatted_skills:
         missing_fields.append('Skills')
+    formatted_skills = skills_for_job(formatted_skills, target_skills_list)
 
     # Education block — no invented university, years or CGPA.
     education = {
@@ -538,6 +558,7 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
         'contact': contact,
         'summary': ai_summary or own_summary or summary,
         'skills': formatted_skills,
+        'experience': clean_experience(candidate.get('experience')),
         'projects': resume_projects,
         'education': education,
         'certifications': candidate.get('certifications') or [],

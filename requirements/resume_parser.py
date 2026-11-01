@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 from .ai_engine import call_groq_chat
-from .resume_engine import score_project_ats
+from .resume_engine import has_keyword, resume_text, score_project_ats
 
 logger = logging.getLogger(__name__)
 
@@ -295,8 +295,6 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
 
     if contact.get("github") and "github" in contact.get("github").lower():
         c_score += 3
-    else:
-        c_score += 1
 
     c_score = min(15, c_score)
     total_score += c_score
@@ -329,7 +327,7 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         "score": s_score,
         "max_score": 15,
         "status": "pass" if s_score >= 12 else "warn",
-        "detail": "Standard Workday/Taleo single-column section hierarchy verified."
+        "detail": f"{min(sections_found, 5)} of 5 standard resume sections found."
     })
 
     # Collect all bullets across projects and experience
@@ -338,9 +336,6 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         all_bullets.extend(p.get("bullets", []))
     for e in parsed_resume.get("experience", []):
         all_bullets.extend(e.get("bullets", []))
-
-    if not all_bullets:
-        all_bullets = ["Worked on software features", "Built responsive applications"]
 
     # 3. Action Verbs Power (20 pts)
     action_verbs = {
@@ -397,23 +392,24 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
     })
 
     # 5. Technical Skills & Depth (20 pts)
-    skills_text = json.dumps(parsed_resume.get("skills", {})).lower()
-    all_content_text = json.dumps(parsed_resume).lower()
+    content_text = resume_text(parsed_resume)
+    all_content_text = content_text.lower()
 
     matched_skills = []
     missing_skills = []
     if target_skills_list:
         for s in target_skills_list:
-            if s.lower() in all_content_text:
-                matched_skills.append(s)
-            else:
-                missing_skills.append(s)
-        skills_score = min(20, int((len(matched_skills) / max(1, len(target_skills_list))) * 20) + 4)
+            (matched_skills if has_keyword(s, content_text) else missing_skills).append(s)
+        job_match = round(len(matched_skills) / len(target_skills_list) * 100)
+        skills_score = int(len(matched_skills) / len(target_skills_list) * 20)
+        skills_detail = f"{len(matched_skills)} of {len(target_skills_list)} skills this job asks for are on the resume."
     else:
         # Measure diversity of technical keywords
-        core_tech = ['python', 'javascript', 'sql', 'react', 'django', 'docker', 'aws', 'rest', 'git', 'linux', 'node', 'java', 'c++']
-        matched_skills = [t for t in core_tech if t in all_content_text]
-        skills_score = min(20, max(8, int((len(matched_skills) / len(core_tech)) * 20) + 4))
+        core_tech = ['Python', 'JavaScript', 'SQL', 'React', 'Django', 'Docker', 'AWS', 'REST', 'Git', 'Linux', 'Node', 'Java', 'C++']
+        matched_skills = [t for t in core_tech if has_keyword(t, content_text)]
+        job_match = None
+        skills_score = min(20, len(matched_skills) * 3)
+        skills_detail = f"{len(matched_skills)} common technical skills found. Pick a job to compare against it."
 
     total_score += skills_score
     pillars.append({
@@ -422,7 +418,7 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         "score": skills_score,
         "max_score": 20,
         "status": "pass" if skills_score >= 15 else "warn",
-        "detail": "Tech skills structured into searchable categorizations."
+        "detail": skills_detail
     })
 
     # 6. Architecture & System Depth (10 pts)
@@ -431,7 +427,7 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         'async', 'celery', 'docker', 'ci/cd', 'jwt', 'rbac', 'microservice', 'latency', 'api'
     ]
     arch_matches = sum(1 for k in arch_keywords if k in all_content_text)
-    arch_score = min(10, max(3, arch_matches * 2))
+    arch_score = min(10, arch_matches * 2)
     total_score += arch_score
     pillars.append({
         "id": "architecture_depth",
@@ -442,8 +438,12 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         "detail": f"Detected {arch_matches} enterprise architectural keywords (caching, queues, async, docker)."
     })
 
-    # Cap total score at 100
-    total_score = min(100, max(25, total_score))
+    total_score = min(100, total_score)
+
+    # A polished resume missing what the job asks for is still a poor match for
+    # that job, so the job match limits the score: 0% tops out at 40, 100% at 100.
+    if job_match is not None:
+        total_score = min(total_score, 40 + round(job_match * 0.6))
 
     # Grade & Rating Label
     if total_score >= 90:
@@ -494,6 +494,7 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         "improvements": improvements[:4],
         "matched_skills": matched_skills,
         "missing_skills": missing_skills,
+        "job_match": job_match,
         "bullet_count": len(all_bullets),
         "bullets_with_metrics": bullets_with_metrics
     }
