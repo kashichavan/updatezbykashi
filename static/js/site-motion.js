@@ -14,6 +14,12 @@
   var ScrollTrigger = window.ScrollTrigger;
   gsap.registerPlugin(ScrollTrigger);
 
+  // Hiding the mobile address bar resizes the screen. It must not re-measure the page.
+  ScrollTrigger.config({ ignoreMobileResize: true });
+
+  // Phones get a lighter entrance: no tilt, no curved video row, no layered depth.
+  var fullDepth = window.matchMedia('(min-width: 861px) and (hover: hover) and (pointer: fine)').matches;
+
   var CARDS = '.vp-product-card, .jd-panel, .rs-card, .rs-rail-card, .upload-card, .about-two-col > *, .contact-grid > *, .kx-reveal > *';
   var SKIP = 'header, nav, footer, [role="dialog"], .kx-hero, #toastContainer';
 
@@ -47,14 +53,14 @@
       onEnter: function (batch) {
         batch.forEach(function (el) { entering.add(el); });
         gsap.from(batch, {
-          rotationX: -38,
-          z: -140,
-          y: 50,
+          rotationX: fullDepth ? -38 : -14,
+          z: fullDepth ? -140 : 0,
+          y: fullDepth ? 50 : 24,
           autoAlpha: 0,
           transformPerspective: 1000,
           transformOrigin: '50% 100%',
-          duration: 0.95,
-          stagger: 0.08,
+          duration: fullDepth ? 0.95 : 0.6,
+          stagger: fullDepth ? 0.08 : 0.05,
           ease: 'expo.out',
           clearProps: 'transform,opacity,visibility',
           onComplete: function () {
@@ -75,7 +81,6 @@
   }
 
   function tiltObjects() {
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
     var active = null;
 
     function release() {
@@ -155,7 +160,9 @@
   }
 
   reveal();
-  tiltObjects();
-  curveVideoRow();
+  if (fullDepth) {
+    tiltObjects();
+    curveVideoRow();
+  }
   window.addEventListener('load', function () { ScrollTrigger.refresh(); });
 })();

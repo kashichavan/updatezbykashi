@@ -15,6 +15,10 @@
   var items = panel.querySelectorAll('[data-hero-item]');
   var groups = panel.querySelectorAll('.kx-bento, .kx-tools');
 
+  // Phones stack the panel under the text, so the depth effects tied to the
+  // hero's position would hit it while people are reading it.
+  var fullDepth = window.matchMedia('(min-width: 861px) and (hover: hover) and (pointer: fine)').matches;
+
   function format(value) {
     return Math.round(value).toLocaleString('en-IN');
   }
@@ -23,24 +27,28 @@
     var timeline = gsap.timeline({ defaults: { ease: 'expo.out' } });
 
     timeline.from(hero.querySelectorAll('.kx-eyebrow, h1, .lead, .kx-hero-actions'), {
-      rotationX: -55,
-      z: -120,
+      rotationX: fullDepth ? -55 : -16,
+      z: fullDepth ? -120 : 0,
       y: 24,
       autoAlpha: 0,
+      transformPerspective: 900,
       transformOrigin: '50% 100%',
-      duration: 1,
-      stagger: 0.09,
+      duration: fullDepth ? 1 : 0.7,
+      stagger: fullDepth ? 0.09 : 0.06,
       clearProps: 'transform,opacity,visibility'
     }, 0);
 
     timeline.from(items, {
-      rotationX: -75,
-      rotationY: 14,
-      z: -260,
+      rotationX: fullDepth ? -75 : -22,
+      rotationY: fullDepth ? 14 : 0,
+      z: fullDepth ? -260 : 0,
+      y: fullDepth ? 0 : 18,
       autoAlpha: 0,
+      transformPerspective: fullDepth ? 0 : 900,
       transformOrigin: '50% 100%',
-      duration: 1.1,
-      stagger: 0.08
+      duration: fullDepth ? 1.1 : 0.7,
+      stagger: fullDepth ? 0.08 : 0.06,
+      clearProps: fullDepth ? '' : 'transform,opacity,visibility'
     }, 0.1);
 
     timeline.from(panel.querySelectorAll('.kx-chart-bar'), {
@@ -79,8 +87,6 @@
 
   // The panel leans toward the cursor, and each card lifts off it.
   function pointerDepth() {
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-
     var turn = Array.prototype.map.call(groups, function (group) {
       return {
         x: gsap.quickTo(group, 'rotationX', { duration: 0.7, ease: 'power3' }),
@@ -149,6 +155,8 @@
   }
 
   whenSplashIsGone(intro);
-  scrollDepth();
-  pointerDepth();
+  if (fullDepth) {
+    scrollDepth();
+    pointerDepth();
+  }
 })();

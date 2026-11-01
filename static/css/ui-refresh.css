@@ -471,8 +471,7 @@ html .button.kx-btn-primary:hover { background: #1e40af; }
 html .button.kx-btn-ghost { color: #0f172a; background: #fff; border: 1px solid #cbd5e1; }
 html .button.kx-btn-ghost:hover { border-color: #1d4ed8; color: #1d4ed8; }
 .kx-hero-actions svg { width: 16px; height: 16px; }
-.kx-hero-panel { display: grid; gap: 10px; transform-style: preserve-3d; }
-.kx-bento, .kx-tools, .kx-card, .kx-tool { transform-style: preserve-3d; }
+.kx-hero-panel { display: grid; gap: 10px; }
 .kx-bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .kx-card, .kx-tool {
   --mx: 50%;
@@ -617,13 +616,18 @@ html input:focus-visible, html textarea:focus-visible, html select:focus-visible
 @keyframes rbAiChanged { from { background: #dbeafe; } to { background: transparent; } }
 @media (max-width: 760px) { .rb-ai-status { flex-wrap: wrap; white-space: normal; margin: 6px 0 0; } }
 
-/* GSAP 3D. overflow: clip keeps rounded corners without flattening the layers. */
-html .vp-hero.kx-hero { perspective: 1100px; }
-html .vp-product-card { --mx: 50%; --my: 50%; overflow: clip; transform-style: preserve-3d; }
-html .vp-product-card.is-lifted { z-index: 3; box-shadow: 0 34px 44px -26px rgba(29, 78, 216, .55); }
-html .vp-product-card::after { content: ""; position: absolute; inset: 0; z-index: 4; opacity: 0; pointer-events: none; background: radial-gradient(260px circle at var(--mx) var(--my), rgba(255, 255, 255, .16), transparent 70%); transition: opacity .25s ease; }
-html .vp-product-card.is-lifted::after { opacity: 1; }
-html .vp-card-header, html .vp-card-content { transform-style: preserve-3d; }
-html .client-card-3d { transition: box-shadow .25s ease, border-color .25s ease; backface-visibility: hidden; }
+/* GSAP 3D, for mouse users on larger screens. overflow: clip keeps rounded
+   corners without flattening the layers. */
+html .vp-product-card { --mx: 50%; --my: 50%; overflow: clip; }
+html .client-card-3d { transition: box-shadow .25s ease, border-color .25s ease; }
 html .client-card-3d:hover { transform: none; }
-html .logo-marquee-track { transform-style: preserve-3d; }
+@media (min-width: 861px) and (hover: hover) and (pointer: fine) {
+  html .vp-hero.kx-hero { perspective: 1100px; }
+  .kx-hero-panel, .kx-bento, .kx-tools, .kx-card, .kx-tool { transform-style: preserve-3d; }
+  html .vp-product-card, html .vp-card-header, html .vp-card-content { transform-style: preserve-3d; }
+  html .vp-product-card.is-lifted { z-index: 3; box-shadow: 0 34px 44px -26px rgba(29, 78, 216, .55); }
+  html .vp-product-card::after { content: ""; position: absolute; inset: 0; z-index: 4; opacity: 0; pointer-events: none; background: radial-gradient(260px circle at var(--mx) var(--my), rgba(255, 255, 255, .16), transparent 70%); transition: opacity .25s ease; }
+  html .vp-product-card.is-lifted::after { opacity: 1; }
+  html .client-card-3d { backface-visibility: hidden; }
+  html .logo-marquee-track { transform-style: preserve-3d; }
+}
