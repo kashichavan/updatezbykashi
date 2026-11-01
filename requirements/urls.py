@@ -135,6 +135,7 @@ urlpatterns = [
     path('api/jobs/', views.api_jobs, name='api_jobs'),
     path('api/jobs/<int:pk>/', views.api_job_detail, name='api_job_detail'),
     path('api/jobs/<int:pk>/ig-story-image/', views.api_job_ig_story_image, name='api_job_ig_story_image'),
+    path('api/jobs/<int:pk>/publish-ig-story/', views.api_publish_job_ig_story, name='api_publish_job_ig_story'),
     path('api/youtube/videos/', views.api_youtube_videos, name='api_youtube_videos'),
 
     # Owner Admin Portal Endpoints

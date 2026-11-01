@@ -45,3 +45,10 @@ class RequirementsConfig(AppConfig):
             except Exception:
                 pass
 
+            try:
+                from .services.instagram_story import setup_instagram_signals
+                setup_instagram_signals()
+            except Exception:
+                pass
+
+

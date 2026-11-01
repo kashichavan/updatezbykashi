@@ -1739,72 +1739,113 @@
     <div style="margin-bottom: 20px; text-align: center;">
       <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">🎨 Story Card Preview (9:16 Format):</label>
       
-      <div id="igStoryCardPreview" style="background: linear-gradient(150deg, #0f172a, #111827, #1e1b4b); border-radius: 22px; padding: 26px 22px; color: #ffffff; text-align: left; position: relative; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-width: 320px; margin: 0 auto;">
+      <div id="igStoryCardPreview" style="background: linear-gradient(150deg, #0f172a, #111827, #1e1b4b); border-radius: 22px; padding: 24px 20px; color: #ffffff; text-align: left; position: relative; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-width: 320px; margin: 0 auto;">
         
         <!-- Background Ambient Glow Orbs -->
         <div style="position: absolute; top: -50px; right: -50px; width: 160px; height: 160px; border-radius: 50%; background: rgba(236, 72, 153, 0.3); filter: blur(40px); pointer-events: none;"></div>
         <div style="position: absolute; bottom: -40px; left: -40px; width: 140px; height: 140px; border-radius: 50%; background: rgba(59, 130, 246, 0.3); filter: blur(35px); pointer-events: none;"></div>
 
         <!-- Header Tag -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; position: relative; z-index: 2;">
-          <span style="font-size: 10px; font-weight: 900; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 5px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.8px; color: #ffffff; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.4);">🔥 NEW REQUIREMENT</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 2;">
+          <span style="font-size: 10px; font-weight: 900; background: linear-gradient(135deg, #ea580c, #f97316); padding: 5px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.8px; color: #ffffff; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);">🔥 URGENT REQUIREMENT</span>
           <span style="font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 0.3px;">@ikashii_07</span>
         </div>
 
         <!-- Company & Job Title -->
-        <div style="position: relative; z-index: 2; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid #334155;">
+        <div style="position: relative; z-index: 2; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #334155;">
           <div style="font-size: 12px; font-weight: 900; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">{{ job.company_name }}</div>
-          <h2 style="font-size: 20px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ job.title }}</h2>
+          <h2 style="font-size: 18px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ job.title }}</h2>
         </div>
 
+        <!-- Prominently Highlighted Experience Requirement -->
+        {% with exp=job.get_experience_display %}
+        <div style="position: relative; z-index: 2; margin-bottom: 12px; border-radius: 12px; padding: 9px 12px;
+          {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
+            background: rgba(6, 78, 59, 0.95); border: 1.5px solid #10b981;
+          {% else %}
+            background: rgba(49, 46, 129, 0.95); border: 1.5px solid #818cf8;
+          {% endif %}
+        ">
+          <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+            {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
+              color: #a7f3d0;
+            {% else %}
+              color: #c7d2fe;
+            {% endif %}
+            margin-bottom: 3px;">
+            🎯 EXPERIENCE REQUIREMENT
+          </div>
+          <div style="font-size: 12px; font-weight: 900; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
+            <span>{{ exp|upper }}</span>
+            <span style="font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 99px;
+              {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
+                background: #10b981; color: #064e3b;
+              {% else %}
+                background: #6366f1; color: #ffffff;
+              {% endif %}
+            ">
+              {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
+                FRESHERS ELIGIBLE 🚀
+              {% else %}
+                EXPERIENCED PROS 💼
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        {% endwith %}
+
         <!-- Classy Details Inset Card with Extended Job Info -->
-        <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px;">
+        <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 14px; padding: 11px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
           <div style="display: flex; justify-content: space-between; gap: 8px;">
             <div style="flex: 1;">
               <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">STIPEND / SALARY</div>
-              <div style="font-size: 12px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-salary.png' %}" width="14" height="14" alt="Salary"> {{ job.stipend_salary }}
+              <div style="font-size: 11px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-salary.png' %}" width="13" height="13" alt="Salary"> {{ job.stipend_salary }}
               </div>
             </div>
             <div style="flex: 1;">
-              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">JOB TYPE</div>
-              <div style="font-size: 12px; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-feed.png' %}" width="14" height="14" alt="Type"> {{ job.get_job_type_display }}
+              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">LOCATION</div>
+              <div style="font-size: 11px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 4px;">
+                <img src="{% static 'images/icon-location.png' %}" width="13" height="13" alt="Location"> {{ job.location }}
               </div>
             </div>
           </div>
 
-          <div style="display: flex; justify-content: space-between; gap: 8px;">
-            <div style="flex: 1;">
-              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">LOCATION</div>
-              <div style="font-size: 11px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-location.png' %}" width="14" height="14" alt="Location"> {{ job.location }}
-              </div>
-            </div>
-            <div style="flex: 1;">
-              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">DEADLINE</div>
-              <div style="font-size: 11px; font-weight: 700; color: #f43f5e; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-date.png' %}" width="14" height="14" alt="Deadline"> {{ job.deadline|date:"M d, Y" }}
-              </div>
+          <div>
+            <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">ELIGIBILITY</div>
+            <div style="font-size: 10px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 4px;">
+              <img src="{% static 'images/icon-type.png' %}" width="13" height="13" alt="Batch"> {{ job.eligibility|default:"Any Graduate / BE / B.Tech / MCA / All Batches"|truncatechars:42 }}
             </div>
           </div>
 
           {% if job.skills_required %}
           <div>
-            <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">SKILLS REQUIRED</div>
-            <div style="font-size: 11px; font-weight: 700; color: #cbd5e1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">KEY SKILLS</div>
+            <div style="font-size: 9.5px; font-weight: 700; color: #93c5fd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               ⚡ {{ job.skills_required }}
             </div>
           </div>
           {% endif %}
         </div>
 
-        <!-- Animated Blinking Link Sticker Placement Badge -->
-        <div class="ig-blinking-sticker" style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 12px 14px; text-align: center; font-size: 12px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px; animation: pulseGlow 1.5s infinite alternate;">
-          <img src="{% static 'images/icon-apply.png' %}" width="16" height="16" style="filter: brightness(0) invert(1);" alt="Link">
-          <span>🔗 Link in Bio - Click to Apply ↗</span>
+        <!-- Scannable QR Code & Short Apply Link -->
+        <div style="position: relative; z-index: 2; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 9px 11px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <div style="background: #ffffff; padding: 4px; border-radius: 6px; flex-shrink: 0; display: grid; place-items: center;">
+            <img src="/api/jobs/{{ job.id }}/ig-story-image/" style="width: 52px; height: 52px; object-fit: cover; object-position: 18% 78%; border-radius: 4px;" alt="QR Code">
+          </div>
+          <div style="flex: 1; text-align: left;">
+            <div style="font-size: 9.5px; font-weight: 900; color: #ffffff;">SCAN QR CODE TO APPLY ↗</div>
+            <div style="font-size: 8px; color: #94a3b8; line-height: 1.3;">Screenshot or scan with camera</div>
+            <div style="font-size: 8.5px; font-weight: 700; color: #38bdf8; margin-top: 2px;">kashiiupdatez.online/job/{{ job.uuid|stringformat:"s"|slice:":8" }}</div>
+          </div>
         </div>
-        <div style="font-size: 10px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online</div>
+
+        <!-- Animated Blinking Link Sticker Placement Badge -->
+        <div class="ig-blinking-sticker" style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 10px 12px; text-align: center; font-size: 11px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px; animation: pulseGlow 1.5s infinite alternate;">
+          <img src="{% static 'images/icon-apply.png' %}" width="15" height="15" style="filter: brightness(0) invert(1);" alt="Link">
+          <span>🔗 TAP LINK STICKER TO APPLY ↗</span>
+        </div>
+        <div style="font-size: 9px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online · 100% Verified</div>
       </div>
       <style>
         @keyframes pulseGlow {
@@ -1822,25 +1863,45 @@
 
     <!-- Action Buttons -->
     <div style="display: flex; flex-direction: column; gap: 10px;">
+      <!-- 1. Meta Graph API Auto-Push Button -->
+      <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span id="igStoryStatusDot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {% if job.insta_story_published %}#10b981{% else %}#f59e0b{% endif %};"></span>
+            <span style="font-size: 11px; font-weight: 800; color: #334155;">Meta Story API (@ikashii_07)</span>
+          </div>
+          <span id="igStoryPublishBadge" style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 99px; {% if job.insta_story_published %}background: #dcfce7; color: #166534;{% else %}background: #fef3c7; color: #92400e;{% endif %}">
+            {% if job.insta_story_published %}Published ✅{% else %}Ready to Push{% endif %}
+          </span>
+        </div>
+        
+        <button type="button" id="btnPublishIgStory" onclick="publishStoryToInstagram({{ job.id }})" class="button" style="width: 100%; background: linear-gradient(135deg, #e1306c, #833ab4); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 11px; border-radius: 10px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
+          <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+          <span id="btnPublishIgStoryText">{% if job.insta_story_published %}🚀 Re-Push Story to @ikashii_07{% else %}🚀 Push Story to @ikashii_07 (Meta API){% endif %}</span>
+        </button>
+
+        <div id="igPublishStatusMsg" style="display: none; font-size: 11px; margin-top: 8px; padding: 8px 10px; border-radius: 8px; line-height: 1.4;"></div>
+      </div>
+
+      <!-- 2. Copy Formatted Story Text -->
       <button type="button" id="btnCopyIgCaption" onclick="copyFormattedIgStory()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
         <i data-lucide="instagram" style="width: 17px; height: 17px;"></i>
-        <span id="btnCopyIgCaptionText">📋 1. Copy Complete Story Text (Company, Salary, Exp, Link)</span>
+        <span id="btnCopyIgCaptionText">📋 Copy Story Text (Company, Exp, Salary, Apply Link)</span>
       </button>
 
-      <button type="button" id="btnDownloadIgVideo" onclick="downloadIgStoryVideo()" class="button" style="background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4); display: flex; align-items: center; gap: 8px;">
-        🎥 2. Download Animated Story Video (Reel / Story)
-      </button>
-
-      <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 14px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); text-decoration: none; display: flex; align-items: center; gap: 8px;">
-        🖼️ 3. Download Static Story HD Image
+      <!-- 3. Download Static 9:16 HD Story Image with QR Code -->
+      <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); text-decoration: none; display: flex; align-items: center; gap: 8px;">
+        🖼️ Download 9:16 Story HD Image (Scannable QR + Exp Badge)
       </a>
 
+      <!-- 4. Copy Apply Link for IG Sticker -->
       <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; justify-content: center; font-weight: 700; font-size: 13px; padding: 11px; border-radius: 12px;">
-        🔗 4. Copy Apply Link (For IG Link Sticker)
+        🔗 Copy Apply Link (For IG Link Sticker)
       </button>
 
+      <!-- 5. Open Instagram App / Web -->
       <a href="https://instagram.com" target="_blank" rel="noopener" class="button" style="background: #0f172a; color: #ffffff; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; text-decoration: none;">
-        🚀 5. Open Instagram App / Web ↗
+        🚀 Open Instagram App / Web ↗
       </a>
     </div>
   </div>
@@ -2189,6 +2250,81 @@
     copyFormattedIgStory();
   }
 
+  function publishStoryToInstagram(jobId) {
+    const btn = document.getElementById('btnPublishIgStory');
+    const btnText = document.getElementById('btnPublishIgStoryText');
+    const badge = document.getElementById('igStoryPublishBadge');
+    const statusBox = document.getElementById('igPublishStatusMsg');
+    const dot = document.getElementById('igStoryStatusDot');
+
+    if (!btn) return;
+    const origText = btnText ? btnText.innerText : 'Push Story';
+    btn.disabled = true;
+    if (btnText) btnText.innerHTML = '⏳ Contacting Meta Graph API...';
+
+    fetch(`/api/jobs/${jobId}/publish-ig-story/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, body: data })))
+    .then(({ status, ok, body }) => {
+      btn.disabled = false;
+      if (body.success) {
+        if (btnText) btnText.innerHTML = '✅ Published to @ikashii_07!';
+        if (badge) {
+          badge.innerText = 'Published ✅';
+          badge.style.background = '#dcfce7';
+          badge.style.color = '#166534';
+        }
+        if (dot) dot.style.background = '#10b981';
+        if (statusBox) {
+          statusBox.style.display = 'block';
+          statusBox.style.background = '#ecfdf5';
+          statusBox.style.color = '#065f46';
+          statusBox.style.border = '1px solid #a7f3d0';
+          statusBox.innerHTML = `<strong>Success!</strong> Story posted to @ikashii_07. Media ID: <code>${body.media_id || ''}</code>`;
+        }
+        if (window.showToast) {
+          window.showToast("🚀 Story successfully pushed to Instagram (@ikashii_07)!", "success");
+        }
+      } else if (body.error === 'MISSING_ACCESS_TOKEN') {
+        if (btnText) btnText.innerHTML = origText;
+        if (statusBox) {
+          statusBox.style.display = 'block';
+          statusBox.style.background = '#eff6ff';
+          statusBox.style.color = '#1e40af';
+          statusBox.style.border = '1px solid #bfdbfe';
+          statusBox.innerHTML = `<strong>Meta API Configured:</strong> Account @ikashii_07 (ID: 17841475393977759). Set <code>INSTAGRAM_ACCESS_TOKEN</code> in production to auto-post, or use the 1-click Download / Copy actions below!`;
+        }
+        if (window.showToast) {
+          window.showToast("Story ready! Download 9:16 HD card or copy formatted text below.", "info");
+        }
+      } else {
+        if (btnText) btnText.innerHTML = origText;
+        if (statusBox) {
+          statusBox.style.display = 'block';
+          statusBox.style.background = '#fef2f2';
+          statusBox.style.color = '#991b1b';
+          statusBox.style.border = '1px solid #fecaca';
+          statusBox.innerHTML = `<strong>Publish Note:</strong> ${escapeHtml(body.message || body.error || 'Check Meta permissions.')}`;
+        }
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      if (btnText) btnText.innerHTML = origText;
+      if (statusBox) {
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#fef2f2';
+        statusBox.style.color = '#991b1b';
+        statusBox.style.border = '1px solid #fecaca';
+        statusBox.innerHTML = `<strong>Request Error:</strong> ${escapeHtml(err.message)}`;
+      }
+    });
+  }
+
   function downloadIgStoryCardImage() {
     const canvas = document.createElement('canvas');
     canvas.width = 1080;
@@ -2286,24 +2422,62 @@
     }
     ctx.fillText(line, 160, y);
 
+    // Prominent Experience Requirement Highlight Box
+    const expY = y + 40;
+    {% with exp=job.get_experience_display %}
+    {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
+    ctx.fillStyle = '#064e3b';
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(160, expY, 760, 95, 20);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#6ee7b7';
+    ctx.font = '800 22px sans-serif';
+    ctx.fillText('🎯 EXPERIENCE REQUIREMENT', 190, expY + 36);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 32px sans-serif';
+    ctx.fillText('{{ exp|upper }} · FRESHERS ELIGIBLE 🚀', 190, expY + 74);
+    {% else %}
+    ctx.fillStyle = '#312e81';
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(160, expY, 760, 95, 20);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#c7d2fe';
+    ctx.font = '800 22px sans-serif';
+    ctx.fillText('🎯 EXPERIENCE REQUIREMENT', 190, expY + 36);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 32px sans-serif';
+    ctx.fillText('{{ exp|upper }} · EXPERIENCED PROS 💼', 190, expY + 74);
+    {% endif %}
+    {% endwith %}
+
     // Inner Details Box
-    const detY = Math.max(y + 80, 780);
+    const detY = expY + 120;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(160, detY, 760, 360, 32);
+    ctx.roundRect(160, detY, 760, 310, 28);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#34d399';
-    ctx.font = '900 40px sans-serif';
-    ctx.fillText('💼  Stipend: {{ job.stipend_salary }}', 200, detY + 90);
+    ctx.font = '900 36px sans-serif';
+    ctx.fillText('💼  Salary: {{ job.stipend_salary }}', 200, detY + 75);
 
     ctx.fillStyle = '#cbd5e1';
-    ctx.font = '700 36px sans-serif';
-    ctx.fillText('📍  Location: {{ job.location }}', 200, detY + 180);
-    ctx.fillText('🎓  Batch: All Eligible Students', 200, detY + 270);
+    ctx.font = '700 32px sans-serif';
+    ctx.fillText('📍  Location: {{ job.location }}', 200, detY + 155);
+    ctx.fillText('🎓  Eligibility: {{ job.eligibility|default:"All Eligible Batches"|truncatechars:40 }}', 200, detY + 235);
 
     // Link Sticker Banner Badge
     const btnY = detY + 440;

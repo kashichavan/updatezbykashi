@@ -2082,148 +2082,40 @@ def api_job_detail(request, pk):
         })
 
 def api_job_ig_story_image(request, pk):
-    from io import BytesIO
+    """
+    Renders and serves high-resolution 1080x1920 (9:16) Instagram Story image
+    with prominent Experience highlight, scannable QR code, and Link Sticker CTA.
+    """
     from django.http import HttpResponse
-    from PIL import Image, ImageDraw, ImageFont
+    from .services.instagram_story import generate_job_story_image
 
     job = get_object_or_404(JobPosting, pk=pk)
+    host_url = request.build_absolute_uri('/').rstrip('/')
+    buf = generate_job_story_image(job, base_url=host_url)
 
-    # 1080x1920 9:16 Canvas
-    img = Image.new('RGB', (1080, 1920), color='#090d16')
-    draw = ImageDraw.Draw(img)
-
-    # Premium Radial & Linear Ambient Glows
-    for y in range(1920):
-        r = int(9 + (15 - 9) * (y / 1920))
-        g = int(13 + (23 - 13) * (y / 1920))
-        b = int(22 + (42 - 22) * (y / 1920))
-        draw.line([(0, y), (1080, y)], fill=(r, g, b))
-
-    # Decorative Ambient Lighting Orbs
-    draw.ellipse([700, 100, 1200, 600], fill=(131, 58, 180, 50))
-    draw.ellipse([-100, 1300, 450, 1850], fill=(37, 99, 235, 45))
-
-    # Main Classy Card Outline & Solid Dark Background
-    draw.rounded_rectangle([90, 240, 990, 1680], radius=52, fill=(15, 23, 42), outline=(56, 189, 248), width=3)
-    draw.rounded_rectangle([94, 244, 986, 1676], radius=48, fill=(17, 24, 39))
-
-    # Load High-Quality System TTF Fonts
-    font_paths = [
-        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "Arial.ttf"
-    ]
-
-    def get_font(size, bold=False):
-        for path in font_paths:
-            try:
-                return ImageFont.truetype(path, size)
-            except Exception:
-                pass
-        return ImageFont.load_default()
-
-    font_badge = get_font(30, bold=True)
-    font_handle = get_font(32)
-    font_company = get_font(44, bold=True)
-    font_title = get_font(58, bold=True)
-    font_label = get_font(30, bold=True)
-    font_val = get_font(38, bold=True)
-    font_btn = get_font(38, bold=True)
-    font_domain = get_font(28, bold=True)
-
-    # 1. Top Category & Handle Header
-    draw.rounded_rectangle([150, 300, 560, 375], radius=38, fill=(236, 72, 153))
-    draw.text((180, 322), "🔥 NEW REQUIREMENT", fill=(255, 255, 255), font=font_badge)
-    draw.text((710, 322), "@ikashii_07", fill=(148, 163, 184), font=font_handle)
-
-    # Divider Line
-    draw.line([(150, 410), (930, 410)], fill=(51, 65, 85), width=2)
-
-    # 2. Company Name & Title Header
-    draw.text((150, 450), job.company_name.upper(), fill=(56, 189, 248), font=font_company)
-
-    # Multiline Job Title
-    words = job.title.split()
-    line = ""
-    y_pos = 530
-    for word in words:
-        test = line + word + " "
-        if len(test) > 20 and line:
-            draw.text((150, y_pos), line, fill=(255, 255, 255), font=font_title)
-            line = word + " "
-            y_pos += 76
-        else:
-            line = test
-    if line:
-        draw.text((150, y_pos), line, fill=(255, 255, 255), font=font_title)
-
-    # 3. Classy Details Section (Card Inset matching HTML Preview)
-    box_top = max(y_pos + 70, 780)
-    draw.rounded_rectangle([150, box_top, 930, box_top + 400], radius=36, fill=(30, 41, 59), outline=(71, 85, 105), width=2)
-
-    # Load PNG Icon Assets
-    static_img_dir = os.path.join(settings.BASE_DIR, 'static', 'images')
-    
-    def load_png_icon(filename, size=(38, 38)):
-        try:
-            path = os.path.join(static_img_dir, filename)
-            icon = Image.open(path).convert("RGBA")
-            icon = icon.resize(size, Image.Resampling.LANCZOS)
-            return icon
-        except Exception:
-            return None
-
-    icon_salary = load_png_icon('icon-salary.png')
-    icon_location = load_png_icon('icon-location.png')
-    icon_eligibility = load_png_icon('icon-type.png')
-    icon_link = load_png_icon('icon-apply.png', size=(42, 42))
-
-    # Detail Item 1: Salary / Stipend
-    draw.text((190, box_top + 45), "STIPEND / SALARY", fill=(148, 163, 184), font=font_label)
-    if icon_salary:
-        img.paste(icon_salary, (190, box_top + 92), icon_salary)
-        draw.text((240, box_top + 90), f"{job.stipend_salary}", fill=(52, 211, 153), font=font_val)
-    else:
-        draw.text((190, box_top + 90), f"{job.stipend_salary}", fill=(52, 211, 153), font=font_val)
-
-    # Detail Item 2: Location
-    draw.text((190, box_top + 165), "LOCATION", fill=(148, 163, 184), font=font_label)
-    if icon_location:
-        img.paste(icon_location, (190, box_top + 212), icon_location)
-        draw.text((240, box_top + 210), f"{job.location}", fill=(244, 244, 245), font=font_val)
-    else:
-        draw.text((190, box_top + 210), f"{job.location}", fill=(244, 244, 245), font=font_val)
-
-    # Detail Item 3: Eligibility
-    draw.text((190, box_top + 285), "ELIGIBILITY", fill=(148, 163, 184), font=font_label)
-    if icon_eligibility:
-        img.paste(icon_eligibility, (190, box_top + 332), icon_eligibility)
-        draw.text((240, box_top + 330), "All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
-    else:
-        draw.text((190, box_top + 330), "All Eligible Batches / Students", fill=(244, 244, 245), font=font_val)
-
-    # 4. Link Sticker Call-To-Action Button (Instagram Gradient)
-    btn_y = box_top + 470
-    draw.rounded_rectangle([150, btn_y, 930, btn_y + 120], radius=60, fill=(225, 48, 108))
-    
-    if icon_link:
-        img.paste(icon_link, (200, btn_y + 39), icon_link)
-        draw.text((560, btn_y + 40), "Tap Link Sticker Below to Apply", fill=(255, 255, 255), font=font_btn, anchor="mm")
-    else:
-        draw.text((540, btn_y + 40), "Tap Link Sticker Below to Apply ->", fill=(255, 255, 255), font=font_btn, anchor="mm")
-
-    # Domain Attribution Footer
-    draw.text((540, btn_y + 170), "kashiiupdatez.online", fill=(148, 163, 184), font=font_domain, anchor="mm")
-
-    buf = BytesIO()
-    img.save(buf, format='PNG', optimize=True)
-    img_data = buf.getvalue()
-    buf.close()
-    img.close()
-    response = HttpResponse(img_data, content_type='image/png')
+    response = HttpResponse(buf.getvalue(), content_type='image/png')
     response['Cache-Control'] = 'public, max-age=3600'
     return response
+
+
+@csrf_exempt
+def api_publish_job_ig_story(request, pk):
+    """
+    Meta / Instagram Graph API Endpoint:
+    Publishes the 9:16 Story for this job to connected Instagram account (@ikashii_07).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'METHOD_NOT_ALLOWED', 'message': 'POST method required.'}, status=405)
+
+    from .services.instagram_story import InstagramStoryPublisher
+
+    job = get_object_or_404(JobPosting, pk=pk)
+    host_url = request.build_absolute_uri('/').rstrip('/')
+    publisher = InstagramStoryPublisher()
+    result = publisher.publish_job_story(job, base_url=host_url)
+
+    status_code = 200 if result.get('success') else (200 if result.get('error') == 'MISSING_ACCESS_TOKEN' else 400)
+    return JsonResponse(result, status=status_code)
 
 # ==============================================================================
 # REQUIREMENT GROUPS & MULTI-JOB BUNDLES

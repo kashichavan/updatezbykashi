@@ -104,6 +104,12 @@ class JobPosting(models.Model):
     normalized_city = models.CharField(max_length=100, default='Bengaluru', db_index=True, help_text="Normalized city e.g. Bengaluru, Hyderabad, Pune, Mumbai, Delhi NCR, Remote")
     ingestion_batch_id = models.CharField(max_length=64, blank=True, default='', db_index=True)
 
+    # ── Meta / Instagram Story Automation Tracking ──
+    insta_story_published = models.BooleanField(default=False, db_index=True, help_text="True if posted to Instagram Story")
+    insta_story_media_id = models.CharField(max_length=100, blank=True, default="", help_text="Instagram Media Container/Story ID")
+    insta_story_published_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when story was posted")
+    insta_story_error = models.TextField(blank=True, default="", help_text="Last error message if story publishing failed")
+
     # 7-Day Auto Expiration Policy
     created_at = models.DateTimeField(auto_now_add=True)
     posted_date = models.DateField(
@@ -381,11 +387,10 @@ class JobPosting(models.Model):
                 out.append(char)
         return "".join(out)
 
-    def get_insta_story_text(self, include_link=False, share_url=None, base_url="https://kashiiupdatez.online"):
+    def get_insta_story_text(self, include_link=True, share_url=None, base_url="https://kashiiupdatez.online"):
         """
         Generates clean, aesthetic Instagram Story text with highlighted company name,
-        prominent experience requirement, salary, skills, eligibility, and optional contact.
-        Apply link is excluded by default so creators can use native IG Link stickers or custom links.
+        prominently featured experience requirement, salary, skills, eligibility, and apply link.
         """
         url = share_url
         if not url:
@@ -399,9 +404,9 @@ class JobPosting(models.Model):
         exp_str = self.get_experience_display()
         is_fresher = any(k in exp_str.lower() for k in ['fresher', '0-', '0 yr', 'intern', 'entry'])
         if is_fresher:
-            exp_line = f"🎯 Experience: {exp_str} 🚀 (Freshers Eligible!)"
+            exp_line = f"🎯 Experience: {exp_str} 🚀 [FRESHERS ELIGIBLE]"
         else:
-            exp_line = f"🎯 Experience: {exp_str} ⚠️ (Experience Required)"
+            exp_line = f"🎯 Experience: {exp_str} 💼 [EXPERIENCED PROS]"
 
         skills_list = self.get_skills_list()
         if skills_list:
@@ -424,7 +429,7 @@ class JobPosting(models.Model):
         company_highlight = self.to_unicode_bold((self.company_name or 'HIRING COMPANY').strip().upper())
 
         lines = [
-            "🚨 URGENT HIRING ALERT! 🚨",
+            "🚨 URGENT HIRING REQUIREMENT! 🚨",
             "",
             f"🏢 Company: {company_highlight}",
             f"📌 Role: {self.title}",
@@ -439,7 +444,11 @@ class JobPosting(models.Model):
             lines.append(f"📞 HR Contact: {self.contact_phone}")
 
         if include_link and url:
-            lines.append(f"🔗 Apply Link: {url}")
+            lines.append("")
+            lines.append(f"🔗 Apply Here: {url}")
+            lines.append("⚡ Tap Link Sticker or Scan QR code in story to apply!")
+            tags = "#fresherjobs #freshers" if is_fresher else "#experiencedjobs #techhiring"
+            lines.append(f"#hiring #jobs #career #kashiiupdatez {tags}")
 
         return "\n".join(lines)
 
