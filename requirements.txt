@@ -8,7 +8,6 @@ javalang>=0.13.0
 requests>=2.31.0
 djangorestframework>=3.18.3
 djangorestframework-simplejwt>=5.5.0
-django-ninja>=1.1.0
 pydantic>=2.0.0
 pypdf>=6.21.4
 python-docx>=1.0.0

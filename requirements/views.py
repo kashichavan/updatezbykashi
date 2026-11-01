@@ -14,7 +14,7 @@ from django.db.models import Q, Count, F
 from datetime import timedelta
 from django.utils.text import slugify
 from django.core.cache import cache
-from .models import Category, JobPosting, GuideArticle, ContactInquiry, JobGroup
+from .models import Category, JobPosting, ContactInquiry, JobGroup
 from .jobdexo_service import auto_import_from_jobdexo, cleanup_all_database_duplicates
 from .resume_engine import has_keyword
 from .company_resolver import resolve_company_name
@@ -368,17 +368,6 @@ def contact_view(request):
             success_message = "Thank you for reaching out! Your message has been received. We will respond within 24 hours."
 
     return render(request, 'content/contact.html', {'success_message': success_message})
-
-def ensure_guides_seeded():
-    """Guarantees production has all 13 high-value technical articles populated with PDF attachments."""
-    if GuideArticle.objects.filter(status='PUBLISHED').count() >= 13:
-        return
-    try:
-        from .seed_prod import guides_seeds
-        for g in guides_seeds:
-            GuideArticle.objects.update_or_create(slug=g['slug'], defaults=g)
-    except Exception:
-        pass
 
 def guides_list_view(request):
     """Legacy /guides/ links go to the home page: the articles were retired."""

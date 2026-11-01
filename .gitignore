@@ -141,3 +141,6 @@ nextjs-frontend/node_modules/
 nextjs-frontend/.next/
 nextjs-frontend/out/
 
+
+# bunshin run files
+.bunshin/

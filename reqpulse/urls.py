@@ -16,7 +16,6 @@ from requirements.views import (
     rss_feed_view,
     indexnow_key_view,
 )
-from api.ninja_api import api as ninja_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -69,7 +68,6 @@ urlpatterns = [
     path('sqlsandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
     path('blog/', RedirectView.as_view(url='/', permanent=True)),
     path('blog/<path:subpath>/', RedirectView.as_view(url='/', permanent=True)),
-    path('api/v1/', ninja_api.urls),
     path('', include('requirements.urls')),
 ]
 

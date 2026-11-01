@@ -89,7 +89,7 @@ class ApplicationSecurityAuditTests(TestCase):
 
         # Attempt to access owner jobs endpoint with regular user token
         resp = self.client.get(
-            '/api/v1/owner/jobs',
+            '/api/owner/groups/',
             HTTP_AUTHORIZATION=f"Bearer {regular_access_token}"
         )
         self.assertEqual(resp.status_code, 401)
@@ -99,7 +99,7 @@ class ApplicationSecurityAuditTests(TestCase):
         staff_access_token = str(staff_refresh.access_token)
 
         resp_staff = self.client.get(
-            '/api/v1/owner/jobs',
+            '/api/owner/groups/',
             HTTP_AUTHORIZATION=f"Bearer {staff_access_token}"
         )
         self.assertEqual(resp_staff.status_code, 200)

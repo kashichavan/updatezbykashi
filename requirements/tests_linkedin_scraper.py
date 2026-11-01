@@ -1,3 +1,5 @@
+import json
+from unittest.mock import patch
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from requirements.models import JobPosting, Category
@@ -23,7 +25,17 @@ class LinkedInScraperTests(TestCase):
         Connect on LinkedIn: https://linkedin.com/in/rohit-microsoft
         Regards, Rohit Verma
         """
-        parsed = parse_linkedin_content(raw_text)
+        # A fixed model answer, so the result does not depend on a live model.
+        answer = json.dumps({
+            'company': 'Microsoft', 'title': 'SDE-1', 'is_referral': True,
+            'skills_required': 'C#, .NET Core, Azure, SQL',
+            'referrer_name': 'Rohit Verma',
+            'referrer_linkedin': 'https://linkedin.com/in/rohit-microsoft',
+            'apply_url': 'mailto:referral.ms@microsoft.com',
+        })
+        with patch('requirements.ai_engine.get_groq_api_key', return_value='test-key'), \
+                patch('requirements.ai_engine.call_groq_chat', return_value=answer):
+            parsed = parse_linkedin_content(raw_text)
 
         self.assertEqual(parsed['company'], 'Microsoft')
         self.assertEqual(parsed['title'], 'SDE-1')
