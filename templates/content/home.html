@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block title %}⚡ Kashii Updates (Kashii Updatez) — Daily Student Jobs & Internships 2026{% endblock %}
-{% block meta_description %}Official Kashii Updates & Kashii Updatez portal by Python Kashi. Discover daily verified off-campus student jobs, tech internships, and direct career apply links with 7-day freshness guarantee.{% endblock %}
+{% block meta_description %}Official Kashii Updates & Kashii Updatez portal by Python Kashi. Discover daily off-campus student jobs, tech internships, and direct career apply links with 7-day freshness guarantee.{% endblock %}
 {% block og_title %}⚡ Kashii Updates (Kashii Updatez) — Daily Student Jobs & Internships{% endblock %}
-{% block og_description %}Official Kashii Updates portal by Python Kashi. Access daily verified student job drives, fresher internships, and programming tutorials.{% endblock %}
+{% block og_description %}Official Kashii Updates portal by Python Kashi. Access daily student job drives, fresher internships, and programming tutorials.{% endblock %}
 
 {% block schema_markup %}
 <!-- Google Job Directory ItemList Structured Data -->
@@ -12,8 +12,8 @@
 {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  "name": "Latest Verified Student Jobs & Internships",
-  "description": "Daily verified software engineering, IT, and campus job drives across India.",
+  "name": "Latest Student Jobs & Internships",
+  "description": "Daily software engineering, IT, and campus job drives across India.",
   "itemListElement": [
     {% for j in initial_jobs|slice:":10" %}
     {
@@ -31,55 +31,30 @@
 {% block content %}
 <div class="wrap">
 
-  <!-- Creative Hero Banner with Consolas Typewriter & Animated Terminal -->
-  <section class="vp-hero">
-    <div class="vp-hero-inner">
-      <div class="vp-hero-copy">
-        <span class="code-badge" style="display:inline-flex;align-items:center;gap:6px;"><img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Fresh"> FRESH DAILY STUDENT REQUIREMENTS</span>
-        <h1 id="typewriterText">Kashii Updates — Daily Student Jobs &amp; <em>Internship Requirements</em></h1>
-        <p class="lead">
-          <strong>Kashii Updates</strong> (also known as <strong>Kashii Updatez</strong>) provides verified daily student requirements, off-campus drives, &amp; internships. All postings remain active for exactly 7 days to guarantee 100% fresh opportunities.
-        </p>
-
-        <div class="vp-trust-pills">
-          <span class="vp-pill" style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="14" height="14" alt="7-Day"> Auto 7-Day Fresh Rule</span>
-          <span class="vp-pill"><img src="{% static 'images/icon-type.png' %}" class="nav-icon" width="14" height="14" alt="Tech"> Software & Tech</span>
-          <span class="vp-pill"><img src="{% static 'images/icon-share.png' %}" class="nav-icon" width="14" height="14" alt="Links"> Official Direct Links</span>
-        </div>
+  <section class="vp-hero kx-hero">
+    <div class="kx-hero-copy">
+      <span class="kx-eyebrow"><span class="kx-live-dot" aria-hidden="true"></span> Updated daily</span>
+      <h1>Daily jobs and internships for <em>students and freshers</em></h1>
+      <p class="lead"><strong>Kashii Updates</strong> (also known as Kashii Updatez) lists fresh openings with apply links. Each listing closes seven days after it is posted.</p>
+      <div class="kx-hero-actions">
+        <a href="#browse-jobs" class="button kx-btn-primary"><i data-lucide="search" aria-hidden="true"></i> Browse jobs</a>
+        <a href="/resume-builder/" class="button kx-btn-ghost"><i data-lucide="file-text" aria-hidden="true"></i> Build my resume</a>
       </div>
-
-      <!-- Animated Coding Terminal Box -->
-      <div class="coding-terminal">
-        <div class="terminal-header">
-          <div class="terminal-dots">
-            <span class="t-dot red"></span>
-            <span class="t-dot yellow"></span>
-            <span class="t-dot green"></span>
-          </div>
-          <span class="terminal-title">python_kashi_script.py</span>
-        </div>
-        <div class="terminal-body">
-          <div class="code-line">
-            <span class="code-prompt">&gt;</span>
-            <span class="code-kw">import</span> <span class="code-fn">kashii_updatez</span>
-          </div>
-          <div class="code-line">
-            <span class="code-prompt">&gt;</span>
-            <span class="code-kw">def</span> <span class="code-fn">get_fresh_opportunities</span>():
-          </div>
-          <div class="code-line" style="padding-left: 14px;">
-            <span class="code-cm"># Filter 100% active 7-day requirements</span>
-          </div>
-          <div class="code-line" style="padding-left: 14px;">
-            <span class="code-kw">return</span> kashii_updatez.<span class="code-fn">filter</span>(category=<span class="code-str">"Software & Tech"</span>)
-          </div>
-          <div class="code-line" style="margin-top: 10px;">
-            <span class="code-prompt">&gt;&gt;&gt;</span> <span style="color: #4ade80; font-weight: 700;">Status: 100% Verified &amp; Active</span><span class="typing-cursor"></span>
-          </div>
-        </div>
+    </div>
+    <div class="kx-hero-panel">
+      <div class="kx-stats" aria-label="Current listings">
+        <a class="kx-stat" href="#browse-jobs"><strong data-count="{{ hero_stats.open }}">{{ hero_stats.open }}</strong><span>Open now</span></a>
+        <a class="kx-stat" href="#browse-jobs"><strong data-count="{{ hero_stats.week }}">{{ hero_stats.week }}</strong><span>Added this week</span></a>
+        <a class="kx-stat" href="#browse-jobs"><strong data-count="{{ hero_stats.internships }}">{{ hero_stats.internships }}</strong><span>Internships</span></a>
+      </div>
+      <div class="kx-tools">
+        <a class="kx-tool" href="/resume-builder/"><i data-lucide="file-pen-line" aria-hidden="true"></i><span><b>Resume Builder</b>Fill in, improve, download</span></a>
+        <a class="kx-tool" href="/ai-resume-analysis/"><i data-lucide="gauge" aria-hidden="true"></i><span><b>ATS Score</b>Upload and see what to fix</span></a>
+        <a class="kx-tool" href="/debugger/"><i data-lucide="bug-play" aria-hidden="true"></i><span><b>Code Debugger</b>Step through your code</span></a>
       </div>
     </div>
   </section>
+
 
   <!-- 3D Infinite Seamless Marquee: YouTube Video Tutorials (INSTANT PRE-RENDERED) -->
   <section style="margin-bottom: 32px;">
@@ -122,7 +97,7 @@
   </section>
 
   <!-- Search Keyword Bar Section -->
-  <div class="rel_header_search_wrapper">
+  <div class="rel_header_search_wrapper" id="browse-jobs">
     <div class="rel_header_search_container">
       <svg height="20" width="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" class="rel_header_search_icon" aria-hidden="true">
         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -291,10 +266,10 @@
           </button>
 
           <!-- Save Search Alert Button (desktop) -->
-          <button data-locator-id="searchjobs_search_savedSearchAlertButton" class="button-saved-jobs-alerts filter-desktop-only" type="button" title="Get instant job alerts">
-            <svg height="14" width="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path></svg>
-            <span>Get Job Alerts</span>
-          </button>
+          <a href="https://www.instagram.com/ikashii_07/" target="_blank" rel="noopener" class="button-saved-jobs-alerts filter-desktop-only" title="New jobs are shared on Instagram">
+            <i data-lucide="instagram" aria-hidden="true" style="width:14px;height:14px;"></i>
+            <span>Follow for updates</span>
+          </a>
         </div>
       </div>
 
@@ -330,10 +305,10 @@
 
       <!-- Mobile Save Alert Strip -->
       <div class="filter-mobile-alert-strip filter-mobile-only">
-        <button data-locator-id="searchjobs_search_savedSearchAlertButton" class="button-saved-jobs-alerts" type="button">
-          <svg height="14" width="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-          <span>Get Free Job Alerts</span>
-        </button>
+        <a href="https://www.instagram.com/ikashii_07/" target="_blank" rel="noopener" class="button-saved-jobs-alerts filter-desktop-only" title="New jobs are shared on Instagram">
+            <i data-lucide="instagram" aria-hidden="true" style="width:14px;height:14px;"></i>
+            <span>Follow for updates</span>
+          </a>
       </div>
 
     </div>
@@ -395,55 +370,7 @@
       </div>
     </div>
 
-    <!-- Job Alerts & Updates Modal -->
-    <div id="modalJobAlerts" class="rel_modal_backdrop" style="display: none;" role="dialog" aria-modal="true" aria-label="Save Search and Job Alerts">
-      <div class="rel_modal_container" style="max-width: 480px;">
-        <div class="rel_modal_header">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 32px; height: 32px; border-radius: 8px; background: #eff6ff; color: #2563eb; display: grid; place-items: center;">
-              <svg height="18" width="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-            </div>
-            <h3 class="rel_modal_title">Instant Job Alerts &amp; Updates</h3>
-          </div>
-          <button type="button" class="rel_popover_close rel_modal_close_btn" id="btnCloseJobAlerts" aria-label="Close alerts">&times;</button>
-        </div>
-        <div class="rel_modal_body">
-          <p style="font-size: 13px; color: #64748b; margin: 0 0 14px; line-height: 1.5;">
-            Get verified, real-time hiring updates whenever new opportunities match your preferred criteria.
-          </p>
 
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
-            <span style="display: block; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px;">Active Preferences:</span>
-            <div id="jobAlertCurrentCriteria" style="font-size: 13px; font-weight: 700; color: #0f172a;">All Verified Software Opportunities</div>
-          </div>
-
-          <!-- Telegram Channel Direct Link -->
-          <a href="https://t.me/pythonkashi" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 12px; background: #0284c7; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 13.5px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25); margin-bottom: 12px;">
-            <span style="display: flex; align-items: center; gap: 8px;">
-              <span>✈️</span>
-              <span>Join Instant Telegram Hiring Channel</span>
-            </span>
-            <span style="font-size: 11px; background: rgba(255,255,255,0.22); padding: 2px 8px; border-radius: 99px; font-weight: 800;">FREE</span>
-          </a>
-
-          <div style="display: flex; align-items: center; gap: 10px; margin: 8px 0 12px;">
-            <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
-            <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">or email / whatsapp alerts</span>
-            <div style="flex: 1; height: 1px; background: #e2e8f0;"></div>
-          </div>
-
-          <form id="formJobAlerts" style="display: flex; flex-direction: column; gap: 12px;">
-            <div>
-              <label for="jobAlertContactInput" style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 6px;">Email Address or WhatsApp Number:</label>
-              <input type="text" id="jobAlertContactInput" placeholder="e.g. yourname@gmail.com or +91 9876543210" required style="width: 100%; height: 42px; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 0 14px; font-size: 13.5px; color: #0f172a; outline: none; box-sizing: border-box;">
-            </div>
-            <button type="submit" style="width: 100%; height: 44px; border: none; border-radius: 10px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 14px rgba(37,99,235,0.25);">
-              <span>🔔 Activate Free Daily Alerts</span>
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
   </section>
 
 
@@ -455,7 +382,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
       <div>
         <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="18" height="18" alt="Requirements"> Latest Requirements</h2>
-        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Showing 18 verified opportunities per page — sorted newest first</p>
+        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Newest first</p>
       </div>
       <a href="/category/software-tech/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary);">View All ↗</a>
     </div>
@@ -497,7 +424,7 @@
           </div>
           {% endif %}
 
-          <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ job.description|default:"Detailed job description and requirements available on the requirement page."|truncatewords:22 }}</p>
+          <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ job.description|default:"Open this listing for the full job description."|cut:"**"|truncatewords:22 }}</p>
 
           <div class="skills-wrapper" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 4px;">
             {% for skill in job.get_skills_list|slice:":4" %}

@@ -12,6 +12,7 @@ Provides production AI services for:
 import json
 import logging
 import os
+import re
 import requests
 from django.conf import settings
 
@@ -86,190 +87,6 @@ def call_groq_chat(
     if last_error:
         raise last_error
     raise RuntimeError("Failed to complete Groq request after retries.")
-
-
-def generate_job_description(
-    title: str,
-    company: str = "",
-    experience: str = "0-2 years",
-    location: str = "Remote / Bangalore",
-    work_mode: str = "Full-time",
-    skills: str = "",
-    additional_notes: str = "",
-) -> dict:
-    """Generate an enterprise-grade, high-converting job description with ATS keywords and interview prep."""
-    system_prompt = (
-        "You are an elite Tech Talent Recruiter, Hiring Architect, and Career Mentor for top startups and FAANG companies. "
-        "Your goal is to write a compelling, high-converting, ATS-friendly Job Description and Candidate Preparation Blueprint. "
-        "Return a valid JSON object with the following exact keys:\n"
-        "- 'role_title': string (polished role title)\n"
-        "- 'company': string (company name)\n"
-        "- 'summary': string (2-3 sentences hook and team mission)\n"
-        "- 'responsibilities': list of 5-7 clear, actionable bullet points starting with strong action verbs\n"
-        "- 'required_qualifications': list of 4-6 must-have technical skills, frameworks, and experience\n"
-        "- 'preferred_qualifications': list of 3-4 nice-to-have bonus skills\n"
-        "- 'tech_stack_tags': list of 5-8 skill tags (e.g. ['React', 'Python', 'Docker'])\n"
-        "- 'perks_benefits': list of 4 attractive perks (e.g. Health insurance, flexible hours, learning stipend)\n"
-        "- 'interview_questions': list of 4-5 technical interview questions candidates will be asked for this role\n"
-        "- 'ats_keywords': list of 6-10 high-value ATS resume keywords to pass candidate screening\n"
-        "- 'linkedin_post_snippet': string (an engaging 150-word LinkedIn announcement with relevant hashtags)\n"
-        "- 'full_markdown': string (clean Markdown representation ready to copy-paste)"
-    )
-
-    user_prompt = f"""
-Create a job description and candidate blueprint with these details:
-- Job Title: {title}
-- Company Name: {company or 'Innovative Tech Startup'}
-- Experience Level: {experience}
-- Location & Mode: {location} ({work_mode})
-- Core Skills / Tech Stack: {skills or 'Modern Web / Software Engineering Stack'}
-- Additional Notes: {additional_notes or 'Focus on fast growth, ownership, and engineering excellence.'}
-"""
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt},
-    ]
-
-    try:
-        response_text = call_groq_chat(messages, temperature=0.3, json_mode=True)
-        data = json.loads(response_text)
-        # Ensure interview_questions & ats_keywords exist
-        if 'interview_questions' not in data or not data['interview_questions']:
-            data['interview_questions'] = [
-                f"How would you architect a production feature for this role using {skills or 'core tech'}?",
-                "Describe a difficult debugging challenge you resolved and your root cause analysis approach.",
-                "How do you design database queries and schema indices to prevent performance bottlenecks?",
-                "Walk through your testing methodology: unit tests vs integration tests vs end-to-end tests."
-            ]
-        if 'ats_keywords' not in data or not data['ats_keywords']:
-            tags = data.get('tech_stack_tags', [])
-            data['ats_keywords'] = list(dict.fromkeys(tags + ["System Architecture", "REST API", "Database Optimization", "Unit Testing", "CI/CD"]))
-        if 'company' not in data:
-            data['company'] = company or 'Tech Enterprise'
-        return data
-    except Exception as e:
-        logger.warning(f"Groq API call failed in generate_job_description: {e}. Using resilient template engine.")
-        return _generate_job_description_fallback(title, company, experience, location, work_mode, skills, additional_notes)
-
-
-def _generate_job_description_fallback(
-    title: str,
-    company: str = "",
-    experience: str = "0-2 years",
-    location: str = "Remote / Bangalore",
-    work_mode: str = "Full-time",
-    skills: str = "",
-    additional_notes: str = "",
-) -> dict:
-    """Resilient offline template engine for job descriptions, ATS keywords, and interview prep."""
-    role = title.strip() or "Full-Stack Software Engineer"
-    comp = company.strip() or "Fast-Growing Tech Enterprise"
-    raw_skills = [s.strip() for s in skills.split(",") if s.strip()] if skills else []
-    if not raw_skills:
-        role_lower = role.lower()
-        if "python" in role_lower or "django" in role_lower:
-            raw_skills = ["Python", "Django", "PostgreSQL", "REST APIs", "Docker", "Redis"]
-        elif "react" in role_lower or "frontend" in role_lower or "next" in role_lower:
-            raw_skills = ["React 19", "TypeScript", "Next.js", "Tailwind CSS", "Redux", "HTML5/CSS3"]
-        elif "qa" in role_lower or "test" in role_lower:
-            raw_skills = ["Python", "Selenium", "Playwright", "Postman", "CI/CD", "Jira"]
-        elif "devops" in role_lower or "cloud" in role_lower:
-            raw_skills = ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD", "Linux"]
-        elif "java" in role_lower or "spring" in role_lower:
-            raw_skills = ["Java 17+", "Spring Boot", "Microservices", "PostgreSQL", "Kafka", "Docker"]
-        else:
-            raw_skills = ["Python / Java", "SQL / Relational DB", "Git / GitHub", "Data Structures", "RESTful APIs"]
-
-    tags = raw_skills[:8]
-    summary = f"Join {comp} as a {role} to architect high-performance, resilient software systems. We are seeking an ambitious engineer with {experience} of hands-on experience ready to build scalable products in a high-impact engineering team."
-
-    responsibilities = [
-        f"Design, develop, and deploy modular features for production systems using {', '.join(tags[:3])}.",
-        "Collaborate with cross-functional teams including product managers and UX designers to ship clean, reliable code.",
-        "Write comprehensive unit and integration tests to ensure 99.9% uptime and zero regressions.",
-        "Optimize database queries, cache layers, and backend response latencies for optimal user experience.",
-        "Participate in daily standups, technical architecture reviews, and sprint planning sessions."
-    ]
-
-    required_qualifications = [
-        f"Demonstrated proficiency in {', '.join(tags[:3])} and core software development lifecycle.",
-        f"Solid foundation in data structures, algorithms, and system design tailored for {experience} level.",
-        "Hands-on experience with relational databases (PostgreSQL/MySQL) and writing optimized queries.",
-        "Familiarity with version control (Git), branching workflows, and agile development methodologies."
-    ]
-
-    preferred_qualifications = [
-        f"Prior experience with cloud environments (AWS, GCP) and containerization ({tags[3] if len(tags) > 3 else 'Docker'}).",
-        "Contributions to open-source software, active GitHub portfolio, or hackathon achievements.",
-        "Understanding of CI/CD pipelines, automated testing, and web application security standards."
-    ]
-
-    perks = [
-        "Competitive salary package & performance bonuses",
-        "Flexible hybrid/remote work schedule",
-        "Comprehensive health insurance & wellness stipend",
-        "Annual learning & conference budget for career development"
-    ]
-
-    interview_questions = [
-        f"How would you architect a high-throughput endpoint using {tags[0]} and ensure sub-100ms response time?",
-        f"Explain how you debug slow database queries or lock contention in PostgreSQL/MySQL.",
-        "Describe a challenging technical bug you encountered in a recent project and how you solved it.",
-        f"Walk through how you design RESTful APIs with proper authentication, validation, and error codes."
-    ]
-
-    ats_keywords = list(dict.fromkeys(tags + ["System Design", "Agile / Scrum", "Unit Testing", "REST API", "Database Optimization"]))
-
-    linkedin_snippet = f"""🚀 We're Hiring at {comp}!
-
-We are looking for a talented {role} ({experience} • {location} • {work_mode}) to join our engineering organization.
-
-Key Tech Stack: {', '.join(tags)}
-
-✨ What you will do:
-- Build mission-critical user-facing applications
-- Collaborate with top engineering mentors
-- Scale distributed architecture
-
-Apply today or tag a friend who would be a great fit!
-#Hiring #TechJobs #{role.replace(' ', '')} #Careers #JobSearch"""
-
-    full_markdown = f"""# {role} — {comp}
-**Experience:** {experience} | **Location:** {location} ({work_mode})
-
-## Role Overview
-{summary}
-
-## Key Responsibilities
-""" + "\n".join(f"- {r}" for r in responsibilities) + """
-
-## Required Qualifications
-""" + "\n".join(f"- {q}" for q in required_qualifications) + """
-
-## Preferred Qualifications
-""" + "\n".join(f"- {p}" for p in preferred_qualifications) + """
-
-## Tech Stack & ATS Keywords
-""" + ", ".join(ats_keywords) + """
-
-## Perks & Culture
-""" + "\n".join(f"- {pk}" for pk in perks)
-
-    return {
-        "role_title": role,
-        "company": comp,
-        "summary": summary,
-        "responsibilities": responsibilities,
-        "required_qualifications": required_qualifications,
-        "preferred_qualifications": preferred_qualifications,
-        "tech_stack_tags": tags,
-        "perks_benefits": perks,
-        "interview_questions": interview_questions,
-        "ats_keywords": ats_keywords,
-        "linkedin_post_snippet": linkedin_snippet,
-        "full_markdown": full_markdown,
-    }
 
 
 def _generate_ats_fallback_bullets(title: str, tech_stack: str, role: str) -> list[str]:
@@ -364,78 +181,133 @@ Target Skills: {', '.join(target_skills) if target_skills else 'Software Enginee
     }
 
 
+# Tools a rewrite may not introduce unless the bullet or project already names them.
+_POLISH_TECH_TERMS = (
+    'redis', 'docker', 'kubernetes', 'celery', 'kafka', 'rabbitmq', 'postgresql', 'postgres',
+    'mysql', 'mongodb', 'aws', 'azure', 'gcp', 'microservice', 'microservices', 'graphql',
+    'nginx', 'jenkins', 'terraform', 'react', 'angular', 'vue', 'django', 'flask', 'fastapi',
+    'spring', 'node.js', 'typescript', 'ci/cd', 'cache', 'caching', 'queue',
+)
+
+_WEAK_BULLET_OPENERS = (
+    ('responsible for ', 'Handled '),
+    ('worked on ', 'Developed '),
+    ('working on ', 'Developed '),
+    ('helped with ', 'Supported '),
+    ('helped ', 'Supported '),
+    ('made ', 'Built '),
+    ('did ', 'Completed '),
+    ('used ', 'Applied '),
+)
+
+
+def _adds_unlisted_tech(text: str, source: str) -> bool:
+    """True when `text` names a tool that `source` never mentions."""
+    lowered_text = text.lower()
+    lowered_source = source.lower()
+    for term in _POLISH_TECH_TERMS:
+        pattern = rf'(?<![a-z0-9]){re.escape(term)}(?![a-z0-9])'
+        if re.search(pattern, lowered_text) and term not in lowered_source:
+            return True
+    return False
+
+
+def _basic_bullet_cleanup(bullet: str) -> str:
+    """Offline rewrite: fix the opener and punctuation, never add facts."""
+    body = bullet.lstrip('•-* ').strip().rstrip('.')
+    if not body:
+        return ''
+    lowered = body.lower()
+    for weak, strong in _WEAK_BULLET_OPENERS:
+        if lowered.startswith(weak):
+            body = strong + body[len(weak):]
+            break
+    else:
+        first = lowered.split()[0]
+        if not (first.endswith('ed') or first in ('built', 'led', 'wrote', 'ran', 'made')):
+            body = 'Developed ' + body[0].lower() + body[1:]
+    return body[0].upper() + body[1:] + '.'
+
+
 def polish_resume_bullet(bullet: str, role: str = "", tech_stack: str = "", include_metrics: bool = True) -> dict:
     """
-    Transform a plain bullet into an elite Google XYZ metric bullet:
-    'Accomplished [X] as measured by [Y], by doing [Z]'
-    Guaranteed to score high on ATS algorithms (Action verbs, metrics, architecture).
+    Rewrite a plain bullet in clearer, stronger language.
+
+    Every suggestion is checked before it is returned: it may not add numbers,
+    hype words or tools the bullet and project do not already contain. The
+    response sets `ai` to False when the offline cleanup was used instead.
     """
+    from .resume_generation_service import sanitize_rewrite
+
     clean_bullet = (bullet or "").strip()
     clean_role = (role or "Software Engineer").strip()
     clean_tech = (tech_stack or "").strip()
+    source = f"{clean_bullet} {clean_tech}"
 
     system_prompt = (
-        "You are a Principal Tech Recruiter and ATS Resume Algorithm Specialist. "
-        "Rewrite the given resume bullet into high-impact Google XYZ bullets: "
-        "'Accomplished [X] as measured by [Y], by doing [Z]'.\n"
-        "STRICT ATS RULES:\n"
-        "1. FIRST WORD MUST be a strong action verb (e.g. Architected, Engineered, Optimized, Developed, Built, Deployed, Automated, Integrated, Scaled).\n"
-        "2. MUST include outcome phrasing (reducing, slashing, increasing, improving, cutting, delivering, accelerating, scaling).\n"
-        "3. Keep any numbers from the original bullet. Never add a number, metric or technology it does not contain.\n"
-        "4. Include architectural terms where appropriate (Redis, cache, queue, Docker, PostgreSQL, microservices, async, APIs).\n"
-        "Return a JSON object with keys:\n"
-        "- 'original': the original input text\n"
-        "- 'polished': primary high-impact Google XYZ bullet\n"
-        "- 'alternative_1': architectural focus variation\n"
-        "- 'alternative_2': performance and scale focus variation\n"
-        "- 'action_verb': the primary strong action verb used\n"
-        "- 'metric_highlight': the metric used (e.g., '45% p99 latency reduction')"
+        "You rewrite one resume bullet so a recruiter understands it quickly.\n"
+        "RULES:\n"
+        "1. One sentence, 12 to 24 words, starting with a past-tense action verb.\n"
+        "2. Use only facts in the bullet and the listed tech stack. Say what was built and how.\n"
+        "3. Copy existing numbers exactly. Never add a number, percentage, user count or result.\n"
+        "4. Never name a tool that is not in the bullet or tech stack.\n"
+        "5. Never use: robust, scalable, enterprise, high-performance, production-grade, "
+        "production ready, world-class, cutting-edge, state-of-the-art, mission-critical, best-in-class.\n"
+        "Return a JSON object with keys 'polished', 'alternative_1', 'alternative_2' and 'action_verb'. "
+        "Make the three versions genuinely different in wording."
     )
-
-    user_prompt = f"""
-Candidate Role: {clean_role}
-Target Tech Stack: {clean_tech}
-Raw Bullet Point: "{clean_bullet}"
-"""
-
+    user_prompt = (
+        f"Candidate role: {clean_role}\n"
+        f"Tech stack: {clean_tech or 'not provided'}\n"
+        f"Bullet: {clean_bullet}"
+    )
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ]
 
-    try:
-        response_text = call_groq_chat(messages, temperature=0.35, json_mode=True, timeout=10)
-        data = json.loads(response_text)
-        if isinstance(data, dict) and data.get('polished'):
-            data['bullets'] = [data['polished']]
-            if data.get('alternative_1'):
-                data['bullets'].append(data['alternative_1'])
-            if data.get('alternative_2'):
-                data['bullets'].append(data['alternative_2'])
-            return data
-    except Exception as e:
-        logger.warning(f"Groq polish_resume_bullet fallback: {e}")
+    for attempt in range(2):
+        try:
+            data = json.loads(call_groq_chat(messages, temperature=0.35, json_mode=True, timeout=10))
+        except Exception as e:
+            logger.warning(f"Groq polish_resume_bullet fallback: {e}")
+            break
+        if not isinstance(data, dict):
+            continue
 
-    # Fallback if Groq unavailable
-    first_w = clean_bullet.split()[0] if clean_bullet else "Engineered"
-    if first_w.lower() not in ('architected', 'engineered', 'developed', 'optimized', 'built', 'deployed'):
-        verb = "Architected"
-    else:
-        verb = first_w.capitalize()
+        options = []
+        for key in ('polished', 'alternative_1', 'alternative_2'):
+            kept = sanitize_rewrite(data.get(key), source)
+            if kept and not _adds_unlisted_tech(kept, source) and kept not in options:
+                options.append(kept)
+        if options:
+            padded = options + ['', '']
+            return {
+                'original': clean_bullet,
+                'polished': padded[0],
+                'alternative_1': padded[1],
+                'alternative_2': padded[2],
+                'action_verb': options[0].split()[0],
+                'metric_highlight': '',
+                'bullets': options,
+                'ai': True,
+            }
+        if attempt == 0:
+            messages.append({
+                "role": "user",
+                "content": "Those were rejected for a banned word or an added number or tool. Follow every rule and try again.",
+            })
 
-    body = clean_bullet.lstrip('•- ').strip().rstrip('.')
-    if body and body.split()[0].lower() == verb.lower():
-        body = body.split(' ', 1)[1] if ' ' in body else ''
-    polished = f"{verb} {body}." if body else clean_bullet
-
+    polished = _basic_bullet_cleanup(clean_bullet) or clean_bullet
     return {
         'original': clean_bullet,
         'polished': polished,
         'alternative_1': '',
         'alternative_2': '',
-        'action_verb': verb,
+        'action_verb': polished.split()[0] if polished else '',
         'metric_highlight': '',
-        'bullets': [polished],
+        'bullets': [polished] if polished else [],
+        'ai': False,
     }
 
 
@@ -806,275 +678,189 @@ def generate_ai_resume_critique_and_suggestions(
         }
 
 
-def generate_100_percent_ats_resume_from_jd(
-    job_description: str,
-    job_title: str = "",
-    company_name: str = "",
-    candidate_info: dict = None,
-    experience_level: str = "fresher",
-    num_projects: int = 2,
-) -> dict:
-    """
-    Generate a 100% ATS-friendly software engineering resume directly from a Job Description.
-    1. Extracts/detects job title, core tech stack, and domain requirements.
-    2. Dynamically crafts tailored flagship enterprise projects matching the exact JD tech stack.
-    3. Every project bullet strictly adheres to the Google XYZ Formula with power action verbs and metrics.
-    4. Categorizes technical skills to match 100% of required JD keywords.
-    5. Formats a role-tailored summary with architecture scale hooks.
-    6. Returns structured resume JSON + ATS scorecard guaranteeing 95-100/100 pass rate.
-    """
-    import re
-    from .resume_parser import evaluate_uploaded_resume_ats
+# Skills we can recognise in a job description, grouped the way a resume lists them.
+JD_SKILL_MAP = {
+    'Languages': [
+        'Python', 'JavaScript', 'TypeScript', 'Java', 'Golang', 'C++', 'C#', 'Rust', 'SQL',
+        'PHP', 'Ruby', 'Swift', 'Kotlin', 'Scala', 'Bash', 'HTML', 'CSS',
+    ],
+    'Frameworks & Libraries': [
+        'Django', 'FastAPI', 'Flask', 'React', 'Next.js', 'Node.js', 'Express.js', 'Spring Boot',
+        'Angular', 'Vue.js', 'Redux', 'Tailwind CSS', 'GraphQL', 'gRPC', 'PyTorch', 'TensorFlow',
+        'Pandas', 'NumPy', 'Scikit-Learn', 'Selenium', 'Playwright', 'Flutter', 'React Native',
+    ],
+    'Databases & Caching': [
+        'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Cassandra', 'Elasticsearch', 'DynamoDB',
+        'SQLite', 'Oracle', 'Snowflake', 'BigQuery',
+    ],
+    'Cloud & DevOps': [
+        'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'CI/CD', 'GitHub Actions', 'Jenkins',
+        'Terraform', 'Linux', 'Nginx', 'Kafka', 'Celery', 'RabbitMQ', 'Prometheus', 'Grafana', 'Git',
+    ],
+    'Tools & Concepts': [
+        'Microservices', 'REST API', 'Distributed Systems', 'System Design', 'JWT',
+        'Unit Testing', 'Agile', 'Scrum', 'Power BI', 'Tableau', 'Excel', 'Machine Learning',
+    ],
+}
 
-    cand = candidate_info or {}
-    name = cand.get('name') or 'Rahul Sharma'
-    contact = cand.get('contact') or {
-        'email': cand.get('email') or 'rahul.sharma@example.com',
-        'phone': cand.get('phone') or '+91 98765 01234',
-        'location': cand.get('location') or 'Bengaluru, India',
-        'linkedin': cand.get('linkedin') or 'linkedin.com/in/rahulsharma-dev',
-        'github': cand.get('github') or 'github.com/rahulsharma-dev',
-        'portfolio': cand.get('portfolio') or ''
-    }
 
-    # Extract technologies and concepts deterministically from JD
-    common_tech_map = {
-        'Languages': [
-            'Python', 'JavaScript', 'TypeScript', 'Java', 'Golang', 'Go', 'C++', 'C#',
-            'Rust', 'SQL', 'PHP', 'Ruby', 'Swift', 'Kotlin', 'Scala', 'Bash'
-        ],
-        'Frameworks & Libraries': [
-            'Django', 'FastAPI', 'Flask', 'React', 'React.js', 'Next.js', 'Node.js',
-            'Express.js', 'Spring Boot', 'Angular', 'Vue.js', 'Redux', 'Tailwind CSS',
-            'GraphQL', 'gRPC', 'PyTorch', 'TensorFlow', 'Pandas', 'NumPy', 'Scikit-Learn'
-        ],
-        'Databases & Caching': [
-            'PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Cassandra', 'Elasticsearch',
-            'DynamoDB', 'SQLite', 'Oracle', 'Snowflake', 'BigQuery'
-        ],
-        'Cloud & DevOps': [
-            'Docker', 'Kubernetes', 'AWS', 'Amazon Web Services', 'GCP', 'Google Cloud',
-            'Azure', 'CI/CD', 'GitHub Actions', 'Jenkins', 'Terraform', 'Linux',
-            'Nginx', 'Kafka', 'Apache Kafka', 'Celery', 'RabbitMQ', 'Prometheus', 'Grafana'
-        ],
-        'Architecture & Concepts': [
-            'Microservices', 'REST API', 'RESTful APIs', 'Distributed Systems', 'System Design',
-            'High Availability', 'Concurrency', 'Event-Driven Architecture', 'JWT', 'RBAC',
-            'Caching', 'Unit Testing', 'TDD', 'Agile', 'Scrum'
-        ]
-    }
+def _mentions_skill(skill: str, text: str) -> bool:
+    return re.search(rf'(?<![a-z0-9+#.]){re.escape(skill.lower())}(?![a-z0-9+#])', text) is not None
 
-    jd_lower = (job_description or '').lower()
-    matched_by_cat = {}
-    all_matched_skills = []
 
-    for category, tech_list in common_tech_map.items():
-        found = []
-        for tech in tech_list:
-            pattern = r'\b' + re.escape(tech.lower()) + r'\b'
-            if re.search(pattern, jd_lower):
-                found.append(tech)
-                if tech not in all_matched_skills:
-                    all_matched_skills.append(tech)
-        if found:
-            matched_by_cat[category] = found
-
-    # Ensure baseline skills if JD is sparse
-    if not all_matched_skills:
-        all_matched_skills = ['Python', 'FastAPI', 'Django', 'PostgreSQL', 'Redis', 'Docker', 'REST API', 'Git', 'CI/CD']
-        matched_by_cat = {
-            'Languages': ['Python', 'SQL', 'JavaScript'],
-            'Frameworks': ['Django', 'FastAPI', 'Celery'],
-            'Databases & Caching': ['PostgreSQL', 'Redis'],
-            'Cloud & DevOps': ['Docker', 'AWS', 'CI/CD', 'Git'],
-            'Architecture & Concepts': ['REST APIs', 'Microservices', 'Distributed Systems']
-        }
-
-    # Derive role title if not provided
-    if not job_title:
-        if 'full stack' in jd_lower or 'fullstack' in jd_lower:
-            job_title = 'Full-Stack Software Engineer'
-        elif 'devops' in jd_lower or 'sre' in jd_lower or 'cloud engineer' in jd_lower:
-            job_title = 'DevOps & Cloud Systems Engineer'
-        elif 'data engineer' in jd_lower or 'big data' in jd_lower:
-            job_title = 'Data Engineer & Distributed Systems Architect'
-        elif 'java' in jd_lower:
-            job_title = 'Java & Spring Boot Backend Engineer'
-        elif 'frontend' in jd_lower or 'react' in jd_lower or 'ui engineer' in jd_lower:
-            job_title = 'Frontend / UI Systems Engineer'
-        elif 'go' in jd_lower or 'golang' in jd_lower:
-            job_title = 'Golang Distributed Backend Engineer'
-        else:
-            job_title = 'Software Development Engineer (Backend)'
-
-    # Attempt AI generation for custom flagship projects tailored specifically to the JD
-    ai_generated_data = None
-    try:
-        system_prompt = (
-            "You are an elite ex-FAANG Principal Resume Architect and ATS Optimization Engine. "
-            "Given a Job Description and extracted skills, synthesize a 100% ATS-Compliant software engineering resume. "
-            "CRITICAL REQUIREMENTS:\n"
-            "1. SUMMARY: A 3-line punchy recruiter elevator pitch referencing the role, top skills, and scale/latency achievements.\n"
-            "2. PROJECTS: Build 2 flagship enterprise projects tailored directly to the problems, domain, and tech stack in this JD: "
-            "   - 'title': Realistic system name (e.g. 'Distributed High-Throughput Payment Engine' or 'Real-Time Event Streaming Microservices'). "
-            "   - 'role': 'Software Development Engineer / Architect'. "
-            "   - 'tech_stack': Comma-separated list including primary technologies from the JD. "
-            "   - 'bullets': Exactly 4 accomplishment bullets strictly formatted as Google XYZ: 'Accomplished [X] as measured by [Y], by doing [Z]'. "
-            "   - Every bullet MUST start with an active power verb: Architected, Engineered, Optimized, Spearheaded, Implemented, Deployed, Benchmarked, Scaled. "
-            "   - Every bullet MUST include quantified metrics: e.g. 'cutting API latency by 44% (from 280ms to 155ms)', 'processing 2.5M+ transactions daily with 99.99% uptime', 'reducing query time by 38%'. "
-            "   - Embed architecture scale keywords: Redis caching, Celery queues, Docker containerization, PostgreSQL indexing, RESTful APIs, JWT/RBAC security, CI/CD pipeline, Kafka.\n"
-            "Return a valid JSON object with keys: 'summary', 'projects'."
-        )
-
-        user_payload = {
-            "job_title": job_title,
-            "company_name": company_name,
-            "target_skills": all_matched_skills[:12],
-            "job_description_snippet": job_description[:2500]
-        }
-
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": json.dumps(user_payload)}
-        ]
-
-        response_text = call_groq_chat(messages, temperature=0.25, json_mode=True, timeout=12)
-        ai_generated_data = json.loads(response_text)
-    except Exception as e:
-        logger.warning(f"Groq JD resume generation encountered issue: {e}. Using deterministic 100% ATS generator.")
-
-    # 1. Professional Summary
-    top_skills_str = ", ".join(all_matched_skills[:5])
-    summary = ""
-    if ai_generated_data and ai_generated_data.get("summary"):
-        summary = ai_generated_data["summary"].strip()
-    if not summary or len(summary) < 50:
-        company_ref = f" at {company_name}" if company_name else ""
-        summary = (
-            f"Results-driven {job_title} with proven engineering expertise in {top_skills_str}. "
-            f"Demonstrated track record of architecting high-throughput distributed backends, implementing Redis caching and Celery queues, "
-            f"and deploying containerized microservices delivering 99.99% uptime under peak concurrency{company_ref}."
-        )
-
-    # 2. Categorized Skills
-    skills_dict = {}
-    for cat, items in matched_by_cat.items():
-        if items:
-            skills_dict[cat] = ", ".join(items)
-    if not skills_dict:
-        skills_dict = {
-            "Languages": "Python, SQL, JavaScript, Bash",
-            "Frameworks": "Django, FastAPI, Celery, REST Framework",
-            "Databases & Caching": "PostgreSQL, Redis, MySQL",
-            "Cloud & DevOps": "Docker, Kubernetes, AWS, CI/CD, Git, Linux",
-            "Architecture & System Design": "REST APIs, Microservices, Distributed Systems, JWT, RBAC"
-        }
-
-    # 3. Flagship Projects Tailored to JD
-    projects = []
-    if ai_generated_data and isinstance(ai_generated_data.get("projects"), list) and len(ai_generated_data["projects"]) >= 2:
-        for p in ai_generated_data["projects"][:3]:
-            if p.get("title") and p.get("bullets") and len(p.get("bullets")) >= 3:
-                projects.append({
-                    "title": p.get("title"),
-                    "role": p.get("role", "Software Development Engineer"),
-                    "tech_stack": p.get("tech_stack", ", ".join(all_matched_skills[:5])),
-                    "bullets": p.get("bullets")[:4]
-                })
-
-    # If AI projects were empty or invalid, draw directly from the 500+ Curated Project Catalog matching detected skills
-    if len(projects) < 2:
-        try:
-            from .comprehensive_projects_catalog import search_projects
-            cat_matches = []
-            for skill in all_matched_skills[:4]:
-                found = search_projects(tech=skill, limit=2)
-                for f in found:
-                    if not any(cm['title'] == f['title'] for cm in cat_matches):
-                        cat_matches.append(f)
-            if cat_matches:
-                for cm in cat_matches[:2]:
-                    projects.append({
-                        "title": cm["title"],
-                        "role": (cm.get("target_job_roles") or ["Software Engineer"])[0],
-                        "tech_stack": cm.get("tech_stack", ", ".join(all_matched_skills[:5])),
-                        "github_url": cm.get("github_url", ""),
-                        "bullets": cm.get("bullets", [])[:4]
-                    })
-        except Exception:
-            pass
-
-    # If still fewer than 2, construct deterministic high-impact projects matching the stack
-    if len(projects) < 2:
-        primary_stack = ", ".join(all_matched_skills[:6])
-        sec_stack = ", ".join(all_matched_skills[3:9]) if len(all_matched_skills) > 6 else ", ".join(all_matched_skills[:4])
-        first_tech = all_matched_skills[0] if all_matched_skills else "Python"
-
-        projects = [
-            {
-                "title": f"Distributed High-Throughput {first_tech} Processing Engine",
-                "role": "Backend Software Engineer & Architect",
-                "tech_stack": f"{primary_stack}, REST API, Microservices, CI/CD",
-                "bullets": [
-                    f"Architected an event-driven microservices processing pipeline utilizing {first_tech} and Redis caching, slashing API response latency by 44% (from 280ms to 155ms).",
-                    "Engineered an asynchronous Celery task queue with PostgreSQL connection pooling, handling 2.4M+ daily transactions with 99.99% uptime under peak concurrency.",
-                    "Optimized complex SQL queries and composite database indexes, cutting p99 read latency by 38% and reducing CPU overhead by 25%.",
-                    "Deployed containerized Docker services orchestrated via automated CI/CD pipelines, eliminating manual release downtime and ensuring 100% test pass rate."
-                ]
-            },
-            {
-                "title": "Real-Time Scalable Data Ingestion & Analytics Gateway",
-                "role": "Systems / Software Engineer",
-                "tech_stack": f"{sec_stack}, Docker, Linux, Caching",
-                "bullets": [
-                    "Spearheaded the development of a real-time event ingestion gateway processing 15,000+ events per second with sub-50ms processing latency.",
-                    "Implemented JWT and role-based access control (RBAC) authentication, safeguarding 100% of sensitive API endpoints against unauthorized access.",
-                    "Constructed automated regression and unit test suites achieving 94% test coverage, preventing regression bugs across weekly sprint releases.",
-                    "Streamlined cloud infrastructure deployment with Docker and monitoring alerts, accelerating team deployment cadence by 300%."
-                ]
-            }
-        ]
-
-    # Education block
-    education = cand.get('education') or {
-        "institution": "Institute of Technology & Science",
-        "degree": "Bachelor of Engineering in Computer Science & Engineering",
-        "year": "2021 – 2025",
-        "gpa": "8.8 CGPA",
-        "coursework": "Data Structures & Algorithms, Distributed Systems, Database Management Systems, Computer Networks"
-    }
-
-    certifications = cand.get('certifications') or [
-        "AWS Certified Solutions Architect (Associate)",
-        "Docker & Kubernetes Professional Certification"
+def extract_jd_skills(job_description: str) -> list:
+    """Skills named in the job description, in the order of JD_SKILL_MAP."""
+    lowered = (job_description or '').lower()
+    return [
+        skill
+        for group in JD_SKILL_MAP.values()
+        for skill in group
+        if _mentions_skill(skill, lowered)
     ]
 
-    resume = {
-        "name": name,
-        "contact": contact,
-        "summary": summary,
-        "skills": skills_dict,
-        "projects": projects,
-        "education": education,
-        "certifications": certifications,
-        "job_title": job_title,
-        "target_skills": all_matched_skills
-    }
 
-    # Evaluate ATS Compliance
-    ats_eval = evaluate_uploaded_resume_ats(resume, all_matched_skills)
-    score = ats_eval.get("score", 98)
-    if score < 95:
-        score = 98
+def detect_job_title(job_description: str) -> str:
+    """Best-effort title from the first short line of the posting."""
+    for line in (job_description or '').splitlines():
+        line = line.strip(' \t:-*#')
+        if 4 <= len(line) <= 70 and re.search(
+            r'engineer|developer|analyst|intern|designer|manager|tester|architect|consultant|scientist|sdet',
+            line, re.I,
+        ):
+            return re.sub(r'^(job title|title|role|position)\s*[:\-]\s*', '', line, flags=re.I)
+    return ''
 
+
+def _candidate_skill_groups(candidate: dict) -> dict:
+    skills = candidate.get('skills') or {}
+    if isinstance(skills, list):
+        return {'Skills': [str(item).strip() for item in skills if str(item).strip()]}
+    groups = {}
+    for name, value in skills.items():
+        items = value if isinstance(value, list) else str(value or '').split(',')
+        cleaned = [str(item).strip() for item in items if str(item).strip()]
+        if cleaned:
+            groups[name] = cleaned
+    return groups
+
+
+def analyse_job_for_candidate(job_description: str, candidate: dict) -> dict:
+    """Split the job's skills into those the candidate already lists and the rest."""
+    required = extract_jd_skills(job_description)
+    candidate_text = json.dumps(candidate or {}, default=str).lower()
+    matched = [skill for skill in required if _mentions_skill(skill, candidate_text)]
     return {
-        "resume": resume,
-        "job_title": job_title,
-        "target_skills": all_matched_skills,
-        "ats_score": score,
-        "ats_grade": "Exceptional (100% ATS Match)" if score >= 98 else "Top Tier Pass (ATS 95+)",
-        "ats_eval": ats_eval
+        'required': required,
+        'matched': matched,
+        'missing': [skill for skill in required if skill not in matched],
     }
 
 
+def _job_summary(candidate: dict, job_title: str, skills: list) -> str:
+    """A summary built only from what the candidate gave us, plus the target role."""
+    existing = str(candidate.get('summary') or '').strip()
+    source = f"{json.dumps(candidate, default=str)} {job_title} {' '.join(skills)}"
+    fallback = existing or (
+        f"Candidate targeting {job_title or 'software'} roles, with skills in {', '.join(skills[:5])}."
+        if skills else ''
+    )
+    if not skills and not existing:
+        return ''
+
+    from .resume_generation_service import sanitize_rewrite
+
+    messages = [
+        {
+            "role": "system",
+            "content": (
+                "Write a 2 sentence resume summary for the target role using only the supplied facts. "
+                "Do not say the candidate is experienced. Do not add years of experience, numbers, employers, results or tools. Do not use hype "
+                "words such as robust, scalable, enterprise, results-driven or passionate. "
+                'Return JSON: {"summary": "..."}'
+            ),
+        },
+        {
+            "role": "user",
+            "content": json.dumps({
+                "target_role": job_title,
+                "skills": skills[:12],
+                "current_summary": existing,
+                "projects": [p.get('title') for p in candidate.get('projects') or [] if isinstance(p, dict)][:4],
+            }),
+        },
+    ]
+    try:
+        data = json.loads(call_groq_chat(messages, temperature=0.3, json_mode=True, timeout=10))
+        summary = sanitize_rewrite(data.get('summary') if isinstance(data, dict) else '', source)
+        claims_experience = re.search(r'\bexperienced?\b|\byears?\b', summary, re.I)
+        if summary and not claims_experience and not _adds_unlisted_tech(summary, source):
+            return summary
+    except Exception as e:
+        logger.warning(f"Groq job summary fallback: {e}")
+    return fallback
+
+
+def build_resume_for_job(
+    job_description: str,
+    job_title: str = "",
+    candidate_info: dict = None,
+    confirmed_skills: list = None,
+    practice_projects: list = None,
+) -> dict:
+    """
+    Arrange the candidate's own resume for one job.
+
+    Skills the job asks for are moved to the front, and skills the candidate
+    ticked as true are added. Experience, education and certifications are only
+    ever copied from the candidate, so a blank field stays blank. Practice
+    projects appear only when the candidate picked them, and are labelled.
+    """
+    from .resume_parser import evaluate_uploaded_resume_ats
+
+    candidate = dict(candidate_info or {})
+    analysis = analyse_job_for_candidate(job_description, candidate)
+    job_title = (job_title or detect_job_title(job_description)).strip()
+
+    confirmed = [skill for skill in (confirmed_skills or []) if skill]
+    groups = _candidate_skill_groups(candidate)
+    known = {item.lower() for items in groups.values() for item in items}
+    added = [skill for skill in confirmed if skill.lower() not in known]
+    if added:
+        groups.setdefault('Skills for this role', []).extend(added)
+
+    priority = {skill.lower() for skill in analysis['required']}
+    skills = {
+        name: ', '.join(sorted(items, key=lambda item: item.lower() not in priority))
+        for name, items in groups.items()
+    }
+
+    projects = [p for p in candidate.get('projects') or [] if isinstance(p, dict)]
+    def relevance(project):
+        text = json.dumps(project, default=str).lower()
+        return -sum(1 for skill in analysis['required'] if _mentions_skill(skill, text))
+    projects = sorted(projects, key=relevance) + list(practice_projects or [])
+
+    listed_skills = [item for items in groups.values() for item in items]
+    resume = dict(candidate)
+    resume.update({
+        'name': candidate.get('name') or '',
+        'contact': candidate.get('contact') or {},
+        'skills': skills,
+        'projects': projects,
+        'education': candidate.get('education') or {},
+        'certifications': candidate.get('certifications') or [],
+    })
+    resume['summary'] = _job_summary(resume, job_title, listed_skills)
+
+    final = analyse_job_for_candidate(job_description, resume)
+    ats_eval = evaluate_uploaded_resume_ats(resume, analysis['required'])
+    return {
+        'resume': resume,
+        'job_title': job_title,
+        'target_skills': analysis['required'],
+        'matched_skills': final['matched'],
+        'missing_skills': final['missing'],
+        'ats_score': ats_eval.get('overall_score', ats_eval.get('score', 0)),
+        'ats_eval': ats_eval,
+    }
 

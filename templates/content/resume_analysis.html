@@ -4,7 +4,7 @@
 {% block title %}{{ page_title }}{% endblock %}
 {% block meta_description %}{{ meta_description }}{% endblock %}
 {% block og_title %}⚡ Free AI Resume Checker & ATS Score Analysis — Kashii Updatez{% endblock %}
-{% block og_description %}Get instant 0-100 ATS resume scoring, keyword gap analysis, Google XYZ bullet recommendations, and 1-click AI project enhancements.{% endblock %}
+{% block og_description %}Get a 0-100 resume score, missing keywords and clear suggestions for your bullets.{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -381,11 +381,11 @@
       <span>Instant AI Resume Score &amp; ATS Audit</span>
     </div>
     <h1 class="analysis-title">
-      Most resumes get rejected by ATS.<br>
-      <span class="grad">See where yours stands in seconds.</span>
+      Check your resume before you apply.<br>
+      <span class="grad">Get a clear score and what to fix.</span>
     </h1>
     <p class="analysis-subtitle">
-      Check your resume score (0–100), spot missing keywords, eliminate weak unquantified bullets, and upgrade your project descriptions with Google XYZ action verbs.
+      Check your resume score (0–100), spot missing keywords, find weak bullets and improve your project descriptions.
     </p>
   </section>
 
@@ -413,7 +413,7 @@
           Click to upload or drag &amp; drop your resume
         </h3>
         <p style="font-size: 12px; color: #64748b; margin: 0;">
-          Supports text-based PDF, DOCX (Word), or TXT up to 8MB. 100% private.
+          Text-based PDF, DOCX or TXT, up to 8MB. Your text is sent to our server and AI provider to score it.
         </p>
         <div id="selectedFileName" style="display: none; margin-top: 12px; font-size: 12px; font-weight: 750; color: #2563eb; background: #eff6ff; padding: 6px 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px;">
           <i data-lucide="file-text" style="width: 14px; height: 14px;"></i>
@@ -463,7 +463,7 @@
           Evaluating your resume...
         </h2>
         <p id="resultPassRateText" style="font-size: 13.5px; color: #94a3b8; margin: 0 0 18px; line-height: 1.5;">
-          Checking keyword density, formatting, and Google XYZ metrics against top applicant tracking systems.
+          Checking keyword density, formatting, and Google XYZ metrics with our resume checks.
         </p>
 
         <!-- CTAs -->
@@ -474,7 +474,7 @@
           </button>
           <button type="button" onclick="openActionVerbsModal()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; padding: 10px 14px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
             <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
-            <span>250+ Tech Action Verbs</span>
+            <span>Tech action verbs</span>
           </button>
         </div>
       </div>
@@ -517,10 +517,10 @@
         <div class="compare-box good">
           <span class="compare-tag good">Strong example (use your own real numbers)</span>
           <p style="font-size: 12.5px; color: #14532d; margin: 0; line-height: 1.5; font-weight: 600;">
-            “Architected asynchronous task queue with Redis and Celery, reducing p99 API latency by 45% and maintaining 99.9% uptime under 15,000+ RPS.”
+            “Built an asynchronous task queue with Redis and Celery, cutting report generation from 40 seconds to 6 seconds.”
           </p>
           <div style="margin-top: 8px; font-size: 11px; color: #166534;">
-            &bull; Active verb (Architected) &bull; Measurable proof (45%, 15k+ RPS) &bull; Core stack (Redis, Celery)
+            &bull; Active verb (Built) &bull; A result you measured &bull; Core stack (Redis, Celery). Use your own numbers only.
           </div>
         </div>
       </div>
@@ -570,7 +570,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 20px;">⚡</span>
-        <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">250+ Software Engineering Action Verbs</h3>
+        <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">Software engineering action verbs</h3>
       </div>
       <button type="button" onclick="closeActionVerbsModal()" style="background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer;">&times;</button>
     </div>

@@ -1424,6 +1424,97 @@ def extract_job_contact_emails(job) -> List[EmailCandidate]:
 # Public API
 # ---------------------------------------------------------------------------
 
+_PEOPLE_ROLE_RE = re.compile(
+    r"recruit|talent|hiring|human resources|\bhr\b|people (?:partner|operations)|campus", re.I
+)
+_PEOPLE_CACHE_TTL = 6 * 60 * 60
+
+
+def _person_from_linkedin_result(item: Dict[str, str], company: str) -> Optional[Dict[str, str]]:
+    """Read a person from one search result, or None if it is not clearly one at this company."""
+    url = (item.get("url") or "").split("?")[0].rstrip("/")
+    if not re.match(r"https://([a-z]{2,3}\.)?linkedin\.com/in/[^/]+$", url):
+        return None
+    title = re.sub(r"\s*[|·]\s*LinkedIn.*$", "", item.get("title") or "", flags=re.I).strip()
+    # The company must be in the headline: snippets often mention past employers.
+    if company.lower() not in title.lower():
+        return None
+    if not _PEOPLE_ROLE_RE.search(f"{title} {item.get('snippet') or ''}"):
+        return None
+    parts = [part.strip() for part in re.split(r"\s[-–—]\s", title) if part.strip()]
+    name = parts[0] if parts else ""
+    if not name or re.search(r"\d", name) or not 1 < len(name.split()) <= 5:
+        return None
+    return {
+        "name": name,
+        "headline": " · ".join(parts[1:3]),
+        "url": url,
+        "source": "LinkedIn search result",
+        "kind": "recruiter",
+    }
+
+
+def _github_company_people(company: str, limit: int = 5) -> List[Dict[str, str]]:
+    """Developers whose public GitHub profile names this company: good referral contacts."""
+    found = _github_get("/search/users", {"q": f'"{company}" in:company type:user', "per_page": "12"})
+    people: List[Dict[str, str]] = []
+    for item in (found or {}).get("items") or []:
+        if len(people) >= limit:
+            break
+        if item.get("type") != "User":
+            continue
+        profile = _github_get(f"/users/{item.get('login')}") or {}
+        works_at = str(profile.get("company") or "")
+        if company.lower() not in works_at.lower() or not profile.get("name"):
+            continue
+        people.append({
+            "name": profile["name"],
+            "headline": (profile.get("bio") or f"Works at {works_at.lstrip('@')}")[:120],
+            "url": profile.get("html_url") or "",
+            "source": "Public GitHub profile",
+            "kind": "referral",
+        })
+    return people
+
+
+def discover_company_people(company_name: str) -> Dict[str, Any]:
+    """
+    Find people to contact at a company without needing a name first.
+
+    LinkedIn profiles are read only from search engine results, never from
+    LinkedIn itself. Each person links to the public page they came from, and
+    no contact details are generated here.
+    """
+    company = clean_company_name_for_search(company_name) or (company_name or "").strip()
+    if not company:
+        return {"company": "", "people": [], "search_configured": False}
+
+    cache_key = f"recruiter:people:{_hash(company)}"
+    cached = _cache_get(cache_key)
+    if isinstance(cached, dict):
+        return cached
+
+    query = f'site:linkedin.com/in "{company}" (recruiter OR "talent acquisition" OR "hiring manager") India'
+    search = search_web(query, limit=10)
+    people: List[Dict[str, str]] = []
+    seen = set()
+    for item in search.get("results") or []:
+        person = _person_from_linkedin_result(item, company)
+        if person and person["url"] not in seen:
+            seen.add(person["url"])
+            people.append(person)
+        if len(people) >= 6:
+            break
+
+    payload = {
+        "company": company,
+        "people": people + _github_company_people(company),
+        "search_configured": bool(search.get("configured")),
+    }
+    _cache_set(cache_key, payload, _PEOPLE_CACHE_TTL)
+    return payload
+
+
 def discover_recruiter_contact(
     name: str = "",
     company: str = "",

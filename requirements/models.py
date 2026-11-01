@@ -230,9 +230,9 @@ class JobPosting(models.Model):
                 "icon": "🎯"
             },
             {
-                "title": "Technical Placement Cheat Sheets & Question Bank",
+                "title": "Technical Placement Question Bank",
                 "desc": "High-yield coding cheat sheets, core CS fundamentals (OOP, DBMS, OS, Networks), and rapid revision guides.",
-                "url": "/guides/python-interview-questions-cheat-sheet/",
+                "url": "https://www.geeksforgeeks.org/interview-preparation/",
                 "icon": "📝"
             },
             {

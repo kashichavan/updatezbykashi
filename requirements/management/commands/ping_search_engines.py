@@ -5,7 +5,6 @@ import urllib.error
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from requirements.models import JobPosting, Category
-from blog.models import BlogPost
 
 
 class Command(BaseCommand):
@@ -23,7 +22,6 @@ class Command(BaseCommand):
             f'{host}/privacy-policy/',
             f'{host}/terms/',
             f'{host}/disclaimer/',
-            f'{host}/blog/',
             f'{host}/youtube/',
             f'{host}/debugger/',
             f'{host}/sql/',
@@ -38,10 +36,6 @@ class Command(BaseCommand):
         # Add active jobs
         for job in JobPosting.objects.filter(status="ACTIVE", deadline__gt=timezone.now())[:50]:
             url_list.append(f'{host}/category/{job.category.slug}/job/{job.uuid}/')
-
-        # Add blog posts
-        for post in BlogPost.objects.filter(is_published=True):
-            url_list.append(f'{host}/blog/{post.slug}/')
 
         url_list = list(dict.fromkeys(url_list))
         self.stdout.write(self.style.NOTICE(f"🚀 Collected {len(url_list)} unique URLs for Search Engine Indexing submission..."))

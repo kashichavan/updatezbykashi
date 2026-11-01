@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}⚡ {{ group.name }} — Kashii Updatez{% endblock %}
-{% block meta_description %}{{ group.description|default:"Explore all verified requirements in this hiring drive bundle with direct official apply links on Kashii Updatez." }}{% endblock %}
+{% block meta_description %}{{ group.description|default:"Explore all requirements in this hiring drive bundle with direct official apply links on Kashii Updatez." }}{% endblock %}
 
 {% block content %}
 <div class="wrap">
@@ -107,7 +107,7 @@
           </div>
           {% endif %}
 
-          <p>{{ job.description|truncatewords:18 }}</p>
+          <p>{{ job.description|cut:"**"|truncatewords:18 }}</p>
 
           <div class="skills-wrapper">
             {% for skill in job.get_skills_list %}

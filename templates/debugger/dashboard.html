@@ -67,7 +67,7 @@
       "name": "Is this online code editor free?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, it is 100% free with unlimited runs, no account required, and instant execution in the browser."
+        "text": "Yes. It is free and needs no account."
       }
     }
   ]
@@ -630,6 +630,11 @@
 {% block extra_js %}
 <!-- Monaco Editor Loader -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.38.0/min/vs/loader.min.js"></script>
+<script>
+  if (typeof require === 'undefined') {
+    document.getElementById('monacoEditorContainer').innerHTML = '<p style="padding:24px;font:14px/1.6 sans-serif;color:#b91c1c;">The code editor could not load. Check your connection and <a href="" style="color:inherit;font-weight:700;">reload this page</a>.</p>';
+  }
+</script>
 
 <!-- Debugger IDE Logic -->
 <script src="{% static 'js/debugger.js' %}?v=202608072325_jvm_highlighter_fix"></script>

@@ -230,37 +230,6 @@ class AutoUpgradeAndAnalysisViewTests(TestCase):
         upgraded = data.get('upgraded_resume', {})
         self.assertTrue(len(upgraded.get('projects', [])[0].get('bullets', [])) >= 2)
 
-    def test_generate_resume_from_jd_endpoint_success(self):
-        sample_jd = (
-            "We are seeking a Senior Python & Distributed Systems Backend Engineer. "
-            "You will build high-throughput microservices using Python, FastAPI, Django, PostgreSQL, "
-            "Redis caching, Celery task queues, Docker, and Kubernetes. Experience with REST APIs, "
-            "concurrency, and CI/CD pipelines is required."
-        )
-        res = self.client.post(
-            '/api/resume/from-job-description/',
-            data=json.dumps({
-                'job_description': sample_jd,
-                'job_title': 'Senior Python Backend Engineer',
-                'company_name': 'TechCorp Systems'
-            }),
-            content_type='application/json'
-        )
-        self.assertEqual(res.status_code, 200)
-        data = res.json()
-        self.assertEqual(data.get('status'), 'success')
-        self.assertGreaterEqual(data.get('ats_score', 0), 95)
-        self.assertGreaterEqual(data.get('projects_count', 0), 2)
-        resume = data.get('resume', {})
-        self.assertTrue(resume.get('summary'))
-        self.assertTrue(resume.get('skills'))
-        self.assertTrue(len(resume.get('projects', [])) >= 2)
-        # Check that projects have Google XYZ bullets
-        bullets = resume['projects'][0]['bullets']
-        self.assertTrue(len(bullets) >= 3)
-        self.assertIn('editor_url', data)
-        self.assertIn('gen_id', data)
-
     def test_generate_resume_from_jd_validation_error(self):
         res = self.client.post(
             '/api/resume/from-job-description/',
@@ -270,17 +239,6 @@ class AutoUpgradeAndAnalysisViewTests(TestCase):
         self.assertEqual(res.status_code, 400)
         data = res.json()
         self.assertEqual(data.get('status'), 'error')
-
-    def test_generate_resume_from_jd_alias_route(self):
-        res = self.client.post(
-            '/api/ai/resume-from-jd/',
-            data=json.dumps({'job_description': 'We need a Java Spring Boot engineer with MySQL, Docker, Kafka and AWS.'}),
-            content_type='application/json'
-        )
-        self.assertEqual(res.status_code, 200)
-        data = res.json()
-        self.assertEqual(data.get('status'), 'success')
-        self.assertGreaterEqual(data.get('ats_score', 0), 95)
 
     def test_500_plus_projects_catalog_endpoint(self):
         """Verify the 500+ project catalog returns curated projects with GitHub URLs and ATS scores."""

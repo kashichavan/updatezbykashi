@@ -259,7 +259,6 @@ def index_view(request):
 
     videos = get_cached_youtube_videos()
     initial_jobs = []
-    recent_posts = []
 
     try:
         jobs_qs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).select_related('category')
@@ -288,17 +287,23 @@ def index_view(request):
         logger.warning(f"Error fetching initial_jobs: {e}")
         initial_jobs_count = 0
 
+    hero_stats = {'open': 0, 'week': 0, 'internships': 0}
     try:
-        from blog.models import BlogPost
-        recent_posts = list(BlogPost.objects.filter(is_published=True).select_related('category').order_by('-published_at')[:3])
+        live_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now())
+        week_start = timezone.localdate() - timedelta(days=7)
+        hero_stats = {
+            'open': live_jobs.count(),
+            'week': live_jobs.filter(posted_date__gte=week_start).count(),
+            'internships': live_jobs.filter(job_type='INTERNSHIP').count(),
+        }
     except Exception as e:
-        logger.warning(f"Error fetching recent_posts: {e}")
+        logger.warning(f"Error fetching hero stats: {e}")
 
     return render(request, 'content/home.html', {
+        'hero_stats': hero_stats,
         'youtube_videos': videos,
         'initial_jobs': initial_jobs,
         'initial_jobs_count': initial_jobs_count,
-        'recent_posts': recent_posts,
     })
 
 
@@ -350,15 +355,12 @@ def ensure_guides_seeded():
         pass
 
 def guides_list_view(request):
-    """Seamlessly redirects legacy /guides/ traffic to the new Tech Blog."""
-    topic = request.GET.get('topic')
-    if topic:
-        return redirect(f'/blog/?search={topic}', permanent=False)
-    return redirect('/blog/', permanent=False)
+    """Legacy /guides/ links go to the home page: the articles were retired."""
+    return redirect('/', permanent=True)
 
 def guide_detail_view(request, slug):
-    """Seamlessly redirects legacy /guides/<slug>/ traffic to the new Tech Blog."""
-    return redirect(f'/blog/{slug}/', permanent=False)
+    """Legacy /guides/<slug>/ links go to the home page: the articles were retired."""
+    return redirect('/', permanent=True)
 
 
 def sitemap_xml_view(request):
@@ -372,8 +374,6 @@ def sitemap_xml_view(request):
         ('/debugger/', 'daily', '1.0'),
         ('/resume/', 'daily', '0.95'),
         ('/sql/', 'daily', '0.90'),
-        ('/tools/job-description-generator/', 'weekly', '0.85'),
-        ('/guides/', 'daily', '0.90'),
         ('/about/', 'weekly', '0.80'),
         ('/youtube/', 'weekly', '0.80'),
         ('/privacy-policy/', 'monthly', '0.50'),
@@ -393,16 +393,6 @@ def sitemap_xml_view(request):
         xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
         xml_lines.append(f'    <changefreq>{changefreq}</changefreq>')
         xml_lines.append(f'    <priority>{priority}</priority>')
-        xml_lines.append(f'  </url>')
-
-    # Guide articles
-    for guide in GuideArticle.objects.filter(status='PUBLISHED'):
-        g_mod = guide.updated_at.strftime('%Y-%m-%d')
-        xml_lines.append(f'  <url>')
-        xml_lines.append(f'    <loc>{host}/guides/{guide.slug}/</loc>')
-        xml_lines.append(f'    <lastmod>{g_mod}</lastmod>')
-        xml_lines.append(f'    <changefreq>weekly</changefreq>')
-        xml_lines.append(f'    <priority>0.8</priority>')
         xml_lines.append(f'  </url>')
 
     # Interactive Learning Academy Topics
@@ -467,23 +457,6 @@ def rss_feed_view(request):
       <description><![CDATA[Apply for {job.title} at {job.company_name}. Location: {job.location}. Salary: {job.stipend_salary}. 100% verified student opportunity on Kashii Update.]]></description>
       <category><![CDATA[{cat_name}]]></category>
     </item>""")
-
-    # Blog Masterclasses
-    try:
-        from blog.models import BlogPost
-        for post in BlogPost.objects.filter(is_published=True).order_by('-published_at')[:20]:
-            p_date = post.published_at.strftime("%a, %d %b %Y %H:%M:%S GMT") if post.published_at else now_rfc
-            cat_name = post.category.name if post.category else "Technology"
-            items.append(f"""    <item>
-      <title><![CDATA[{post.title}]]></title>
-      <link>{host}/blog/{post.slug}/</link>
-      <guid isPermaLink="true">{host}/blog/{post.slug}/</guid>
-      <pubDate>{p_date}</pubDate>
-      <description><![CDATA[{post.excerpt or post.title}. In-depth technical masterclass by Python Kashi on Kashii Update.]]></description>
-      <category><![CDATA[{cat_name}]]></category>
-    </item>""")
-    except Exception:
-        pass
 
     xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -819,6 +792,35 @@ def api_recruiter_intel(request, job_uuid=None):
         return response
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+def api_recruiter_people(request, job_uuid=None):
+    """People at the hiring company, found on public search results and GitHub."""
+    from django.utils.cache import patch_cache_control
+    from requirements.services.recruiter_finder import discover_company_people
+
+    job = JobPosting.objects.filter(uuid=job_uuid).first()
+    if not job:
+        return JsonResponse({'status': 'error', 'message': 'Job not found'}, status=404)
+
+    client_ip = (
+        (request.META.get('HTTP_X_FORWARDED_FOR') or '').split(',')[0].strip()
+        or request.META.get('REMOTE_ADDR')
+        or 'unknown'
+    )
+    rate_key = f'recruiter:people:{client_ip}'
+    hits = cache.get(rate_key, 0)
+    if hits >= 10:
+        return JsonResponse({'status': 'error', 'message': 'Too many searches. Please wait a minute and try again.'}, status=429)
+    cache.set(rate_key, hits + 1, 60)
+
+    try:
+        response = JsonResponse({'status': 'ok', 'data': discover_company_people(job.company_name)})
+    except Exception:
+        logger.exception("api_recruiter_people error:")
+        return JsonResponse({'status': 'error', 'message': 'The search failed. Please try again.'}, status=500)
+    patch_cache_control(response, no_store=True)
+    return response
+
 
 def job_apply_redirect_view(request, uuid=None, pk=None, identifier=None):
     """
@@ -3040,16 +3042,16 @@ def resume_builder_view(request):
             if str(job_id).isdigit():
                 target_job = JobPosting.objects.filter(pk=int(job_id)).first()
 
-    # Pre-populate with realistic dummy name and contact details so candidate
-    # sees a complete, photorealistic, 100% finished ATS 95+ resume immediately.
+    # The role template fills the body as an example. Identity stays blank so
+    # nobody's resume ships with a stranger's name, phone or profile links.
     initial_resume = {
-        'name': 'Rahul Sharma',
+        'name': 'Your Name',
         'contact': {
-            'email': 'rahul.sharma@example.com',
-            'phone': '+91 98765 01234',
-            'location': 'Bengaluru, India',
-            'linkedin': 'linkedin.com/in/rahulsharma-dev',
-            'github': 'github.com/rahulsharma-dev',
+            'email': '',
+            'phone': '',
+            'location': '',
+            'linkedin': '',
+            'github': '',
             'portfolio': ''
         },
         'summary': role_data['summary'],
@@ -3715,43 +3717,6 @@ def api_download_resume_docx(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
-def job_description_generator_view(request):
-    """AI Job Description Generator & Career Blueprint Hub."""
-    target_title = request.GET.get('title', '').strip()
-    target_company = request.GET.get('company', '').strip()
-    context = {
-        'page_title': '⚡ AI Job Description Generator & Career Blueprint — Kashii Updatez',
-        'meta_description': 'Reverse-engineer tech job descriptions, extract ATS keywords, prepare for interviews, and draft high-converting recruiter postings in seconds.',
-        'target_title': target_title,
-        'target_company': target_company,
-    }
-    return render(request, 'job_description_generator.html', context)
-
-
-@csrf_exempt
-def api_ai_generate_jd(request):
-    """AJAX endpoint for generating job descriptions via Groq AI."""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-    from .ai_engine import generate_job_description
-
-    try:
-        body = json.loads(request.body.decode('utf-8'))
-        data = generate_job_description(
-            title=body.get('title', ''),
-            company=body.get('company', ''),
-            experience=body.get('experience', '0-2 years'),
-            location=body.get('location', 'Remote / Bangalore'),
-            work_mode=body.get('work_mode', 'Full-time'),
-            skills=body.get('skills', ''),
-            additional_notes=body.get('additional_notes', ''),
-        )
-        return JsonResponse({'success': True, 'data': data})
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
 @csrf_exempt
 def api_ai_generate_project_bullets(request):
     """
@@ -3807,20 +3772,27 @@ def api_ai_polish_bullet(request):
 
     try:
         body = json.loads(request.body.decode('utf-8'))
-        bullet = body.get('bullet', '')
+        bullet = str(body.get('bullet', '')).strip()
+        tech_stack = body.get('tech_stack', '')
+        if isinstance(tech_stack, list):
+            tech_stack = ', '.join(str(item) for item in tech_stack)
+        tech_stack = str(tech_stack)[:300]
         if not bullet:
             return JsonResponse({'success': False, 'error': 'Bullet text is required'}, status=400)
+        if len(bullet) > 600:
+            return JsonResponse({'success': False, 'error': 'Keep each bullet under 600 characters.'}, status=400)
 
         data = polish_resume_bullet(
             bullet=bullet,
-            role=body.get('role', ''),
-            tech_stack=body.get('tech_stack', ''),
+            role=str(body.get('role', ''))[:80],
+            tech_stack=tech_stack,
         )
         if isinstance(data, dict):
             from .resume_generation_service import sanitize_rewrite
+            allowed = f"{bullet} {tech_stack}"
             for key in ('polished', 'alternative_1', 'alternative_2', 'metric_highlight'):
                 if key in data:
-                    data[key] = sanitize_rewrite(data.get(key), bullet) or ''
+                    data[key] = sanitize_rewrite(data.get(key), allowed) or ''
         polished = data.get('polished', '')
         alts = [b for b in (data.get('alternative_1'), data.get('alternative_2')) if b]
         bullets_list = data.get('bullets', ([polished] if polished else []))
@@ -4121,118 +4093,104 @@ def api_ai_auto_upgrade_resume(request):
 @csrf_exempt
 def api_generate_resume_from_jd(request):
     """
-    100% ATS-Friendly Resume Generation Endpoint from a Job Description.
-    1. Extracts required skills, tech stack, and role concepts from the provided JD.
-    2. Dynamically crafts tailored enterprise projects with Google XYZ quantified metrics.
-    3. Categorizes technical skills to match 100% of required keywords.
-    4. Formats a role-tailored summary with architecture scale hooks.
-    5. Saves record in ResumeGenerationJob for instant 1-click live editor URL.
-    6. Returns structured resume JSON + ATS scorecard guaranteeing 95-100/100 pass rate.
+    Paste a job description, get the candidate's own resume arranged for it.
+
+    With preview=true this only returns the skill split and practice ideas, so
+    the candidate can confirm what is true before anything is created.
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed. Use POST.'}, status=405)
 
-    from .ai_engine import generate_100_percent_ats_resume_from_jd
-    from .models import ResumeGenerationJob
+    from .ai_engine import analyse_job_for_candidate, build_resume_for_job, detect_job_title, extract_jd_skills
+    from .comprehensive_projects_catalog import ALL_PROJECTS, search_projects
     import uuid
 
+    def practice_entry(project):
+        stack = project.get('tech_stack') or ', '.join(project.get('technical_stack') or [])
+        return {
+            'title': f"{project.get('title', '')} (Practice Project)",
+            'role': '',
+            'tech_stack': stack,
+            'github_url': '',
+            'bullets': [f"Built {project.get('title', 'this project')} using {stack}."],
+        }
+
     try:
-        body = {}
         if request.content_type and 'application/json' in request.content_type:
             body = json.loads(request.body.decode('utf-8'))
         else:
             body = request.POST.dict()
 
-        job_description = (
-            body.get('job_description') or
-            body.get('description') or
-            body.get('jd') or
-            body.get('jd_text') or
-            ''
+        job_description = str(
+            body.get('job_description') or body.get('description') or body.get('jd') or ''
         ).strip()
+        job_title = str(body.get('job_title') or '').strip()[:120]
 
         job_id = body.get('job_id')
         if job_id and not job_description:
-            from .models import JobPosting
             posting = None
             try:
                 posting = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
-            except Exception:
+            except (ValueError, AttributeError):
                 if str(job_id).isdigit():
                     posting = JobPosting.objects.filter(pk=int(job_id)).first()
             if posting:
-                job_description = posting.description or posting.skills_required or ''
-                if not body.get('job_title'):
-                    body['job_title'] = posting.title
-                if not body.get('company_name'):
-                    body['company_name'] = posting.company_name
+                job_description = ' '.join(filter(None, [posting.description, posting.skills_required]))
+                job_title = job_title or posting.title
 
-        if not job_description or len(job_description) < 20:
+        if len(job_description) < 20:
             return JsonResponse({
-                'status': 'error',
-                'success': False,
-                'error': 'job_description is required and must be at least 20 characters long.'
+                'status': 'error', 'success': False,
+                'error': 'Paste the job description first. It needs at least 20 characters.',
+            }, status=400)
+        if len(job_description) > 20000:
+            return JsonResponse({
+                'status': 'error', 'success': False,
+                'error': 'That job description is too long. Keep it under 20,000 characters.',
             }, status=400)
 
-        job_title = body.get('job_title', '').strip()
-        company_name = body.get('company_name', '').strip()
-        candidate_info = body.get('candidate') or body.get('candidate_info') or {}
-        experience_level = body.get('experience_level', 'fresher')
+        candidate = body.get('candidate') or body.get('candidate_info') or {}
+        if not isinstance(candidate, dict):
+            candidate = {}
 
-        result = generate_100_percent_ats_resume_from_jd(
+        if body.get('preview'):
+            analysis = analyse_job_for_candidate(job_description, candidate)
+            ideas, seen = [], set()
+            for skill in extract_jd_skills(job_description)[:4]:
+                for project in search_projects(tech=skill, limit=2):
+                    title = project.get('title', '')
+                    if title and title not in seen and len(ideas) < 4:
+                        seen.add(title)
+                        ideas.append({
+                            'title': title,
+                            'tech_stack': project.get('tech_stack') or ', '.join(project.get('technical_stack') or []),
+                        })
+            return JsonResponse({
+                'status': 'success', 'success': True,
+                'job_title': job_title or detect_job_title(job_description),
+                'matched_skills': analysis['matched'],
+                'missing_skills': analysis['missing'],
+                'practice_ideas': ideas,
+            })
+
+        confirmed = body.get('confirmed_skills') or []
+        confirmed = [str(item).strip()[:60] for item in confirmed if str(item).strip()][:40] if isinstance(confirmed, list) else []
+        titles = body.get('practice_projects') or []
+        titles = {str(item) for item in titles} if isinstance(titles, list) else set()
+        picked = [practice_entry(p) for p in ALL_PROJECTS if p.get('title') in titles][:3]
+
+        result = build_resume_for_job(
             job_description=job_description,
             job_title=job_title,
-            company_name=company_name,
-            candidate_info=candidate_info,
-            experience_level=experience_level,
-            num_projects=int(body.get('num_projects', 2))
+            candidate_info=candidate,
+            confirmed_skills=confirmed,
+            practice_projects=picked,
         )
+        return JsonResponse({'status': 'success', 'success': True, **result})
 
-        resume = result['resume']
-        from .ai_engine import _generate_ats_fallback_bullets
-        from .resume_generation_service import sanitize_rewrite
-        allowed_source = f"{job_description} {json.dumps(candidate_info or {}, default=str)}"
-        for project in resume.get('projects') or []:
-            kept = [sanitize_rewrite(b, allowed_source) for b in project.get('bullets') or []]
-            kept = [b for b in kept if b]
-            project['bullets'] = kept or _generate_ats_fallback_bullets(
-                project.get('title', ''), project.get('tech_stack', ''), project.get('role', ''))
-        if not sanitize_rewrite(resume.get('summary'), allowed_source):
-            skills_text = ', '.join(result['target_skills'][:4])
-            resume['summary'] = f"Candidate targeting {result['job_title']} roles, with skills in {skills_text}."
-        ats_score = result['ats_score']
-        ats_grade = result['ats_grade']
-        target_skills = result['target_skills']
-
-        # Persist record in ResumeGenerationJob so candidate can open /resume-builder/?gen_id=<uuid>
-        job_record = ResumeGenerationJob.objects.create(
-            status='COMPLETED',
-            generated_resume=resume,
-            mode='SCRATCH',
-            target_profile={'job_description': job_description[:2000], 'job_title': job_title}
-        )
-
-        editor_url = f"/resume-builder/?gen_id={job_record.uuid}&from_studio=1"
-
-        return JsonResponse({
-            'status': 'success',
-            'success': True,
-            'ats_score': ats_score,
-            'grade': ats_grade,
-            'job_title': result['job_title'],
-            'target_skills': target_skills,
-            'projects_count': len(resume.get('projects', [])),
-            'resume': resume,
-            'ats_evaluation': result['ats_eval'],
-            'editor_url': editor_url,
-            'gen_id': str(job_record.uuid),
-            'pdf_download_url': '/api/resume/download-pdf/',
-            'docx_download_url': '/api/resume/download-docx/'
-        })
-
-    except Exception as e:
+    except Exception:
         logger.exception("api_generate_resume_from_jd error:")
-        return JsonResponse({'status': 'error', 'success': False, 'error': str(e)}, status=500)
+        return JsonResponse({'status': 'error', 'success': False, 'error': 'Could not build the resume. Please try again.'}, status=500)
 
 
 @csrf_exempt

@@ -92,12 +92,8 @@ except Exception as e:
         print('==> Snapshot retry failed:', retry_err)
 " || true
 
-# 4. Auto-create production owner account, Software & Tech category, and seed guide articles & blog
+# 4. Auto-create production owner account and Software & Tech category
 python requirements/seed_prod.py || true
-python manage.py seed_blog || true
-python manage.py seed_deep_blogs || true
-python manage.py seed_kdeldycke_blogs || true
-python manage.py seed_starred_repo_blogs || true
 
 # 5. Auto-clean legacy database duplicates & normalize company names
 python manage.py shell -c "import requirements.jobdexo_service as j; j.cleanup_all_database_duplicates()" || true

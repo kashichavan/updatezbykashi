@@ -302,8 +302,6 @@ class VisitorAnalyticsMiddleware:
             page_title = "Learning Academy"
         elif path.startswith('/guides') or path.startswith('/tutorials'):
             page_title = "Study Guides & Prep"
-        elif path.startswith('/blog'):
-            page_title = "Technical Blog"
 
         SiteVisit.objects.create(
             visitor_hash=visitor_hash,
@@ -329,12 +327,13 @@ class SecurityHeadersMiddleware:
 
     CSP_POLICY = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "font-src 'self' https://fonts.gstatic.com data:; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; "
         "img-src 'self' data: https:; "
         "connect-src 'self' https:; "
         "frame-src 'self' https://www.youtube.com https://googleads.g.doubleclick.net; "
+        "worker-src 'self' blob:; "
         "object-src 'none'; "
         "base-uri 'self';"
     )

@@ -59,10 +59,9 @@ urlpatterns = [
     path('api/jobs/deduplicate/', views.api_jobs_deduplicate, name='api_jobs_deduplicate'),
 
     # AI Job Description Generator & Career Suite
-    path('tools/job-description-generator/', views.job_description_generator_view, name='job_description_generator'),
-    path('jd-generator/', views.job_description_generator_view, name='jd_generator_alias'),
-    path('ai-job-description/', views.job_description_generator_view, name='ai_jd_alias'),
-    path('api/ai/generate-jd/', views.api_ai_generate_jd, name='api_ai_generate_jd'),
+    path('tools/job-description-generator/', RedirectView.as_view(url='/resume-builder/?paste_jd=1', permanent=True)),
+    path('jd-generator/', RedirectView.as_view(url='/resume-builder/?paste_jd=1', permanent=True)),
+    path('ai-job-description/', RedirectView.as_view(url='/resume-builder/?paste_jd=1', permanent=True)),
     path('api/ai/polish-bullet/', views.api_ai_polish_bullet, name='api_ai_polish_bullet'),
     path('api/ai/generate-project-bullets/', views.api_ai_generate_project_bullets, name='api_ai_generate_project_bullets'),
     path('api/ai/tailor-resume/', views.api_ai_tailor_resume, name='api_ai_tailor_resume'),
@@ -73,6 +72,7 @@ urlpatterns = [
     path('api/resume/from-job-description/', views.api_generate_resume_from_jd, name='api_generate_resume_from_jd'),
     path('api/ai/resume-from-jd/', views.api_generate_resume_from_jd, name='api_ai_resume_from_jd'),
     path('api/jobs/<uuid:job_uuid>/recruiter-intel/', views.api_recruiter_intel, name='api_recruiter_intel'),
+    path('api/jobs/<uuid:job_uuid>/recruiter-people/', views.api_recruiter_people, name='api_recruiter_people'),
 
     # Mandatory Legal & Compliance Pages (AdSense Policy Requirements)
     path('privacy-policy/', views.privacy_policy_view, name='privacy_policy'),

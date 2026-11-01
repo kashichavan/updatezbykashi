@@ -53,7 +53,7 @@
     // 2. Animate status indicator
     await sleep(700);
     if (statusEl) {
-      statusEl.textContent = "⚡ Verified Opportunities Live";
+      statusEl.textContent = "Updated daily";
       statusEl.classList.add('ready');
     }
 

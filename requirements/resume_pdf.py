@@ -581,7 +581,7 @@ def _render_ats_pdf_buffer(data: dict, scale_factor: float = 1.0) -> bytes:
 
     # 6. Enterprise / Flagship Software Projects
     if proj_list:
-        sec_name = 'FLAGSHIP SOFTWARE PROJECTS' if exp_list else 'TECHNICAL & ENTERPRISE PROJECTS'
+        sec_name = 'PROJECTS'
         add_section_header(sec_name)
         for proj in proj_list:
             if not isinstance(proj, dict):

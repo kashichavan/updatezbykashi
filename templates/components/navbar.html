@@ -88,13 +88,13 @@
             </div>
           </a>
 
-          <a href="/tools/job-description-generator/" class="dropdown-item {% if '/job-description-generator' in request.path or '/jd-generator' in request.path %}active{% endif %}" role="menuitem">
+          <a href="/resume-builder/?paste_jd=1" class="dropdown-item">
             <span class="dropdown-item-icon icon-ai">
               <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
             </span>
             <div class="dropdown-item-text">
-              <div class="dropdown-item-title">AI JD Generator <span class="dropdown-badge badge-violet">AI</span></div>
-              <div class="dropdown-item-desc">Tailored job descriptions and hiring requirements</div>
+              <div class="dropdown-item-title">Resume from Job Post <span class="dropdown-badge badge-violet">New</span></div>
+              <div class="dropdown-item-desc">Paste a job and get your resume ready for it</div>
             </div>
           </a>
 
@@ -273,14 +273,14 @@
             <span class="drawer-badge" style="background: rgba(56, 189, 248, 0.2); color: #0284c7; font-weight: 800;">Free</span>
           </a>
 
-          <a href="/tools/job-description-generator/" class="drawer-link {% if '/job-description-generator' in request.path or '/jd-generator' in request.path %}active{% endif %}">
+          <a href="/resume-builder/?paste_jd=1" class="drawer-link">
             <div class="drawer-link-left">
               <span class="drawer-link-icon" style="color: #c084fc;">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
               </span>
-              <span class="drawer-link-label">AI JD Generator</span>
+              <span class="drawer-link-label">Resume from Job Post</span>
             </div>
             <span class="drawer-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; font-weight: 700;">AI</span>
           </a>

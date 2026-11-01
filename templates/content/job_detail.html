@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}💼 {{ job.company_name }} Hiring: {{ job.title }} (Apply Online) | Kashii Updatez{% endblock %}
-{% block meta_description %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Compensation: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}. 100% verified student job requirement with direct official application link on Kashii Updatez.{% endblock %}
+{% block meta_description %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Compensation: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}. 100% student job requirement with direct official application link on Kashii Updatez.{% endblock %}
 
 {% block schema_markup %}
 <!-- Google for Jobs Structured Data (JSON-LD) -->
@@ -1340,7 +1340,7 @@
           <h2 class="jd-kicker">About the role</h2>
         </div>
         <div class="jd-panel-body">
-          <div class="jd-prose">{{ job.description }}</div>
+          <div class="jd-prose">{{ job.description|cut:"**" }}</div>
         </div>
       </section>
 
@@ -1617,12 +1617,7 @@
             <span>Build a resume for this job</span>
             <i data-lucide="arrow-right" class="arrow"></i>
           </a>
-          <a href="/tools/job-description-generator/?title={{ job.title|urlencode }}&company={{ job.company_name|urlencode }}" class="jd-rail-link">
-            <i data-lucide="wand-2"></i>
-            <span>AI job description generator</span>
-            <i data-lucide="arrow-right" class="arrow"></i>
-          </a>
-        </div>
+          </div>
       </section>
 
       <section class="jd-rail-card">
@@ -1845,7 +1840,7 @@
           <img src="{% static 'images/icon-apply.png' %}" width="15" height="15" style="filter: brightness(0) invert(1);" alt="Link">
           <span>🔗 TAP LINK STICKER TO APPLY ↗</span>
         </div>
-        <div style="font-size: 9px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online · 100% Verified</div>
+        <div style="font-size: 9px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online</div>
       </div>
       <style>
         @keyframes pulseGlow {

@@ -67,8 +67,8 @@ urlpatterns = [
     path('sql/', include(('sqlsandbox.urls', 'sqlsandbox'), namespace='sqlsandbox')),
     path('sql-sandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
     path('sqlsandbox/', RedirectView.as_view(url='/sql/', permanent=False)),
-    path('blog/', RedirectView.as_view(url='/', permanent=False)),
-    path('blog/<path:subpath>/', RedirectView.as_view(url='/', permanent=False)),
+    path('blog/', RedirectView.as_view(url='/', permanent=True)),
+    path('blog/<path:subpath>/', RedirectView.as_view(url='/', permanent=True)),
     path('api/v1/', ninja_api.urls),
     path('', include('requirements.urls')),
 ]

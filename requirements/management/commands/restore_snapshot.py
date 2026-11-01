@@ -1,17 +1,28 @@
 import json
 import uuid as py_uuid
 from pathlib import Path
-from datetime import timedelta
+from datetime import date, datetime, time, timedelta
 from django.core.management.base import BaseCommand
 from django.db import connection, transaction
 from django.conf import settings
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from requirements.models import Category as JobCategory, JobPosting, JobGroup
-from blog.models import Category as BlogCategory, Tag as BlogTag, BlogPost
+
+
+LISTING_DAYS = 7
+
+
+def listing_deadline(posted_date, fallback):
+    """A listing closes seven days after it was posted, however often we redeploy."""
+    posted = posted_date if isinstance(posted_date, date) else parse_date(str(posted_date or '')[:10])
+    if not posted:
+        return fallback
+    return timezone.make_aware(datetime.combine(posted + timedelta(days=LISTING_DAYS), time.max))
 
 
 class Command(BaseCommand):
-    help = "Fast bulk-restore of full snapshot into database with active status and refreshed deadlines."
+    help = "Fast bulk-restore of the snapshot. Listings older than seven days stay closed."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -72,37 +83,6 @@ class Command(BaseCommand):
                     description="All software engineering and technology opportunities."
                 )
 
-            # 2. Blog Categories
-            blog_cat_map = {}
-            for item in data_by_model.get('blog.category', []):
-                old_pk = item.get('pk')
-                f = item.get('fields', {})
-                slug = f.get('slug') or f"blog-cat-{old_pk}"
-                name = f.get('name') or "Engineering"
-                obj = BlogCategory.objects.filter(slug=slug).first() or BlogCategory.objects.filter(name=name).first()
-                if not obj:
-                    obj = BlogCategory.objects.create(
-                        name=name,
-                        slug=slug,
-                        icon=f.get('icon', 'code'),
-                        description=f.get('description', ''),
-                        color=f.get('color', 'blue'),
-                        order=f.get('order', 0)
-                    )
-                blog_cat_map[old_pk] = obj
-
-            # 3. Blog Tags
-            tag_map = {}
-            for item in data_by_model.get('blog.tag', []):
-                old_pk = item.get('pk')
-                f = item.get('fields', {})
-                name = f.get('name') or f"tag-{old_pk}"
-                slug = f.get('slug') or f"tag-{old_pk}"
-                obj = BlogTag.objects.filter(name=name).first() or BlogTag.objects.filter(slug=slug).first()
-                if not obj:
-                    obj = BlogTag.objects.create(name=name, slug=slug)
-                tag_map[old_pk] = obj
-
             # 4. Job Postings Bulk Upsert
             existing_jobs = {j.id: j for j in JobPosting.objects.all()}
             existing_urls = {j.apply_url: j for j in existing_jobs.values() if j.apply_url}
@@ -121,11 +101,9 @@ class Command(BaseCommand):
                 title = f.get('title') or 'Job Opening'
                 company = f.get('company_name') or 'Company'
 
-                # Ensure requirement is ACTIVE and unexpired (at least 7 days from now)
-                deadline = f.get('deadline')
-                if not deadline:
-                    deadline = default_deadline
                 posted_date = f.get('posted_date') or default_posted_date
+                job_deadline = listing_deadline(posted_date, default_deadline)
+                job_status = 'ACTIVE' if job_deadline > now else 'EXPIRED'
 
                 target_obj = existing_jobs.get(old_pk) or (existing_urls.get(apply_url) if apply_url else None)
 
@@ -144,8 +122,8 @@ class Command(BaseCommand):
                     target_obj.description = f.get('description', '')
                     target_obj.eligibility = f.get('eligibility', '')
                     target_obj.selection_process = f.get('selection_process', '')
-                    target_obj.status = 'ACTIVE'  # Reactivate
-                    target_obj.deadline = default_deadline  # Refresh deadline
+                    target_obj.status = job_status
+                    target_obj.deadline = job_deadline
                     target_obj.posted_date = posted_date
                     target_obj.is_featured = f.get('is_featured', False)
                     jobs_to_update.append(target_obj)
@@ -179,8 +157,8 @@ class Command(BaseCommand):
                         study_materials=f.get('study_materials', []),
                         posted_by=f.get('posted_by', 'Kashii Updatez Admin'),
                         poster_email=f.get('poster_email', 'admin@kashiiupdatez.com'),
-                        status='ACTIVE',  # All seeded requirements ACTIVE
-                        deadline=default_deadline,  # Active 7-day window
+                        status=job_status,
+                        deadline=job_deadline,
                         posted_date=posted_date,
                         is_featured=f.get('is_featured', False),
                         is_referral=f.get('is_referral', False),
@@ -245,8 +223,8 @@ class Command(BaseCommand):
                     target_grp.banner_tag = f.get('banner_tag', '🔥 HIRING DRIVE')
                     target_grp.description = f.get('description', '')
                     target_grp.posted_date = f.get('posted_date') or default_posted_date
-                    target_grp.deadline = default_deadline  # Refresh group deadline
-                    target_grp.is_active = True  # Reactivate group
+                    target_grp.deadline = listing_deadline(target_grp.posted_date, default_deadline)
+                    target_grp.is_active = target_grp.deadline > now
                     groups_to_update.append(target_grp)
                     group_jobs_map[target_grp.id] = jobs_pks
                 else:
@@ -257,8 +235,8 @@ class Command(BaseCommand):
                         banner_tag=f.get('banner_tag', '🔥 HIRING DRIVE'),
                         description=f.get('description', ''),
                         posted_date=f.get('posted_date') or default_posted_date,
-                        deadline=default_deadline,  # Active deadline
-                        is_active=True,
+                        deadline=listing_deadline(f.get('posted_date') or default_posted_date, default_deadline),
+                        is_active=listing_deadline(f.get('posted_date') or default_posted_date, default_deadline) > now,
                     )
                     groups_to_create.append(new_grp)
                     group_jobs_map[old_pk] = jobs_pks
@@ -290,81 +268,10 @@ class Command(BaseCommand):
             if m2m_relations:
                 ThroughModel.objects.bulk_create(m2m_relations, batch_size=500, ignore_conflicts=True)
 
-            # 6. Blog Posts Bulk Upsert
-            existing_blogs = {b.slug: b for b in BlogPost.objects.all()}
-            blogs_to_create = []
-            blogs_to_update = []
-            blog_tags_map = {}
-
-            for item in data_by_model.get('blog.blogpost', []):
-                old_pk = item.get('pk')
-                f = item.get('fields', {})
-                slug = f.get('slug')
-                title = f.get('title')
-                cat_val = f.get('category')
-                resolved_cat = blog_cat_map.get(cat_val)
-                tag_pks = f.get('tags', [])
-
-                target_blog = existing_blogs.get(slug)
-                if target_blog:
-                    target_blog.title = title
-                    target_blog.category = resolved_cat
-                    target_blog.excerpt = f.get('excerpt', '')
-                    target_blog.content = f.get('content', '')
-                    target_blog.cover_image_url = f.get('cover_image_url', '')
-                    target_blog.author_name = f.get('author_name', 'Kashinath Chavan')
-                    target_blog.author_title = f.get('author_title', 'Software Architect')
-                    target_blog.is_published = True
-                    target_blog.is_featured = f.get('is_featured', False)
-                    blogs_to_update.append(target_blog)
-                    blog_tags_map[target_blog.id] = tag_pks
-                else:
-                    new_blog = BlogPost(
-                        id=old_pk,
-                        title=title,
-                        slug=slug,
-                        category=resolved_cat,
-                        excerpt=f.get('excerpt', ''),
-                        content=f.get('content', ''),
-                        cover_image_url=f.get('cover_image_url', ''),
-                        author_name=f.get('author_name', 'Kashinath Chavan'),
-                        author_title=f.get('author_title', 'Software Architect'),
-                        is_published=True,
-                        is_featured=f.get('is_featured', False),
-                        views_count=f.get('views_count', 0),
-                        likes_count=f.get('likes_count', 0),
-                    )
-                    blogs_to_create.append(new_blog)
-                    blog_tags_map[old_pk] = tag_pks
-
-            if blogs_to_update:
-                BlogPost.objects.bulk_update(
-                    blogs_to_update,
-                    fields=['title', 'category', 'excerpt', 'content', 'cover_image_url', 'author_name', 'author_title', 'is_published', 'is_featured'],
-                    batch_size=100
-                )
-
-            if blogs_to_create:
-                BlogPost.objects.bulk_create(blogs_to_create, batch_size=100)
-
-            # Blog Tag M2M links
-            BlogTagThrough = BlogPost.tags.through
-            BlogTagThrough.objects.all().delete()
-            tag_relations = []
-            all_db_blogs = {b.id: b for b in BlogPost.objects.all()}
-            for b_id, t_pks in blog_tags_map.items():
-                if b_id in all_db_blogs:
-                    for t_pk in t_pks:
-                        if t_pk in tag_map:
-                            tag_relations.append(BlogTagThrough(blogpost_id=b_id, tag_id=tag_map[t_pk].id))
-
-            if tag_relations:
-                BlogTagThrough.objects.bulk_create(tag_relations, batch_size=500, ignore_conflicts=True)
-
         # Align Postgres Sequences
         if connection.vendor == 'postgresql':
             with connection.cursor() as cursor:
-                for ModelClass in [JobPosting, JobGroup, JobCategory, BlogPost, BlogCategory, BlogTag]:
+                for ModelClass in [JobPosting, JobGroup, JobCategory]:
                     table = ModelClass._meta.db_table
                     pk_name = ModelClass._meta.pk.name
                     if ModelClass._meta.pk.get_internal_type() in ['AutoField', 'BigAutoField', 'SmallAutoField']:
@@ -376,10 +283,8 @@ class Command(BaseCommand):
         total_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now()).count()
         total_groups = JobGroup.objects.filter(is_active=True, deadline__gt=timezone.now()).count()
         self.stdout.write(self.style.SUCCESS(
-            f"🎉 FAST RESTORE & REACTIVATION COMPLETED!\n"
-            f"  - Active Jobs: {total_jobs} (All Unexpired & Accepting Applications)\n"
+            f"Snapshot restore completed.\n"
+            f"  - Active Jobs: {total_jobs} (posted in the last 7 days)\n"
             f"  - Active Groups: {total_groups} (All Unexpired)\n"
-            f"  - Blog Posts: {BlogPost.objects.count()}\n"
-            f"  - Tags: {BlogTag.objects.count()}\n"
             f"  - Group-Job Links: {JobGroup.jobs.through.objects.count()}"
         ))

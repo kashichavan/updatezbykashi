@@ -21,7 +21,7 @@
   <meta property="og:url" content="https://kashiiupdatez.online{{ request.path }}">
   <meta property="og:site_name" content="Kashii Updatez">
   <meta property="og:title" content="{% block og_title %}⚡ Kashii Updatez — Daily Student Requirements & Internships{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}Discover verified daily student job requirements, tech internships, and deep-dive programming tutorials by Python Kashi. 100% direct official career apply links.{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Discover daily student job requirements, tech internships, and deep-dive programming tutorials by Python Kashi. Every listing includes an apply link.{% endblock %}">
   <meta property="og:image" content="https://kashiiupdatez.online{% static 'images/icon-feed.png' %}">
 
   <!-- Twitter Card -->
@@ -29,7 +29,7 @@
   <meta name="twitter:site" content="@ikashii_07">
   <meta name="twitter:creator" content="@ikashii_07">
   <meta name="twitter:title" content="Kashii Updatez — Daily Student Jobs & Internships">
-  <meta name="twitter:description" content="Verified off-campus drives, fresher internships, and technical tutorials by Python Kashi.">
+  <meta name="twitter:description" content="Off-campus drives, fresher internships, and technical tutorials by Python Kashi.">
 
   <!-- JSON-LD Entity Schema for Search Engine Authority -->
   <script type="application/ld+json">
@@ -96,7 +96,7 @@
             "name": "What is Kashii Update?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Kashii Update (kashiiupdatez.online) is a dedicated career portal and technical learning hub founded by Kashinath (Python Kashi). It publishes daily verified off-campus job recruitment drives, software engineering internships, non-IT opportunities, and comprehensive Python and Django programming masterclasses."
+              "text": "Kashii Update (kashiiupdatez.online) is a dedicated career portal and technical learning hub founded by Kashinath (Python Kashi). It publishes daily off-campus job recruitment drives, software engineering internships, non-IT opportunities, and comprehensive Python and Django programming masterclasses."
             }
           },
           {
@@ -104,7 +104,7 @@
             "name": "Where can I get daily job updates from Kashii Update?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "You can access daily verified job requirements directly on the official website at https://kashiiupdatez.online/, via the official YouTube channel @pythonkashi, and on Instagram @ikashii_07."
+              "text": "You can access daily job requirements directly on the official website at https://kashiiupdatez.online/, via the official YouTube channel @pythonkashi, and on Instagram @ikashii_07."
             }
           },
           {
@@ -117,10 +117,10 @@
           },
           {
             "@type": "Question",
-            "name": "Are the job postings on Kashii Update free and verified?",
+            "name": "Are the job postings on Kashii Update free?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Yes, 100% of job links and internship listings on Kashii Update are free and direct links to official company careers portals with an active 7-day freshness guarantee."
+              "text": "Yes. Browsing and applying through Kashii Update is free. Each listing links to where you apply, on the company site or a job board, and closes seven days after it is posted."
             }
           }
         ]
@@ -146,7 +146,7 @@
   <link rel="shortcut icon" href="{% static 'images/icon-apply.png' %}" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Playfair+Display:ital,wght@0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2026102801">
-  <link rel="stylesheet" href="{% static 'css/ui-refresh.css' %}?v=2026110104">
+  <link rel="stylesheet" href="{% static 'css/ui-refresh.css' %}?v=2026110106">
   
   <!-- Instant Session Entry Guard (Prevents layout shift and bypasses admin/owner portal) -->
   <script>
@@ -166,6 +166,7 @@
   {% block schema_markup %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
+  <div class="kx-progress" aria-hidden="true"></div>
 
   <!-- Subtle Film Texture -->
   <div class="site-grain"></div>
@@ -226,14 +227,15 @@
 
   <!-- Lucide Modern Vector Icons -->
   <script src="{% static 'js/lucide.min.js' %}"></script>
+  <script src="{% static 'js/ui-motion.js' %}?v=2026110105" defer></script>
 
   <!-- Interactive Spider-Man / VS Code Background Particle Web -->
   <script src="{% static 'js/spider_mesh.js' %}?v=202609270120"></script>
 
   <!-- Core App Scripts -->
-  <script src="{% static 'js/app.js' %}?v=2026100801"></script>
+  <script src="{% static 'js/app.js' %}?v=2026110105"></script>
   {% block entry_scripts %}
-    <script src="{% static 'js/entry_experience.js' %}?v=202608281420"></script>
+    <script src="{% static 'js/entry_experience.js' %}?v=2026110105"></script>
   {% endblock %}
   {% block extra_js %}{% endblock %}
   <script>

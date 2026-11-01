@@ -950,6 +950,11 @@
 <!-- Monaco Script & Client Logic -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
+  if (typeof require === 'undefined') {
+    document.getElementById('monacoSqlContainer').innerHTML = '<p style="padding:24px;font:14px/1.6 sans-serif;color:#b91c1c;">The code editor could not load. Check your connection and <a href="" style="color:inherit;font-weight:700;">reload this page</a>.</p>';
+  }
+</script>
+<script>
   let editor = null;
   let activeDatasetId = "{{ default_dataset.id|default:'scott_tiger' }}";
   let activeChallengeId = null;

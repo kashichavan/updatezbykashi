@@ -7,7 +7,6 @@ from typing import List, Optional, Dict, Any
 from ninja import Router, Schema
 from pydantic import Field
 from requirements.ai_engine import (
-    generate_job_description,
     polish_resume_bullet,
     tailor_resume_to_job,
     generate_professional_summary,
@@ -16,16 +15,6 @@ from api.auth import AuthBearer # Import AuthBearer
 from ninja.errors import HttpError # Import HttpError
 
 router = Router(tags=["⚡ AI Career & Job Tools"])
-
-
-class JobDescriptionRequest(Schema):
-    title: str = Field(..., description="Job Title, e.g. Frontend Engineer")
-    company: Optional[str] = Field("", description="Company Name")
-    experience: Optional[str] = Field("0-2 years", description="Experience range")
-    location: Optional[str] = Field("Remote / Bangalore", description="Location & Work Mode")
-    work_mode: Optional[str] = Field("Full-time", description="Employment Type")
-    skills: Optional[str] = Field("", description="Core Tech Stack / Skills")
-    additional_notes: Optional[str] = Field("", description="Special requirements or perks")
 
 
 class BulletPolishRequest(Schema):
@@ -46,26 +35,6 @@ class SummaryGenRequest(Schema):
     experience_level: Optional[str] = Field("fresher", description="e.g. fresher, 2 years, 5 years")
     key_skills: Optional[str] = Field("", description="Key skills and tools")
     target_company_type: Optional[str] = Field("Product Startup", description="Startup, FAANG, Service")
-
-
-@router.post("/generate-jd", summary="Generate High-Converting Job Description", auth=AuthBearer())
-def api_generate_jd(request, payload: JobDescriptionRequest):
-    """Generate structured, ATS-compliant job description with LinkedIn and IG post formats. Requires JWT authentication."""
-    if not request.auth: 
-        raise HttpError(401, "Unauthorized: Valid JWT token required.")
-    try:
-        data = generate_job_description(
-            title=payload.title,
-            company=payload.company or "",
-            experience=payload.experience or "0-2 years",
-            location=payload.location or "Remote / Bangalore",
-            work_mode=payload.work_mode or "Full-time",
-            skills=payload.skills or "",
-            additional_notes=payload.additional_notes or "",
-        )
-        return {"success": True, "data": data}
-    except Exception as e:
-        raise HttpError(500, f"Failed to generate job description: {e}")
 
 
 @router.post("/polish-bullet", summary="Polish Resume Bullet to Google XYZ Format", auth=AuthBearer())

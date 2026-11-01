@@ -19,56 +19,6 @@ class TagSchema(Schema):
     slug: str
     posts_count: Optional[int] = 0
 
-class BlogPostListSchema(Schema):
-    id: int
-    title: str
-    slug: str
-    excerpt: str
-    cover_image_url: Optional[str] = None
-    author_name: str
-    author_title: str
-    author_avatar_url: Optional[str] = None
-    category: Optional[CategorySchema] = None
-    tags: List[TagSchema] = []
-    read_time_minutes: int
-    views_count: int
-    likes_count: int
-    is_featured: bool
-    published_at: datetime
-
-class BlogPostDetailSchema(BlogPostListSchema):
-    content: str
-    seo_title: str
-    seo_description: str
-    canonical_url: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
-    related_posts: List[BlogPostListSchema] = []
-
-class BlogPostCreateSchema(Schema):
-    title: str
-    slug: Optional[str] = None
-    excerpt: str
-    content: str
-    category_id: Optional[int] = None
-    tags: Optional[List[str]] = []
-    cover_image_url: Optional[str] = None
-    author_name: Optional[str] = "Kashinath Chavan"
-    author_title: Optional[str] = "Founder & Software Architect"
-    author_avatar_url: Optional[str] = None
-    is_published: Optional[bool] = True
-    is_featured: Optional[bool] = False
-    seo_title: Optional[str] = None
-    seo_description: Optional[str] = None
-
-class BlogPostsResponse(Schema):
-    total: int
-    limit: int
-    offset: int
-    posts: List[BlogPostListSchema]
-
-
-# ── 2. JAVASCRIPT MASTERCLASS CURRICULUM SCHEMAS ──
 class AnalogyMappingItem(Schema):
     real: str
     prog: str

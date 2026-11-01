@@ -77,7 +77,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCategories();
 
     if (isHomePage || isCategoryPage) {
-      if (isHomePage) startTypewriter();
       bindCardClicks();
       setupViewToggle();
       setupFilterPopovers();
@@ -87,45 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- CONSOLAS TYPEWRITER TYPING ANIMATION ENGINE ---
-
-  function startTypewriter() {
-    const el = document.getElementById('typewriterText');
-    if (!el) return;
-
-    const part1 = "Daily Student Jobs & ";
-    const part2 = "Internship Requirements";
-
-    let i = 0;
-    el.innerHTML = "";
-
-    function typePart1() {
-      if (i < part1.length) {
-        el.innerHTML += part1.charAt(i);
-        i++;
-        setTimeout(typePart1, 40);
-      } else {
-        const em = document.createElement('em');
-        em.style.fontStyle = 'italic';
-        em.style.color = 'var(--blue-primary)';
-        el.appendChild(em);
-
-        let j = 0;
-        function typePart2() {
-          if (j < part2.length) {
-            em.textContent += part2.charAt(j);
-            j++;
-            setTimeout(typePart2, 45);
-          }
-        }
-        typePart2();
-      }
-    }
-
-    typePart1();
-  }
-
-  window.startTypewriter = startTypewriter;
 
   // --- GLOBAL SIDE DRAWER SETUP ---
 
@@ -498,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             ` : ''}
 
-            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(j.description || 'Detailed job description and responsibilities available on the official requirement page.')}</p>
+            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, ''))}</p>
 
             ${skillsHtml ? `<div class="skills-wrapper" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;">${skillsHtml}</div>` : ''}
 
@@ -662,7 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('detailSalary').textContent = j.stipend_salary;
     document.getElementById('detailLocation').textContent = j.location;
     document.getElementById('detailPostedDate').textContent = j.posted_date_display || 'Today';
-    document.getElementById('detailDescription').textContent = j.description;
+    document.getElementById('detailDescription').textContent = String(j.description || '').replace(/\*\*/g, '');
     document.getElementById('detailEligibility').textContent = j.eligibility;
 
     const skillsContainer = document.getElementById('detailSkills');
@@ -1226,72 +1186,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Job Alerts Modal Wireup
-    const modalJobAlerts = document.getElementById('modalJobAlerts');
-    const btnCloseJobAlerts = document.getElementById('btnCloseJobAlerts');
-    const formJobAlerts = document.getElementById('formJobAlerts');
-    const alertCriteriaEl = document.getElementById('jobAlertCurrentCriteria');
-
-    function openAlertsModal() {
-      if (!modalJobAlerts) return;
-      if (alertCriteriaEl) {
-        const parts = [];
-        if (state.searchQuery) parts.push(`Query: "${state.searchQuery}"`);
-        if (state.city) parts.push(`Location: ${state.city}`);
-        if (state.jobType && state.jobType !== 'all') parts.push(state.jobType === 'FULL_TIME' ? 'Full-Time' : 'Internships');
-        if (state.category && state.category !== 'all') parts.push(CATEGORY_LABELS[state.category] || state.category);
-        alertCriteriaEl.textContent = parts.length > 0 ? parts.join(' • ') : 'All Verified Opportunities (Zero Filters)';
-      }
-      modalJobAlerts.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeAlertsModal() {
-      if (modalJobAlerts) {
-        modalJobAlerts.style.display = 'none';
-        document.body.style.overflow = '';
-      }
-    }
-
-    document.querySelectorAll('[data-locator-id="searchjobs_search_savedSearchAlertButton"], .button-saved-jobs-alerts').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        openAlertsModal();
-      });
-    });
-
-    if (btnCloseJobAlerts) btnCloseJobAlerts.addEventListener('click', closeAlertsModal);
-    if (modalJobAlerts) {
-      modalJobAlerts.addEventListener('click', (e) => {
-        if (e.target === modalJobAlerts) closeAlertsModal();
-      });
-    }
-
-    if (formJobAlerts) {
-      formJobAlerts.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const contactInput = document.getElementById('jobAlertContactInput');
-        const contactVal = contactInput ? contactInput.value.trim() : '';
-        if (!contactVal) {
-          alert('Please enter your email or WhatsApp number.');
-          return;
-        }
-        try {
-          localStorage.setItem('saved_job_alerts', JSON.stringify({
-            contact: contactVal,
-            criteria: alertCriteriaEl ? alertCriteriaEl.textContent : '',
-            savedAt: new Date().toISOString()
-          }));
-        } catch(err){}
-        closeAlertsModal();
-        if (window.showToast) {
-          window.showToast("🎉 Search saved! You will receive daily alerts for matching jobs.", "success");
-        } else {
-          alert("🎉 Search saved! You will receive daily alerts for matching jobs.");
-        }
-        if (contactInput) contactInput.value = '';
-      });
-    }
   }
 
   function setupHomePageListeners() {
