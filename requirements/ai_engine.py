@@ -63,6 +63,14 @@ def _rest_groq_model(model: str, retry_after) -> None:
     _groq_model_rest_until[model] = time.time() + min(max(seconds, 1.0), 60.0)
 
 
+def _groq_error_code(response) -> str:
+    """Groq's error code only. The full body can repeat the candidate's resume."""
+    try:
+        return str(response.json()["error"].get("code") or "unknown")
+    except (ValueError, KeyError, AttributeError, TypeError):
+        return "unknown"
+
+
 def _call_nvidia_chat(messages: list[dict], temperature: float, max_tokens: int, json_mode: bool) -> str:
     """Backup provider. It speaks the same chat format as Groq."""
     payload = {
@@ -159,9 +167,15 @@ def _call_groq_chat(
                 logger.warning(f"Groq 429 on {payload['model']} (attempt {attempt + 1}/{max_retries}).")
                 time.sleep(0.2)
                 continue
-            else:
-                logger.error(f"Groq API Error {response.status_code}: {response.text}")
-                raise RuntimeError(f"Groq API Error {response.status_code}: {response.text}")
+            error_code = _groq_error_code(response)
+            message = f"Groq API Error {response.status_code}: {error_code} on {payload['model']}"
+            if error_code == "json_validate_failed":
+                # The model broke its own JSON, so another model may well succeed.
+                logger.warning(message)
+                last_error = RuntimeError(message)
+                continue
+            logger.error(message)
+            raise RuntimeError(message)
         except requests.exceptions.RequestException as e:
             last_error = e
             time.sleep(0.5)
@@ -655,6 +669,8 @@ def generate_ai_resume_critique_and_suggestions(
         "A candidate has uploaded their resume. Provide an objective, candid diagnostic evaluation. "
         "'sections_present' lists what the resume contains: never call any of those sections missing. "
         "Fresher resumes may have projects instead of work experience, which is acceptable. "
+        "Be honest in all advice: never tell the candidate to add a skill, tool, course or number they do not have. "
+        "List such gaps as things to learn, and never put made-up numbers in an example. "
         "Return a valid JSON object with the following keys:\n"
         "- 'overall_score': integer from 20 to 98 (accurate ATS score)\n"
         "- 'grade': string (e.g. 'Strong Match (90+ ATS Pass Rate)', 'Moderate - Needs Optimization', 'Critical Gaps Detected')\n"

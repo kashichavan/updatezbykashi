@@ -158,6 +158,18 @@ class RateLimitMiddleware:
         return self.get_response(request)
 
 
+class HealthCheckMiddleware:
+    """Answers Render first, so a health check needs no database, redirect or host match."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.path == '/healthz':
+            return HttpResponse('ok', content_type='text/plain')
+        return self.get_response(request)
+
+
 class VisitorAnalyticsMiddleware:
     """
     Zero-dependency, high-performance visitor analytics middleware.

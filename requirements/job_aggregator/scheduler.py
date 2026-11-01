@@ -1,6 +1,6 @@
 """
 Background Periodic Job Aggregation Scheduler.
-Executes multi-source job ingestion at a configurable interval (default: 5 minutes)
+Executes multi-source job ingestion at a configurable interval (default: 15 minutes)
 without exceeding permitted request frequency or overloading resources on Render.
 """
 
@@ -34,7 +34,7 @@ def _try_acquire_scheduler_lock() -> bool:
 def _background_aggregation_loop():
     """Periodic worker loop running India-wide ingestion."""
     global _SCHEDULER_RUNNING
-    interval_minutes = int(os.getenv("JOB_AGGREGATION_INTERVAL_MINUTES", "5"))
+    interval_minutes = int(os.getenv("JOB_AGGREGATION_INTERVAL_MINUTES", "15"))
     interval_seconds = interval_minutes * 60
 
     logger.info(f"⚡ [India Job Aggregator] Daemon started. Cycle interval: {interval_minutes} minutes.")

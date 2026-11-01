@@ -66,6 +66,7 @@ SIMPLE_JWT = {
 }
 
 MIDDLEWARE = [
+    'requirements.middleware.HealthCheckMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

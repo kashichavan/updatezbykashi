@@ -1,16 +1,29 @@
 import time
 import logging
+import subprocess
 import threading
-import gc
 from datetime import datetime
-from django.core.management import call_command
-from django.db import reset_queries, close_old_connections
+from pathlib import Path
+
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 _backup_lock = threading.Lock()
 _last_backup_time = 0
-_MIN_BACKUP_INTERVAL = 600  # Debounce: at most 1 manual/auto backup every 10 minutes
+_MIN_BACKUP_INTERVAL = 6 * 60 * 60  # Job imports save all day, and a dump is heavy on 0.1 CPU.
+_BACKUP_TIMEOUT = 15 * 60
+
+
+def _last_backup_at() -> float:
+    """Newest backup time. It reads the file too, because restarts clear the variable."""
+    snapshot = Path(settings.BASE_DIR) / 'backups' / 'kashii_full_snapshot_latest.json'
+    try:
+        return max(_last_backup_time, snapshot.stat().st_mtime)
+    except OSError:
+        return _last_backup_time
+
+
 
 def _execute_backup():
     global _last_backup_time
@@ -19,21 +32,19 @@ def _execute_backup():
         return
 
     try:
-        close_old_connections()
-        reset_queries()
         logger.info(f"[Auto-Backup] Starting database backup at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}...")
-        call_command('auto_backup', format='all')
+        # A separate low-priority process, so the dump cannot starve page requests.
+        subprocess.run(
+            ['nice', '-n', '19', sys.executable, 'manage.py', 'auto_backup', '--format', 'all'],
+            cwd=settings.BASE_DIR,
+            check=True,
+            timeout=_BACKUP_TIMEOUT,
+        )
         _last_backup_time = time.time()
         logger.info("[Auto-Backup] Database backup completed successfully.")
     except Exception as e:
         logger.error(f"[Auto-Backup] Backup error: {str(e)}")
     finally:
-        try:
-            close_old_connections()
-            reset_queries()
-            gc.collect()
-        except Exception:
-            pass
         _backup_lock.release()
 
 import sys
@@ -46,10 +57,7 @@ def trigger_auto_backup_async(force=False):
     if 'test' in sys.argv:
         return
 
-    global _last_backup_time
-    now = time.time()
-    if not force and (now - _last_backup_time < _MIN_BACKUP_INTERVAL):
-        logger.info(f"[Auto-Backup] Throttled: last backup was {int(now - _last_backup_time)}s ago (min interval: {_MIN_BACKUP_INTERVAL}s).")
+    if not force and (time.time() - _last_backup_at() < _MIN_BACKUP_INTERVAL):
         return
 
     thread = threading.Thread(target=_execute_backup, daemon=True, name="AutoBackupThread")
