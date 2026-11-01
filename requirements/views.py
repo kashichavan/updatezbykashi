@@ -4253,6 +4253,7 @@ def api_ai_resume_review(request):
         cache.set(rate_key, hits + 1, 60)
 
     rewrites = []
+    enhance_ok = allowed
     items = _resume_enhance_items(resume, body.get('enhance')) if allowed else []
     if items:
         try:
@@ -4260,6 +4261,7 @@ def api_ai_resume_review(request):
         except Exception as e:
             logger.warning("Resume auto-enhance failed: %s", e)
             improved = {}
+            enhance_ok = False
         for item in items:
             text = improved.get(item['id'])
             if not text:
@@ -4277,7 +4279,8 @@ def api_ai_resume_review(request):
     fingerprint = hashlib.sha256(json.dumps([content, target_skills], sort_keys=True, default=str).encode()).hexdigest()
     review_key = f'resume-review-result:{fingerprint}'
     review = cache.get(review_key)
-    if review is None and allowed:
+    # A full upgrade works in batches, and only the last one needs scoring.
+    if review is None and allowed and body.get('score') is not False:
         try:
             review = review_resume_with_ai(resume, target_skills, role_title)
             cache.set(review_key, review, 6 * 3600)
@@ -4290,6 +4293,7 @@ def api_ai_resume_review(request):
     return JsonResponse({
         'ai': used_ai,
         'busy': not allowed,
+        'enhance_ok': enhance_ok,
         'score': review['overall_score'],
         'overall_score': review['overall_score'],
         'grade': review['grade'],

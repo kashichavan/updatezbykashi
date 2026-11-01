@@ -52,6 +52,25 @@ class ResumeAiReviewTests(TestCase):
         self.assertEqual(data['project_scores']['0']['score'], 55)
         self.assertEqual(data['missing_skills'], ['Docker'])
 
+    def test_upgrade_batch_rewrites_without_scoring(self):
+        body = json.loads(make_body()) if isinstance(make_body(), str) else dict(make_body())
+        body['score'] = False
+        body['enhance'] = [{'kind': 'project', 'index': 0, 'bullet': 0}]
+        with patch('requirements.views._resume_enhance_items', return_value=[]):
+            with patch('requirements.ai_engine.review_resume_with_ai') as review:
+                data = self.post(json.dumps(body)).json()
+        review.assert_not_called()
+        self.assertTrue(data['enhance_ok'])
+
+    def test_upgrade_batch_reports_a_failed_rewrite(self):
+        body = json.loads(make_body()) if isinstance(make_body(), str) else dict(make_body())
+        body['score'] = False
+        items = [{'id': 'summary', 'kind': 'summary', 'text': 'x', 'source': '', 'where': {'kind': 'summary'}}]
+        with patch('requirements.views._resume_enhance_items', return_value=items):
+            with patch('requirements.ai_engine.enhance_resume_items', side_effect=RuntimeError('down')):
+                data = self.post(json.dumps(body)).json()
+        self.assertFalse(data['enhance_ok'])
+
     def test_projects_still_get_a_score_when_ai_is_down(self):
         with patch('requirements.ai_engine.call_groq_chat', side_effect=RuntimeError('down')):
             data = self.post(make_body()).json()

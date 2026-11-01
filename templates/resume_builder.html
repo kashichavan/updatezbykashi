@@ -52,11 +52,16 @@
       <span class="rb-step-num" aria-hidden="true">2</span>
       <div class="rb-step-copy">
         <strong>Improve it</strong>
-        <span>Click any text and type. When you pause, AI improves the wording and updates your score.</span>
+        <span>Upgrade everything in one tap, or click any text and type.</span>
       </div>
       <div class="rb-step-actions">
+        <button type="button" class="studio-btn studio-btn-primary" id="aiUpgradeBtn" onclick="upgradeResumeWithAi()" title="Rewrite your summary and every bullet in one go"><i data-lucide="sparkles" style="width: 15px; height: 15px;"></i><span id="aiUpgradeLabel">Upgrade with AI</span></button>
         <button type="button" class="studio-btn studio-btn-ghost" onclick="document.getElementById('resumeSheet').scrollIntoView({behavior: 'smooth', block: 'start'})">Go to page</button>
       </div>
+      <p class="rb-upgrade-note" id="aiUpgradeNote" hidden>
+        <span id="aiUpgradeText" role="status" aria-live="polite"></span>
+        <button type="button" class="ai-undo-btn" onclick="undoAiChanges()" hidden>Undo</button>
+      </p>
     </div>
     <div class="rb-step" id="rbStep3">
       <span class="rb-step-num" aria-hidden="true">3</span>
@@ -122,7 +127,7 @@
       <div class="rb-ai-status" data-state="idle">
         <span class="rb-ai-dot" aria-hidden="true"></span>
         <span id="aiAutoText" role="status" aria-live="polite">AI ready</span>
-        <button type="button" id="aiUndoBtn" onclick="undoAiChanges()" hidden>Undo</button>
+        <button type="button" id="aiUndoBtn" class="ai-undo-btn" onclick="undoAiChanges()" hidden>Undo</button>
         <label title="Let AI improve your wording when you pause"><input type="checkbox" id="aiAutoToggle" checked onchange="setAiAutoEnhance(this.checked)"> Auto-improve</label>
       </div>
     </div>
@@ -2797,6 +2802,8 @@
   // Automatic AI pass: after a pause in typing, new text is improved and the
   // whole resume is scored. Every caller of recalculateAtsScore lands here.
   const AI_REVIEW_DELAY = 5000;
+  const AI_UPGRADE_BATCH = 6;
+  const aiUpgradedText = new Set();
   const AI_SEEN_KEY = 'kashii_ai_seen_text';
   const AI_AUTO_KEY = 'kashii_ai_auto_enhance';
   let aiReviewTimer = null;
@@ -2870,7 +2877,7 @@
     ]);
   }
 
-  function applyAiRewrites(rewrites) {
+  function applyAiRewrites(rewrites, keepUndo) {
     const applied = [];
     const caretNode = aiCaretNode();
     rewrites.forEach(({ original, improved }) => {
@@ -2884,13 +2891,93 @@
       applied.push({ original, improved });
     });
     if (applied.length) {
-      aiUndoList = applied;
-      document.getElementById('aiUndoBtn').hidden = false;
+      aiUndoList = keepUndo ? aiUndoList.concat(applied) : applied;
+      showAiUndo(true);
       extractFullResumeFromDom();
       saveResumeDraft();
       if (typeof WordEditor !== 'undefined') WordEditor.updateCounts();
     }
     return applied.length;
+  }
+
+  function showAiUndo(visible) {
+    document.querySelectorAll('.ai-undo-btn').forEach((btn) => { btn.hidden = !visible; });
+  }
+
+  function setUpgradeProgress(state, text) {
+    setAiStatus(state, text);
+    document.getElementById('aiUpgradeNote').hidden = false;
+    document.getElementById('aiUpgradeText').textContent = text;
+  }
+
+  function aiUpgradeTargets(resume) {
+    const worthRewriting = (text) => text && text.length >= 25 && !aiUpgradedText.has(text);
+    const targets = [];
+    if (worthRewriting(resume.summary)) targets.push({ kind: 'summary', text: resume.summary });
+    [['experience', resume.experience], ['project', resume.projects]].forEach(([kind, group]) => {
+      (group || []).forEach((entry, index) => {
+        (entry.bullets || []).forEach((text, bullet) => {
+          if (worthRewriting(text)) targets.push({ kind, index, bullet, text });
+        });
+      });
+    });
+    return targets;
+  }
+
+  async function upgradeResumeWithAi() {
+    const btn = document.getElementById('aiUpgradeBtn');
+    if (document.activeElement) document.activeElement.blur();
+    clearTimeout(aiReviewTimer);
+    aiReviewRun += 1;
+    const targets = aiUpgradeTargets(extractFullResumeFromDom());
+    if (!targets.length) {
+      setUpgradeProgress('done', 'Your resume is already upgraded');
+      return;
+    }
+
+    btn.disabled = true;
+    document.getElementById('aiUpgradeLabel').textContent = 'Upgrading...';
+    aiUndoList = [];
+    showAiUndo(false);
+    let changed = 0;
+    let failed = false;
+    try {
+      for (let start = 0; start < targets.length; start += AI_UPGRADE_BATCH) {
+        const end = Math.min(start + AI_UPGRADE_BATCH, targets.length);
+        setUpgradeProgress('working', `AI is upgrading ${end} of ${targets.length} lines`);
+        const batch = targets.slice(start, end);
+        const res = await fetch('/api/ai/resume-review/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: currentRoleKey, resume: extractFullResumeFromDom(), enhance: batch, score: false })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data.enhance_ok) {
+          failed = true;
+          break;
+        }
+        changed += applyAiRewrites(data.rewrites || [], true);
+        (data.rewrites || []).forEach(({ improved }) => aiUpgradedText.add(improved));
+        batch.forEach((target) => aiUpgradedText.add(target.text));
+      }
+    } catch (err) {
+      console.error('AI upgrade error:', err);
+      failed = true;
+    }
+
+    aiLastKey = '';
+    await runAiReview();
+    btn.disabled = false;
+    document.getElementById('aiUpgradeLabel').textContent = 'Upgrade with AI';
+    if (failed) {
+      setUpgradeProgress('basic', changed
+        ? `AI upgraded ${changed} lines, then got busy. Try again in a minute.`
+        : 'AI is busy, so nothing changed. Try again in a minute.');
+    } else {
+      setUpgradeProgress('done', changed
+        ? `AI upgraded ${changed} ${changed === 1 ? 'line' : 'lines'}`
+        : 'AI found nothing it could improve honestly');
+    }
   }
 
   function undoAiChanges() {
@@ -2899,7 +2986,8 @@
       if (node) node.textContent = original;
     });
     aiUndoList = [];
-    document.getElementById('aiUndoBtn').hidden = true;
+    showAiUndo(false);
+    document.getElementById('aiUpgradeNote').hidden = true;
     extractFullResumeFromDom();
     saveResumeDraft();
     recalculateAtsScore();
