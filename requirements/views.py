@@ -4283,9 +4283,9 @@ def api_ai_resume_review(request):
     if len(request.body) > 96 * 1024:
         return JsonResponse({'error': 'This resume is too long to review.'}, status=413)
 
-    from .ai_engine import enhance_resume_items, review_resume_with_ai
+    from .ai_engine import enhance_resume_items, review_grade, review_resume_with_ai
     from .middleware import RateLimitMiddleware
-    from .resume_engine import RESUME_ROLES
+    from .resume_engine import RESUME_ROLES, job_match_limit, resume_text
 
     try:
         body = json.loads(request.body.decode('utf-8'))
@@ -4348,6 +4348,14 @@ def api_ai_resume_review(request):
     used_ai = review is not None
     if review is None:
         review = _rule_based_review(resume, target_skills)
+
+    # The badge shows this number, so the model cannot score past a real job's match.
+    if body.get('job_skills'):
+        text = resume_text(resume)
+        hits = sum(1 for skill in target_skills if has_keyword(skill, text))
+        limit = job_match_limit(round(hits / len(target_skills) * 100))
+        if review['overall_score'] > limit:
+            review = {**review, 'overall_score': limit, 'grade': review_grade(limit)}
 
     return JsonResponse({
         'ai': used_ai,

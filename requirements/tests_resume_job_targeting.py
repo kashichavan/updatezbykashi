@@ -147,6 +147,26 @@ class JobResumeTests(TestCase):
         self.assertLess(text.index('ASHA RAO'), text.index('Infosys'))
 
 
+class ReviewScoreLimitTests(TestCase):
+    def _review(self, skills, score=95):
+        fake = {'overall_score': score, 'grade': 'Strong', 'checks': [], 'fixes': [], 'missing_skills': [], 'project_scores': {}}
+        with patch('requirements.ai_engine.review_resume_with_ai', return_value=fake):
+            response = self.client.post(
+                '/api/ai/resume-review/',
+                json.dumps({'resume': resume(), 'job_skills': skills}),
+                content_type='application/json',
+            )
+        return response.json()
+
+    def test_model_cannot_score_a_wrong_stack_resume_highly(self):
+        data = self._review(['Java', 'Spring Boot', 'Kafka'])
+        self.assertEqual(data['overall_score'], 40)
+        self.assertEqual(data['grade'], 'Weak')
+
+    def test_full_match_keeps_the_model_score(self):
+        self.assertEqual(self._review(['React', 'JavaScript'])['overall_score'], 95)
+
+
 class RestoreKeepsExpiryTests(TestCase):
     def test_old_group_expires_but_keeps_link_and_jobs(self):
         category = Category.objects.create(name='Software Engineering', slug='software-engineering')

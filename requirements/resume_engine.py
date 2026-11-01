@@ -331,6 +331,11 @@ def skills_text(skills) -> str:
     return resume_text(skills)
 
 
+def job_match_limit(job_match: int) -> int:
+    """Polish cannot make up for missing skills: 0% match tops out at 40, 100% at 100."""
+    return 40 + round(job_match * 0.6)
+
+
 def pick_role_for_skills(skills) -> str:
     """The role template closest to a job's skills, or '' if none shares any."""
     best, best_hits = '', 0

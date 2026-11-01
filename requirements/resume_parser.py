@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 from .ai_engine import call_groq_chat
-from .resume_engine import has_keyword, resume_text, score_project_ats
+from .resume_engine import has_keyword, job_match_limit, resume_text, score_project_ats
 
 logger = logging.getLogger(__name__)
 
@@ -440,10 +440,8 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
 
     total_score = min(100, total_score)
 
-    # A polished resume missing what the job asks for is still a poor match for
-    # that job, so the job match limits the score: 0% tops out at 40, 100% at 100.
     if job_match is not None:
-        total_score = min(total_score, 40 + round(job_match * 0.6))
+        total_score = min(total_score, job_match_limit(job_match))
 
     # Grade & Rating Label
     if total_score >= 90:
