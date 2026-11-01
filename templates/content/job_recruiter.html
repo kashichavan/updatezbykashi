@@ -739,6 +739,7 @@
       scroll-behavior: auto !important;
     }
   }
+  #rcPeopleXray[hidden] { display: none; }
 </style>
 {% endblock %}
 
@@ -837,6 +838,7 @@
           <button type="button" class="rc-btn rc-btn-primary" id="rcPeopleBtn">Find people</button>
         </div>
         <p id="rcPeopleStatus" class="rc-form-note" role="status"></p>
+        <a id="rcPeopleXray" class="rc-btn rc-btn-primary" href="{{ google_xray_url }}" target="_blank" rel="noopener noreferrer" hidden>Open LinkedIn X-Ray in Google</a>
         <div id="rcPeopleList" class="rc-people-list"></div>
       </section>
 
@@ -1306,6 +1308,7 @@
     btn.disabled = true;
     status.textContent = "Searching public profiles...";
     $("rcPeopleList").replaceChildren();
+    $("rcPeopleXray").hidden = true;
     try {
       const response = await fetch(API_URL.replace("recruiter-intel", "recruiter-people"), { headers: { "Accept": "application/json" } });
       const payload = await response.json().catch(() => ({}));
@@ -1314,9 +1317,11 @@
       $("rcPeopleList").replaceChildren(...people.map(personCard));
       status.textContent = people.length
         ? "Open a profile and check it before you write. People change jobs."
-        : "No public profiles found for this company. Use Open LinkedIn X-Ray above to search it yourself.";
+        : "We could not list profiles here for this company. Google can show them for you:";
+      $("rcPeopleXray").hidden = people.length > 0;
     } catch (err) {
       status.textContent = err.message || "The search failed. Please try again.";
+      $("rcPeopleXray").hidden = false;
     } finally {
       btn.disabled = false;
     }

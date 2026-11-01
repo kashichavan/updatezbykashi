@@ -20,6 +20,11 @@ logger = logging.getLogger(__name__)
 
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_GROQ_MODEL = "qwen/qwen3.8-27b"
+NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions"
+DEFAULT_NVIDIA_MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b"
+NVIDIA_TIMEOUT = 25
+# Past this, stop waiting on Groq so NVIDIA can still answer inside Gunicorn's 60s limit.
+GROQ_TIME_BUDGET = 25
 
 
 def get_groq_api_key() -> str:
@@ -28,6 +33,10 @@ def get_groq_api_key() -> str:
         os.getenv("GROQ_API_KEY")
         or getattr(settings, "GROQ_API_KEY", "")
     )
+
+
+def get_nvidia_api_key() -> str:
+    return os.getenv("NVIDIA_API_KEY") or getattr(settings, "NVIDIA_API_KEY", "")
 
 
 # Each model has its own per-minute limit, so a busy model hands over to the next.
@@ -54,6 +63,33 @@ def _rest_groq_model(model: str, retry_after) -> None:
     _groq_model_rest_until[model] = time.time() + min(max(seconds, 1.0), 60.0)
 
 
+def _call_nvidia_chat(messages: list[dict], temperature: float, max_tokens: int, json_mode: bool) -> str:
+    """Backup provider. It speaks the same chat format as Groq."""
+    payload = {
+        "model": os.getenv("NVIDIA_MODEL") or DEFAULT_NVIDIA_MODEL,
+        "messages": messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        # With thinking on, this model can use every token before it answers.
+        "chat_template_kwargs": {"enable_thinking": False},
+    }
+    if json_mode:
+        payload["response_format"] = {"type": "json_object"}
+    response = requests.post(
+        NVIDIA_ENDPOINT,
+        json=payload,
+        headers={"Authorization": f"Bearer {get_nvidia_api_key()}", "Content-Type": "application/json"},
+        timeout=NVIDIA_TIMEOUT,
+    )
+    if response.status_code != 200:
+        raise RuntimeError(f"NVIDIA API Error {response.status_code}")
+    content = response.json()["choices"][0]["message"].get("content") or ""
+    content = re.sub(r"<think>.*?</think>", "", content, flags=re.S).strip()
+    if not content:
+        raise RuntimeError("NVIDIA returned an empty reply.")
+    return content
+
+
 def call_groq_chat(
     messages: list[dict],
     temperature: float = 0.3,
@@ -62,13 +98,32 @@ def call_groq_chat(
     timeout: int = 15,
     max_retries: int = 3,
 ) -> str:
+    """Chat completion through Groq, then NVIDIA when Groq cannot answer."""
+    has_groq = bool(get_groq_api_key())
+    if has_groq:
+        try:
+            return _call_groq_chat(messages, temperature, max_tokens, json_mode, timeout, max_retries)
+        except Exception as e:
+            if not get_nvidia_api_key():
+                raise
+            logger.warning(f"Groq failed, trying NVIDIA: {str(e)[:200]}")
+    elif not get_nvidia_api_key():
+        raise ValueError("GROQ_API_KEY is not configured in environment.")
+    return _call_nvidia_chat(messages, temperature, max_tokens, json_mode)
+
+
+def _call_groq_chat(
+    messages: list[dict],
+    temperature: float,
+    max_tokens: int,
+    json_mode: bool,
+    timeout: int,
+    max_retries: int,
+) -> str:
     """Execute a low-latency chat completion using Groq with SSL verification and rate-limit backoff."""
     import time
 
     api_key = get_groq_api_key()
-    if not api_key:
-        raise ValueError("GROQ_API_KEY is not configured in environment.")
-
     model = os.getenv("GROQ_MODEL") or DEFAULT_GROQ_MODEL
 
     payload = {
@@ -89,7 +144,10 @@ def call_groq_chat(
 
     last_error = None
     models = _groq_models_to_try(model)
+    started = time.monotonic()
     for attempt in range(max_retries):
+        if time.monotonic() - started > GROQ_TIME_BUDGET:
+            break
         payload["model"] = models[attempt % len(models)]
         try:
             response = requests.post(GROQ_ENDPOINT, json=payload, headers=headers, timeout=timeout)
@@ -404,6 +462,36 @@ Target Environment: {target_company_type}
 
     response_text = call_groq_chat(messages, temperature=0.4, json_mode=True)
     return json.loads(response_text)
+
+
+def write_tailored_summary(candidate_summary: str, role: str, company: str, skills: str, projects: str) -> str:
+    """Two lines aimed at the role, or '' if the model is unavailable or adds facts."""
+    from .resume_generation_service import sanitize_rewrite
+
+    source = f"{candidate_summary} {role} {company} {skills} {projects}"
+    messages = [
+        {"role": "system", "content": (
+            "You write the summary at the top of a resume. Write 2 sentences, 25 to 45 words, with no first-person "
+            "pronouns, and use the exact target role in the first sentence. "
+            "Use only the facts given. Never add a number, employer, result, tool or years of experience. "
+            "If a project was studied rather than built, do not claim the candidate built it. "
+            "Never use: robust, scalable, enterprise, high-performance, production-grade, world-class, cutting-edge. "
+            "Return a JSON object with the key 'summary'."
+        )},
+        {"role": "user", "content": (
+            f"Target role: {role}\nTarget company: {company or 'not given'}\nCandidate's own summary: "
+            f"{candidate_summary or 'none'}\nSkills: {skills or 'none'}\nProjects: {projects or 'none'}"
+        )},
+    ]
+    try:
+        data = json.loads(call_groq_chat(messages, temperature=0.3, max_tokens=400, json_mode=True, timeout=12))
+    except Exception as e:
+        logger.warning(f"AI summary unavailable: {e}")
+        return ""
+    kept = sanitize_rewrite(data.get("summary") if isinstance(data, dict) else "", source)
+    if not kept or role.lower() not in kept.lower() or _adds_unlisted_tech(kept, source):
+        return ""
+    return kept
 
 
 def generate_github_project_bullets(

@@ -45,7 +45,7 @@
       <div class="kx-bento" aria-label="Current listings">
         <a class="kx-card kx-card-main" href="#browse-jobs" data-hero-item>
           <span class="kx-card-label"><span class="kx-live-dot" aria-hidden="true"></span> Open now</span>
-          <strong data-hero-count="{{ hero_stats.open }}">{{ hero_stats.open }}</strong>
+          <strong>{{ hero_stats.open }}</strong>
           <div class="kx-chart" role="img" aria-label="Jobs posted on each of the last 7 days">
             {% for day in hero_stats.daily %}
             <span class="kx-chart-col" title="{{ day.label }}: {{ day.count }} jobs">
@@ -57,11 +57,11 @@
         </a>
         <a class="kx-card" href="#browse-jobs" data-hero-item>
           <span class="kx-card-label">Added this week</span>
-          <strong data-hero-count="{{ hero_stats.week }}">{{ hero_stats.week }}</strong>
+          <strong>{{ hero_stats.week }}</strong>
         </a>
         <a class="kx-card" href="#browse-jobs" data-hero-item>
           <span class="kx-card-label">Internships</span>
-          <strong data-hero-count="{{ hero_stats.internships }}">{{ hero_stats.internships }}</strong>
+          <strong>{{ hero_stats.internships }}</strong>
         </a>
       </div>
       <nav class="kx-tools" aria-label="Free tools">
@@ -584,5 +584,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/hero-motion.js' %}?v=2026110114"></script>
+<script src="{% static 'js/hero-motion.js' %}?v=2026110115"></script>
 {% endblock %}

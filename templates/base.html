@@ -145,23 +145,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="shortcut icon" href="{% static 'images/icon-apply.png' %}" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Playfair+Display:ital,wght@0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2026102801">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2026110201">
   <link rel="stylesheet" href="{% static 'css/ui-refresh.css' %}?v=2026110112">
-  
-  <!-- Instant Session Entry Guard (Prevents layout shift and bypasses admin/owner portal) -->
-  <script>
-    (function(){
-      try {
-        var path = window.location.pathname;
-        var p = new URLSearchParams(window.location.search);
-        var isOwnerOrAdmin = path.indexOf('/owner') === 0 || path.indexOf('/admin') === 0;
-        var isIntro = path === '/intro/' || path === '/welcome/' || p.get('intro') === '1' || p.get('replay') === '1';
-        if (isOwnerOrAdmin || (!isIntro && sessionStorage.getItem('kashiiEntryPlayed'))) {
-          document.documentElement.classList.add('entry-done');
-        }
-      } catch(e){}
-    })();
-  </script>
   {% block extra_css %}{% endblock %}
   {% block schema_markup %}{% endblock %}
 </head>
@@ -170,33 +155,6 @@
 
   <!-- Subtle Film Texture -->
   <div class="site-grain"></div>
-
-  {% block entry_experience %}
-    <!-- Ultra-Clean Minimalist Editorial Entry Experience -->
-    <div id="kashiiEntry" role="dialog" aria-modal="true" aria-label="Welcome to Kashii Updatez">
-      <div class="aurora a1"></div>
-      <div class="aurora a2"></div>
-      
-      <button id="entrySkipBtn" type="button" aria-label="Skip introduction animation">Skip ›</button>
-
-      <div class="entry-center-stage">
-        <h1 id="entryWordmark" class="entry-brand-typography">
-          <span class="word-kashii">Kashii</span>
-          <span class="word-updatez">Updatez</span>
-        </h1>
-        <p id="entrySubTag" class="entry-sub-tag">
-          Daily Student Opportunities &middot; Campus Drives &middot; Python Kashi
-        </p>
-      </div>
-
-      <div class="entry-status-badge">
-        <span class="status-pulse-dot"></span>
-        <span id="entryStatusText">Assembling today's opportunities...</span>
-      </div>
-    </div>
-      <!-- Show the logo right away instead of waiting for the scripts at the end of the page -->
-    <script>document.getElementById('kashiiEntry').classList.add('active');</script>
-  {% endblock %}
 
   <!-- Flash Announcement Banner -->
   {% block flash_banner %}
@@ -235,9 +193,6 @@
 
   <!-- Core App Scripts -->
   <script src="{% static 'js/app.js' %}?v=2026110105"></script>
-  {% block entry_scripts %}
-    <script src="{% static 'js/entry_experience.js' %}?v=2026110113"></script>
-  {% endblock %}
   <!-- GSAP (standard license) and site-wide scroll motion -->
   <script src="{% static 'js/vendor/gsap.min.js' %}"></script>
   <script src="{% static 'js/vendor/ScrollTrigger.min.js' %}"></script>

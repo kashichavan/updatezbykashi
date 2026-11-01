@@ -17,62 +17,7 @@
 
   // Phones stack the panel under the text, so the depth effects tied to the
   // hero's position would hit it while people are reading it.
-  var fullDepth = window.matchMedia('(min-width: 861px) and (hover: hover) and (pointer: fine)').matches;
-
-  function format(value) {
-    return Math.round(value).toLocaleString('en-IN');
-  }
-
-  function intro() {
-    var timeline = gsap.timeline({ defaults: { ease: 'expo.out' } });
-
-    timeline.from(hero.querySelectorAll('.kx-eyebrow, h1, .lead, .kx-hero-actions'), {
-      rotationX: fullDepth ? -55 : -16,
-      z: fullDepth ? -120 : 0,
-      y: 24,
-      autoAlpha: 0,
-      transformPerspective: 900,
-      transformOrigin: '50% 100%',
-      duration: fullDepth ? 1 : 0.7,
-      stagger: fullDepth ? 0.09 : 0.06,
-      clearProps: 'transform,opacity,visibility'
-    }, 0);
-
-    timeline.from(items, {
-      rotationX: fullDepth ? -75 : -22,
-      rotationY: fullDepth ? 14 : 0,
-      z: fullDepth ? -260 : 0,
-      y: fullDepth ? 0 : 18,
-      autoAlpha: 0,
-      transformPerspective: fullDepth ? 0 : 900,
-      transformOrigin: '50% 100%',
-      duration: fullDepth ? 1.1 : 0.7,
-      stagger: fullDepth ? 0.08 : 0.06,
-      clearProps: fullDepth ? '' : 'transform,opacity,visibility'
-    }, 0.1);
-
-    timeline.from(panel.querySelectorAll('.kx-chart-bar'), {
-      scaleY: 0,
-      duration: 0.9,
-      stagger: 0.05,
-      ease: 'back.out(1.5)'
-    }, 0.45);
-
-    panel.querySelectorAll('[data-hero-count]').forEach(function (el) {
-      var target = Number(el.getAttribute('data-hero-count'));
-      if (!Number.isFinite(target) || target <= 0) return;
-      var counter = { value: 0 };
-      el.textContent = '0';
-      timeline.to(counter, {
-        value: target,
-        duration: 1.3,
-        ease: 'power3.out',
-        onUpdate: function () { el.textContent = format(counter.value); }
-      }, 0.3);
-    });
-
-    return timeline;
-  }
+  if (!window.matchMedia('(min-width: 861px) and (hover: hover) and (pointer: fine)').matches) return;
 
   // Leaving the screen, the panel falls back into the page.
   function scrollDepth() {
@@ -134,25 +79,6 @@
     });
   }
 
-  // The entrance only runs while the first-visit splash covers the hero. Once
-  // people can see the hero, it is never hidden and played again.
-  function playBehindSplash() {
-    var splash = document.getElementById('kashiiEntry');
-    var root = document.documentElement;
-    if (!splash || root.classList.contains('entry-done') || getComputedStyle(splash).display === 'none') return;
-    // Already fading: its signal has fired and the hero is showing through.
-    if (splash.classList.contains('fade-veil')) return;
-
-    var timeline = intro();
-    timeline.pause();
-    var play = function () { timeline.play(); };
-    window.addEventListener('kashii:entry-leaving', play, { once: true });
-    window.setTimeout(play, 4000);
-  }
-
-  playBehindSplash();
-  if (fullDepth) {
-    scrollDepth();
-    pointerDepth();
-  }
+  scrollDepth();
+  pointerDepth();
 })();

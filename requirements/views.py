@@ -330,9 +330,13 @@ def index_view(request):
 
 
 def intro_view(request):
-    """Standalone 3D particle morphing intro landing page with automatic redirect."""
-    redirect_target = request.GET.get('redirect', '/')
-    return render(request, 'content/intro.html', {'redirect_target': redirect_target})
+    """Old intro links go straight to the page they named."""
+    from django.utils.http import url_has_allowed_host_and_scheme
+
+    target = request.GET.get('redirect') or request.GET.get('to') or '/'
+    if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        target = '/'
+    return redirect(target)
 
 def about_view(request):
     return render(request, 'content/about.html')
@@ -622,6 +626,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
     if not company_clean:
         company_clean = (job.company_name or '').strip()
 
+    from requirements.job_text import description_blocks
     from requirements.services.recruiter_finder import get_recruiter_intelligence_for_job
     recruiter_intel = get_recruiter_intelligence_for_job(job)
     sourcing_links = recruiter_intel.get('sourcing_links', {})
@@ -640,6 +645,7 @@ def job_detail_view(request, category_slug=None, uuid=None, pk=None, identifier=
     context = {
         'job': job,
         'skills_list': job.get_skills_list(),
+        'description_blocks': description_blocks(job.description),
         'posted_date_display': job.get_posted_date_display(),
         'related_jobs': related_jobs,
         'youtube_videos': videos,

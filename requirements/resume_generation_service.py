@@ -487,14 +487,22 @@ def finalize_resume_synthesis(job_uuid: str) -> Dict[str, Any]:
     summary = (
         f"{'Fresher' if not skill_phrase else 'Early-career engineer'} targeting {role_target}."
         + (f" Working with {skill_phrase}." if skill_phrase else "")
-        + " Built the selected projects listed below and is looking for a first full-time engineering role."
+    )
+    own_summary = _clean(candidate.get('summary'))
+    project_facts = '; '.join(
+        f"{p['title']} ({p['tech_stack']}): {' '.join(p['bullets'][:2])}" for p in resume_projects
+    )
+    from .ai_engine import write_tailored_summary
+    ai_summary = write_tailored_summary(
+        own_summary, role_title, company_target,
+        ', '.join(str(v) for v in formatted_skills.values()), project_facts,
     )
 
     final_resume = {
         'name': _clean(candidate.get('name')),
         'profile_level': 'fresher' if job.mode == 'FRESHER_GITHUB' else 'experienced',
         'contact': contact,
-        'summary': _clean(candidate.get('summary')) or summary,
+        'summary': ai_summary or own_summary or summary,
         'skills': formatted_skills,
         'projects': resume_projects,
         'education': education,

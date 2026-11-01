@@ -363,11 +363,14 @@ def parse_linkedin_profile_url(linkedin_url: str) -> Optional[Dict[str, str]]:
 def build_google_xray_url(company_name: str, name: str = "") -> str:
     """High-precision Google X-Ray URL for public LinkedIn profiles (no scraping)."""
     clean_company = clean_company_name_for_search(company_name) or company_name
-    name_part = f'"{name}" ' if name else ""
-    query = (
-        f'{name_part}site:linkedin.com/in "{clean_company}" '
-        f'(recruiter OR "talent acquisition" OR "technical recruiter" OR "hiring manager")'
-    )
+    if name:
+        # A named person may not have a recruiting title.
+        query = f'site:linkedin.com/in "{name}" "{clean_company}"'
+    else:
+        query = (
+            f'site:linkedin.com/in "{clean_company}" '
+            f'(recruiter OR "talent acquisition" OR HR OR hiring)'
+        )
     return f"https://www.google.com/search?q={urllib.parse.quote(query)}"
 
 
@@ -385,7 +388,8 @@ def build_sourcing_links(name: str, company_name: str, linkedin_url: str = "") -
         f"keywords={urllib.parse.quote_plus(f'{person} {clean_company} recruiter'.strip())}"
     )
     gmail_query = f'"{person}" OR "{domain}"' if person else f'"{domain}"'
-    github_query = f'"{person}" "{clean_company}"' if person else f'"{clean_company}"'
+    who = f'"{person}" "{clean_company}"' if person else f'"{clean_company}"'
+    github_query = who
 
     return {
         "linkedin_search_url": linkedin_url or linkedin_people,
@@ -393,15 +397,15 @@ def build_sourcing_links(name: str, company_name: str, linkedin_url: str = "") -
         "google_xray_url": build_google_xray_url(company_name, person),
         "google_email_url": (
             "https://www.google.com/search?q="
-            + urllib.parse.quote_plus(f'"{person}" "{clean_company}" email'.strip())
+            + urllib.parse.quote_plus(f'{who} email')
         ),
         "google_phone_url": (
             "https://www.google.com/search?q="
-            + urllib.parse.quote_plus(f'"{person}" "{clean_company}" phone'.strip())
+            + urllib.parse.quote_plus(f'{who} phone')
         ),
         "bing_search_url": (
             "https://www.bing.com/search?q="
-            + urllib.parse.quote_plus(f'"{person}" "{clean_company}" (email OR contact)'.strip())
+            + urllib.parse.quote_plus(f'{who} (email OR contact)')
         ),
         "gmail_search_url": "https://mail.google.com/mail/u/0/#search/" + urllib.parse.quote(gmail_query),
         "github_search_url": "https://github.com/search?type=users&q=" + urllib.parse.quote_plus(github_query),

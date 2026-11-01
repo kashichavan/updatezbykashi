@@ -555,10 +555,21 @@
     font-size: 14.5px;
     line-height: 1.72;
     color: #334155;
-    white-space: pre-line;
     overflow-wrap: anywhere;
   }
   @media (min-width: 768px) { .jd-prose { font-size: 15px; } }
+  .jd-prose p { margin: 0 0 12px; }
+  .jd-prose > :last-child { margin-bottom: 0; }
+  .jd-prose-heading {
+    margin: 20px 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #0f172a;
+  }
+  .jd-prose > .jd-prose-heading:first-child { margin-top: 0; }
+  .jd-prose-list { margin: 0 0 12px; padding-left: 20px; list-style: disc; }
+  .jd-prose-list li { margin-bottom: 6px; padding-left: 2px; }
 
   /* ── Requirements block (2 cols) ──────────────────────────────────── */
   .jd-facts {
@@ -1340,7 +1351,13 @@
           <h2 class="jd-kicker">About the role</h2>
         </div>
         <div class="jd-panel-body">
-          <div class="jd-prose">{{ job.description|cut:"**" }}</div>
+          <div class="jd-prose">
+            {% for block in description_blocks %}
+              {% if block.kind == 'heading' %}<h3 class="jd-prose-heading">{{ block.text }}</h3>
+              {% elif block.kind == 'list' %}<ul class="jd-prose-list">{% for line in block.lines %}<li>{{ line }}</li>{% endfor %}</ul>
+              {% else %}<p>{{ block.text }}</p>{% endif %}
+            {% endfor %}
+          </div>
         </div>
       </section>
 
