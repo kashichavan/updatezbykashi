@@ -62,6 +62,7 @@ urlpatterns = [
     path('tools/job-description-generator/', RedirectView.as_view(url='/resume-builder/?paste_jd=1', permanent=True)),
     path('jd-generator/', RedirectView.as_view(url='/resume-builder/?paste_jd=1', permanent=True)),
     path('ai-job-description/', RedirectView.as_view(url='/resume-builder/?paste_jd=1', permanent=True)),
+    path('api/ai/resume-review/', views.api_ai_resume_review, name='api_ai_resume_review'),
     path('api/ai/polish-bullet/', views.api_ai_polish_bullet, name='api_ai_polish_bullet'),
     path('api/ai/generate-project-bullets/', views.api_ai_generate_project_bullets, name='api_ai_generate_project_bullets'),
     path('api/ai/tailor-resume/', views.api_ai_tailor_resume, name='api_ai_tailor_resume'),

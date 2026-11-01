@@ -243,6 +243,26 @@ def randstad_svg_view(request):
     return response
 
 
+def _jobs_posted_by_day(jobs, today, days=7):
+    """Live jobs posted on each of the last `days` days, oldest first, for the home chart."""
+    start = today - timedelta(days=days - 1)
+    counts = dict(
+        jobs.filter(posted_date__gte=start)
+        .values_list('posted_date')
+        .annotate(total=Count('id'))
+    )
+    series = [start + timedelta(days=offset) for offset in range(days)]
+    peak = max([counts.get(day, 0) for day in series] + [1])
+    return [
+        {
+            'label': day.strftime('%a'),
+            'count': counts.get(day, 0),
+            'height': max(round(counts.get(day, 0) * 100 / peak), 6),
+        }
+        for day in series
+    ]
+
+
 def index_view(request):
     try:
         sync_expired_jobs()
@@ -287,7 +307,7 @@ def index_view(request):
         logger.warning(f"Error fetching initial_jobs: {e}")
         initial_jobs_count = 0
 
-    hero_stats = {'open': 0, 'week': 0, 'internships': 0}
+    hero_stats = {'open': 0, 'week': 0, 'internships': 0, 'daily': []}
     try:
         live_jobs = JobPosting.objects.filter(status='ACTIVE', deadline__gt=timezone.now())
         week_start = timezone.localdate() - timedelta(days=7)
@@ -295,6 +315,7 @@ def index_view(request):
             'open': live_jobs.count(),
             'week': live_jobs.filter(posted_date__gte=week_start).count(),
             'internships': live_jobs.filter(job_type='INTERNSHIP').count(),
+            'daily': _jobs_posted_by_day(live_jobs, timezone.localdate()),
         }
     except Exception as e:
         logger.warning(f"Error fetching hero stats: {e}")
@@ -4088,6 +4109,183 @@ def api_ai_auto_upgrade_resume(request):
     except Exception as e:
         logger.exception("api_ai_auto_upgrade_resume error:")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def _clean_resume_for_review(raw):
+    """Keep the parts of a posted resume the AI review uses, within fixed limits."""
+    def text(value, limit):
+        return str(value or '')[:limit]
+
+    def bullets(value):
+        items = value if isinstance(value, list) else []
+        return [text(b, 600).strip() for b in items[:8] if isinstance(b, str) and b.strip()]
+
+    if not isinstance(raw, dict):
+        raise ValueError('resume must be an object')
+    contact = raw.get('contact') if isinstance(raw.get('contact'), dict) else {}
+    return {
+        'name': text(raw.get('name'), 120),
+        'contact': {key: text(contact.get(key), 200) for key in ('email', 'phone', 'location', 'linkedin', 'github')},
+        'summary': text(raw.get('summary'), 1500),
+        'skills': raw.get('skills') if isinstance(raw.get('skills'), (dict, list)) else [],
+        'experience': [
+            {'company': text(e.get('company'), 120), 'role': text(e.get('role'), 120), 'period': text(e.get('period'), 60),
+             'bullets': bullets(e.get('bullets'))}
+            for e in (raw.get('experience') or [])[:6] if isinstance(e, dict)
+        ],
+        'projects': [
+            {'title': text(p.get('title'), 120), 'role': text(p.get('role'), 120), 'tech_stack': text(p.get('tech_stack'), 300),
+             'bullets': bullets(p.get('bullets'))}
+            for p in (raw.get('projects') or [])[:8] if isinstance(p, dict)
+        ],
+        'education': raw.get('education') if isinstance(raw.get('education'), (dict, list)) else [],
+        'certifications': [text(c, 200) for c in (raw.get('certifications') or [])[:12] if isinstance(c, str)],
+    }
+
+
+def _resume_enhance_items(resume, requested):
+    """Turn {kind, index, bullet} requests into items whose text comes from the resume itself."""
+    skills_text = json.dumps(resume.get('skills'), default=str)
+    project_text = ' '.join(f"{p['title']} {p['tech_stack']} {' '.join(p['bullets'])}" for p in resume['projects'])
+    items = []
+    for entry in (requested if isinstance(requested, list) else [])[:8]:
+        if not isinstance(entry, dict):
+            continue
+        kind = entry.get('kind')
+        if kind == 'summary' and resume['summary'].strip():
+            items.append({
+                'id': 'summary', 'kind': 'summary', 'text': resume['summary'].strip(),
+                'source': f"{skills_text} {project_text}"[:1800], 'where': {'kind': 'summary'},
+            })
+            continue
+        if kind not in ('project', 'experience'):
+            continue
+        group = resume['projects' if kind == 'project' else 'experience']
+        index, bullet = entry.get('index'), entry.get('bullet')
+        if not isinstance(index, int) or not isinstance(bullet, int):
+            continue
+        if not (0 <= index < len(group)) or not (0 <= bullet < len(group[index]['bullets'])):
+            continue
+        owner = group[index]
+        items.append({
+            'id': f'{kind}-{index}-{bullet}', 'kind': 'bullet', 'text': owner['bullets'][bullet],
+            'source': f"{owner.get('title', '')} {owner.get('company', '')} {owner.get('role', '')} {owner.get('tech_stack', '')}",
+            'where': {'kind': kind, 'index': index, 'bullet': bullet},
+        })
+    return items
+
+
+def _rule_based_review(resume, target_skills):
+    """Used only when the AI cannot answer. The response says so with ai: False."""
+    from .ai_engine import review_grade
+    from .resume_parser import evaluate_uploaded_resume_ats
+
+    result = evaluate_uploaded_resume_ats(resume, target_skills)
+    score = result.get('overall_score', 0)
+    return {
+        'overall_score': score,
+        'grade': review_grade(score),
+        'checks': [
+            {'name': p['name'], 'score': p['score'], 'max_score': p['max_score'], 'detail': p['detail']}
+            for p in result.get('pillars', [])
+        ],
+        'fixes': (result.get('improvements') or [])[:4],
+        'missing_skills': [],
+        'project_scores': {},
+    }
+
+
+@csrf_exempt
+def api_ai_resume_review(request):
+    """
+    One automatic pass for the resume builder: improve the text the page asks
+    about, then score the result. Nothing identifying goes to the AI, and every
+    rewrite passes the same honesty checks as the rest of the site.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    if len(request.body) > 96 * 1024:
+        return JsonResponse({'error': 'This resume is too long to review.'}, status=413)
+
+    from .ai_engine import enhance_resume_items, review_resume_with_ai
+    from .middleware import RateLimitMiddleware
+    from .resume_engine import RESUME_ROLES
+
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        resume = _clean_resume_for_review(body.get('resume'))
+    except (ValueError, UnicodeDecodeError, AttributeError):
+        return JsonResponse({'error': 'Send a resume as JSON.'}, status=400)
+
+    role_key = body.get('role') if body.get('role') in RESUME_ROLES else 'python-backend'
+    role_info = RESUME_ROLES[role_key]
+    target_skills = body.get('job_skills') or []
+    if isinstance(target_skills, str):
+        target_skills = [s.strip() for s in target_skills.split(',') if s.strip()]
+    if not isinstance(target_skills, list):
+        target_skills = []
+    target_skills = [str(s)[:60] for s in target_skills[:30]] or role_info.get('target_ats_keywords', [])
+    role_title = role_info.get('title', '')
+
+    client_ip = RateLimitMiddleware(None).get_client_ip(request)
+    rate_key = f'resume-review:{client_ip}'
+    hits = cache.get(rate_key, 0)
+    # Under the /api/ai/ limit, so a fast typist gets a labelled basic score, not an error.
+    allowed = hits < 15
+    if allowed:
+        cache.set(rate_key, hits + 1, 60)
+
+    rewrites = []
+    items = _resume_enhance_items(resume, body.get('enhance')) if allowed else []
+    if items:
+        try:
+            improved = enhance_resume_items(items, target_skills, role_title)
+        except Exception as e:
+            logger.warning("Resume auto-enhance failed: %s", e)
+            improved = {}
+        for item in items:
+            text = improved.get(item['id'])
+            if not text:
+                continue
+            where = item['where']
+            if where['kind'] == 'summary':
+                resume['summary'] = text
+            else:
+                group = 'projects' if where['kind'] == 'project' else 'experience'
+                resume[group][where['index']]['bullets'][where['bullet']] = text
+            rewrites.append({'original': item['text'], 'improved': text})
+
+    review = None
+    content = {k: resume[k] for k in ('summary', 'skills', 'experience', 'projects', 'education', 'certifications')}
+    fingerprint = hashlib.sha256(json.dumps([content, target_skills], sort_keys=True, default=str).encode()).hexdigest()
+    review_key = f'resume-review-result:{fingerprint}'
+    review = cache.get(review_key)
+    if review is None and allowed:
+        try:
+            review = review_resume_with_ai(resume, target_skills, role_title)
+            cache.set(review_key, review, 6 * 3600)
+        except Exception as e:
+            logger.warning("Resume AI review failed: %s", e)
+    used_ai = review is not None
+    if review is None:
+        review = _rule_based_review(resume, target_skills)
+
+    return JsonResponse({
+        'ai': used_ai,
+        'busy': not allowed,
+        'score': review['overall_score'],
+        'overall_score': review['overall_score'],
+        'grade': review['grade'],
+        'pass_rate': 'Scored by AI' if used_ai else 'Basic check, AI is busy',
+        'checks': (
+            [{'rule': c['name'], 'passed': c['score'] >= c['max_score'] * 0.7, 'points': c['score'],
+              'max_points': c['max_score'], 'detail': c['detail']} for c in review['checks']]
+            + [{'rule': 'Next step', 'passed': False, 'detail': fix} for fix in review['fixes']]
+        ),
+        'missing_skills': review['missing_skills'],
+        'project_scores': review['project_scores'],
+        'rewrites': rewrites,
+    })
 
 
 @csrf_exempt

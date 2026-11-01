@@ -41,18 +41,59 @@
         <a href="/resume-builder/" class="button kx-btn-ghost"><i data-lucide="file-text" aria-hidden="true"></i> Build my resume</a>
       </div>
     </div>
-    <div class="kx-hero-panel">
-      <div class="kx-stats" aria-label="Current listings">
-        <a class="kx-stat" href="#browse-jobs"><strong data-count="{{ hero_stats.open }}">{{ hero_stats.open }}</strong><span>Open now</span></a>
-        <a class="kx-stat" href="#browse-jobs"><strong data-count="{{ hero_stats.week }}">{{ hero_stats.week }}</strong><span>Added this week</span></a>
-        <a class="kx-stat" href="#browse-jobs"><strong data-count="{{ hero_stats.internships }}">{{ hero_stats.internships }}</strong><span>Internships</span></a>
+    <div class="kx-hero-panel" data-hero-panel>
+      <div class="kx-bento" aria-label="Current listings">
+        <a class="kx-card kx-card-main" href="#browse-jobs" data-hero-item>
+          <span class="kx-card-label"><span class="kx-live-dot" aria-hidden="true"></span> Open now</span>
+          <strong data-hero-count="{{ hero_stats.open }}">{{ hero_stats.open }}</strong>
+          <div class="kx-chart" role="img" aria-label="Jobs posted on each of the last 7 days">
+            {% for day in hero_stats.daily %}
+            <span class="kx-chart-col" title="{{ day.label }}: {{ day.count }} jobs">
+              <i class="kx-chart-bar" style="height: {{ day.height }}%"></i>
+              <small>{{ day.label }}</small>
+            </span>
+            {% endfor %}
+          </div>
+        </a>
+        <a class="kx-card" href="#browse-jobs" data-hero-item>
+          <span class="kx-card-label">Added this week</span>
+          <strong data-hero-count="{{ hero_stats.week }}">{{ hero_stats.week }}</strong>
+        </a>
+        <a class="kx-card" href="#browse-jobs" data-hero-item>
+          <span class="kx-card-label">Internships</span>
+          <strong data-hero-count="{{ hero_stats.internships }}">{{ hero_stats.internships }}</strong>
+        </a>
       </div>
-      <div class="kx-tools">
-        <a class="kx-tool" href="/resume-builder/"><i data-lucide="file-pen-line" aria-hidden="true"></i><span><b>Resume Builder</b>Fill in, improve, download</span></a>
-        <a class="kx-tool" href="/ai-resume-analysis/"><i data-lucide="gauge" aria-hidden="true"></i><span><b>ATS Score</b>Upload and see what to fix</span></a>
-        <a class="kx-tool" href="/debugger/"><i data-lucide="bug-play" aria-hidden="true"></i><span><b>Code Debugger</b>Step through your code</span></a>
-      </div>
+      <nav class="kx-tools" aria-label="Free tools">
+        <a class="kx-tool" href="/resume-builder/" data-hero-item>
+          <span class="kx-tool-icon"><i data-lucide="file-pen-line" aria-hidden="true"></i></span>
+          <span class="kx-tool-text"><b>Resume Builder</b>Fill in, improve, download</span>
+          <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
+        </a>
+        <a class="kx-tool" href="/ai-resume-analysis/" data-hero-item>
+          <span class="kx-tool-icon"><i data-lucide="gauge" aria-hidden="true"></i></span>
+          <span class="kx-tool-text"><b>ATS Score</b>Upload and see what to fix</span>
+          <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
+        </a>
+        <a class="kx-tool" href="/debugger/" data-hero-item>
+          <span class="kx-tool-icon"><i data-lucide="bug-play" aria-hidden="true"></i></span>
+          <span class="kx-tool-text"><b>Code Debugger</b>Step through your code</span>
+          <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
+        </a>
+      </nav>
     </div>
+  </section>
+
+  <section class="kx-flow" data-flow aria-labelledby="kxFlowTitle">
+    <div class="kx-flow-copy">
+      <h2 id="kxFlowTitle">From job post to interview</h2>
+      <ol class="kx-flow-steps">
+        <li><a href="#browse-jobs" data-flow-step class="is-active"><b>Find a job</b><span>Fresh openings with apply links</span></a></li>
+        <li><a href="/resume-builder/" data-flow-step><b>Build your resume</b><span>AI improves your wording as you write</span></a></li>
+        <li><a href="/ai-resume-analysis/" data-flow-step><b>Check your score</b><span>See what to fix before you apply</span></a></li>
+      </ol>
+    </div>
+    <div class="kx-flow-stage" aria-hidden="true"><canvas data-three="{% static 'js/vendor/three.module.min.js' %}"></canvas></div>
   </section>
 
 
@@ -552,4 +593,9 @@
 
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/hero-motion.js' %}?v=2026110107"></script>
+<script type="module" src="{% static 'js/flow-scene.js' %}?v=2026110107"></script>
 {% endblock %}

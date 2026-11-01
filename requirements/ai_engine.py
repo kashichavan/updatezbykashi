@@ -678,6 +678,187 @@ def generate_ai_resume_critique_and_suggestions(
         }
 
 
+# The resume builder scores with these bands. Totals are added up here so the
+# number on screen always equals the parts shown under it.
+REVIEW_CHECKS = (
+    ('Clarity and impact', 30),
+    ('Keywords for the role', 25),
+    ('Proof in projects and experience', 25),
+    ('Structure and completeness', 20),
+)
+REVIEW_PROJECT_DIMENSIONS = (
+    ('action_verbs', 25),
+    ('google_xyz', 25),
+    ('quantified_metrics', 20),
+    ('tech_relevance', 20),
+    ('architecture_scale', 10),
+)
+_UNEARNED_CLAIMS = re.compile(r'\b(years?|experienced|expert|seasoned|veteran|proven)\b', re.IGNORECASE)
+
+
+def _bounded_int(value, maximum: int) -> int:
+    try:
+        return max(0, min(maximum, int(round(float(value)))))
+    except (TypeError, ValueError):
+        return 0
+
+
+def review_grade(score: int) -> str:
+    if score >= 85:
+        return 'Strong'
+    if score >= 70:
+        return 'Good'
+    if score >= 50:
+        return 'Needs work'
+    return 'Weak'
+
+
+def _resume_for_ai(resume: dict) -> dict:
+    """The resume without identity: the model scores the content, not the person."""
+    contact = resume.get('contact') if isinstance(resume.get('contact'), dict) else {}
+    return {
+        'has_contact_details': {key: bool(contact.get(key)) for key in ('email', 'phone', 'linkedin', 'github')},
+        'summary': resume.get('summary') or '',
+        'skills': resume.get('skills') or [],
+        'experience': [
+            {'role': e.get('role', ''), 'bullets': e.get('bullets') or []}
+            for e in resume.get('experience') or [] if isinstance(e, dict)
+        ],
+        'projects': [
+            {
+                'index': position,
+                'title': p.get('title', ''),
+                'tech_stack': p.get('tech_stack', ''),
+                'bullets': p.get('bullets') or [],
+            }
+            for position, p in enumerate(resume.get('projects') or []) if isinstance(p, dict)
+        ],
+        'education': resume.get('education') or [],
+        'certifications': resume.get('certifications') or [],
+    }
+
+
+def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: str = "") -> dict:
+    """
+    Score a resume with the model. Raises when the model cannot give a usable
+    answer, so the caller can say the score did not come from AI.
+    """
+    bands = ', '.join(f"'{name}' out of {maximum}" for name, maximum in REVIEW_CHECKS)
+    dimensions = ', '.join(f"'{name}' 0-{maximum}" for name, maximum in REVIEW_PROJECT_DIMENSIONS)
+    system_prompt = (
+        "You are a strict technical recruiter scoring a resume for the target role. Judge only what is written.\n"
+        "Fresher resumes may have projects and no work experience. That is acceptable.\n"
+        "Reward specific, believable work. Do not reward buzzwords or length. Most resumes score 45 to 80.\n"
+        "Return a JSON object with exactly these keys:\n"
+        f"- 'checks': list of objects with 'name', 'score' and 'detail' for these bands: {bands}. "
+        "'detail' is one plain sentence naming what you saw.\n"
+        "- 'fixes': up to 4 short, specific things only the candidate can do, such as adding a real result.\n"
+        "- 'missing_skills': up to 6 skills from target_skills that the resume does not show.\n"
+        f"- 'projects': one object per project with 'index' and {dimensions}."
+    )
+    user_prompt = json.dumps({
+        'target_role': role_title or 'Software Engineer',
+        'target_skills': (target_skills or [])[:30],
+        'resume': _resume_for_ai(resume),
+    }, default=str)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    data = json.loads(call_groq_chat(messages, temperature=0, max_tokens=1400, json_mode=True, timeout=12, max_retries=2))
+
+    answered = {
+        str(item.get('name', '')).lower(): item
+        for item in data.get('checks') or [] if isinstance(item, dict)
+    }
+    checks = []
+    for name, maximum in REVIEW_CHECKS:
+        item = answered.get(name.lower())
+        if item is None:
+            raise ValueError(f"AI review left out '{name}'")
+        checks.append({
+            'name': name,
+            'score': _bounded_int(item.get('score'), maximum),
+            'max_score': maximum,
+            'detail': str(item.get('detail') or '')[:220],
+        })
+
+    resume_text = json.dumps(_resume_for_ai(resume), default=str).lower()
+    project_count = len(resume.get('projects') or [])
+    project_scores = {}
+    for item in data.get('projects') or []:
+        if not isinstance(item, dict):
+            continue
+        position = _bounded_int(item.get('index'), max(project_count - 1, 0))
+        breakdown = {name: _bounded_int(item.get(name), maximum) for name, maximum in REVIEW_PROJECT_DIMENSIONS}
+        project_scores[position] = {'score': sum(breakdown.values()), 'breakdown': breakdown}
+
+    score = sum(check['score'] for check in checks)
+    return {
+        'overall_score': score,
+        'grade': review_grade(score),
+        'checks': checks,
+        'fixes': [str(fix)[:200] for fix in (data.get('fixes') or []) if isinstance(fix, str)][:4],
+        # The model can name a skill the resume already shows, so check it here.
+        'missing_skills': [
+            str(skill)[:40] for skill in (data.get('missing_skills') or [])
+            if isinstance(skill, str) and skill.lower() not in resume_text
+        ][:6],
+        'project_scores': project_scores,
+    }
+
+
+def enhance_resume_items(items: list, target_skills: list = None, role_title: str = "") -> dict:
+    """
+    Rewrite resume text in place. `items` are {'id', 'kind', 'text', 'source'}, where
+    `source` is everything the candidate wrote that the rewrite may draw on.
+    Returns {id: rewrite} and leaves out anything that fails the honesty checks.
+    """
+    from .resume_generation_service import sanitize_rewrite
+
+    if not items:
+        return {}
+    system_prompt = (
+        "You improve resume text so a recruiter understands it quickly.\n"
+        "RULES:\n"
+        "1. A bullet is one sentence of 12 to 24 words starting with a past-tense action verb.\n"
+        "2. A summary is two sentences of plain language.\n"
+        "3. Use only facts in the item's 'text' and 'source'. Say what was built and how.\n"
+        "4. Copy existing numbers exactly. Never add a number, percentage, user count, duration or result.\n"
+        "5. Never name a tool that is not in the text or source.\n"
+        "6. Never use: robust, scalable, enterprise, high-performance, production-grade, world-class, "
+        "cutting-edge, state-of-the-art, mission-critical, best-in-class, seasoned, proven.\n"
+        "Return a JSON object with key 'rewrites': a list of objects with 'id' and 'text', one per item."
+    )
+    user_prompt = json.dumps({
+        'target_role': role_title or 'Software Engineer',
+        'target_skills': (target_skills or [])[:20],
+        'items': [{'id': i['id'], 'kind': i['kind'], 'text': i['text'], 'source': i['source']} for i in items],
+    }, default=str)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+    data = json.loads(call_groq_chat(messages, temperature=0.3, max_tokens=1600, json_mode=True, timeout=12, max_retries=2))
+
+    by_id = {item['id']: item for item in items}
+    kept = {}
+    for rewrite in data.get('rewrites') or []:
+        if not isinstance(rewrite, dict):
+            continue
+        item = by_id.get(rewrite.get('id'))
+        text = re.sub(r'[<>]', '', str(rewrite.get('text') or '')).strip()
+        if item is None or not text or text == item['text'] or len(text) > 480:
+            continue
+        allowed = f"{item['text']} {item['source']}"
+        if not sanitize_rewrite(text, allowed) or _adds_unlisted_tech(text, allowed):
+            continue
+        if _UNEARNED_CLAIMS.search(text) and not _UNEARNED_CLAIMS.search(allowed):
+            continue
+        kept[item['id']] = text
+    return kept
+
+
 # Skills we can recognise in a job description, grouped the way a resume lists them.
 JD_SKILL_MAP = {
     'Languages': [
