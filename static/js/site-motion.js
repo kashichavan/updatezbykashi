@@ -32,6 +32,8 @@
 
   function isRevealable(el) {
     if (el.closest(SKIP)) return false;
+    // Already on screen: hiding it to animate it in would look like a blink.
+    if (el.getBoundingClientRect().top < window.innerHeight) return false;
     var style = getComputedStyle(el);
     return style.position !== 'fixed' && style.display !== 'none';
   }

@@ -70,6 +70,8 @@
         onUpdate: function () { el.textContent = format(counter.value); }
       }, 0.3);
     });
+
+    return timeline;
   }
 
   // Leaving the screen, the panel falls back into the page.
@@ -132,29 +134,21 @@
     });
   }
 
-  // The first-visit splash covers the hero, so the entrance waits for it to leave.
-  function whenSplashIsGone(run) {
+  // The entrance only runs while the first-visit splash covers the hero. Once
+  // people can see the hero, it is never hidden and played again.
+  function playBehindSplash() {
+    var splash = document.getElementById('kashiiEntry');
     var root = document.documentElement;
-    var waiting = document.getElementById('kashiiEntry');
-    if (!waiting || root.classList.contains('entry-done')) {
-      run();
-      return;
-    }
-    var started = false;
-    function begin() {
-      if (started) return;
-      started = true;
-      observer.disconnect();
-      run();
-    }
-    var observer = new MutationObserver(function () {
-      if (root.classList.contains('entry-done')) begin();
-    });
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    window.setTimeout(begin, 5000);
+    if (!splash || root.classList.contains('entry-done') || getComputedStyle(splash).display === 'none') return;
+
+    var timeline = intro();
+    timeline.pause();
+    var play = function () { timeline.play(); };
+    window.addEventListener('kashii:entry-leaving', play, { once: true });
+    window.setTimeout(play, 5000);
   }
 
-  whenSplashIsGone(intro);
+  playBehindSplash();
   if (fullDepth) {
     scrollDepth();
     pointerDepth();

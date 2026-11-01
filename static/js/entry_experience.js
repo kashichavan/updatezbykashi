@@ -76,6 +76,7 @@
     if (entryEl) {
       entryEl.classList.add('fade-veil');
     }
+    window.dispatchEvent(new Event('kashii:entry-leaving'));
 
     await sleep(600);
 
@@ -133,5 +134,11 @@
     await runSequence();
   };
 
-  runSequence();
+  // On a slow connection the splash has already been showing while this file
+  // loaded, so go straight to the page.
+  if (performance.now() > 1800) {
+    finishSequence();
+  } else {
+    runSequence();
+  }
 })();

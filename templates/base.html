@@ -194,6 +194,8 @@
         <span id="entryStatusText">Assembling today's opportunities...</span>
       </div>
     </div>
+      <!-- Show the logo right away instead of waiting for the scripts at the end of the page -->
+    <script>document.getElementById('kashiiEntry').classList.add('active');</script>
   {% endblock %}
 
   <!-- Flash Announcement Banner -->
@@ -234,12 +236,12 @@
   <!-- Core App Scripts -->
   <script src="{% static 'js/app.js' %}?v=2026110105"></script>
   {% block entry_scripts %}
-    <script src="{% static 'js/entry_experience.js' %}?v=2026110105"></script>
+    <script src="{% static 'js/entry_experience.js' %}?v=2026110113"></script>
   {% endblock %}
   <!-- GSAP (standard license) and site-wide scroll motion -->
   <script src="{% static 'js/vendor/gsap.min.js' %}"></script>
   <script src="{% static 'js/vendor/ScrollTrigger.min.js' %}"></script>
-  <script src="{% static 'js/site-motion.js' %}?v=2026110112"></script>
+  <script src="{% static 'js/site-motion.js' %}?v=2026110113"></script>
   {% block extra_js %}{% endblock %}
   <script>
     if (window.lucide) {
