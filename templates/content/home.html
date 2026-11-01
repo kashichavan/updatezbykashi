@@ -41,9 +41,9 @@
         <a href="/resume-builder/" class="button kx-btn-ghost"><i data-lucide="file-text" aria-hidden="true"></i> Build my resume</a>
       </div>
     </div>
-    <div class="kx-hero-panel" data-hero-panel>
+    <div class="kx-hero-panel">
       <div class="kx-bento" aria-label="Current listings">
-        <a class="kx-card kx-card-main" href="#browse-jobs" data-hero-item>
+        <a class="kx-card kx-card-main" href="#browse-jobs">
           <span class="kx-card-label"><span class="kx-live-dot" aria-hidden="true"></span> Open now</span>
           <strong>{{ hero_stats.open }}</strong>
           <div class="kx-chart" role="img" aria-label="Jobs posted on each of the last 7 days">
@@ -55,27 +55,27 @@
             {% endfor %}
           </div>
         </a>
-        <a class="kx-card" href="#browse-jobs" data-hero-item>
+        <a class="kx-card" href="#browse-jobs">
           <span class="kx-card-label">Added this week</span>
           <strong>{{ hero_stats.week }}</strong>
         </a>
-        <a class="kx-card" href="#browse-jobs" data-hero-item>
+        <a class="kx-card" href="#browse-jobs">
           <span class="kx-card-label">Internships</span>
           <strong>{{ hero_stats.internships }}</strong>
         </a>
       </div>
       <nav class="kx-tools" aria-label="Free tools">
-        <a class="kx-tool" href="/resume-builder/" data-hero-item>
+        <a class="kx-tool" href="/resume-builder/">
           <span class="kx-tool-icon"><i data-lucide="file-pen-line" aria-hidden="true"></i></span>
           <span class="kx-tool-text"><b>Resume Builder</b>Fill in, improve, download</span>
           <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
         </a>
-        <a class="kx-tool" href="/ai-resume-analysis/" data-hero-item>
+        <a class="kx-tool" href="/ai-resume-analysis/">
           <span class="kx-tool-icon"><i data-lucide="gauge" aria-hidden="true"></i></span>
           <span class="kx-tool-text"><b>ATS Score</b>Upload and see what to fix</span>
           <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
         </a>
-        <a class="kx-tool" href="/debugger/" data-hero-item>
+        <a class="kx-tool" href="/debugger/">
           <span class="kx-tool-icon"><i data-lucide="bug-play" aria-hidden="true"></i></span>
           <span class="kx-tool-text"><b>Code Debugger</b>Step through your code</span>
           <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
@@ -583,6 +583,3 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script src="{% static 'js/hero-motion.js' %}?v=2026110115"></script>
-{% endblock %}
