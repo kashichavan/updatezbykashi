@@ -2,7 +2,7 @@ import uuid
 import re
 from django.db import models
 from django.utils import timezone
-from datetime import timedelta
+from datetime import datetime, time, timedelta
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -144,6 +144,17 @@ class JobPosting(models.Model):
         if not self.posted_date:
             self.posted_date = timezone.localtime(timezone.now()).date()
         super().save(*args, **kwargs)
+
+    def closes_at(self):
+        """A listing closes seven days after posting, even if its deadline says later."""
+        if not self.posted_date:
+            return self.deadline
+        limit = timezone.make_aware(datetime.combine(self.posted_date + timedelta(days=7), time.max))
+        return min(self.deadline, limit) if self.deadline else limit
+
+    def get_time_left_seconds(self):
+        closes = self.closes_at()
+        return max(0, int((closes - timezone.now()).total_seconds())) if closes else 0
 
     def is_expired(self):
         now = timezone.now()

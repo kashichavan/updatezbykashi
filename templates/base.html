@@ -3,7 +3,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081227">
   <title>{% block title %}⚡ Kashii Update — Daily Student Jobs & Internships | Kashii Updatez{% endblock %}</title>
   <meta name="description" content="{% block meta_description %}Official Kashii Update & Kashii Updatez (kashiiupdatez.online) by Python Kashi. Explore daily student job opportunities, freshers off-campus drives, tech internships, and Python tutorials.{% endblock %}">
   <meta name="keywords" content="code editor online, online code editor, run code online, online compiler, python online compiler, javascript compiler, java online compiler, student jobs, off campus drives 2026, fresher jobs, tech jobs online, software engineering jobs, bangalore internships, kashii update, kashi update, kashii updatez, python kashi, kashiiupdatez.online">
@@ -141,25 +142,29 @@
   <link rel="dns-prefetch" href="https://tpc.googlesyndication.com">
   <link rel="dns-prefetch" href="https://adservice.google.com">
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="shortcut icon" href="{% static 'images/icon-apply.png' %}" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Playfair+Display:ital,wght@0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2026110201">
-  <link rel="stylesheet" href="{% static 'css/ui-refresh.css' %}?v=2026110203">
+  <link rel="preload" href="{% static 'fonts/hind-400.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var conn = navigator.connection || {};
+      var weak = (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || conn.saveData;
+      if (weak) root.classList.add('lite');
+      try {
+        var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!calm && !weak && !sessionStorage.getItem('fogWiped')) {
+          sessionStorage.setItem('fogWiped', '1');
+          root.classList.add('fog-on');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="{% static 'css/bus.css' %}?v=2026110201">
   {% block extra_css %}{% endblock %}
   {% block schema_markup %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
-  <div class="kx-progress" aria-hidden="true"></div>
-
-  <!-- Subtle Film Texture -->
-  <div class="site-grain"></div>
-
-  <!-- Flash Announcement Banner -->
-  {% block flash_banner %}
-    {% include 'components/flash_banner.html' %}
-  {% endblock %}
+  <div class="fog" aria-hidden="true"></div>
 
   <!-- Site Navigation Header -->
   {% block navbar %}
@@ -174,12 +179,9 @@
     {% include 'components/footer.html' %}
   {% endblock %}
 
-  <!-- Floating Instagram Chat Widget (Bottom Right) -->
-  {% block floating_widgets %}
-  <a href="instagram://user?username=ikashii_07" id="floatingChatWidget" class="floating-chat-widget" aria-label="Chat with Kashii on Instagram" title="Chat directly with Kashii on Instagram DM" onclick="(function(e){ var isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); if (!isMobile) { e.preventDefault(); window.open('https://ig.me/m/ikashii_07', '_blank'); } })(event)">
-    <span class="chat-icon"><img src="{% static 'images/icon-chat.png' %}" class="mobile-nav-icon" style="filter: brightness(0) invert(1);" width="22" height="22" alt="Chat" loading="eager" decoding="async"></span>
-    <span class="chat-label">Chat with Kashii</span>
-  </a>
+  <!-- Bottom bar: page navigation, or the page's own actions -->
+  {% block bottom_bar %}
+    {% include 'components/bottom_nav.html' %}
   {% endblock %}
 
   <!-- Toast Notification Container -->
@@ -188,11 +190,8 @@
   <!-- Lucide Modern Vector Icons -->
   <script src="{% static 'js/lucide.min.js' %}"></script>
 
-  <!-- Interactive Spider-Man / VS Code Background Particle Web -->
-  <script src="{% static 'js/spider_mesh.js' %}?v=202609270120"></script>
-
   <!-- Core App Scripts -->
-  <script src="{% static 'js/app.js' %}?v=2026110105"></script>
+  <script src="{% static 'js/app.js' %}?v=2026110201"></script>
   {% block extra_js %}{% endblock %}
   <script>
     if (window.lucide) {

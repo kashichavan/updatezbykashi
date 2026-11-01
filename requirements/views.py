@@ -1936,7 +1936,7 @@ def api_jobs(request):
             results = []
             now = timezone.now()
             for j in paginated_qs:
-                time_left_seconds = max(0, int((j.deadline - now).total_seconds())) if j.deadline else 7 * 86400
+                time_left_seconds = j.get_time_left_seconds()
                 posted_date_display = j.get_posted_date_display()
                 skills_list = j.get_skills_list()
                 share_url = f"/category/{j.category.slug}/job/{j.uuid}/" if j.category else f"/job/{j.uuid}/"
@@ -2063,7 +2063,7 @@ def api_job_detail(request, pk):
         job.save(update_fields=['views_count'])
 
         now = timezone.now()
-        time_left_seconds = max(0, int((job.deadline - now).total_seconds()))
+        time_left_seconds = job.get_time_left_seconds()
 
         # Use the explicit posted_date field
         posted_date_display = job.get_posted_date_display()
@@ -2148,8 +2148,8 @@ def api_publish_job_ig_story(request, pk):
 def group_detail_view(request, slug):
     """Public web page displaying a curated collection/drive of multiple job requirements."""
     group = get_object_or_404(JobGroup, slug=slug)
-    group.views_count += 1
-    group.save(update_fields=['views_count'])
+    # update() rather than save(): save() starts a full database backup on every view.
+    JobGroup.objects.filter(pk=group.pk).update(views_count=F('views_count') + 1)
     jobs = list(group.get_active_jobs())
     if not jobs:
         # Fallback to all associated jobs in the group if all are past deadline
@@ -5015,7 +5015,7 @@ def api_jobs_list(request):
 
     job_items = []
     for job in page_obj:
-        time_left_seconds = max(0, int((job.deadline - now).total_seconds())) if job.deadline else 7 * 86400
+        time_left_seconds = job.get_time_left_seconds()
         skills_list = job.get_skills_list()
         share_url = f"/category/{job.category.slug}/job/{job.uuid}/" if job.category else f"/job/{job.uuid}/"
 

@@ -735,7 +735,7 @@ def auto_import_from_jobdexo(urls=None, limit=20, group_name=None):
     created_job_instances = []
     seen_in_batch = set()
     now = timezone.now()
-    deadline = now + timedelta(days=30)
+    deadline = now + timedelta(days=7)
 
     # Filter out empty or duplicate candidate URLs
     valid_candidate_urls = []
@@ -766,7 +766,7 @@ def auto_import_from_jobdexo(urls=None, limit=20, group_name=None):
                 continue
 
             job_posted_date = job_data.get('posted_date', now.date())
-            job_deadline = timezone.now() + timedelta(days=30)
+            job_deadline = timezone.now() + timedelta(days=7)
             job_category = classify_opportunity_category(job_data, cat_map)
 
             # Create standard verified job posting

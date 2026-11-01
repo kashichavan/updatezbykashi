@@ -235,34 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- SHIMMER SKELETON RENDERER ---
   function renderShimmerSkeletons(count = 6) {
     if (!jobsGrid) return;
-    const cardHtml = `
-      <div class="vp-product-card vp-shimmer-card">
-        <div class="vp-card-header" style="margin-bottom: 16px;">
-          <div class="shimmer-placeholder" style="width: 100px; height: 22px; border-radius: 9999px;"></div>
-          <div class="shimmer-placeholder" style="width: 75px; height: 22px; border-radius: 9999px;"></div>
-        </div>
-        <div class="vp-card-content">
-          <div class="shimmer-placeholder" style="width: 85%; height: 20px; margin-bottom: 12px; border-radius: 6px;"></div>
-          <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-            <div class="shimmer-placeholder" style="width: 90px; height: 16px; border-radius: 4px;"></div>
-            <div class="shimmer-placeholder" style="width: 70px; height: 16px; border-radius: 4px;"></div>
-          </div>
-          <div class="shimmer-placeholder" style="width: 110px; height: 14px; margin-bottom: 12px; border-radius: 4px;"></div>
-          <div class="shimmer-placeholder" style="width: 100%; height: 13px; margin-bottom: 6px; border-radius: 4px;"></div>
-          <div class="shimmer-placeholder" style="width: 70%; height: 13px; margin-bottom: 16px; border-radius: 4px;"></div>
-          <div class="skills-wrapper" style="display: flex; gap: 6px; margin-bottom: 18px;">
-            <div class="shimmer-placeholder" style="width: 55px; height: 22px; border-radius: 6px;"></div>
-            <div class="shimmer-placeholder" style="width: 65px; height: 22px; border-radius: 6px;"></div>
-            <div class="shimmer-placeholder" style="width: 50px; height: 22px; border-radius: 6px;"></div>
-          </div>
-          <div class="shimmer-placeholder" style="width: 140px; height: 18px; margin-bottom: 16px; border-radius: 6px;"></div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;">
-            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
-            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
-          </div>
-        </div>
-      </div>
-    `;
+    const cardHtml = '<div class="vp-product-card vp-shimmer-card" aria-hidden="true"></div>';
     jobsGrid.innerHTML = cardHtml.repeat(count);
   }
 
@@ -295,9 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorData = await res.json().catch(() => ({}));
         showToast(errorData.message || 'Rate limit reached. Please wait a moment before searching again.', 'error');
         jobsGrid.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: #ffffff; border-radius: 16px; border: 1px solid #fed7aa;">
-            <h3 style="color: #c2410c; margin-bottom: 6px;">Too Many Requests</h3>
-            <p style="color: #64748b; font-size: 14px;">You have temporarily reached the request rate limit. Please retry in a few moments.</p>
+          <div class="glass empty-state">
+            <h3>Too many searches</h3>
+            <p>Please wait a moment, then try again.</p>
           </div>
         `;
         return;
@@ -316,13 +289,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Failed to load jobs:', err);
-      if (jobsFoundHeading) jobsFoundHeading.textContent = 'Unable to load opportunities.';
+      if (jobsFoundHeading) jobsFoundHeading.textContent = 'Could not load jobs';
       jobsGrid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1.5px solid #fecaca; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.06);">
-          <div style="font-size: 36px; margin-bottom: 10px;">⚠️</div>
-          <h3 style="color: #b91c1c; font-size: 18px; font-weight: 800; margin-bottom: 6px;">Unable to load opportunities feed</h3>
-          <p style="color: #64748b; font-size: 13.5px; margin-bottom: 16px;">We encountered a network or server issue while fetching the listings.</p>
-          <button type="button" id="btnRetryLoadJobs" class="rel_modal_btn_apply" style="padding: 8px 22px; cursor: pointer;">Retry Now</button>
+        <div class="glass empty-state">
+          <h3>Could not load jobs</h3>
+          <p>Check your connection, then try again.</p>
+          <button type="button" id="btnRetryLoadJobs" class="button button-primary">Retry</button>
         </div>`;
       const btnRetry = document.getElementById('btnRetryLoadJobs');
       if (btnRetry) {
@@ -366,13 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!jobs || jobs.length === 0) {
       jobsGrid.innerHTML = `
-        <div class="empty-jobs-container" style="grid-column: 1 / -1; text-align: center; padding: 4rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1px solid var(--subtle-border, #e2e8f0); box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);">
-          <div style="font-size: 38px; margin-bottom: 12px;">🔍</div>
-          <h3 style="font-family: var(--font-serif); font-size: 20px; font-weight: 800; color: var(--ink, #0f172a); margin-bottom: 8px;">No jobs found matching your filters.</h3>
-          <p style="color: var(--muted, #64748b); font-size: 14px; max-width: 440px; margin: 0 auto 18px; line-height: 1.5;">Try selecting a different location, removing specific job type criteria, or clearing all filters.</p>
-          <button type="button" id="btnEmptyClearFilters" class="rel_modal_btn_apply" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; cursor: pointer;">
-            <span>Clear All Filters</span>
-          </button>
+        <div class="glass empty-state">
+          <h3>No jobs match these filters</h3>
+          <p>Try another location or clear the filters.</p>
+          <button type="button" id="btnEmptyClearFilters" class="button button-primary">Clear filters</button>
         </div>`;
       const btnEmptyClear = document.getElementById('btnEmptyClearFilters');
       if (btnEmptyClear) {
@@ -385,117 +354,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     jobsGrid.innerHTML = jobs.map(j => {
-      const formattedTime = (typeof j.time_left_seconds === 'number' && j.time_left_seconds > 0)
-        ? formatTimeLeft(j.time_left_seconds)
-        : 'Auto-Expires in 7 Days';
+      const formattedTime = formatTimeLeft(j.time_left_seconds);
       const rawSkills = j.skills_list || j.skills || [];
       const skillsHtml = (Array.isArray(rawSkills) ? rawSkills : []).slice(0, 3).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('');
-      const isDeactivated = j.status === 'EXPIRED';
+      const isClosed = j.status === 'EXPIRED';
       const postedDate = j.posted_date_display || j.relative_time || 'Today';
-      const isNewToday = postedDate === 'Today';
-
-      let catStyle = 'background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;';
-      let catIcon = '💻';
-      let catLabel = j.category_name || 'Software Eng';
-
-      const catSlug = (j.category_slug || '').toLowerCase();
-      const titleLower = (j.title || '').toLowerCase();
-      if (catSlug.includes('qa') || titleLower.includes('test') || titleLower.includes('qa')) {
-        catStyle = 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;';
-        catIcon = '🧪';
-        catLabel = 'QA & Testing';
-      } else if (catSlug.includes('hr') || titleLower.includes('recruiter') || titleLower.includes('talent') || titleLower.includes('hr ')) {
-        catStyle = 'background:#faf5ff;color:#7e22ce;border:1px solid #e9d5ff;';
-        catIcon = '👥';
-        catLabel = 'HR & Hiring';
-      } else if (catSlug.includes('mba') || titleLower.includes('mba') || titleLower.includes('management trainee') || titleLower.includes('business analyst')) {
-        catStyle = 'background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8;';
-        catIcon = '📈';
-        catLabel = 'MBA & Business';
-      } else if (catSlug.includes('non') || j.industry_domain === 'NON_TECHNICAL') {
-        catStyle = 'background:#fef3c7;color:#b45309;border:1px solid #fde68a;';
-        catIcon = '📞';
-        catLabel = 'Non IT';
-      }
-      const srcCode = j.source_code || ((j.source_name || '').toLowerCase().includes('linkedin') ? 'L' : ((j.source_name || '').toLowerCase().includes('naukri') ? 'N' : ((j.source_name || '').toLowerCase().includes('startup') ? 'S' : 'JD')));
-
       const shareUrl = j.share_url || `/category/${j.category_slug}/job/${j.uuid}/`;
+      const pay = j.stipend_salary && j.stipend_salary !== 'Competitive' ? `<span>${escapeHtml(j.stipend_salary)}</span>` : '';
       return `
-        <div class="vp-product-card" data-id="${j.id}" data-share-url="${escapeHtml(shareUrl)}">
+        <article class="vp-product-card" data-id="${j.id}" data-share-url="${escapeHtml(shareUrl)}">
           <div class="vp-card-header">
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-              <span class="company-badge" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
-              <span class="source-tag" title="Verified Opportunity" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;letter-spacing:0.3px;">${srcCode}</span>
-            </div>
-            <div class="vp-badge-cluster">
-              ${j.is_referral ? '<span style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #bfdbfe;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:3px;">🤝 Referral</span>' : ''}
-              <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;">${catIcon} ${escapeHtml(j.category_name || catLabel)}</span>
-              ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:4px;"><span class="badge-live-pulse"></span>NEW</span>' : ''}
-              <span class="type-badge">${j.job_type_display}</span>
-            </div>
+            <span class="company-badge">${escapeHtml(j.company_name)}</span>
+            <span class="type-badge">${j.is_referral ? 'Referral' : escapeHtml(j.job_type_display)}</span>
           </div>
-
-          <div class="vp-card-content">
-            <h3><a href="${escapeHtml(shareUrl)}" style="color:inherit;text-decoration:none;">${escapeHtml(j.title)}</a></h3>
-            
-            <div class="vp-salary-row">
-              <span style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-salary.png" class="nav-icon" width="16" height="16" alt="Salary"> ${escapeHtml(j.stipend_salary)}</span>
-              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> ${escapeHtml(j.normalized_city || j.location)}</span>
-            </div>
-
-            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
-              <div style="display:flex;align-items:center;gap:4px;">
-                <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">${escapeHtml(postedDate)}</strong>
-              </div>
-              <div style="display:flex;align-items:center;gap:4px;color:var(--blue-primary);font-weight:700;">
-                <span>💼</span> <span>Exp: ${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
-              </div>
-            </div>
-
-            ${j.contact_phone ? `
-              <div style="font-size:11.5px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:3px 8px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:5px;">
-                <span>📞 HR Contact:</span> <a href="tel:${escapeHtml(j.contact_phone)}" style="color:#047857;text-decoration:none;font-weight:800;" onclick="event.stopPropagation();">${escapeHtml(j.contact_phone)}</a>
-              </div>
-            ` : ''}
-
-            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, ''))}</p>
-
-            ${skillsHtml ? `<div class="skills-wrapper" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;">${skillsHtml}</div>` : ''}
-
-            <div class="vp-price-row">
-              <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">
-                ⏱️ <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
-              </div>
-            </div>
-
-            <!-- Balanced 50/50 Action Grid -->
-            <div class="card-action-grid">
-              ${!isDeactivated && j.apply_url ? `
-                <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener"
-                   class="external-apply-btn"
-                   onclick="event.stopPropagation();">
-                  <img src="/static/images/icon-apply.png" class="nav-icon" style="filter:brightness(0) invert(1);" width="14" height="14" alt="Apply"> Apply Now ↗
-                </a>
-                <a href="${escapeHtml(shareUrl)}"
-                   class="detail-page-btn"
-                   onclick="event.stopPropagation();">
-                  <img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Detail"> Detail Page
-                </a>
-              ` : isDeactivated ? `
-                <div style="grid-column: 1 / -1; display:flex;align-items:center;justify-content:center;height:38px;background:#f1f5f9;color:#94a3b8;font-size:12px;font-weight:700;border-radius:var(--radius-sm, 6px);border:1px solid #e2e8f0;">
-                  ⛔ Closed Opportunity
-                </div>
-              ` : `
-                <a href="${escapeHtml(shareUrl)}"
-                   class="external-apply-btn"
-                   onclick="event.stopPropagation();"
-                   style="grid-column: 1 / -1;">
-                  <img src="/static/images/icon-feed.png" class="nav-icon" width="14" height="14" alt="View"> View Requirement Page ↗
-                </a>
-              `}
-            </div>
+          <h3><a href="${escapeHtml(shareUrl)}">${escapeHtml(j.title)}</a></h3>
+          <p class="job-meta">
+            <span>${escapeHtml(j.normalized_city || j.location)}</span>
+            ${pay}
+            <span>${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
+          </p>
+          ${j.contact_phone ? `<p class="job-phone">HR contact: <a href="tel:${escapeHtml(j.contact_phone)}">${escapeHtml(j.contact_phone)}</a></p>` : ''}
+          ${skillsHtml ? `<div class="skills-wrapper">${skillsHtml}</div>` : ''}
+          <div class="job-foot">
+            <span class="timer-tag${isClosed ? ' is-closed' : ''}" data-timer="${j.id}" data-seconds="${j.time_left_seconds}"><span>${isClosed ? 'Closed' : formattedTime}</span></span>
+            <span>Posted ${escapeHtml(postedDate)}</span>
           </div>
-        </div>
+          <div class="card-action-grid">
+            ${isClosed ? '<span class="button wide" aria-disabled="true">This job has closed</span>' : `
+              <a href="${escapeHtml(j.apply_url || shareUrl)}" ${j.apply_url ? 'target="_blank" rel="noopener noreferrer"' : ''} class="button external-apply-btn">${j.apply_url ? 'Apply' : 'View job'}</a>
+              <a href="/resume-studio/?job_id=${escapeHtml(j.uuid)}" class="button resume-btn">Make resume</a>
+            `}
+          </div>
+        </article>
       `;
     }).join('');
 
@@ -519,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
       paginationContainer.innerHTML = `
         <div class="pagination-wrapper">
           <div class="pagination-info">
-            Showing all <strong>${state.totalCount}</strong> active opportunities
+            Showing all <strong>${state.totalCount}</strong> open jobs
           </div>
         </div>`;
       return;
@@ -546,7 +436,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pagesHtml = pageNumbers.map(p => {
       if (p === '...') {
-        return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:38px;color:var(--muted);font-weight:700;">…</span>`;
+        return '<span aria-hidden="true">…</span>';
       }
       return `
         <button class="pag-page-btn ${p === curr ? 'active' : ''}" data-page="${p}">
@@ -558,20 +448,20 @@ document.addEventListener('DOMContentLoaded', () => {
     paginationContainer.innerHTML = `
       <div class="pagination-wrapper">
         <div class="pagination-info">
-          Showing <strong>${startNum}–${endNum}</strong> of <strong>${state.totalCount}</strong> active requirements
+          Showing <strong>${startNum}–${endNum}</strong> of <strong>${state.totalCount}</strong> open jobs
         </div>
 
-        <nav class="pagination-nav" aria-label="Requirement pagination">
+        <nav class="pagination-nav" aria-label="Pages of jobs">
           <button class="pag-btn" id="btnPrevPage" ${curr <= 1 ? 'disabled' : ''} aria-label="Previous Page">
-            ‹ Previous
+            Previous
           </button>
 
-          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center;">
+          <div class="pagination-nav">
             ${pagesHtml}
           </div>
 
           <button class="pag-btn" id="btnNextPage" ${curr >= total ? 'disabled' : ''} aria-label="Next Page">
-            Next ›
+            Next
           </button>
         </nav>
       </div>
@@ -676,9 +566,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (jobsFoundHeading) {
       const locText = state.city ? ` in ${state.city}` : '';
       if (state.searchQuery) {
-        jobsFoundHeading.textContent = `${state.totalCount} jobs found for "${state.searchQuery}"${locText}.`;
+        jobsFoundHeading.textContent = `${state.totalCount} jobs found for "${state.searchQuery}"${locText}`;
       } else {
-        jobsFoundHeading.textContent = `${state.totalCount} jobs found${locText}.`;
+        jobsFoundHeading.textContent = `${state.totalCount} jobs found${locText}`;
       }
     }
 
@@ -711,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. City Filter Sync (Default: '' All Locations)
     if (state.city) {
       activeFilterCount++;
-      if (locationBtnText) locationBtnText.textContent = state.city.toLowerCase();
+      if (locationBtnText) locationBtnText.textContent = state.city;
       if (locationBadge) { locationBadge.textContent = '1'; locationBadge.style.display = 'inline-flex'; }
       if (btnLocation) btnLocation.classList.add('is-active');
       if (selectedCityTag && selectedCityTagName) {
@@ -719,7 +609,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedCityTag.style.display = 'inline-flex';
       }
     } else {
-      if (locationBtnText) locationBtnText.textContent = 'location';
+      if (locationBtnText) locationBtnText.textContent = 'Location';
       if (locationBadge) locationBadge.style.display = 'none';
       if (btnLocation) btnLocation.classList.remove('is-active');
       if (selectedCityTag) selectedCityTag.style.display = 'none';
@@ -729,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.jobType && state.jobType !== 'all') {
       activeFilterCount++;
       const typeLabel = state.jobType === 'FULL_TIME' ? 'Full-Time' : 'Internships';
-      if (jobTypeBtnText) jobTypeBtnText.textContent = typeLabel.toLowerCase();
+      if (jobTypeBtnText) jobTypeBtnText.textContent = typeLabel;
       if (jobTypeBadge) { jobTypeBadge.textContent = '1'; jobTypeBadge.style.display = 'inline-flex'; }
       if (btnJobType) btnJobType.classList.add('is-active');
       if (selectedJobTypeTag && selectedJobTypeTagName) {
@@ -737,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedJobTypeTag.style.display = 'inline-flex';
       }
     } else {
-      if (jobTypeBtnText) jobTypeBtnText.textContent = 'job types';
+      if (jobTypeBtnText) jobTypeBtnText.textContent = 'Job type';
       if (jobTypeBadge) jobTypeBadge.style.display = 'none';
       if (btnJobType) btnJobType.classList.remove('is-active');
       if (selectedJobTypeTag) selectedJobTypeTag.style.display = 'none';
@@ -747,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.category && state.category !== 'all') {
       activeFilterCount++;
       const catLabel = CATEGORY_LABELS[state.category] || state.category;
-      if (specialismBtnText) specialismBtnText.textContent = catLabel.toLowerCase();
+      if (specialismBtnText) specialismBtnText.textContent = catLabel;
       if (specialismBadge) { specialismBadge.textContent = '1'; specialismBadge.style.display = 'inline-flex'; }
       if (btnSpecialism) btnSpecialism.classList.add('is-active');
       if (selectedSpecialismTag && selectedSpecialismTagName) {
@@ -755,7 +645,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedSpecialismTag.style.display = 'inline-flex';
       }
     } else {
-      if (specialismBtnText) specialismBtnText.textContent = 'professional field';
+      if (specialismBtnText) specialismBtnText.textContent = 'Field';
       if (specialismBadge) specialismBadge.style.display = 'none';
       if (btnSpecialism) btnSpecialism.classList.remove('is-active');
       if (selectedSpecialismTag) selectedSpecialismTag.style.display = 'none';
@@ -1284,25 +1174,19 @@ document.addEventListener('DOMContentLoaded', () => {
   function startCountdownTimer() {
     state.timerInterval = setInterval(() => {
       document.querySelectorAll('.timer-tag').forEach(el => {
-        let sec = parseInt(el.dataset.seconds);
-        if (sec > 0) {
-          sec--;
-          el.dataset.seconds = sec;
-          el.querySelector('span').textContent = formatTimeLeft(sec);
-        } else {
-          el.querySelector('span').textContent = 'Deactivated';
-        }
+        const sec = Math.max(0, (parseInt(el.dataset.seconds, 10) || 0) - 60);
+        el.dataset.seconds = sec;
+        el.querySelector('span').textContent = formatTimeLeft(sec);
       });
-    }, 1000);
+    }, 60000);
   }
 
   function formatTimeLeft(seconds) {
-    if (seconds <= 0) return 'Deactivated';
+    if (!seconds || seconds <= 0) return 'Closed';
     const days = Math.floor(seconds / 86400);
-    const hrs = Math.floor((seconds % 86400) / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    if (days > 0) return `${days}d ${hrs}h left`;
-    return `${hrs}h ${mins}m left`;
+    if (days >= 1) return `${days} day${days === 1 ? '' : 's'} left`;
+    const hours = Math.max(1, Math.floor(seconds / 3600));
+    return `${hours} hour${hours === 1 ? '' : 's'} left`;
   }
 
   function showToast(message, type = 'success') {
@@ -1311,7 +1195,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerHTML = `
-      <span>${type === 'success' ? '✅' : '⚠️'}</span>
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(toast);
