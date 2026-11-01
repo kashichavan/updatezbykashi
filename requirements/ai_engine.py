@@ -564,34 +564,27 @@ def alter_resume_for_job(
     job_description: str,
 ) -> dict:
     """
-    Reverse-engineered 1-Click Resume Alteration Engine (inspired by Jobscan & Rezi).
-    Directly aligns a candidate's resume with a target job:
-    1. Rewrites Professional Summary tailored to role and company.
-    2. Aligns Technical Skills placing matching target keywords first.
-    3. Alters project bullets into 95+ score Google XYZ bullets embedding target skills.
-    Guarantees an ATS score above 90 (92–98+).
+    Align a candidate's resume with one job using only what they already wrote.
+
+    The summary is aimed at the role, skills are reordered, and bullets are
+    reworded in the job's language. The caller checks the result for added
+    facts and works out the match score itself.
     """
     system_prompt = (
-        "You are an elite ex-FAANG Principal Technical Resume Architect and ATS Optimization Algorithm. "
-        "A candidate is tailoring their resume for a specific job posting. Your mission is to alter, upgrade, "
-        "and align their resume so it achieves a 95+ ATS Match Score (Top Tier ATS Pass 90+) against the target job. "
-        "CRITICAL REQUIREMENTS:\n"
-        "1. SUMMARY: A 2-3 line punchy elevator pitch highlighting experience with the target role and key skills.\n"
-        "2. SKILLS: Reorder and map categories placing the target skills prominently first.\n"
-        "3. PROJECTS: CRITICAL REQUIREMENT — Directly align the candidate's projects with the target job's tech stack and domain: "
-        "- For each project, update 'tech_stack' to explicitly include relevant technologies from the target job skills. "
-        "- Write 3-4 high-impact accomplishment bullets per project strictly following the Google XYZ Formula: 'Accomplished [X] as measured by [Y], by doing [Z]'. "
-        "- Every single bullet MUST start with a power action verb (Architected, Engineered, Optimized, Spearheaded, Implemented, Deployed, Benchmarked, Scaled). "
-        "- Every single bullet MUST include quantified metrics and numbers (e.g. 'reducing API response latency by 42% (from 280ms to 160ms)', 'supporting 15,000+ daily active users', 'processing 2.5M+ requests daily with 99.9% uptime', 'cutting query execution time by 35%'). "
-        "- Embed system architecture and scale depth keywords (e.g. Redis caching, Celery queues, Docker containerization, PostgreSQL indexing, RESTful APIs, JWT/RBAC security, CI/CD pipeline). "
-        "- Ensure the projects feel realistic, coherent, and directly prove mastery of the required job skills.\n"
-        "4. MATCH SCORE & EVALUATION: "
-        "- 'overall_match_score': integer between 93 and 98 (guaranteed Top Tier ATS Pass 90+). "
-        "- 'match_grade': 'Top Tier ATS Pass (ATS 90+)'. "
-        "- 'matching_keywords': list of matched skills between resume and target job. "
-        "- 'missing_keywords_injected': list of target skills that were integrated into the summary, skills, and projects. "
-        "- 'key_alterations': list of 3-4 specific notes explaining how projects and skills were aligned with the role.\n\n"
-        "Return a valid JSON object with keys: 'altered_summary', 'altered_skills', 'altered_projects', 'overall_match_score', 'match_grade', 'matching_keywords', 'missing_keywords_injected', 'key_alterations'."
+        "You tailor a candidate's resume to one job. The candidate will send this to real recruiters and "
+        "must be able to defend every word, so use only facts in the candidate's own summary, skills and projects.\n"
+        "RULES:\n"
+        "1. SUMMARY: 2 sentences aimed at the target role. Do not claim years of experience, seniority, "
+        "employers or results the candidate did not state.\n"
+        "2. SKILLS: Reorder the candidate's skills so those the job needs come first. Never add a skill.\n"
+        "3. PROJECTS: Keep each project and its tech stack. Rewrite each bullet to start with a plain past-tense "
+        "action verb and use the job's wording where the work honestly matches.\n"
+        "4. Never add a number, percentage, user count, result or tool. Copy existing numbers exactly. "
+        "A bullet with no number is fine.\n"
+        "5. Never use: robust, scalable, enterprise, high-performance, production-grade, world-class, "
+        "cutting-edge, state-of-the-art, mission-critical, best-in-class.\n"
+        "6. 'key_alterations': 3-4 short notes on what you changed.\n\n"
+        "Return a valid JSON object with keys: 'altered_summary', 'altered_skills', 'altered_projects', 'key_alterations'."
     )
 
     user_payload = {
@@ -611,13 +604,7 @@ def alter_resume_for_job(
 
     try:
         response_text = call_groq_chat(messages, temperature=0.3, json_mode=True, timeout=12)
-        parsed = json.loads(response_text)
-        # Guarantee score > 90
-        score = parsed.get("overall_match_score")
-        if not isinstance(score, (int, float)) or score < 90:
-            parsed["overall_match_score"] = 95
-        parsed["match_grade"] = "Top Tier ATS Pass (ATS 90+)"
-        return parsed
+        return json.loads(response_text)
     except Exception as e:
         logger.warning(f"Error calling Groq for resume alteration: {e}. Leaving the resume unchanged.")
         # Never fill this in with template text: it would go out under the

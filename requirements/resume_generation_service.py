@@ -33,6 +33,10 @@ _PUFFERY = (
 )
 
 
+# Words that change what the candidate is claiming to be.
+_UNEARNED_CLAIM_RE = re.compile(r'\b(senior|lead|principal|staff|expert|veteran|seasoned|years?)\b', re.I)
+
+
 def _numbers_in(text: str) -> set:
     """Digit groups normalised so 14,000 and 14000 compare equal."""
     return {n.replace(',', '').strip('.') for n in _NUMBER_RE.findall(text or '')}
@@ -119,14 +123,46 @@ def sanitize_rewrite(text: str, allowed_source: str) -> str:
     return text.strip()
 
 
+def _keep_candidate_skills(altered, original):
+    """The new order of the skills, without any the candidate never listed."""
+    if not isinstance(altered, dict) or not isinstance(original, dict):
+        return original
+    def split(value):
+        parts = value if isinstance(value, (list, tuple)) else str(value or '').split(',')
+        return [str(part).strip() for part in parts if str(part).strip()]
+
+    listed = {part.lower() for value in original.values() for part in split(value)}
+    kept = {}
+    for group, value in altered.items():
+        parts = [part for part in split(value) if part.lower() in listed]
+        if parts:
+            kept[group] = parts if isinstance(value, (list, tuple)) else ', '.join(parts)
+    return kept or original
+
+
 def sanitize_altered_resume(result: dict, summary: str, skills, projects) -> dict:
     """
-    Sanitize altered resume response from AI.
-    Ensures bullets are clean and strings are formatted properly.
-    Preserves quantified Google XYZ metrics so the resume passes ATS 90+ criteria.
+    Remove anything the candidate did not supply from a tailored resume.
+
+    Rewritten text may not add numbers, tools, seniority or years of experience.
+    A project keeps its own title and tech stack, and falls back to its original
+    bullets if none of the rewrites survive.
     """
+    from .ai_engine import _adds_unlisted_tech
+
     if not isinstance(result, dict):
         return result
+
+    allowed = candidate_corpus(summary, skills, projects)
+
+    def honest(text):
+        kept = sanitize_rewrite(text, allowed)
+        if not kept or _adds_unlisted_tech(kept, allowed):
+            return ''
+        for claim in _UNEARNED_CLAIM_RE.findall(kept):
+            if claim.lower() not in allowed.lower():
+                return ''
+        return kept
 
     altered = result.get('altered_projects')
     if isinstance(altered, list) and altered:
@@ -138,26 +174,24 @@ def sanitize_altered_resume(result: dict, summary: str, skills, projects) -> dic
             bullets = project.get('bullets') or []
             if isinstance(bullets, str):
                 bullets = [part for part in re.split(r"(?<=[.!?])\s+|\n+", bullets) if part.strip()]
-            kept = []
-            for bullet in bullets:
-                if not isinstance(bullet, str):
-                    continue
-                text = bullet.strip()
-                if not text:
-                    continue
-                # Keep high-impact Google XYZ bullets with numbers/metrics so ATS score achieves 90+
-                kept.append(text)
+            kept = [text for text in (honest(b) for b in bullets) if text]
+            original = originals[idx] if idx < len(originals) else None
             if kept:
                 project = dict(project)
                 project['bullets'] = kept
+                if original:
+                    for field in ('title', 'role', 'tech_stack'):
+                        if field in original:
+                            project[field] = original[field]
                 cleaned.append(project)
-            elif idx < len(originals):
-                cleaned.append(originals[idx])
+            elif original:
+                cleaned.append(original)
+        # A project the model dropped stays on the resume.
+        cleaned.extend(originals[len(altered):])
         result['altered_projects'] = cleaned
 
-    altered_summary = result.get('altered_summary')
-    if isinstance(altered_summary, str) and altered_summary.strip():
-        result['altered_summary'] = altered_summary.strip()
+    result['altered_summary'] = honest(result.get('altered_summary')) or summary
+    result['altered_skills'] = _keep_candidate_skills(result.get('altered_skills'), skills)
     return result
 
 

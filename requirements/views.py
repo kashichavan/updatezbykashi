@@ -4004,33 +4004,40 @@ def api_ai_alter_resume(request):
             result, candidate_summary, candidate_skills, candidate_projects
         )
 
-        # Standardize field names for frontends and ensure ATS score > 90
-        raw_score = result.get('overall_match_score') or result.get('match_score')
-        if isinstance(raw_score, (int, float)):
-            match_score = max(92, min(99, int(raw_score)))
+        # The match is counted from the finished text, not taken from the model.
+        from .skill_extractor import extract_technical_skills
+        if isinstance(job_skills, str):
+            keywords = [s.strip() for s in job_skills.split(',') if s.strip()]
         else:
-            match_score = 95
+            keywords = [str(s).strip() for s in (job_skills or []) if str(s).strip()]
+        if not keywords:
+            keywords = [k.strip() for k in extract_technical_skills(description=job_description, max_skills=12).split(',') if k.strip()]
+        final_text = json.dumps(
+            [result.get('altered_summary'), result.get('altered_skills'), result.get('altered_projects')],
+            default=str,
+        ).lower()
+        found = [k for k in keywords if k.lower() in final_text]
+        match_score = round(100 * len(found) / len(keywords)) if keywords else None
         result['match_score'] = match_score
         result['overall_match_score'] = match_score
-        result['match_grade'] = 'Top Tier ATS Pass (ATS 90+)'
+        result['match_grade'] = (
+            f"{len(found)} of {len(keywords)} job keywords found" if keywords
+            else 'No clear skills found in this job'
+        )
+        result['matching_keywords'] = found
+        result['missing_keywords'] = [k for k in keywords if k not in found]
+        result.pop('missing_keywords_injected', None)
+        result['injected_keywords'] = []
+        result['reordered_skills'] = result.get('altered_skills') or {}
 
-        if 'injected_keywords' not in result or result['injected_keywords'] is None:
-            result['injected_keywords'] = result.get('missing_keywords_injected') or result.get('matching_keywords') or []
-        if 'reordered_skills' not in result or result['reordered_skills'] is None:
-            result['reordered_skills'] = result.get('altered_skills') or {}
-
-        # Rate each altered project with reverse-engineered ATS score (guaranteeing > 90)
-        target_skills_list = [s.strip() for s in job_skills.split(',') if s.strip()] if isinstance(job_skills, str) else (job_skills or [])
         scored_projects = []
         for p in result.get('altered_projects', []):
-            eval_data = score_project_ats(p, target_skills_list)
-            p_score = max(90, eval_data.get('score', 92))
-            p['ats_score'] = p_score
-            p['ats_badge'] = f"🟢 {p_score}/100"
-            p['ats_grade'] = 'Top Tier Pass (ATS 90+)'
-            p['breakdown'] = eval_data.get('breakdown', {
-                'action_verbs': 25, 'google_xyz': 25, 'quantified_metrics': 20, 'tech_relevance': 20, 'architecture_scale': 10
-            })
+            p = dict(p)
+            eval_data = score_project_ats(p, keywords)
+            p['ats_score'] = eval_data.get('score')
+            p['ats_badge'] = eval_data.get('badge')
+            p['ats_grade'] = eval_data.get('grade')
+            p['breakdown'] = eval_data.get('breakdown', {})
             scored_projects.append(p)
 
         result['altered_projects'] = scored_projects
