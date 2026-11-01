@@ -471,21 +471,20 @@ html .button.kx-btn-primary:hover { background: #1e40af; }
 html .button.kx-btn-ghost { color: #0f172a; background: #fff; border: 1px solid #cbd5e1; }
 html .button.kx-btn-ghost:hover { border-color: #1d4ed8; color: #1d4ed8; }
 .kx-hero-actions svg { width: 16px; height: 16px; }
-.kx-hero-panel { display: grid; gap: 10px; perspective: 900px; }
+.kx-hero-panel { display: grid; gap: 10px; transform-style: preserve-3d; }
+.kx-bento, .kx-tools, .kx-card, .kx-tool { transform-style: preserve-3d; }
 .kx-bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .kx-card, .kx-tool {
   --mx: 50%;
   --my: 50%;
   position: relative;
-  overflow: hidden;
+  overflow: clip;
   color: #0f172a;
   text-decoration: none;
-  background: rgba(255, 255, 255, .82);
+  background: rgba(255, 255, 255, .92);
   border: 1px solid rgba(37, 99, 235, .14);
   border-radius: 14px;
   box-shadow: inset 0 1px 0 #fff, 0 10px 24px -20px rgba(29, 78, 216, .55);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
   transition: border-color .2s ease, box-shadow .2s ease;
 }
 .kx-card::before, .kx-tool::before {
@@ -618,21 +617,13 @@ html input:focus-visible, html textarea:focus-visible, html select:focus-visible
 @keyframes rbAiChanged { from { background: #dbeafe; } to { background: transparent; } }
 @media (max-width: 760px) { .rb-ai-status { flex-wrap: wrap; white-space: normal; margin: 6px 0 0; } }
 
-/* Home: 3D walkthrough */
-.kx-flow { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: 12px; margin: 22px 0; padding: 26px 34px; background: rgba(255, 255, 255, .72); border: 1px solid rgba(37, 99, 235, .12); border-radius: 22px; box-shadow: inset 0 1px 0 #fff; }
-.kx-flow.is-3d { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
-.kx-flow h2 { margin: 0 0 14px; color: #0f172a; font-size: clamp(24px, 3vw, 34px); font-weight: 800; letter-spacing: -.03em; }
-.kx-flow-steps { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: flow; }
-.kx-flow-steps a { position: relative; display: block; padding: 11px 14px 11px 50px; color: #475569; font-size: 13px; text-decoration: none; border: 1px solid transparent; border-radius: 12px; transition: background-color .25s ease, border-color .25s ease; }
-.kx-flow-steps a::before { counter-increment: flow; content: counter(flow); position: absolute; top: 50%; left: 13px; display: grid; place-items: center; width: 26px; height: 26px; color: #475569; font-size: 12px; font-weight: 800; background: #f1f5f9; border-radius: 50%; translate: 0 -50%; transition: background-color .25s ease, color .25s ease; }
-.kx-flow-steps b { display: block; color: #0f172a; font-size: 15px; }
-.kx-flow-steps a:hover, .kx-flow-steps a.is-active { background: #eff6ff; border-color: #bfdbfe; }
-.kx-flow-steps a.is-active::before { color: #fff; background: #2563eb; }
-.kx-flow-stage { display: none; height: 380px; min-width: 0; }
-.kx-flow.is-3d .kx-flow-stage { display: block; }
-.kx-flow-stage canvas { display: block; width: 100%; height: 100%; }
-@media (max-width: 860px) {
-  .kx-flow { padding: 18px 16px; }
-  .kx-flow.is-3d { grid-template-columns: minmax(0, 1fr); }
-  .kx-flow-stage { height: 280px; }
-}
+/* GSAP 3D. overflow: clip keeps rounded corners without flattening the layers. */
+html .vp-hero.kx-hero { perspective: 1100px; }
+html .vp-product-card { --mx: 50%; --my: 50%; overflow: clip; transform-style: preserve-3d; }
+html .vp-product-card.is-lifted { z-index: 3; box-shadow: 0 34px 44px -26px rgba(29, 78, 216, .55); }
+html .vp-product-card::after { content: ""; position: absolute; inset: 0; z-index: 4; opacity: 0; pointer-events: none; background: radial-gradient(260px circle at var(--mx) var(--my), rgba(255, 255, 255, .16), transparent 70%); transition: opacity .25s ease; }
+html .vp-product-card.is-lifted::after { opacity: 1; }
+html .vp-card-header, html .vp-card-content { transform-style: preserve-3d; }
+html .client-card-3d { transition: box-shadow .25s ease, border-color .25s ease; backface-visibility: hidden; }
+html .client-card-3d:hover { transform: none; }
+html .logo-marquee-track { transform-style: preserve-3d; }
