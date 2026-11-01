@@ -206,7 +206,6 @@ class Command(BaseCommand):
             existing_groups_by_id = {g.id: g for g in existing_groups.values()}
 
             groups_to_create = []
-            groups_to_update = []
             group_jobs_map = {}
 
             for item in data_by_model.get('requirements.jobgroup', []):
@@ -216,20 +215,14 @@ class Command(BaseCommand):
                 name = f.get('name') or "Hiring Drive"
                 jobs_pks = f.get('jobs', [])
 
-                target_grp = existing_groups.get(slug) or existing_groups_by_id.get(old_pk)
-                if target_grp:
-                    target_grp.name = name
-                    target_grp.slug = slug
-                    target_grp.banner_tag = f.get('banner_tag', '🔥 HIRING DRIVE')
-                    target_grp.description = f.get('description', '')
-                    target_grp.posted_date = f.get('posted_date') or default_posted_date
-                    target_grp.deadline = listing_deadline(target_grp.posted_date, default_deadline)
-                    target_grp.is_active = target_grp.deadline > now
-                    groups_to_update.append(target_grp)
-                    group_jobs_map[target_grp.id] = jobs_pks
+                # The slug is the shared link, so it alone decides whether a group
+                # exists. An existing group is left exactly as it is: matching on
+                # id here used to rename an unrelated group and break its link.
+                if slug in existing_groups:
+                    continue
                 else:
                     new_grp = JobGroup(
-                        id=old_pk,
+                        id=None if old_pk in existing_groups_by_id else old_pk,
                         name=name,
                         slug=slug,
                         banner_tag=f.get('banner_tag', '🔥 HIRING DRIVE'),
@@ -239,24 +232,18 @@ class Command(BaseCommand):
                         is_active=listing_deadline(f.get('posted_date') or default_posted_date, default_deadline) > now,
                     )
                     groups_to_create.append(new_grp)
-                    group_jobs_map[old_pk] = jobs_pks
-
-            if groups_to_update:
-                JobGroup.objects.bulk_update(
-                    groups_to_update,
-                    fields=['name', 'slug', 'banner_tag', 'description', 'posted_date', 'deadline', 'is_active'],
-                    batch_size=100
-                )
+                    group_jobs_map[slug] = jobs_pks
 
             if groups_to_create:
                 JobGroup.objects.bulk_create(groups_to_create, batch_size=100)
 
-            # Re-map group M2M associations in bulk ONLY for restored groups (preserves other existing groups!)
+            # Link jobs only for groups created above; existing groups keep theirs.
+            group_jobs_map = {
+                group_id: group_jobs_map[slug]
+                for group_id, slug in JobGroup.objects.filter(slug__in=group_jobs_map).values_list('id', 'slug')
+            }
             all_db_groups = {g.id: g for g in JobGroup.objects.all()}
             ThroughModel = JobGroup.jobs.through
-            restored_group_ids = [gid for gid in group_jobs_map.keys() if gid in all_db_groups]
-            if restored_group_ids:
-                ThroughModel.objects.filter(jobgroup_id__in=restored_group_ids).delete()
 
             m2m_relations = []
             for grp_id, j_pks in group_jobs_map.items():

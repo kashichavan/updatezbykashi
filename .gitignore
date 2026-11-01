@@ -130,6 +130,7 @@ $RECYCLE.BIN/
 scratch/
 backups/*
 !backups/kashii_full_snapshot_latest.json
+!backups/groups_archive.json
 data_backup*.json
 
 # Node dependencies

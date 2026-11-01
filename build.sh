@@ -92,6 +92,10 @@ except Exception as e:
         print('==> Snapshot retry failed:', retry_err)
 " || true
 
+# 3b. Carry over groups made since the last commit. The old instance is still
+# serving during this build, so its groups can be read before it is replaced.
+python manage.py preserve_groups || echo "==> WARNING: preserve_groups failed, recent shared groups may be missing"
+
 # 4. Auto-create production owner account and Software & Tech category
 python requirements/seed_prod.py || true
 

@@ -2202,6 +2202,22 @@ def api_groups(request):
     return JsonResponse({'groups': res})
 
 
+def api_groups_archive(request):
+    """Recent groups with their jobs, read by the next deploy so shared links survive it."""
+    from django.utils.dateparse import parse_datetime
+    from .group_archive import export_groups
+
+    try:
+        since = parse_datetime(request.GET.get('since', ''))
+    except ValueError:
+        since = None
+    if since is None:
+        return JsonResponse({'error': 'since must be an ISO date and time.'}, status=400)
+    if timezone.is_naive(since):
+        since = timezone.make_aware(since)
+    return JsonResponse(export_groups(since))
+
+
 @csrf_exempt
 def api_owner_groups(request):
     """Owner endpoint to list all requirement groups or create a new group with Indian Standard Time."""
