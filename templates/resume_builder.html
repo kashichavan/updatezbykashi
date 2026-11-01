@@ -2315,8 +2315,8 @@
     if (!found) {
       return {
         score: null,
-        badge: 'AI score',
-        grade: 'Waiting for AI',
+        badge: 'View score',
+        grade: 'Scoring...',
         breakdown: { action_verbs: 0, google_xyz: 0, quantified_metrics: 0, tech_relevance: 0, architecture_scale: 0 }
       };
     }
@@ -2692,11 +2692,39 @@
     const modal = document.getElementById('projectAtsModal');
     if (!modal) return;
 
-    const ats = evaluateProjectAts(p);
-
     document.getElementById('projectAtsModalTitle').innerText = p.title;
+    renderProjectAtsModal(evaluateProjectAts(p));
+    modal.style.display = 'flex';
+    if (window.lucide) window.lucide.createIcons();
+
+    // No AI score yet, so show the instant check instead of leaving this empty.
+    if (evaluateProjectAts(p).score === null) fetchBasicProjectScore(p, idx);
+  }
+
+  async function fetchBasicProjectScore(project, idx) {
+    const skills = (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills_list) || [];
+    try {
+      const res = await fetch('/api/resume/score-project/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project, target_skills: skills })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.project_score) throw new Error('No score');
+      if (!aiProjectScores.has(project.title)) aiProjectScores.set(project.title, data.project_score);
+      refreshProjectBadges();
+      if (activeModalProjIdx === idx) renderProjectAtsModal(evaluateProjectAts(project));
+    } catch (err) {
+      if (activeModalProjIdx === idx) {
+        document.getElementById('projectAtsScoreBig').innerText = '— / 100';
+        document.getElementById('projectAtsGradeBig').innerText = 'Could not score. Reopen to retry.';
+      }
+    }
+  }
+
+  function renderProjectAtsModal(ats) {
     const scoreBig = document.getElementById('projectAtsScoreBig');
-    scoreBig.innerText = ats.score === null ? 'Waiting for AI' : `${ats.score} / 100`;
+    scoreBig.innerText = ats.score === null ? '— / 100' : `${ats.score} / 100`;
     scoreBig.style.color = ats.score === null ? '#94a3b8' : (ats.score >= 85 ? '#34d399' : (ats.score >= 70 ? '#fbbf24' : '#f87171'));
     document.getElementById('projectAtsGradeBig').innerText = ats.grade;
 
@@ -2716,9 +2744,6 @@
 
     document.getElementById('scoreDimArch').innerText = `${b.architecture_scale} / 10`;
     document.getElementById('barDimArch').style.width = `${(b.architecture_scale / 10) * 100}%`;
-
-    modal.style.display = 'flex';
-    if (window.lucide) window.lucide.createIcons();
   }
 
   function closeProjectAtsModal() {

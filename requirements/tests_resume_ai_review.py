@@ -52,6 +52,13 @@ class ResumeAiReviewTests(TestCase):
         self.assertEqual(data['project_scores']['0']['score'], 55)
         self.assertEqual(data['missing_skills'], ['Docker'])
 
+    def test_projects_still_get_a_score_when_ai_is_down(self):
+        with patch('requirements.ai_engine.call_groq_chat', side_effect=RuntimeError('down')):
+            data = self.post(make_body()).json()
+        self.assertFalse(data['ai'])
+        self.assertIn('0', data['project_scores'])
+        self.assertIn('quantified_metrics', data['project_scores']['0']['breakdown'])
+
     def test_identity_never_reaches_the_ai(self):
         with patch('requirements.ai_engine.call_groq_chat', return_value=REVIEW_ANSWER) as call:
             self.post(make_body())

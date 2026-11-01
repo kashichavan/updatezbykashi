@@ -620,3 +620,23 @@ EXPERIENCED_ROLE_DEFAULTS = {
     }
 }
 
+
+def basic_project_score(project: dict, target_skills: list = None) -> dict:
+    """Rule-based project score in the shape the resume builder shows."""
+    result = score_project_ats(project, target_skills)
+    parts = result.get('breakdown') or {}
+
+    def points(key):
+        value = parts.get(key)
+        return value.get('score', 0) if isinstance(value, dict) else 0
+
+    return {
+        'score': result.get('score', 0),
+        'breakdown': {
+            'action_verbs': points('action_verbs'),
+            'google_xyz': points('google_xyz'),
+            'quantified_metrics': points('metrics'),
+            'tech_relevance': points('tech_relevance'),
+            'architecture_scale': points('system_depth'),
+        },
+    }

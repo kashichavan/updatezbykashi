@@ -3929,14 +3929,18 @@ def api_score_project_ats(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-    from .resume_engine import score_project_ats
+    from .resume_engine import basic_project_score, score_project_ats
 
     try:
         body = json.loads(request.body.decode('utf-8'))
         project = body.get('project', {})
         target_skills = body.get('target_skills', [])
         evaluation = score_project_ats(project, target_skills)
-        return JsonResponse({'success': True, 'evaluation': evaluation})
+        return JsonResponse({
+            'success': True,
+            'evaluation': evaluation,
+            'project_score': basic_project_score(project, target_skills),
+        })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
@@ -4186,6 +4190,7 @@ def _resume_enhance_items(resume, requested):
 def _rule_based_review(resume, target_skills):
     """Used only when the AI cannot answer. The response says so with ai: False."""
     from .ai_engine import review_grade
+    from .resume_engine import basic_project_score
     from .resume_parser import evaluate_uploaded_resume_ats
 
     result = evaluate_uploaded_resume_ats(resume, target_skills)
@@ -4199,7 +4204,11 @@ def _rule_based_review(resume, target_skills):
         ],
         'fixes': (result.get('improvements') or [])[:4],
         'missing_skills': [],
-        'project_scores': {},
+        'project_scores': {
+            str(index): basic_project_score(project, target_skills)
+            for index, project in enumerate(resume.get('projects') or [])
+            if isinstance(project, dict)
+        },
     }
 
 
