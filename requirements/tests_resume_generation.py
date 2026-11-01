@@ -568,7 +568,44 @@ class AlteredResumeJobAlignmentAndAtsTests(TestCase):
             description="We are seeking a Senior Python Developer with strong Django, FastAPI, Docker, PostgreSQL and Redis skills."
         )
 
-    def test_alter_resume_aligns_projects_and_scores_above_90(self):
+    def test_ai_failure_leaves_the_resume_alone(self):
+        projects = [{"title": "Inventory", "tech_stack": "Python", "bullets": ["Built a catalog"]}]
+        with patch("requirements.ai_engine.call_groq_chat", side_effect=RuntimeError("busy")):
+            res = self.client.post(
+                "/api/ai/alter-resume/",
+                data=json.dumps({
+                    "job_id": str(self.job.uuid),
+                    "candidate_summary": "Python student.",
+                    "candidate_skills": {"Languages": "Python"},
+                    "candidate_projects": projects,
+                }),
+                content_type="application/json",
+            )
+        data = res.json()["data"]
+        self.assertIs(data["ai"], False)
+        self.assertEqual(data["altered_summary"], "Python student.")
+        self.assertEqual(data["altered_projects"], projects)
+        self.assertNotIn("match_score", data)
+        self.assertNotIn("99.9%", res.content.decode())
+
+    @patch("requirements.ai_engine.call_groq_chat")
+    def test_alter_resume_aligns_projects_and_scores_above_90(self, groq):
+        groq.return_value = json.dumps({
+            "altered_summary": "Python developer aligned to Django and FastAPI backends.",
+            "altered_skills": {"Backend": "Python, Django, FastAPI, Docker, REST APIs, SQL, PostgreSQL, Redis"},
+            "altered_projects": [{
+                "title": "Inventory Management",
+                "role": "Developer",
+                "tech_stack": "Python, Django, FastAPI, Docker, REST APIs, SQL, PostgreSQL, Redis",
+                "bullets": [
+                    "Built a product catalog with Django REST APIs, reducing lookup time by 40%.",
+                    "Deployed the FastAPI service with Docker, cutting setup time by 30%.",
+                    "Optimized PostgreSQL queries and SQL indexes, lowering response time by 25%.",
+                    "Implemented Redis caching for stock lookups, reducing database load by 35%.",
+                ],
+            }],
+            "overall_match_score": 95,
+        })
         candidate_projects = [
             {
                 "title": "Inventory Management",

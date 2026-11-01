@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.core.cache import cache
 from django.test import TestCase
@@ -115,3 +115,30 @@ class ResumeAiReviewTests(TestCase):
         self.assertEqual(call.call_count, 15)
         self.assertTrue(data['busy'])
         self.assertFalse(data['ai'])
+
+
+class GroqModelRotationTests(TestCase):
+    def setUp(self):
+        from requirements import ai_engine
+        ai_engine._groq_model_rest_until.clear()
+        self.addCleanup(ai_engine._groq_model_rest_until.clear)
+
+    def reply(self, status, text='ok'):
+        response = Mock(status_code=status, headers={'retry-after': '30'}, text=text)
+        response.json.return_value = {'choices': [{'message': {'content': text}}]}
+        return response
+
+    def test_busy_model_hands_over_and_then_rests(self):
+        from requirements import ai_engine
+        replies = [self.reply(429), self.reply(429), self.reply(200, 'done'), self.reply(200, 'next')]
+        used = []
+
+        def post(url, json, headers, timeout):
+            used.append(json['model'])
+            return replies.pop(0)
+
+        with patch.dict('os.environ', {'GROQ_API_KEY': 'test', 'GROQ_MODEL': 'qwen/qwen3.8-27b'}), \
+                patch('requirements.ai_engine.requests.post', side_effect=post):
+            self.assertEqual(ai_engine.call_groq_chat([{'role': 'user', 'content': 'x'}]), 'done')
+            ai_engine.call_groq_chat([{'role': 'user', 'content': 'x'}])
+        self.assertEqual(used, ['qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'openai/gpt-oss-120b', 'openai/gpt-oss-120b'])

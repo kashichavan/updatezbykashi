@@ -3988,6 +3988,8 @@ def api_ai_alter_resume(request):
             job_description=job_description,
         )
         # Text the model invented may not survive into the exported resume.
+        if result.get('ai') is False:
+            return JsonResponse({'success': True, 'data': result})
         result = sanitize_altered_resume(
             result, candidate_summary, candidate_skills, candidate_projects
         )

@@ -30,6 +30,30 @@ def get_groq_api_key() -> str:
     )
 
 
+# Each model has its own per-minute limit, so a busy model hands over to the next.
+GROQ_FALLBACK_MODELS = ("openai/gpt-oss-20b", "openai/gpt-oss-120b")
+_groq_model_rest_until = {}
+
+
+def _groq_models_to_try(preferred: str) -> list[str]:
+    """Models in order of preference, leaving out any still resting after a 429."""
+    import time
+
+    models = [preferred] + [m for m in GROQ_FALLBACK_MODELS if m != preferred]
+    now = time.time()
+    return [m for m in models if _groq_model_rest_until.get(m, 0) <= now] or models
+
+
+def _rest_groq_model(model: str, retry_after) -> None:
+    import time
+
+    try:
+        seconds = float(retry_after)
+    except (TypeError, ValueError):
+        seconds = 5.0
+    _groq_model_rest_until[model] = time.time() + min(max(seconds, 1.0), 60.0)
+
+
 def call_groq_chat(
     messages: list[dict],
     temperature: float = 0.3,
@@ -64,18 +88,18 @@ def call_groq_chat(
     }
 
     last_error = None
+    models = _groq_models_to_try(model)
     for attempt in range(max_retries):
+        payload["model"] = models[attempt % len(models)]
         try:
             response = requests.post(GROQ_ENDPOINT, json=payload, headers=headers, timeout=timeout)
             if response.status_code == 200:
                 res_json = response.json()
                 return res_json["choices"][0]["message"]["content"]
             elif response.status_code == 429:
-                wait_time = 0.5 * (attempt + 1)
-                logger.warning(f"Groq 429 Rate limited. Rotating to fallback model openai/gpt-oss-20b (attempt {attempt + 1}/{max_retries})...")
-                if payload["model"] != "openai/gpt-oss-20b":
-                    payload["model"] = "openai/gpt-oss-20b"
-                time.sleep(wait_time)
+                _rest_groq_model(payload["model"], response.headers.get("retry-after"))
+                logger.warning(f"Groq 429 on {payload['model']} (attempt {attempt + 1}/{max_retries}).")
+                time.sleep(0.2)
                 continue
             else:
                 logger.error(f"Groq API Error {response.status_code}: {response.text}")
@@ -507,60 +531,14 @@ def alter_resume_for_job(
         parsed["match_grade"] = "Top Tier ATS Pass (ATS 90+)"
         return parsed
     except Exception as e:
-        logger.warning(f"Error calling Groq for resume alteration: {e}. Generating deterministic aligned resume.")
-        # Fallback generator aligning projects to target job skills with 95+ score
-        skills_list = [s.strip() for s in job_skills.split(",") if s.strip()] if isinstance(job_skills, str) else (job_skills or ["Python", "REST APIs", "SQL", "Docker"])
-        lead_skills = ", ".join(skills_list[:4]) if skills_list else "Software Engineering"
-        company_tag = f" at {company_name}" if company_name else ""
-
-        fallback_summary = (
-            f"Results-driven Software Engineer with extensive experience in {lead_skills}, "
-            f"specializing in architecting high-throughput distributed backends and scalable services{company_tag}. "
-            f"Proven track record of optimizing database performance, implementing containerized CI/CD pipelines, "
-            f"and delivering robust software with 99.9% uptime."
-        )
-
-        fallback_skills = dict(candidate_skills) if isinstance(candidate_skills, dict) and candidate_skills else {
-            "Core Technologies": ", ".join(skills_list),
-            "Databases & Caching": "PostgreSQL, Redis, SQL",
-            "DevOps & Architecture": "Docker, Git, CI/CD, REST APIs, Microservices"
-        }
-        if skills_list:
-            fallback_skills["Target Job Stack"] = ", ".join(skills_list)
-
-        existing_projects = candidate_projects or [
-            {"title": f"{job_title or 'Enterprise'} Service Platform", "tech_stack": ", ".join(skills_list[:5])}
-        ]
-        fallback_projects = []
-        for idx, p in enumerate(existing_projects):
-            p_title = p.get("title") or f"{job_title or 'Enterprise'} System {idx + 1}"
-            p_stack = ", ".join(skills_list[:6]) if skills_list else (p.get("tech_stack") or "Python, Docker, SQL, REST APIs")
-            fallback_projects.append({
-                "title": p_title,
-                "role": p.get("role") or (f"Senior {job_title}" if job_title else "Software Engineer"),
-                "tech_stack": p_stack,
-                "bullets": [
-                    f"Architected high-throughput services using {skills_list[0] if skills_list else 'modern frameworks'} and REST APIs, processing 1.5M+ requests daily with 99.9% uptime.",
-                    f"Engineered caching and indexing layer using Redis and PostgreSQL, reducing p95 API latency by 42% (from 280ms to 160ms) for 15,000+ active users.",
-                    f"Optimized database queries and background task queues, cutting CPU utilization by 35% during peak traffic loads.",
-                    f"Deployed containerized services via Docker with automated CI/CD pipelines, accelerating release cycles by 50%."
-                ]
-            })
-
+        logger.warning(f"Error calling Groq for resume alteration: {e}. Leaving the resume unchanged.")
+        # Never fill this in with template text: it would go out under the
+        # candidate's name with results they never achieved.
         return {
-            "altered_summary": fallback_summary,
-            "altered_skills": fallback_skills,
-            "altered_projects": fallback_projects,
-            "overall_match_score": 96,
-            "match_grade": "Top Tier ATS Pass (ATS 90+)",
-            "matching_keywords": skills_list[:8],
-            "missing_keywords_injected": skills_list[:4],
-            "key_alterations": [
-                f"Aligned project tech stack with {lead_skills}.",
-                "Upgraded project bullets to Google XYZ formula with quantifiable metrics.",
-                "Injected system architecture keywords (Docker, Redis, REST APIs, PostgreSQL).",
-                f"Tailored professional summary for {job_title}{company_tag}."
-            ]
+            "ai": False,
+            "altered_summary": candidate_summary,
+            "altered_skills": candidate_skills,
+            "altered_projects": candidate_projects or [],
         }
 
 
@@ -765,7 +743,7 @@ def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: 
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ]
-    data = json.loads(call_groq_chat(messages, temperature=0, max_tokens=1400, json_mode=True, timeout=12, max_retries=2))
+    data = json.loads(call_groq_chat(messages, temperature=0, max_tokens=1200, json_mode=True, timeout=12, max_retries=3))
 
     answered = {
         str(item.get('name', '')).lower(): item
@@ -839,7 +817,7 @@ def enhance_resume_items(items: list, target_skills: list = None, role_title: st
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ]
-    data = json.loads(call_groq_chat(messages, temperature=0.3, max_tokens=1600, json_mode=True, timeout=12, max_retries=2))
+    data = json.loads(call_groq_chat(messages, temperature=0.3, max_tokens=1200, json_mode=True, timeout=12, max_retries=3))
 
     by_id = {item['id']: item for item in items}
     kept = {}

@@ -140,12 +140,14 @@
     var splash = document.getElementById('kashiiEntry');
     var root = document.documentElement;
     if (!splash || root.classList.contains('entry-done') || getComputedStyle(splash).display === 'none') return;
+    // Already fading: its signal has fired and the hero is showing through.
+    if (splash.classList.contains('fade-veil')) return;
 
     var timeline = intro();
     timeline.pause();
     var play = function () { timeline.play(); };
     window.addEventListener('kashii:entry-leaving', play, { once: true });
-    window.setTimeout(play, 5000);
+    window.setTimeout(play, 4000);
   }
 
   playBehindSplash();

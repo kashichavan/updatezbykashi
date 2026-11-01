@@ -2408,6 +2408,11 @@
       }
 
       const d = json.data || {};
+      if (d.ai === false) {
+        setTargetTailorStatus('', 'AI is busy, so your resume was not changed. Try again in a minute.');
+        setTargetTailorButton('Tailor to this job', false);
+        return;
+      }
       if (d.altered_summary) currentResumeData.summary = d.altered_summary;
       if (d.reordered_skills) currentResumeData.skills = d.reordered_skills;
       if (d.altered_projects && d.altered_projects.length > 0) {
@@ -2766,7 +2771,7 @@
 
   // Automatic AI pass: after a pause in typing, new text is improved and the
   // whole resume is scored. Every caller of recalculateAtsScore lands here.
-  const AI_REVIEW_DELAY = 2500;
+  const AI_REVIEW_DELAY = 5000;
   const AI_SEEN_KEY = 'kashii_ai_seen_text';
   const AI_AUTO_KEY = 'kashii_ai_auto_enhance';
   let aiReviewTimer = null;
@@ -2830,7 +2835,7 @@
         });
       });
     });
-    return targets.slice(0, 8);
+    return targets.slice(0, 5);
   }
 
   function aiContentKey(resume) {
