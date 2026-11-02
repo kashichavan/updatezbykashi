@@ -1,0 +1,307 @@
+/* SQL Debugger, /sql/.
+   Phone first: one column. Query editor, Run in thumb reach, then the step tracer,
+   the results (tables scroll sideways in their own box), then tables, practice and history.
+   Desktop: tables panel on the left, editor and tracer side by side, results below.
+   Editor and result panels are solid, never glass. Built on the tokens in bus.css. */
+
+.sql { padding-bottom: var(--s6); }
+.sql [hidden] { display: none; }
+.sql-head { padding-bottom: var(--s3); }
+.sql-head h1 { max-width: 20ch; }
+.sql-head-top { display: flex; justify-content: space-between; align-items: center; gap: var(--s3); margin-block: calc((var(--tap) - 1.5em) / -2); }
+
+.sql-head-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--s1) var(--s4); }
+.sql-text-link {
+  display: inline-flex; align-items: center; gap: 6px; min-height: var(--tap); padding: 0;
+  background: none; border: 0; color: var(--accent);
+  font-size: var(--text-sm); font-weight: 600; text-decoration: none; cursor: pointer;
+  touch-action: manipulation;
+}
+.sql-text-link svg { flex: none; width: 18px; height: 18px; }
+.sql-desktop-only { display: none; }
+
+/* Two-state icons: the button's aria-pressed picks one. */
+.sql-swap { display: inline-flex; }
+.sql-swap svg { width: 18px; height: 18px; }
+.sql-when-on, [aria-pressed="true"] .sql-when-off { display: none; }
+[aria-pressed="true"] .sql-when-on { display: inline; }
+
+/* Layout */
+.sql-workspace-grid { display: grid; gap: var(--s3); min-width: 0; }
+.sql-main-panel { display: grid; gap: var(--s3); min-width: 0; }
+.sql-sidebar-card { order: 2; }
+
+/* Solid panels */
+.sql-panel {
+  min-width: 0;
+  background: var(--solid);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.sql-panel-title { font: 600 var(--text-md)/1.3 var(--font-body); }
+.sql-empty { padding: var(--s5) var(--s3); color: var(--ink-soft); font-size: var(--text-sm); text-align: center; }
+.sql-empty code, .sql-step-banner-compact code { font-size: .92em; }
+.sql-tag {
+  display: inline-flex; align-items: center; flex: none;
+  padding: 1px var(--s2); border-radius: var(--r-full);
+  background: var(--glass-tint); color: var(--ink-soft);
+  font: 500 var(--text-xs)/1.5 var(--font-code); white-space: nowrap;
+}
+
+/* Editor */
+.editor-toolbar {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: var(--s3);
+  padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line-soft);
+}
+.sql-label { font-size: var(--text-sm); font-weight: 600; }
+.sql-input {
+  width: 100%; padding: 0 var(--s3);
+  background: var(--solid-raised); border: 1px solid var(--line); border-radius: var(--r-md);
+  color: var(--ink); font-size: var(--text-md);
+}
+.sql-editor { height: 168px; width: 100%; background: var(--solid); }
+.sql-editor-fail { padding: var(--s5) var(--s4); color: var(--bad); font-size: var(--text-sm); }
+.sql-editor-fail a { color: inherit; font-weight: 600; }
+
+/* bus.css gives every textarea a 44px min-height; Monaco's hidden input must stay tiny. */
+.monaco-editor textarea { min-height: 0; }
+
+/* Monaco decorations set by goToStep(). */
+.monaco-editor .sql-debug-active-line { background: rgba(255, 215, 154, .14); box-shadow: inset 3px 0 0 var(--accent); }
+.monaco-editor .sql-debug-glyph { display: flex; align-items: center; justify-content: center; }
+.monaco-editor .sql-debug-glyph::after {
+  content: ""; width: 0; height: 0;
+  border-block: 5px solid transparent; border-left: 8px solid var(--accent);
+}
+
+.editor-actions { display: grid; gap: var(--s2); padding: var(--s3); border-top: 1px solid var(--line-soft); }
+.sql-run { width: 100%; min-height: 52px; font-size: var(--text-md); }
+.sql-run svg { width: 18px; height: 18px; }
+.sql-kbd { display: none; padding: 1px 6px; border-radius: var(--r-sm); background: rgba(16, 33, 58, .14); font-size: var(--text-xs); font-weight: 500; }
+.sql-verify { width: 100%; color: var(--ok); border-color: var(--ok); }
+.sql-secondary-actions { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+.sql-secondary-actions .button { padding-inline: var(--s2); font-weight: 500; }
+.sql-secondary-actions .button svg { width: 16px; height: 16px; }
+
+/* Step tracer */
+.sql-trace { display: grid; gap: var(--s3); padding: var(--s3); }
+.sql-trace-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
+.sql-step-badge { color: var(--accent); font: 600 var(--text-sm)/1.2 var(--font-code); white-space: nowrap; }
+.sql-step-banner-compact {
+  display: grid; gap: var(--s1); padding: var(--s3);
+  border-radius: var(--r-md); background: var(--solid-raised); border: 1px solid var(--line-soft);
+  color: var(--ink-soft); font-size: var(--text-sm);
+}
+.sql-step-banner-compact strong { color: var(--ink); font-weight: 600; }
+.sql-phase {
+  justify-self: start; padding: 1px var(--s2); border-radius: var(--r-sm);
+  background: var(--accent); color: var(--on-accent);
+  font: 600 var(--text-xs)/1.5 var(--font-code);
+}
+
+.pipeline-strip-compact { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.pipeline-pill {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--s3);
+  border: 1px solid var(--line); border-radius: var(--r-full); background: none;
+  color: var(--muted); font: 500 var(--text-xs)/1 var(--font-code); white-space: nowrap;
+}
+button.pipeline-pill { min-height: var(--tap); cursor: pointer; touch-action: manipulation; transition: opacity var(--t-press) ease-out, transform var(--t-press) ease-out; }
+button.pipeline-pill:active { transform: scale(.97); opacity: .85; }
+.pipeline-pill.passed { color: var(--ok); border-color: rgba(134, 227, 181, .45); }
+.pipeline-pill.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.pipeline-pill.is-empty { opacity: .6; }
+
+.sql-playback-group {
+  display: grid; grid-template-columns: var(--tap) var(--tap) minmax(0, 1fr) var(--tap) minmax(0, 1fr); gap: var(--s2);
+}
+.sql-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-width: var(--tap); min-height: var(--tap); padding: 0 var(--s2);
+  background: var(--solid-raised); border: 1px solid var(--line); border-radius: var(--r-md);
+  color: var(--ink); font-size: var(--text-sm); font-weight: 600; white-space: nowrap; cursor: pointer;
+  touch-action: manipulation;
+  transition: opacity var(--t-press) ease-out, transform var(--t-press) ease-out;
+}
+.sql-icon-btn svg { flex: none; width: 18px; height: 18px; }
+.sql-icon-btn:active { transform: scale(.97); opacity: .85; }
+.sql-icon-btn:disabled { opacity: .45; cursor: not-allowed; }
+.sql-icon-btn.sql-next { border-color: var(--accent); color: var(--accent); }
+.sql-autoplay[aria-pressed="true"] { background: var(--glass-tint); border-color: var(--accent); color: var(--accent); }
+.sql-slider { width: 100%; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.sql-slider:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Results */
+.results-card { display: grid; }
+.results-header-tabs { display: grid; gap: var(--s1); border-bottom: 1px solid var(--line-soft); }
+.tab-group {
+  display: flex; gap: var(--s1); padding: var(--s2) var(--s2) 0;
+  overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.tab-group::-webkit-scrollbar { display: none; }
+.res-tab-btn, .sidebar-tab-btn {
+  flex: none; min-height: var(--tap); padding: 0 var(--s3);
+  background: none; border: 0; border-bottom: 2px solid transparent;
+  color: var(--ink-soft); font-size: var(--text-sm); font-weight: 500; white-space: nowrap; cursor: pointer;
+  touch-action: manipulation;
+}
+.res-tab-btn.active, .sidebar-tab-btn.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--accent); }
+.meta-stats {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--s2);
+  padding: 0 var(--s3); color: var(--muted); font: 400 var(--text-xs)/1.4 var(--font-code);
+}
+.meta-stats .sql-text-link { margin-left: auto; font-family: var(--font-body); font-size: var(--text-xs); }
+.results-body { min-width: 0; padding: var(--s3); }
+
+.sql-step-head { display: grid; gap: var(--s1); margin-bottom: var(--s3); }
+.sql-step-name { font-weight: 600; }
+.sql-step-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1) var(--s2); color: var(--ink-soft); font-size: var(--text-sm); }
+
+/* Wide tables scroll inside their own box, never the page. */
+.sql-table-scroll {
+  max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain;
+  border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--night);
+}
+.sql-table-scroll:focus-visible { outline-offset: -3px; }
+.sql-data-table { width: 100%; border-collapse: collapse; font: 400 var(--text-xs)/1.4 var(--font-code); }
+.sql-data-table th, .sql-data-table td { padding: 8px var(--s3); text-align: left; white-space: nowrap; border-bottom: 1px solid var(--line-soft); }
+.sql-data-table th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--solid-raised); color: var(--accent); font-weight: 600;
+}
+.sql-data-table td { color: var(--ink); }
+.sql-data-table td.is-num { text-align: right; font-variant-numeric: tabular-nums; }
+.sql-data-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, .03); }
+.sql-data-table tbody tr:last-child td { border-bottom: 0; }
+.sql-data-table th.sql-status-col { color: var(--muted); }
+.null-cell { color: var(--muted); font-style: italic; }
+.sql-empty-cell { padding: var(--s5) var(--s3); color: var(--ink-soft); text-align: center; white-space: normal; }
+
+.row-badge {
+  display: inline-block; padding: 1px 6px; border-radius: var(--r-sm);
+  background: var(--glass-tint); color: var(--ink-soft); font-size: var(--text-xs); font-weight: 600;
+}
+.row-badge-kept { color: var(--ok); background: rgba(134, 227, 181, .12); }
+.row-badge-sorted { color: var(--accent); background: rgba(255, 215, 154, .12); }
+
+.sql-ok { padding: var(--s5) var(--s3); color: var(--ok); font-size: var(--text-sm); text-align: center; }
+
+.sql-error-alert {
+  display: grid; gap: var(--s1); padding: var(--s3);
+  border: 1px solid var(--bad); border-radius: var(--r-md); background: rgba(255, 170, 165, .08);
+}
+.sql-error-title { color: var(--bad); font-weight: 600; }
+.sql-error-text { margin: 0; color: var(--ink); font-size: var(--text-sm); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.plan-tree-box { display: grid; gap: var(--s2); }
+.sql-plan-title { color: var(--muted); font: 600 var(--text-xs)/1.4 var(--font-code); }
+.sql-plan-list { list-style: none; display: grid; gap: var(--s2); }
+.sql-plan-list li { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2); font-size: var(--text-sm); }
+.sql-plan-list code { color: var(--ink); overflow-wrap: anywhere; }
+
+.sql-verdict { display: grid; gap: var(--s1); padding: var(--s4); border-radius: var(--r-md); border: 1px solid; }
+.sql-verdict h3 { font-size: var(--text-md); }
+.sql-verdict p { color: var(--ink-soft); font-size: var(--text-sm); }
+.sql-verdict.is-pass { border-color: var(--ok); background: rgba(134, 227, 181, .08); }
+.sql-verdict.is-pass h3 { color: var(--ok); }
+.sql-verdict.is-fail { border-color: var(--bad); background: rgba(255, 170, 165, .08); }
+.sql-verdict.is-fail h3 { color: var(--bad); }
+
+.sql-cheats { display: grid; gap: var(--s2); }
+.sql-cheat { display: grid; gap: var(--s2); min-width: 0; padding: var(--s3); border-radius: var(--r-md); background: var(--solid-raised); border: 1px solid var(--line-soft); }
+.sql-cheat h3 { font: 600 var(--text-sm)/1.3 var(--font-body); color: var(--accent); }
+.sql-cheat pre { margin: 0; overflow-x: auto; font-size: var(--text-xs); line-height: 1.6; color: var(--ink); }
+
+/* Tables, practice and history */
+.sidebar-tabs { display: flex; overflow-x: auto; border-bottom: 1px solid var(--line-soft); padding: var(--s2) var(--s2) 0; scrollbar-width: none; }
+.sidebar-tabs .sidebar-tab-btn { flex: 1 0 auto; }
+.sidebar-content-pane { display: grid; gap: var(--s2); align-content: start; max-height: 420px; overflow-y: auto; overscroll-behavior: contain; padding: var(--s3); }
+#schemaContainer, #historyContainer { display: grid; gap: var(--s2); }
+
+.schema-table-item { border: 1px solid var(--line-soft); border-radius: var(--r-md); background: var(--solid-raised); overflow: hidden; }
+.schema-table-header {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--s2);
+  width: 100%; min-height: var(--tap); padding: 0 var(--s3);
+  background: none; border: 0; color: var(--ink); text-align: left; cursor: pointer;
+}
+.table-title { font: 600 var(--text-sm)/1.3 var(--font-code); }
+.schema-columns-list { display: none; padding: 0 var(--s1) var(--s1); }
+.schema-columns-list.open { display: grid; }
+.schema-col-row {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--s2);
+  width: 100%; min-height: var(--tap); padding: 0 var(--s2);
+  background: none; border: 0; border-top: 1px solid var(--line-soft); border-radius: 0;
+  color: var(--ink-soft); font: 400 var(--text-xs)/1.3 var(--font-code); text-align: left; cursor: pointer;
+}
+.schema-col-name { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.pk-badge { color: var(--accent); font-weight: 600; }
+.col-type-tag { flex: none; color: var(--muted); }
+
+.challenge-item-card {
+  display: grid; gap: var(--s1); width: 100%; min-height: var(--tap); padding: var(--s3);
+  background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+  color: var(--ink); text-align: left; cursor: pointer;
+  transition: opacity var(--t-press) ease-out, transform var(--t-press) ease-out;
+}
+.challenge-item-card:active { transform: scale(.99); opacity: .9; }
+.sql-card-meta { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); color: var(--muted); font-size: var(--text-xs); }
+.sql-card-title { font-weight: 600; font-size: var(--text-sm); }
+.diff-badge { padding: 1px var(--s2); border-radius: var(--r-full); font-weight: 600; background: var(--glass-tint); }
+.diff-badge-Easy { color: var(--ok); }
+.diff-badge-Medium { color: var(--warn); }
+.diff-badge-Hard { color: var(--bad); }
+.sql-history-sql {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  color: var(--ink-soft); font-size: var(--text-xs); white-space: pre-wrap;
+}
+
+/* Full width results mode, toggled on body by toggleMaximizeTable(). */
+body.table-maximized-mode .sql-sidebar-card,
+body.table-maximized-mode .editor-card { display: none; }
+body.table-maximized-mode .sql-workspace-grid,
+body.table-maximized-mode .sql-main-panel { grid-template-columns: minmax(0, 1fr); }
+
+@media (min-width: 720px) {
+  .sql-cheats { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .sql-playback-group, .sql-slider { max-width: 520px; }
+  .editor-toolbar { grid-template-columns: auto minmax(0, 360px); }
+  .sql-editor { height: 240px; }
+  .editor-actions { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .sql-run { width: auto; padding-inline: var(--s5); justify-self: start; }
+  .sql-verify { width: auto; }
+  .sql-secondary-actions { grid-column: 1 / -1; grid-template-columns: repeat(4, auto); justify-content: start; }
+  .results-header-tabs { grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+  .meta-stats { padding-bottom: var(--s1); }
+  }
+
+@media (min-width: 1000px) {
+  .sql.wrap { width: min(100%, 1440px); padding-inline: var(--s5); }
+  .sql { padding-top: var(--s3); }
+  .sql-desktop-only { display: inline-flex; }
+
+  .sql-workspace-grid { grid-template-columns: 280px minmax(0, 1fr); align-items: start; }
+  .sql-sidebar-card { order: 0; position: sticky; top: 72px; }
+  .sidebar-content-pane { max-height: calc(100dvh - 160px); }
+  body.sidebar-collapsed .sql-sidebar-card { display: none; }
+  body.sidebar-collapsed .sql-workspace-grid { grid-template-columns: minmax(0, 1fr); }
+
+  .sql-table-scroll { max-height: min(62dvh, 640px); overflow: auto; }
+}
+
+@media (min-width: 1200px) {
+  .sql-main-panel { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: stretch; }
+  .editor-card { display: flex; flex-direction: column; }
+  .sql-editor { flex: 1; min-height: 240px; height: auto; }
+  .sql-trace { align-content: start; }
+  .results-card { grid-column: 1 / -1; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sql-kbd { display: inline-block; }
+  .sql-text-link:hover { text-decoration: underline; }
+  .sql-icon-btn:not(:disabled):hover, button.pipeline-pill:hover { border-color: var(--accent); }
+  .res-tab-btn:hover, .sidebar-tab-btn:hover { color: var(--ink); }
+  .schema-table-header:hover, .schema-col-row:hover { background: var(--glass-tint); }
+  .schema-col-row:hover { color: var(--ink); }
+  .challenge-item-card:hover { border-color: var(--line); }
+}

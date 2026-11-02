@@ -1,0 +1,1134 @@
+/* Resume Builder, /resume/ and /resume-builder/.
+   The editor chrome sits on the Bus window system: glass for the step cards, deck and
+   banner, solid --solid for panels, toolbars, menus and dialogs. The A4 sheet is white
+   paper and keeps its own typography; its rules (part 2) and the print rules (part 4)
+   are moved here from the template unchanged in effect. */
+
+/* ── 1. Page scope ─────────────────────────────────────────────────────────── */
+.rb-page [hidden] { display: none; }
+.rb-page .lucide { flex: none; width: 16px; height: 16px; }
+.rb-page .button .lucide { width: 18px; height: 18px; }
+.spin-icon { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.resume-builder-main.wrap { width: min(100%, 1360px); padding-bottom: var(--s6); }
+
+/* Hero */
+.studio-hero { padding-block: var(--s4) var(--s3); }
+.studio-hero .sub { max-width: 68ch; }
+
+/* Three steps */
+.rb-steps { display: grid; gap: var(--s3); margin-bottom: var(--s4); }
+.rb-step { display: grid; grid-template-columns: auto 1fr; gap: var(--s2) var(--s3); align-content: start; }
+.rb-step-num {
+  display: grid; place-items: center; width: 32px; height: 32px;
+  border: 1px solid var(--line); border-radius: var(--r-full);
+  color: var(--ink-soft); font-weight: 600; font-size: var(--text-sm);
+}
+.rb-step.is-done .rb-step-num { border-color: var(--ok); color: var(--ok); }
+.rb-step-copy { display: grid; gap: 2px; }
+.rb-step-copy h2 { font: 600 var(--text-md)/1.3 var(--font-body); }
+.rb-step-copy p { color: var(--ink-soft); font-size: var(--text-sm); }
+.rb-step-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--s2); }
+.rb-step-actions .button { flex: 1 1 auto; }
+.rb-step-actions .button:first-child { border-color: var(--accent); }
+.rb-step-actions .button:first-child .lucide { color: var(--accent); }
+.rb-upgrade-note {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2);
+  color: var(--ink-soft); font-size: var(--text-sm);
+}
+
+/* Small text buttons used by the AI undo controls */
+.ai-undo-btn, .inspector-link-btn {
+  min-height: var(--tap); padding: 0 var(--s2); background: none; border: 0;
+  color: var(--accent); font-weight: 600; font-size: var(--text-sm); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line);
+}
+
+/* ── Command deck ─────────────────────────────────────────────────────────── */
+.studio-command-deck { display: grid; gap: var(--s3); margin-bottom: var(--s4); }
+.deck-zone { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); min-width: 0; }
+.deck-field { display: grid; gap: 2px; flex: 1 1 220px; min-width: 0; }
+.deck-tag { color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
+.deck-target-label {
+  display: flex; align-items: center; gap: var(--s2); min-height: var(--tap);
+  font-weight: 600; min-width: 0;
+}
+.deck-target-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deck-target-label .lucide { color: var(--accent); }
+
+.rb-input, .rb-field input, .rb-field select, .rb-field textarea {
+  width: 100%; padding: var(--s2) var(--s3);
+  background: var(--solid); border: 1px solid var(--line); border-radius: var(--r-md);
+  color: var(--ink); font-size: var(--text-md); line-height: 1.4;
+}
+select.rb-input, .rb-field select { padding-block: 0; cursor: pointer; }
+.rb-input::placeholder, .rb-field input::placeholder, .rb-field textarea::placeholder { color: var(--muted); }
+textarea.rb-input, .rb-field textarea { resize: vertical; line-height: 1.5; }
+.rb-input:focus-visible, .rb-field :is(input, select, textarea):focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.rb-page option { background: var(--solid); color: var(--ink); }
+
+.deck-level-toggle {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--s1); flex: 1 1 220px;
+  padding: var(--s1); border-radius: var(--r-md); background: var(--solid); border: 1px solid var(--line-soft);
+}
+.level-pill-btn {
+  min-height: 40px; padding: 0 var(--s3); border: 1px solid transparent; border-radius: var(--r-sm);
+  background: none; color: var(--ink-soft); font-size: var(--text-sm); font-weight: 500; cursor: pointer;
+}
+.level-pill-btn.active { background: var(--solid-raised); border-color: var(--line); color: var(--ink); font-weight: 600; }
+
+/* Score chip. data-tone is set from the score by the script. */
+.ats-pulse-chip {
+  --tone: var(--ok);
+  display: inline-flex; align-items: center; gap: var(--s2); min-height: var(--tap);
+  padding: var(--s1) var(--s3) var(--s1) var(--s1);
+  background: var(--solid); border: 1px solid var(--line); border-radius: var(--r-full);
+  color: var(--ink); cursor: pointer;
+  transition: opacity var(--t-press) ease-out, transform var(--t-press) ease-out;
+}
+.ats-pulse-chip:active { transform: scale(.98); opacity: .85; }
+.ats-pulse-chip[data-tone="ok"] { --tone: var(--ink); }
+.ats-pulse-chip[data-tone="mid"] { --tone: var(--warn); }
+.ats-pulse-chip[data-tone="low"] { --tone: var(--bad); }
+.ats-chip-circle {
+  display: grid; place-items: center; width: 34px; height: 34px;
+  border: 2px solid var(--tone); border-radius: var(--r-full);
+}
+.ats-gauge-num { font: 700 var(--text-sm)/1 var(--font-display); color: var(--tone); }
+.ats-chip-label { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; font-size: var(--text-sm); }
+.ats-chip-tag { color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
+#atsGradeText { color: var(--tone); font-weight: 600; }
+
+.rb-ai-status {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--s2);
+  color: var(--ink-soft); font-size: var(--text-sm);
+}
+.rb-ai-status[data-state="working"] #aiAutoText { color: var(--accent); }
+.rb-ai-status[data-state="done"] #aiAutoText { color: var(--ok); }
+.rb-ai-status[data-state="basic"] #aiAutoText { color: var(--warn); }
+.rb-check { display: inline-flex; align-items: center; gap: var(--s2); min-height: var(--tap); cursor: pointer; }
+.rb-check input { min-height: 0; width: 18px; height: 18px; accent-color: var(--accent); }
+
+.deck-zone-actions { display: grid; grid-template-columns: 1fr 1fr; }
+.deck-zone-actions .button { width: 100%; }
+#btnDownloadPdf { display: none; }
+
+/* More menu: solid popover */
+.studio-dropdown-wrap { position: relative; }
+.studio-dropdown-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 60;
+  flex-direction: column; gap: 2px; width: min(300px, calc(100vw - 32px)); padding: var(--s2);
+  background: var(--solid-raised); border: 1px solid var(--line); border-radius: var(--r-lg);
+}
+.studio-menu-item {
+  display: flex; align-items: center; gap: var(--s3); width: 100%; min-height: var(--tap);
+  padding: 0 var(--s3); background: none; border: 0; border-radius: var(--r-sm);
+  color: var(--ink); font-size: var(--text-sm); font-weight: 500; text-align: left; cursor: pointer;
+}
+.studio-menu-item .lucide { color: var(--muted); }
+.studio-menu-item.is-accent, .studio-menu-item.is-accent .lucide { color: var(--accent); font-weight: 600; }
+.studio-menu-item.is-danger, .studio-menu-item.is-danger .lucide { color: var(--bad); }
+.studio-menu-rule { height: 1px; margin: var(--s1) 0; background: var(--line-soft); }
+
+/* Target job banner */
+.target-job-banner { display: grid; gap: var(--s3); margin-bottom: var(--s4); }
+.target-job-info { display: grid; gap: var(--s2); min-width: 0; }
+.target-job-name { font-weight: 600; }
+.target-badge { color: var(--accent); font-size: var(--text-xs); font-weight: 600; margin-right: var(--s1); }
+.target-job-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.target-job-actions .button { flex: 1 1 auto; }
+.target-job-status {
+  display: inline-flex; align-items: center; gap: 6px; width: 100%;
+  color: var(--accent); font-size: var(--text-sm); font-weight: 500;
+}
+.target-job-status.is-done { color: var(--ok); }
+.target-job-status.is-error { color: var(--bad); }
+.target-job-status:empty { display: none; }
+
+/* ── Workspace: tools panel and the sheet ─────────────────────────────────── */
+.resume-workspace { display: grid; gap: var(--s4); align-items: start; }
+.studio-canvas-stage { order: -1; display: flex; flex-direction: column; align-items: center; width: 100%; min-width: 0; }
+
+.studio-inspector {
+  display: grid; gap: var(--s4); padding: var(--s4);
+  background: var(--solid); border: 1px solid var(--line-soft); border-radius: var(--r-lg);
+}
+.inspector-section { display: grid; gap: var(--s2); min-width: 0; }
+.inspector-header { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
+.inspector-title, .checklist-header {
+  display: flex; align-items: center; gap: var(--s2);
+  font: 600 var(--text-md)/1.3 var(--font-body); color: var(--ink);
+}
+.inspector-title .lucide, .checklist-header .lucide { color: var(--accent); }
+.inspector-pill-counter {
+  min-width: 28px; padding: 0 var(--s2); border-radius: var(--r-full);
+  background: var(--glass-tint); color: var(--ink-soft); font-size: var(--text-xs); font-weight: 600; text-align: center;
+}
+.inspector-project-list { display: grid; gap: var(--s2); }
+.project-control-card {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--s2);
+  padding: var(--s1) var(--s1) var(--s1) var(--s3);
+  background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+}
+.experience-control-card { grid-template-columns: minmax(0, 1fr) auto; }
+.control-card-main { display: grid; min-width: 0; }
+.control-card-title, .control-card-sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.control-card-title { font-weight: 600; font-size: var(--text-sm); }
+.control-card-sub { color: var(--muted); font-size: var(--text-xs); }
+.control-card-delete {
+  display: grid; place-items: center; width: var(--tap); height: var(--tap);
+  background: none; border: 0; border-radius: var(--r-sm); color: var(--muted); cursor: pointer;
+}
+.rb-score-tag {
+  --tone: var(--muted);
+  min-height: 32px; padding: 0 var(--s2); background: none;
+  border: 1px solid var(--tone); border-radius: var(--r-sm);
+  color: var(--tone); font-size: var(--text-xs); font-weight: 600; white-space: nowrap; cursor: pointer;
+}
+.rb-score-tag[data-tone="good"] { --tone: var(--ok); }
+.rb-score-tag[data-tone="mid"] { --tone: var(--warn); }
+.rb-score-tag[data-tone="low"] { --tone: var(--bad); }
+
+.inspector-action-full {
+  display: flex; align-items: center; justify-content: center; gap: var(--s2); width: 100%; min-height: var(--tap);
+  background: none; border: 1px dashed var(--muted); border-radius: var(--r-md);
+  color: var(--accent); font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.inspector-exp-box { padding-top: var(--s4); border-top: 1px solid var(--line-soft); }
+.inspector-utilities-section .button { width: 100%; }
+.inspector-checklist-section { padding-top: var(--s4); border-top: 1px solid var(--line-soft); }
+.inspector-checklist { list-style: none; display: grid; gap: var(--s2); font-size: var(--text-sm); }
+.checklist-item { display: grid; grid-template-columns: auto 1fr; gap: var(--s2); color: var(--ink-soft); line-height: 1.45; }
+.checklist-item strong { color: var(--ink); font-weight: 600; }
+.chk-badge {
+  display: grid; place-items: center; width: 20px; height: 20px; margin-top: 1px;
+  border: 1px solid currentColor; border-radius: var(--r-sm); font-size: var(--text-xs); font-weight: 600;
+}
+.checklist-item.passed .chk-badge { color: var(--ok); }
+.checklist-item.failed .chk-badge { color: var(--bad); }
+
+/* Editor window around the sheet: solid, never glass. */
+.word-editor-shell {
+  width: 100%; max-width: 840px;
+  background: var(--solid); border: 1px solid var(--line-soft); border-bottom: 0;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+.word-titlebar {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line-soft);
+}
+.word-titlebar-left, .word-titlebar-right, .word-doc-meta { display: flex; align-items: center; gap: var(--s2); min-width: 0; }
+.word-titlebar-left { flex: 1 1 auto; }
+.word-doc-meta { flex-wrap: wrap; gap: 0 var(--s2); }
+.word-app-badge { display: grid; place-items: center; color: var(--accent); }
+.word-doc-title-input {
+  min-height: 40px; width: 13em; max-width: 100%; padding: 0 var(--s2);
+  background: none; border: 1px solid transparent; border-radius: var(--r-sm);
+  color: var(--ink); font-weight: 600; font-size: var(--text-sm);
+}
+.word-doc-title-input:focus-visible { border-color: var(--line); background: var(--solid-raised); }
+.word-save-pill { display: inline-flex; align-items: center; gap: 4px; color: var(--ok); font-size: var(--text-xs); }
+.word-save-pill .lucide { width: 14px; height: 14px; }
+.single-page-badge, .word-count-badge { color: var(--muted); font-size: var(--text-xs); }
+.word-titlebar-right { display: none; }
+
+.word-ribbon-bar {
+  display: flex; align-items: center; gap: var(--s1); padding: var(--s1) var(--s2);
+  overflow-x: auto; scrollbar-width: thin; overscroll-behavior-x: contain;
+  border-bottom: 1px solid var(--line-soft);
+}
+.word-tool-group { display: flex; flex: none; align-items: center; gap: 2px; }
+.word-tool-divider { flex: none; width: 1px; height: 24px; margin: 0 var(--s1); background: var(--line-soft); }
+.word-tool-btn, .word-color-picker-label {
+  position: relative; display: inline-grid; place-items: center; min-width: var(--tap); height: var(--tap); padding: 0 6px;
+  background: none; border: 1px solid transparent; border-radius: var(--r-sm);
+  color: var(--ink-soft); font-size: var(--text-sm); cursor: pointer;
+}
+.word-tool-btn.active { background: var(--solid-raised); border-color: var(--line); color: var(--accent); }
+.word-select {
+  height: var(--tap); padding: 0 var(--s2);
+  background: var(--solid-raised); border: 1px solid var(--line); border-radius: var(--r-sm);
+  color: var(--ink); font-size: var(--text-sm); cursor: pointer;
+}
+.word-font-select { width: 150px; }
+.word-size-select { width: 136px; }
+.word-color-picker-label { grid-template-rows: auto 3px; align-content: center; gap: 2px; }
+.word-color-letter { font-weight: 600; line-height: 1; }
+.word-color-bar { width: 14px; height: 3px; border-radius: 1px; }
+.word-color-bar.is-text { background: var(--ink); }
+.word-color-bar.is-highlight { background: #fef08a; }
+.word-color-input { position: absolute; opacity: 0; width: 0; height: 0; min-height: 0; pointer-events: none; }
+.word-color-picker-label:focus-within { outline: 3px solid var(--accent); outline-offset: 1px; }
+.word-pill-action, .word-page-toggle {
+  display: inline-flex; align-items: center; gap: var(--s1); height: var(--tap); padding: 0 var(--s3);
+  background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+  color: var(--ink); font-size: var(--text-xs); font-weight: 600; white-space: nowrap; cursor: pointer;
+}
+.word-pill-action .lucide { width: 14px; height: 14px; color: var(--accent); }
+.word-page-label { color: var(--muted); font-size: var(--text-xs); font-weight: 600; margin-right: 2px; }
+.word-page-toggle.active-page-toggle { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.word-tool-btn:active, .word-pill-action:active, .word-page-toggle:active, .word-zoom-btn:active { transform: scale(.96); }
+
+/* Ruler: wide screens only, it means nothing at phone width. */
+.word-ruler-bar { display: none; }
+.word-ruler-corner { width: 20px; border-right: 1px solid var(--line-soft); }
+.word-ruler-track { flex: 1; display: flex; }
+.ruler-margin-zone { position: relative; width: 50px; background: var(--night); }
+.ruler-margin-left { border-right: 1px solid var(--line-soft); }
+.ruler-margin-right { border-left: 1px solid var(--line-soft); }
+.ruler-indent-marker { position: absolute; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; }
+.ruler-marker-first-line { top: 0; left: 45px; border-top: 5px solid var(--accent); }
+.ruler-marker-left-indent { bottom: 0; left: 45px; border-bottom: 5px solid var(--accent); }
+.ruler-marker-right-indent { bottom: 0; right: 45px; border-bottom: 5px solid var(--accent); }
+.ruler-active-zone {
+  flex: 1; display: grid; grid-template-columns: repeat(16, 1fr);
+  background: repeating-linear-gradient(to right, transparent 0 18px, var(--line-soft) 18px 19px);
+}
+.ruler-num { text-align: right; transform: translateX(50%); color: var(--muted); font-size: 9px; line-height: 18px; pointer-events: none; }
+
+/* The desk the paper sits on */
+.word-document-stage {
+  display: flex; justify-content: center; width: 100%; max-width: 840px;
+  padding: var(--s3) var(--s2); overflow-x: auto;
+  background: var(--night); border: 1px solid var(--line-soft); border-block: 0;
+}
+
+.word-status-bar {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s2);
+  width: 100%; max-width: 840px; padding: var(--s1) var(--s3);
+  background: var(--solid); border: 1px solid var(--line-soft); border-radius: 0 0 var(--r-lg) var(--r-lg);
+  color: var(--muted); font-size: var(--text-xs);
+}
+.word-status-left, .word-status-right { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.word-status-page { color: var(--ink); font-weight: 600; }
+.word-status-left strong { color: var(--ink-soft); font-weight: 600; }
+.word-status-pill { padding: 1px 6px; border-radius: var(--r-sm); background: var(--glass-tint); color: var(--ink-soft); }
+.word-status-pill.is-multi { color: var(--accent); }
+.word-status-ats { color: var(--ok); font-weight: 600; }
+.word-status-ats strong { color: var(--ok); }
+.word-zoom-btn, .word-zoom-reset {
+  display: grid; place-items: center; min-width: var(--tap); height: var(--tap); padding: 0 var(--s2);
+  background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-sm);
+  color: var(--ink); font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.word-zoom-reset { color: var(--accent); }
+.word-zoom-label { min-width: 40px; color: var(--ink); text-align: center; font-weight: 600; }
+
+/* ── 2. The A4 sheet (document). Moved from the template; keep identical. ── */
+
+/* Shield the paper from the dark site defaults so it renders as it did before:
+   headings inherit the sheet font, nothing gets default margins, words wrap as before. */
+.ats-resume-sheet :where(*) { margin: 0; padding: 0; }
+.ats-resume-sheet :where(h1, h2, h3, h4) { font-family: inherit; line-height: inherit; text-wrap: wrap; }
+.ats-resume-sheet :where(h1) { font-size: 2em; }
+.ats-resume-sheet :where(h2) { font-size: 1.5em; }
+.ats-resume-sheet :where(h3) { font-size: 1.17em; }
+.ats-resume-sheet :where(h4) { font-size: 1em; }
+.ats-resume-sheet :where(a) { text-decoration-color: currentColor; text-underline-offset: auto; }
+.ats-resume-sheet ::selection { background: #bfdbfe; color: #0f172a; }
+
+/* Single & Multi-Page A4 ATS Resume Sheet (ISO 216: 210mm × 297mm = 794px × 1123px at 96 DPI) */
+.ats-resume-sheet {
+  background: #ffffff;
+  color: #0f172a;
+  width: 100%;
+  max-width: 794px;
+  min-height: 1123px;
+  padding: 44px 50px;
+  border-radius: 2px;
+  border: 1px solid #cbd5e1;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 20px 30px -4px rgba(15, 23, 42, 0.12),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  line-height: 1.45;
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s ease, outline 0.2s ease, transform 0.15s ease;
+  transform-origin: top center;
+  position: relative;
+  overflow-wrap: break-word;
+}
+.ats-resume-sheet:focus-within {
+  box-shadow:
+    0 8px 12px -2px rgba(0, 0, 0, 0.1),
+    0 25px 40px -4px rgba(37, 99, 235, 0.16);
+  outline: 2px solid #bfdbfe;
+}
+
+/* Visual multi-page sheet gap and splitter */
+.word-page-break {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 40px -52px 40px;
+  height: 38px;
+  background: #e2e8f0;
+  border-top: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+  box-shadow:
+    0 4px 6px -2px rgba(15, 23, 42, 0.08),
+    inset 0 6px 10px -4px rgba(0, 0, 0, 0.12),
+    inset 0 -6px 10px -4px rgba(0, 0, 0, 0.12);
+  user-select: none;
+  cursor: default;
+  z-index: 5;
+}
+.word-page-break::before {
+  content: "PAGE 1 END";
+  position: absolute;
+  top: -24px;
+  right: 52px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.word-page-break::after {
+  content: "PAGE 2 START";
+  position: absolute;
+  bottom: -24px;
+  right: 52px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.word-page-break-tag {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 99px;
+  padding: 4px 16px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e293b;
+  font-size: 11px;
+  font-weight: 700;
+}
+.word-page-break-tag .page-indicator-pill {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 800;
+}
+.word-page-break-delete {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 4px;
+  margin-left: 6px;
+}
+
+.ats-header {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.ats-name {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  margin: 0 0 5px;
+  color: #0f172a;
+  text-transform: uppercase;
+}
+
+.ats-contact-line {
+  font-size: 12px;
+  color: #334155;
+}
+.ats-contact-line a {
+  color: #0f172a;
+  text-decoration: none;
+}
+/* Contact items are independent spans so a blank field can be hidden.
+   The separator lives on the item, never as loose text between them. */
+.ats-c-item { display: inline; }
+.ats-c-item::before { content: '|'; margin: 0 7px; color: #64748b; }
+.ats-c-item.is-first::before { content: none; margin: 0; }
+
+.ats-section {
+  margin-bottom: 13px;
+}
+
+.ats-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #0f172a;
+  border-bottom: 1.5px solid #0f172a;
+  padding-bottom: 2px;
+  margin: 0 0 7px;
+}
+
+.ats-summary-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #1e293b;
+  text-align: justify;
+}
+
+.ats-skills-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ats-skill-line {
+  margin: 0;
+  font-size: 12.5px;
+  color: #1e293b;
+  line-height: 1.4;
+}
+
+.ats-project-entry {
+  margin-bottom: 10px;
+}
+.ats-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+.ats-project-title {
+  font-size: 13px;
+  font-weight: 750;
+  color: #0f172a;
+  margin: 0;
+}
+.ats-project-role {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+.ats-project-tech {
+  font-size: 12px;
+  color: #334155;
+  margin-bottom: 4px;
+}
+.ats-date {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.project-ats-chip {
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid #10b981;
+  color: #065f46;
+}
+
+.ats-bullet-list {
+  margin: 0;
+  padding-left: 18px;
+  color: #1e293b;
+  font-size: 12.5px;
+}
+.ats-bullet-list li {
+  margin-bottom: 3px;
+  line-height: 1.42;
+}
+
+/* Six ATS templates */
+
+/* 1. Modern Slate */
+.ats-resume-sheet.template-modern {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.ats-resume-sheet.template-modern .ats-name {
+  color: #1e3a8a;
+  font-weight: 850;
+  letter-spacing: -0.02em;
+  border-bottom: 2.5px solid #2563eb;
+  padding-bottom: 5px;
+  display: inline-block;
+}
+.ats-resume-sheet.template-modern .ats-section-title {
+  color: #1e3a8a;
+  border-bottom: 1.5px solid #93c5fd;
+  font-size: 13.5px;
+}
+.ats-resume-sheet.template-modern .ats-project-title {
+  color: #1e3a8a;
+}
+
+/* 2. Classic Heritage / Academic Serif */
+.ats-resume-sheet.template-classic {
+  font-family: 'Fraunces', 'Georgia', 'Times New Roman', serif;
+}
+.ats-resume-sheet.template-classic .ats-name {
+  font-family: 'Fraunces', serif;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 0.04em;
+  font-size: 26px;
+}
+.ats-resume-sheet.template-classic .ats-header-block {
+  text-align: center;
+  border-bottom: 1px solid #0f172a;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+.ats-resume-sheet.template-classic .ats-section-title {
+  font-family: 'Fraunces', serif;
+  text-align: left;
+  border-bottom: 1px solid #475569;
+  letter-spacing: 0.06em;
+}
+
+/* 3. Minimalist Graphite */
+.ats-resume-sheet.template-minimalist {
+  font-family: 'Inter', sans-serif;
+  padding: 24px 28px;
+}
+.ats-resume-sheet.template-minimalist .ats-section {
+  margin-bottom: 9px;
+}
+.ats-resume-sheet.template-minimalist .ats-section-title {
+  border-bottom: none;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  margin-bottom: 3px;
+  font-weight: 800;
+}
+.ats-resume-sheet.template-minimalist .ats-name {
+  font-size: 22px;
+  margin-bottom: 2px;
+}
+.ats-resume-sheet.template-minimalist .ats-bullet-list li {
+  margin-bottom: 2px;
+}
+
+/* 4. Bold Cobalt */
+.ats-resume-sheet.template-bold {
+  border-top: 6px solid #1d4ed8;
+}
+.ats-resume-sheet.template-bold .ats-name {
+  color: #0f172a;
+  font-size: 26px;
+  font-weight: 900;
+}
+.ats-resume-sheet.template-bold .ats-section-title {
+  color: #1d4ed8;
+  border-bottom: 2px solid #1d4ed8;
+  font-size: 13.5px;
+  font-weight: 850;
+}
+
+/* 5. Executive Verona */
+.ats-resume-sheet.template-executive {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  border-left: 5px solid #0f172a;
+}
+.ats-resume-sheet.template-executive .ats-name {
+  color: #0f172a;
+  font-size: 25px;
+  font-weight: 800;
+}
+.ats-resume-sheet.template-executive .ats-section-title {
+  color: #334155;
+  border-bottom: 1.5px solid #cbd5e1;
+  font-size: 13px;
+}
+
+/* Narrow screens: the sheet drops its fixed height and side margins shrink.
+   Same values as before; the minimalist template keeps its own padding. */
+@media (max-width: 992px) {
+  .ats-resume-sheet {
+    padding: 24px 20px;
+    min-height: auto;
+  }
+  .ats-resume-sheet.template-minimalist { padding: 24px 28px; }
+}
+
+/* Lines the AI just rewrote get a short fade, drawn over the text so the
+   document itself never changes colour. Opacity only. */
+.rb-ai-changed { position: relative; }
+.rb-ai-changed::after {
+  content: ""; position: absolute; inset: -1px -3px; border-radius: 3px;
+  background: rgba(255, 196, 107, .38); pointer-events: none;
+  opacity: 0; animation: rb-ai-flash 1.6s ease-out 1 backwards;
+}
+@keyframes rb-ai-flash { from { opacity: 1; } to { opacity: 0; } }
+
+/* Clean styles applied during PDF export (html2pdf fallback). */
+.ats-resume-sheet.ats-exporting {
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  outline: none;
+}
+.ats-exporting .print-hide, .ats-exporting .ai-suggest-popover, .ats-exporting .rb-ai-changed::after {
+  display: none;
+}
+
+/* ── 3. Dialogs: solid panels, bottom sheets on phones ───────────────────── */
+body.rb-modal-open { overflow: hidden; }
+.rb-overlay, .rb-modal {
+  position: fixed; inset: 0; z-index: 96;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: rgba(4, 9, 20, .66);
+}
+.rb-dialog, .rb-modal-card {
+  display: grid; gap: var(--s3); align-content: start;
+  width: 100%; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain;
+  padding: var(--s4) var(--s4) calc(var(--s4) + env(safe-area-inset-bottom));
+  background: var(--solid); border-top: 1px solid var(--line); border-radius: var(--r-lg) var(--r-lg) 0 0;
+  color: var(--ink);
+}
+.rb-dialog-head, .rb-polish-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--s3); }
+.rb-dialog-title, .rb-modal-card h3 {
+  display: flex; align-items: center; gap: var(--s2);
+  font: 700 var(--text-lg)/1.25 var(--font-display); color: var(--ink);
+}
+.rb-dialog-title .lucide { width: 20px; height: 20px; color: var(--accent); }
+.rb-dialog-sub { margin-top: 2px; color: var(--ink-soft); font-size: var(--text-sm); }
+.rb-dialog-text, .rb-modal-card > p, .rb-jd-panel > p { color: var(--ink-soft); font-size: var(--text-sm); }
+.rb-dialog-text code { font-size: var(--text-xs); color: var(--ink); }
+.rb-close {
+  flex: none; display: grid; place-items: center; width: var(--tap); height: var(--tap); margin: calc(var(--s2) * -1) calc(var(--s2) * -1) 0 0;
+  background: none; border: 0; border-radius: var(--r-md); color: var(--ink); cursor: pointer;
+}
+.rb-close .lucide { width: 22px; height: 22px; }
+.rb-dialog-actions, .rb-modal-actions { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.rb-dialog-actions .button, .rb-modal-actions .button { flex: 1 1 auto; }
+.rb-dialog-actions.is-end { justify-content: flex-end; }
+.rb-dialog-actions.is-end .button { flex: 0 1 160px; }
+.rb-wide { width: 100%; }
+
+.rb-field { display: grid; gap: var(--s1); color: var(--ink); font-size: var(--text-sm); font-weight: 600; min-width: 0; }
+.rb-field :is(input, select, textarea) { font-weight: 400; }
+.rb-field-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s2); }
+.rb-form-stack { display: grid; gap: var(--s3); }
+.rb-form-grid { display: grid; gap: var(--s3); }
+.rb-small-btn { min-height: 40px; font-size: var(--text-xs); }
+
+.rb-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--muted); font-size: var(--text-xs); font-weight: 600;
+}
+.rb-label.is-bad { color: var(--bad); }
+.rb-label.is-ok { color: var(--ok); }
+.rb-label.is-warn { color: var(--warn); }
+.rb-label .lucide { width: 14px; height: 14px; }
+.rb-hint { color: var(--muted); font-size: var(--text-xs); font-weight: 400; }
+.rb-hint.is-bad { color: var(--bad); font-size: var(--text-sm); }
+.rb-results { display: grid; gap: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--line-soft); }
+.rb-block { display: grid; gap: var(--s2); }
+.rb-list { display: grid; gap: var(--s1); padding-left: var(--s4); color: var(--ink-soft); font-size: var(--text-sm); }
+.rb-quote { padding: var(--s3); background: var(--solid-raised); border-radius: var(--r-md); color: var(--ink-soft); font-size: var(--text-sm); }
+.skill-tag.is-missing { color: var(--accent); border-color: var(--accent); }
+
+.rb-scorebox {
+  --tone: var(--ink);
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s3);
+  padding: var(--s3) var(--s4); background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+}
+.rb-scorebox-end { text-align: right; display: grid; justify-items: end; gap: 2px; }
+.rb-score-big { font: 700 var(--text-xl)/1.15 var(--font-display); color: var(--ink); }
+.rb-score-big[data-tone="good"] { color: var(--ok); }
+.rb-score-big[data-tone="mid"] { color: var(--warn); }
+.rb-score-big[data-tone="low"] { color: var(--bad); }
+.rb-score-big[data-tone="none"] { color: var(--muted); }
+.rb-score-grade { font-weight: 600; color: var(--ink); }
+
+.rb-dims { display: grid; gap: var(--s2); }
+.rb-dim {
+  --tone: var(--accent);
+  display: grid; gap: 6px; padding: var(--s2) var(--s3);
+  background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+}
+.rb-dim[data-tone="good"] { --tone: var(--ok); }
+.rb-dim[data-tone="mid"] { --tone: var(--warn); }
+.rb-dim[data-tone="low"] { --tone: var(--bad); }
+.rb-dim-head { display: flex; justify-content: space-between; gap: var(--s3); font-size: var(--text-sm); color: var(--ink-soft); }
+.rb-dim-score { flex: none; color: var(--tone); font-weight: 600; }
+.rb-bar { height: 6px; border-radius: var(--r-full); background: var(--line-soft); overflow: hidden; }
+.rb-bar-fill { width: 0; height: 100%; background: var(--tone); }
+
+.rb-subpanel { display: grid; gap: var(--s2); padding: var(--s3); background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md); }
+.rb-subpanel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s2); }
+.rb-chip-note { color: var(--muted); font-size: var(--text-xs); }
+.rb-chip-note.is-ok { color: var(--ok); font-weight: 600; }
+.rb-inline-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s2); }
+.rb-quick-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.rb-chip {
+  min-height: 40px; padding: 0 var(--s3); background: none;
+  border: 1px solid var(--line); border-radius: var(--r-full);
+  color: var(--ink); font-size: var(--text-xs); font-weight: 500; cursor: pointer;
+}
+.rb-gh-results { flex-direction: column; gap: var(--s2); max-height: 280px; overflow-y: auto; overscroll-behavior: contain; }
+.rb-gh-item { display: grid; gap: var(--s1); padding: var(--s3); background: var(--solid); border: 1px solid var(--line-soft); border-radius: var(--r-md); }
+.rb-gh-item-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+.rb-gh-item-head a { color: var(--ink); font-weight: 600; font-size: var(--text-sm); }
+.rb-gh-item-foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--s2); }
+.rb-gh-item-foot strong { color: var(--ink-soft); font-weight: 600; }
+.rb-gh-item-foot .button { min-height: 40px; }
+
+.rb-note-box {
+  display: flex; gap: var(--s2); padding: var(--s3);
+  background: var(--solid-raised); border-radius: var(--r-md); color: var(--ink-soft); font-size: var(--text-sm);
+}
+.rb-note-box .lucide { margin-top: 3px; color: var(--accent); }
+.rb-note-box strong { color: var(--ink); font-weight: 600; }
+
+.rb-tabs {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s1);
+  padding: var(--s1); background: var(--night); border-radius: var(--r-md);
+}
+.proj-tab-btn {
+  min-height: var(--tap); padding: 0 var(--s1); background: none; border: 1px solid transparent; border-radius: var(--r-sm);
+  color: var(--ink-soft); font-size: var(--text-sm); font-weight: 500; line-height: 1.1; cursor: pointer;
+}
+.proj-tab-btn.active { background: var(--solid-raised); border-color: var(--line); color: var(--ink); font-weight: 600; }
+.rb-tab-panel { display: grid; gap: var(--s3); align-content: start; }
+.rb-filters { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
+.rb-filter-search { grid-column: 1 / -1; }
+.rb-filters .rb-input { font-size: var(--text-sm); }
+
+.rb-card-grid { display: grid; gap: var(--s3); }
+.rb-empty {
+  grid-column: 1 / -1; display: grid; justify-items: center; gap: var(--s2);
+  padding: var(--s6) var(--s4); text-align: center; color: var(--ink-soft); font-size: var(--text-sm);
+}
+.rb-empty strong { color: var(--ink); font-weight: 600; }
+.rb-empty .lucide { width: 24px; height: 24px; color: var(--accent); }
+.bengaluru-card {
+  display: flex; flex-direction: column; justify-content: space-between; gap: var(--s3);
+  padding: var(--s3); background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+}
+.bengaluru-card-body { display: grid; gap: var(--s2); }
+.bengaluru-card-tags { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.rb-tag {
+  padding: 1px var(--s2); border: 1px solid var(--line-soft); border-radius: var(--r-full);
+  color: var(--ink-soft); font-size: var(--text-xs); white-space: nowrap;
+}
+.rb-tag.is-ok { color: var(--ok); border-color: currentColor; }
+.rb-tag[data-level="Advanced"], .rb-tag[data-level="Expert"] { color: var(--warn); }
+.rb-card-title { font: 600 var(--text-md)/1.3 var(--font-body); color: var(--ink); }
+.rb-meta { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); color: var(--ink-soft); font-size: var(--text-xs); }
+.rb-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.rb-meta .lucide { width: 14px; height: 14px; color: var(--muted); }
+.rb-repo-link {
+  display: inline-flex; align-items: center; gap: 6px; justify-self: start; min-height: 32px;
+  color: var(--ink); font-size: var(--text-xs); font-weight: 600; text-decoration: none;
+}
+.rb-repo-link .lucide { width: 14px; height: 14px; }
+.rb-stack { color: var(--ink-soft); font-size: var(--text-xs); }
+.rb-stack strong { color: var(--ink); font-weight: 600; }
+.bengaluru-card .rb-list { font-size: var(--text-xs); }
+.bengaluru-card-foot { display: grid; gap: var(--s2); padding-top: var(--s3); border-top: 1px solid var(--line-soft); }
+.bengaluru-card-foot .rb-field { font-size: var(--text-xs); color: var(--muted); }
+.bengaluru-card-foot .rb-input { font-size: var(--text-sm); }
+
+.rb-choice-list { display: grid; gap: var(--s2); }
+.rb-choice {
+  display: grid; gap: var(--s2); padding: var(--s3);
+  background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md);
+}
+.rb-choice-body { display: grid; gap: var(--s1); }
+.rb-choice-body p { font-size: var(--text-sm); color: var(--ink); }
+
+.rb-fix-list { display: grid; gap: var(--s2); }
+.rb-fix-card { display: grid; gap: 2px; padding: var(--s2) var(--s3); background: var(--solid); border-radius: var(--r-sm); font-size: var(--text-sm); }
+.rb-fix-title { font-weight: 600; color: var(--ink); }
+.rb-fix-body, .rb-fix-before { color: var(--ink-soft); }
+.rb-fix-after { color: var(--ok); font-weight: 500; }
+
+/* Templates gallery */
+.rb-template-grid { display: grid; gap: var(--s3); }
+.template-card-option {
+  position: relative; display: grid; overflow: hidden; cursor: pointer;
+  background: var(--solid-raised); border: 2px solid var(--line-soft); border-radius: var(--r-md);
+  transition: opacity var(--t-press) ease-out, transform var(--t-press) ease-out;
+}
+.template-card-option:active { transform: scale(.99); }
+.template-card-option.active { border-color: var(--accent); }
+.template-active-badge {
+  position: absolute; top: var(--s2); right: var(--s2); z-index: 2;
+  display: flex; align-items: center; gap: 4px; padding: 2px var(--s2);
+  background: var(--accent); color: var(--on-accent); border-radius: var(--r-full);
+  font-size: var(--text-xs); font-weight: 600;
+}
+.template-active-badge .lucide { width: 14px; height: 14px; }
+.template-thumb { height: 160px; overflow: hidden; background: var(--paper); border-bottom: 1px solid var(--line-soft); }
+.template-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.template-body { display: grid; gap: var(--s2); padding: var(--s3); }
+.template-name-row { display: flex; justify-content: space-between; align-items: center; gap: var(--s2); }
+.template-name { font: 600 var(--text-md)/1.3 var(--font-body); }
+.template-tag { padding: 1px var(--s2); border: 1px solid var(--line-soft); border-radius: var(--r-full); color: var(--ink-soft); font-size: var(--text-xs); }
+.template-desc { color: var(--ink-soft); font-size: var(--text-sm); }
+
+/* Resume from a job post and Your details (hidden attribute dialogs) */
+.rb-modal-card > p { margin: 0; }
+.rb-jd-steps { display: flex; gap: 6px; margin-top: var(--s2); }
+.rb-jd-dot { width: 36px; height: 4px; border-radius: var(--r-full); background: var(--line-soft); }
+.rb-jd-dot.is-active { background: var(--accent); }
+.rb-jd-panel { display: grid; gap: var(--s3); min-height: 0; }
+.rb-polish-list { display: grid; gap: var(--s2); }
+.rb-polish-status { color: var(--ink-soft); font-size: var(--text-sm); }
+.rb-polish-status strong { color: var(--ink); }
+.rb-polish-item { display: grid; gap: var(--s2); padding: var(--s3); background: var(--solid-raised); border: 1px solid var(--line-soft); border-radius: var(--r-md); }
+.rb-polish-label { color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
+.rb-polish-note { color: var(--ink-soft); font-size: var(--text-sm); }
+.rb-polish-note.is-error { color: var(--bad); }
+.rb-jd-checks { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.rb-jd-check {
+  display: inline-flex; align-items: center; gap: var(--s2); min-height: var(--tap); padding: 0 var(--s3);
+  background: var(--solid); border: 1px solid var(--line); border-radius: var(--r-full);
+  color: var(--ink); font-size: var(--text-sm); cursor: pointer;
+}
+.rb-jd-check:has(input:checked) { border-color: var(--accent); }
+.rb-jd-check input { min-height: 0; width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* Phone action bar: the download stays in thumb reach. */
+.rb-action-bar .button { min-height: 48px; }
+
+/* Toast leaving: opacity only */
+.toast.is-leaving { opacity: 0; }
+
+/* ── Wider screens ────────────────────────────────────────────────────────── */
+@media (min-width: 560px) {
+  .word-titlebar-right { display: flex; }
+  .rb-form-grid { grid-template-columns: 1fr 1fr; }
+  .rb-field-wide { grid-column: 1 / -1; }
+  .rb-choice { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
+  .rb-filters { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (min-width: 720px) {
+  .word-document-stage { padding: 24px 20px; }
+  .rb-overlay, .rb-modal { align-items: center; padding: var(--s4); }
+  .rb-dialog, .rb-modal-card {
+    max-width: 640px; max-height: 90dvh; padding: var(--s5);
+    border: 1px solid var(--line); border-radius: var(--r-lg);
+  }
+  .rb-dialog.is-wide { max-width: 880px; }
+  .rb-card-grid, .rb-template-grid { grid-template-columns: repeat(2, 1fr); }
+  .target-job-banner { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .target-job-status { width: auto; }
+}
+
+@media (min-width: 1000px) {
+  .resume-builder-main.wrap { padding-inline: var(--s5); }
+  .rb-steps { grid-template-columns: repeat(3, 1fr); }
+  .studio-command-deck { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: var(--s4); }
+  .deck-zone-config { flex-wrap: nowrap; }
+  .deck-field { flex: 0 0 auto; grid-template-columns: auto 240px; align-items: center; column-gap: var(--s2); }
+  .deck-level-toggle { flex: 0 0 auto; }
+  .deck-zone-actions { display: flex; flex-wrap: nowrap; }
+  .deck-zone-actions .button { width: auto; }
+  #btnDownloadPdf { display: inline-flex; }
+  .rb-action-bar { display: none; }
+
+  .resume-workspace { grid-template-columns: 320px minmax(0, 1fr); gap: var(--s5); }
+  .studio-canvas-stage { order: 0; }
+  .studio-inspector { position: sticky; top: 72px; max-height: calc(100dvh - 88px); overflow-y: auto; overscroll-behavior: contain; }
+  .word-ruler-bar { display: flex; height: 18px; background: var(--solid-raised); border-bottom: 1px solid var(--line-soft); }
+  .rb-template-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Fine pointers get a denser toolbar; touch keeps 44px targets. */
+@media (hover: hover) and (pointer: fine) {
+  .word-tool-btn, .word-color-picker-label, .word-select, .word-pill-action, .word-page-toggle,
+  .word-zoom-btn, .word-zoom-reset { height: 34px; }
+  .word-tool-btn, .word-color-picker-label, .word-zoom-btn, .word-zoom-reset { min-width: 34px; }
+  .word-ribbon-bar { flex-wrap: wrap; overflow-x: visible; }
+
+  .word-tool-btn:hover, .word-color-picker-label:hover { background: var(--solid-raised); color: var(--ink); }
+  .word-pill-action:hover, .word-page-toggle:not(.active-page-toggle):hover, .word-zoom-btn:hover, .word-zoom-reset:hover { border-color: var(--line); }
+  .studio-menu-item:hover, .control-card-delete:hover, .rb-close:hover { background: var(--glass-tint); }
+  .control-card-delete:hover { color: var(--bad); }
+  .level-pill-btn:not(.active):hover, .proj-tab-btn:not(.active):hover { color: var(--ink); }
+  .ats-pulse-chip:hover, .rb-chip:hover, .rb-score-tag:hover, .inspector-action-full:hover { border-color: var(--accent); }
+  .template-card-option:hover { border-color: var(--line); }
+  .template-card-option.active:hover { border-color: var(--accent); }
+  .ai-undo-btn:hover, .inspector-link-btn:hover, .rb-repo-link:hover { text-decoration-color: currentColor; }
+  .word-doc-title-input:hover { border-color: var(--line-soft); }
+  .word-page-break-delete:hover { color: #ef4444; }
+}
+
+/* ── 4. Print. The rules below are the template's own, unchanged; the last
+   block only keeps the new editor chrome and the dark desk off the paper. ── */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  nav, header.site-header, footer.site-footer, .site-grain, .studio-hero,
+  .studio-command-deck, .target-job-banner, .resume-controls-panel,
+  .canvas-floating-status, .floating-chat-widget, .modal-overlay,
+  #toastContainer, .print-hide, .ai-suggest-popover, button {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .site-layout, .resume-builder-main, .resume-workspace, .resume-preview-wrapper {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  #resumeSheet {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
+  }
+
+  .word-page-break {
+    display: block !important;
+    page-break-before: always !important;
+    break-before: page !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    visibility: hidden !important;
+  }
+
+  .ats-header {
+    margin-bottom: 8pt !important;
+  }
+
+  .ats-name {
+    font-size: 20pt !important;
+    color: #000000 !important;
+    margin-bottom: 2pt !important;
+  }
+
+  .ats-contact-line {
+    font-size: 9.5pt !important;
+    color: #333333 !important;
+  }
+
+  .ats-contact-line a {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+
+  .ats-section {
+    margin-bottom: 8pt !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .ats-section-title {
+    color: #000000 !important;
+    border-bottom: 1.5pt solid #000000 !important;
+    font-size: 11pt !important;
+    margin-bottom: 4pt !important;
+    padding-bottom: 1pt !important;
+    font-weight: bold !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .ats-summary-text {
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
+    color: #000000 !important;
+  }
+
+  .ats-skill-line {
+    font-size: 9.5pt !important;
+    line-height: 1.3 !important;
+    color: #000000 !important;
+  }
+
+  .ats-project-entry {
+    margin-bottom: 6pt !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .ats-project-title {
+    font-size: 10.5pt !important;
+    color: #000000 !important;
+    font-weight: bold !important;
+  }
+
+  .ats-project-tech {
+    font-size: 9.5pt !important;
+    color: #222222 !important;
+    margin-bottom: 2pt !important;
+  }
+
+  .ats-bullet-list li {
+    font-size: 9.5pt !important;
+    line-height: 1.32 !important;
+    color: #000000 !important;
+    margin-bottom: 2pt !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  /* New chrome from the redesign, kept off the paper. */
+  .rb-steps, .rb-action-bar, .rb-overlay, .rb-modal, .page-head, .rb-ai-changed::after {
+    display: none !important;
+  }
+  /* The desk keeps its old geometry (so line breaks match) but prints white. */
+  .word-document-stage {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+    max-width: 840px !important;
+    padding: 24px 20px !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    border-width: 0 1px !important;
+    border-style: solid !important;
+    border-color: #ffffff !important;
+    border-radius: 0 !important;
+  }
+}

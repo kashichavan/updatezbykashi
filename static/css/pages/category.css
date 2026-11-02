@@ -1,0 +1,52 @@
+/* Category page, /category/<slug>/.
+   Same job card system as home and groups (bus.css). Phone first. */
+
+.cat { display: grid; gap: var(--s3); padding-bottom: var(--s6); }
+.cat-head { padding-top: 0; }
+
+.cat-crumbs { padding-top: var(--s3); color: var(--muted); font-size: var(--text-sm); }
+.cat-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--s2); list-style: none; }
+.cat-crumbs li { display: inline-flex; align-items: center; gap: var(--s2); }
+.cat-crumbs li + li::before { content: "/"; }
+.cat-crumbs a { display: inline-flex; align-items: center; min-height: var(--tap); color: var(--ink-soft); font-weight: 500; }
+.cat-crumbs [aria-current] { color: var(--ink); }
+
+.cat-catalog { display: grid; gap: var(--s3); }
+.cat-filter-bar { margin-top: var(--s3); }
+.cat-selects { display: flex; gap: var(--s2); }
+.cat-select {
+  padding: 0 var(--s3); background: var(--solid); border: 1px solid var(--line); border-radius: var(--r-md);
+  color: var(--ink); font-size: var(--text-sm);
+}
+.cat-pagination:empty { display: none; }
+.cat-pagination .pagination-wrapper { margin-top: var(--s3); }
+
+.cat-back { margin-top: var(--s3); }
+.text-link { display: inline-flex; align-items: center; gap: var(--s1); min-height: var(--tap); color: var(--accent); font-weight: 600; text-decoration: none; }
+.text-link svg { width: 16px; height: 16px; flex: none; }
+
+/* Job detail sheet: solid, never glass. */
+.cat-detail { display: grid; gap: var(--s4); padding-bottom: calc(var(--s4) + env(safe-area-inset-bottom)); }
+.cat-detail-badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); min-width: 0; }
+.cat-detail .close-btn { display: grid; place-items: center; flex: none; }
+.cat-detail .modal-title { font-size: var(--text-xl); }
+.cat-detail-facts { display: grid; gap: var(--s2); margin: 0; }
+.cat-detail-facts div { display: flex; justify-content: space-between; gap: var(--s3); font-size: var(--text-sm); }
+.cat-detail-facts dt { color: var(--muted); }
+.cat-detail-facts dd { margin: 0; color: var(--ink); font-weight: 600; text-align: right; }
+.cat-detail-block { display: grid; gap: var(--s1); }
+.cat-detail-block h3 { font: 600 var(--text-sm)/1.3 var(--font-body); color: var(--muted); }
+.cat-detail-block p { color: var(--ink-soft); font-size: var(--text-sm); }
+.cat-detail-desc { white-space: pre-line; line-height: 1.6; }
+.cat-detail-apply { display: grid; gap: var(--s2); padding-top: var(--s4); border-top: 1px solid var(--line-soft); }
+.cat-detail-apply p { color: var(--ink-soft); font-size: var(--text-sm); }
+.cat-detail-apply .button { width: 100%; min-height: 52px; font-size: var(--text-md); }
+.cat-detail-apply .button svg { width: 18px; height: 18px; }
+
+@media (max-width: 479px) {
+  .cat-filter-bar { flex-direction: column; align-items: stretch; }
+  .cat-selects > select { flex: 1; min-width: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .cat-crumbs a:hover, .text-link:hover { text-decoration: underline; }
+}

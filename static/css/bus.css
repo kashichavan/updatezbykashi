@@ -109,7 +109,8 @@ a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 3
 img, svg { max-width: 100%; }
 img { height: auto; }
 button, input, select, textarea { font: inherit; color: inherit; }
-input, select, textarea { min-height: var(--tap); }
+/* Zero specificity, so third-party widgets (code editors) can override it. */
+:where(input:not([type="checkbox"], [type="radio"], [type="hidden"]), select, textarea) { min-height: var(--tap); }
 ul, ol { margin: 0; padding: 0; }
 code, pre, kbd { font-family: var(--font-code); }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
@@ -244,7 +245,8 @@ html.lite body::before { background: linear-gradient(170deg, var(--road), var(--
 .footer-base { margin-top: var(--s5); color: var(--muted); font-size: var(--text-xs); }
 
 /* Ads: reserve the height so the page never jumps. */
-.ad-slot { min-height: 120px; margin-block: var(--s4); overflow: hidden; }
+.ad-slot { min-height: 120px; margin-block: var(--s5); overflow: hidden; text-align: center; clear: both; }
+.ad-label { margin-bottom: var(--s1); color: var(--muted); font-size: var(--text-xs); }
 
 /* Job card, used on home, categories and groups. */
 .vp-catalog-grid { display: grid; gap: var(--s3); }
@@ -350,7 +352,7 @@ html.lite .search-box { background: var(--solid); }
 html.lite .tool-link { background: var(--solid); }
 .tool-link i, .tool-link svg { grid-row: span 2; width: 22px; height: 22px; color: var(--accent); }
 .tool-link b { font-weight: 600; }
-.tool-link span { color: var(--ink-soft); font-size: var(--text-sm); }
+.tool-link span { color: var(--ink-soft); font-size: var(--text-sm); text-wrap: pretty; }
 .video-row { display: grid; grid-auto-flow: column; grid-auto-columns: min(70vw, 260px); gap: var(--s3); overflow-x: auto; padding-bottom: var(--s2); scroll-snap-type: x proximity; }
 .video-card { display: grid; gap: var(--s2); text-decoration: none; scroll-snap-align: start; font-size: var(--text-sm); }
 .video-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--r-md); background: var(--solid); }

@@ -7,208 +7,196 @@
 {% block og_description %}Your details, your target role, real public repositories, and a real ATS score. Export to PDF or DOCX.{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/resume_studio.css' %}">
+<link rel="stylesheet" href="{% static 'css/pages/resume-studio.css' %}?v=2026110201">
 {% endblock %}
 
 {% block content %}
-<main class="rs-page">
-  <div class="rs-wrap">
+<main class="wrap rs-page">
 
-    <!-- ── Hero ─────────────────────────────────────────────────────── -->
-    <header class="rs-hero">
-      <span class="rs-eyebrow">
-        <i data-lucide="wand-sparkles"></i>
-        AI Resume Studio
-      </span>
-      <h1 class="rs-title">A resume built on <em>real work</em>, scored honestly</h1>
-      <p class="rs-sub">
-        {% if target_job %}
-          You are building for <strong>{{ target_job.title }}</strong> at <strong>{{ target_job.company_name }}</strong>.
-          Change the target below if you meant a different role.
-        {% else %}
-          Pick a posting or type the role yourself. The resume is assembled from public repositories you choose,
-          scored by the same ATS evaluator that grades uploaded resumes, and exported to PDF or DOCX.
-        {% endif %}
-      </p>
-      <div class="rs-points">
-        <span class="rs-point"><i data-lucide="shield-check"></i> Nothing is invented</span>
-        <span class="rs-point"><i data-lucide="github"></i> Real public repos</span>
-        <span class="rs-point"><i data-lucide="gauge"></i> Server-side ATS score</span>
-        <span class="rs-point"><i data-lucide="download"></i> PDF &amp; DOCX</span>
-      </div>
+  <header class="page-head rs-head">
+    <p class="kicker">Resume Studio</p>
+    <h1>A resume built on real work, scored honestly.</h1>
+    <p class="sub">
+      {% if target_job %}
+        You are building for <strong>{{ target_job.title }}</strong> at <strong>{{ target_job.company_name }}</strong>.
+        Nothing is invented: your details, public repositories you pick, and an ATS score from our server.
+      {% else %}
+        Pick a posting or type the role yourself. The resume uses public repositories you choose,
+        gets scored by the same ATS check used for uploaded resumes, and exports to PDF or DOCX.
+      {% endif %}
+    </p>
+    <p class="rs-skip">
+      Want to skip the forms?
+      <a href="/resume-builder/">Open the live editor</a> with sample content and 6 templates, then replace it with yours.
+    </p>
+  </header>
 
-      <!-- 1-Click Fast Track: Direct Resume with Dummy Profile & Everything Ready -->
-      <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(124, 58, 237, 0.12) 100%); border: 1.5px solid rgba(37, 99, 235, 0.35); border-radius: 14px; padding: 14px 18px; margin-top: 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 20px;">⚡</span>
+  <div class="rs-layout">
+    <div class="rs-main">
+
+      <nav aria-label="Resume steps">
+        <ol class="rs-steps">
+          <li><button type="button" class="rs-tab" data-step="0" aria-current="step"><span class="rs-num" id="rsNumYou">1</span><span class="rs-tab-label">Details</span></button></li>
+          <li><button type="button" class="rs-tab" data-step="1"><span class="rs-num" id="rsNumTarget">2</span><span class="rs-tab-label">Role</span></button></li>
+          <li><button type="button" class="rs-tab" data-step="2"><span class="rs-num" id="rsNumProjects">3</span><span class="rs-tab-label">Projects</span></button></li>
+          <li><button type="button" class="rs-tab" data-step="3"><span class="rs-num" id="rsNumGenerate">4</span><span class="rs-tab-label">Resume</span></button></li>
+        </ol>
+      </nav>
+
+      <!-- Step 1: you -->
+      <section class="rs-card" id="rsStepYou" aria-labelledby="rsHeadYou">
+        <div class="rs-step">
           <div>
-            <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Want an instant resume without filling forms?</div>
-            <div style="font-size: 12px; color: #475569;">Open the live editor with sample content and 6 templates, then replace it with yours.</div>
+            <h2 id="rsHeadYou" tabindex="-1">Your details</h2>
+            <p class="rs-step-sub">These go on the page exactly as typed. Blank stays blank.</p>
+          </div>
+          <span class="rs-hint" id="rsHintYou">3 required</span>
+        </div>
+
+        <div class="rs-upload">
+          <button type="button" id="rsUploadBtn" class="button rs-upload-btn">
+            <i data-lucide="upload-cloud" aria-hidden="true"></i>
+            <span>Upload a PDF or DOCX</span>
+          </button>
+          <p class="rs-note">Already have a resume? Upload it and these fields fill in from it.</p>
+          <input type="file" id="rsFileInput" accept=".pdf,.docx,.doc" class="rs-hidden" aria-label="Resume file">
+          <div id="rsUploadStatus" class="rs-flash rs-hidden" role="status">
+            <i data-lucide="loader" class="spin-icon" aria-hidden="true"></i>
+            <span id="rsUploadStatusText">Reading your file...</span>
           </div>
         </div>
-        <a href="/resume-builder/" style="background: #2563eb; color: #ffffff; text-decoration: none; padding: 9px 16px; border-radius: 9px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
-          <span>Launch Live Editor &rarr;</span>
-        </a>
-      </div>
-    </header>
 
-    <div class="rs-grid">
-      <div class="rs-main">
-
-        <!-- ── Step 1: you ──────────────────────────────────────────── -->
-        <section class="rs-card" id="rsStepYou">
-          <div class="rs-step">
-            <span class="rs-num" id="rsNumYou">1</span>
-            <div>
-              <h2>Your details</h2>
-              <p class="rs-step-sub">These go on the page exactly as typed. Blank stays blank.</p>
-            </div>
-            <span class="rs-hint" id="rsHintYou">3 required</span>
+        <div class="rs-fields">
+          <div class="rs-field">
+            <label class="rs-label" for="rsName">Full name <span class="rs-req">(required)</span></label>
+            <input class="rs-input" type="text" id="rsName" autocomplete="name" aria-required="true" placeholder="Your full name">
           </div>
-
-          <div class="rs-fields">
-            <div class="rs-field">
-              <label class="rs-label" for="rsName">Full name <span class="rs-req">*</span></label>
-              <input class="rs-input" type="text" id="rsName" autocomplete="name" placeholder="Your full name">
-            </div>
-            <div class="rs-field">
-              <label class="rs-label" for="rsEmail">Email <span class="rs-req">*</span></label>
-              <input class="rs-input" type="email" id="rsEmail" autocomplete="email" inputmode="email" placeholder="you@example.com">
-            </div>
-            <div class="rs-field">
-              <label class="rs-label" for="rsPhone">Phone <span class="rs-req">*</span></label>
-              <input class="rs-input" type="tel" id="rsPhone" autocomplete="tel" inputmode="tel" placeholder="Include your country code">
-            </div>
-            <div class="rs-field">
-              <label class="rs-label" for="rsLocation">Location</label>
-              <input class="rs-input" type="text" id="rsLocation" autocomplete="address-level2" placeholder="e.g. Pune, India">
-            </div>
-            <div class="rs-field">
-              <label class="rs-label" for="rsDegree">Degree</label>
-              <input class="rs-input" type="text" id="rsDegree" placeholder="e.g. B.E. in Computer Engineering">
-            </div>
-            <div class="rs-field">
-              <label class="rs-label" for="rsInstitution">College / university</label>
-              <input class="rs-input" type="text" id="rsInstitution" placeholder="e.g. Pune University">
-            </div>
-            <div class="rs-field">
-              <label class="rs-label" for="rsYear">Graduation year</label>
-              <input class="rs-input" type="text" id="rsYear" placeholder="e.g. 2026">
-            </div>
-            <div class="rs-field">
-              <label class="rs-label" for="rsGpa">CGPA / percentage</label>
-              <input class="rs-input" type="text" id="rsGpa" placeholder="e.g. 8.4 / 10">
-            </div>
-            <div class="rs-field is-full">
-              <label class="rs-label" for="rsSkills">Skills you can defend in an interview</label>
-              <textarea class="rs-textarea" id="rsSkills" rows="2"
-                        placeholder="Python, SQL, Git — only the ones you actually use"></textarea>
-              <p class="rs-note">
-                <i data-lucide="list-checks"></i>
-                <span id="rsSkillHint">Add skills yourself. This field is never pre-filled from the posting.</span>
-              </p>
-            </div>
+          <div class="rs-field">
+            <label class="rs-label" for="rsEmail">Email <span class="rs-req">(required)</span></label>
+            <input class="rs-input" type="email" id="rsEmail" autocomplete="email" inputmode="email" aria-required="true" placeholder="you@example.com">
           </div>
-
-          <p class="rs-note">
-            <i data-lucide="upload-cloud"></i>
-            <span>
-              Already have a resume?
-              <button type="button" id="rsUploadBtn" class="rs-linkish">Upload a PDF or DOCX</button>
-              and these fields fill in from it.
-            </span>
-          </p>
-          <input type="file" id="rsFileInput" accept=".pdf,.docx,.doc" class="rs-hidden">
-          <div id="rsUploadStatus" class="rs-flash rs-hidden">
-            <i data-lucide="loader" class="spin-icon"></i>
-            <span id="rsUploadStatusText">Parsing…</span>
+          <div class="rs-field">
+            <label class="rs-label" for="rsPhone">Phone <span class="rs-req">(required)</span></label>
+            <input class="rs-input" type="tel" id="rsPhone" autocomplete="tel" inputmode="tel" aria-required="true" placeholder="Include your country code">
           </div>
-        </section>
-
-        <!-- ── Step 2: target ──────────────────────────────────────── -->
-        <section class="rs-card" id="rsStepTarget">
-          <div class="rs-step">
-            <span class="rs-num" id="rsNumTarget">2</span>
-            <div>
-              <h2>{% if target_job %}Your target for this resume{% else %}What role are you aiming at?{% endif %}</h2>
-              <p class="rs-step-sub">
-                {% if target_job %}
-                  This posting's own description and skills are already loaded — nothing to paste.
-                {% else %}
-                  A posting on this site, or a role you type yourself.
-                {% endif %}
-              </p>
-            </div>
-            <span class="rs-hint" id="rsHintTarget">Required</span>
+          <div class="rs-field">
+            <label class="rs-label" for="rsLocation">Location</label>
+            <input class="rs-input" type="text" id="rsLocation" autocomplete="address-level2" placeholder="e.g. Pune, India">
           </div>
-
-          {% if target_job %}
-          <!-- Arrived from a posting: keep the target visible but compact, and
-               put the whole picker behind one "change" control. -->
-          <div class="rs-target-lock" id="rsTargetLock">
-            <div class="rs-target-lock-main">
-              <span class="rs-target-lock-badge">TARGET LOCKED</span>
-              <div class="rs-target-lock-title">{{ target_job.title }}</div>
-              <div class="rs-target-lock-meta">
-                {{ target_job.company_name }}{% if target_job.location %} • {{ target_job.location }}{% endif %}
-              </div>
-              <div class="rs-chiprow rs-target-lock-chips">
-                {% for s in skills_list|slice:":6" %}
-                  <span class="rs-chip">{{ s }}</span>
-                {% endfor %}
-              </div>
-            </div>
-            <button type="button" class="rs-btn rs-btn-ghost rs-btn-sm" id="rsChangeTargetBtn" onclick="rsUnlockTarget()">
-              <i data-lucide="pencil-line"></i><span>Change target</span>
-            </button>
+          <div class="rs-field">
+            <label class="rs-label" for="rsDegree">Degree</label>
+            <input class="rs-input" type="text" id="rsDegree" placeholder="e.g. B.E. in Computer Engineering">
           </div>
-          <p class="rs-note" style="margin-top:10px;">
-            <i data-lucide="sparkles"></i>
-            <span>
-              Already have a resume?
-              <a class="rs-linkish" href="/resume-builder/?job_id={{ target_job.uuid }}">Tailor it to this job</a>
-              — this posting's description is applied automatically.
-            </span>
-          </p>
-          {% endif %}
+          <div class="rs-field">
+            <label class="rs-label" for="rsInstitution">College or university</label>
+            <input class="rs-input" type="text" id="rsInstitution" placeholder="e.g. Pune University">
+          </div>
+          <div class="rs-field">
+            <label class="rs-label" for="rsYear">Graduation year</label>
+            <input class="rs-input" type="text" id="rsYear" inputmode="numeric" placeholder="e.g. 2026">
+          </div>
+          <div class="rs-field">
+            <label class="rs-label" for="rsGpa">CGPA or percentage</label>
+            <input class="rs-input" type="text" id="rsGpa" placeholder="e.g. 8.4 / 10">
+          </div>
+          <div class="rs-field is-full">
+            <label class="rs-label" for="rsSkills">Skills you can defend in an interview</label>
+            <textarea class="rs-input" id="rsSkills" rows="3"
+                      placeholder="Python, SQL, Git. Only the ones you actually use."></textarea>
+            <p class="rs-note" id="rsSkillHint">Add skills yourself. This field is never pre-filled from the posting.</p>
+          </div>
+        </div>
 
-          <div id="rsTargetPickerWrap" class="{% if target_job %}rs-hidden{% endif %}">
-          <div class="rs-btn-row" style="margin-bottom:12px;">
-            <button type="button" class="rs-btn rs-btn-quiet rs-btn-sm" id="rsModeJob"
+        <div class="rs-foot">
+          <button type="button" class="button button-primary rs-next" data-next="0">
+            <span>Next: the role</span>
+            <i data-lucide="arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 2: target -->
+      <section class="rs-card" id="rsStepTarget" aria-labelledby="rsHeadTarget" hidden>
+        <div class="rs-step">
+          <div>
+            <h2 id="rsHeadTarget" tabindex="-1">{% if target_job %}Your target for this resume{% else %}What role are you aiming at?{% endif %}</h2>
+            <p class="rs-step-sub">
+              {% if target_job %}
+                This posting's description and skills are already loaded. Nothing to paste.
+              {% else %}
+                A posting on this site, or a role you type yourself.
+              {% endif %}
+            </p>
+          </div>
+          <span class="rs-hint" id="rsHintTarget">Required</span>
+        </div>
+
+        {% if target_job %}
+        <!-- Arrived from a posting: keep the target visible but compact, and
+             put the whole picker behind one "change" control. -->
+        <div class="rs-target-lock" id="rsTargetLock">
+          <div class="rs-target-lock-main">
+            <span class="rs-target-lock-badge">TARGET LOCKED</span>
+            <p class="rs-target-lock-title">{{ target_job.title }}</p>
+            <p class="rs-target-lock-meta">
+              {{ target_job.company_name }}{% if target_job.location %} · {{ target_job.location }}{% endif %}
+            </p>
+          </div>
+          <button type="button" class="button rs-change-btn" id="rsChangeTargetBtn" onclick="rsUnlockTarget()">
+            <i data-lucide="pencil-line" aria-hidden="true"></i><span>Change target</span>
+          </button>
+        </div>
+        {% endif %}
+
+        <div class="rs-chiprow" id="rsTargetChips"></div>
+
+        {% if target_job %}
+        <p class="rs-note">
+          Already have a resume?
+          <a class="rs-link" href="/resume-builder/?job_id={{ target_job.uuid }}">Tailor it to this job</a>.
+          This posting's description is applied automatically.
+        </p>
+        {% endif %}
+
+        <div id="rsTargetPickerWrap" class="rs-picker{% if target_job %} rs-hidden{% endif %}">
+          <div class="rs-segment" role="group" aria-label="How to set the role">
+            <button type="button" class="rs-seg-btn" id="rsModeJob"
                     onclick="rsSetTargetMode('job')" aria-pressed="true">
-              <i data-lucide="briefcase"></i><span>Pick a posting</span>
+              <i data-lucide="briefcase" aria-hidden="true"></i><span>Pick a posting</span>
             </button>
-            <button type="button" class="rs-btn rs-btn-ghost rs-btn-sm" id="rsModeCustom"
+            <button type="button" class="rs-seg-btn" id="rsModeCustom"
                     onclick="rsSetTargetMode('custom')" aria-pressed="false">
-              <i data-lucide="pencil-line"></i><span>Type it myself</span>
+              <i data-lucide="pencil-line" aria-hidden="true"></i><span>Type it myself</span>
             </button>
           </div>
 
           <!-- Job picker -->
-          <div id="rsJobPicker">
-            <input class="rs-input" type="search" id="rsJobSearch" placeholder="Filter by title, company or skill…"
-                   autocomplete="off" style="margin-bottom:8px;">
+          <div id="rsJobPicker" class="rs-picker">
+            <div class="rs-field">
+              <label class="rs-label" for="rsJobSearch">Filter postings</label>
+              <input class="rs-input" type="search" id="rsJobSearch" placeholder="Title, company or skill"
+                     autocomplete="off">
+            </div>
             <div class="rs-joblist" id="rsJobList">
               {% for j in recent_jobs %}
                 <button type="button" class="rs-jobrow" data-job-uuid="{{ j.uuid }}"
                         onclick="rsPickJob('{{ j.uuid }}')" aria-pressed="false">
-                  <span style="flex:1;min-width:0;">
+                  <span class="rs-jobrow-text">
                     <span class="rs-jobrow-title">{{ j.title }}</span>
-                    <span class="rs-jobrow-meta">{{ j.company_name }}{% if j.location %} • {{ j.location }}{% endif %}</span>
+                    <span class="rs-jobrow-meta">{{ j.company_name }}{% if j.location %} · {{ j.location }}{% endif %}</span>
                   </span>
-                  <i data-lucide="chevron-right" style="width:14px;height:14px;flex-shrink:0;color:#64748b;"></i>
+                  <i data-lucide="check" class="rs-jobrow-icon" aria-hidden="true"></i>
                 </button>
               {% empty %}
                 <p class="rs-empty">
-                  <i data-lucide="briefcase"></i>
+                  <i data-lucide="briefcase" aria-hidden="true"></i>
                   <strong>No active postings right now</strong>
-                  Switch to “Type it myself” and describe the role directly.
+                  Switch to "Type it myself" and describe the role.
                 </p>
               {% endfor %}
             </div>
             <p class="rs-note">
-              <i data-lucide="info"></i>
-              <span>Not seeing your role? <button type="button" class="rs-linkish" onclick="rsSetTargetMode('custom')">Type it instead</button> — the studio does not need a posting.</span>
+              Not seeing your role? <button type="button" class="rs-link" onclick="rsSetTargetMode('custom')">Type it instead</button>. The studio does not need a posting.
             </p>
           </div>
 
@@ -216,8 +204,8 @@
           <div id="rsCustomTarget" class="rs-hidden">
             <div class="rs-fields">
               <div class="rs-field">
-                <label class="rs-label" for="rsTargetTitle">Role title <span class="rs-req">*</span></label>
-                <input class="rs-input" type="text" id="rsTargetTitle" placeholder="e.g. Backend Engineer">
+                <label class="rs-label" for="rsTargetTitle">Role title <span class="rs-req">(required)</span></label>
+                <input class="rs-input" type="text" id="rsTargetTitle" aria-required="true" placeholder="e.g. Backend Engineer">
               </div>
               <div class="rs-field">
                 <label class="rs-label" for="rsTargetCompany">Company (optional)</label>
@@ -225,201 +213,224 @@
               </div>
               <div class="rs-field is-full">
                 <label class="rs-label" for="rsTargetSkills">Skills this role screens for</label>
-                <textarea class="rs-textarea" id="rsTargetSkills" rows="2"
+                <textarea class="rs-input" id="rsTargetSkills" rows="2"
                           placeholder="Python, Django, PostgreSQL, REST APIs"></textarea>
               </div>
               <div class="rs-field is-full">
                 <label class="rs-label" for="rsTargetDescription">Job description (optional, helps ranking)</label>
-                <textarea class="rs-textarea" id="rsTargetDescription" rows="3"
+                <textarea class="rs-input" id="rsTargetDescription" rows="4"
                           placeholder="Paste the responsibilities section here."></textarea>
               </div>
             </div>
           </div>
-          </div><!-- /#rsTargetPickerWrap -->
+        </div><!-- /#rsTargetPickerWrap -->
 
-          <div class="rs-chiprow" id="rsTargetChips"></div>
-        </section>
+        <div class="rs-foot">
+          <button type="button" class="button rs-back" data-back="1">
+            <i data-lucide="arrow-left" aria-hidden="true"></i><span class="rs-back-label">Back</span>
+          </button>
+          <button type="button" class="button button-primary rs-next" data-next="1">
+            <span>Next: projects</span>
+            <i data-lucide="arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </section>
 
-        <!-- ── Step 3: projects ────────────────────────────────────── -->
-        <section class="rs-card" id="rsStepProjects">
-          <div class="rs-step">
-            <span class="rs-num" id="rsNumProjects">3</span>
-            <div>
-              <h2>Projects that prove the fit</h2>
-              <p class="rs-step-sub">Public repositories ranked against the target stack. Tick the ones you can talk about.</p>
-            </div>
-            <span class="rs-hint" id="rsHintProjects">None yet</span>
+      <!-- Step 3: projects -->
+      <section class="rs-card" id="rsStepProjects" aria-labelledby="rsHeadProjects" hidden>
+        <div class="rs-step">
+          <div>
+            <h2 id="rsHeadProjects" tabindex="-1">Projects that prove the fit</h2>
+            <p class="rs-step-sub">Public repositories ranked against the target stack. Tick the ones you can talk about.</p>
           </div>
+          <span class="rs-hint" id="rsHintProjects">None yet</span>
+        </div>
 
-          <button type="button" class="rs-btn rs-btn-primary rs-btn-block" id="rsFindProjects"
+        <div class="rs-progress" id="rsDiscoveryProgress">
+          <div class="rs-track"><div class="rs-fill" id="rsDiscoveryBar"></div></div>
+          <div class="rs-progress-meta" role="status">
+            <span id="rsDiscoveryStage">Searching public GitHub repositories...</span>
+            <span class="rs-pct" id="rsDiscoveryPct">0%</span>
+          </div>
+        </div>
+
+        <div class="rs-list is-empty" id="rsProjectsList">
+          <p class="rs-empty">
+            <i data-lucide="search" aria-hidden="true"></i>
+            <strong>No repositories yet</strong>
+            Run the search once your details and target are filled in.
+          </p>
+        </div>
+
+        <p class="rs-note">
+          The "My role" choice goes on the resume as written: <em>Personally Developed</em>, <em>Open Source Contribution</em>
+          or <em>Practice Case Study</em>. Be accurate. Interviewers ask.
+        </p>
+
+        <div class="rs-foot">
+          <button type="button" class="button rs-back" data-back="2">
+            <i data-lucide="arrow-left" aria-hidden="true"></i><span class="rs-back-label">Back</span>
+          </button>
+          <button type="button" class="button button-primary rs-find" id="rsFindProjects"
                   onclick="rsStartDiscovery()">
-            <i data-lucide="git-branch"></i>
+            <i data-lucide="git-branch" aria-hidden="true"></i>
             <span id="rsFindProjectsText">Find matching repositories</span>
           </button>
+          <button type="button" class="button button-primary rs-next rs-after-results" data-next="2">
+            <span>Next: generate</span>
+            <i data-lucide="arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </section>
 
-          <div class="rs-progress" id="rsDiscoveryProgress">
-            <div class="rs-track"><div class="rs-fill" id="rsDiscoveryBar"></div></div>
-            <div class="rs-progress-meta">
-              <span id="rsDiscoveryStage">Searching public GitHub repositories…</span>
-              <span class="rs-pct" id="rsDiscoveryPct">0%</span>
+      <!-- Step 4: generate -->
+      <section class="rs-card" id="rsStepGenerate" aria-labelledby="rsHeadGenerate" hidden>
+        <div class="rs-step">
+          <div>
+            <h2 id="rsHeadGenerate" tabindex="-1">Generate and score</h2>
+            <p class="rs-step-sub">Summaries come from your details and the selected repositories.</p>
+          </div>
+          <span class="rs-hint" id="rsHintGenerate">Not generated</span>
+        </div>
+
+        <div class="rs-progress" id="rsGenerateProgress">
+          <div class="rs-track"><div class="rs-fill" id="rsGenerateBar"></div></div>
+          <div class="rs-progress-meta" role="status">
+            <span id="rsGenerateStage">Writing...</span>
+            <span class="rs-pct" id="rsGeneratePct">0%</span>
+          </div>
+        </div>
+
+        <p class="rs-note rs-before-ready">
+          The score comes from the same six-part check used on uploaded resumes. A low score means the resume
+          is missing evidence, not that the tool failed.
+        </p>
+
+        <div id="rsGenerated" class="rs-generated rs-hidden">
+          <div class="rs-scorecard">
+            <div class="rs-gauge" id="rsGauge">
+              <div class="rs-gauge-in">
+                <span class="rs-gauge-num" id="rsGaugeNum">0</span>
+                <span class="rs-gauge-cap">ATS</span>
+              </div>
+            </div>
+            <div class="rs-scorecard-main">
+              <p class="rs-scorecard-title" id="rsGrade">Scored</p>
+              <p class="rs-scorecard-sub" id="rsPassRate"></p>
             </div>
           </div>
 
-          <div class="rs-list is-empty" id="rsProjectsList">
-            <p class="rs-empty">
-              <i data-lucide="search"></i>
-              <strong>No repositories yet</strong>
-              Run the search once your details and target are filled in.
+          <div class="rs-finish">
+            <p class="rs-finish-title">
+              <i data-lucide="check-circle-2" aria-hidden="true"></i>
+              <span>Your resume is ready</span>
             </p>
-          </div>
-
-          <p class="rs-note">
-            <i data-lucide="shield-check"></i>
-            <span>The “my role” selector goes on the resume as written — <em>Personally Developed</em>, <em>Open Source Contribution</em>, or <em>Practice Case Study</em>. Be accurate; interviewers ask.</span>
-          </p>
-        </section>
-
-        <!-- ── Step 4: generate ────────────────────────────────────── -->
-        <section class="rs-card" id="rsStepGenerate">
-          <div class="rs-step">
-            <span class="rs-num" id="rsNumGenerate">4</span>
-            <div>
-              <h2>Generate and score</h2>
-              <p class="rs-step-sub">Summaries come from your details and the selected repositories.</p>
+            <p class="rs-note">Open it in the live A4 editor to polish it, or download it now.</p>
+            <a id="rsOpenInEditorBtn" href="{{ studio_editor_url }}" class="button button-primary rs-finish-main">
+              <i data-lucide="file-edit" aria-hidden="true"></i>
+              <span>Open in the live resume editor</span>
+            </a>
+            <div class="rs-finish-row">
+              <button type="button" class="button" onclick="rsDownload('pdf')">
+                <i data-lucide="file-down" aria-hidden="true"></i><span>Download PDF</span>
+              </button>
+              <button type="button" class="button" onclick="rsDownload('docx')">
+                <i data-lucide="file-text" aria-hidden="true"></i><span>DOCX</span>
+              </button>
             </div>
-            <span class="rs-hint" id="rsHintGenerate">Not generated</span>
           </div>
 
-          <button type="button" class="rs-btn rs-btn-solid rs-btn-block" id="rsGenerate"
+          <div class="rs-block">
+            <h3 class="rs-block-label">Keywords</h3>
+            <div class="rs-chiprow" id="rsKeywords"></div>
+          </div>
+
+          <div class="rs-block">
+            <h3 class="rs-block-label">Score by check</h3>
+            <div class="rs-pillars" id="rsPillars"></div>
+          </div>
+
+          <div id="rsMissingWrap" class="rs-block rs-hidden">
+            <h3 class="rs-block-label">Missing so far</h3>
+            <div class="rs-flash">
+              <i data-lucide="alert-triangle" aria-hidden="true"></i>
+              <ul id="rsMissing"></ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="rs-foot">
+          <button type="button" class="button rs-back" data-back="3">
+            <i data-lucide="arrow-left" aria-hidden="true"></i><span class="rs-back-label">Back</span>
+          </button>
+          <button type="button" class="button button-primary rs-generate" id="rsGenerate"
                   onclick="rsGenerateResume()">
-            <i data-lucide="wand-sparkles"></i>
+            <i data-lucide="wand-sparkles" aria-hidden="true"></i>
             <span id="rsGenerateText">Generate my resume</span>
           </button>
+        </div>
+      </section>
 
-          <div class="rs-progress" id="rsGenerateProgress">
-            <div class="rs-track"><div class="rs-fill" id="rsGenerateBar"></div></div>
-            <div class="rs-progress-meta">
-              <span id="rsGenerateStage">Synthesizing…</span>
-              <span class="rs-pct" id="rsGeneratePct">0%</span>
-            </div>
-          </div>
+    </div>
 
-          <div id="rsGenerated" class="rs-hidden">
-            <div class="rs-scorecard" style="margin-top:12px;">
-              <div class="rs-gauge" id="rsGauge">
-                <div class="rs-gauge-in">
-                  <span class="rs-gauge-num" id="rsGaugeNum">0</span>
-                  <span class="rs-gauge-cap">ATS</span>
-                </div>
-              </div>
-              <div class="rs-scorecard-main">
-                <div class="rs-scorecard-title" id="rsGrade">—</div>
-                <div class="rs-scorecard-sub" id="rsPassRate"></div>
-                <div class="rs-chiprow" id="rsKeywords"></div>
-              </div>
-            </div>
-
-            <div class="rs-pillars" id="rsPillars"></div>
-
-            <div id="rsMissingWrap" class="rs-hidden">
-              <div class="rs-block-label">Missing so far</div>
-              <div class="rs-flash">
-                <i data-lucide="alert-triangle"></i>
-                <ul id="rsMissing"></ul>
-              </div>
-            </div>
-
-            <!-- Action Bar to Open in Live Resume Editor and Export -->
-            <div class="rs-finish-actions" style="margin-top: 18px; padding: 18px; background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #bbf7d0; border-radius: 14px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.08);">
-              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap;">
-                <div>
-                  <div style="font-weight: 800; font-size: 15px; color: #0f172a; display: flex; align-items: center; gap: 7px;">
-                    <i data-lucide="check-circle-2" style="width: 18px; height: 18px; color: #16a34a;"></i>
-                    <span>Your resume is ready</span>
-                  </div>
-                  <p style="margin: 3px 0 0; font-size: 12.5px; color: #475569;">Open directly in the live A4 editor to customize, polish, or download PDF/Word.</p>
-                </div>
-              </div>
-              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <a id="rsOpenInEditorBtn" href="{{ studio_editor_url }}" class="rs-btn rs-btn-primary" style="flex: 2; min-width: 220px; justify-content: center; font-size: 14px; font-weight: 700; padding: 11px 18px; text-decoration: none; background: #2563eb; color: #ffffff; border-radius: 9px; box-shadow: 0 4px 14px rgba(37,99,235,0.3); display: inline-flex; align-items: center; gap: 8px;">
-                  <i data-lucide="file-edit" style="width: 17px; height: 17px;"></i>
-                  <span>Open in Live Resume Editor ↗</span>
-                </a>
-                <button type="button" class="rs-btn rs-btn-quiet" style="flex: 1; min-width: 120px; justify-content: center; padding: 11px 14px;" onclick="rsDownload('pdf')">
-                  <i data-lucide="file-down" style="width: 16px; height: 16px;"></i>
-                  <span>Download PDF</span>
-                </button>
-                <button type="button" class="rs-btn rs-btn-quiet" style="flex: 1; min-width: 110px; justify-content: center; padding: 11px 14px;" onclick="rsDownload('docx')">
-                  <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
-                  <span>DOCX</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
+    <!-- Rail: the target and the result, beside the steps on desktop, below them on phones. -->
+    <aside class="rs-rail" aria-label="Summary">
+      <div class="glass rs-rail-card">
+        <h2 class="rs-rail-title">Target</h2>
+        <div id="rsTargetSummary">
+          {% if target_job %}
+            <div class="rs-target-name">{{ target_job.title }}</div>
+            <div class="rs-target-company">{{ target_job.company_name }}</div>
+          {% else %}
+            <p class="rs-target-empty">No role selected yet. Pick a posting or type one in step 2.</p>
+          {% endif %}
+        </div>
+        <div class="rs-chiprow" id="rsRailChips"></div>
       </div>
 
-      <!-- ── Rail ─────────────────────────────────────────────────── -->
-      <aside class="rs-rail">
-        <div class="rs-rail-card">
-          <p class="rs-rail-title"><i data-lucide="target"></i> Target</p>
-          <div id="rsTargetSummary">
-            {% if target_job %}
-              <div class="rs-target-name">{{ target_job.title }}</div>
-              <div class="rs-target-company">{{ target_job.company_name }}</div>
-            {% else %}
-              <p class="rs-target-empty">No role selected yet. Pick a posting or type one in step 2.</p>
-            {% endif %}
-          </div>
-          <div class="rs-chiprow" id="rsRailChips"></div>
+      <div class="glass rs-rail-card">
+        <h2 class="rs-rail-title">Your resume</h2>
+        <div id="rsRailEmpty">
+          <p class="rs-target-empty">Nothing generated yet. Steps 1 to 3 take about two minutes.</p>
         </div>
-
-        <div class="rs-rail-card">
-          <p class="rs-rail-title"><i data-lucide="file-text"></i> Your resume</p>
-          <div id="rsRailEmpty">
-            <p class="rs-target-empty">Nothing generated yet. Steps 1–3 take about two minutes.</p>
+        <div id="rsRailResult" class="rs-rail-result rs-hidden">
+          <div class="rs-scorecard">
+            <div class="rs-gauge rs-gauge-mini" id="rsGaugeMini">
+              <div class="rs-gauge-in">
+                <span class="rs-gauge-num" id="rsGaugeMiniNum">0</span>
+              </div>
+            </div>
+            <div class="rs-scorecard-main">
+              <p class="rs-scorecard-title" id="rsGradeMini">Scored</p>
+              <p class="rs-scorecard-sub" id="rsPassMini"></p>
+            </div>
           </div>
-          <div id="rsRailResult" class="rs-hidden">
-            <div class="rs-scorecard" style="padding:10px;">
-              <div class="rs-gauge" id="rsGaugeMini" style="width:56px;height:56px;">
-                <div class="rs-gauge-in" style="width:42px;height:42px;">
-                  <span class="rs-gauge-num" id="rsGaugeMiniNum" style="font-size:14px;">0</span>
-                </div>
-              </div>
-              <div class="rs-scorecard-main">
-                <div class="rs-scorecard-title" id="rsGradeMini" style="font-size:12px;">—</div>
-                <div class="rs-scorecard-sub" id="rsPassMini" style="font-size:10.5px;"></div>
-              </div>
-            </div>
-            <div class="rs-btn-row" style="margin-top:10px;">
-              <button type="button" class="rs-btn rs-btn-quiet rs-btn-sm" onclick="rsDownload('pdf')">
-                <i data-lucide="file-down"></i><span>PDF</span>
-              </button>
-              <button type="button" class="rs-btn rs-btn-quiet rs-btn-sm" onclick="rsDownload('docx')">
-                <i data-lucide="file-text"></i><span>DOCX</span>
-              </button>
-            </div>
-            <button type="button" class="rs-btn rs-btn-ghost rs-btn-sm rs-btn-block" style="margin-top:8px;" onclick="rsCopyResume()">
-              <i data-lucide="copy"></i><span>Copy as plain text</span>
+          <div class="rs-finish-row">
+            <button type="button" class="button" onclick="rsDownload('pdf')">
+              <i data-lucide="file-down" aria-hidden="true"></i><span>PDF</span>
+            </button>
+            <button type="button" class="button" onclick="rsDownload('docx')">
+              <i data-lucide="file-text" aria-hidden="true"></i><span>DOCX</span>
             </button>
           </div>
-          <a id="rsEditorLink" class="rs-btn rs-btn-primary rs-btn-sm rs-btn-block" style="margin-top:8px;"
-             href="{{ studio_editor_url }}">
-            <i data-lucide="pencil-line"></i><span>{% if target_job %}Tailor my resume to this job{% else %}Open in the live editor{% endif %}</span>
-          </a>
+          <button type="button" class="button rs-block-btn" onclick="rsCopyResume()">
+            <i data-lucide="copy" aria-hidden="true"></i><span>Copy as plain text</span>
+          </button>
         </div>
+        <a id="rsEditorLink" class="button rs-block-btn" href="{{ studio_editor_url }}">
+          <i data-lucide="pencil-line" aria-hidden="true"></i><span>{% if target_job %}Tailor my resume to this job{% else %}Open in the live editor{% endif %}</span>
+        </a>
+      </div>
 
-        <div class="rs-rail-card">
-          <p class="rs-rail-title"><i data-lucide="info"></i> How scoring works</p>
-          <p class="rs-target-empty" style="line-height:1.6;">
-            The score comes from the same six-pillar evaluator used on uploaded resumes: contact completeness,
-            section parseability, action verbs, quantified metrics, stack relevance and system depth.
-            A low score means the resume is missing evidence — not that the tool failed.
-          </p>
-        </div>
-      </aside>
-    </div>
+      <div class="glass rs-rail-card">
+        <h2 class="rs-rail-title">How scoring works</h2>
+        <p class="rs-target-empty">
+          The score comes from the same six-part check used on uploaded resumes: contact details,
+          sections an ATS can read, action verbs, measured results, skills for the role and system depth.
+          A low score means the resume is missing evidence, not that the tool failed.
+        </p>
+      </div>
+    </aside>
   </div>
 </main>
 
@@ -482,6 +493,53 @@
     return String(text || '').split(',').map((s) => s.trim()).filter(Boolean);
   }
 
+  /* ── steps: one per screen ──────────────────────────────────────── */
+  const STEP_IDS = ['rsStepYou', 'rsStepTarget', 'rsStepProjects', 'rsStepGenerate'];
+
+  function rsShowStep(index) {
+    const i = Math.max(0, Math.min(STEP_IDS.length - 1, index));
+    STEP_IDS.forEach((id, n) => { $(id).hidden = n !== i; });
+    document.querySelectorAll('.rs-tab').forEach((tab) => {
+      if (Number(tab.dataset.step) === i) tab.setAttribute('aria-current', 'step');
+      else tab.removeAttribute('aria-current');
+    });
+    const nav = document.querySelector('.rs-steps');
+    // Bring the new step to the top, so its fields sit above the pinned action.
+    if (nav && Math.abs(nav.getBoundingClientRect().top - 72) > 8) nav.scrollIntoView({ block: 'start' });
+    const heading = $(STEP_IDS[i]).querySelector('h2');
+    if (heading) heading.focus({ preventScroll: true });
+  }
+
+  function rsNext(from) {
+    if (from === 0) {
+      const missing = ['rsName', 'rsEmail', 'rsPhone'].find((id) => !($(id).value || '').trim());
+      if (missing) {
+        syncProfileHints(true);
+        $(missing).focus();
+        toast('Add your name, email and phone. They go on the resume.', 'warning');
+        return;
+      }
+    }
+    if (from === 1) {
+      const target = currentTarget();
+      if (!target || !target.title) {
+        toast('Pick a target role first, or type one yourself.', 'warning');
+        return;
+      }
+    }
+    rsShowStep(from + 1);
+  }
+
+  document.querySelectorAll('.rs-tab').forEach((tab) => {
+    tab.addEventListener('click', () => rsShowStep(Number(tab.dataset.step)));
+  });
+  document.querySelectorAll('[data-next]').forEach((btn) => {
+    btn.addEventListener('click', () => rsNext(Number(btn.dataset.next)));
+  });
+  document.querySelectorAll('[data-back]').forEach((btn) => {
+    btn.addEventListener('click', () => rsShowStep(Number(btn.dataset.back) - 1));
+  });
+
   /* ── step 1: profile ────────────────────────────────────────────── */
   function profile() {
     return {
@@ -508,10 +566,14 @@
     hint.textContent = missing.length ? missing.length + ' required' : 'Complete';
     hint.className = 'rs-hint ' + (missing.length ? 'is-warn' : 'is-ok');
     $('rsNumYou').classList.toggle('is-done', missing.length === 0);
-    ['rsName', 'rsEmail', 'rsPhone'].forEach((id) => $(id).classList.remove('is-invalid'));
-    if (!p.name && (force || touched.has('rsName'))) $('rsName').classList.add('is-invalid');
-    if (!p.email && (force || touched.has('rsEmail'))) $('rsEmail').classList.add('is-invalid');
-    if (!p.phone && (force || touched.has('rsPhone'))) $('rsPhone').classList.add('is-invalid');
+    ['rsName', 'rsEmail', 'rsPhone'].forEach((id) => {
+      $(id).classList.remove('is-invalid');
+      $(id).removeAttribute('aria-invalid');
+    });
+    const mark = (id) => { $(id).classList.add('is-invalid'); $(id).setAttribute('aria-invalid', 'true'); };
+    if (!p.name && (force || touched.has('rsName'))) mark('rsName');
+    if (!p.email && (force || touched.has('rsEmail'))) mark('rsEmail');
+    if (!p.phone && (force || touched.has('rsPhone'))) mark('rsPhone');
   }
 
   ['rsName', 'rsEmail', 'rsPhone'].forEach((id) => {
@@ -533,8 +595,8 @@
     if (!file) return;
     const status = $('rsUploadStatus');
     const statusText = $('rsUploadStatusText');
-    status.classList.remove('rs-hidden');
-    statusText.textContent = 'Reading ' + file.name + '…';
+    status.classList.remove('rs-hidden', 'is-error', 'is-done');
+    statusText.textContent = 'Reading ' + file.name + '...';
 
     const body = new FormData();
     body.append('resume_file', file);
@@ -575,9 +637,11 @@
       }
 
       syncProfileHints();
+      status.classList.add('is-done');
       statusText.textContent = 'Filled in whatever the document actually contained. Check every field.';
       setTimeout(() => status.classList.add('rs-hidden'), 6000);
     } catch (err) {
+      status.classList.add('is-error');
       statusText.textContent = err.message;
       toast(err.message, 'error');
     } finally {
@@ -613,8 +677,6 @@
     $('rsCustomTarget').classList.toggle('rs-hidden', mode !== 'custom');
     $('rsModeJob').setAttribute('aria-pressed', mode === 'job' ? 'true' : 'false');
     $('rsModeCustom').setAttribute('aria-pressed', mode === 'custom' ? 'true' : 'false');
-    $('rsModeJob').className = 'rs-btn rs-btn-sm ' + (mode === 'job' ? 'rs-btn-quiet' : 'rs-btn-ghost');
-    $('rsModeCustom').className = 'rs-btn rs-btn-sm ' + (mode === 'custom' ? 'rs-btn-quiet' : 'rs-btn-ghost');
     if (mode === 'custom' && !state.jobId) {
       // Carry over anything already typed rather than starting blank.
       const t = currentTarget();
@@ -684,7 +746,7 @@
     summary.innerHTML =
       '<div class="rs-target-name">' + esc(target.title) + '</div>' +
       (target.company ? '<div class="rs-target-company">' + esc(target.company) + '</div>' : '') +
-      (target.location ? '<div class="rs-target-company" style="color:#64748b;">' + esc(target.location) + '</div>' : '');
+      (target.location ? '<div class="rs-target-company is-muted">' + esc(target.location) + '</div>' : '');
 
     const skills = skillsFrom(target.skills);
     skills.slice(0, 10).forEach((skill) => {
@@ -702,7 +764,7 @@
     if (!skills.length) {
       const chip = document.createElement('span');
       chip.className = 'rs-chip is-miss';
-      chip.textContent = 'No skills listed — ranking will be weak';
+      chip.textContent = 'No skills listed. Ranking will be weak.';
       chips.appendChild(chip);
     }
 
@@ -732,9 +794,10 @@
   });
 
   /* ── step 3: discovery ──────────────────────────────────────────── */
-  function setDiscovery(pct, stage, on) {
+  function setDiscovery(pct, stage, on, failed) {
     $('rsDiscoveryProgress').classList.toggle('is-on', !!on);
-    $('rsDiscoveryBar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+    $('rsDiscoveryProgress').classList.toggle('is-error', !!failed);
+    $('rsDiscoveryBar').style.transform = 'scaleX(' + (Math.max(0, Math.min(100, pct)) / 100) + ')';
     if (stage) $('rsDiscoveryStage').textContent = stage;
     $('rsDiscoveryPct').textContent = Math.round(pct) + '%';
   }
@@ -743,25 +806,25 @@
     const p = profile();
     if (!p.name || !p.email || !p.phone) {
       syncProfileHints(true);
-      toast('Add your name, email and phone first — they go on the resume.', 'warning');
-      $('rsStepYou').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast('Add your name, email and phone first. They go on the resume.', 'warning');
+      rsShowStep(0);
       return;
     }
     const target = currentTarget();
     if (!target || !target.title) {
       toast('Pick a target role first, or type one yourself.', 'warning');
-      $('rsStepTarget').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      rsShowStep(1);
       return;
     }
 
     const btn = $('rsFindProjects');
     btn.disabled = true;
-    $('rsFindProjectsText').textContent = 'Searching…';
-    setDiscovery(8, 'Searching public GitHub repositories…', true);
+    $('rsFindProjectsText').textContent = 'Searching...';
+    setDiscovery(8, 'Searching public GitHub repositories...', true);
 
     const list = $('rsProjectsList');
     list.classList.remove('is-empty');
-    list.innerHTML = '<p class="rs-empty"><i data-lucide="loader" class="spin-icon"></i><strong>Ranking repositories</strong>Scoring each one against the target stack.</p>';
+    list.innerHTML = '<p class="rs-empty"><i data-lucide="loader" class="spin-icon" aria-hidden="true"></i><strong>Ranking repositories</strong>Scoring each one against the target stack.</p>';
     refreshIcons();
 
     const payload = {
@@ -791,10 +854,11 @@
       state.generationJobId = state.jobId || '';
       rsPollDiscovery(data.job_id);
     } catch (err) {
-      setDiscovery(0, err.message, true);
+      setDiscovery(0, err.message, true, true);
       btn.disabled = false;
       $('rsFindProjectsText').textContent = 'Find matching repositories';
-      list.innerHTML = '<p class="rs-empty"><strong>Search failed</strong>' + esc(err.message) + '</p>';
+      list.innerHTML = '<p class="rs-empty is-error"><i data-lucide="alert-triangle" aria-hidden="true"></i><strong>Search failed</strong>' + esc(err.message) + '</p>';
+      refreshIcons();
       toast(err.message, 'error');
     }
   }
@@ -809,7 +873,7 @@
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Status check failed');
 
-        setDiscovery(data.progress_pct || 0, data.stage_message || 'Working…', true);
+        setDiscovery(data.progress_pct || 0, data.stage_message || 'Working...', true);
 
         if (data.status === 'AWAITING_SELECTION' || data.status === 'COMPLETED') {
           clearInterval(state.poll);
@@ -819,13 +883,13 @@
           rsLoadProjects(jobId);
         } else if (data.status === 'FAILED') {
           clearInterval(state.poll);
-          setDiscovery(0, data.error_message || 'Discovery failed', true);
+          setDiscovery(0, data.error_message || 'Discovery failed', true, true);
           btn.disabled = false;
           $('rsFindProjectsText').textContent = 'Try again';
         }
       } catch (err) {
         clearInterval(state.poll);
-        setDiscovery(0, 'Could not read discovery status', true);
+        setDiscovery(0, 'Could not read discovery status', true, true);
         btn.disabled = false;
         $('rsFindProjectsText').textContent = 'Try again';
       }
@@ -842,15 +906,17 @@
       renderProjects();
     } catch (err) {
       list.classList.remove('is-empty');
-      list.innerHTML = '<p class="rs-empty"><strong>Could not load repositories</strong>' + esc(err.message) + '</p>';
+      list.innerHTML = '<p class="rs-empty is-error"><i data-lucide="alert-triangle" aria-hidden="true"></i><strong>Could not load repositories</strong>' + esc(err.message) + '</p>';
+      refreshIcons();
     }
   }
 
   function renderProjects() {
     const list = $('rsProjectsList');
+    $('rsStepProjects').classList.toggle('has-results', state.projects.length > 0);
     if (!state.projects.length) {
       list.classList.add('is-empty');
-      list.innerHTML = '<p class="rs-empty"><i data-lucide="search"></i><strong>Nothing matched</strong>Try a different target role or add more skills.</p>';
+      list.innerHTML = '<p class="rs-empty"><i data-lucide="search" aria-hidden="true"></i><strong>Nothing matched</strong>Try a different target role or add more skills.</p>';
       refreshIcons();
       updateProjectHint();
       return;
@@ -867,13 +933,15 @@
       const relation = proj.candidate_relationship || 'BUILT';
       card.innerHTML =
         '<div class="rs-proj-top">' +
-          '<input type="checkbox" class="rs-check" ' + (proj.is_selected ? 'checked' : '') +
-          ' aria-label="Include ' + esc(proj.repo_name) + '" data-proj-id="' + esc(proj.id) + '">' +
+          '<label class="rs-check-hit">' +
+            '<input type="checkbox" class="rs-check" ' + (proj.is_selected ? 'checked' : '') +
+            ' aria-label="Include ' + esc(proj.repo_name) + '" data-proj-id="' + esc(proj.id) + '">' +
+          '</label>' +
           '<div class="rs-proj-main">' +
-            '<a class="rs-repo" href="' + esc(proj.repo_url) + '" target="_blank" rel="noopener">' + esc(proj.repo_name) + ' ↗</a>' +
+            '<a class="rs-repo" href="' + esc(proj.repo_url) + '" target="_blank" rel="noopener">' + esc(proj.repo_name) + ' <span aria-hidden="true">↗</span></a>' +
             '<div class="rs-proj-meta">' +
               '<span>' + esc(proj.language || 'Unknown stack') + '</span>' +
-              '<span>·</span><span>' + (proj.stars || 0) + ' stars</span>' +
+              '<span aria-hidden="true">·</span><span>' + (proj.stars || 0) + ' stars</span>' +
             '</div>' +
           '</div>' +
           '<span class="rs-score ' + (score >= 75 ? 'is-high' : '') + '">' + score + '% fit</span>' +
@@ -881,7 +949,7 @@
         (proj.description ? '<p class="rs-proj-desc">' + esc(proj.description) + '</p>' : '') +
         '<div class="rs-proj-foot">' +
           '<label for="rsRel_' + esc(proj.id) + '">My role</label>' +
-          '<select id="rsRel_' + esc(proj.id) + '" class="rs-select" style="height:32px;font-size:11.5px;flex:1;min-width:0;" data-proj-id="' + esc(proj.id) + '">' +
+          '<select id="rsRel_' + esc(proj.id) + '" class="rs-input rs-select" data-proj-id="' + esc(proj.id) + '">' +
             '<option value="BUILT"' + (relation === 'BUILT' ? ' selected' : '') + '>I built this</option>' +
             '<option value="CONTRIBUTED"' + (relation === 'CONTRIBUTED' ? ' selected' : '') + '>I contributed</option>' +
             '<option value="PRACTICE"' + (relation === 'PRACTICE' ? ' selected' : '') + '>I studied it</option>' +
@@ -921,9 +989,10 @@
   }
 
   /* ── step 4: generate ───────────────────────────────────────────── */
-  function setGenerate(pct, stage, on) {
+  function setGenerate(pct, stage, on, failed) {
     $('rsGenerateProgress').classList.toggle('is-on', !!on);
-    $('rsGenerateBar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+    $('rsGenerateProgress').classList.toggle('is-error', !!failed);
+    $('rsGenerateBar').style.transform = 'scaleX(' + (Math.max(0, Math.min(100, pct)) / 100) + ')';
     if (stage) $('rsGenerateStage').textContent = stage;
     $('rsGeneratePct').textContent = Math.round(pct) + '%';
   }
@@ -933,18 +1002,19 @@
     if (!p.name || !p.email || !p.phone) {
       syncProfileHints(true);
       toast('Name, email and phone are required before generating.', 'warning');
-      $('rsStepYou').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      rsShowStep(0);
       return;
     }
     if (!state.generationId) {
-      toast('Run the repository search first — it is what makes this resume specific.', 'warning');
+      toast('Run the repository search first. It is what makes this resume specific.', 'warning');
+      rsShowStep(2);
       return;
     }
 
     const btn = $('rsGenerate');
     btn.disabled = true;
-    $('rsGenerateText').textContent = 'Writing your resume…';
-    setGenerate(20, 'Saving your project choices…', true);
+    $('rsGenerateText').textContent = 'Writing your resume...';
+    setGenerate(20, 'Saving your project choices...', true);
 
     try {
       if (state.projects.length) {
@@ -961,7 +1031,7 @@
         });
       }
 
-      setGenerate(55, 'Synthesizing bullets and scoring ATS…', true);
+      setGenerate(55, 'Writing bullets and scoring ATS...', true);
 
       const res = await fetch('/api/resume/generations/' + state.generationId + '/generate/', {
         method: 'POST',
@@ -976,7 +1046,7 @@
       renderResume(data.resume, data.ats_eval || {}, data.missing_fields || []);
       toast('Resume generated. Check the score before you download.', 'success');
     } catch (err) {
-      setGenerate(0, err.message, true);
+      setGenerate(0, err.message, true, true);
       toast(err.message, 'error');
     } finally {
       btn.disabled = false;
@@ -986,16 +1056,18 @@
 
   function renderResume(resume, ats, missingFields) {
     $('rsGenerated').classList.remove('rs-hidden');
+    $('rsStepGenerate').classList.add('is-ready');
 
     const score = Math.round(ats.score || 0);
-    const color = score >= 80 ? '#16a34a' : (score >= 60 ? '#b45309' : '#dc2626');
-    const ring = 'conic-gradient(' + color + ' 0%, ' + color + ' ' + score + '%, #e2e8f0 ' + score + '%, #e2e8f0 100%)';
+    const tone = score >= 80 ? 'is-good' : (score >= 60 ? 'is-mid' : 'is-low');
 
-    [$('rsGauge'), $('rsGaugeMini')].forEach((gauge) => { gauge.style.background = ring; });
+    [$('rsGauge'), $('rsGaugeMini')].forEach((gauge) => {
+      gauge.classList.remove('is-good', 'is-mid', 'is-low');
+      gauge.classList.add(tone);
+      gauge.style.setProperty('--score', score);
+    });
     $('rsGaugeNum').textContent = score;
-    $('rsGaugeNum').style.color = color;
     $('rsGaugeMiniNum').textContent = score;
-    $('rsGaugeMiniNum').style.color = color;
 
     const grade = ats.grade || 'Scored';
     $('rsGrade').textContent = grade;
@@ -1026,6 +1098,7 @@
       row.className = 'rs-pillar';
       row.innerHTML =
         '<span class="rs-pillar-name" title="' + esc(pillar.detail || pillar.name) + '">' + esc(pillar.name) + '</span>' +
+        '<span class="rs-pillar-pct">' + pct + '%</span>' +
         '<span class="rs-pillar-track"><span class="rs-pillar-fill" style="width:' + pct + '%"></span></span>';
       pillars.appendChild(row);
     });
@@ -1144,6 +1217,7 @@
   window.rsPickJob = rsPickJob;
   window.rsDownload = rsDownload;
   window.rsCopyResume = rsCopyResume;
+  window.rsShowStep = rsShowStep;
 
   if (TARGET_JOB) {
     const row = document.querySelector('.rs-jobrow[data-job-uuid="' + TARGET_JOB.uuid + '"]');

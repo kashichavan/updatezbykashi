@@ -1155,13 +1155,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    if (sortSelect) {
-      sortSelect.addEventListener('change', (e) => {
-        state.sort = e.target.value;
-        state.page = 1;
-        loadJobs();
-      });
-    }
+    // Sort changes are handled once, with the value mapping, in setupFilterPopovers.
 
     if (btnCloseDetail && detailModal) {
       btnCloseDetail.addEventListener('click', () => detailModal.classList.remove('active'));

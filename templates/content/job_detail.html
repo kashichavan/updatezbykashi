@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static display %}
 
 {% block title %}💼 {{ job.company_name }} Hiring: {{ job.title }} (Apply Online) | Kashii Updatez{% endblock %}
 {% block meta_description %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Compensation: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}. 100% student job requirement with direct official application link on Kashii Updatez.{% endblock %}
@@ -95,1315 +95,212 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ job.company_name }} Hiring — {{ job.title }}">
 <meta name="twitter:description" content="Apply directly via official recruiter application link on Kashii Updatez.">
-
-<style>
-  /* ==========================================================================
-     JOB DETAIL — compact document layout
-     One hero, one column of content, one rail. No nested card stacks.
-     ========================================================================== */
-
-  .jd-wrap {
-    width: 100%;
-    max-width: 1120px;
-    margin: 20px auto 56px;
-    padding: 0 14px;
-  }
-  @media (min-width: 768px) {
-    .jd-wrap { margin: 32px auto 72px; padding: 0 24px; }
-  }
-
-  .jd-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
-  @media (min-width: 1024px) {
-    .jd-grid {
-      grid-template-columns: minmax(0, 1fr) 330px;
-      gap: 26px;
-      align-items: start;
-    }
-  }
-
-  .jd-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-  .jd-rail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-  @media (min-width: 1024px) {
-    .jd-rail { position: sticky; top: 88px; }
-  }
-
-  /* ── Hero ─────────────────────────────────────────────────────────── */
-  .jd-hero {
-    position: relative;
-    overflow: hidden;
-    padding: 20px 18px;
-    border-radius: 20px;
-    border: 1px solid rgba(148, 163, 184, 0.16);
-    background:
-      radial-gradient(120% 120% at 100% 0%, rgba(37, 99, 235, 0.28) 0%, transparent 55%),
-      linear-gradient(160deg, #101a2e 0%, #0b1220 60%, #080d17 100%);
-    color: #f8fafc;
-    box-shadow: 0 22px 48px -28px rgba(2, 6, 23, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  }
-  @media (min-width: 768px) {
-    .jd-hero { padding: 28px 30px 24px; border-radius: 24px; }
-  }
-
-  .jd-glow {
-    position: absolute;
-    top: -140px; right: -110px;
-    width: 340px; height: 340px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.22) 0%, transparent 68%);
-    filter: blur(10px);
-    pointer-events: none;
-  }
-
-  .jd-hero-top {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-
-  .jd-crumbs {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    font-size: 12px;
-    font-weight: 500;
-    color: #8fa3bd;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-  .jd-crumbs a { color: #7dd3fc; text-decoration: none; }
-  .jd-crumbs a:hover { color: #bae6fd; text-decoration: underline; }
-  .jd-crumbs span.sep { color: #475569; }
-  .jd-crumbs .crumb-current {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #cbd5e1;
-  }
-
-  .jd-ref {
-    flex-shrink: 0;
-    font-family: var(--font-code, monospace);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: #94a3b8;
-    padding: 3px 7px;
-    border-radius: 5px;
-    border: 1px solid rgba(148, 163, 184, 0.22);
-    background: rgba(148, 163, 184, 0.08);
-  }
-  @media (max-width: 600px) {
-    .jd-ref { display: none; }
-  }
-
-  .jd-chips {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .jd-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 9px;
-    border-radius: 6px;
-    font-size: 10.5px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #cbd5e1;
-    background: rgba(148, 163, 184, 0.12);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-  }
-  .jd-chip-live {
-    color: #6ee7b7;
-    background: rgba(16, 185, 129, 0.14);
-    border-color: rgba(16, 185, 129, 0.32);
-  }
-  .jd-chip-closed {
-    color: #fca5a5;
-    background: rgba(239, 68, 68, 0.14);
-    border-color: rgba(239, 68, 68, 0.32);
-  }
-  .jd-chip-dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    box-shadow: 0 0 6px currentColor;
-  }
-
-  .jd-title {
-    position: relative;
-    margin: 0 0 4px;
-    font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
-    font-size: clamp(24px, 5.4vw, 36px);
-    font-weight: 900;
-    line-height: 1.14;
-    letter-spacing: -0.03em;
-    color: #ffffff;
-    text-wrap: balance;
-  }
-
-  .jd-company {
-    position: relative;
-    margin: 0 0 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #93c5fd;
-  }
-
-  .jd-meta {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 16px;
-    margin: 0 0 20px;
-    padding: 0;
-    list-style: none;
-  }
-  .jd-meta li {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    font-size: 12.5px;
-    line-height: 1.3;
-    color: #b6c4d8;
-  }
-  .jd-meta li svg { width: 14px; height: 14px; flex-shrink: 0; color: #38bdf8; }
-  .jd-meta li b { color: #f1f5f9; font-weight: 700; }
-  .jd-meta li .jd-exp {
-    color: #f1f5f9;
-    font-weight: 700;
-  }
-
-  /* ── Hero actions ─────────────────────────────────────────────────── */
-  .jd-actions { position: relative; display: flex; flex-direction: column; gap: 10px; }
-
-  .jd-actions-main {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .jd-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-height: 44px;
-    padding: 0 18px;
-    border-radius: 11px;
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    text-decoration: none;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: transform .18s cubic-bezier(.16,1,.3,1), box-shadow .18s ease, background .18s ease;
-    box-sizing: border-box;
-  }
-  .jd-btn svg { width: 16px; height: 16px; }
-  .jd-btn:active { transform: scale(.985); }
-
-  .jd-btn-primary {
-    flex: 1 1 210px;
-    color: #ffffff;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    box-shadow: 0 8px 22px -6px rgba(37, 99, 235, 0.65);
-  }
-  .jd-btn-primary:hover { background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); }
-
-  .jd-btn-ghost {
-    flex: 0 1 auto;
-    color: #dbe4f0;
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.14);
-  }
-  .jd-btn-ghost:hover { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
-
-  @media (max-width: 560px) {
-    .jd-actions-main { flex-direction: column; align-items: stretch; }
-    .jd-btn-primary, .jd-btn-ghost { flex: 1 1 auto; width: 100%; }
-  }
-
-  .jd-btn-muted {
-    color: #94a3b8;
-    background: rgba(148, 163, 184, 0.1);
-    border-color: rgba(148, 163, 184, 0.2);
-    cursor: not-allowed;
-  }
-
-  .jd-secondary {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    margin-top: 2px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.09);
-  }
-  @media (min-width: 680px) {
-    .jd-secondary { display: flex; flex-wrap: wrap; gap: 8px; }
-  }
-  @media (max-width: 679px) {
-    .jd-secondary > :last-child { grid-column: 1 / -1; }
-  }
-
-  .jd-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-height: 42px;
-    padding: 0 12px;
-    border-radius: 9999px;
-    border: 1px solid rgba(255, 255, 255, 0.17);
-    background: rgba(255, 255, 255, 0.07);
-    color: #e2e8f0;
-    font-family: inherit;
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background .16s ease, border-color .16s ease, color .16s ease, transform .16s cubic-bezier(.16,1,.3,1);
-  }
-  .jd-pill svg { width: 15px; height: 15px; flex-shrink: 0; }
-  .jd-pill:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.32);
-    color: #ffffff;
-  }
-  .jd-pill:active { transform: scale(.98); }
-
-  .jd-pill-accent {
-    background: rgba(168, 85, 247, 0.18);
-    border-color: rgba(168, 85, 247, 0.45);
-    color: #f3e8ff;
-  }
-  .jd-pill-accent svg { color: #d8b4fe; }
-  .jd-pill-accent:hover {
-    background: rgba(168, 85, 247, 0.3);
-    border-color: rgba(196, 181, 253, 0.6);
-    color: #ffffff;
-  }
-
-  /* ── Panels ───────────────────────────────────────────────────────── */
-  .jd-panel,
-  .jd-related {
-    scroll-margin-top: 84px;
-  }
-
-  .jd-panel {
-    background: #ffffff;
-    border: 1px solid var(--subtle-border);
-    border-radius: 16px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-    min-width: 0;
-  }
-
-  .jd-panel-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--subtle-border);
-  }
-  .jd-panel-head svg { width: 14px; height: 14px; color: var(--blue-primary); }
-  .jd-kicker {
-    margin: 0;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .jd-count {
-    margin-left: auto;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted);
-    background: var(--paper);
-    border: 1px solid var(--subtle-border);
-    border-radius: 99px;
-    padding: 1px 8px;
-  }
-
-  .jd-panel-body { padding: 16px; }
-  @media (min-width: 768px) { .jd-panel-body { padding: 20px; } }
-
-  /* ── Recruiter strip ──────────────────────────────────────────────── */
-  .jd-recruiter {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 14px 16px;
-  }
-  .jd-avatar {
-    position: relative;
-    flex-shrink: 0;
-    display: grid;
-    place-items: center;
-    width: 42px; height: 42px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 900;
-    line-height: 1;
-    color: #ffffff;
-    background: linear-gradient(135deg, #0284c7, #2563eb);
-  }
-  .jd-avatar::after {
-    content: "";
-    position: absolute;
-    right: -2px; bottom: -2px;
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    border: 2px solid #ffffff;
-    background: #cbd5e1;
-  }
-  .jd-avatar.is-verified::after { background: #10b981; }
-
-  .jd-recruiter-main { flex: 1 1 200px; min-width: 0; }
-  .jd-recruiter-name {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--ink);
-    line-height: 1.3;
-  }
-  .jd-recruiter-role {
-    margin-top: 1px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-  }
-  .jd-recruiter-note {
-    margin-top: 4px;
-    font-size: 11.5px;
-    line-height: 1.45;
-    color: var(--muted);
-  }
-  .jd-recruiter-note code {
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--blue-primary);
-    background: var(--blue-light);
-    padding: 1px 5px;
-    border-radius: 4px;
-  }
-  .jd-tag-ok {
-    font-size: 9.5px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #047857;
-    background: #d1fae5;
-    border-radius: 4px;
-    padding: 2px 5px;
-  }
-  .jd-recruiter-btns { display: flex; gap: 6px; flex-shrink: 0; }
-  @media (max-width: 560px) {
-    .jd-recruiter-btns { width: 100%; }
-    .jd-recruiter-btns .jd-btn-sm { flex: 1; justify-content: center; }
-  }
-
-  .jd-btn-sm {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    min-height: 34px;
-    padding: 0 12px;
-    border-radius: 9px;
-    font-size: 12.5px;
-    font-weight: 700;
-    text-decoration: none;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: var(--transition);
-  }
-  .jd-btn-sm svg { width: 14px; height: 14px; }
-  .jd-btn-sm-solid {
-    color: #ffffff;
-    background: var(--blue-primary);
-  }
-  .jd-btn-sm-solid:hover { background: #1d4ed8; }
-  .jd-btn-sm-quiet {
-    color: #0f172a;
-    background: var(--paper);
-    border-color: var(--subtle-border);
-  }
-  .jd-btn-sm-quiet:hover { background: #ffffff; border-color: #94a3b8; }
-
-  /* ── Prose ────────────────────────────────────────────────────────── */
-  .jd-prose {
-    margin: 0;
-    font-size: 14.5px;
-    line-height: 1.72;
-    color: #334155;
-    overflow-wrap: anywhere;
-  }
-  @media (min-width: 768px) { .jd-prose { font-size: 15px; } }
-  .jd-prose p { margin: 0 0 12px; }
-  .jd-prose > :last-child { margin-bottom: 0; }
-  .jd-prose-heading {
-    margin: 20px 0 8px;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.35;
-    color: #0f172a;
-  }
-  .jd-prose > .jd-prose-heading:first-child { margin-top: 0; }
-  .jd-prose-list { margin: 0 0 12px; padding-left: 20px; list-style: disc; }
-  .jd-prose-list li { margin-bottom: 6px; padding-left: 2px; }
-
-  /* ── Requirements block (2 cols) ──────────────────────────────────── */
-  .jd-facts {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
-  @media (min-width: 720px) {
-    .jd-facts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; }
-  }
-  .jd-fact-title {
-    margin: 0 0 8px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .jd-fact-text {
-    margin: 0;
-    font-size: 13.5px;
-    line-height: 1.6;
-    color: var(--ink-secondary);
-  }
-
-  .jd-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .jd-tag {
-    font-size: 12px;
-    font-weight: 600;
-    color: #1e3a8a;
-    background: #eff6ff;
-    border: 1px solid #dbeafe;
-    border-radius: 7px;
-    padding: 4px 9px;
-  }
-
-  .jd-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: step;
-  }
-  .jd-steps li {
-    position: relative;
-    padding-left: 26px;
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--ink-secondary);
-    counter-increment: step;
-  }
-  .jd-steps li::before {
-    content: counter(step);
-    position: absolute;
-    left: 0; top: 1px;
-    width: 18px; height: 18px;
-    display: grid;
-    place-items: center;
-    border-radius: 5px;
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--blue-primary);
-    background: #eff6ff;
-    border: 1px solid #dbeafe;
-  }
-
-  /* ── Accordion (prep kit) ─────────────────────────────────────────── */
-  .jd-acc { border-top: 1px solid var(--subtle-border); }
-  .jd-acc:first-of-type { border-top: none; }
-  .jd-acc > summary {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 13px 16px;
-    cursor: pointer;
-    list-style: none;
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--ink);
-    transition: background .16s ease;
-  }
-  .jd-acc > summary::-webkit-details-marker { display: none; }
-  .jd-acc > summary:hover { background: var(--paper); }
-  .jd-acc > summary:focus-visible { outline: 2px solid var(--blue-primary); outline-offset: -2px; }
-  .jd-acc > summary svg { width: 15px; height: 15px; color: var(--muted); flex-shrink: 0; }
-  .jd-acc > summary .jd-chev {
-    margin-left: auto;
-    transition: transform .2s cubic-bezier(.16,1,.3,1);
-    color: var(--muted-light);
-  }
-  .jd-acc[open] > summary .jd-chev { transform: rotate(180deg); }
-  .jd-acc-num {
-    margin-left: 4px;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted-light);
-  }
-  .jd-acc-body {
-    display: grid;
-    gap: 7px;
-    padding: 2px 16px 16px;
-  }
-
-  /* Compact list row — title never gets squeezed by the link label */
-  .jd-row {
-    display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) 14px;
-    align-items: start;
-    gap: 10px;
-    padding: 11px 12px;
-    border: 1px solid var(--subtle-border);
-    border-radius: 10px;
-    background: var(--paper);
-    text-decoration: none;
-    color: inherit;
-    transition: var(--transition);
-  }
-  .jd-row:hover { background: #ffffff; border-color: #bfdbfe; }
-  .jd-row-icon {
-    display: grid;
-    place-items: center;
-    width: 30px; height: 30px;
-    border-radius: 8px;
-    background: #ffffff;
-    border: 1px solid var(--subtle-border);
-    font-size: 15px;
-    line-height: 1;
-  }
-  .jd-row-main { display: block; min-width: 0; }
-  .jd-row-title {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.4;
-    color: var(--ink);
-  }
-  .jd-row-desc {
-    display: block;
-    margin-top: 2px;
-    font-size: 11.5px;
-    line-height: 1.45;
-    color: var(--muted);
-  }
-  .jd-row-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 8px;
-    margin-top: 5px;
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--muted-light);
-  }
-  .jd-row-meta .hi { color: #059669; }
-  .jd-row-arrow { align-self: center; color: var(--muted-light); }
-  .jd-row-arrow svg { width: 14px; height: 14px; }
-
-  .jd-row-tag {
-    display: inline-block;
-    margin-bottom: 4px;
-    font-size: 9.5px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--blue-primary);
-    background: #eff6ff;
-    border: 1px solid #dbeafe;
-    border-radius: 4px;
-    padding: 1px 5px;
-  }
-
-  /* Q&A */
-  .jd-qa {
-    border: 1px solid var(--subtle-border);
-    border-radius: 10px;
-    background: var(--paper);
-  }
-  .jd-qa > summary {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 11px 12px;
-    cursor: pointer;
-    list-style: none;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.45;
-    color: var(--ink);
-  }
-  .jd-qa > summary::-webkit-details-marker { display: none; }
-  .jd-qa > summary .jd-qa-hint {
-    flex-shrink: 0;
-    font-size: 10.5px;
-    font-weight: 700;
-    color: var(--blue-primary);
-    padding-top: 1px;
-  }
-  .jd-qa[open] > summary .jd-qa-hint { visibility: hidden; }
-  .jd-qa-body {
-    padding: 0 12px 12px;
-    margin-top: -2px;
-    font-size: 12.5px;
-    line-height: 1.62;
-    color: var(--ink-secondary);
-  }
-  .jd-qa-body strong { color: var(--ink); }
-  .jd-qa-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 8px;
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--blue-primary);
-    text-decoration: none;
-  }
-
-  .jd-tip {
-    margin: 0 0 10px;
-    padding: 10px 12px 10px 14px;
-    border-left: 2px solid #c4b5fd;
-    border-radius: 0 8px 8px 0;
-    background: #faf5ff;
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: var(--ink-secondary);
-  }
-  .jd-tip:last-child { margin-bottom: 0; }
-  .jd-tip strong { color: #5b21b6; }
-
-  /* ── Rail ─────────────────────────────────────────────────────────── */
-  .jd-rail-card {
-    background: #ffffff;
-    border: 1px solid var(--subtle-border);
-    border-radius: 16px;
-    box-shadow: var(--card-shadow);
-    padding: 16px;
-  }
-
-  .jd-rail-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 10px;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #047857;
-  }
-  .jd-rail-status.is-closed { color: #b91c1c; }
-  .jd-rail-status .dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-  }
-
-  .jd-rail-pay {
-    font-size: 24px;
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    color: var(--ink);
-  }
-  .jd-rail-sub {
-    margin-top: 3px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  .jd-specs {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin: 14px 0;
-    border-top: 1px solid var(--subtle-border);
-  }
-  .jd-specs-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--subtle-border);
-    font-size: 12.5px;
-  }
-  .jd-specs-key {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--muted);
-    font-weight: 500;
-  }
-  .jd-specs-key svg { width: 13px; height: 13px; }
-  .jd-specs-val { font-weight: 700; color: var(--ink); text-align: right; }
-
-  .jd-rail-cta { display: flex; flex-direction: column; gap: 7px; }
-  .jd-rail-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-height: 42px;
-    border-radius: 10px;
-    font-size: 13.5px;
-    font-weight: 800;
-    text-decoration: none;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: var(--transition);
-  }
-  .jd-rail-btn svg { width: 15px; height: 15px; }
-  .jd-rail-btn-primary {
-    color: #ffffff;
-    background: var(--blue-primary);
-    box-shadow: 0 6px 18px -8px rgba(37, 99, 235, 0.8);
-  }
-  .jd-rail-btn-primary:hover { background: #1d4ed8; }
-  .jd-rail-btn-quiet {
-    color: var(--ink);
-    background: var(--paper);
-    border-color: var(--subtle-border);
-    font-weight: 700;
-    min-height: 38px;
-    font-size: 12.5px;
-  }
-  .jd-rail-btn-quiet:hover { background: #ffffff; border-color: #94a3b8; }
-
-  .jd-rail-links {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--subtle-border);
-  }
-  .jd-rail-link {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 2px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color .16s ease;
-  }
-  .jd-rail-link:hover { color: var(--blue-primary); }
-  .jd-rail-link svg { width: 13px; height: 13px; }
-  .jd-rail-link .arrow { margin-left: auto; }
-
-  .jd-share-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 6px;
-  }
-  .jd-share-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    min-height: 36px;
-    padding: 0 8px;
-    border-radius: 9px;
-    border: 1px solid var(--subtle-border);
-    background: #ffffff;
-    font-family: inherit;
-    font-size: 11.5px;
-    font-weight: 700;
-    color: var(--ink);
-    text-decoration: none;
-    cursor: pointer;
-    transition: var(--transition);
-  }
-  .jd-share-btn svg { width: 14px; height: 14px; }
-  .jd-share-btn:hover { border-color: #94a3b8; background: var(--paper); }
-
-  .jd-rail-foot {
-    padding: 2px 4px;
-    font-size: 11px;
-    line-height: 1.6;
-    color: var(--muted-light);
-    text-align: center;
-  }
-  .jd-rail-foot a { color: var(--muted); font-weight: 700; text-decoration: none; }
-  .jd-rail-foot a:hover { color: var(--blue-primary); }
-
-  /* ── Related ──────────────────────────────────────────────────────── */
-  .jd-related { margin-top: 34px; }
-  .jd-related-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 14px;
-  }
-  .jd-related-title {
-    margin: 0;
-    font-family: var(--font-serif);
-    font-size: 19px;
-    font-weight: 700;
-    color: var(--ink);
-  }
-  .jd-related-link {
-    flex-shrink: 0;
-    font-size: 12.5px;
-    font-weight: 700;
-    color: var(--blue-primary);
-    text-decoration: none;
-    white-space: nowrap;
-  }
-  .jd-related-link:hover { text-decoration: underline; }
-
-  .jd-related-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-  }
-  @media (min-width: 640px) {
-    .jd-related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-
-  .jd-rel-card {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px 16px;
-    border: 1px solid var(--subtle-border);
-    border-radius: 14px;
-    background: #ffffff;
-    box-shadow: var(--card-shadow);
-    text-decoration: none;
-    transition: var(--transition);
-  }
-  .jd-rel-card:hover {
-    border-color: #bfdbfe;
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px -14px rgba(37, 99, 235, 0.35);
-  }
-  .jd-rel-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: 11px;
-    color: var(--muted);
-  }
-  .jd-rel-company {
-    font-weight: 800;
-    color: var(--blue-primary);
-    background: #eff6ff;
-    border-radius: 5px;
-    padding: 2px 7px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .jd-rel-title {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.35;
-    color: var(--ink);
-  }
-  .jd-rel-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px 10px;
-    margin: 0;
-    font-size: 11.5px;
-    color: var(--muted);
-  }
-  .jd-rel-meta span { display: inline-flex; align-items: center; gap: 3px; }
-  .jd-rel-meta svg { width: 11px; height: 11px; }
-
-  /* ── Sticky mobile bar ────────────────────────────────────────────── */
-  .jd-sticky {
-    display: none;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: calc(56px + env(safe-area-inset-bottom, 0px));
-    z-index: 155;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 14px;
-    background: rgba(9, 15, 28, 0.97);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-top: 1px solid rgba(148, 163, 184, 0.18);
-    box-shadow: 0 -8px 24px rgba(2, 6, 23, 0.4);
-    box-sizing: border-box;
-  }
-  @media (max-width: 1023px) {
-    .jd-sticky { display: flex; }
-    .jd-wrap { padding-bottom: calc(64px + 56px + env(safe-area-inset-bottom, 0px)); }
-    .jd-related { margin-bottom: 8px; }
-  }
-
-  .jd-sticky-info { flex: 1; min-width: 0; }
-  .jd-sticky-company {
-    display: block;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #7dd3fc;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .jd-sticky-pay {
-    display: block;
-    margin-top: 1px;
-    font-size: 13px;
-    font-weight: 800;
-    color: #f8fafc;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .jd-sticky-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .jd-sticky-icon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    min-width: 44px;
-    height: 42px;
-    padding: 0 6px;
-    border-radius: 10px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
-    background: rgba(148, 163, 184, 0.12);
-    color: #e2e8f0;
-    font-family: inherit;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  .jd-sticky-icon svg { width: 15px; height: 15px; }
-  .jd-sticky-apply {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 38px;
-    padding: 0 16px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #ffffff;
-    font-size: 13.5px;
-    font-weight: 800;
-    text-decoration: none;
-    white-space: nowrap;
-    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
-  }
-  .jd-sticky-apply svg { width: 15px; height: 15px; }
-  .jd-sticky-apply:active,
-  .jd-sticky-icon:active { transform: scale(.96); }
-
-  @media (max-width: 360px) {
-    .jd-sticky { gap: 8px; padding: 9px 10px; }
-    .jd-sticky-company { display: none; }
-    .jd-sticky-pay { font-size: 12.5px; }
-    .jd-sticky-icon { min-width: 40px; padding: 0 4px; }
-  }
-
-  /* The floating DM bubble collides with the sticky apply bar on phones.
-     The page already offers WhatsApp, recruiter and share actions. */
-  @media (max-width: 1023px) {
-    .floating-chat-widget { display: none !important; }
-  }
-
-
-  /* Focus visibility */
-  .jd-btn:focus-visible,
-  .jd-pill:focus-visible,
-  .jd-btn-sm:focus-visible,
-  .jd-rail-btn:focus-visible,
-  .jd-sticky-apply:focus-visible,
-  .jd-sticky-icon:focus-visible,
-  .jd-share-btn:focus-visible,
-  .jd-row:focus-visible,
-  .jd-rel-card:focus-visible {
-    outline: 2px solid #60a5fa;
-    outline-offset: 2px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .jd-btn, .jd-rel-card, .jd-row, .jd-acc > summary .jd-chev { transition: none !important; }
-  }
-</style>
+<link rel="stylesheet" href="{% static 'css/pages/job-detail.css' %}?v=2026110201">
 {% endblock %}
 
+{% block body_class %}has-action-bar{% endblock %}
+
 {% block content %}
-<div class="jd-wrap">
+<main class="wrap jd">
+  <nav class="jd-crumbs" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span aria-hidden="true">/</span>
+    <a href="/category/{{ job.category.slug }}/">{{ job.category.name }}</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ job.company_name }}</span>
+  </nav>
 
-  <div class="jd-grid">
+  <div class="jd-layout">
 
-    <!-- ══════════════════════════════════════════════════════════════
-         MAIN COLUMN
-         ══════════════════════════════════════════════════════════════ -->
-    <main class="jd-main">
+    <header class="jd-head">
+      <p class="jd-company">{{ job.company_name }}</p>
+      <h1>{{ job.title }}</h1>
+      <p class="jd-closes">
+        <span class="timer-tag{% if job.is_expired %} is-closed{% endif %}" data-timer="{{ job.id }}" data-seconds="{{ job.get_time_left_seconds }}"><span>{{ job.get_time_left_seconds|days_left }}</span></span>
+        <span class="jd-closes-date">{% if job.is_expired %}Closed{% else %}Closes{% endif %} {{ job.closes_at|date:"j M Y" }}</span>
+      </p>
 
-      <!-- ── HERO ─────────────────────────────────────────────────── -->
-      <header class="jd-hero">
-        <div class="jd-glow"></div>
-
-        <div class="jd-hero-top">
-          <nav class="jd-crumbs" aria-label="Breadcrumb">
-            <a href="/">Home</a>
-            <span class="sep">›</span>
-            <a href="/category/{{ job.category.slug }}/">{{ job.category.name }}</a>
-            <span class="sep">›</span>
-            <span class="crumb-current">{{ job.company_name }}</span>
-          </nav>
-          <span class="jd-ref">{{ job.get_discreet_source_code }} #{{ job.pk }}</span>
+      <dl class="glass jd-facts">
+        <div class="wide">
+          <dt>Location</dt>
+          <dd>{{ job.location|default:"Location not specified" }}</dd>
         </div>
+        <div>
+          <dt>Pay</dt>
+          <dd>{{ job.stipend_salary|default:"Not disclosed" }}</dd>
+        </div>
+        <div>
+          <dt>Experience</dt>
+          <dd>{{ job.get_experience_display }}</dd>
+        </div>
+        <div>
+          <dt>Job type</dt>
+          <dd>{{ job.get_job_type_display }}</dd>
+        </div>
+        <div>
+          <dt>Posted</dt>
+          <dd>{{ posted_date_display }}</dd>
+        </div>
+        {% if job.contact_phone %}
+        <div class="wide">
+          <dt>HR contact</dt>
+          <dd><a href="tel:{{ job.contact_phone }}">{{ job.contact_phone }}</a></dd>
+        </div>
+        {% endif %}
+      </dl>
 
-        <div class="jd-chips">
-          {% if job.is_expired %}
-            <span class="jd-chip jd-chip-closed">Closed</span>
-          {% else %}
-            <span class="jd-chip jd-chip-live"><span class="jd-chip-dot"></span> Applications open</span>
+      <div class="share-row">
+        <a id="shareWaBtn"
+           href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}"
+           target="_blank" rel="noopener" class="button">Share on WhatsApp</a>
+        <button id="copyUrlBtn" type="button" onclick="copyShareUrl()" class="button">Copy link</button>
+      </div>
+    </header>
+
+    <div class="jd-col">
+      {% if job.is_referral or job.referral_instructions or job.referrer_name %}
+      <section class="glass jd-section" aria-labelledby="jd-referral">
+        <div class="jd-section-head">
+          <h2 id="jd-referral">Employee referral</h2>
+          {% if job.referrer_linkedin %}
+          <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" class="jd-text-link">Referrer profile</a>
           {% endif %}
-          <span class="jd-chip">{{ job.get_job_type_display }}</span>
         </div>
-
-        <h1 class="jd-title">{{ job.title }}</h1>
-        <p class="jd-company">{{ job.company_name }}</p>
-
-        <ul class="jd-meta">
-          <li>
-            <i data-lucide="map-pin"></i>
-            <span>{{ job.location|default:"Location not specified" }}</span>
-          </li>
-          <li>
-            <i data-lucide="wallet"></i>
-            <b>{{ job.stipend_salary|default:"Not disclosed" }}</b>
-          </li>
-          <li>
-            <i data-lucide="briefcase"></i>
-            <span class="jd-exp">{{ job.get_experience_display }}</span>
-          </li>
-          <li>
-            <i data-lucide="clock"></i>
-            <span>Posted {{ posted_date_display }}</span>
-          </li>
-          {% if job.contact_phone %}
-          <li>
-            <i data-lucide="phone"></i>
-            <a href="tel:{{ job.contact_phone }}" style="color:#a7f3d0; font-weight:700; text-decoration:none;">{{ job.contact_phone }}</a>
-          </li>
-          {% endif %}
-        </ul>
-
-        <div class="jd-actions">
-          <div class="jd-actions-main">
-            {% if job.is_expired %}
-              <span class="jd-btn jd-btn-muted">
-                <i data-lucide="clock-alert"></i>
-                <span>Applications closed</span>
-              </span>
-            {% else %}
-              <a href="{% if job.clean_apply_url %}{{ job.clean_apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}"
-                 target="_blank" rel="noopener noreferrer" class="jd-btn jd-btn-primary">
-                <i data-lucide="external-link"></i>
-                <span>Apply on official portal</span>
-              </a>
-            {% endif %}
-            <a href="#prep-kit" class="jd-btn jd-btn-ghost">
-              <i data-lucide="book-open"></i>
-              <span>Prep kit</span>
-            </a>
-          </div>
-
-          <div class="jd-secondary">
-            <a href="/resume-studio/?job_id={{ job.uuid }}" class="jd-pill jd-pill-accent">
-              <i data-lucide="sparkles"></i>
-              <span>Build resume</span>
-            </a>
-            <a href="{{ recruiter_connect_url }}" class="jd-pill">
-              <i data-lucide="user-check"></i>
-              <span>Find recruiter</span>
-            </a>
-            <a href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply:%20{{ share_url }}"
-               target="_blank" rel="noopener" class="jd-pill">
-              <i data-lucide="message-circle"></i>
-              <span>WhatsApp</span>
-            </a>
-            <button type="button" onclick="copyFormattedIgStory()" id="btnHeaderCopyStory" class="jd-pill">
-              <i data-lucide="instagram"></i>
-              <span id="headerCopyStoryBtnText">Copy story</span>
-            </button>
-            <button type="button" onclick="copyShareUrl()" class="jd-pill">
-              <i data-lucide="link"></i>
-              <span>Copy link</span>
-            </button>
-          </div>
+        <p class="jd-text"><strong>Posted by:</strong> {{ job.referrer_name|default:"Not specified in the post" }}</p>
+        {% if job.referral_instructions %}
+        <div class="jd-box">
+          <h3 class="jd-sub">How to request the referral</h3>
+          <p class="jd-text">{{ job.referral_instructions|linebreaksbr }}</p>
         </div>
-      </header>
+        {% endif %}
+      </section>
+      {% endif %}
 
-      <!-- ── RECRUITER CONTACT ────────────────────────────────────── -->
-      <section class="jd-panel" aria-label="Recruiter contact">
-        <div class="jd-recruiter">
-          <div class="jd-avatar {% if active_recruiter.email %}is-verified{% endif %}"
-               title="{% if active_recruiter.email %}Email published in the job post{% else %}No public email in this post{% endif %}">
-            {% if active_recruiter.name %}{{ active_recruiter.name|slice:":2"|upper }}{% else %}HR{% endif %}
-          </div>
+      <section class="glass jd-section" id="about" aria-labelledby="jd-about">
+        <h2 id="jd-about">About the role</h2>
+        <div class="jd-prose">
+          {% for block in description_blocks %}
+            {% if block.kind == 'heading' %}<h3>{{ block.text }}</h3>
+            {% elif block.kind == 'list' %}<ul>{% for line in block.lines %}<li>{{ line }}</li>{% endfor %}</ul>
+            {% else %}<p>{{ block.text }}</p>{% endif %}
+          {% endfor %}
+        </div>
+      </section>
 
-          <div class="jd-recruiter-main">
-            <div class="jd-recruiter-name">
-              <span>{{ active_recruiter.name|default:"Recruiter contact" }}</span>
-              {% if active_recruiter.email %}
-                <span class="jd-tag-ok">In post</span>
-              {% endif %}
+      <section class="glass jd-section" id="requirements" aria-labelledby="jd-req">
+        <h2 id="jd-req">Eligibility and process</h2>
+        <div class="jd-req">
+          <div>
+            <h3 class="jd-sub">Who can apply</h3>
+            <p class="jd-text">{{ job.eligibility }}</p>
+            <h3 class="jd-sub">Skills</h3>
+            <div class="skills-wrapper">
+              {% for skill in skills_list %}
+                <span class="skill-tag">{{ skill }}</span>
+              {% empty %}
+                <span class="jd-text">General student requirements</span>
+              {% endfor %}
             </div>
-            <div class="jd-recruiter-role">{{ active_recruiter.title|default:"Recruiter / hiring contact" }}</div>
-            <div class="jd-recruiter-note">
+          </div>
+          <div>
+            <h3 class="jd-sub">Selection process</h3>
+            {% if job.selection_process %}
+              <ol class="jd-steps">
+                {% for round in job.get_selection_rounds_list %}
+                  <li>{{ round }}</li>
+                {% endfor %}
+              </ol>
+            {% else %}
+              <p class="jd-text">Details are shared by the recruiter after shortlisting.</p>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="jd-rail" aria-label="Tools for this job">
+      <section class="jd-section jd-tools" aria-labelledby="jd-tools">
+        <h2 id="jd-tools">Get ready to apply</h2>
+        <ul class="tool-list">
+          <li>
+            <a class="tool-link" href="/resume-studio/?job_id={{ job.uuid }}">
+              <i data-lucide="file-check" aria-hidden="true"></i>
+              <b>Make a resume for this job</b>
+              <span>Fitted to this post, nothing invented</span>
+            </a>
+          </li>
+          <li>
+            <a class="tool-link" href="/ai-resume-analysis/">
+              <i data-lucide="gauge" aria-hidden="true"></i>
+              <b>Check your ATS score</b>
+              <span>Score out of 100 and what to fix</span>
+            </a>
+          </li>
+          <li>
+            <a class="tool-link" href="{{ recruiter_connect_url }}">
+              <i data-lucide="user-check" aria-hidden="true"></i>
+              <b>Find the recruiter</b>
+              <span>Search for hiring contacts at {{ clean_company_name|default:job.company_name }}</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section class="glass jd-section" aria-labelledby="jd-recruiter">
+        <h2 id="jd-recruiter">Recruiter contact</h2>
+        <div class="jd-recruiter">
+          <div class="jd-avatar{% if active_recruiter.email %} is-verified{% endif %}"
+               title="{% if active_recruiter.email %}Email published in the job post{% else %}No public email in this post{% endif %}"
+               aria-hidden="true">{% if active_recruiter.name %}{{ active_recruiter.name|slice:":2"|upper }}{% else %}HR{% endif %}</div>
+          <div class="jd-recruiter-main">
+            <p class="jd-recruiter-name">
+              <span>{{ active_recruiter.name|default:"Recruiter contact" }}</span>
+              {% if active_recruiter.email %}<span class="jd-tag-ok">In post</span>{% endif %}
+            </p>
+            <p class="jd-recruiter-role">{{ active_recruiter.title|default:"Recruiter / hiring contact" }}</p>
+            <p class="jd-recruiter-note">
               {% if active_recruiter.email %}
                 <code>{{ active_recruiter.email }}</code> at {{ clean_company_name|default:job.company_name }}
               {% else %}
                 No public email in this post. Use a source-linked contact instead.
               {% endif %}
-            </div>
+            </p>
           </div>
-
           <div class="jd-recruiter-btns">
-            <a href="{{ recruiter_connect_url }}" class="jd-btn-sm jd-btn-sm-solid">
-              <i data-lucide="send"></i>
+            <a href="{{ recruiter_connect_url }}" class="button">
+              <i data-lucide="send" aria-hidden="true"></i>
               <span>Connect</span>
             </a>
             <a href="{{ active_recruiter.linkedin_url|default:linkedin_recruiter_search_url }}"
-               target="_blank" rel="noopener noreferrer" class="jd-btn-sm jd-btn-sm-quiet"
+               target="_blank" rel="noopener noreferrer" class="button"
                aria-label="Open LinkedIn profile search">
-              <i data-lucide="user-search"></i>
+              <i data-lucide="user-search" aria-hidden="true"></i>
               <span>LinkedIn</span>
             </a>
           </div>
         </div>
       </section>
 
-      <!-- ── REFERRAL ─────────────────────────────────────────────── -->
-      {% if job.is_referral or job.referral_instructions or job.referrer_name %}
-      <section class="jd-panel">
-        <div class="jd-panel-head">
-          <i data-lucide="handshake"></i>
-          <h2 class="jd-kicker">Employee referral</h2>
-          {% if job.referrer_linkedin %}
-          <a href="{{ job.referrer_linkedin }}" target="_blank" rel="noopener noreferrer" class="jd-count" style="text-decoration:none; color: var(--blue-primary);">
-            Referrer profile ↗
-          </a>
-          {% endif %}
-        </div>
-        <div class="jd-panel-body" style="display:flex; flex-direction:column; gap:10px;">
-          <p class="jd-fact-text" style="margin:0;">
-            <strong style="color: var(--ink);">Posted by:</strong>
-            {{ job.referrer_name|default:"Not specified in the post" }}
-          </p>
-          {% if job.referral_instructions %}
-          <div style="background: var(--paper); border: 1px solid var(--subtle-border); border-radius: 10px; padding: 12px 14px;">
-            <div class="jd-fact-title" style="margin-bottom:4px;">How to request the referral</div>
-            <div class="jd-fact-text">{{ job.referral_instructions|linebreaksbr }}</div>
-          </div>
-          {% endif %}
+      <section class="glass jd-section" aria-labelledby="jd-share">
+        <h2 id="jd-share">Share on Instagram</h2>
+        <p class="jd-lead">Copy ready story text, or open the story card with a QR code.</p>
+        <div class="jd-share">
+          <button type="button" onclick="copyFormattedIgStory()" id="btnSidebarCopyStory" class="button">
+            <i data-lucide="copy" aria-hidden="true"></i>
+            <span id="sidebarCopyStoryText">Story text</span>
+          </button>
+          <button type="button" onclick="openIgStoryModal()" class="button" aria-haspopup="dialog" aria-controls="igStoryModal">
+            <i data-lucide="image" aria-hidden="true"></i>
+            <span>Story card</span>
+          </button>
         </div>
       </section>
-      {% endif %}
+    </aside>
 
-      <!-- ── ABOUT THE ROLE ───────────────────────────────────────── -->
-      <section class="jd-panel" id="about">
-        <div class="jd-panel-head">
-          <i data-lucide="file-text"></i>
-          <h2 class="jd-kicker">About the role</h2>
-        </div>
-        <div class="jd-panel-body">
-          <div class="jd-prose">
-            {% for block in description_blocks %}
-              {% if block.kind == 'heading' %}<h3 class="jd-prose-heading">{{ block.text }}</h3>
-              {% elif block.kind == 'list' %}<ul class="jd-prose-list">{% for line in block.lines %}<li>{{ line }}</li>{% endfor %}</ul>
-              {% else %}<p>{{ block.text }}</p>{% endif %}
-            {% endfor %}
-          </div>
-        </div>
-      </section>
-
-      <!-- ── REQUIREMENTS ─────────────────────────────────────────── -->
-      <section class="jd-panel" id="requirements">
-        <div class="jd-panel-head">
-          <i data-lucide="clipboard-check"></i>
-          <h2 class="jd-kicker">Eligibility &amp; process</h2>
-        </div>
-        <div class="jd-panel-body">
-          <div class="jd-facts">
-            <div>
-              <h3 class="jd-fact-title">Who can apply</h3>
-              <p class="jd-fact-text">{{ job.eligibility }}</p>
-
-              <h3 class="jd-fact-title" style="margin-top:18px;">Skills &amp; stack</h3>
-              <div class="jd-tags">
-                {% for skill in skills_list %}
-                  <span class="jd-tag">{{ skill }}</span>
-                {% empty %}
-                  <span class="jd-fact-text">General student requirements</span>
-                {% endfor %}
-              </div>
-            </div>
-
-            <div>
-              <h3 class="jd-fact-title">Selection process</h3>
-              {% if job.selection_process %}
-                <ol class="jd-steps">
-                  {% for round in job.get_selection_rounds_list %}
-                    <li>{{ round }}</li>
-                  {% endfor %}
-                </ol>
-              {% else %}
-                <p class="jd-fact-text">Details are shared by the recruiter after shortlisting.</p>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── PREP KIT ─────────────────────────────────────────────── -->
-      <section class="jd-panel" id="prep-kit">
-        <div class="jd-panel-head">
-          <i data-lucide="graduation-cap"></i>
-          <h2 class="jd-kicker">Prep kit</h2>
+    <div class="jd-more">
+      <section class="glass jd-section" id="prep-kit" aria-labelledby="jd-prep">
+        <div class="jd-section-head">
+          <h2 id="jd-prep">Prep kit</h2>
           <span class="jd-count">
             {% if interview_prep %}
               {% with mat=job.get_study_materials_list|length pl=interview_prep.prep_links|length cc=interview_prep.coding_challenges|length tq=interview_prep.tech_questions|length bq=interview_prep.behavioral_questions|length %}
@@ -1415,24 +312,24 @@
           </span>
         </div>
 
-        <!-- 1. Study material -->
+        <div>
         {% if job.get_study_materials_list %}
         <details class="jd-acc" open>
           <summary>
-            <i data-lucide="library"></i>
+            <i data-lucide="library" aria-hidden="true"></i>
             <span>Study material</span>
             <span class="jd-acc-num">{{ job.get_study_materials_list|length }}</span>
-            <i data-lucide="chevron-down" class="jd-chev"></i>
+            <i data-lucide="chevron-down" class="jd-chev" aria-hidden="true"></i>
           </summary>
           <div class="jd-acc-body">
             {% for mat in job.get_study_materials_list %}
             <a href="{{ mat.url }}" target="_blank" rel="noopener" class="jd-row">
-              <span class="jd-row-icon">{{ mat.icon|default:"📖" }}</span>
+              <span class="jd-row-icon"><i data-lucide="book-open" aria-hidden="true"></i></span>
               <span class="jd-row-main">
                 <span class="jd-row-title">{{ mat.title }}</span>
                 <span class="jd-row-desc">{{ mat.desc }}</span>
               </span>
-              <span class="jd-row-arrow"><i data-lucide="arrow-up-right"></i></span>
+              <span class="jd-row-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
             </a>
             {% endfor %}
           </div>
@@ -1440,71 +337,68 @@
         {% endif %}
 
         {% if interview_prep %}
-        <!-- 2. Company prep links -->
         {% if interview_prep.prep_links %}
         <details class="jd-acc">
           <summary>
-            <i data-lucide="link"></i>
-            <span>Company-specific guides</span>
+            <i data-lucide="link" aria-hidden="true"></i>
+            <span>Company guides</span>
             <span class="jd-acc-num">{{ interview_prep.prep_links|length }}</span>
-            <i data-lucide="chevron-down" class="jd-chev"></i>
+            <i data-lucide="chevron-down" class="jd-chev" aria-hidden="true"></i>
           </summary>
           <div class="jd-acc-body">
             {% for item in interview_prep.prep_links %}
             <a href="{{ item.url }}" target="_blank" rel="noopener" class="jd-row">
-              <span class="jd-row-icon">{{ item.icon|default:"📖" }}</span>
+              <span class="jd-row-icon"><i data-lucide="book-open" aria-hidden="true"></i></span>
               <span class="jd-row-main">
                 <span class="jd-row-tag">{{ item.tag }}</span>
                 <span class="jd-row-title">{{ item.title }}</span>
                 <span class="jd-row-desc">{{ item.desc }}</span>
               </span>
-              <span class="jd-row-arrow"><i data-lucide="arrow-up-right"></i></span>
+              <span class="jd-row-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
             </a>
             {% endfor %}
           </div>
         </details>
         {% endif %}
 
-        <!-- 3. Coding challenges -->
         {% if interview_prep.coding_challenges %}
         <details class="jd-acc">
           <summary>
-            <i data-lucide="code-2"></i>
+            <i data-lucide="code-2" aria-hidden="true"></i>
             <span>Likely coding questions</span>
             <span class="jd-acc-num">{{ interview_prep.coding_challenges|length }}</span>
-            <i data-lucide="chevron-down" class="jd-chev"></i>
+            <i data-lucide="chevron-down" class="jd-chev" aria-hidden="true"></i>
           </summary>
           <div class="jd-acc-body">
             {% for ch in interview_prep.coding_challenges %}
             <a href="{{ ch.url }}" class="jd-row">
-              <span class="jd-row-icon">💻</span>
+              <span class="jd-row-icon"><i data-lucide="code-2" aria-hidden="true"></i></span>
               <span class="jd-row-main">
                 <span class="jd-row-title">{{ ch.title }}</span>
                 <span class="jd-row-meta">
                   <span>{{ ch.difficulty }}</span>
                   <span>{{ ch.frequency }}</span>
-                  <span class="hi">⚡ Live debugger</span>
+                  <span>Open in live debugger</span>
                 </span>
               </span>
-              <span class="jd-row-arrow"><i data-lucide="arrow-up-right"></i></span>
+              <span class="jd-row-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
             </a>
             {% endfor %}
           </div>
         </details>
         {% endif %}
 
-        <!-- 4. Round strategy -->
         {% if interview_prep.rounds_roadmap %}
         <details class="jd-acc">
           <summary>
-            <i data-lucide="route"></i>
-            <span>Round-wise strategy</span>
+            <i data-lucide="route" aria-hidden="true"></i>
+            <span>Round by round</span>
             <span class="jd-acc-num">{{ interview_prep.rounds_roadmap|length }}</span>
-            <i data-lucide="chevron-down" class="jd-chev"></i>
+            <i data-lucide="chevron-down" class="jd-chev" aria-hidden="true"></i>
           </summary>
           <div class="jd-acc-body">
             {% for r in interview_prep.rounds_roadmap %}
-            <div class="jd-row" style="grid-template-columns: minmax(0,1fr); cursor: default;">
+            <div class="jd-row is-static">
               <span class="jd-row-main">
                 <span class="jd-row-tag">{{ r.round }}</span>
                 <span class="jd-row-title">{{ r.focus }}</span>
@@ -1516,14 +410,13 @@
         </details>
         {% endif %}
 
-        <!-- 5. Technical Q&A -->
         {% if interview_prep.tech_questions %}
         <details class="jd-acc">
           <summary>
-            <i data-lucide="help-circle"></i>
+            <i data-lucide="help-circle" aria-hidden="true"></i>
             <span>Technical questions</span>
             <span class="jd-acc-num">{{ interview_prep.tech_questions|length }}</span>
-            <i data-lucide="chevron-down" class="jd-chev"></i>
+            <i data-lucide="chevron-down" class="jd-chev" aria-hidden="true"></i>
           </summary>
           <div class="jd-acc-body">
             {% for tq in interview_prep.tech_questions %}
@@ -1533,13 +426,11 @@
                 <span class="jd-qa-hint">Answer</span>
               </summary>
               <div class="jd-qa-body">
-                <strong>Model answer:</strong> {{ tq.a }}
-                <div>
-                  <a href="{{ tq.debugger_url }}" class="jd-qa-link">
-                    ⚡ Practice in the code editor
-                    <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
-                  </a>
-                </div>
+                <p><strong>Model answer:</strong> {{ tq.a }}</p>
+                <a href="{{ tq.debugger_url }}" class="jd-text-link">
+                  Practice in the code editor
+                  <i data-lucide="arrow-right" aria-hidden="true"></i>
+                </a>
               </div>
             </details>
             {% endfor %}
@@ -1547,381 +438,165 @@
         </details>
         {% endif %}
 
-        <!-- 6. Behavioural -->
         {% if interview_prep.behavioral_questions %}
         <details class="jd-acc">
           <summary>
-            <i data-lucide="messages-square"></i>
-            <span>Behavioural &amp; HR questions</span>
+            <i data-lucide="messages-square" aria-hidden="true"></i>
+            <span>HR and behavioural questions</span>
             <span class="jd-acc-num">{{ interview_prep.behavioral_questions|length }}</span>
-            <i data-lucide="chevron-down" class="jd-chev"></i>
+            <i data-lucide="chevron-down" class="jd-chev" aria-hidden="true"></i>
           </summary>
           <div class="jd-acc-body">
             {% for bq in interview_prep.behavioral_questions %}
             <div class="jd-tip">
-              <strong>{{ bq.q }}</strong><br>
-              {{ bq.tip }}
+              <strong>{{ bq.q }}</strong>
+              <span>{{ bq.tip }}</span>
             </div>
             {% endfor %}
           </div>
         </details>
         {% endif %}
         {% endif %}
+        </div>
       </section>
 
-      <!-- AdSense Unit in Job Detail -->
       {% include 'components/adsense_unit.html' %}
-
-    </main>
-
-    <!-- ══════════════════════════════════════════════════════════════
-         RAIL
-         ══════════════════════════════════════════════════════════════ -->
-    <aside class="jd-rail">
-
-      <section class="jd-rail-card">
-        <div class="jd-rail-status {% if job.is_expired %}is-closed{% endif %}">
-          <span class="dot"></span>
-          {% if job.is_expired %}No longer accepting{% else %}Accepting applications{% endif %}
-        </div>
-
-        <div class="jd-rail-pay">{{ job.stipend_salary|default:"Not disclosed" }}</div>
-        <div class="jd-rail-sub">{{ job.get_job_type_display }} · {{ job.company_name }}</div>
-
-        <div class="jd-specs">
-          <div class="jd-specs-row">
-            <span class="jd-specs-key"><i data-lucide="map-pin"></i> Location</span>
-            <span class="jd-specs-val">{{ job.location|default:"—" }}</span>
-          </div>
-          <div class="jd-specs-row">
-            <span class="jd-specs-key"><i data-lucide="briefcase"></i> Experience</span>
-            <span class="jd-specs-val">{{ job.get_experience_display }}</span>
-          </div>
-          <div class="jd-specs-row">
-            <span class="jd-specs-key"><i data-lucide="calendar"></i> Posted</span>
-            <span class="jd-specs-val">{{ posted_date_display }}</span>
-          </div>
-        </div>
-
-        <div class="jd-rail-cta">
-          {% if job.is_expired %}
-            <span class="jd-rail-btn jd-rail-btn-quiet" style="cursor: not-allowed;">
-              <i data-lucide="clock-alert"></i>
-              <span>Applications closed</span>
-            </span>
-          {% else %}
-            <a href="{% if job.clean_apply_url %}{{ job.clean_apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}"
-               target="_blank" rel="noopener noreferrer" class="jd-rail-btn jd-rail-btn-primary">
-              <i data-lucide="external-link"></i>
-              <span>Apply on official portal</span>
-            </a>
-          {% endif %}
-
-          <a href="/resume-studio/?job_id={{ job.uuid }}" class="jd-rail-btn jd-rail-btn-quiet">
-            <i data-lucide="sparkles"></i>
-            <span>Build my resume</span>
-          </a>
-        </div>
-
-        <div class="jd-rail-links">
-          <a href="{{ recruiter_connect_url }}" class="jd-rail-link">
-            <i data-lucide="user-check"></i>
-            <span>Connect with a recruiter</span>
-            <i data-lucide="arrow-right" class="arrow"></i>
-          </a>
-          <a href="/resume-studio/?job_id={{ job.uuid }}" class="jd-rail-link">
-            <i data-lucide="file-check"></i>
-            <span>Build a resume for this job</span>
-            <i data-lucide="arrow-right" class="arrow"></i>
-          </a>
-          </div>
-      </section>
-
-      <section class="jd-rail-card">
-        <div class="jd-panel-head" style="padding: 0 0 10px; border-bottom: none;">
-          <i data-lucide="share-2"></i>
-          <h2 class="jd-kicker">Share this requirement</h2>
-        </div>
-        <div class="jd-share-grid">
-          <button type="button" onclick="copyFormattedIgStory()" id="btnSidebarCopyStory" class="jd-share-btn">
-            <i data-lucide="instagram"></i>
-            <span id="sidebarCopyStoryText">Story text</span>
-          </button>
-          <a id="shareWaBtn"
-             href="https://api.whatsapp.com/send?text={{ job.company_name }}%20is%20hiring%20for%20{{ job.title }}!%20Check%20eligibility%20%26%20apply%20here:%20{{ share_url }}"
-             target="_blank" rel="noopener" class="jd-share-btn">
-            <i data-lucide="message-circle"></i>
-            <span>WhatsApp</span>
-          </a>
-          <button type="button" onclick="openIgStoryModal()" class="jd-share-btn">
-            <i data-lucide="image"></i>
-            <span>Story card</span>
-          </button>
-          <button id="copyUrlBtn" type="button" onclick="copyShareUrl()" class="jd-share-btn">
-            <i data-lucide="link"></i>
-            <span>Copy link</span>
-          </button>
-        </div>
-      </section>
-
-      <p class="jd-rail-foot">
-        Daily student requirements by
-        <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener">Python Kashi</a> ·
-        <a href="/category/{{ job.category.slug }}/">more {{ job.category.name }} roles</a>
-      </p>
-
-    </aside>
+    </div>
 
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-       RELATED
-       ══════════════════════════════════════════════════════════════ -->
   {% if related_jobs %}
-  <section class="jd-related">
-    <div class="jd-related-head">
-      <h2 class="jd-related-title">More fresh requirements in {{ job.category.name }}</h2>
-      <a href="/category/{{ job.category.slug }}/" class="jd-related-link">View category feed ↗</a>
+  <section class="jd-related" aria-labelledby="jd-related">
+    <div class="section-head">
+      <h2 id="jd-related">More {{ job.category.name }} jobs</h2>
+      <a href="/category/{{ job.category.slug }}/">See all</a>
     </div>
-
-    <div class="jd-related-grid">
+    <div class="vp-catalog-grid">
       {% for r in related_jobs %}
-      <a href="/category/{{ r.category.slug }}/job/{{ r.uuid }}/" class="jd-rel-card">
-        <div class="jd-rel-top">
-          <span class="jd-rel-company">{{ r.company_name }}</span>
-          <span>{{ r.get_posted_date_display }}</span>
-        </div>
-        <h3 class="jd-rel-title">{{ r.title }}</h3>
-        <p class="jd-rel-meta">
-          <span><i data-lucide="map-pin"></i>{{ r.location }}</span>
-          <span><i data-lucide="wallet"></i>{{ r.stipend_salary }}</span>
-        </p>
-      </a>
+        {% include 'components/job_card.html' with job=r %}
       {% endfor %}
     </div>
   </section>
   {% endif %}
 
-</div>
+  <p class="jd-foot">
+    Daily student requirements by
+    <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener">Python Kashi</a>.
+    <a href="/category/{{ job.category.slug }}/">More {{ job.category.name }} roles</a>.
+    <span class="jd-ref">Ref {{ job.get_discreet_source_code }} #{{ job.pk }}</span>
+  </p>
+</main>
 
-<!-- ── STICKY MOBILE BAR ─────────────────────────────────────────────── -->
-<div class="jd-sticky">
-  <div class="jd-sticky-info">
-    <span class="jd-sticky-company">{{ job.company_name }}</span>
-    <span class="jd-sticky-pay">{{ job.stipend_salary|default:job.get_job_type_display }}</span>
-  </div>
+<div id="igStoryModal" class="modal-overlay jd-modal" role="dialog" aria-modal="true" aria-labelledby="igStoryTitle">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <h2 id="igStoryTitle">Instagram story</h2>
+        <p>A 9:16 story card and a link for the sticker.</p>
+      </div>
+      <button type="button" class="close-btn" onclick="closeIgStoryModal()" aria-label="Close">
+        <i data-lucide="x" aria-hidden="true"></i>
+      </button>
+    </div>
 
-  <div class="jd-sticky-actions">
-    <a href="{{ recruiter_connect_url }}" class="jd-sticky-icon" aria-label="Connect with recruiter">
-      <i data-lucide="user-check"></i>
-      <span>Recruiter</span>
-    </a>
-    <a href="/resume-studio/?job_id={{ job.uuid }}" class="jd-sticky-icon" aria-label="Build a resume for this job">
-      <i data-lucide="sparkles"></i>
-      <span>Resume</span>
-    </a>
-    {% if job.is_expired %}
-      <span class="jd-sticky-apply" style="background: rgba(100,116,139,.35); box-shadow:none; color:#94a3b8;">Closed</span>
-    {% else %}
-      <a href="{% if job.clean_apply_url %}{{ job.clean_apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}"
-         target="_blank" rel="noopener noreferrer" class="jd-sticky-apply">
-        <i data-lucide="external-link"></i>
-        <span>Apply</span>
-      </a>
+    <div>
+      <p class="jd-label">Story card preview</p>
+      <div id="igStoryCardPreview" class="jd-story">
+        <div class="jd-story-top">
+          <span class="jd-story-tag">New requirement</span>
+          <span class="jd-story-handle">@ikashii_07</span>
+        </div>
+
+        <div class="jd-story-role">
+          <span class="jd-story-company">{{ job.company_name }}</span>
+          <h3>{{ job.title }}</h3>
+        </div>
+
+        {% with exp=job.get_experience_display %}
+        {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
+        <div class="jd-story-exp is-fresher">
+          <span><small>Experience</small><b>{{ exp }}</b></span>
+          <em>Freshers eligible</em>
+        </div>
+        {% else %}
+        <div class="jd-story-exp">
+          <span><small>Experience</small><b>{{ exp }}</b></span>
+          <em>Experienced</em>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <div class="jd-story-facts">
+          <div><small>Stipend / salary</small><span class="pay">{{ job.stipend_salary }}</span></div>
+          <div><small>Location</small><span>{{ job.location }}</span></div>
+          <div class="wide"><small>Eligibility</small><span>{{ job.eligibility|default:"Any Graduate / BE / B.Tech / MCA / All Batches"|truncatechars:42 }}</span></div>
+          {% if job.skills_required %}
+          <div class="wide"><small>Key skills</small><span class="clip">{{ job.skills_required }}</span></div>
+          {% endif %}
+        </div>
+
+        <div class="jd-story-qr">
+          <img src="/api/jobs/{{ job.id }}/ig-story-image/" width="60" height="60" loading="lazy" alt="QR code to apply">
+          <div>
+            <b>Scan the QR code to apply</b>
+            <span>Screenshot or scan with your camera</span>
+            <code>kashiiupdatez.online/job/{{ job.uuid|stringformat:"s"|slice:":8" }}</code>
+          </div>
+        </div>
+
+        <p class="jd-story-cta">Tap the link sticker to apply</p>
+        <p class="jd-story-site">kashiiupdatez.online</p>
+      </div>
+    </div>
+
+    <div>
+      <p class="jd-label" id="igStoryCaptionLabel">Story text, ready to paste</p>
+      <div id="igStoryCaptionText" class="jd-caption" aria-labelledby="igStoryCaptionLabel">{{ insta_story_text|default:job.get_insta_story_text }}</div>
+    </div>
+
+    <div class="jd-modal-actions">
+      <button type="button" id="btnCopyIgCaption" onclick="copyFormattedIgStory()" class="button button-primary">
+        <i data-lucide="copy" aria-hidden="true"></i>
+        <span id="btnCopyIgCaptionText">Copy story text</span>
+      </button>
+      <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button">Download story image with QR</a>
+      <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button">Copy link for the sticker</button>
+      <a href="https://instagram.com" target="_blank" rel="noopener" class="button">Open Instagram</a>
+    </div>
+
+    {% if user.is_staff or user.is_superuser %}
+    <div class="jd-box jd-meta-api">
+      <div class="jd-meta-api-head">
+        <span>Meta Story API (@ikashii_07)</span>
+        <span id="igStoryPublishBadge" class="jd-badge{% if job.insta_story_published %} is-published{% endif %}">{% if job.insta_story_published %}Published{% else %}Ready to push{% endif %}</span>
+      </div>
+      <button type="button" id="btnPublishIgStory" onclick="publishStoryToInstagram({{ job.id }})" class="button">
+        <i data-lucide="send" aria-hidden="true"></i>
+        <span id="btnPublishIgStoryText">{% if job.insta_story_published %}Push story again{% else %}Push story to @ikashii_07{% endif %}</span>
+      </button>
+      <div id="igPublishStatusMsg" class="jd-status" role="status" hidden></div>
+    </div>
     {% endif %}
   </div>
 </div>
+{% endblock %}
 
-<!-- ── INSTAGRAM STORY SHARE & CARD CREATOR MODAL ────────────────────── -->
-<div id="igStoryModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 12px; overflow-y: auto;">
-  <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 24px; padding: 18px 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); position: relative; border: 1px solid rgba(225, 48, 108, 0.25); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
-    <button type="button" onclick="closeIgStoryModal()" style="position: absolute; top: 14px; right: 14px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; color: #64748b; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
-
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-      <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: grid; place-items: center; color: white; flex-shrink: 0;">
-        <img src="{% static 'images/icon-chat.png' %}" width="24" height="24" style="filter: brightness(0) invert(1);" alt="Instagram">
-      </div>
-      <div>
-        <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a;">Instagram Story Creator</h3>
-        <p style="font-size: 12px; color: #64748b; margin: 0;">Visual 9:16 Story Card + Link Sticker</p>
-      </div>
-    </div>
-
-    <!-- ── 9:16 VISUAL STORY CARD PREVIEW ────────────────────────── -->
-    <div style="margin-bottom: 20px; text-align: center;">
-      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">🎨 Story Card Preview (9:16 Format):</label>
-      
-      <div id="igStoryCardPreview" style="background: linear-gradient(150deg, #0f172a, #111827, #1e1b4b); border-radius: 22px; padding: 24px 20px; color: #ffffff; text-align: left; position: relative; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-width: 320px; margin: 0 auto;">
-        
-        <!-- Background Ambient Glow Orbs -->
-        <div style="position: absolute; top: -50px; right: -50px; width: 160px; height: 160px; border-radius: 50%; background: rgba(236, 72, 153, 0.3); filter: blur(40px); pointer-events: none;"></div>
-        <div style="position: absolute; bottom: -40px; left: -40px; width: 140px; height: 140px; border-radius: 50%; background: rgba(59, 130, 246, 0.3); filter: blur(35px); pointer-events: none;"></div>
-
-        <!-- Header Tag -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; z-index: 2;">
-          <span style="font-size: 10px; font-weight: 900; background: linear-gradient(135deg, #ea580c, #f97316); padding: 5px 12px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.8px; color: #ffffff; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);">🔥 URGENT REQUIREMENT</span>
-          <span style="font-size: 11px; font-weight: 800; color: #94a3b8; letter-spacing: 0.3px;">@ikashii_07</span>
-        </div>
-
-        <!-- Company & Job Title -->
-        <div style="position: relative; z-index: 2; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #334155;">
-          <div style="font-size: 12px; font-weight: 900; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">{{ job.company_name }}</div>
-          <h2 style="font-size: 18px; font-weight: 900; line-height: 1.25; margin: 0; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">{{ job.title }}</h2>
-        </div>
-
-        <!-- Prominently Highlighted Experience Requirement -->
-        {% with exp=job.get_experience_display %}
-        <div style="position: relative; z-index: 2; margin-bottom: 12px; border-radius: 12px; padding: 9px 12px;
-          {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
-            background: rgba(6, 78, 59, 0.95); border: 1.5px solid #10b981;
-          {% else %}
-            background: rgba(49, 46, 129, 0.95); border: 1.5px solid #818cf8;
-          {% endif %}
-        ">
-          <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-            {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
-              color: #a7f3d0;
-            {% else %}
-              color: #c7d2fe;
-            {% endif %}
-            margin-bottom: 3px;">
-            🎯 EXPERIENCE REQUIREMENT
-          </div>
-          <div style="font-size: 12px; font-weight: 900; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
-            <span>{{ exp|upper }}</span>
-            <span style="font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 99px;
-              {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
-                background: #10b981; color: #064e3b;
-              {% else %}
-                background: #6366f1; color: #ffffff;
-              {% endif %}
-            ">
-              {% if 'fresher' in exp|lower or '0-' in exp|lower or '0 yr' in exp|lower or 'intern' in exp|lower or 'entry' in exp|lower %}
-                FRESHERS ELIGIBLE 🚀
-              {% else %}
-                EXPERIENCED PROS 💼
-              {% endif %}
-            </span>
-          </div>
-        </div>
-        {% endwith %}
-
-        <!-- Classy Details Inset Card with Extended Job Info -->
-        <div style="position: relative; z-index: 2; background: #1e293b; border: 1px solid #475569; border-radius: 14px; padding: 11px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; gap: 8px;">
-            <div style="flex: 1;">
-              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">STIPEND / SALARY</div>
-              <div style="font-size: 11px; font-weight: 800; color: #34d399; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-salary.png' %}" width="13" height="13" alt="Salary"> {{ job.stipend_salary }}
-              </div>
-            </div>
-            <div style="flex: 1;">
-              <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">LOCATION</div>
-              <div style="font-size: 11px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 4px;">
-                <img src="{% static 'images/icon-location.png' %}" width="13" height="13" alt="Location"> {{ job.location }}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">ELIGIBILITY</div>
-            <div style="font-size: 10px; font-weight: 700; color: #f4f4f5; display: flex; align-items: center; gap: 4px;">
-              <img src="{% static 'images/icon-type.png' %}" width="13" height="13" alt="Batch"> {{ job.eligibility|default:"Any Graduate / BE / B.Tech / MCA / All Batches"|truncatechars:42 }}
-            </div>
-          </div>
-
-          {% if job.skills_required %}
-          <div>
-            <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">KEY SKILLS</div>
-            <div style="font-size: 9.5px; font-weight: 700; color: #93c5fd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              ⚡ {{ job.skills_required }}
-            </div>
-          </div>
-          {% endif %}
-        </div>
-
-        <!-- Scannable QR Code & Short Apply Link -->
-        <div style="position: relative; z-index: 2; background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 9px 11px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-          <div style="background: #ffffff; padding: 4px; border-radius: 6px; flex-shrink: 0; display: grid; place-items: center;">
-            <img src="/api/jobs/{{ job.id }}/ig-story-image/" style="width: 52px; height: 52px; object-fit: cover; object-position: 18% 78%; border-radius: 4px;" alt="QR Code">
-          </div>
-          <div style="flex: 1; text-align: left;">
-            <div style="font-size: 9.5px; font-weight: 900; color: #ffffff;">SCAN QR CODE TO APPLY ↗</div>
-            <div style="font-size: 8px; color: #94a3b8; line-height: 1.3;">Screenshot or scan with camera</div>
-            <div style="font-size: 8.5px; font-weight: 700; color: #38bdf8; margin-top: 2px;">kashiiupdatez.online/job/{{ job.uuid|stringformat:"s"|slice:":8" }}</div>
-          </div>
-        </div>
-
-        <!-- Animated Blinking Link Sticker Placement Badge -->
-        <div class="ig-blinking-sticker" style="position: relative; z-index: 2; background: linear-gradient(135deg, #e1306c, #fd1d1d, #fcb045); border-radius: 99px; padding: 10px 12px; text-align: center; font-size: 11px; font-weight: 900; color: #ffffff; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.5); display: flex; align-items: center; justify-content: center; gap: 6px; animation: pulseGlow 1.5s infinite alternate;">
-          <img src="{% static 'images/icon-apply.png' %}" width="15" height="15" style="filter: brightness(0) invert(1);" alt="Link">
-          <span>🔗 TAP LINK STICKER TO APPLY ↗</span>
-        </div>
-        <div style="font-size: 9px; text-align: center; color: #94a3b8; margin-top: 8px; font-weight: 800; letter-spacing: 0.5px;">kashiiupdatez.online</div>
-      </div>
-      <style>
-        @keyframes pulseGlow {
-          0% { transform: scale(1); box-shadow: 0 4px 14px rgba(225, 48, 108, 0.4); }
-          100% { transform: scale(1.03); box-shadow: 0 8px 24px rgba(225, 48, 108, 0.8), 0 0 15px rgba(255,255,255,0.6); }
-        }
-      </style>
-    </div>
-
-    <!-- Story Text Caption Snippet -->
-    <div style="margin-bottom: 16px;">
-      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Formatted Instagram Story Text (Ready to Paste):</label>
-      <div id="igStoryCaptionText" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 12px; color: #1e293b; font-family: monospace; white-space: pre-wrap; line-height: 1.5; max-height: 140px; overflow-y: auto;">{{ insta_story_text|default:job.get_insta_story_text }}</div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-      <!-- 1. Meta Graph API Auto-Push Button -->
-      <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <span id="igStoryStatusDot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: {% if job.insta_story_published %}#10b981{% else %}#f59e0b{% endif %};"></span>
-            <span style="font-size: 11px; font-weight: 800; color: #334155;">Meta Story API (@ikashii_07)</span>
-          </div>
-          <span id="igStoryPublishBadge" style="font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 99px; {% if job.insta_story_published %}background: #dcfce7; color: #166534;{% else %}background: #fef3c7; color: #92400e;{% endif %}">
-            {% if job.insta_story_published %}Published ✅{% else %}Ready to Push{% endif %}
-          </span>
-        </div>
-        
-        {% if user.is_staff or user.is_superuser %}
-        <button type="button" id="btnPublishIgStory" onclick="publishStoryToInstagram({{ job.id }})" class="button" style="width: 100%; background: linear-gradient(135deg, #e1306c, #833ab4); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 11px; border-radius: 10px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-          <i data-lucide="send" style="width: 16px; height: 16px;"></i>
-          <span id="btnPublishIgStoryText">{% if job.insta_story_published %}🚀 Re-Push Story to @ikashii_07{% else %}🚀 Push Story to @ikashii_07 (Meta API){% endif %}</span>
-        </button>
-        {% endif %}
-
-        <div id="igPublishStatusMsg" style="display: none; font-size: 11px; margin-top: 8px; padding: 8px 10px; border-radius: 8px; line-height: 1.4;"></div>
-      </div>
-
-      <!-- 2. Copy Formatted Story Text -->
-      <button type="button" id="btnCopyIgCaption" onclick="copyFormattedIgStory()" class="button" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(225, 48, 108, 0.35); cursor: pointer; display: flex; align-items: center; gap: 8px;">
-        <i data-lucide="instagram" style="width: 17px; height: 17px;"></i>
-        <span id="btnCopyIgCaptionText">📋 Copy Story Text (Company, Exp, Salary, Apply Link)</span>
-      </button>
-
-      <!-- 3. Download Static 9:16 HD Story Image with QR Code -->
-      <a id="btnDownloadIgCard" href="/api/jobs/{{ job.id }}/ig-story-image/" download="IG_Story_{{ job.company_name }}.png" target="_blank" class="button" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; justify-content: center; font-weight: 800; font-size: 13.5px; padding: 12px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); text-decoration: none; display: flex; align-items: center; gap: 8px;">
-        🖼️ Download 9:16 Story HD Image (Scannable QR + Exp Badge)
-      </a>
-
-      <!-- 4. Copy Apply Link for IG Sticker -->
-      <button type="button" id="btnCopyIgLink" onclick="copyIgStoryLinkOnly()" class="button" style="background: #f1f5f9; color: #0f172a; border: 1px solid #cbd5e1; justify-content: center; font-weight: 700; font-size: 13px; padding: 11px; border-radius: 12px;">
-        🔗 Copy Apply Link (For IG Link Sticker)
-      </button>
-
-      <!-- 5. Open Instagram App / Web -->
-      <a href="https://instagram.com" target="_blank" rel="noopener" class="button" style="background: #0f172a; color: #ffffff; justify-content: center; font-weight: 800; font-size: 13px; padding: 11px; border-radius: 12px; text-decoration: none;">
-        🚀 Open Instagram App / Web ↗
-      </a>
-    </div>
-  </div>
+{% block bottom_bar %}
+<div class="action-bar jd-bar">
+  <a href="/resume-studio/?job_id={{ job.uuid }}" class="button">Make resume</a>
+  {% if job.is_expired %}
+  <span class="button is-off" aria-disabled="true">Applications closed</span>
+  {% else %}
+  <a href="{% if job.clean_apply_url %}{{ job.clean_apply_url }}{% else %}/job/{{ job.uuid }}/apply/{% endif %}"
+     target="_blank" rel="noopener noreferrer" class="button button-primary">
+    <span>Apply on official site</span>
+    <i data-lucide="external-link" aria-hidden="true"></i>
+  </a>
+  {% endif %}
 </div>
+{% endblock %}
 
-
+{% block extra_js %}
 <script>
   /* Local HTML-escape helper.
      app.js defines an equivalent function inside its own closure, so it is not
@@ -1941,19 +616,28 @@
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
-        if (window.showToast) window.showToast("✅ Apply Link copied for IG Story Link Sticker!", "success");
+        if (window.showToast) window.showToast("Link copied for the story link sticker.", "success");
       }
     } catch (e) {}
 
-    // 2. Open interactive 9:16 Visual Story Creator Modal (Works on all mobile & desktop devices)
+    // 2. Open the story modal. Solid sheet from .modal-overlay in bus.css.
     const modal = document.getElementById('igStoryModal');
     if (modal) {
-      modal.style.display = 'flex';
-      modal.style.opacity = '1';
-      modal.style.visibility = 'visible';
+      igStoryReturnFocus = document.activeElement;
       modal.classList.add('active');
+      const closeBtn = modal.querySelector('.close-btn');
+      if (closeBtn) closeBtn.focus();
     }
   }
+
+  let igStoryReturnFocus = null;
+  document.addEventListener('keydown', function (e) {
+    const modal = document.getElementById('igStoryModal');
+    if (e.key === 'Escape' && modal && modal.classList.contains('active')) closeIgStoryModal();
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'igStoryModal') closeIgStoryModal();
+  });
 
   function generateIgStoryImageBlob() {
     return new Promise((resolve) => {
@@ -2180,10 +864,8 @@
   function closeIgStoryModal() {
     const modal = document.getElementById('igStoryModal');
     if (modal) {
-      modal.style.display = 'none';
-      modal.style.opacity = '0';
-      modal.style.visibility = 'hidden';
       modal.classList.remove('active');
+      if (igStoryReturnFocus && igStoryReturnFocus.focus) igStoryReturnFocus.focus();
     }
   }
 
@@ -2198,39 +880,39 @@
       const heroText = document.getElementById('heroCopyStoryText');
       if (heroText) {
         const orig = heroText.innerHTML;
-        heroText.innerHTML = '✅ Story Copied!';
+        heroText.textContent = 'Story copied';
         setTimeout(() => { heroText.innerHTML = orig; }, 2500);
       }
       // 2. Header Action Button
       const headerText = document.getElementById('headerCopyStoryBtnText');
       if (headerText) {
         const orig = headerText.innerText;
-        headerText.innerText = '✓ Copied!';
+        headerText.innerText = 'Copied';
         setTimeout(() => { headerText.innerText = orig; }, 2500);
       }
       // 3. Sidebar Action Button
       const sideText = document.getElementById('sidebarCopyStoryText');
       if (sideText) {
         const orig = sideText.innerText;
-        sideText.innerText = '✅ Story Text Copied!';
+        sideText.innerText = 'Copied';
         setTimeout(() => { sideText.innerText = orig; }, 2500);
       }
       // 4. Modal Copy Button
       const modalBtn = document.getElementById('btnCopyIgCaptionText') || document.getElementById('btnCopyIgCaption');
       if (modalBtn) {
         const orig = modalBtn.innerText;
-        modalBtn.innerText = '✅ Story Text Copied!';
+        modalBtn.innerText = 'Story text copied';
         setTimeout(() => { modalBtn.innerText = orig; }, 2500);
       }
       // 5. Mobile Sticky Bar Button
       const mobileText = document.getElementById('mobileStoryBtnText');
       if (mobileText) {
         const orig = mobileText.innerText;
-        mobileText.innerText = '✓ Copied';
+        mobileText.innerText = 'Copied';
         setTimeout(() => { mobileText.innerText = orig; }, 2500);
       }
       if (window.showToast) {
-        window.showToast("📋 Complete Instagram Story text copied! Ready to paste into Instagram Story.", "success");
+        window.showToast("Story text copied. Paste it into your Instagram story.", "success");
       }
     }
 
@@ -2246,8 +928,8 @@
   function fallbackCopyStoryText(text, callback) {
     const ta = document.createElement('textarea');
     ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
+    ta.className = 'sr-only';
+    ta.setAttribute('readonly', '');
     document.body.appendChild(ta);
     ta.focus();
     ta.select();
@@ -2264,17 +946,22 @@
     copyFormattedIgStory();
   }
 
+  function setIgStatus(box, tone) {
+    box.classList.remove('is-ok', 'is-info', 'is-bad');
+    box.classList.add(tone);
+    box.hidden = false;
+  }
+
   function publishStoryToInstagram(jobId) {
     const btn = document.getElementById('btnPublishIgStory');
     const btnText = document.getElementById('btnPublishIgStoryText');
     const badge = document.getElementById('igStoryPublishBadge');
     const statusBox = document.getElementById('igPublishStatusMsg');
-    const dot = document.getElementById('igStoryStatusDot');
 
     if (!btn) return;
     const origText = btnText ? btnText.innerText : 'Push Story';
     btn.disabled = true;
-    if (btnText) btnText.innerHTML = '⏳ Contacting Meta Graph API...';
+    if (btnText) btnText.textContent = 'Contacting Meta Graph API...';
 
     fetch(`/api/jobs/${jobId}/publish-ig-story/`, {
       method: 'POST',
@@ -2286,42 +973,31 @@
     .then(({ status, ok, body }) => {
       btn.disabled = false;
       if (body.success) {
-        if (btnText) btnText.innerHTML = '✅ Published to @ikashii_07!';
+        if (btnText) btnText.textContent = 'Published to @ikashii_07';
         if (badge) {
-          badge.innerText = 'Published ✅';
-          badge.style.background = '#dcfce7';
-          badge.style.color = '#166534';
+          badge.innerText = 'Published';
+          badge.classList.add('is-published');
         }
-        if (dot) dot.style.background = '#10b981';
         if (statusBox) {
-          statusBox.style.display = 'block';
-          statusBox.style.background = '#ecfdf5';
-          statusBox.style.color = '#065f46';
-          statusBox.style.border = '1px solid #a7f3d0';
+          setIgStatus(statusBox, 'is-ok');
           statusBox.innerHTML = `<strong>Success!</strong> Story posted to @ikashii_07. Media ID: <code>${body.media_id || ''}</code>`;
         }
         if (window.showToast) {
-          window.showToast("🚀 Story successfully pushed to Instagram (@ikashii_07)!", "success");
+          window.showToast("Story pushed to Instagram (@ikashii_07).", "success");
         }
       } else if (body.error === 'MISSING_ACCESS_TOKEN') {
         if (btnText) btnText.innerHTML = origText;
         if (statusBox) {
-          statusBox.style.display = 'block';
-          statusBox.style.background = '#eff6ff';
-          statusBox.style.color = '#1e40af';
-          statusBox.style.border = '1px solid #bfdbfe';
-          statusBox.innerHTML = `<strong>Meta API Configured:</strong> Account @ikashii_07 (ID: 17841475393977759). Set <code>INSTAGRAM_ACCESS_TOKEN</code> in production to auto-post, or use the 1-click Download / Copy actions below!`;
+          setIgStatus(statusBox, 'is-info');
+          statusBox.innerHTML = `<strong>Meta API Configured:</strong> Account @ikashii_07 (ID: 17841475393977759). Set <code>INSTAGRAM_ACCESS_TOKEN</code> in production to auto-post, or use the Download and Copy actions above.`;
         }
         if (window.showToast) {
-          window.showToast("Story ready! Download 9:16 HD card or copy formatted text below.", "info");
+          window.showToast("Story ready. Download the card or copy the story text above.", "info");
         }
       } else {
         if (btnText) btnText.innerHTML = origText;
         if (statusBox) {
-          statusBox.style.display = 'block';
-          statusBox.style.background = '#fef2f2';
-          statusBox.style.color = '#991b1b';
-          statusBox.style.border = '1px solid #fecaca';
+          setIgStatus(statusBox, 'is-bad');
           statusBox.innerHTML = `<strong>Publish Note:</strong> ${escapeHtml(body.message || body.error || 'Check Meta permissions.')}`;
         }
       }
@@ -2330,10 +1006,7 @@
       btn.disabled = false;
       if (btnText) btnText.innerHTML = origText;
       if (statusBox) {
-        statusBox.style.display = 'block';
-        statusBox.style.background = '#fef2f2';
-        statusBox.style.color = '#991b1b';
-        statusBox.style.border = '1px solid #fecaca';
+        setIgStatus(statusBox, 'is-bad');
         statusBox.innerHTML = `<strong>Request Error:</strong> ${escapeHtml(err.message)}`;
       }
     });
@@ -2528,14 +1201,14 @@
 
     const btn = document.getElementById('btnDownloadIgCard');
     const orig = btn.innerText;
-    btn.innerText = '✅ HD Story Image Downloaded!';
+    btn.innerText = 'Story image downloaded';
     setTimeout(() => { btn.innerText = orig; }, 3000);
   }
 
   function downloadIgStoryVideo() {
     const btn = document.getElementById('btnDownloadIgVideo');
     const origText = btn.innerText;
-    btn.innerText = '🎬 Generating Animated Video (5s)...';
+    btn.innerText = 'Making the video (5s)...';
     btn.disabled = true;
 
     // 4K Ultra HD Resolution Canvas (2160 x 3840 9:16 Vertical UHD)
@@ -2601,7 +1274,7 @@
       link.click();
       document.body.removeChild(link);
 
-      btn.innerText = '✅ 4K HDR Video Downloaded!';
+      btn.innerText = 'Video downloaded';
       btn.disabled = false;
       setTimeout(() => { btn.innerText = origText; }, 3500);
     };
@@ -2838,8 +1511,8 @@
     navigator.clipboard.writeText(url).then(() => {
       const btn = document.getElementById('btnCopyIgLink');
       const orig = btn.innerText;
-      btn.innerText = '✅ Link Sticker Copied! Opening IG...';
-      if (window.showToast) window.showToast("✅ Link copied! Add to IG Story Link Sticker", "success");
+      btn.innerText = 'Link copied. Opening Instagram...';
+      if (window.showToast) window.showToast("Link copied. Add it to the story link sticker.", "success");
 
       if (isMobile) {
         setTimeout(() => {
@@ -2859,10 +1532,10 @@
       const btn = document.getElementById('copyUrlBtn');
       if (btn) {
         const orig = btn.innerText;
-        btn.innerText = '✅ Link Copied!';
+        btn.innerText = 'Link copied';
         setTimeout(() => { btn.innerText = orig; }, 2500);
       }
-      if (window.showToast) window.showToast("✅ Requirement link copied!", "success");
+      if (window.showToast) window.showToast("Job link copied.", "success");
     }).catch(err => {
       alert('Share URL: ' + url);
     });
