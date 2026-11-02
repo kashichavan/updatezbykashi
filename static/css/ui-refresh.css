@@ -678,3 +678,53 @@ html .vp-pill .card-mini-icon, html .button .card-mini-icon { width: 14px; heigh
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
 }
+
+/* ── Theme: blue primary + one warm accent (2026-11-02) ──────────────── */
+:root {
+  --muted: #475569;                 /* was #64748b: easier to read on white */
+  --subtle-border: #e2e8f0;
+  --accent: #f59e0b;                /* fills, icons */
+  --accent-ink: #b45309;            /* amber text on light, 5:1 on white */
+  --accent-soft: #fffbeb;
+  --accent-border: #fde68a;
+}
+/* Days left: the site's promise, in the accent. */
+html .timer-tag {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+html .timer-tag .card-mini-icon { color: var(--accent); }
+/* New today */
+html .badge-new {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 99px;
+  background: var(--accent-soft); color: var(--accent-ink); border: 1px solid var(--accent-border);
+  font-size: 10px; font-weight: 800; letter-spacing: .3px;
+}
+html .badge-new::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+/* Section highlights and links keep the blue; hover is one shade darker everywhere. */
+html a.button-primary:hover, html .button-primary:hover, html .btn-primary:hover { background: var(--blue-hover); border-color: var(--blue-hover); }
+
+/* Group page: share bar replaces the bottom nav on phones. */
+.group-share-bar { display: none; }
+@media (max-width: 768px) {
+  html body:has(.group-share-bar) .mobile-bottom-nav { display: none; }
+  html .group-share-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 155;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, .96); border-top: 1px solid var(--subtle-border);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, .08);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  }
+  html .group-share-bar a, html .group-share-bar button {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 46px; border-radius: 12px; font: 800 14px/1 var(--font-sans); text-decoration: none; cursor: pointer;
+  }
+  html .group-share-wa { background: #16a34a; color: #fff; border: 1px solid #16a34a; }
+  html .group-share-copy { background: #fff; color: var(--ink); border: 1px solid var(--subtle-border); }
+  html body:has(.group-share-bar) { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+}
+/* Phones: one filter button (All Filters, with its count), not two. */
+@media (max-width: 768px) { html .filter-mobile-only { display: none; } }

@@ -321,7 +321,7 @@
           </div>
           <div class="word-titlebar-right">
             <span class="single-page-badge" style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 6px;">📄 1-Page ATS</span>
-            <span class="word-count-badge" id="wordCountLive" style="font-size: 11.5px; color: #64748b; font-weight: 600;">~340 words</span>
+            <span class="word-count-badge" id="wordCountLive" style="font-size: 11.5px; color: var(--muted); font-weight: 600;">~340 words</span>
           </div>
         </div>
 
@@ -449,7 +449,7 @@
 
           <!-- Page Target Selector -->
           <div class="word-tool-group" style="align-items: center; gap: 4px;">
-            <span style="font-size: 11px; font-weight: 700; color: #64748b; margin-right: 2px;">A4 Format:</span>
+            <span style="font-size: 11px; font-weight: 700; color: var(--muted); margin-right: 2px;">A4 Format:</span>
             <button type="button" id="btnPageModeSingle" onclick="setDocPageMode('single')" class="word-page-toggle active-page-toggle" title="Standard 1-Page A4 (210mm × 297mm) - Recommended for Freshers">1-Page A4</button>
             <button type="button" id="btnPageModeMulti" onclick="setDocPageMode('multi')" class="word-page-toggle" title="2-Page A4 for Multi-Project / Experienced Engineers">2-Page A4</button>
             <button type="button" id="btnPageModeAuto" onclick="setDocPageMode('auto')" class="word-page-toggle" title="Auto A4: Dynamic multi-page sizing">Auto A4</button>
@@ -716,7 +716,7 @@
   .deck-tag {
     font-size: 10px;
     font-weight: 800;
-    color: #64748b;
+    color: var(--muted);
     letter-spacing: 0.06em;
   }
 
@@ -775,7 +775,7 @@
     font-weight: 650;
     border: none;
     background: transparent;
-    color: #64748b;
+    color: var(--muted);
     cursor: pointer;
     transition: all 0.15s ease;
   }
@@ -974,7 +974,7 @@
   }
   .studio-btn-subtle:hover {
     background: #f8fafc;
-    border-color: #64748b;
+    border-color: var(--muted);
     transform: translateY(-1px);
   }
 
@@ -1220,7 +1220,7 @@
   .util-btn-copy:hover {
     background: #f8fafc;
     color: #0f172a;
-    border-color: #64748b;
+    border-color: var(--muted);
   }
 
   .inspector-checklist-section {
@@ -1396,7 +1396,7 @@
   .word-btn-action:hover {
     background: #f1f5f9;
     color: #0f172a;
-    border-color: #64748b;
+    border-color: var(--muted);
   }
 
   .word-btn-action-primary {
@@ -1628,7 +1628,7 @@
     transform: translateX(-50%);
     font-size: 9px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--muted);
     pointer-events: none;
   }
 
@@ -1735,7 +1735,7 @@
     right: 52px;
     font-size: 10px;
     font-weight: 800;
-    color: #64748b;
+    color: var(--muted);
     letter-spacing: 0.6px;
     text-transform: uppercase;
   }
@@ -1746,7 +1746,7 @@
     right: 52px;
     font-size: 10px;
     font-weight: 800;
-    color: #64748b;
+    color: var(--muted);
     letter-spacing: 0.6px;
     text-transform: uppercase;
   }
@@ -1775,7 +1775,7 @@
   .word-page-break-delete {
     background: transparent;
     border: none;
-    color: #64748b;
+    color: var(--muted);
     cursor: pointer;
     font-size: 15px;
     line-height: 1;
@@ -1800,7 +1800,7 @@
     border-top: 1px solid #e2e8f0;
     border-radius: 0 0 12px 12px;
     font-size: 11.5px;
-    color: #64748b;
+    color: var(--muted);
     box-sizing: border-box;
     margin-top: 0;
   }
@@ -1890,7 +1890,7 @@
   /* Contact items are independent spans so a blank field can be hidden.
      The separator lives on the item, never as loose text between them. */
   .ats-c-item { display: inline; }
-  .ats-c-item::before { content: '|'; margin: 0 7px; color: #64748b; }
+  .ats-c-item::before { content: '|'; margin: 0 7px; color: var(--muted); }
   .ats-c-item.is-first::before { content: none; margin: 0; }
 
   .ats-section {
@@ -2040,7 +2040,7 @@
     border-bottom: none;
     font-size: 11.5px;
     letter-spacing: 0.1em;
-    color: #64748b;
+    color: var(--muted);
     margin-bottom: 3px;
     font-weight: 800;
   }
@@ -2589,7 +2589,7 @@
                 <span class="ats-date">${e.period}</span>
               </div>
               <div style="font-size:12px; font-weight:700; color:#334155; margin-bottom:3px;">
-                <em>${e.role}</em> &bull; <span style="font-weight:500; color:#64748b;">${e.location}</span>
+                <em>${e.role}</em> &bull; <span style="font-weight:500; color: var(--muted);">${e.location}</span>
               </div>
               <div class="ats-project-tech"><strong>Core Stack:</strong> ${e.tech_stack}</div>
               <ul class="ats-bullet-list">
@@ -2672,7 +2672,7 @@
                 ${atsEval.badge}
               </button>
             </div>
-            <div style="font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <div style="font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               ${p.tech_stack}
             </div>
           </div>
@@ -2767,7 +2767,7 @@
             <div style="font-size: 12.5px; font-weight: 750; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
               ${e.company}
             </div>
-            <div style="font-size: 11px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+            <div style="font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
               ${e.role} &bull; ${e.period}
             </div>
           </div>
@@ -3617,7 +3617,7 @@
       const roleEl = entry.querySelector('em') || entry.querySelector('.ats-project-role');
       const role = roleEl ? cleanDomContactVal(roleEl.innerText) : (origExp.role || '');
 
-      const locEl = entry.querySelector('span[style*="color:#64748b"], .ats-location');
+      const locEl = entry.querySelector('span[style*="color: var(--muted)"], .ats-location');
       const location = locEl ? cleanDomContactVal(locEl.innerText) : (origExp.location || '');
       
       const techEl = entry.querySelector('.ats-project-tech');
@@ -4977,10 +4977,10 @@
     if (!Array.isArray(indianDemoCatalog) || indianDemoCatalog.length === 0) {
       if (container) {
         container.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: #64748b;">
+          <div style="grid-column: 1 / -1; text-align: center; padding: 48px 16px; color: var(--muted);">
             <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(245, 158, 11, 0.2); border-top-color: #f59e0b; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px;"></div>
             <div style="font-size: 13.5px; font-weight: 700; color: #475569;">Loading projects...</div>
-            <div style="font-size: 11.5px; color: #64748b; margin-top: 4px;">Fetching top Bengaluru &amp; Indian IT projects</div>
+            <div style="font-size: 11.5px; color: var(--muted); margin-top: 4px;">Fetching top Bengaluru &amp; Indian IT projects</div>
           </div>
         `;
       }
@@ -5090,10 +5090,10 @@
     if (!container) return;
     if (!items || items.length === 0) {
       container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: #64748b; font-size: 13px;">
+        <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; color: var(--muted); font-size: 13px;">
           <div style="font-size: 24px; margin-bottom: 8px;">🔍</div>
           <div style="font-weight: 700; color: #334155;">No projects found matching your filter criteria.</div>
-          <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Try selecting "All Experience Tiers" or clear the search query.</div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">Try selecting "All Experience Tiers" or clear the search query.</div>
           <button type="button" onclick="document.getElementById('demoFilterSearch').value='';document.getElementById('demoFilterCity').value='';if(document.getElementById('demoFilterExperience')) document.getElementById('demoFilterExperience').value='';if(document.getElementById('demoFilterTech')) document.getElementById('demoFilterTech').value='';document.getElementById('demoFilterDifficulty').value='';filterIndianDemoProjects();" style="margin-top: 12px; background: #2563eb; color: #fff; font-weight: 700; border: none; padding: 7px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;">Reset All Filters</button>
         </div>
       `;
@@ -5143,7 +5143,7 @@
               <a href="${ghUrl || '#'}" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 5px; color: #0f172a; font-size: 11px; font-weight: 700; text-decoration: none; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
                 <span>${ghRepoName}</span>
-                <span style="color: #64748b; font-weight: 500;">↗</span>
+                <span style="color: var(--muted); font-weight: 500;">↗</span>
               </a>
             </div>
 
@@ -5158,7 +5158,7 @@
 
           <div style="border-top: 1px solid #f1f5f9; padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-              <label style="font-size: 11px; color: #64748b; font-weight: 700;">Attribution:</label>
+              <label style="font-size: 11px; color: var(--muted); font-weight: 700;">Attribution:</label>
               <select id="attrRel_${pId}" style="background: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-size: 11px; padding: 4px 8px; border-radius: 6px; outline: none; flex: 1;">
                 <option value="PORTFOLIO" selected>Personal Portfolio Project</option>
                 <option value="BUILT">Personally Developed</option>
@@ -5361,7 +5361,7 @@
               <a href="${p.repo_url}" target="_blank" rel="noopener" style="color: #1d4ed8; font-weight: 800; font-size: 13px; text-decoration: none;">
                 ${p.repo_name} ↗
               </a>
-              ${p.stars ? `<span style="font-size: 11px; color: #64748b; margin-left: 6px;">⭐ ${p.stars}</span>` : ''}
+              ${p.stars ? `<span style="font-size: 11px; color: var(--muted); margin-left: 6px;">⭐ ${p.stars}</span>` : ''}
             </div>
             <div style="background: ${scoreBg}; border: 1px solid ${scoreColor}; color: ${scoreColor}; padding: 1px 6px; border-radius: 99px; font-size: 10.5px; font-weight: 800;">
               ${p.relevance_score.toFixed(1)}% Match
@@ -5369,7 +5369,7 @@
           </div>
           <div style="font-size: 11.5px; color: #475569; line-height: 1.35;">${p.description}</div>
           <div style="display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: 4px;">
-            <span style="font-size: 10.5px; color: #64748b;">Stack: <strong style="color: #0369a1;">${(p.tech_stack || []).slice(0, 3).join(', ')}</strong></span>
+            <span style="font-size: 10.5px; color: var(--muted);">Stack: <strong style="color: #0369a1;">${(p.tech_stack || []).slice(0, 3).join(', ')}</strong></span>
             <button type="button" class="btn-import-disc" style="background: linear-gradient(135deg, #15803d, #15803d); color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; cursor: pointer;">
               + Add to Resume
             </button>
@@ -5944,9 +5944,9 @@
         <i data-lucide="target" style="width: 18px; height: 18px; color: #1d4ed8;"></i>
         <span>AI Resume Tailor & Matcher</span>
       </h3>
-      <button type="button" onclick="closeTailorModal()" style="background: transparent; border: none; color: #64748b; font-size: 20px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeTailorModal()" style="background: transparent; border: none; color: var(--muted); font-size: 20px; cursor: pointer;">&times;</button>
     </div>
-    <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; line-height: 1.5;">
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">
       Paste the target Job Description below. Groq AI will evaluate your keyword gap, calculate a real ATS match score, and tailor your bullet points to match.
     </p>
     <textarea id="targetJdInput" rows="5" placeholder="Paste full Job Description or requirements here..." style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; color: #0f172a; font-size: 13px; line-height: 1.5; outline: none; margin-bottom: 14px; resize: vertical;"></textarea>
@@ -5965,7 +5965,7 @@
     <div id="tailorResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 16px;">
       <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px;">
         <div>
-          <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Match Score</span>
+          <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase;">Match Score</span>
           <div id="tailorScoreVal" style="font-size: 22px; font-weight: 800; color: #15803d;"></div>
         </div>
         <div id="tailorGradeVal" style="font-size: 13px; font-weight: 700; color: #1d4ed8;"></div>
@@ -5975,11 +5975,11 @@
         <div id="tailorMissingKeywords" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
       </div>
       <div style="margin-bottom: 14px;">
-        <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px;">Actionable Recommendations:</span>
+        <span style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Actionable Recommendations:</span>
         <ul id="tailorRecList" style="padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.6; margin: 0;"></ul>
       </div>
       <div style="margin-bottom: 16px;">
-        <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px;">Tailored Professional Summary:</span>
+        <span style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Tailored Professional Summary:</span>
         <p id="tailorSummaryPreview" style="font-size: 13px; color: #334155; line-height: 1.6; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin: 0;"></p>
       </div>
       <button type="button" onclick="applyTailoredData()" style="width: 100%; background: #15803d; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer;">
@@ -5997,9 +5997,9 @@
         <i data-lucide="wand-2" style="width: 18px; height: 18px; color: #1d4ed8;"></i>
         <span>Google XYZ Bullet Polisher</span>
       </h3>
-      <button type="button" onclick="closeBulletPolishModal()" style="background: transparent; border: none; color: #64748b; font-size: 20px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeBulletPolishModal()" style="background: transparent; border: none; color: var(--muted); font-size: 20px; cursor: pointer;">&times;</button>
     </div>
-    <p style="font-size: 13px; color: #64748b; margin-bottom: 12px; line-height: 1.5;">
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 12px; line-height: 1.5;">
       Enter a simple sentence describing your work. AI will rewrite it into quantified Google XYZ format: <em>"Accomplished [X] as measured by [Y], by doing [Z]"</em>.
     </p>
     <textarea id="rawBulletInput" rows="3" placeholder="e.g. I worked on testing APIs with Postman and finding bugs in Jira" style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; color: #0f172a; font-size: 13px; outline: none; margin-bottom: 12px;"></textarea>
@@ -6009,7 +6009,7 @@
     </button>
 
     <div id="bulletResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 14px;">
-      <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 10px;">Select Polished Bullet:</span>
+      <span style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 10px;">Select Polished Bullet:</span>
       <div id="polishedChoicesList"></div>
     </div>
   </div>
@@ -6023,9 +6023,9 @@
         <i data-lucide="file-edit" style="width: 18px; height: 18px; color: #1d4ed8;"></i>
         <span>AI Summary Pitch Generator</span>
       </h3>
-      <button type="button" onclick="closeSummaryModal()" style="background: transparent; border: none; color: #64748b; font-size: 20px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeSummaryModal()" style="background: transparent; border: none; color: var(--muted); font-size: 20px; cursor: pointer;">&times;</button>
     </div>
-    <p style="font-size: 13px; color: #64748b; margin-bottom: 14px; line-height: 1.5;">
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 14px; line-height: 1.5;">
       Generate 3 distinct elevator pitch summaries tailored to your active role.
     </p>
     <button type="button" id="runSummaryBtn" onclick="handleRunSummary()" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%); color: #fff; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px;">
@@ -6034,7 +6034,7 @@
     </button>
 
     <div id="summaryResults" style="display: none; border-top: 1px solid #e2e8f0; padding-top: 14px;">
-      <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 10px;">Pick a Summary Variation:</span>
+      <span style="font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 10px;">Pick a Summary Variation:</span>
       <div id="summaryChoicesList"></div>
     </div>
   </div>
@@ -6052,7 +6052,7 @@
         </div>
         <div>
           <h3 style="font-size: 18px; font-weight: 800; color: #0f172a; margin: 0;">Add Tech Portfolio Project</h3>
-          <p style="font-size: 12px; color: #64748b; margin: 0;">Curated Indian IT industry demo projects, live GitHub repos, or custom entries.</p>
+          <p style="font-size: 12px; color: var(--muted); margin: 0;">Curated Indian IT industry demo projects, live GitHub repos, or custom entries.</p>
         </div>
       </div>
       <button type="button" onclick="closeUnifiedAddProjectModal()" style="background: #f1f5f9; border: 1px solid #cbd5e1; width: 32px; height: 32px; border-radius: 50%; color: #475569; font-size: 16px; cursor: pointer; display: grid; place-items: center;">&times;</button>
@@ -6063,10 +6063,10 @@
       <button type="button" class="proj-tab-btn" data-tab="bengaluru" onclick="switchProjectModalTab('bengaluru')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff;">
         <span>🇮🇳 Indian Demo Projects</span>
       </button>
-      <button type="button" class="proj-tab-btn" data-tab="github" onclick="switchProjectModalTab('github')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #ffffff; color: #64748b;">
+      <button type="button" class="proj-tab-btn" data-tab="github" onclick="switchProjectModalTab('github')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #ffffff; color: var(--muted);">
         <span>🐙 GitHub Repo AI</span>
       </button>
-      <button type="button" class="proj-tab-btn" data-tab="custom" onclick="switchProjectModalTab('custom')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #ffffff; color: #64748b;">
+      <button type="button" class="proj-tab-btn" data-tab="custom" onclick="switchProjectModalTab('custom')" style="padding: 10px; border-radius: 8px; font-size: 12.5px; font-weight: 800; border: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; background: #ffffff; color: var(--muted);">
         <span>✍️ Custom Project</span>
       </button>
     </div>
@@ -6166,7 +6166,7 @@
       </div>
 
       <!-- Sub-section 2: Direct Single Repo URL Import -->
-      <p style="font-size: 12px; color: #64748b; margin: 0 0 8px;">
+      <p style="font-size: 12px; color: var(--muted); margin: 0 0 8px;">
         Or paste any specific public GitHub repository URL or <code>username/repo</code>:
       </p>
       <div style="margin-bottom: 12px;">
@@ -6181,12 +6181,12 @@
           <option value="PRACTICE">I rebuilt parts of it to learn</option>
           <option value="RECOMMENDED" selected>I only studied it (reference)</option>
         </select>
-        <p style="font-size: 11px; color: #64748b; margin: 5px 0 0; line-height: 1.45;">
+        <p style="font-size: 11px; color: var(--muted); margin: 5px 0 0; line-height: 1.45;">
           This decides the wording on the resume. Studying a famous repo and claiming you built it is the first thing an interviewer checks.
         </p>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;">
-        <span style="font-size: 11px; color: #64748b;">Try sample:</span>
+        <span style="font-size: 11px; color: var(--muted);">Try sample:</span>
         <button type="button" onclick="fillSampleGitHub('encode/django-rest-framework')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django-rest-framework</button>
         <button type="button" onclick="fillSampleGitHub('tiangolo/fastapi')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">fastapi</button>
         <button type="button" onclick="fillSampleGitHub('django/django')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 11px; cursor: pointer;">django</button>
@@ -6198,7 +6198,7 @@
       <div id="ghPreviewBox" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px;">
         <div style="font-size: 11px; font-weight: 800; color: #15803d; text-transform: uppercase; margin-bottom: 4px;">Crafted Enterprise Project:</div>
         <h4 id="ghProjTitle" style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0 0 4px;"></h4>
-        <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;"><em id="ghProjRole"></em> &bull; <span id="ghProjTech" style="color: #0369a1;"></span></div>
+        <div style="font-size: 12px; color: var(--muted); margin-bottom: 6px;"><em id="ghProjRole"></em> &bull; <span id="ghProjTech" style="color: #0369a1;"></span></div>
         <ul id="ghProjBullets" style="margin: 0; padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.5; display: flex; flex-direction: column; gap: 4px;"></ul>
         <button type="button" onclick="applyGitHubProjectToResume()" style="width: 100%; background: #15803d; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 13px; cursor: pointer; margin-top: 12px;">
           Add to My Resume Sheet
@@ -6255,7 +6255,7 @@
         <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #15803d;"></i>
         <span>Add Work Experience</span>
       </h3>
-      <button type="button" onclick="closeAddExperienceModal()" style="background: transparent; border: none; color: #64748b; font-size: 22px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeAddExperienceModal()" style="background: transparent; border: none; color: var(--muted); font-size: 22px; cursor: pointer;">&times;</button>
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px;">
@@ -6306,20 +6306,20 @@
         </div>
         <div>
           <h3 id="projectAtsModalTitle" style="font-size: 16.5px; font-weight: 800; color: #0f172a; margin: 0;">Project ATS Scorecard</h3>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0;">How this project scores on five checks</p>
+          <p style="font-size: 11.5px; color: var(--muted); margin: 0;">How this project scores on five checks</p>
         </div>
       </div>
-      <button type="button" onclick="closeProjectAtsModal()" style="background: transparent; border: none; color: #64748b; font-size: 22px; cursor: pointer;">&times;</button>
+      <button type="button" onclick="closeProjectAtsModal()" style="background: transparent; border: none; color: var(--muted); font-size: 22px; cursor: pointer;">&times;</button>
     </div>
 
     <!-- Overall Project Score Banner -->
     <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; margin-bottom: 16px;">
       <div>
-        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Project ATS Rating</div>
+        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px;">Project ATS Rating</div>
         <div id="projectAtsScoreBig" style="font-size: 26px; font-weight: 900; color: #15803d;">— / 100</div>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px;">Recruiter Pass Level</div>
+        <div style="font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px;">Recruiter Pass Level</div>
         <div id="projectAtsGradeBig" style="font-size: 14.5px; font-weight: 800; color: #0369a1;">Not scored yet</div>
       </div>
     </div>
@@ -6403,7 +6403,7 @@
         </div>
         <div>
           <h3 style="font-size: 17.5px; font-weight: 800; color: #0f172a; margin: 0;">ATS Diagnostic Scorecard</h3>
-          <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+          <div style="font-size: 11.5px; color: var(--muted); margin-top: 2px;">
             <span id="uploadScoreCandName" style="color: #0369a1; font-weight: 700;">Your resume</span> &bull; 
             <span id="uploadScoreFilename" style="color: #475569;">no file selected</span>
           </div>
@@ -6415,13 +6415,13 @@
     <!-- Overall ATS Match Score Card -->
     <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px 20px; margin-bottom: 16px;">
       <div>
-        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.6px;">Calculated ATS Score</div>
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.6px;">Calculated ATS Score</div>
         <div id="uploadScoreBig" style="font-size: 30px; font-weight: 900; color: #15803d; line-height: 1.15; margin-top: 2px;">— / 100</div>
       </div>
       <div style="text-align: right;">
-        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.6px;">Scanner Pass Status</div>
+        <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.6px;">Scanner Pass Status</div>
         <div id="uploadScoreGrade" style="font-size: 15px; font-weight: 800; color: #0369a1; margin-top: 2px;">Not scored yet</div>
-        <div id="uploadScorePassRate" style="font-size: 11px; color: #64748b; margin-top: 2px;">No score until a resume is analysed</div>
+        <div id="uploadScorePassRate" style="font-size: 11px; color: var(--muted); margin-top: 2px;">No score until a resume is analysed</div>
       </div>
     </div>
 
@@ -6479,7 +6479,7 @@
         </div>
         <div>
           <h3 style="font-size: 19px; font-weight: 800; color: #0f172a; margin: 0;">ATS Resume Templates</h3>
-          <p style="font-size: 12.5px; color: #64748b; margin: 2px 0 0;">
+          <p style="font-size: 12.5px; color: var(--muted); margin: 2px 0 0;">
             Six single-column layouts that ATS software can read. Your text stays the same when you switch.
           </p>
         </div>
@@ -6503,7 +6503,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Standard Noah</div>
             <span style="background: #e0f2fe; color: #0369a1; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Default</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">The gold standard single-column layout recommended by FAANG &amp; top Indian MNC recruiters.</p>
+          <p style="font-size: 11.5px; color: var(--muted); margin: 0 0 10px; line-height: 1.4;">The gold standard single-column layout recommended by FAANG &amp; top Indian MNC recruiters.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>
@@ -6521,7 +6521,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Modern Slate</div>
             <span style="background: #ede9fe; color: #6d28d9; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Cobalt</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Crisp typography with cobalt-blue header accents and high visual appeal.</p>
+          <p style="font-size: 11.5px; color: var(--muted); margin: 0 0 10px; line-height: 1.4;">Crisp typography with cobalt-blue header accents and high visual appeal.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>
@@ -6539,7 +6539,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Classic Heritage</div>
             <span style="background: #fef3c7; color: #b45309; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Serif</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Centered header with refined serif typography, great for enterprise and academic.</p>
+          <p style="font-size: 11.5px; color: var(--muted); margin: 0 0 10px; line-height: 1.4;">Centered header with refined serif typography, great for enterprise and academic.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>
@@ -6557,7 +6557,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Minimalist Graphite</div>
             <span style="background: #f1f5f9; color: #475569; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Compact</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">High density, borderless headers with compact margins for maximum content depth.</p>
+          <p style="font-size: 11.5px; color: var(--muted); margin: 0 0 10px; line-height: 1.4;">High density, borderless headers with compact margins for maximum content depth.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>
@@ -6575,7 +6575,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Bold Cobalt</div>
             <span style="background: #dbeafe; color: #1e40af; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">Top Stripe</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Cobalt headings with solid dividing lines for a clear hierarchy.</p>
+          <p style="font-size: 11.5px; color: var(--muted); margin: 0 0 10px; line-height: 1.4;">Cobalt headings with solid dividing lines for a clear hierarchy.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>
@@ -6593,7 +6593,7 @@
             <div style="font-weight: 800; font-size: 14px; color: #0f172a;">Executive Verona</div>
             <span style="background: #f8fafc; color: #0f172a; font-size: 10.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1px solid #cbd5e1;">Lead / Staff</span>
           </div>
-          <p style="font-size: 11.5px; color: #64748b; margin: 0 0 10px; line-height: 1.4;">Strong section rules and clear hierarchy, suited to senior engineers.</p>
+          <p style="font-size: 11.5px; color: var(--muted); margin: 0 0 10px; line-height: 1.4;">Strong section rules and clear hierarchy, suited to senior engineers.</p>
           <button type="button" class="studio-btn studio-btn-primary" style="width: 100%; font-size: 12px; padding: 7px;">Apply Template</button>
         </div>
       </div>

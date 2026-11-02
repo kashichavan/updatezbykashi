@@ -151,7 +151,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #64748b;
+    color: var(--muted);
     margin-bottom: 10px;
   }
   .lesson-toc ol {
@@ -330,7 +330,7 @@
   .video-duration-badge {
     font-size: 11px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--muted);
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -344,7 +344,7 @@
   }
   .video-card-desc {
     font-size: 13px;
-    color: #64748b;
+    color: var(--muted);
     line-height: 1.5;
     margin: 0 0 12px;
     flex: 1;
@@ -1303,7 +1303,7 @@
               </thead>
               <tbody id="variablesTableBody">
                 <tr>
-                  <td colspan="3" style="color: #64748b; font-style: italic; text-align: center; padding: 20px 0;">
+                  <td colspan="3" style="color: var(--muted); font-style: italic; text-align: center; padding: 20px 0;">
                     Click "Start Debugging" to inspect memory in real-time.
                   </td>
                 </tr>
@@ -1449,7 +1449,7 @@
         {% if ex.hint %}
         <details class="interactive-details" style="margin: 6px 0;">
           <summary>💡 Hint</summary>
-          <p style="margin: 8px 0 0; font-size: 13px; color: #64748b;">{{ ex.hint }}</p>
+          <p style="margin: 8px 0 0; font-size: 13px; color: var(--muted);">{{ ex.hint }}</p>
         </details>
         {% endif %}
 
@@ -1752,7 +1752,7 @@ function loadSnippetIntoDebugger(codeStr) {
     }
     if (stepLabel) stepLabel.textContent = "Step 0 / 0";
     if (stepStoryText) stepStoryText.innerHTML = 'Click <strong>"Start Debugging"</strong> or <strong>"Next ▶"</strong> to trace code line-by-line.';
-    if (varsTbody) varsTbody.innerHTML = '<tr><td colspan="3" style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;">Click "Start Debugging" to inspect memory.</td></tr>';
+    if (varsTbody) varsTbody.innerHTML = '<tr><td colspan="3" style="color: var(--muted);font-style:italic;text-align:center;padding:20px 0;">Click "Start Debugging" to inspect memory.</td></tr>';
     if (termOut) termOut.textContent = "Waiting for execution...";
     window.renderTraceView(-1);
   }

@@ -57,7 +57,7 @@
   }
   .analysis-subtitle {
     font-size: clamp(14px, 1.8vw, 17px);
-    color: #64748b;
+    color: var(--muted);
     max-width: 680px;
     margin: 0 auto 28px;
     line-height: 1.6;
@@ -91,7 +91,7 @@
     border-radius: 9px;
     font-size: 13px;
     font-weight: 750;
-    color: #64748b;
+    color: var(--muted);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -412,7 +412,7 @@
         <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0 0 6px;">
           Click to upload or drag &amp; drop your resume
         </h3>
-        <p style="font-size: 12px; color: #64748b; margin: 0;">
+        <p style="font-size: 12px; color: var(--muted); margin: 0;">
           Text-based PDF, DOCX or TXT, up to 8MB. Your text is sent to our server and AI provider to score it.
         </p>
         <div id="selectedFileName" style="display: none; margin-top: 12px; font-size: 12px; font-weight: 750; color: #2563eb; background: #eff6ff; padding: 6px 14px; border-radius: 99px; display: inline-flex; align-items: center; gap: 6px;">
@@ -500,7 +500,7 @@
         </h3>
         <span style="font-size: 11px; font-weight: 800; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 6px;">Google XYZ Formula</span>
       </div>
-      <p style="font-size: 12.5px; color: #64748b; margin: 5px 0 0;">
+      <p style="font-size: 12.5px; color: var(--muted); margin: 5px 0 0;">
         Recruiters and ATS scanners look for quantifiable achievements rather than generic duties.
       </p>
 
@@ -551,7 +551,7 @@
           <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">
             💼 Project Accomplishment Audit &amp; AI Enhancer
           </h3>
-          <p style="font-size: 12.5px; color: #64748b; margin: 3px 0 0;">
+          <p style="font-size: 12.5px; color: var(--muted); margin: 3px 0 0;">
             Click <strong>Rewrite bullets with AI</strong> for clearer wording. Your facts stay the same.
           </p>
         </div>
@@ -574,7 +574,7 @@
       </div>
       <button type="button" onclick="closeActionVerbsModal()" style="background: #f1f5f9; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer;">&times;</button>
     </div>
-    <p style="font-size: 12.5px; color: #64748b; margin: 0 0 16px;">
+    <p style="font-size: 12.5px; color: var(--muted); margin: 0 0 16px;">
       Click any action verb to copy it instantly and replace passive words like “Worked on” or “Responsible for”.
     </p>
 
@@ -756,7 +756,7 @@
         <div class="pillar-bar-bg">
           <div class="pillar-bar-fill" style="width: ${pPct}%; background: ${pColor};"></div>
         </div>
-        <div style="font-size: 11px; color: #64748b; line-height: 1.35; margin-top: 4px;">
+        <div style="font-size: 11px; color: var(--muted); line-height: 1.35; margin-top: 4px;">
           ${p.detail}
         </div>
       `;
@@ -798,7 +798,7 @@
           <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px;">
             <div>
               <h4 style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0 0 3px;">${esc(proj.title || 'Project')}</h4>
-              <div style="font-size: 11.5px; color: #64748b;">Technologies: <strong style="color: #0369a1;">${esc(proj.tech_stack || 'Not listed')}</strong></div>
+              <div style="font-size: 11.5px; color: var(--muted);">Technologies: <strong style="color: #0369a1;">${esc(proj.tech_stack || 'Not listed')}</strong></div>
             </div>
             <button type="button" onclick="upgradeProjectBullets(${idx})" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; border: none; padding: 6px 12px; border-radius: 7px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">
               <i data-lucide="sparkles" style="width: 13px; height: 13px;"></i>

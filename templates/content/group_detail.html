@@ -172,9 +172,28 @@
 
 </div>
 
+<!-- Phone share bar: the group's main actions in thumb reach. -->
+<div class="group-share-bar" role="region" aria-label="Share this drive">
+  <a href="https://wa.me/?text={{ share_whatsapp_text|urlencode }}" target="_blank" rel="noopener" class="group-share-wa">
+    <i data-lucide="message-circle" class="card-mini-icon" aria-hidden="true"></i> Share on WhatsApp
+  </a>
+  <button type="button" class="group-share-copy" data-copy-group-link>
+    <i data-lucide="link" class="card-mini-icon" aria-hidden="true"></i> <span>Copy link</span>
+  </button>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const btnCopy = document.getElementById('btnCopyGroupLink');
+  document.querySelectorAll('[data-copy-group-link]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        const label = btn.querySelector('span');
+        if (label) label.textContent = 'Link copied';
+        setTimeout(() => { if (label) label.textContent = 'Copy link'; }, 2500);
+      });
+    });
+  });
   if (btnCopy) {
     btnCopy.addEventListener('click', () => {
       navigator.clipboard.writeText(window.location.href).then(() => {

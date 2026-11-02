@@ -366,7 +366,7 @@
   }
   .rc-source-chip .rc-source-dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; flex: 0 0 auto; }
   .rc-source-chip.is-on .rc-source-dot { background: var(--rc-green); box-shadow: 0 0 0 3px rgba(4,120,87,.10); }
-  .rc-source-chip svg { width: 13px; height: 13px; color: #64748b; flex: 0 0 auto; }
+  .rc-source-chip svg { width: 13px; height: 13px; color: var(--muted); flex: 0 0 auto; }
 
   /* ── Results pane ─────────────────────────────────────── */
   .rc-result-pane { min-height: 430px; display: flex; flex-direction: column; }
@@ -554,7 +554,7 @@
     display: inline-flex; align-items: center; gap: 4px;
     padding: 4px 7px; border-radius: 6px;
     background: #f1f5f9; border: 1px solid #e2e8f0;
-    color: #64748b; font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--muted); font-size: 9px; font-weight: 750; text-transform: uppercase; letter-spacing: .04em;
   }
   .rc-checked-chip::before { content: "✓"; color: var(--rc-green); font-weight: 900; }
 
@@ -626,7 +626,7 @@
   .rc-composer-top p { margin: 0; color: var(--rc-muted); font-size: 12px; line-height: 1.55; max-width: 580px; }
   .rc-tabs { display: flex; gap: 5px; flex-wrap: wrap; padding: 4px; border-radius: 11px; background: #f1f5f9; border: 1px solid var(--rc-line); }
   .rc-tab {
-    border: 0; background: transparent; color: #64748b;
+    border: 0; background: transparent; color: var(--muted);
     padding: 7px 10px; border-radius: 8px;
     font-size: 10.5px; font-weight: 750; font-family: inherit; cursor: pointer;
     transition: all .18s ease; white-space: nowrap;

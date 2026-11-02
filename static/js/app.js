@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         jobsGrid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: #ffffff; border-radius: 16px; border: 1px solid #fed7aa;">
             <h3 style="color: #c2410c; margin-bottom: 6px;">Too Many Requests</h3>
-            <p style="color: #64748b; font-size: 14px;">You have temporarily reached the request rate limit. Please retry in a few moments.</p>
+            <p style="color: var(--muted); font-size: 14px;">You have temporarily reached the request rate limit. Please retry in a few moments.</p>
           </div>
         `;
         return;
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1.5px solid #fecaca; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.06);">
           <div style="font-size: 36px; margin-bottom: 10px;">⚠️</div>
           <h3 style="color: #b91c1c; font-size: 18px; font-weight: 800; margin-bottom: 6px;">Unable to load opportunities feed</h3>
-          <p style="color: #64748b; font-size: 13.5px; margin-bottom: 16px;">We encountered a network or server issue while fetching the listings.</p>
+          <p style="color: var(--muted); font-size: 13.5px; margin-bottom: 16px;">We encountered a network or server issue while fetching the listings.</p>
           <button type="button" id="btnRetryLoadJobs" class="rel_modal_btn_apply" style="padding: 8px 22px; cursor: pointer;">Retry Now</button>
         </div>`;
       const btnRetry = document.getElementById('btnRetryLoadJobs');
@@ -426,12 +426,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="vp-card-header">
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
               <span class="company-badge" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
-              <span class="source-tag" title="Verified Opportunity" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;letter-spacing:0.3px;">${srcCode}</span>
+              <span class="source-tag" title="Verified Opportunity" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color: var(--muted);border:1px solid #cbd5e1;letter-spacing:0.3px;">${srcCode}</span>
             </div>
             <div class="vp-badge-cluster">
               ${j.is_referral ? '<span style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #bfdbfe;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="handshake" class="card-mini-icon" aria-hidden="true"></i>Referral</span>' : ''}
               <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${catIcon}" class="card-mini-icon" aria-hidden="true"></i>${escapeHtml(j.category_name || catLabel)}</span>
-              ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:4px;"><span class="badge-live-pulse"></span>NEW</span>' : ''}
+              ${isNewToday ? '<span class="badge-new">New today</span>' : ''}
               <span class="type-badge">${j.job_type_display}</span>
             </div>
           </div>
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             ` : ''}
 
-            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, ''))}</p>
+            <p style="font-size:13px;color: var(--muted);line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, ''))}</p>
 
             ${skillsHtml ? `<div class="skills-wrapper" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;">${skillsHtml}</div>` : ''}
 
@@ -712,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. City Filter Sync (Default: '' All Locations)
     if (state.city) {
       activeFilterCount++;
-      if (locationBtnText) locationBtnText.textContent = state.city.toLowerCase();
+      if (locationBtnText) locationBtnText.textContent = state.city;
       if (locationBadge) { locationBadge.textContent = '1'; locationBadge.style.display = 'inline-flex'; }
       if (btnLocation) btnLocation.classList.add('is-active');
       if (selectedCityTag && selectedCityTagName) {
@@ -720,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedCityTag.style.display = 'inline-flex';
       }
     } else {
-      if (locationBtnText) locationBtnText.textContent = 'location';
+      if (locationBtnText) locationBtnText.textContent = 'Location';
       if (locationBadge) locationBadge.style.display = 'none';
       if (btnLocation) btnLocation.classList.remove('is-active');
       if (selectedCityTag) selectedCityTag.style.display = 'none';
@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.jobType && state.jobType !== 'all') {
       activeFilterCount++;
       const typeLabel = state.jobType === 'FULL_TIME' ? 'Full-Time' : 'Internships';
-      if (jobTypeBtnText) jobTypeBtnText.textContent = typeLabel.toLowerCase();
+      if (jobTypeBtnText) jobTypeBtnText.textContent = typeLabel;
       if (jobTypeBadge) { jobTypeBadge.textContent = '1'; jobTypeBadge.style.display = 'inline-flex'; }
       if (btnJobType) btnJobType.classList.add('is-active');
       if (selectedJobTypeTag && selectedJobTypeTagName) {
@@ -738,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedJobTypeTag.style.display = 'inline-flex';
       }
     } else {
-      if (jobTypeBtnText) jobTypeBtnText.textContent = 'job types';
+      if (jobTypeBtnText) jobTypeBtnText.textContent = 'Job type';
       if (jobTypeBadge) jobTypeBadge.style.display = 'none';
       if (btnJobType) btnJobType.classList.remove('is-active');
       if (selectedJobTypeTag) selectedJobTypeTag.style.display = 'none';
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.category && state.category !== 'all') {
       activeFilterCount++;
       const catLabel = CATEGORY_LABELS[state.category] || state.category;
-      if (specialismBtnText) specialismBtnText.textContent = catLabel.toLowerCase();
+      if (specialismBtnText) specialismBtnText.textContent = catLabel;
       if (specialismBadge) { specialismBadge.textContent = '1'; specialismBadge.style.display = 'inline-flex'; }
       if (btnSpecialism) btnSpecialism.classList.add('is-active');
       if (selectedSpecialismTag && selectedSpecialismTagName) {
@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedSpecialismTag.style.display = 'inline-flex';
       }
     } else {
-      if (specialismBtnText) specialismBtnText.textContent = 'professional field';
+      if (specialismBtnText) specialismBtnText.textContent = 'Field';
       if (specialismBadge) specialismBadge.style.display = 'none';
       if (btnSpecialism) btnSpecialism.classList.remove('is-active');
       if (selectedSpecialismTag) selectedSpecialismTag.style.display = 'none';

@@ -1735,7 +1735,7 @@
 <!-- ── INSTAGRAM STORY SHARE & CARD CREATOR MODAL ────────────────────── -->
 <div id="igStoryModal" class="modal-overlay" style="display: none; opacity: 0; visibility: hidden; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 12px; overflow-y: auto;">
   <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 24px; padding: 18px 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); position: relative; border: 1px solid rgba(225, 48, 108, 0.25); max-height: 92vh; overflow-y: auto; -webkit-overflow-scrolling: touch;">
-    <button type="button" onclick="closeIgStoryModal()" style="position: absolute; top: 14px; right: 14px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; color: #64748b; font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
+    <button type="button" onclick="closeIgStoryModal()" style="position: absolute; top: 14px; right: 14px; background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; color: var(--muted); font-weight: 800; cursor: pointer; display: grid; place-items: center; font-size: 16px; z-index: 10;">✕</button>
 
     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); display: grid; place-items: center; color: white; flex-shrink: 0;">
@@ -1743,13 +1743,13 @@
       </div>
       <div>
         <h3 style="font-size: 18px; font-weight: 800; margin: 0; color: #0f172a;">Instagram Story Creator</h3>
-        <p style="font-size: 12px; color: #64748b; margin: 0;">Visual 9:16 Story Card + Link Sticker</p>
+        <p style="font-size: 12px; color: var(--muted); margin: 0;">Visual 9:16 Story Card + Link Sticker</p>
       </div>
     </div>
 
     <!-- ── 9:16 VISUAL STORY CARD PREVIEW ────────────────────────── -->
     <div style="margin-bottom: 20px; text-align: center;">
-      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.8px; display: block; margin-bottom: 8px;">🎨 Story Card Preview (9:16 Format):</label>
+      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.8px; display: block; margin-bottom: 8px;">🎨 Story Card Preview (9:16 Format):</label>
       
       <div id="igStoryCardPreview" style="background: linear-gradient(150deg, #0f172a, #111827, #1e1b4b); border-radius: 22px; padding: 24px 20px; color: #ffffff; text-align: left; position: relative; overflow: hidden; border: 2px solid #38bdf8; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-width: 320px; margin: 0 auto;">
         
@@ -1869,7 +1869,7 @@
 
     <!-- Story Text Caption Snippet -->
     <div style="margin-bottom: 16px;">
-      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Formatted Instagram Story Text (Ready to Paste):</label>
+      <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--muted); letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Formatted Instagram Story Text (Ready to Paste):</label>
       <div id="igStoryCaptionText" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 12px; color: #1e293b; font-family: monospace; white-space: pre-wrap; line-height: 1.5; max-height: 140px; overflow-y: auto;">{{ insta_story_text|default:job.get_insta_story_text }}</div>
     </div>
 

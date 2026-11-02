@@ -196,7 +196,7 @@
                     <span class="rs-jobrow-title">{{ j.title }}</span>
                     <span class="rs-jobrow-meta">{{ j.company_name }}{% if j.location %} • {{ j.location }}{% endif %}</span>
                   </span>
-                  <i data-lucide="chevron-right" style="width:14px;height:14px;flex-shrink:0;color:#64748b;"></i>
+                  <i data-lucide="chevron-right" style="width:14px;height:14px;flex-shrink:0;color: var(--muted);"></i>
                 </button>
               {% empty %}
                 <p class="rs-empty">
@@ -684,7 +684,7 @@
     summary.innerHTML =
       '<div class="rs-target-name">' + esc(target.title) + '</div>' +
       (target.company ? '<div class="rs-target-company">' + esc(target.company) + '</div>' : '') +
-      (target.location ? '<div class="rs-target-company" style="color:#64748b;">' + esc(target.location) + '</div>' : '');
+      (target.location ? '<div class="rs-target-company" style="color: var(--muted);">' + esc(target.location) + '</div>' : '');
 
     const skills = skillsFrom(target.skills);
     skills.slice(0, 10).forEach((skill) => {
