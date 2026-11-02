@@ -728,3 +728,35 @@ html a.button-primary:hover, html .button-primary:hover, html .btn-primary:hover
 }
 /* Phones: one filter button (All Filters, with its count), not two. */
 @media (max-width: 768px) { html .filter-mobile-only { display: none; } }
+
+/* ── Resume Builder: the sheet comes first on phones and tablets ─────── */
+@media (max-width: 992px) {
+  html .resume-workspace { display: flex; flex-direction: column; gap: 16px; }
+  html .resume-workspace > .resume-preview-wrapper { order: -1; }   /* sheet, then projects + ATS audit */
+}
+@media (max-width: 768px) {
+  /* Shorter header: the title is enough, the steps explain the rest. */
+  html .studio-hero { margin-bottom: 12px; padding-top: 4px; }
+  html .studio-hero .studio-subtitle, html .studio-hero .studio-badge { display: none; }
+  html .studio-hero h1 { font-size: 26px; }
+  /* Compact steps: number, name, actions. */
+  html .rb-steps { gap: 8px; margin-bottom: 12px; }
+  html .rb-step { padding: 12px; gap: 8px 10px; }
+  html .rb-step-copy span { display: none; }
+  html .rb-step-actions .studio-btn { min-height: 44px; }
+  /* Step 3 repeats the toolbar's Download PDF button. */
+  html #rbStep3 { display: none; }
+}
+@media (max-width: 768px) {
+  /* Editor ribbon: one row that scrolls sideways, like a phone document app. */
+  html .word-ribbon-bar {
+    display: flex; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; gap: 4px;
+  }
+  html .word-ribbon-bar::-webkit-scrollbar { display: none; }
+  html .word-ribbon-bar > * { flex: none; }
+  html .word-ribbon-bar .word-tool-group { flex-wrap: nowrap; }
+  html .word-tool-btn { min-width: 40px; min-height: 40px; }
+  /* AI status sits under the score instead of in a squeezed column. */
+  html .rb-ai-status { width: 100%; justify-content: center; }
+}
