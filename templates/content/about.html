@@ -4,77 +4,222 @@
 {% block title %}ℹ️ About Kashii — Founder of Kashii Updatez & Python Kashi{% endblock %}
 {% block meta_description %}Meet Kashinath (Kashii) — the founder of Kashii Updatez and creator of @pythonkashi YouTube channel. Python educator, Django developer, and student career guide.{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/info.css' %}?v=2026110201">
-{% endblock %}
-
 {% block content %}
-<main class="wrap info">
+<div class="wrap kx-reveal" style="margin-top: 40px; margin-bottom: 60px;">
 
-  <header class="profile">
-    <div class="profile-photo">
-      <picture>
-        <source srcset="{% static 'images/kashii-author.webp' %}" type="image/webp">
-        <img src="{% static 'images/kashii-author.jpg' %}" alt="Kashinath (Kashii), founder of Kashii Updatez" loading="eager" decoding="async" width="160" height="160">
-      </picture>
-    </div>
-    <div class="profile-text">
-      <p class="kicker">Founder and tech educator</p>
-      <h1>Kashinath <span>(Kashii)</span></h1>
-      <p class="sub">Founder of Kashii Updatez. Creator of <strong>@pythonkashi</strong> on YouTube.</p>
-      <div class="info-actions">
-        <a class="button" href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener"><i data-lucide="youtube" aria-hidden="true"></i> YouTube @pythonkashi</a>
-        <a class="button" href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener"><i data-lucide="instagram" aria-hidden="true"></i> Instagram @ikashii_07</a>
-        <a class="button" href="https://ig.me/m/ikashii_07" target="_blank" rel="noopener"><i data-lucide="message-circle" aria-hidden="true"></i> DM on Instagram</a>
+  <!-- ── HERO CARD ───────────────────────────────────────────────── -->
+  <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+              border-radius: 28px; padding: 48px 40px; color: #fff;
+              box-shadow: 0 24px 60px rgba(15,23,42,0.35);
+              margin-bottom: 28px; position: relative; overflow: hidden;">
+
+    <!-- Background glow -->
+    <div style="position:absolute;top:-80px;right:-80px;width:320px;height:320px;
+                background:radial-gradient(circle,rgba(37,99,235,0.25),transparent 70%);
+                pointer-events:none;"></div>
+
+    <div style="display:flex; gap:40px; align-items:center; flex-wrap:wrap; position:relative;">
+
+      <!-- Author Photo -->
+      <div style="flex-shrink:0;">
+        <div style="width:160px;height:160px;border-radius:50%;overflow:hidden;
+                    border:4px solid rgba(255,255,255,0.25);
+                    box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+          <picture>
+            <source srcset="{% static 'images/kashii-author.webp' %}" type="image/webp">
+            <img src="{% static 'images/kashii-author.jpg' %}"
+                 alt="Kashinath (Kashii) — Founder of Kashii Updatez"
+                 style="width:100%;height:100%;object-fit:cover;object-position:top center;"
+                 loading="eager"
+                 decoding="async"
+                 width="160"
+                 height="160">
+          </picture>
+        </div>
+        <!-- Online dot -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;box-shadow:0 0 8px #4ade80;"></span>
+          <span style="font-size:12px;font-weight:700;color:#94a3b8;">Active Creator</span>
+        </div>
+      </div>
+
+      <!-- Name & Bio -->
+      <div style="flex:1; min-width:240px;">
+        <span style="display:inline-block;padding:4px 12px;background:rgba(37,99,235,0.3);
+                     color:#93c5fd;font-size:11px;font-weight:800;font-family:monospace;
+                     border-radius:6px;margin-bottom:12px;border:1px solid rgba(147,197,253,0.3);">
+          <img src="{% static 'images/icon-about.png' %}" class="nav-icon" width="14" height="14" alt="Founder"> FOUNDER & TECH EDUCATOR
+        </span>
+        <h1 style="font:800 40px var(--font-serif);margin:0 0 6px;color:#fff;letter-spacing:-0.5px;">
+          Kashinath <span style="color:#60a5fa;">(Kashii)</span>
+        </h1>
+        <p style="font-size:16px;color:#94a3b8;margin:0 0 24px;font-weight:500;">
+          Founder of Kashii Updatez &middot; Creator of <strong style="color:#fff;">@pythonkashi</strong> on YouTube
+        </p>
+
+        <!-- Social Buttons -->
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;
+                    background:#dc2626;color:#fff;font-size:14px;font-weight:800;
+                    border-radius:10px;text-decoration:none;transition:all 0.2s;
+                    box-shadow:0 4px 14px rgba(220,38,38,0.4);"
+             onmouseover="this.style.background='#b91c1c';this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.background='#dc2626';this.style.transform=''">
+            <i data-lucide="youtube" style="width: 18px; height: 18px;"></i> YouTube @pythonkashi
+          </a>
+          <a href="https://www.instagram.com/ikashii_07/?hl=en" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;
+                    background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);
+                    color:#fff;font-size:14px;font-weight:800;border-radius:10px;
+                    text-decoration:none;transition:all 0.2s;box-shadow:0 4px 14px rgba(225,48,108,0.4);"
+             onmouseover="this.style.transform='translateY(-2px)'"
+             onmouseout="this.style.transform=''">
+            <i data-lucide="instagram" style="width: 18px; height: 18px;"></i> @ikashii_07
+          </a>
+          <a href="https://ig.me/m/ikashii_07" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;
+                    background:rgba(255,255,255,0.1);color:#fff;font-size:14px;font-weight:700;
+                    border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,0.2);
+                    transition:all 0.2s;"
+             onmouseover="this.style.background='rgba(255,255,255,0.18)'"
+             onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+            <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i> DM on Instagram
+          </a>
+        </div>
       </div>
     </div>
-  </header>
-
-  <div class="info-two">
-    <section class="glass info-panel" aria-labelledby="story-heading">
-      <h2 id="story-heading">Why I built Kashii Updatez</h2>
-      <p>Hi, I'm <strong>Kashinath (Kashii)</strong>, a developer, educator and content creator. I help students land their first tech job.</p>
-      <p>I saw students wasting hours on <strong>outdated job posts and fake requirements</strong>. So I built Kashii Updatez with a strict <strong>7-day auto-expiry policy</strong>: every opportunity here has an official recruiter link and closes after 7 days.</p>
-      <p><strong>Fresh listings, with less noise.</strong></p>
-    </section>
-
-    <section class="glass info-panel" aria-labelledby="channel-heading">
-      <h2 id="channel-heading">@pythonkashi on YouTube</h2>
-      <p>Free tutorials on Python, Django, REST APIs, OOP projects and tech careers, step by step for students and fresh graduates.</p>
-      <ul class="chip-list" aria-label="Topics">
-        <li class="skill-tag">Python basics</li>
-        <li class="skill-tag">Django</li>
-        <li class="skill-tag">OOP projects</li>
-        <li class="skill-tag">REST APIs</li>
-        <li class="skill-tag">SQLite and databases</li>
-        <li class="skill-tag">Career guide</li>
-        <li class="skill-tag">Interview prep</li>
-        <li class="skill-tag">Web development</li>
-      </ul>
-      <a class="text-link" href="/youtube/">See all tutorials <i data-lucide="arrow-right" aria-hidden="true"></i></a>
-    </section>
   </div>
 
-  <section class="info-panel" aria-labelledby="offer-heading">
-    <h2 id="offer-heading">What you get on Kashii Updatez</h2>
-    <ul class="offer-list">
-      <li><i data-lucide="briefcase" aria-hidden="true"></i><b>Daily job requirements</b><span>New software and tech jobs every day, with official apply links.</span></li>
-      <li><i data-lucide="clock" aria-hidden="true"></i><b>7-day fresh rule</b><span>Every listing closes after 7 days, so only live openings show.</span></li>
-      <li><i data-lucide="play" aria-hidden="true"></i><b>Free Python tutorials</b><span>Step-by-step Python and Django courses on YouTube, free.</span></li>
-      <li><i data-lucide="message-circle" aria-hidden="true"></i><b>Direct DM support</b><span>Message Kashii on Instagram with career or code questions.</span></li>
-    </ul>
-  </section>
+  <!-- ── TWO-COLUMN STORY + SKILLS ──────────────────────────────── -->
+  <div class="about-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
 
-  <section class="glass info-cta" aria-labelledby="cta-heading">
-    <h2 id="cta-heading">Ready to find your next opportunity?</h2>
-    <p>Browse the latest student jobs and internships.</p>
-    <div class="info-actions">
-      <a href="/" class="button button-primary">Browse latest jobs</a>
-      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener" class="button">Watch Python tutorials</a>
+    <!-- My Story -->
+    <div style="background:#fff;border-radius:20px;border:1px solid var(--subtle-border);
+                padding:36px;box-shadow:var(--card-shadow);">
+      <span style="display:inline-block;padding:3px 10px;background:var(--blue-light);
+                   color:var(--blue-primary);font-size:11px;font-weight:800;
+                   border-radius:6px;margin-bottom:14px;font-family:monospace;">
+        <img src="/static/images/icon-about.png" class="nav-icon" width="14" height="14" alt="Story"> MY STORY
+      </span>
+      <h2 style="font:700 24px var(--font-serif);margin:0 0 16px;color:var(--ink);">
+        Why I Built Kashii Updatez
+      </h2>
+      <p style="color:#475569;font-size:15px;line-height:1.8;margin-bottom:14px;">
+        Hi! I'm <strong>Kashinath (Kashii)</strong> — a developer, educator, and content creator passionate about helping students land their first tech job.
+      </p>
+      <p style="color:#475569;font-size:15px;line-height:1.8;margin-bottom:14px;">
+        I saw students wasting hours on <strong>outdated job posts and fake requirements</strong>. So I built Kashii Updatez with a strict <strong>7-Day Auto-Expiry Policy</strong> — every opportunity here has an official recruiter link and deactivates after 7 days.
+      </p>
+      <p style="color:#475569;font-size:15px;line-height:1.8;margin:0;">
+        <strong>Fresh listings, with less noise.</strong>
+      </p>
     </div>
-  </section>
 
+    <!-- Python Kashi Channel -->
+    <div style="background:#fff;border-radius:20px;border:1px solid var(--subtle-border);
+                padding:36px;box-shadow:var(--card-shadow);">
+      <span style="display:inline-block;padding:3px 10px;background:#fef2f2;
+                   color:#dc2626;font-size:11px;font-weight:800;
+                   border-radius:6px;margin-bottom:14px;font-family:monospace;">
+        ▶ YOUTUBE CHANNEL
+      </span>
+      <h2 style="font:700 24px var(--font-serif);margin:0 0 16px;color:var(--ink);">
+        @pythonkashi on YouTube
+      </h2>
+      <p style="color:#475569;font-size:15px;line-height:1.8;margin-bottom:20px;">
+        Free, high-quality tutorials on Python, Django, REST APIs, OOP projects, and tech career strategies — step-by-step for students and fresh graduates.
+      </p>
+
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;">
+        <span class="skill-tag">Python Basics</span>
+        <span class="skill-tag">Django Framework</span>
+        <span class="skill-tag">OOP Projects</span>
+        <span class="skill-tag">REST APIs</span>
+        <span class="skill-tag">SQLite & DB</span>
+        <span class="skill-tag">Career Guide</span>
+        <span class="skill-tag">Interview Prep</span>
+        <span class="skill-tag">Web Dev</span>
+      </div>
+
+      <a href="/youtube/" style="display:inline-flex;align-items:center;gap:6px;
+                                  font-size:13px;font-weight:700;
+                                  color:#dc2626;text-decoration:none;">
+        ▶ View All Tutorials on Kashii Updatez ↗
+      </a>
+    </div>
+  </div>
+
+  <!-- ── WHAT I OFFER ────────────────────────────────────────────── -->
+  <div style="background:#fff;border-radius:20px;border:1px solid var(--subtle-border);
+              padding:36px;box-shadow:var(--card-shadow);margin-bottom:24px;">
+    <h2 style="font:700 22px var(--font-sans);margin:0 0 24px;color:var(--ink);">
+      <img src="/static/images/icon-share.png" class="nav-icon" width="14" height="14" alt="Target"> What You Get on Kashii Updatez
+    </h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
+      <div style="background:#f8fafc;border-radius:14px;padding:22px;border:1px solid var(--subtle-border);">
+        <div style="margin-bottom:10px;"><img src="/static/images/icon-date.png" class="nav-icon" width="28" height="28" alt="Date"></div>
+        <h3 style="font:700 15px var(--font-sans);margin:0 0 6px;color:var(--ink);">Daily Job Requirements</h3>
+        <p style="font-size:13px;color:var(--muted);margin:0;line-height:1.6;">Fresh software & tech job postings every day with official apply links.</p>
+      </div>
+      <div style="background:#f8fafc;border-radius:14px;padding:22px;border:1px solid var(--subtle-border);">
+        <div style="font-size:28px;margin-bottom:10px;">⏱️</div>
+        <h3 style="font:700 15px var(--font-sans);margin:0 0 6px;color:var(--ink);">7-Day Fresh Rule</h3>
+        <p style="font-size:13px;color:var(--muted);margin:0;line-height:1.6;">Every posting auto-expires after 7 days — only live opportunities shown.</p>
+      </div>
+      <div style="background:#f8fafc;border-radius:14px;padding:22px;border:1px solid var(--subtle-border);">
+        <div style="font-size:28px;margin-bottom:10px;">▶</div>
+        <h3 style="font:700 15px var(--font-sans);margin:0 0 6px;color:var(--ink);">Free Python Tutorials</h3>
+        <p style="font-size:13px;color:var(--muted);margin:0;line-height:1.6;">Step-by-step Python & Django courses on YouTube — completely free.</p>
+      </div>
+      <div style="background:#f8fafc;border-radius:14px;padding:22px;border:1px solid var(--subtle-border);">
+        <div style="margin-bottom:10px;"><img src="/static/images/icon-chat.png" class="nav-icon" width="28" height="28" alt="Chat"></div>
+        <h3 style="font:700 15px var(--font-sans);margin:0 0 6px;color:var(--ink);">Direct DM Support</h3>
+        <p style="font-size:13px;color:var(--muted);margin:0;line-height:1.6;">Message Kashii on Instagram with career or code questions.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CTA FOOTER ─────────────────────────────────────────────── -->
+  <div style="background:linear-gradient(135deg,#1e3a5f,#0f172a);border-radius:20px;
+              padding:40px;text-align:center;box-shadow:0 16px 40px rgba(15,23,42,0.3);">
+    <h2 style="font:700 28px var(--font-serif);color:#fff;margin:0 0 10px;">
+      Ready to find your next opportunity?
+    </h2>
+    <p style="color:#94a3b8;font-size:15px;margin:0 0 28px;">
+      Browse the latest student jobs and internships.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="/" style="display:inline-flex;align-items:center;gap:8px;padding:13px 28px;
+                         background:var(--blue-primary);color:#fff;font-size:15px;font-weight:800;
+                         border-radius:12px;text-decoration:none;
+                         box-shadow:0 4px 16px rgba(37,99,235,0.4);transition:all 0.2s;"
+         onmouseover="this.style.transform='translateY(-2px)'"
+         onmouseout="this.style.transform=''">
+        <img src="{% static 'images/icon-apply.png' %}" class="nav-icon" style="filter:brightness(0) invert(1);" width="16" height="16" alt="Jobs"> Browse Latest Jobs
+      </a>
+      <a href="https://www.youtube.com/@pythonkashi" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:8px;padding:13px 28px;
+                background:rgba(255,255,255,0.1);color:#fff;font-size:15px;font-weight:800;
+                border-radius:12px;text-decoration:none;border:1px solid rgba(255,255,255,0.2);
+                transition:all 0.2s;"
+         onmouseover="this.style.background='rgba(255,255,255,0.18)'"
+         onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+        ▶ Watch Python Tutorials
+      </a>
+    </div>
+  </div>
+
+  <!-- Google AdSense Unit in About Page -->
   {% include 'components/adsense_unit.html' %}
 
-</main>
+</div>
+
+<style>
+  @media (max-width: 768px) {
+    .about-two-col {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
 {% endblock %}

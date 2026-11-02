@@ -273,7 +273,7 @@ require(['vs/editor/editor.main'], function () {
       activeDecorations = editor.deltaDecorations(activeDecorations, []);
       clearInlineValueHints();
       updateControls();
-      updateBannerMessage('<strong>Code Edited:</strong> Click <strong>Start Debugging</strong> to evaluate your new code line-by-line!');
+      updateBannerMessage('✏️ <strong>Code Edited:</strong> Click <strong>Start Debugging</strong> to evaluate your new code line-by-line!');
     }
   });
 
@@ -357,11 +357,11 @@ function switchLanguage(lang) {
   updateControls();
 
   const capLang = lang.charAt(0).toUpperCase() + lang.slice(1);
-  updateBannerMessage(`<strong>Switched to ${capLang}:</strong> Code loaded! Set breakpoints then click <strong>Start Debugging</strong>.`);
+  updateBannerMessage(`💡 <strong>Switched to ${capLang}:</strong> Code loaded! Set breakpoints then click <strong>Start Debugging</strong>.`);
   document.getElementById('variablesContainer').innerHTML =
-    '<p class="dbg-empty">Run the debugger to inspect variables.</p>';
+    '<div style="color:#64748b;text-align:center;padding:12px;">Switch complete — run debugger to inspect variables.</div>';
   document.getElementById('callStackList').innerHTML =
-    '<p class="dbg-empty">Global stack frame (idle)</p>';
+    '<div style="color:#64748b;">Global Stack Frame (Idle)</div>';
   document.getElementById('stdoutConsole').textContent = 'Console output will appear here...';
 }
 
@@ -438,12 +438,13 @@ function setTraceInCache(lang, codeStr, bps, stdinStr, data) {
   }
 }
 
-function updateBannerMessage(htmlContent, tone = '') {
+function updateBannerMessage(htmlContent, bgStyle = '', borderStyle = '', colorStyle = '') {
   const banner = document.getElementById('aiExplainBanner');
   const bannerText = document.getElementById('aiExplainBannerText');
   if (banner) {
-    banner.classList.remove('is-error', 'is-new');
-    if (tone) banner.classList.add(tone);
+    banner.style.background = bgStyle;
+    banner.style.border = borderStyle;
+    banner.style.color = colorStyle;
   }
   if (bannerText) {
     bannerText.innerHTML = htmlContent;
@@ -470,13 +471,13 @@ async function startDebugging(forceRefresh = false) {
       debugSteps     = cachedTrace.steps;
       currentStepIdx  = 0;
       goToStep(0);
-      updateBannerMessage(`<strong>Loaded from this browser:</strong> this trace was saved earlier, so it opened instantly.`);
+      updateBannerMessage(`⚡ <strong>Instant Browser Cache Hit (0ms):</strong> Loaded trace locally with 0 server load!`);
       showToast(`Loaded trace instantly from browser cache!`, 'success');
       return;
     }
   }
 
-  updateBannerMessage(`<strong>${currentLang.toUpperCase()} Debugger Engine:</strong> AST validation & compiling memory steps...`);
+  updateBannerMessage(`⏳ <strong>${currentLang.toUpperCase()} Debugger Engine:</strong> AST validation & compiling memory steps...`);
 
   const endpointMap = {
     python:     '/debugger/api/python/trace/',
@@ -501,10 +502,10 @@ async function startDebugging(forceRefresh = false) {
       goToStep(0);
       showToast(`${currentLang.toUpperCase()} Debugger initialized & cached!`, 'success');
     } else {
-      updateBannerMessage(`<strong>Debugger Error:</strong> ${escapeHtml(data.message || 'Execution failed.')}`, 'is-error');
+      updateBannerMessage(`❌ <strong>Debugger Error:</strong> ${escapeHtml(data.message || 'Execution failed.')}`);
     }
   } catch (err) {
-    updateBannerMessage('<strong>Error:</strong> Could not reach the debugger. Check your connection and try again.', 'is-error');
+    updateBannerMessage('❌ <strong>Error:</strong> Could not connect to Django Debugger Backend.');
   }
 }
 
@@ -524,8 +525,8 @@ function toggleAutoPlay() {
     stopAutoPlay();
   } else {
     const btn = document.getElementById('btnAutoPlay');
-    btn.textContent = 'Pause';
-    btn.setAttribute('aria-pressed', 'true');
+    btn.innerHTML = '⏸ Pause';
+    btn.style.background = '#eab308';
     autoPlayTimer = setInterval(() => {
       if (currentStepIdx < debugSteps.length - 1) nextStep();
       else stopAutoPlay();
@@ -536,7 +537,7 @@ function toggleAutoPlay() {
 function stopAutoPlay() {
   if (autoPlayTimer) { clearInterval(autoPlayTimer); autoPlayTimer = null; }
   const btn = document.getElementById('btnAutoPlay');
-  if (btn) { btn.textContent = 'Auto play'; btn.setAttribute('aria-pressed', 'false'); }
+  if (btn) { btn.innerHTML = '▶ Auto Play'; btn.style.background = ''; }
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -554,13 +555,13 @@ function goToStep(idx) {
   applyInlineValueHints(currentStepIdx);
 
   if (step.event_type === 'exception') {
-    updateBannerMessage(`<strong>Line ${step.line_number} Exception:</strong> ${escapeHtml(step.ai_explanation)}`, 'is-error');
+    updateBannerMessage(`❌ <strong>Line ${step.line_number} Exception:</strong> ${escapeHtml(step.ai_explanation)}`, 'rgba(239, 68, 68, 0.15)', '1px solid #ef4444', '#fca5a5');
   } else if (step.event_type === 'new') {
     // Highlight allocation of a new object
     const className = step.ai_explanation || step.line_text || '';
-    updateBannerMessage(`<strong>Allocate:</strong> ${escapeHtml(className)}`, 'is-new');
+    updateBannerMessage(`🆕 <strong>Allocate:</strong> ${escapeHtml(className)}`, 'rgba(34, 197, 94, 0.15)', '1px solid #22c55e', '#a7f3d0');
   } else {
-    updateBannerMessage(`<strong>Line ${step.line_number}:</strong> ${escapeHtml(step.ai_explanation)}`);
+    updateBannerMessage(`💡 <strong>Line ${step.line_number}:</strong> ${escapeHtml(step.ai_explanation)}`, '', '', '');
   }
 
   renderVariablesCards(step.variables);
@@ -586,7 +587,11 @@ function goToStep(idx) {
   const consoleElem = document.getElementById('stdoutConsole');
   if (consoleElem) {
     consoleElem.textContent = streamOutput || '$ Program execution completed.';
-    consoleElem.classList.toggle('is-error', step.event_type === 'exception');
+    if (step.event_type === 'exception') {
+      consoleElem.style.color = '#ef4444';
+    } else {
+      consoleElem.style.color = '';
+    }
   }
 
   updateControls();
@@ -644,7 +649,7 @@ function applyInlineValueHints(upToIdx) {
       if (newlyPrinted) {
         const firstLinePrint = newlyPrinted.split('\n')[0];
         let cleanPrint = firstLinePrint.length > 50 ? firstLinePrint.slice(0, 48) + '…' : firstLinePrint;
-        hints.push({ text: `print ➔ ${cleanPrint}`, changed: true, isCond: false, isReturn: false, isPrint: true });
+        hints.push({ text: `🖨️ print ➔ ${cleanPrint}`, changed: true, isCond: false, isReturn: false, isPrint: true });
       }
     }
 
@@ -759,7 +764,7 @@ function renderVariablesCards(vars) {
   const keys      = Object.keys(vars || {});
 
   if (keys.length === 0) {
-    if (container) container.innerHTML = '<p class="dbg-empty">No variables at this step yet.</p>';
+    if (container) container.innerHTML = '<div style="color:#94a3b8;text-align:center;padding:20px;font-size:12px;">No variables initialized at this step.</div>';
     return;
   }
 
@@ -786,41 +791,59 @@ function renderVariablesCards(vars) {
     let valueBlock;
     if (!isLong) {
       valueBlock = `
-        <div class="var-val">
-          <div class="var-val-text">${escapeHtml(fullVal)}</div>
+        <div style="text-align:right; display:flex; flex-direction:column; gap:4px; align-items:flex-end; max-width:55%;">
+          <div class="var-val-text" style="font-size:13px; font-weight:900;
+                      font-family:'Consolas','Fira Code',monospace; letter-spacing:0.3px;
+                      word-break:break-all; white-space:pre-wrap;">${escapeHtml(fullVal)}</div>
           <span class="mem-pointer-tag">${escapeHtml(v.mem_addr)}</span>
         </div>`;
     } else {
       valueBlock = `
-        <div class="var-val">
+        <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
           <span class="mem-pointer-tag">${escapeHtml(v.mem_addr)}</span>
-          <button type="button" id="${btnId}" class="var-expand" aria-expanded="false" aria-controls="${blockId}"
-            onclick="(function(btn){
+          <button id="${btnId}"
+            onclick="(function(){
               var b = document.getElementById('${blockId}');
-              var open = !b.hidden;
-              b.hidden = open;
-              btn.setAttribute('aria-expanded', String(!open));
-              btn.textContent = open ? 'Expand' : 'Collapse';
-            })(this)">Expand</button>
+              var btn = document.getElementById('${btnId}');
+              var open = b.style.display !== 'none';
+              b.style.display = open ? 'none' : 'block';
+              btn.textContent  = open ? '+ expand' : '− collapse';
+            })()"
+            style="background:none; border:1px solid var(--border-subtle); border-radius:6px;
+                   color:var(--accent); font-size:10px; font-weight:800; cursor:pointer;
+                   padding:2px 8px; font-family:monospace; white-space:nowrap;">
+            + expand
+          </button>
         </div>`;
     }
 
     html += `
-      <div class="var-pill-card ${changed}" id="${cardId}">
-        <div class="var-head">
-          <div class="var-id">
-            <div class="var-name-text">${escapeHtml(k)}</div>
+      <div class="var-pill-card ${changed}" id="${cardId}"
+           style="flex-direction:column; align-items:stretch; gap:6px;">
+
+        <!-- ── Header row: name + type + mem ── -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+          <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+            <div class="var-name-text">${isObject ? '📦 ' : '⚡ '}${escapeHtml(k)}</div>
             <div class="var-type-text">
-              type: <em class="var-type-em">${escapeHtml(v.type)}</em>${isObject ? ' <span class="var-kind">object</span>' : ''}
+              type: <em class="var-type-em">${escapeHtml(v.type)}</em>
             </div>
           </div>
           ${valueBlock}
         </div>
+
         ${ isLong ? `
-        <div id="${blockId}" class="var-fields" hidden>
-          <p class="var-fields-title">Internal fields and state</p>
-          <pre class="var-val-text var-val-block">${escapeHtml(fullVal)}</pre>
+        <!-- ── Collapsible Internal Fields & Properties ── -->
+        <div id="${blockId}" style="display:none; margin-top:4px;">
+          <div style="font-size:10px; font-weight:800; color:var(--text-muted); margin-bottom:4px;">Internal Fields &amp; State:</div>
+          <pre class="var-val-text" style="margin:0; padding:8px 10px;
+                      background:var(--bg-app); border:1px solid var(--border-subtle);
+                      border-radius:8px; font-size:11px; font-weight:600;
+                      font-family:'Consolas','Fira Code',monospace;
+                      white-space:pre-wrap; word-break:break-all;
+                      max-height:200px; overflow-y:auto; line-height:1.6;">${escapeHtml(fullVal)}</pre>
         </div>` : '' }
+
       </div>
     `;
   });
@@ -835,17 +858,22 @@ function renderCallStack(frames) {
   const list = document.getElementById('callStackList');
 
   if (!frames || frames.length === 0) {
-    list.innerHTML = '<p class="dbg-empty">Global stack frame (idle)</p>';
+    list.innerHTML = '<div style="color:#94a3b8;">Global Stack Frame (Idle)</div>';
     return;
   }
 
   let html = '';
   frames.forEach((f, idx) => {
-    const isTop = idx === frames.length - 1;
+    const isTop  = idx === frames.length - 1;
+    const bg     = isTop ? 'linear-gradient(135deg,rgba(30,58,138,0.6),rgba(15,23,42,0.85))' : '#141e33';
+    const border = isTop ? '#3b82f6' : '#23324d';
+    const color  = isTop ? '#60a5fa' : '#94a3b8';
+    const shadow = isTop ? '0 0 12px rgba(37,99,235,0.3)' : 'none';
+
     html += `
-      <div class="stack-frame${isTop ? ' is-top' : ''}">
-        <span>${isTop ? '' : '↳ '}${escapeHtml(f)}</span>
-        ${isTop ? '<span class="stack-frame-tag">Active</span>' : ''}
+      <div style="padding:8px 14px;background:${bg};border:1px solid ${border};border-radius:10px;font-weight:700;color:${color};box-shadow:${shadow};font-family:'Consolas','Fira Code',monospace;font-size:12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span>${isTop ? '👉 ' : '↳ '}${escapeHtml(f)}</span>
+        ${isTop ? '<span style="font-size:10px;color:#fff;background:#2563eb;padding:2px 8px;border-radius:5px;">Active</span>' : ''}
       </div>
     `;
   });
@@ -901,14 +929,14 @@ function toggleSectionMaximize(containerElem) {
   document.querySelectorAll('.maximized-section').forEach(el => {
     el.classList.remove('maximized-section');
     const btn = el.querySelector('.section-maximize-btn');
-    if (btn) btn.textContent = 'Maximize';
+    if (btn) btn.innerHTML = '⛶ Maximize';
   });
 
   if (!isMaximized) {
     containerElem.classList.add('maximized-section');
     document.body.classList.add('debugger-has-maximized');
     const btn = containerElem.querySelector('.section-maximize-btn');
-    if (btn) btn.textContent = 'Restore';
+    if (btn) btn.innerHTML = '✕ Restore';
 
     // Move playback bar into top of maximized section if available
     if (playbackBar && originalBarPlaceholder) {
@@ -943,11 +971,11 @@ function toggleFullWorkspaceMaximize() {
   if (!isMaximized) {
     appWrap.classList.add('maximized-full-workspace');
     document.body.classList.add('debugger-has-maximized');
-    if (btn) btn.textContent = 'Restore';
+    if (btn) btn.innerHTML = '✕ Restore IDE';
   } else {
     appWrap.classList.remove('maximized-full-workspace');
     document.body.classList.remove('debugger-has-maximized');
-    if (btn) btn.textContent = 'Maximize';
+    if (btn) btn.innerHTML = '⛶ Maximize IDE';
   }
 
   setTimeout(() => {

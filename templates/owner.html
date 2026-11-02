@@ -2,995 +2,2205 @@
 {% load static %}
 
 {% block title %}Owner Control Studio | Kashii Updatez{% endblock %}
-{% block robots %}noindex, nofollow{% endblock %}
 
 {% block flash_banner %}{% endblock %}
 {% block navbar %}{% endblock %}
 {% block footer %}{% endblock %}
 {% block floating_widgets %}{% endblock %}
-{% block bottom_bar %}{% endblock %}
 {% block entry_scripts %}{% endblock %}
 {% block body_class %}{% if is_owner_authenticated %}is-owner-authenticated{% endif %}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/owner.css' %}?v=2026110201">
+<style>
+  :root {
+    --blue-primary: #2563eb;
+    --blue-hover: #1d4ed8;
+    --blue-dark: #1e40af;
+    --blue-light: #eff6ff;
+    --blue-border: #bfdbfe;
+    --blue-glow: rgba(37, 99, 235, 0.18);
+
+    --emerald-primary: #10b981;
+    --emerald-light: #ecfdf5;
+    --emerald-border: #a7f3d0;
+
+    --violet-primary: #8b5cf6;
+    --violet-light: #f5f3ff;
+    --violet-border: #ddd6fe;
+
+    --amber-primary: #f59e0b;
+    --amber-light: #fffbeb;
+    --amber-border: #fde68a;
+
+    --rose-primary: #ef4444;
+    --rose-light: #fef2f2;
+    --rose-border: #fecaca;
+    
+    --ink: #0f172a;
+    --paper: #f8fafc;
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
+    --subtle-border: rgba(226, 232, 240, 0.85);
+    --strong-border: #cbd5e1;
+    --muted: #64748b;
+    --faint: #94a3b8;
+    
+    /* Semantic Typographic Scale */
+    --text-xs:   0.75rem;   /* 12px */
+    --text-sm:   0.8125rem; /* 13px */
+    --text-base: 0.875rem;  /* 14px */
+    --text-md:   1rem;      /* 16px */
+    --text-lg:   1.125rem;  /* 18px */
+    --text-xl:   1.375rem;  /* 22px */
+    --text-2xl:  1.625rem;  /* 26px */
+    --text-3xl:  1.875rem;  /* 30px */
+
+    /* Semantic Text Color System */
+    --color-text-primary:   #0f172a;
+    --color-text-secondary: #334155;
+    --color-text-muted:     #64748b;
+    --color-text-brand:     #2563eb;
+    --color-text-success:   #059669;
+    --color-text-danger:    #dc2626;
+
+    /* Corner Radii System */
+    --radius-xs:  4px;
+    --radius-sm:  6px;
+    --radius-md:  10px;
+    --radius-lg:  14px;
+    --radius-xl:  18px;
+    --radius-full: 9999px;
+
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    
+    /* Dual-Layer Specular Box Shadows (Craft-UI Standard) */
+    --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    --hover-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03), inset 0 1px 0 rgba(255, 255, 255, 1);
+    --modal-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--paper) !important;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.04) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.03) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.02) 0px, transparent 50%) !important;
+    background-attachment: fixed !important;
+    color: var(--color-text-primary) !important;
+    font-family: var(--font-sans) !important;
+    font-size: var(--text-base);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  body.is-owner-authenticated {
+    padding-bottom: 74px !important;
+  }
+
+  /* Enterprise App Shell */
+  .app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* ==========================================
+     TOP OWNER HEADER & WORKSPACE NAVIGATION
+     ========================================== */
+  .owner-header-navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--subtle-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 20px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .owner-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .owner-brand-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: var(--text-sm);
+    color: #ffffff;
+    box-shadow: 0 2px 8px var(--blue-glow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+
+  .owner-brand-logo:hover {
+    transform: scale(1.04);
+  }
+
+  .owner-brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .owner-brand-title {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+
+  .owner-brand-title span {
+    color: var(--blue-primary);
+    font-weight: 900;
+  }
+
+  .owner-brand-badge {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-text-success);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    letter-spacing: 0.2px;
+  }
+
+  .owner-live-dot {
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    animation: livePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+  }
+
+  /* Dedicated Interactive Workspace Sub-Nav Rail */
+  .owner-subnav-rail {
+    background: #ffffff;
+    border-bottom: 1px solid var(--subtle-border);
+    position: sticky;
+    top: 60px;
+    z-index: 95;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02);
+    display: flex;
+    justify-content: center;
+    padding: 6px 16px;
+    transition: top 0.2s ease;
+  }
+
+  /* Segmented Workspace Link Track */
+  .owner-link-nav {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 0;
+  }
+
+  .owner-link-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .owner-link-item {
+    padding: 6px 11px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    line-height: 1.2;
+    box-sizing: border-box;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .owner-link-item:hover {
+    color: var(--color-text-primary);
+    background: #f1f5f9;
+  }
+
+  .owner-link-item.active {
+    color: var(--blue-primary);
+    background: var(--blue-light);
+    border-color: var(--blue-border);
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.08);
+    font-weight: 700;
+  }
+
+  .owner-link-badge {
+    font-size: 10px;
+    font-weight: 800;
+    background: #e2e8f0;
+    color: var(--color-text-muted);
+    padding: 1px 6px;
+    border-radius: var(--radius-full);
+    transition: all 0.15s ease;
+  }
+
+  .owner-link-item.active .owner-link-badge {
+    background: var(--blue-primary);
+    color: #ffffff;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
+  }
+
+  /* Right Header Controls */
+  .owner-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-text-short {
+    display: none;
+  }
+
+  /* Experience Segregation Quick Switcher Pills */
+  .owner-exp-segregation-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .owner-exp-pill {
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--subtle-border);
+    background: #ffffff;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.16s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+
+  .owner-exp-pill:hover {
+    background: var(--surface-hover);
+    color: var(--color-text-primary);
+  }
+
+  .owner-exp-pill.active {
+    background: var(--blue-primary) !important;
+    color: #ffffff !important;
+    border-color: var(--blue-primary) !important;
+    box-shadow: 0 2px 8px var(--blue-glow);
+  }
+
+  .owner-exp-pill.fresher {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.06);
+    color: #059669;
+  }
+
+  .owner-exp-pill.fresher.active {
+    background: #059669 !important;
+    color: #ffffff !important;
+    border-color: #059669 !important;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  }
+
+  .owner-exp-pill.exp {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.06);
+    color: #4f46e5;
+  }
+
+  .owner-exp-pill.exp.active {
+    background: #4f46e5 !important;
+    color: #ffffff !important;
+    border-color: #4f46e5 !important;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  }
+
+  /* Unified Button System */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+    white-space: nowrap;
+    line-height: 1;
+    box-sizing: border-box;
+    user-select: none;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--blue-primary);
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-color: #1d4ed8;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px var(--blue-glow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    box-shadow: 0 4px 12px var(--blue-glow);
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: #ffffff;
+    border-color: var(--strong-border);
+    color: var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface-hover);
+    color: var(--color-text-primary);
+    border-color: var(--muted);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-text-secondary);
+  }
+
+  .btn-ghost:hover {
+    background: var(--surface-hover);
+    color: var(--color-text-primary);
+  }
+
+  .btn-danger-ghost {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: var(--color-text-danger);
+    font-weight: 600;
+  }
+
+  .btn-danger-ghost:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+
+  /* Main Workspace Container */
+  .workspace-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Metric KPI Bento Grid (5 Cards) */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+  }
+
+  .kpi-card-blue::before { background: linear-gradient(90deg, #2563eb, #38bdf8); }
+  .kpi-card-indigo::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+  .kpi-card-emerald::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .kpi-card-amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .kpi-card-violet::before { background: linear-gradient(90deg, #8b5cf6, #c084fc); }
+
+  .kpi-card:hover {
+    box-shadow: var(--hover-shadow);
+    transform: translateY(-2px);
+    border-color: var(--strong-border);
+  }
+
+  .kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .kpi-title {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1.2;
+  }
+
+  .kpi-icon-bubble {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    background: var(--surface-hover);
+    border: 1px solid var(--subtle-border);
+  }
+
+  .kpi-card-blue .kpi-icon-bubble { background: var(--blue-light); border-color: var(--blue-border); }
+  .kpi-card-indigo .kpi-icon-bubble { background: #eef2ff; border-color: #c7d2fe; }
+  .kpi-card-emerald .kpi-icon-bubble { background: var(--emerald-light); border-color: var(--emerald-border); }
+  .kpi-card-amber .kpi-icon-bubble { background: var(--amber-light); border-color: var(--amber-border); }
+  .kpi-card-violet .kpi-icon-bubble { background: var(--violet-light); border-color: var(--violet-border); }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kpi-card-blue .kpi-value { color: var(--blue-primary); }
+  .kpi-card-emerald .kpi-value { color: var(--emerald-primary); }
+  .kpi-card-amber .kpi-value { color: #b45309; }
+
+  .kpi-sub {
+    font-size: 11.5px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .kpi-sub-active { color: var(--color-text-success); }
+  .kpi-sub-danger { color: var(--color-text-danger); }
+
+  /* Workspace Card Panel */
+  .workspace-card {
+    background: var(--surface);
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 22px;
+  }
+
+  /* Standard Toolbar Controls */
+  .standard-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--card-shadow);
+  }
+
+  .search-wrapper {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 240px;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid var(--strong-border);
+    border-radius: var(--radius-md);
+    padding: 0 38px 0 38px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--ink);
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+  }
+
+  .search-input:focus {
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  .filters-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .standard-select {
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid var(--strong-border);
+    border-radius: var(--radius-md);
+    padding: 0 12px;
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .standard-select:focus {
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  /* Responsive Catalog Grid & Cards */
+  .vp-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .vp-product-card {
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .vp-product-card:hover {
+    border-color: var(--strong-border);
+    box-shadow: var(--hover-shadow);
+    transform: translateY(-2px);
+  }
+
+  .vp-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .company-badge {
+    font-size: var(--text-xs);
+    font-weight: 800;
+    color: var(--blue-primary);
+    background: var(--blue-light);
+    border: 1px solid var(--blue-border);
+    padding: 3px 9px;
+    border-radius: var(--radius-sm);
+    letter-spacing: -0.01em;
+  }
+
+  .type-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    background: var(--surface-hover);
+    border: 1px solid var(--subtle-border);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+  }
+
+  .job-card-title, .vp-product-card h2, .vp-product-card h3 {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 8px;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+  }
+
+  .vp-salary-row {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .skills-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .skill-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: var(--radius-xs);
+    background: #f8fafc;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--subtle-border);
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Status Pills */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .status-active {
+    background: var(--emerald-light);
+    color: var(--emerald-primary);
+    border: 1px solid var(--emerald-border);
+  }
+
+  .status-expired {
+    background: var(--rose-light);
+    color: var(--rose-primary);
+    border: 1px solid var(--rose-border);
+  }
+
+  /* Form Elements */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .form-label {
+    font-size: var(--text-xs);
+    font-weight: 800;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  .form-input, .form-textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid var(--strong-border);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--ink);
+    font-family: inherit;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+  }
+
+  .form-input:focus, .form-textarea:focus {
+    border-color: var(--blue-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* Modern High-Density Table */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--subtle-border);
+    background: #ffffff;
+    width: 100%;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+    text-align: left;
+  }
+
+  .data-table th {
+    background: #f8fafc;
+    padding: 12px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--subtle-border);
+  }
+
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--color-text-primary);
+    vertical-align: middle;
+  }
+
+  .data-table tr:hover td {
+    background: #f8fafc;
+  }
+
+  /* Modal Close Button */
+  .modal-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--subtle-border);
+    background: var(--surface-hover);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+  }
+
+  .modal-close-btn:hover,
+  .modal-close-btn:focus-visible {
+    background: #e2e8f0;
+    color: var(--color-text-primary);
+    border-color: var(--strong-border);
+    outline: none;
+  }
+
+  /* Modal Dialog Backdrop */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow-y: auto;
+    padding: 16px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active,
+  .modal-overlay.open {
+    display: flex !important;
+  }
+
+  .modal-box {
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: var(--radius-xl);
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+    padding: 26px;
+    box-shadow: var(--modal-shadow);
+    box-sizing: border-box;
+  }
+
+  /* Mobile Bottom Tab Dock */
+  .mobile-tab-dock {
+    display: none;
+  }
+
+  /* Mobile Secondary Horizontal Sub-Nav Strip */
+  .mobile-subnav-strip {
+    display: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: none;
+    padding: 8px 12px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--subtle-border);
+    gap: 6px;
+  }
+
+  .mobile-subnav-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ==========================================
+     MOBILE RESPONSIVE RULES (< 768px)
+     ========================================== */
+  @media (max-width: 1024px) {
+    .kpi-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .owner-header-navbar {
+      padding: 0 16px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .owner-header-navbar {
+      height: 54px;
+      padding: 0 10px;
+    }
+
+    .owner-subnav-rail {
+      top: 54px;
+      padding: 5px 8px;
+      justify-content: flex-start;
+      -webkit-mask-image: linear-gradient(to right, transparent, black 8px, black calc(100% - 8px), transparent 100%);
+      mask-image: linear-gradient(to right, transparent, black 8px, black calc(100% - 8px), transparent 100%);
+    }
+
+    .owner-link-nav {
+      gap: 3px;
+    }
+
+    .owner-link-item {
+      padding: 5px 9px;
+      font-size: 11.5px;
+      gap: 4px;
+    }
+
+    .btn-text-full {
+      display: none;
+    }
+
+    .btn-text-short {
+      display: inline;
+    }
+
+    .owner-right-actions {
+      gap: 5px;
+    }
+
+    .owner-right-actions .btn {
+      height: 30px;
+      padding: 0 8px;
+      font-size: 11px;
+    }
+
+    .owner-brand-title {
+      font-size: 13.5px;
+    }
+
+    .owner-brand-logo {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+    }
+
+    .workspace-container {
+      padding: 14px 12px 84px;
+    }
+
+    .workspace-card {
+      padding: 16px 14px;
+      border-radius: var(--radius-md);
+      margin-bottom: 14px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .kpi-card {
+      padding: 14px 12px;
+      border-radius: var(--radius-md);
+    }
+
+    .kpi-value {
+      font-size: var(--text-xl);
+      margin-bottom: 2px;
+    }
+
+    .standard-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 12px;
+    }
+
+    .search-wrapper {
+      width: 100%;
+      min-width: 100%;
+    }
+
+    .search-input {
+      height: 42px;
+      font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+    }
+
+    .filters-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .standard-select {
+      width: 100%;
+      height: 38px;
+      font-size: 13px !important;
+      padding: 0 8px;
+    }
+
+    #ownerPageSize {
+      grid-column: span 2;
+    }
+
+    .vp-catalog-grid {
+      grid-template-columns: 1fr !important;
+      gap: 14px !important;
+    }
+
+    .vp-product-card {
+      padding: 16px 14px !important;
+    }
+
+    .form-grid-2 {
+      grid-template-columns: 1fr !important;
+      gap: 10px;
+    }
+
+    .form-input, .form-textarea {
+      font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+      padding: 10px 12px;
+    }
+
+    .modal-box {
+      width: 95% !important;
+      max-width: 95% !important;
+      max-height: 90vh !important;
+      padding: 18px 14px !important;
+      margin: 10px auto !important;
+      border-radius: var(--radius-md) !important;
+      overflow-y: auto;
+    }
+
+    /* Fixed Bottom Dock on Mobile */
+    body.is-owner-authenticated .mobile-tab-dock {
+      display: flex !important;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--subtle-border);
+      z-index: 1000;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 4px;
+      padding-bottom: max(4px, env(safe-area-inset-bottom));
+      box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.06);
+    }
+
+    .dock-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      background: transparent;
+      border: none;
+      color: var(--color-text-muted);
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s ease;
+      text-decoration: none;
+      flex: 1;
+    }
+
+    .dock-btn.active {
+      color: var(--blue-primary);
+      background: var(--blue-light);
+    }
+  }
+
+  @media (min-width: 769px) {
+    .mobile-tab-dock { display: none !important; }
+    .mobile-subnav-strip { display: none !important; }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="app-shell ow">
+<div class="app-shell">
 
-  <!-- Owner header: brand, student site, post job, logout -->
-  <header class="owner-header-navbar ow-header">
-    <div class="ow-header-in">
-      <a href="/" target="_blank" rel="noopener noreferrer" class="brand ow-brand" title="Open the student site in a new tab">Kashii<span>Updatez</span></a>
-      <span class="ow-brand-tag">Owner</span>
+  <!-- ==========================================
+       DEDICATED OWNER LINK NAVBAR (Clean Responsive Theme)
+       ========================================== -->
+  <header class="owner-header-navbar">
+    
+    <!-- Left Brand Badge -->
+    <div class="owner-brand-group">
+      <a href="/" target="_blank" class="owner-brand-logo" title="View Student Feed">⚡</a>
+      <div class="owner-brand-text">
+        <span class="owner-brand-title">Kashii<span>Studio</span></span>
+        <span class="owner-brand-badge"><span class="owner-live-dot"></span> Live Engine</span>
+      </div>
+    </div>
 
-      <div class="owner-right-actions ow-actions" id="ownerRightActions">
-        <a href="/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary ow-icon-btn" title="Open student website in new tab" aria-label="Open student site in a new tab">
-          <i data-lucide="external-link" aria-hidden="true"></i>
-          <span class="ow-wide-only">Student site</span>
-        </a>
-        <div id="ownerAuthActions" class="ow-auth-actions{% if not is_owner_authenticated %} is-off{% endif %}">
-          <button type="button" id="btnHeaderPostJob" class="btn btn-primary owner-btn-post">
-            <i data-lucide="plus" aria-hidden="true"></i>
-            <span>Post<span class="ow-wide-only"> job</span></span>
-          </button>
-          <button type="button" id="btnLogoutOwner" class="btn btn-danger-ghost ow-icon-btn owner-btn-logout" aria-label="Log out">
-            <i data-lucide="log-out" aria-hidden="true"></i>
-            <span class="ow-wide-only">Logout</span>
-          </button>
-        </div>
+    <!-- Right Actions: View Public Site & Post & Logout (Zero screen overflow) -->
+    <div class="owner-right-actions" id="ownerRightActions">
+      <a href="/" target="_blank" class="btn btn-secondary owner-btn-view-site" title="Open student website in new tab" rel="noopener noreferrer">
+        <span class="btn-text-full">Student Site ↗</span>
+        <span class="btn-text-short">Site ↗</span>
+      </a>
+      <div id="ownerAuthActions" style="display: {% if is_owner_authenticated %}flex{% else %}none{% endif %}; align-items: center; gap: 8px;">
+        <button type="button" id="btnHeaderPostJob" class="btn btn-primary owner-btn-post">
+          <span class="btn-text-full">+ Post Job</span>
+          <span class="btn-text-short">+ Post</span>
+        </button>
+        <button type="button" id="btnLogoutOwner" class="btn btn-danger-ghost owner-btn-logout">
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Section rail: every owner tab, scrolls sideways on a phone -->
-  <nav class="owner-subnav-rail ow-rail{% if not is_owner_authenticated %} is-off{% endif %}" id="ownerSubNav" aria-label="Owner Studio Navigation">
-    <div class="owner-link-nav ow-rail-in">
+  <!-- Dedicated Interactive Workspace Sub-Nav Rail (All Screens Supported) -->
+  <nav class="owner-subnav-rail" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-label="Owner Studio Navigation">
+    <div class="owner-link-nav">
       <button type="button" class="owner-link-item owner-nav-item active" data-tab="tabJobs">
-        <i data-lucide="kanban" aria-hidden="true"></i>
-        <span>Pipeline</span>
+        <span>📊 Pipeline</span>
         <span class="owner-link-badge" id="sidebarActiveCount">{{ active_jobs_count|default:"0" }}</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabLinkedin">
-        <i data-lucide="linkedin" aria-hidden="true"></i>
-        <span>LinkedIn &amp; referrals</span>
+        <span>💼 LinkedIn &amp; Referrals</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabPost">
-        <i data-lucide="square-pen" aria-hidden="true"></i>
-        <span>Post job</span>
+        <span>✍️ + Post</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
-        <i data-lucide="scan-text" aria-hidden="true"></i>
-        <span>Single parser</span>
+        <span>🎯 1-Parser</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabBulkParse">
-        <i data-lucide="layers" aria-hidden="true"></i>
-        <span>Bulk parser</span>
+        <span>⚡ Bulk</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabJobdexo">
-        <i data-lucide="download" aria-hidden="true"></i>
-        <span>Jobdexo</span>
+        <span>🤖 Jobdexo</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabGroups">
-        <i data-lucide="boxes" aria-hidden="true"></i>
-        <span>Groups</span>
+        <span>📦 Groups</span>
         <span class="owner-link-badge" id="sidebarGroupsCount">{{ total_groups_count|default:"0" }}</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabAnalytics">
-        <i data-lucide="chart-column" aria-hidden="true"></i>
-        <span>Analytics</span>
+        <span>📈 Analytics</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabCategory">
-        <i data-lucide="tags" aria-hidden="true"></i>
-        <span>Categories</span>
+        <span>🏷️ Categories</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabActivity">
-        <i data-lucide="scroll-text" aria-hidden="true"></i>
-        <span>Logs</span>
+        <span>📋 Logs</span>
       </button>
     </div>
   </nav>
 
-  <!-- Hidden alias kept for older tests -->
-  <nav class="mobile-subnav-strip" id="mobileSubNavStrip" hidden aria-hidden="true"></nav>
+  <!-- Hidden alias for legacy tests compatibility -->
+  <nav class="mobile-subnav-strip" id="mobileSubNavStrip" style="display: none !important;" aria-hidden="true"></nav>
 
-  <main class="ow-main">
-
-    <!-- Login view (signed out) -->
-    <section id="ownerLoginView" class="workspace-container ow-login{% if is_owner_authenticated %} is-off{% endif %}" aria-labelledby="ownerLoginTitle">
-      <div class="workspace-card ow-login-card">
-        <h1 id="ownerLoginTitle" class="ow-login-title">Owner sign in</h1>
-        <p class="ow-sub">Sign in to post jobs, run the parsers and crawlers, and see site traffic.</p>
-
-        <form id="formOwnerLogin" method="POST" action="/owner/" class="ow-form">
-          {% csrf_token %}
-          {% if login_error %}
-          <p class="ow-alert is-bad" role="alert">
-            <i data-lucide="circle-alert" aria-hidden="true"></i>
-            <span>{{ login_error }}</span>
-          </p>
-          {% endif %}
-          <div class="form-group">
-            <label for="ownerUser" class="form-label">Username or email</label>
-            <input type="text" id="ownerUser" name="username" class="form-input" placeholder="Owner username or email" required autocomplete="username">
-          </div>
-          <div class="form-group">
-            <label for="ownerPass" class="form-label">Password</label>
-            <input type="password" id="ownerPass" name="password" class="form-input" placeholder="Your password" required autocomplete="current-password">
-          </div>
-          <button type="submit" class="btn btn-primary ow-submit">
-            Sign in to Studio
-          </button>
-        </form>
+  <!-- ==========================================
+       LOGIN VIEW (If Unauthenticated)
+       ========================================== -->
+  <div id="ownerLoginView" class="workspace-container" style="max-width: 440px; margin: 40px auto; {% if is_owner_authenticated %}display: none;{% endif %}">
+    <div class="workspace-card" style="padding: 28px 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 0; color: var(--color-text-primary);">Owner Studio Login</h2>
+        <span class="status-pill status-active">PRO STUDIO</span>
       </div>
-    </section>
+      <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: 20px; line-height: 1.5;">
+        Sign in to manage student job leads, bulk parsers, crawler engines, and real-time site analytics.
+      </p>
 
-    <!-- Dashboard (signed in) -->
-    <div id="ownerDashboardView" class="workspace-container ow-dash{% if not is_owner_authenticated %} is-off{% endif %}" data-server-auth="{% if is_owner_authenticated %}true{% else %}false{% endif %}" data-owner-user="{{ owner_username }}">
-
-      <header class="ow-dash-head">
-        <div class="ow-dash-title">
-          <h1 id="crmWorkspaceHeading">Opportunity Pipeline CRM</h1>
-          <p id="crmWorkspaceSubheading" class="ow-sub">Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.</p>
+      <form id="formOwnerLogin" method="POST" action="/owner/">
+        {% csrf_token %}
+        {% if login_error %}
+        <div style="background: #fef2f2; color: var(--color-text-danger); border: 1px solid #fecaca; padding: 10px 14px; border-radius: var(--radius-md); font-size: var(--text-sm); margin-bottom: 16px; font-weight: 700;">
+          ⚠️ {{ login_error }}
         </div>
-        <p class="ow-user">Signed in as <b>{{ owner_username|default:"Owner" }}</b></p>
-      </header>
-
-      <!-- Counts from the database -->
-      <div class="kpi-grid ow-kpis">
-        <div class="kpi-card">
-          <span class="kpi-title">Active</span>
-          <span class="kpi-value is-accent" id="kpiActiveJobs">{{ active_jobs_count|default:"0" }}</span>
-          <span class="kpi-sub">Live on student feed</span>
+        {% endif %}
+        <div class="form-group">
+          <label for="ownerUser" class="form-label">Username or Email *</label>
+          <input type="text" id="ownerUser" name="username" class="form-input" placeholder="Enter owner username or email" required autocomplete="username">
         </div>
-        <div class="kpi-card">
-          <span class="kpi-title">Total postings</span>
-          <span class="kpi-value" id="kpiTotalJobs">{{ total_jobs_count|default:"0" }}</span>
-          <span class="kpi-sub">All time</span>
+        <div class="form-group">
+          <label for="ownerPass" class="form-label">Password *</label>
+          <input type="password" id="ownerPass" name="password" class="form-input" placeholder="••••••••••••" required autocomplete="current-password">
         </div>
-        <div class="kpi-card">
-          <span class="kpi-title">Groups</span>
-          <span class="kpi-value" id="kpiTotalGroups">{{ total_groups_count|default:"0" }}</span>
-          <span class="kpi-sub">Shareable bundles</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-title">Expired</span>
-          <span class="kpi-value" id="kpiExpiredJobs">{{ expired_jobs_count|default:"0" }}</span>
-          <span class="kpi-sub">Closes 7 days after posting</span>
-        </div>
-        <div class="kpi-card">
-          <span class="kpi-title">Categories</span>
-          <span class="kpi-value" id="kpiCategories">{{ categories|length|default:"0" }}</span>
-          <span class="kpi-sub">Job categories</span>
-        </div>
-      </div>
-
-      <!-- TAB: Pipeline -->
-      <section id="tabJobs" class="workspace-card tab-content" aria-label="Pipeline">
-
-        <div class="owner-exp-segregation-bar" role="group" aria-label="Filter by experience">
-          <button type="button" class="owner-exp-pill active" data-exp="ALL">All ({{ total_jobs_count|default:"0" }})</button>
-          <button type="button" class="owner-exp-pill fresher" data-exp="FRESHER">Freshers, 0-1 yrs ({{ fresher_jobs_count|default:"0" }})</button>
-          <button type="button" class="owner-exp-pill exp" data-exp="EXPERIENCED">Experienced, 1-5+ yrs ({{ experienced_jobs_count|default:"0" }})</button>
-          <button type="button" class="owner-exp-pill" data-exp="INTERNSHIP">Internships</button>
-        </div>
-
-        <div class="standard-toolbar">
-          <div class="search-wrapper">
-            <label for="crmSearchJobs" class="sr-only">Search jobs</label>
-            <i data-lucide="search" class="search-icon" aria-hidden="true"></i>
-            <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search company, role, skills, location">
-            <button id="btnSearchClear" type="button" class="ow-search-clear is-off" title="Clear search" aria-label="Clear search">
-              <i data-lucide="x" aria-hidden="true"></i>
-            </button>
-          </div>
-
-          <div class="ow-tool-row">
-            <button id="btnVerifyJobLinks" type="button" class="btn btn-secondary" title="Scan active job URLs and soft-expire dead, 404 or redirected links">
-              <i data-lucide="shield-check" aria-hidden="true"></i>
-              <span>Verify links</span>
-            </button>
-            <button id="btnOpenMoveByIdPipeline" type="button" class="btn btn-secondary" title="Move or assign any requirement by typing its Job ID">
-              <i data-lucide="arrow-left-right" aria-hidden="true"></i>
-              <span>Move by job ID</span>
-            </button>
-          </div>
-
-          <div class="filters-group">
-            <div class="ow-select">
-              <label for="crmExperienceFilter" class="ow-select-label">Experience</label>
-              <select id="crmExperienceFilter" class="standard-select" title="Filter by experience tier">
-                <option value="ALL" selected>All experience levels</option>
-                <option value="FRESHER">Freshers (0-1 yrs)</option>
-                <option value="EXPERIENCED">Experienced (1+ yrs)</option>
-                <option value="INTERNSHIP">Internships</option>
-                <option value="EARLY_CAREER">1-3 yrs (early)</option>
-                <option value="MID_LEVEL">3-5 yrs (mid)</option>
-                <option value="SENIOR_LEVEL">5+ yrs (senior)</option>
-              </select>
-            </div>
-            <div class="ow-select">
-              <label for="crmCategoryFilter" class="ow-select-label">Category</label>
-              <select id="crmCategoryFilter" class="standard-select">
-                <option value="ALL">All categories</option>
-                {% for c in categories %}
-                  <option value="{{ c.slug }}">{{ c.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="ow-select">
-              <label for="crmSourceFilter" class="ow-select-label">Source</label>
-              <select id="crmSourceFilter" class="standard-select" title="Filter by job source">
-                <option value="ALL" selected>All sources</option>
-                <option value="Naukri">Naukri</option>
-                <option value="Jobdexo">Jobdexo</option>
-                <option value="LinkedIn">LinkedIn</option>
-                <option value="Startup">Indian startups</option>
-              </select>
-            </div>
-            <div class="ow-select">
-              <label for="crmRecencyFilter" class="ow-select-label">Posted</label>
-              <select id="crmRecencyFilter" class="standard-select" title="Filter by posting date">
-                <option value="ALL" selected>Any date</option>
-                <option value="today">Today</option>
-                <option value="yesterday">Yesterday</option>
-                <option value="3d">Past 3 days</option>
-                <option value="7d">Past 7 days</option>
-              </select>
-            </div>
-            <div class="ow-select">
-              <label for="crmStatusFilter" class="ow-select-label">Status</label>
-              <select id="crmStatusFilter" class="standard-select">
-                <option value="ALL" selected>All status</option>
-                <option value="ACTIVE">Active only (7 days)</option>
-                <option value="EXPIRED">Expired or unpublished</option>
-              </select>
-            </div>
-            <div class="ow-select">
-              <label for="ownerPageSize" class="ow-select-label">Per page</label>
-              <select id="ownerPageSize" class="standard-select">
-                <option value="10" selected>10 per page</option>
-                <option value="25">25 per page</option>
-                <option value="50">50 per page</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div id="ownerJobsTableContainer" class="table-responsive">
-          {% if page_obj %}
-          <div class="vp-catalog-grid">
-            {% for j in page_obj %}
-            <div class="vp-product-card" data-id="{{ j.id }}">
-              <div class="vp-card-header">
-                <span class="company-badge">{{ j.company_name }}</span>
-                <div class="ow-card-tags">
-                  <span class="type-badge">{{ j.get_job_type_display }}</span>
-                  {% if j.status == 'EXPIRED' %}
-                    <span class="status-pill status-expired">Expired</span>
-                  {% else %}
-                    <span class="status-pill status-active">Active</span>
-                  {% endif %}
-                </div>
-              </div>
-
-              <div class="vp-card-content">
-                <h2 class="job-card-title">{{ j.title }}</h2>
-
-                <div class="vp-salary-row">
-                  <span>{{ j.stipend_salary }}</span>
-                  <span class="ow-loc">{{ j.location|default:"India" }}</span>
-                </div>
-
-                <div class="ow-card-meta">
-                  <span>Posted <strong>{{ j.get_posted_date_display }}</strong></span>
-                  <span class="ow-id">#{{ j.id }}</span>
-                </div>
-
-                <p class="ow-card-desc">{{ j.description|truncatewords:18 }}</p>
-
-                <div class="skills-wrapper">
-                  {% for skill in j.get_skills_list %}
-                    {% if forloop.counter <= 4 %}
-                      <span class="skill-tag">{{ skill }}</span>
-                    {% endif %}
-                  {% endfor %}
-                </div>
-
-                {% if j.status != 'EXPIRED' %}
-                <div class="vp-price-row">
-                  <div class="timer-tag">
-                    <i data-lucide="clock" aria-hidden="true"></i>
-                    Auto-expires in 7 days
-                  </div>
-                </div>
-                {% endif %}
-
-                <div class="card-action-bar">
-                  <div class="ow-act-2">
-                    <button type="button" class="btn btn-secondary btn-edit-job" data-id="{{ j.id }}">
-                      <i data-lucide="pencil" aria-hidden="true"></i>
-                      Edit
-                    </button>
-                    <a href="{{ j.apply_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
-                      <i data-lucide="external-link" aria-hidden="true"></i>
-                      Apply URL
-                    </a>
-                  </div>
-                  <div class="ow-act-3">
-                    <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="{{ j.id }}" data-title="{{ j.title|escapejs }}" title="Move or assign this requirement to a specific group">
-                      Move
-                    </button>
-                    <button type="button" class="btn btn-ghost btn-toggle-job{% if j.status == 'EXPIRED' %} is-publish{% endif %}" data-id="{{ j.id }}">
-                      {% if j.status == 'EXPIRED' %}Publish{% else %}Unpublish{% endif %}
-                    </button>
-                    <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="{{ j.id }}" title="Delete lead">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-
-          <div class="ow-pager">
-            <p class="ow-pager-info">
-              Showing <strong>{{ page_obj.start_index }}-{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> (page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
-            </p>
-            <div class="ow-pager-nav">
-              {% if page_obj.has_previous %}
-                <a id="btnPrevPage" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link pag-btn">
-                  Previous
-                </a>
-              {% else %}
-                <button id="btnPrevPage" class="btn-action-light pag-btn" disabled>
-                  Previous
-                </button>
-              {% endif %}
-
-              {% for p in page_numbers %}
-                {% if p == '...' %}
-                  <span class="ow-pag-gap" aria-hidden="true">…</span>
-                {% else %}
-                  <a href="?page={{ p }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="pag-page-btn pag-btn-link {% if page_obj.number == p %}active{% endif %}"{% if page_obj.number == p %} aria-current="page"{% endif %}>
-                    {{ p }}
-                  </a>
-                {% endif %}
-              {% endfor %}
-
-              {% if page_obj.has_next %}
-                <a id="btnNextPage" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link pag-btn">
-                  Next
-                </a>
-              {% else %}
-                <button id="btnNextPage" class="btn-action-light pag-btn" disabled>
-                  Next
-                </button>
-              {% endif %}
-            </div>
-          </div>
-          {% else %}
-          <div class="ow-empty">
-            No jobs in the pipeline yet. Use Post job or the single parser to add one.
-          </div>
-          {% endif %}
-        </div>
-      </section>
-
-      <!-- TAB: Single snippet parser -->
-      <section id="tabSmartParse" class="workspace-card tab-content is-off" aria-labelledby="smartParseTitle">
-        <header class="ow-tab-head">
-          <h2 id="smartParseTitle">Single job parser</h2>
-          <p class="ow-sub">Paste the message text for <strong>one job</strong> from Telegram or WhatsApp. The parser finds the company, role, skills, pay and the official apply link, then publishes it.</p>
-        </header>
-
-        <form id="formSmartParse" class="ow-form">
-          <div class="form-group">
-            <label for="rawText" class="form-label">Job message text</label>
-            <textarea id="rawText" class="form-textarea" rows="9" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Package: 4.5 LPA&#10;Batch: 2026 Batch&#10;Location: Bangalore / Remote&#10;Skills: Java, Spring Boot, SQL&#10;Apply Link: https://..." required></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary ow-submit">
-            <i data-lucide="scan-text" aria-hidden="true"></i>
-            Parse and publish
-          </button>
-        </form>
-      </section>
-
-      <!-- TAB: LinkedIn post scraper and referrals -->
-      <section id="tabLinkedin" class="workspace-card tab-content is-off" aria-labelledby="linkedinTitle">
-        <header class="ow-tab-head">
-          <h2 id="linkedinTitle">LinkedIn posts and referrals</h2>
-          <p class="ow-sub">Pull hiring posts and employee referrals from LinkedIn. The tool checks the apply link, credits the referrer, and lets you publish the lead to the live list.</p>
-        </header>
-
-        <form id="formLinkedinScraper" class="ow-panel ow-form" onsubmit="event.preventDefault(); handleScrapeAndParseLinkedIn();">
-          <div class="form-group">
-            <div class="ow-label-row">
-              <label for="linkedinPostUrl" class="form-label">LinkedIn post or job URL (optional if you paste the text)</label>
-              <span class="ow-hint">Supports /posts/, /feed/update/, /jobs/view/</span>
-            </div>
-            <input type="url" id="linkedinPostUrl" class="form-input" placeholder="https://www.linkedin.com/posts/username_hiring-...">
-          </div>
-
-          <div class="form-group">
-            <label for="linkedinRawText" class="form-label">LinkedIn post text</label>
-            <textarea id="linkedinRawText" class="form-textarea" rows="6" placeholder="Paste the full text of the LinkedIn post here.&#10;e.g. 'We are hiring SDE-1 at Amazon! Open for 2024-2026 Batch. Experience: 0-2 years. Skills: Java, AWS. DM me or email resume to yourname@amazon.com with Job ID 12345 for referral!'"></textarea>
-          </div>
-
-          <div class="form-grid-3">
-            <div class="form-group">
-              <label for="linkedinOpportunityType" class="form-label">Opportunity type</label>
-              <select id="linkedinOpportunityType" class="form-input">
-                <option value="auto" selected>Auto-detect</option>
-                <option value="referral">Employee referral</option>
-                <option value="requirement">Direct job requirement</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="linkedinReferrerName" class="form-label">Referrer or poster name</label>
-              <input type="text" id="linkedinReferrerName" class="form-input" placeholder="e.g. Kashinath / Tech Recruiter">
-            </div>
-            <div class="form-group">
-              <label for="linkedinReferrerLinkedin" class="form-label">Referrer's LinkedIn profile</label>
-              <input type="url" id="linkedinReferrerLinkedin" class="form-input" placeholder="https://linkedin.com/in/username">
-            </div>
-          </div>
-
-          <button type="submit" id="btnLinkedinScrape" class="btn btn-primary ow-submit">
-            <span>Scrape, parse and check</span>
-          </button>
-        </form>
-
-        <!-- Loading -->
-        <div id="linkedinLoadingState" class="ow-loading is-off" role="status">
-          <span class="ow-spinner" aria-hidden="true"></span>
-          <h3>Reading and checking the LinkedIn post</h3>
-          <p class="ow-sub">Finding company, role, skills and referrer, and checking the apply link.</p>
-        </div>
-
-        <!-- Validation and review -->
-        <div id="linkedinValidationCard" class="ow-panel ow-review is-off">
-          <div class="ow-review-head">
-            <div class="ow-review-score">
-              <div class="ow-badge-row">
-                <span id="linkedinScoreBadge" class="ow-score">95 / 100</span>
-                <span id="linkedinStatusBadge" class="status-pill status-active">Validated, ready to pass</span>
-              </div>
-              <p class="ow-sub" id="linkedinValidationSummary">All critical fields verified. Ready to publish.</p>
-            </div>
-            <div class="ow-btn-row">
-              <button type="button" onclick="handlePublishLinkedInLead()" id="btnPublishLinkedInLead" class="btn btn-secondary">
-                <span>Validate and pass lead</span>
-              </button>
-              <button type="button" onclick="resetLinkedInForm()" class="btn btn-ghost">
-                Reset
-              </button>
-            </div>
-          </div>
-
-          <div class="ow-checks">
-            <h3 class="ow-mini-title">Quality checks</h3>
-            <ul id="linkedinChecksList" class="ow-check-list"></ul>
-          </div>
-
-          <h3 class="ow-mini-title">Review and edit the extracted details</h3>
-          <form id="formLinkedinReview" class="ow-form">
-            <div class="form-grid-2">
-              <div class="form-group">
-                <label for="valCompName" class="form-label">Company name</label>
-                <input type="text" id="valCompName" class="form-input" required>
-              </div>
-              <div class="form-group">
-                <label for="valTitle" class="form-label">Role title</label>
-                <input type="text" id="valTitle" class="form-input" required>
-              </div>
-            </div>
-
-            <div class="form-grid-3">
-              <div class="form-group">
-                <label for="valLocation" class="form-label">Location</label>
-                <input type="text" id="valLocation" class="form-input">
-              </div>
-              <div class="form-group">
-                <label for="valSalary" class="form-label">Salary or stipend</label>
-                <input type="text" id="valSalary" class="form-input">
-              </div>
-              <div class="form-group">
-                <label for="valIsReferral" class="form-label">Employee referral?</label>
-                <select id="valIsReferral" class="form-input" onchange="toggleReferralFields(this.value === 'true')">
-                  <option value="true">Yes, referral</option>
-                  <option value="false">No, direct requirement</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="valApplyUrl" class="form-label">Apply URL or referral email (mailto:)</label>
-              <input type="text" id="valApplyUrl" class="form-input" required>
-            </div>
-
-            <div class="form-group">
-              <label for="valSkills" class="form-label">Skills</label>
-              <input type="text" id="valSkills" class="form-input" required>
-            </div>
-
-            <fieldset id="valReferralFieldsGroup" class="ow-fieldset">
-              <legend>Referral details</legend>
-              <div class="form-grid-2">
-                <div class="form-group">
-                  <label for="valReferrerName" class="form-label">Referrer name</label>
-                  <input type="text" id="valReferrerName" class="form-input" placeholder="e.g. Kashinath">
-                </div>
-                <div class="form-group">
-                  <label for="valReferrerLinkedin" class="form-label">Referrer's LinkedIn profile</label>
-                  <input type="url" id="valReferrerLinkedin" class="form-input" placeholder="https://linkedin.com/in/...">
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="valReferralInstructions" class="form-label">How to ask for the referral</label>
-                <textarea id="valReferralInstructions" class="form-textarea" rows="2" placeholder="e.g. Email resume with Job ID to ... or DM on LinkedIn"></textarea>
-              </div>
-            </fieldset>
-
-            <div class="form-group">
-              <label for="valDescription" class="form-label">Full description</label>
-              <textarea id="valDescription" class="form-textarea" rows="4"></textarea>
-            </div>
-
-            <button type="button" onclick="handlePublishLinkedInLead()" class="btn btn-primary ow-submit">
-              Validate and publish to pipeline
-            </button>
-          </form>
-
-          <!-- Published -->
-          <div id="linkedinSuccessAlert" class="ow-alert is-ok ow-success is-off" role="status">
-            <div>
-              <h3>Published and live</h3>
-              <p id="linkedinSuccessMsg">Live in active student catalog.</p>
-            </div>
-            <a id="linkedinSuccessLink" href="#" target="_blank" class="btn btn-secondary">
-              View live job
-              <i data-lucide="external-link" aria-hidden="true"></i>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB: Manual post form -->
-      <section id="tabPost" class="workspace-card tab-content is-off" aria-labelledby="postTitleHead">
-        <header class="ow-tab-head">
-          <h2 id="postTitleHead">Post one job</h2>
-          <p class="ow-sub">Fill in the fields to publish a job or internship to the pipeline.</p>
-        </header>
-
-        <form id="formCreateJob" class="ow-form">
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label for="postTitle" class="form-label">Job title or role</label>
-              <input type="text" id="postTitle" class="form-input" placeholder="e.g. Java Full Stack Developer" required>
-            </div>
-            <div class="form-group">
-              <label for="postCompany" class="form-label">Company name</label>
-              <input type="text" id="postCompany" class="form-input" placeholder="e.g. BNP Paribas" required>
-            </div>
-          </div>
-
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label for="postCategory" class="form-label">Category</label>
-              <select id="postCategory" class="form-input" required></select>
-            </div>
-            <div class="form-group">
-              <label for="postJobType" class="form-label">Type</label>
-              <select id="postJobType" class="form-input" required>
-                <option value="INTERNSHIP">Internship</option>
-                <option value="FULL_TIME" selected>Full-Time Job</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="postApplyUrl" class="form-label">Official apply URL</label>
-            <input type="url" id="postApplyUrl" class="form-input" placeholder="https://careers.company.com/..." required>
-          </div>
-
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label for="postSalary" class="form-label">Stipend or salary</label>
-              <input type="text" id="postSalary" class="form-input" placeholder="e.g. ₹8,00,000 LPA" required>
-            </div>
-            <div class="form-group">
-              <label for="postLocation" class="form-label">Location</label>
-              <input type="text" id="postLocation" class="form-input" placeholder="e.g. Chennai / Remote" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="postSkills" class="form-label">Skills</label>
-            <input type="text" id="postSkills" class="form-input" placeholder="e.g. Java, Spring Boot, REST APIs" required>
-          </div>
-
-          <div class="form-group">
-            <label for="postDescription" class="form-label">Job description</label>
-            <textarea id="postDescription" class="form-textarea" rows="4" placeholder="Role description and responsibilities" required></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="postEligibility" class="form-label">Eligibility <span class="ow-optional">(optional)</span></label>
-            <input type="text" id="postEligibility" class="form-input" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)">
-          </div>
-
-          <button type="submit" class="btn btn-primary ow-submit">
-            <i data-lucide="plus" aria-hidden="true"></i>
-            Publish to pipeline
-          </button>
-        </form>
-      </section>
-
-      <!-- TAB: Bulk parser -->
-      <section id="tabBulkParse" class="workspace-card tab-content is-off" aria-labelledby="bulkTitle">
-        <header class="ow-tab-head">
-          <h2 id="bulkTitle">Bulk parser and group publisher</h2>
-          <p class="ow-sub">Paste a Telegram or WhatsApp message with several jobs. The parser reads each company, role and apply link and <strong>bundles them into one shareable group link</strong>.</p>
-        </header>
-
-        <form id="formBulkParse" class="ow-form">
-          <div class="form-group">
-            <label for="bulkGroupName" class="form-label">Group name <span class="ow-optional">(optional, a timestamp is used if empty)</span></label>
-            <input type="text" id="bulkGroupName" class="form-input" placeholder="e.g. Top 5 Freshers IT Drives">
-          </div>
-
-          <div class="form-group">
-            <label for="bulkRawText" class="form-label">Multi-job message</label>
-            <textarea id="bulkRawText" class="form-textarea" rows="10" placeholder="Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
-          </div>
-
-          <button type="submit" class="btn btn-primary ow-submit">
-            <i data-lucide="layers" aria-hidden="true"></i>
-            Parse all and publish group
-          </button>
-        </form>
-      </section>
-
-      <!-- TAB: Jobdexo sync -->
-      <section id="tabJobdexo" class="workspace-card tab-content is-off" aria-labelledby="jobdexoTitle">
-        <header class="ow-tab-head">
-          <h2 id="jobdexoTitle">Jobdexo importer</h2>
-          <p class="ow-sub">Crawl and import off-campus jobs from Jobdexo with their official career apply links.</p>
-        </header>
-
-        <div class="ow-panel">
-          <h3 class="ow-panel-title">Latest openings</h3>
-          <p class="ow-sub">Crawl the Jobdexo home page for the newest off-campus jobs and bundle them into a 7-day shareable group.</p>
-
-          <div class="form-group">
-            <label for="jobdexoGroupName" class="form-label">Group name <span class="ow-optional">(optional)</span></label>
-            <input type="text" id="jobdexoGroupName" class="form-input" placeholder="e.g. Top Off-Campus Tech Drives Today">
-          </div>
-
-          <div class="ow-btn-grid">
-            <button id="btnFetchJobdexo5" type="button" class="btn btn-primary">
-              <i data-lucide="download" aria-hidden="true"></i>
-              Fetch latest 5
-            </button>
-            <button id="btnFetchJobdexo10" type="button" class="btn btn-secondary">
-              Fetch latest 10
-            </button>
-            <button id="btnCleanDuplicates" type="button" class="btn btn-danger-ghost">
-              Clean duplicates
-            </button>
-          </div>
-        </div>
-
-        <div class="ow-panel">
-          <h3 class="ow-panel-title">Import Jobdexo links</h3>
-          <p class="ow-sub">Paste one or more Jobdexo links, one per line.</p>
-
-          <form id="formJobdexoUrlImport" class="ow-form">
-            <div class="form-group">
-              <label for="jobdexoUrlsInput" class="form-label">Jobdexo URLs</label>
-              <textarea id="jobdexoUrlsInput" class="form-textarea" rows="4" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-secondary ow-submit">
-              Import links and make broadcast
-            </button>
-          </form>
-        </div>
-      </section>
-
-      <!-- TAB: Categories -->
-      <section id="tabCategory" class="workspace-card tab-content is-off" aria-labelledby="categoryTitle">
-        <header class="ow-tab-head">
-          <h2 id="categoryTitle">Categories</h2>
-        </header>
-
-        <form id="formAddCategory" class="ow-form ow-divided">
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label for="catName" class="form-label">New category name</label>
-              <input type="text" id="catName" class="form-input" placeholder="e.g. Cloud & DevOps" required>
-            </div>
-            <div class="form-group">
-              <label for="catDescription" class="form-label">Description <span class="ow-optional">(optional)</span></label>
-              <input type="text" id="catDescription" class="form-input" placeholder="e.g. AWS, Azure, Docker jobs">
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary ow-submit-inline">
-            <i data-lucide="plus" aria-hidden="true"></i>
-            Create category
-          </button>
-        </form>
-
-        <h3 class="ow-panel-title">Existing categories</h3>
-        <div id="ownerCategoryList" class="ow-cat-list"></div>
-      </section>
-
-      <!-- TAB: Groups -->
-      <section id="tabGroups" class="workspace-card tab-content is-off" aria-labelledby="groupsTitle">
-        <header class="ow-tab-head ow-tab-head-split">
-          <div>
-            <h2 id="groupsTitle">Groups and drives</h2>
-            <p class="ow-sub">Shareable bundles of jobs. Empty groups are cleaned up, and jobs can be moved between groups.</p>
-          </div>
-          <div class="ow-btn-row">
-            <button id="btnOpenMoveByIdGroups" type="button" class="btn btn-primary" title="Move or assign any requirement by typing its Job ID">
-              <i data-lucide="arrow-left-right" aria-hidden="true"></i>
-              Move by job ID
-            </button>
-            <button id="btnAutoOrganizeGroups" type="button" class="btn btn-secondary" title="Sort active requirements into Freshers and Experienced drives and clean empty groups">
-              Auto-sort freshers and experienced
-            </button>
-            <button id="btnRefreshGroups" type="button" class="btn btn-ghost">
-              <i data-lucide="refresh-cw" aria-hidden="true"></i>
-              Refresh
-            </button>
-          </div>
-        </header>
-
-        <!-- Bulk move bar, shown by JS when jobs are ticked -->
-        <div id="groupsGlobalBulkBar" class="ow-bulk-bar is-off">
-          <div>
-            <span id="groupsGlobalBulkText" class="ow-bulk-text">0 requirements selected</span>
-            <p class="ow-hint">Ready to move to a new or existing group</p>
-          </div>
-          <div class="ow-btn-row">
-            <button type="button" id="btnGroupsBulkMoveAll" class="btn btn-primary">
-              Move selected to group
-            </button>
-            <button type="button" id="btnGroupsClearSelection" class="btn btn-ghost">
-              Clear
-            </button>
-          </div>
-        </div>
-
-        <div class="standard-toolbar">
-          <div class="search-wrapper">
-            <label for="ownerGroupsSearch" class="sr-only">Search groups</label>
-            <i data-lucide="search" class="search-icon" aria-hidden="true"></i>
-            <input type="text" id="ownerGroupsSearch" class="search-input" placeholder="Search groups by name or slug">
-            <button id="btnGroupsSearchClear" type="button" class="ow-search-clear is-off" title="Clear search" aria-label="Clear search">
-              <i data-lucide="x" aria-hidden="true"></i>
-            </button>
-          </div>
-
-          <div class="filters-group">
-            <div class="ow-select">
-              <label for="ownerGroupsFilter" class="ow-select-label">Show</label>
-              <select id="ownerGroupsFilter" class="standard-select">
-                <option value="all" selected>All groups</option>
-                <option value="freshers">Freshers drives (0-1 yrs)</option>
-                <option value="experienced">Experienced drives</option>
-                <option value="active">Active drives (with jobs)</option>
-                <option value="empty">Empty groups (0 jobs)</option>
-                <option value="expired">Expired groups</option>
-              </select>
-            </div>
-            <div class="ow-select">
-              <label for="ownerGroupsPageSize" class="ow-select-label">Per page</label>
-              <select id="ownerGroupsPageSize" class="standard-select">
-                <option value="15" selected>15 per page</option>
-                <option value="30">30 per page</option>
-                <option value="50">50 per page</option>
-                <option value="all">All groups</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div id="ownerGroupsTableContainer" class="table-responsive">
-          <p class="ow-empty">Loading groups...</p>
-        </div>
-      </section>
-
-      <!-- TAB: Analytics -->
-      <section id="tabAnalytics" class="workspace-card tab-content is-off" aria-labelledby="analyticsTitle">
-        <header class="ow-tab-head ow-tab-head-split">
-          <div>
-            <h2 id="analyticsTitle">Traffic and visitors</h2>
-            <p class="ow-sub">Visitor counts, daily trend, sources, devices and top pages.</p>
-          </div>
-          <button id="btnRefreshAnalytics" type="button" class="btn btn-secondary" aria-label="Refresh analytics data">
-            <svg id="refreshIconSvg" class="ow-refresh-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>
-            </svg>
-            <span id="btnRefreshText">Refresh Data</span>
-          </button>
-        </header>
-
-        <div class="kpi-grid ow-kpis ow-kpis-4">
-          <div class="kpi-card">
-            <span class="kpi-title">Unique visitors</span>
-            <span class="kpi-value is-accent" id="anaTotalVisitors">--</span>
-            <span class="kpi-sub" id="anaMonthVisitors">-- this month</span>
-          </div>
-          <div class="kpi-card">
-            <span class="kpi-title">Visitors today</span>
-            <span class="kpi-value" id="anaTodayVisitors">--</span>
-            <span class="kpi-sub" id="anaTodayViews">-- views today</span>
-          </div>
-          <div class="kpi-card">
-            <span class="kpi-title">Page views</span>
-            <span class="kpi-value" id="anaTotalViews">--</span>
-            <span class="kpi-sub" id="anaWeekVisitors">-- this week</span>
-          </div>
-          <div class="kpi-card">
-            <span class="kpi-title">Devices</span>
-            <span class="kpi-value is-small" id="anaDeviceSplit">--</span>
-            <span class="kpi-sub" id="anaTopSource">Top: Direct / Social</span>
-          </div>
-        </div>
-
-        <div class="ow-panel">
-          <div class="ow-panel-head">
-            <h3 class="ow-panel-title">Last 14 days</h3>
-            <span class="ow-hint">Views per day</span>
-          </div>
-          <div id="anaDailyChartContainer" class="ow-chart"></div>
-        </div>
-
-        <div class="ow-two-col">
-          <div class="ow-panel">
-            <h3 class="ow-panel-title">Top pages</h3>
-            <div id="anaTopPagesList" class="ow-stack">
-              <p class="ow-hint">Loading page data...</p>
-            </div>
-          </div>
-
-          <div class="ow-panel">
-            <h3 class="ow-panel-title">Traffic sources</h3>
-            <div id="anaReferrersList" class="ow-stack">
-              <p class="ow-hint">Loading traffic sources...</p>
-            </div>
-
-            <h4 class="ow-mini-title">Browsers and systems</h4>
-            <div id="anaPlatformsList" class="ow-stack">
-              <p class="ow-hint">Loading platform info...</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="ow-panel">
-          <div class="ow-panel-head">
-            <h3 class="ow-panel-title">Latest visits</h3>
-          </div>
-          <div id="anaRecentVisitsTable" class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th scope="col">Time</th>
-                  <th scope="col">Page</th>
-                  <th scope="col">Source</th>
-                  <th scope="col">Device and OS</th>
-                  <th scope="col">IP (masked)</th>
-                </tr>
-              </thead>
-              <tbody id="anaRecentVisitsBody">
-                <tr><td colspan="5" class="ow-td-empty">Waiting for site traffic...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB: Activity log -->
-      <section id="tabActivity" class="workspace-card tab-content is-off" aria-labelledby="activityTitle">
-        <header class="ow-tab-head">
-          <h2 id="activityTitle">Activity log</h2>
-          <p class="ow-sub">Parsing, status changes and publishing done in this session.</p>
-        </header>
-
-        <div id="crmActivityLogStream" class="ow-log">
-          <div class="crm-activity-item">
-            <div class="crm-activity-dot"></div>
-            <div>
-              <strong>Studio opened</strong>
-              <div>Session established and verified.</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+        <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; font-size: var(--text-base); margin-top: 8px;">
+          Sign In to Studio 🚀
+        </button>
+      </form>
     </div>
-  </main>
+  </div>
 
-  <!-- Group broadcast and share modal -->
-  <div id="groupBroadcastModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalGroupName">
-    <div class="modal-box">
-      <div class="ow-modal-head">
-        <div>
-          <h2 id="modalGroupName">Requirement Group Ready</h2>
-          <span class="ow-hint" id="modalGroupTag">Shareable link ready</span>
+  <!-- ==========================================
+       DASHBOARD WORKSPACE (If Authenticated)
+       ========================================== -->
+  <div id="ownerDashboardView" class="workspace-container" style="{% if not is_owner_authenticated %}display: none;{% endif %}" data-server-auth="{% if is_owner_authenticated %}true{% else %}false{% endif %}" data-owner-user="{{ owner_username }}">
+    
+    <!-- Top Workspace Greeting & Subtitle -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h1 id="crmWorkspaceHeading" style="font-size: var(--text-2xl); font-weight: 800; margin: 0 0 6px; color: var(--color-text-primary); letter-spacing: -0.025em;">
+          Opportunity Pipeline CRM
+        </h1>
+        <p id="crmWorkspaceSubheading" style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0;">
+          Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.
+        </p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span class="status-pill status-active" style="font-size: 12px;">
+          👨‍💻 {{ owner_username|default:"Owner" }} (Executive Admin)
+        </span>
+      </div>
+    </div>
+
+    <!-- KPI Metric Summary Cards (5-Card Bento Grid) -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-card-blue">
+        <div class="kpi-header">
+          <span class="kpi-title">Active Opportunities</span>
+          <span class="kpi-icon-bubble">⚡</span>
         </div>
-        <button id="btnCloseBroadcastModal" type="button" class="modal-close-btn" aria-label="Close broadcast modal">
-          <i data-lucide="x" aria-hidden="true"></i>
+        <div class="kpi-value" id="kpiActiveJobs">{{ active_jobs_count|default:"0" }}</div>
+        <div class="kpi-sub kpi-sub-active">● Live on student feed</div>
+      </div>
+
+      <div class="kpi-card kpi-card-indigo">
+        <div class="kpi-header">
+          <span class="kpi-title">Total Postings</span>
+          <span class="kpi-icon-bubble">📋</span>
+        </div>
+        <div class="kpi-value" id="kpiTotalJobs">{{ total_jobs_count|default:"0" }}</div>
+        <div class="kpi-sub">Lifetime published leads</div>
+      </div>
+
+      <div class="kpi-card kpi-card-emerald">
+        <div class="kpi-header">
+          <span class="kpi-title">Requirement Groups</span>
+          <span class="kpi-icon-bubble">📦</span>
+        </div>
+        <div class="kpi-value" id="kpiTotalGroups">{{ total_groups_count|default:"0" }}</div>
+        <div class="kpi-sub">Curated drives &amp; bundles</div>
+      </div>
+
+      <div class="kpi-card kpi-card-amber">
+        <div class="kpi-header">
+          <span class="kpi-title">Expired / Archived</span>
+          <span class="kpi-icon-bubble">⏳</span>
+        </div>
+        <div class="kpi-value" id="kpiExpiredJobs">{{ expired_jobs_count|default:"0" }}</div>
+        <div class="kpi-sub kpi-sub-danger">Auto-cleaned after 72h</div>
+      </div>
+
+      <div class="kpi-card kpi-card-violet">
+        <div class="kpi-header">
+          <span class="kpi-title">Categories</span>
+          <span class="kpi-icon-bubble">🏷️</span>
+        </div>
+        <div class="kpi-value" id="kpiCategories">{{ categories|length|default:"0" }}</div>
+        <div class="kpi-sub">Taxonomy categories</div>
+      </div>
+    </div>
+
+
+
+    <!-- ==========================================
+         TAB 1: OPPORTUNITY PIPELINE & DATA GRID
+         ========================================== -->
+    <div id="tabJobs" class="workspace-card tab-content">
+      
+      <!-- Experience Tier Segregation Bar -->
+      <div class="owner-exp-segregation-bar">
+        <span style="font-size: var(--text-xs); font-weight: 800; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px;">Segregate By:</span>
+        <button type="button" class="owner-exp-pill active" data-exp="ALL">
+          ⚡ All Postings ({{ total_jobs_count|default:"1000+" }})
+        </button>
+        <button type="button" class="owner-exp-pill fresher" data-exp="FRESHER">
+          🎓 Freshers (0-1 Yrs) ({{ fresher_jobs_count|default:"470+" }})
+        </button>
+        <button type="button" class="owner-exp-pill exp" data-exp="EXPERIENCED">
+          💼 Experienced (1-5+ Yrs) ({{ experienced_jobs_count|default:"560+" }})
+        </button>
+        <button type="button" class="owner-exp-pill" data-exp="INTERNSHIP">
+          🌱 Internships
         </button>
       </div>
 
-      <div class="ow-panel">
-        <label for="modalGroupUrlInput" class="form-label">Group link</label>
-        <div class="ow-url-row">
-          <input type="text" id="modalGroupUrlInput" class="form-input ow-mono" readonly>
-          <div class="ow-btn-row">
-            <button id="btnCopyModalLink" type="button" class="btn btn-primary">
-              Copy link
+      <div class="standard-toolbar">
+        <div class="search-wrapper" style="position: relative; flex: 1;">
+          <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-muted);">🔍</span>
+          <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills, location..." style="width: 100%; padding-left: 42px; padding-right: 36px;">
+          <button id="btnSearchClear" type="button" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: var(--color-text-muted); cursor: pointer; padding: 4px;" title="Clear search">✕</button>
+        </div>
+
+        <div class="filters-group">
+          <button id="btnVerifyJobLinks" type="button" class="btn btn-secondary" style="font-weight: 700;" title="Scan active job URLs and automatically soft-expire dead, 404, or redirected links">
+            🛡️ Verify Links
+          </button>
+
+          <button id="btnOpenMoveByIdPipeline" type="button" class="btn btn-secondary" style="font-weight: 700;" title="Move or assign any requirement by typing its Job ID">
+            ⇄ Move by Job ID
+          </button>
+
+          <select id="crmExperienceFilter" class="standard-select" title="Filter by experience tier">
+            <option value="ALL" selected>All Experience Levels</option>
+            <option value="FRESHER">🎓 Freshers (0-1 Yrs)</option>
+            <option value="EXPERIENCED">💼 Experienced (1+ Yrs)</option>
+            <option value="INTERNSHIP">🌱 Internships</option>
+            <option value="EARLY_CAREER">1–3 Yrs (Early)</option>
+            <option value="MID_LEVEL">3–5 Yrs (Mid)</option>
+            <option value="SENIOR_LEVEL">5+ Yrs (Senior)</option>
+          </select>
+
+          <select id="crmCategoryFilter" class="standard-select">
+            <option value="ALL">All Categories</option>
+            {% for c in categories %}
+              <option value="{{ c.slug }}">{{ c.name }}</option>
+            {% endfor %}
+          </select>
+
+          <select id="crmSourceFilter" class="standard-select" title="Filter by job source">
+            <option value="ALL" selected>All Sources (770+)</option>
+            <option value="Naukri">Naukri (340+)</option>
+            <option value="Jobdexo">Jobdexo (250+)</option>
+            <option value="LinkedIn">LinkedIn (150+)</option>
+            <option value="Startup">Indian Startups (20+)</option>
+          </select>
+
+          <select id="crmRecencyFilter" class="standard-select" title="Filter by posting date">
+            <option value="ALL" selected>All Dates</option>
+            <option value="today">Today's Jobs</option>
+            <option value="yesterday">Yesterday's Jobs</option>
+            <option value="3d">Past 3 Days</option>
+            <option value="7d">Past 7 Days</option>
+          </select>
+
+          <select id="crmStatusFilter" class="standard-select">
+            <option value="ALL" selected>All Status</option>
+            <option value="ACTIVE">Active Only (72h)</option>
+            <option value="EXPIRED">Expired / Unpublished</option>
+          </select>
+
+          <select id="ownerPageSize" class="standard-select">
+            <option value="10" selected>10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="ownerJobsTableContainer" class="table-responsive">
+        {% if page_obj %}
+        <div class="vp-catalog-grid" style="margin-bottom: 24px;">
+          {% for j in page_obj %}
+          <div class="vp-product-card" data-id="{{ j.id }}">
+            <div class="vp-card-header">
+              <span class="company-badge">{{ j.company_name }}</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <span class="type-badge">{{ j.get_job_type_display }}</span>
+                {% if j.status == 'EXPIRED' %}
+                  <span class="status-pill status-expired" style="font-size: 11px;">🔴 Expired</span>
+                {% else %}
+                  <span class="status-pill status-active" style="font-size: 11px;">🟢 Active</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="vp-card-content">
+              <h2 class="job-card-title">{{ j.title }}</h2>
+
+              <div class="vp-salary-row">
+                <span>💰 {{ j.stipend_salary }}</span>
+                <span style="color: var(--color-text-muted); font-weight: 500;">📍 {{ j.location|default:"India" }}</span>
+              </div>
+
+              <div style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                <span>📅 Posted:</span> <strong style="color: var(--color-text-primary);">{{ j.get_posted_date_display }}</strong>
+                <span style="margin-left: auto; color: var(--color-text-muted); font-family: monospace; font-size: 11.5px;">#{{ j.id }}</span>
+              </div>
+
+              <p style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.45; margin-bottom: 10px;">{{ j.description|truncatewords:18 }}</p>
+
+              <div class="skills-wrapper">
+                {% for skill in j.get_skills_list %}
+                  {% if forloop.counter <= 4 %}
+                    <span class="skill-tag">{{ skill }}</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <div class="vp-price-row" style="margin-top: 10px;">
+                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: var(--color-text-success);">
+                  ⏱️ Auto-Expires in 7 Days
+                </div>
+              </div>
+
+              <div class="card-action-bar" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <button type="button" class="btn btn-primary btn-edit-job" data-id="{{ j.id }}" style="height: 38px;">
+                    ✏️ Edit Lead
+                  </button>
+                  <a href="{{ j.apply_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="height: 38px;">
+                    ↗ Apply URL
+                  </a>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                  <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="{{ j.id }}" data-title="{{ j.title|escapejs }}" style="height: 34px; font-size: 12px;" title="Move or assign this requirement to a specific group">
+                    ⇄ Move
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-toggle-job" data-id="{{ j.id }}" style="height: 34px; font-size: 12px; color: {% if j.status == 'EXPIRED' %}var(--color-text-success){% else %}var(--color-text-secondary){% endif %};">
+                    {% if j.status == 'EXPIRED' %}🚀 Publish{% else %}⏸️ Unpublish{% endif %}
+                  </button>
+                  <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="{{ j.id }}" style="height: 34px; font-size: 12px;" title="Delete lead">
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
+          <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
+            Showing <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> verified leads (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+            {% if page_obj.has_previous %}
+              <a id="btnPrevPage" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
+                ← Previous
+              </a>
+            {% else %}
+              <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
+                ← Previous
+              </button>
+            {% endif %}
+
+            {% for p in page_numbers %}
+              {% if p == '...' %}
+                <span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>
+              {% else %}
+                <a href="?page={{ p }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="pag-page-btn pag-btn-link {% if page_obj.number == p %}active{% endif %}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid {% if page_obj.number == p %}#2563eb{% else %}#e2e8f0{% endif %}; background: {% if page_obj.number == p %}#2563eb{% else %}#ffffff{% endif %}; color: {% if page_obj.number == p %}#ffffff{% else %}#0f172a{% endif %}; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                  {{ p }}
+                </a>
+              {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+              <a id="btnNextPage" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
+                Next →
+              </a>
+            {% else %}
+              <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
+                Next →
+              </button>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div style="padding: 40px; text-align: center; color: #64748b; font-size: 14px; font-weight: 600;">
+          ✨ No opportunity leads found in pipeline. Click "+ Post Job" or "🎯 Parse Lead" to add one!
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB: 1-CLICK SINGLE JOB SNIPPET PARSER
+         ========================================== -->
+    <div id="tabSmartParse" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 22px;">
+        <span class="status-pill" style="background: #faf5ff; color: #7c3aed; border: 1px solid #ddd6fe; margin-bottom: 8px;">
+          🎯 1-CLICK SINGLE PARSER
+        </span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">1-Click Single Snippet Parser &amp; Publisher</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+          Paste raw message text for <strong>1 opportunity</strong> from Telegram or WhatsApp. The engine auto-detects company name, job title, skills, stipend, and official application URL, then instantly publishes it!
+        </p>
+      </div>
+
+      <form id="formSmartParse">
+        <div class="form-group">
+          <label for="rawText" class="form-label">Raw Requirement Snippet *</label>
+          <textarea id="rawText" class="form-textarea" rows="9" placeholder="Company: Accenture&#10;Role: Software Engineer&#10;Package: 4.5 LPA&#10;Batch: 2026 Batch&#10;Location: Bangalore / Remote&#10;Skills: Java, Spring Boot, SQL&#10;Apply Link: https://..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-action-light btn-primary-blue" style="height: 44px; padding: 0 24px; font-size: 14px; border-radius: var(--radius-md);">
+          🎯 Parse &amp; Publish Single Lead 🚀
+        </button>
+      </form>
+    </div>
+
+    <!-- ==========================================
+         TAB: LINKEDIN POST SCRAPER & REFERRALS INGESTION
+         ========================================== -->
+    <div id="tabLinkedin" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 24px;">
+        <span class="status-pill" style="background: rgba(2, 132, 199, 0.1); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3); margin-bottom: 8px;">
+          💼 LINKEDIN POST SCRAPER &amp; REFERRAL PIPELINE
+        </span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">LinkedIn Post Scraper &amp; Employee Referral Suite</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.5;">
+          Scrape and extract hiring announcements, job requirement posts, and employee referrals from LinkedIn. Validates destination links, attributes the referrer mention, and lets you <strong>VALIDATE &amp; PASS</strong> directly into the live catalog!
+        </p>
+      </div>
+
+      <!-- Scraper Input Form -->
+      <form id="formLinkedinScraper" onsubmit="event.preventDefault(); handleScrapeAndParseLinkedIn();" style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+        <!-- URL Input -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="linkedinPostUrl" class="form-label" style="display: flex; justify-content: space-between;">
+            <span>LinkedIn Post or Job URL (Optional if pasting raw text)</span>
+            <span style="font-size: 11px; color: #64748b; font-weight: 600;">Supports /posts/, /feed/update/, /jobs/view/</span>
+          </label>
+          <input type="url" id="linkedinPostUrl" class="form-input" placeholder="e.g. https://www.linkedin.com/posts/username_hiring-software-engineer-activity-..." style="background: #ffffff;">
+        </div>
+
+        <!-- Raw Text Snippet -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="linkedinRawText" class="form-label">Raw LinkedIn Post Text *</label>
+          <textarea id="linkedinRawText" class="form-textarea" rows="6" placeholder="Paste the full text of the LinkedIn post here...&#10;e.g. 'We are hiring SDE-1 at Amazon! Open for 2024-2026 Batch. Experience: 0-2 years. Skills: Java, AWS. DM me or email resume to yourname@amazon.com with Job ID 12345 for referral!'" style="background: #ffffff;"></textarea>
+        </div>
+
+        <!-- Options: Classification & Attribution -->
+        <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px;">
+          <div class="form-group">
+            <label for="linkedinOpportunityType" class="form-label">Opportunity Type</label>
+            <select id="linkedinOpportunityType" class="form-input" style="background: #ffffff;">
+              <option value="auto" selected>⚡ Auto-Detect (AI / Heuristic)</option>
+              <option value="referral">🤝 Force Employee Referral</option>
+              <option value="requirement">💼 Direct Job Requirement</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="linkedinReferrerName" class="form-label">Referrer / Poster Name</label>
+            <input type="text" id="linkedinReferrerName" class="form-input" placeholder="e.g. Kashinath / Tech Recruiter" style="background: #ffffff;">
+          </div>
+          <div class="form-group">
+            <label for="linkedinReferrerLinkedin" class="form-label">Referrer's LinkedIn Profile</label>
+            <input type="url" id="linkedinReferrerLinkedin" class="form-input" placeholder="https://linkedin.com/in/username" style="background: #ffffff;">
+          </div>
+        </div>
+
+        <button type="submit" id="btnLinkedinScrape" class="btn btn-primary" style="height: 44px; padding: 0 24px; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+          <span>🔍 Scrape, Parse &amp; Validate Lead</span>
+        </button>
+      </form>
+
+      <!-- Loading State -->
+      <div id="linkedinLoadingState" style="display: none; text-align: center; padding: 40px 20px;">
+        <div class="spinner-pulse" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid rgba(2, 132, 199, 0.2); border-top-color: #0284c7; margin: 0 auto 12px; animation: spin 0.8s linear infinite;"></div>
+        <h4 style="font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 4px;">Analyzing &amp; Validating LinkedIn Post...</h4>
+        <p style="font-size: 13px; color: var(--muted); margin: 0;">Extracting company, role, skills, referrer attribution, and checking application links.</p>
+      </div>
+
+      <!-- Validation Scorecard & Review Deck -->
+      <div id="linkedinValidationCard" style="display: none; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: 14px; padding: 24px; box-shadow: var(--card-shadow);">
+        
+        <!-- Top Validation Score Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--subtle-border); margin-bottom: 20px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span id="linkedinScoreBadge" style="font-size: 18px; font-weight: 800; padding: 4px 12px; border-radius: 99px; background: #dcfce7; color: #15803d; border: 1px solid #86efac;">
+                95 / 100
+              </span>
+              <span id="linkedinStatusBadge" class="status-pill status-active" style="font-size: 12px;">
+                ✅ VALIDATED — READY TO PASS
+              </span>
+            </div>
+            <p style="font-size: 13px; color: var(--muted); margin: 6px 0 0;" id="linkedinValidationSummary">
+              All critical fields verified. Opportunity is ready for one-click publishing.
+            </p>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="handlePublishLinkedInLead()" id="btnPublishLinkedInLead" class="btn btn-primary" style="background: #16a34a; border-color: #16a34a; font-weight: 800; padding: 10px 22px; display: inline-flex; align-items: center; gap: 8px;">
+              <span>🚀 VALIDATE &amp; PASS LEAD ↗</span>
             </button>
-            <a id="btnOpenModalLink" href="#" target="_blank" class="btn btn-secondary">
-              Open page
-            </a>
+            <button type="button" onclick="resetLinkedInForm()" class="btn btn-secondary" style="padding: 10px 16px;">
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Validation Checklist -->
+        <div style="background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: 10px; padding: 14px 18px; margin-bottom: 22px;">
+          <h4 style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink); margin: 0 0 10px;">
+            Quality &amp; Validation Scorecard:
+          </h4>
+          <ul id="linkedinChecksList" style="list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; font-size: 13px;">
+          </ul>
+        </div>
+
+        <!-- Editable Review Fields Form -->
+        <h4 style="font-size: 14px; font-weight: 800; color: var(--ink); margin: 0 0 14px;">Review &amp; Fine-Tune Extracted Information:</h4>
+        <form id="formLinkedinReview">
+          <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label class="form-label">Company Name *</label>
+              <input type="text" id="valCompName" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Role Title *</label>
+              <input type="text" id="valTitle" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="form-grid-3" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 14px;">
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input type="text" id="valLocation" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Salary / Stipend</label>
+              <input type="text" id="valSalary" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Is Employee Referral?</label>
+              <select id="valIsReferral" class="form-input" onchange="toggleReferralFields(this.value === 'true')">
+                <option value="true">🤝 Yes (Referral Opportunity)</option>
+                <option value="false">💼 No (Direct Requirement)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Application URL or Referral Email (mailto:) *</label>
+            <input type="text" id="valApplyUrl" class="form-input" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Skills / Tech Stack *</label>
+            <input type="text" id="valSkills" class="form-input" required>
+          </div>
+
+          <!-- Referral Attribution Block -->
+          <div id="valReferralFieldsGroup" style="background: rgba(2, 132, 199, 0.05); border: 1px solid rgba(2, 132, 199, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+            <div style="font-size: 13px; font-weight: 700; color: #0284c7; margin-bottom: 10px;">
+              🤝 Employee Referral Mention &amp; Instructions:
+            </div>
+            <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px;">
+              <div class="form-group">
+                <label class="form-label">Referrer Name / Mention</label>
+                <input type="text" id="valReferrerName" class="form-input" placeholder="e.g. Kashinath">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Referrer's LinkedIn Profile</label>
+                <input type="url" id="valReferrerLinkedin" class="form-input" placeholder="https://linkedin.com/in/...">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Instructions on How to Request Referral</label>
+              <textarea id="valReferralInstructions" class="form-textarea" rows="2" placeholder="e.g. Email resume with Job ID to ... or DM on LinkedIn"></textarea>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label class="form-label">Full Opportunity Description</label>
+            <textarea id="valDescription" class="form-textarea" rows="4"></textarea>
+          </div>
+
+          <div style="display: flex; gap: 12px;">
+            <button type="button" onclick="handlePublishLinkedInLead()" class="btn btn-primary" style="background: #16a34a; border-color: #16a34a; font-weight: 800; height: 46px; padding: 0 28px; font-size: 15px;">
+              🚀 VALIDATE &amp; PASS — PUBLISH TO PIPELINE NOW
+            </button>
+          </div>
+        </form>
+
+        <!-- Published Success Card -->
+        <div id="linkedinSuccessAlert" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 18px; margin-top: 20px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <h4 style="font-size: 16px; font-weight: 800; color: #166534; margin: 0 0 4px;">🎉 Opportunity Successfully Published &amp; Live!</h4>
+              <p style="font-size: 13.5px; color: #15803d; margin: 0;" id="linkedinSuccessMsg">
+                Live in active student catalog.
+              </p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <a id="linkedinSuccessLink" href="#" target="_blank" class="btn btn-primary" style="text-decoration: none; font-size: 13px; padding: 8px 16px;">
+                View Live Opportunity ↗
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==========================================
+         TAB: MANUAL SINGLE JOB CREATION FORM
+         ========================================== -->
+    <div id="tabPost" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 22px;">
+        <span class="status-pill status-active" style="margin-bottom: 8px;">✍️ MANUAL PUBLISHER</span>
+        <h2 style="font-size: 22px; font-weight: 800; margin: 8px 0 4px; color: var(--ink);">Publish Single Opportunity Lead</h2>
+        <p style="font-size: 13.5px; color: var(--muted); margin: 0;">Fill in the structured fields below to publish a student job lead directly to the pipeline.</p>
+      </div>
+
+      <form id="formCreateJob">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="postTitle" class="form-label">Job Title / Role *</label>
+            <input type="text" id="postTitle" class="form-input" placeholder="e.g. Java Full Stack Developer" required>
+          </div>
+          <div class="form-group">
+            <label for="postCompany" class="form-label">Company Name *</label>
+            <input type="text" id="postCompany" class="form-input" placeholder="e.g. BNP Paribas" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="postCategory" class="form-label">Category *</label>
+            <select id="postCategory" class="form-input" required></select>
+          </div>
+          <div class="form-group">
+            <label for="postJobType" class="form-label">Opportunity Type *</label>
+            <select id="postJobType" class="form-input" required>
+              <option value="INTERNSHIP">Internship</option>
+              <option value="FULL_TIME" selected>Full-Time Job</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="postApplyUrl" class="form-label">Official Application URL *</label>
+          <input type="url" id="postApplyUrl" class="form-input" placeholder="https://careers.company.com/..." required>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="postSalary" class="form-label">Stipend / Salary Package *</label>
+            <input type="text" id="postSalary" class="form-input" placeholder="e.g. ₹8,00,000 LPA" required>
+          </div>
+          <div class="form-group">
+            <label for="postLocation" class="form-label">Location *</label>
+            <input type="text" id="postLocation" class="form-input" placeholder="e.g. Chennai / Remote" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="postSkills" class="form-label">Required Tech Stack / Skills *</label>
+          <input type="text" id="postSkills" class="form-input" placeholder="e.g. Java, Spring Boot, REST APIs" required>
+        </div>
+
+        <div class="form-group">
+          <label for="postDescription" class="form-label">Job Description *</label>
+          <textarea id="postDescription" class="form-textarea" rows="4" placeholder="Detailed role description and job responsibilities..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="postEligibility" class="form-label">Eligibility Criteria</label>
+          <input type="text" id="postEligibility" class="form-input" placeholder="e.g. B.E / B.Tech / MCA (2026 Batch)">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="height: 44px; padding: 0 24px; font-size: var(--text-base); width: 100%;">
+          Publish Lead to Pipeline 🚀
+        </button>
+      </form>
+    </div>
+
+    <!-- ==========================================
+         TAB 2: BULK MULTI-JOB PARSER PIPELINE
+         ========================================== -->
+    <div id="tabBulkParse" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 20px;">
+        <span class="status-pill status-active" style="margin-bottom: 8px;">⚡ BULK AUTOMATION</span>
+        <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 8px 0 4px; color: var(--color-text-primary);">Batch Multi-Job Parser &amp; Group Publisher</h2>
+        <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; line-height: 1.5;">
+          Paste multi-job Telegram/WhatsApp messages. The engine parses multiple companies, roles, and apply links, then <strong>automatically bundles them into a shareable Group link</strong>!
+        </p>
+      </div>
+
+      <form id="formBulkParse">
+        <div class="form-group">
+          <label for="bulkGroupName" class="form-label">🏷️ Requirement Group Name (Optional — Auto Timestamp if empty)</label>
+          <input type="text" id="bulkGroupName" class="form-input" placeholder="e.g. 🔥 Top 5 Freshers IT Drives or Deloitte Mega Drive">
+        </div>
+
+        <div class="form-group">
+          <label for="bulkRawText" class="form-label">Raw Multi-Job Message Stream *</label>
+          <textarea id="bulkRawText" class="form-textarea" rows="10" placeholder="🔥 Mass Hiring Alert - Accenture (Java Developer)...&#10;&#10;1. Company: Cognizant...&#10;2. Company: TCS...&#10;3. Company: Infosys..." required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="height: 44px; padding: 0 24px; font-size: var(--text-base); width: 100%;">
+          ⚡ Execute Bulk Parse &amp; Publish Group
+        </button>
+      </form>
+    </div>
+
+    <!-- ==========================================
+         TAB: JOBDEXO AUTOMATION & SYNC ENGINE
+         ========================================== -->
+    <div id="tabJobdexo" class="workspace-card tab-content" style="display: none;">
+      <div style="margin-bottom: 20px;">
+        <span class="status-pill" style="background: var(--blue-light); color: var(--blue-primary); border: 1px solid var(--blue-border); margin-bottom: 8px;">JOBDEXO LIVE CRAWLER</span>
+        <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 8px 0 4px; color: var(--color-text-primary);">Automated Jobdexo Importer &amp; Drive Generator</h2>
+        <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0; line-height: 1.5;">
+          Automatically crawl and import off-campus opportunities directly from Jobdexo with official direct career apply links.
+        </p>
+      </div>
+
+      <!-- 1-Click Crawler Section -->
+      <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 18px;">
+        <h3 style="font-size: var(--text-base); font-weight: 800; color: var(--color-text-primary); margin: 0 0 6px;">⚡ 1-Click Latest Openings Crawler</h3>
+        <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin: 0 0 14px;">
+          Crawl Jobdexo homepage for the freshest off-campus jobs and bundle them into a 7-day shareable group.
+        </p>
+
+        <div class="form-group">
+          <label for="jobdexoGroupName" class="form-label">Custom Group Name (Optional)</label>
+          <input type="text" id="jobdexoGroupName" class="form-input" placeholder="e.g. 🔥 Top Off-Campus Tech Drives Today">
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btnFetchJobdexo5" type="button" class="btn btn-primary" style="flex: 1; min-width: 140px; height: 40px;">
+            ⚡ Fetch Latest 5 Jobs
+          </button>
+          <button id="btnFetchJobdexo10" type="button" class="btn btn-secondary" style="flex: 1; min-width: 140px; height: 40px;">
+            🚀 Fetch Latest 10 Jobs
+          </button>
+          <button id="btnCleanDuplicates" type="button" class="btn btn-danger-ghost" style="flex: 1; min-width: 140px; height: 40px;">
+            🧹 Clean Duplicates
+          </button>
+        </div>
+      </div>
+
+      <!-- URL Importer Section -->
+      <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 18px;">
+        <h3 style="font-size: var(--text-base); font-weight: 800; color: var(--color-text-primary); margin: 0 0 6px;">🔗 Import Specific Jobdexo URLs</h3>
+        <p style="font-size: var(--text-xs); color: var(--color-text-muted); margin: 0 0 14px;">
+          Paste one or multiple Jobdexo links (1 per line).
+        </p>
+
+        <form id="formJobdexoUrlImport">
+          <div class="form-group">
+            <label for="jobdexoUrlsInput" class="form-label">Jobdexo URL(s) *</label>
+            <textarea id="jobdexoUrlsInput" class="form-textarea" rows="4" placeholder="https://jobdexo.com/job/...&#10;https://jobdexo.com/job/..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="height: 40px; width: 100%;">
+            📥 Import URLs &amp; Generate Broadcast
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 5: CATEGORIES MANAGEMENT
+         ========================================== -->
+    <div id="tabCategory" class="workspace-card tab-content" style="display: none;">
+      <h2 style="font-size: var(--text-xl); font-weight: 800; margin-bottom: 18px; color: var(--color-text-primary);">Taxonomy &amp; Category Management</h2>
+      
+      <form id="formAddCategory" style="margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--subtle-border);">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="catName" class="form-label">New Category Name *</label>
+            <input type="text" id="catName" class="form-input" placeholder="e.g. Cloud & DevOps" required>
+          </div>
+          <div class="form-group">
+            <label for="catDescription" class="form-label">Description (Optional)</label>
+            <input type="text" id="catDescription" class="form-input" placeholder="e.g. AWS, Azure, Docker jobs">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="height: 40px; width: 100%; max-width: 220px;">+ Create Category</button>
+      </form>
+
+      <h3 style="font-size: var(--text-base); font-weight: 800; margin-bottom: 14px; color: var(--color-text-primary);">Existing Categories</h3>
+      <div id="ownerCategoryList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px;"></div>
+    </div>
+
+    <!-- ==========================================
+         TAB 5: REQUIREMENT GROUPS & MULTI-JOB BUNDLES
+         ========================================== -->
+    <div id="tabGroups" class="workspace-card tab-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 0; color: var(--color-text-primary);">Requirement Groups &amp; Drives</h2>
+          <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0;">Shareable collections of multiple requirements with auto-cleanup of empty groups and 1-click requirement transfers.</p>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button id="btnOpenMoveByIdGroups" type="button" class="btn btn-primary" title="Move or assign any requirement by typing its Job ID">
+            ⇄ Move by Job ID
+          </button>
+          <button id="btnAutoOrganizeGroups" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border);" title="Automatically segregate active requirements into dedicated Freshers and Experienced hiring drives and clean empty groups">
+            ⚡ Auto-Segregate Freshers &amp; Experience Groups
+          </button>
+          <button id="btnRefreshGroups" type="button" class="btn btn-secondary">
+            🔄 Refresh Groups
+          </button>
+        </div>
+      </div>
+      <!-- Global Multi-Group Bulk Action Bar -->
+      <div id="groupsGlobalBulkBar" style="display: none; margin-bottom: 16px; padding: 12px 18px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid var(--blue-border); border-radius: var(--radius-md); justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 18px;">📦</span>
+          <div>
+            <span id="groupsGlobalBulkText" style="font-size: var(--text-sm); font-weight: 800; color: var(--blue-dark);">0 requirements selected</span>
+            <div style="font-size: 11.5px; color: var(--color-text-muted);">Ready to move to a new or existing group</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" id="btnGroupsBulkMoveAll" class="btn btn-primary" style="height: 34px; font-size: 12.5px; font-weight: 700; padding: 0 14px;">
+            ⇄ Move Selected to Group
+          </button>
+          <button type="button" id="btnGroupsClearSelection" class="btn btn-secondary" style="height: 34px; font-size: 12.5px; background: #ffffff;">
+            ✕ Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Groups Search & Filter Toolbar -->
+      <div class="standard-toolbar" style="margin-bottom: 16px;">
+        <div class="search-wrapper" style="position: relative; flex: 1;">
+          <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-muted);">🔍</span>
+          <input type="text" id="ownerGroupsSearch" class="search-input" placeholder="Search groups by name or slug..." style="width: 100%; padding-left: 42px; padding-right: 36px;">
+          <button id="btnGroupsSearchClear" type="button" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: var(--color-text-muted); cursor: pointer; padding: 4px;" title="Clear search">✕</button>
+        </div>
+
+        <div class="filters-group">
+          <select id="ownerGroupsFilter" class="standard-select">
+            <option value="all" selected>All Groups</option>
+            <option value="freshers">🎓 Freshers Drives (0-1 Yrs)</option>
+            <option value="experienced">💼 Experienced Lateral Drives</option>
+            <option value="active">Active Drives Only (With Jobs)</option>
+            <option value="empty">Empty Groups (0 Jobs)</option>
+            <option value="expired">Expired Groups</option>
+          </select>
+
+          <select id="ownerGroupsPageSize" class="standard-select">
+            <option value="15" selected>15 per page</option>
+            <option value="30">30 per page</option>
+            <option value="50">50 per page</option>
+            <option value="all">All Groups</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="ownerGroupsTableContainer" class="table-responsive">
+        <div style="padding: 36px; text-align: center; color: var(--muted);">Loading requirement groups...</div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 6: WEBSITE VISITOR & TRAFFIC ANALYTICS
+         ========================================== -->
+    <div id="tabAnalytics" class="workspace-card tab-content" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <span class="status-pill" style="background: var(--blue-light); color: var(--blue-primary); border: 1px solid var(--blue-border); margin-bottom: 6px;">REAL-TIME ANALYTICS</span>
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--blue-primary);">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 0; color: var(--color-text-primary);">Website Traffic &amp; Visitors Analytics</h2>
+          </div>
+          <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0;">Real-time visitor counts, daily trends, referrer sources, device breakdown, and top pages.</p>
+        </div>
+        <button id="btnRefreshAnalytics" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border);" aria-label="Refresh real-time analytics data">
+          <svg id="refreshIconSvg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          <span id="btnRefreshText">Refresh Data</span>
+        </button>
+      </div>
+
+      <!-- 4 Standard KPI Cards -->
+      <div class="kpi-grid" style="margin-bottom: 22px;">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Unique Visitors</span>
+            <span class="kpi-icon" style="color: var(--blue-primary);">👥</span>
+          </div>
+          <div class="kpi-value" id="anaTotalVisitors" style="color: var(--blue-primary);">--</div>
+          <div class="kpi-sub" id="anaMonthVisitors">-- this month</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Today's Visitors</span>
+            <span class="kpi-icon" style="color: var(--color-text-success);">⚡</span>
+          </div>
+          <div class="kpi-value" id="anaTodayVisitors" style="color: var(--color-text-success);">--</div>
+          <div class="kpi-sub" id="anaTodayViews" style="color: var(--color-text-success);">-- views today</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Total Page Views</span>
+            <span class="kpi-icon" style="color: var(--color-text-primary);">👁️</span>
+          </div>
+          <div class="kpi-value" id="anaTotalViews">--</div>
+          <div class="kpi-sub" id="anaWeekVisitors">-- this week</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Device Split</span>
+            <span class="kpi-icon" style="color: #d97706;">📱</span>
+          </div>
+          <div class="kpi-value" id="anaDeviceSplit" style="font-size: var(--text-xl); margin-top: 4px;">--</div>
+          <div class="kpi-sub" id="anaTopSource" style="color: #d97706;">Top: Direct / Social</div>
+        </div>
+      </div>
+
+      <!-- 14-Day Traffic Trend Visualizer -->
+      <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 22px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0;">14-Day Daily Traffic &amp; Visitor Trend</h3>
+          <span style="font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 600;">Daily Unique Visitors &amp; Total Hits</span>
+        </div>
+        <div id="anaDailyChartContainer" style="display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-top: 16px; border-bottom: 1px solid var(--subtle-border); overflow-x: auto;">
+        </div>
+      </div>
+
+      <!-- 2-Column Grid: Top Pages & Traffic Sources -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-bottom: 22px;">
+        <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0 0 14px;">Top Visited Jobs &amp; Pages</h3>
+          <div id="anaTopPagesList" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading page data...</div>
+          </div>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0 0 14px;">Traffic Sources &amp; Channels</h3>
+          <div id="anaReferrersList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+            <div style="color: var(--color-text-muted); font-size: var(--text-sm);">Loading traffic channels...</div>
+          </div>
+
+          <h4 style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-secondary); text-transform: none; margin: 18px 0 10px;">Browsers &amp; Operating Systems</h4>
+          <div id="anaPlatformsList" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--color-text-muted); font-size: var(--text-xs);">Loading platform info...</div>
           </div>
         </div>
       </div>
 
-      <div class="ow-modal-block">
-        <p class="ow-mini-title">Copy broadcast text</p>
-        <div class="ow-btn-grid ow-btn-grid-2">
-          <button id="btnCopyModalWhatsApp" type="button" class="btn btn-secondary">
-            Copy WhatsApp Broadcast
+      <!-- Live Stream Table -->
+      <div style="background: var(--surface); border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <h3 style="font-size: 15px; font-weight: 800; color: var(--color-text-primary); margin: 0;">Live Real-Time Activity Feed</h3>
+          <span style="font-size: var(--text-xs); color: var(--color-text-success); font-weight: 700;">● Live Stream</span>
+        </div>
+        <div id="anaRecentVisitsTable" class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Page / Requirement</th>
+                <th>Source</th>
+                <th>Device &amp; OS</th>
+                <th>IP Masked</th>
+              </tr>
+            </thead>
+            <tbody id="anaRecentVisitsBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--muted); padding: 18px;">Awaiting site traffic...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         TAB 7: ACTIVITY LOG STREAM
+         ========================================== -->
+    <div id="tabActivity" class="workspace-card tab-content" style="display: none;">
+      <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 14px; color: var(--ink);">System Activity &amp; Audit Trail</h2>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">Real-time audit log of owner parsing actions, status toggles, and publishing events.</p>
+      
+      <div id="crmActivityLogStream" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: var(--radius-md);">
+          <span style="color: #059669; font-size: 14px;">●</span>
+          <div>
+            <strong style="color: var(--ink); font-size: 13.5px;">Executive Studio Initialized</strong>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 1px;">Session established &amp; verified.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================
+       GROUP BROADCAST & SHARE MODAL
+       ========================================== -->
+  <div id="groupBroadcastModal" class="modal-overlay">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <div>
+          <h2 id="modalGroupName" style="font-size: var(--text-lg); font-weight: 800; margin: 0; color: var(--color-text-primary);">Requirement Group Ready</h2>
+          <span style="font-size: var(--text-xs); color: var(--blue-primary); font-weight: 700;" id="modalGroupTag">Direct Shareable Link Generated</span>
+        </div>
+        <button id="btnCloseBroadcastModal" type="button" class="modal-close-btn" aria-label="Close broadcast modal">&times;</button>
+      </div>
+
+      <div style="background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px;">
+        <div style="font-size: 11px; font-weight: 800; color: var(--color-text-muted); text-transform: uppercase; margin-bottom: 8px;">Direct Shareable Group URL</div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="modalGroupUrlInput" class="form-input" readonly style="font-family: monospace; font-size: 12px; color: var(--blue-primary); flex: 1; min-width: 200px; background: #ffffff;">
+          <button id="btnCopyModalLink" type="button" class="btn btn-primary" style="height: 38px; padding: 0 14px; font-size: 12.5px;">
+            🔗 Copy Link
           </button>
-          <button id="btnCopyModalTelegram" type="button" class="btn btn-secondary">
-            Copy Telegram Post
+          <a id="btnOpenModalLink" href="#" target="_blank" class="btn btn-secondary" style="height: 38px; padding: 0 14px; font-size: 12.5px; text-decoration: none;">
+            Open Page ↗
+          </a>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <div style="font-size: 12.5px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 8px;">1-Click Multi-Channel Social Broadcast Copy</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btnCopyModalWhatsApp" type="button" class="btn" style="flex: 1; min-width: 140px; height: 40px; background: #16a34a; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
+            📱 Copy WhatsApp Broadcast
+          </button>
+          <button id="btnCopyModalTelegram" type="button" class="btn" style="flex: 1; min-width: 140px; height: 40px; background: #0284c7; color: #ffffff; font-weight: 700; border: none; border-radius: var(--radius-md);">
+            ✈️ Copy Telegram Post
           </button>
         </div>
       </div>
 
-      <div class="form-group">
-        <label for="modalBroadcastPreview" class="form-label">WhatsApp broadcast preview</label>
-        <textarea id="modalBroadcastPreview" class="form-textarea ow-mono" rows="6" readonly></textarea>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label">WhatsApp Broadcast Preview</label>
+        <textarea id="modalBroadcastPreview" class="form-textarea" rows="6" readonly style="font-family: monospace; font-size: 12px; line-height: 1.4; background: #f8fafc;"></textarea>
       </div>
     </div>
   </div>
 
-  <!-- Edit job modal -->
-  <div id="editJobModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="editJobTitle">
-    <div class="modal-box">
-      <div class="ow-modal-head">
-        <h2 id="editJobTitle">Edit job</h2>
-        <button id="btnCloseEditModal" type="button" class="modal-close-btn" aria-label="Close edit modal">
-          <i data-lucide="x" aria-hidden="true"></i>
-        </button>
+  <!-- ==========================================
+       EDIT JOB MODAL DRAWER
+       ========================================== -->
+  <div id="editJobModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 640px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="font-size: var(--text-lg); font-weight: 800; margin: 0; color: var(--color-text-primary);">✏️ Edit Opportunity Lead</h2>
+        <button id="btnCloseEditModal" type="button" class="modal-close-btn" aria-label="Close edit modal">&times;</button>
       </div>
 
-      <form id="formEditJob" class="ow-form">
+      <form id="formEditJob">
         <input type="hidden" id="eJobId">
-
+        
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="eTitle" class="form-label">Job title or role</label>
+            <label for="eTitle" class="form-label">Job Title / Role *</label>
             <input type="text" id="eTitle" class="form-input" required>
           </div>
           <div class="form-group">
-            <label for="eCompany" class="form-label">Company name</label>
+            <label for="eCompany" class="form-label">Company Name *</label>
             <input type="text" id="eCompany" class="form-input" required>
           </div>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="eCategory" class="form-label">Category</label>
+            <label for="eCategory" class="form-label">Category *</label>
             <select id="eCategory" class="form-input" required>
               {% for c in categories %}
                 <option value="{{ c.id }}">{{ c.name }}</option>
@@ -998,7 +2208,7 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="eJobType" class="form-label">Type</label>
+            <label for="eJobType" class="form-label">Type *</label>
             <select id="eJobType" class="form-input" required>
               <option value="INTERNSHIP">Internship</option>
               <option value="FULL_TIME">Full-Time Job</option>
@@ -1007,102 +2217,107 @@
         </div>
 
         <div class="form-group">
-          <label for="eApplyUrl" class="form-label">Apply URL</label>
+          <label for="eApplyUrl" class="form-label">Application URL *</label>
           <input type="url" id="eApplyUrl" class="form-input" required>
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label for="eSalary" class="form-label">Salary or stipend</label>
+            <label for="eSalary" class="form-label">Salary / Stipend *</label>
             <input type="text" id="eSalary" class="form-input" required>
           </div>
           <div class="form-group">
-            <label for="eLocation" class="form-label">Location</label>
+            <label for="eLocation" class="form-label">Location *</label>
             <input type="text" id="eLocation" class="form-input" required>
           </div>
         </div>
 
         <div class="form-group">
-          <label for="eSkills" class="form-label">Skills</label>
+          <label for="eSkills" class="form-label">Skills *</label>
           <input type="text" id="eSkills" class="form-input" required>
         </div>
 
         <div class="form-group">
-          <label for="eDescription" class="form-label">Description</label>
+          <label for="eDescription" class="form-label">Description *</label>
           <textarea id="eDescription" class="form-textarea" rows="3" required></textarea>
         </div>
 
         <div class="form-group">
-          <label for="eEligibility" class="form-label">Eligibility <span class="ow-optional">(optional)</span></label>
+          <label for="eEligibility" class="form-label">Eligibility Criteria</label>
           <input type="text" id="eEligibility" class="form-input">
         </div>
 
-        <div class="ow-modal-foot">
-          <button type="button" id="btnCancelEdit" class="btn btn-ghost">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save changes</button>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" id="btnCancelEdit" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="height: 40px;">Save Changes</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Move requirements between groups modal -->
-  <div id="moveRequirementsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="moveModalTitle">
-    <div class="modal-box">
-      <div class="ow-modal-head">
-        <h2 id="moveModalTitle">Move jobs between groups</h2>
-        <button id="btnCloseMoveModal" type="button" class="modal-close-btn" aria-label="Close move requirements modal">
-          <i data-lucide="x" aria-hidden="true"></i>
-        </button>
+  <!-- ==========================================
+       MOVE REQUIREMENTS BETWEEN GROUPS MODAL
+       ========================================== -->
+  <div id="moveRequirementsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 520px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">⇄</span>
+          <h2 style="font-size: 18px; font-weight: 800; margin: 0; color: var(--color-text-primary);">Move Requirements Between Groups</h2>
+        </div>
+        <button id="btnCloseMoveModal" type="button" class="modal-close-btn" aria-label="Close move requirements modal">&times;</button>
       </div>
 
-      <form id="formMoveRequirements" class="ow-form">
+      <form id="formMoveRequirements">
         <input type="hidden" id="moveJobIds">
         <input type="hidden" id="moveFromGroupId">
 
-        <div class="form-group">
-          <label for="manualJobIdsInput" class="form-label">Job ID(s)</label>
-          <input type="text" id="manualJobIdsInput" class="form-input ow-mono" placeholder="e.g. 263, or several: 263, 264" required>
-          <div class="ow-label-row">
-            <span id="moveJobsSummaryText" class="ow-hint">Requirement #263 selected</span>
-            <span id="moveSourceGroupText" class="ow-hint">From: Pipeline</span>
+        <!-- Explicit Editable Requirement Job ID Field -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="manualJobIdsInput" class="form-label">Requirement Job ID(s) *</label>
+          <div style="position: relative;">
+            <input type="text" id="manualJobIdsInput" class="form-input" placeholder="Type Job ID e.g. 263 or comma-separated: 263, 264" required style="font-family: monospace; font-size: var(--text-sm); font-weight: 700; color: var(--blue-primary); padding-left: 12px;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <span id="moveJobsSummaryText" style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted);">Requirement #263 selected</span>
+            <span id="moveSourceGroupText" style="font-size: 11px; color: var(--color-text-muted);">From: Pipeline</span>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="moveToGroupSelect" class="form-label">Move to group</label>
-          <label for="filterTargetGroupInput" class="sr-only">Search groups</label>
-          <input type="text" id="filterTargetGroupInput" class="form-input" placeholder="Search groups">
-          <select id="moveToGroupSelect" class="form-input" required>
-            <option value="">Choose a group</option>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="moveToGroupSelect" class="form-label">Destination Specific Group *</label>
+          <div style="position: relative; margin-bottom: 8px;">
+            <input type="text" id="filterTargetGroupInput" class="form-input" placeholder="🔍 Search existing specific groups..." style="height: 36px; font-size: var(--text-xs); padding-left: 10px;">
+          </div>
+          <select id="moveToGroupSelect" class="form-input" required style="width: 100%; height: 42px; font-size: var(--text-sm);">
+            <option value="">-- Choose Target Specific Group --</option>
           </select>
         </div>
 
-        <div id="newSpecificGroupDrawer" class="ow-fieldset is-off">
-          <div class="form-group">
-            <label for="newSpecificGroupNameInput" class="form-label">New group name</label>
-            <input type="text" id="newSpecificGroupNameInput" class="form-input" placeholder="e.g. Bangalore IT & Python Hiring Drive 2026">
-          </div>
-          <div class="form-group">
-            <label for="newSpecificGroupTagInput" class="form-label">Banner tag <span class="ow-optional">(optional)</span></label>
-            <input type="text" id="newSpecificGroupTagInput" class="form-input" placeholder="e.g. HOT HIRING DRIVE">
+        <!-- Create New Specific Group Drawer (if selected) -->
+        <div id="newSpecificGroupDrawer" style="display: none; background: var(--surface-hover); border: 1px dashed var(--blue-border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px;">
+          <div style="font-size: var(--text-xs); font-weight: 700; color: var(--blue-primary); margin-bottom: 6px;">✨ Specific Group Name</div>
+          <input type="text" id="newSpecificGroupNameInput" class="form-input" placeholder="e.g. Bangalore IT & Python Hiring Drive 2026" style="margin-bottom: 8px;">
+          <input type="text" id="newSpecificGroupTagInput" class="form-input" placeholder="Banner tag (optional, e.g. 🔥 HOT HIRING DRIVE)" style="font-size: var(--text-xs);">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label class="form-label">Transfer Action</label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-size: var(--text-sm); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="moveActionType" value="move" checked>
+              <span><strong>Move</strong> (Remove from current group &amp; transfer to target)</span>
+            </label>
+            <label style="font-size: var(--text-sm); display: flex; align-items: center; gap: 8px; cursor: pointer;">
+              <input type="radio" name="moveActionType" value="copy">
+              <span><strong>Copy</strong> (Keep in current group and also add to target)</span>
+            </label>
           </div>
         </div>
 
-        <fieldset class="ow-radios">
-          <legend class="form-label">Action</legend>
-          <label class="ow-radio">
-            <input type="radio" name="moveActionType" value="move" checked>
-            <span><strong>Move</strong>: take it out of the current group and add it to the new one</span>
-          </label>
-          <label class="ow-radio">
-            <input type="radio" name="moveActionType" value="copy">
-            <span><strong>Copy</strong>: keep it in the current group and also add it to the new one</span>
-          </label>
-        </fieldset>
-
-        <div class="ow-modal-foot">
-          <button type="button" id="btnCancelMove" class="btn btn-ghost">Cancel</button>
-          <button type="submit" id="btnConfirmMove" class="btn btn-primary">
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" id="btnCancelMove" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="btnConfirmMove" class="btn btn-primary" style="min-width: 130px;">
             Confirm Move ⇄
           </button>
         </div>
@@ -1110,26 +2325,28 @@
     </div>
   </div>
 
-  <!-- Phone dock: the five most used tabs, in thumb reach -->
-  <nav class="mobile-tab-dock ow-dock{% if not is_owner_authenticated %} is-off{% endif %}" id="ownerMobileBottomNav" aria-label="Owner shortcuts">
-    <button type="button" class="dock-btn owner-nav-item active" data-tab="tabJobs">
-      <i data-lucide="kanban" aria-hidden="true"></i>
+  <!-- ==========================================
+       MOBILE BOTTOM DOCK (For Phone Travelling)
+       ========================================== -->
+  <nav class="mobile-tab-dock" id="ownerMobileBottomNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+    <button class="dock-btn owner-nav-item active" data-tab="tabJobs">
+      <span style="font-size: 18px;">📊</span>
       <span>Pipeline</span>
     </button>
-    <button type="button" class="dock-btn owner-nav-item" data-tab="tabSmartParse">
-      <i data-lucide="scan-text" aria-hidden="true"></i>
-      <span>Parser</span>
+    <button class="dock-btn owner-nav-item" data-tab="tabSmartParse">
+      <span style="font-size: 18px;">🎯</span>
+      <span>1-Parser</span>
     </button>
-    <button type="button" class="dock-btn owner-nav-item" data-tab="tabPost">
-      <i data-lucide="square-pen" aria-hidden="true"></i>
-      <span>Post</span>
+    <button class="dock-btn owner-nav-item" data-tab="tabPost">
+      <span style="font-size: 18px;">✍️</span>
+      <span>+ Post</span>
     </button>
-    <button type="button" class="dock-btn owner-nav-item" data-tab="tabBulkParse">
-      <i data-lucide="layers" aria-hidden="true"></i>
+    <button class="dock-btn owner-nav-item" data-tab="tabBulkParse">
+      <span style="font-size: 18px;">⚡</span>
       <span>Bulk</span>
     </button>
-    <button type="button" class="dock-btn owner-nav-item" data-tab="tabAnalytics">
-      <i data-lucide="chart-column" aria-hidden="true"></i>
+    <button class="dock-btn owner-nav-item" data-tab="tabAnalytics">
+      <span style="font-size: 18px;">📈</span>
       <span>Traffic</span>
     </button>
   </nav>
@@ -1138,5 +2355,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026110202"></script>
+<script src="{% static 'js/owner.js' %}?v=202609020732"></script>
 {% endblock %}

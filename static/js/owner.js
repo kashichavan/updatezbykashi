@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAutoOrganizeGroups = document.getElementById('btnAutoOrganizeGroups');
     if (btnAutoOrganizeGroups) {
       btnAutoOrganizeGroups.addEventListener('click', async () => {
-        btnAutoOrganizeGroups.textContent = 'Sorting and cleaning...';
+        btnAutoOrganizeGroups.textContent = '⚡ Segregating & Cleaning...';
         btnAutoOrganizeGroups.disabled = true;
         try {
           const res = await authFetch('/api/owner/groups/auto-organize/', { method: 'POST' });
@@ -363,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
           showToast('Network error while auto-segregating groups.', 'error');
         } finally {
-          btnAutoOrganizeGroups.textContent = 'Auto-sort freshers and experienced';
+          btnAutoOrganizeGroups.textContent = '⚡ Auto-Segregate Freshers & Experience Groups';
           btnAutoOrganizeGroups.disabled = false;
         }
       });
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Signing in...';
+        submitBtn.textContent = 'Authenticating... ⏳';
       }
 
       try {
@@ -516,7 +516,7 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(data.error || 'Invalid credentials.', 'error');
           if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Sign in to Studio';
+            submitBtn.textContent = 'Authenticate CRM Access 🔑';
           }
         }
       } catch (err) {
@@ -588,7 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showToast(`${data.message}`, 'success');
+          showToast(`⚡ ${data.message}`, 'success');
           logActivity(`Bulk Multi-Job Parser executed`, data.message);
           document.getElementById('bulkRawText').value = '';
           if (groupNameInput) groupNameInput.value = '';
@@ -625,7 +625,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const groupName = groupNameInput ? groupNameInput.value.trim() : '';
 
     try {
-      showToast(`Crawling Jobdexo for latest ${limit} off-campus opportunities...`, 'success');
+      showToast(`⚡ Crawling Jobdexo for latest ${limit} off-campus opportunities...`, 'success');
       const res = await authFetch('/api/owner/jobdexo/fetch-latest/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        showToast(`${data.message}`, 'success');
+        showToast(`🎉 ${data.message}`, 'success');
         logActivity(`Jobdexo Auto-Crawler (${limit} jobs)`, data.message);
         if (groupNameInput) groupNameInput.value = '';
         loadKpiStats();
@@ -665,14 +665,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnCleanDuplicates) {
     btnCleanDuplicates.addEventListener('click', async () => {
       try {
-        showToast('Cleaning database duplicates and standardizing company names...', 'success');
+        showToast('🧹 Cleaning database duplicates and standardizing company names...', 'success');
         const res = await authFetch('/api/owner/jobdexo/cleanup/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showToast(`${data.message}`, 'success');
+          showToast(`✨ ${data.message}`, 'success');
           logActivity('Database Cleanup', data.message);
           loadKpiStats();
           loadRecentJobs();
@@ -695,7 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!rawUrls) return;
 
       try {
-        showToast('Importing jobs from provided Jobdexo URLs...', 'success');
+        showToast('📥 Importing jobs from provided Jobdexo URLs...', 'success');
         const res = await authFetch('/api/owner/jobdexo/import-urls/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -704,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showToast(`${data.message}`, 'success');
+          showToast(`🎉 ${data.message}`, 'success');
           logActivity('Jobdexo URL Importer', data.message);
           document.getElementById('jobdexoUrlsInput').value = '';
           if (groupNameInput) groupNameInput.value = '';
@@ -741,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showToast(`Parsed and published: ${data.company_name} - ${data.title}`, 'success');
+          showToast(`🎯 Parsed & Published: ${data.company_name} - ${data.title}`, 'success');
           logActivity(`Single Parser executed`, `${data.company_name} - ${data.title}`);
           document.getElementById('rawText').value = '';
           loadKpiStats();
@@ -817,8 +817,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (scoreEl) {
       scoreEl.innerText = `${validation.score} / 100`;
-      scoreEl.classList.toggle('is-pass', !!validation.is_valid);
-      scoreEl.classList.toggle('is-fail', !validation.is_valid);
+      scoreEl.style.background = validation.is_valid ? '#dcfce7' : '#fee2e2';
+      scoreEl.style.color = validation.is_valid ? '#15803d' : '#b91c1c';
+      scoreEl.style.borderColor = validation.is_valid ? '#86efac' : '#fca5a5';
     }
 
     if (statusEl) {
@@ -836,9 +837,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const checksList = document.getElementById('linkedinChecksList');
     if (checksList && Array.isArray(validation.checks)) {
       checksList.innerHTML = validation.checks.map(c => `
-        <li class="ow-check ${c.passed ? 'is-pass' : 'is-fail'}">
-          <span class="ow-check-mark" aria-hidden="true">${c.passed ? '✓' : '✗'}</span>
-          <span><strong>${c.rule}</strong>: <span class="ow-check-detail">${c.detail}</span><span class="sr-only"> (${c.passed ? 'passed' : 'failed'})</span></span>
+        <li style="display: flex; align-items: flex-start; gap: 8px; padding: 4px 0;">
+          <span style="color: ${c.passed ? '#16a34a' : '#ef4444'}; font-weight: 800;">${c.passed ? '✓' : '✗'}</span>
+          <span><strong>${c.rule}</strong>: <span style="color: #64748b;">${c.detail}</span></span>
         </li>
       `).join('');
     }
@@ -898,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        showToast(`Passed and published: ${data.company} - ${data.title}!`, 'success');
+        showToast(`🎉 PASSED & PUBLISHED: ${data.company} - ${data.title}!`, 'success');
         logActivity('LinkedIn Lead Published', `${data.company} - ${data.title}`);
 
         const successAlert = document.getElementById('linkedinSuccessAlert');
@@ -1002,23 +1003,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Skeleton loading state
     jobsTableContainer.innerHTML = `
-      <div class="vp-catalog-grid" aria-busy="true">
+      <div class="vp-catalog-grid" style="margin-bottom: 24px;">
         ${[1, 2, 3, 4, 5, 6].map(() => `
-          <div class="vp-product-card ow-skel-card" aria-hidden="true">
+          <div class="vp-product-card" style="opacity: 0.7; pointer-events: none;">
             <div class="vp-card-header">
-              <div class="ow-skel ow-skel-company"></div>
-              <div class="ow-skel ow-skel-pill"></div>
+              <div style="width: 90px; height: 22px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
+              <div style="width: 60px; height: 20px; background: #e2e8f0; border-radius: var(--radius-full);"></div>
             </div>
-            <div class="ow-skel ow-skel-title"></div>
-            <div class="ow-skel ow-skel-line"></div>
-            <div class="ow-skel ow-skel-block"></div>
-            <div class="ow-skel-row">
-              <div class="ow-skel ow-skel-tag"></div>
-              <div class="ow-skel ow-skel-tag"></div>
+            <div style="width: 75%; height: 20px; background: #e2e8f0; border-radius: var(--radius-sm); margin: 10px 0 8px;"></div>
+            <div style="width: 45%; height: 16px; background: #f1f5f9; border-radius: var(--radius-sm); margin-bottom: 12px;"></div>
+            <div style="width: 100%; height: 40px; background: #f8fafc; border-radius: var(--radius-sm); margin-bottom: 14px;"></div>
+            <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+              <div style="width: 50px; height: 20px; background: #f1f5f9; border-radius: var(--radius-sm);"></div>
+              <div style="width: 60px; height: 20px; background: #f1f5f9; border-radius: var(--radius-sm);"></div>
             </div>
-            <div class="ow-act-2">
-              <div class="ow-skel ow-skel-btn"></div>
-              <div class="ow-skel ow-skel-btn"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
+              <div style="height: 38px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
+              <div style="height: 38px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
             </div>
           </div>
         `).join('')}
@@ -1071,11 +1072,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Failed to load jobs:', err);
       jobsTableContainer.innerHTML = `
-        <div class="ow-state is-bad" role="alert">
-          <strong class="ow-state-title">Failed to load opportunity pipeline</strong>
-          <p class="ow-state-text">There was an issue communicating with the backend server.</p>
-          <button type="button" class="btn btn-danger-ghost" onclick="loadJobsList(${page})">
-            Try again
+        <div style="padding: 36px 20px; text-align: center; background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-md); margin-bottom: 20px;">
+          <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+          <strong style="color: var(--color-text-danger); font-size: var(--text-base); display: block; margin-bottom: 4px;">Failed to load opportunity pipeline</strong>
+          <p style="color: var(--color-text-muted); font-size: var(--text-sm); margin: 0 0 16px;">There was an issue communicating with the backend server.</p>
+          <button type="button" class="btn btn-secondary" onclick="loadJobsList(${page})" style="border-color: #fca5a5; color: var(--color-text-danger);">
+            🔄 Try Again
           </button>
         </div>
       `;
@@ -1089,11 +1091,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!filtered || filtered.length === 0) {
       jobsTableContainer.innerHTML = `
-        <div class="ow-state">
-          <strong class="ow-state-title">No opportunity leads found</strong>
-          <p class="ow-state-text">Try clearing your search filters or post a new job requirement.</p>
+        <div style="padding: 48px 20px; text-align: center; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); margin-bottom: 20px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
+          <strong style="color: var(--color-text-primary); font-size: var(--text-base); display: block; margin-bottom: 4px;">No opportunity leads found</strong>
+          <p style="color: var(--color-text-muted); font-size: var(--text-sm); margin: 0 0 16px;">Try clearing your search filters or post a new job requirement.</p>
           <button type="button" class="btn btn-primary" onclick="switchTab('tabPost')">
-            + Post new job
+            ✍️ + Post New Job
           </button>
         </div>
       `;
@@ -1123,17 +1126,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const pagesHtml = pageNumbers.map(p => {
       if (p === '...') {
-        return `<span class="ow-pag-gap" aria-hidden="true">…</span>`;
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>`;
       }
       return `
-        <button class="pag-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}"${p === curPage ? ' aria-current="page"' : ''}>
+        <button class="pag-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid ${p === curPage ? '#2563eb' : '#e2e8f0'}; background: ${p === curPage ? '#2563eb' : '#ffffff'}; color: ${p === curPage ? '#ffffff' : '#0f172a'}; cursor: pointer;">
           ${p}
         </button>
       `;
     }).join('');
 
     jobsTableContainer.innerHTML = `
-      <div class="vp-catalog-grid">
+      <div class="vp-catalog-grid" style="margin-bottom: 24px;">
         ${filtered.map(j => {
           const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
           const hoursLeft = Math.ceil(j.time_left_seconds / 3600);
@@ -1142,18 +1145,18 @@ document.addEventListener('DOMContentLoaded', () => {
             : (j.skills_required ? j.skills_required.split(',').map(s => s.trim()).filter(Boolean) : []);
           const isFresher = (j.experience_tier === 'FRESHER' || j.experience_tier === 'INTERNSHIP' || j.job_type === 'INTERNSHIP' || (j.title && /fresher|intern|trainee|0-1/i.test(j.title))) && j.experience_tier !== 'SENIOR_LEVEL' && j.experience_tier !== 'MID_LEVEL';
           const expBadge = isFresher 
-            ? `<span class="status-pill is-fresher">Fresher (0-1 Y)</span>`
-            : `<span class="status-pill is-experienced">Experienced</span>`;
+            ? `<span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 10.5px; font-weight: 700;">🎓 Fresher (0-1 Y)</span>`
+            : `<span class="status-pill" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25); font-size: 10.5px; font-weight: 700;">💼 Experienced</span>`;
 
           return `
           <div class="vp-product-card" data-id="${j.id}">
             <div class="vp-card-header">
               <span class="company-badge">${escapeHtml(j.company_name)}</span>
-              <div class="ow-card-tags">
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                 ${expBadge}
                 <span class="type-badge">${escapeHtml(j.job_type_display || j.job_type || 'Full-Time')}</span>
-                <span class="status-pill ${isExpired ? 'status-expired' : 'status-active'}">
-                  ${isExpired ? 'Expired' : hoursLeft + 'h left'}
+                <span class="status-pill ${isExpired ? 'status-expired' : 'status-active'}" style="font-size: 11px;">
+                  ${isExpired ? '🔴 Expired' : '🟢 ' + hoursLeft + 'h left'}
                 </span>
               </div>
             </div>
@@ -1162,45 +1165,45 @@ document.addEventListener('DOMContentLoaded', () => {
               <h2 class="job-card-title">${escapeHtml(j.title)}</h2>
 
               <div class="vp-salary-row">
-                <span>${escapeHtml(j.stipend_salary || 'Competitive')}</span>
-                <span class="ow-loc">${escapeHtml(j.location || 'India')}</span>
+                <span>💰 ${escapeHtml(j.stipend_salary || 'Competitive')}</span>
+                <span style="color: var(--color-text-muted); font-weight: 500;">📍 ${escapeHtml(j.location || 'India')}</span>
               </div>
 
-              <div class="ow-card-meta">
-                <span>Posted <strong>${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</strong></span>
-                <span class="ow-id">#${j.id}</span>
+              <div style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
+                <span>📅 Posted:</span> <strong style="color: var(--color-text-primary);">${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</strong>
+                <span style="margin-left: auto; color: var(--color-text-muted); font-family: monospace; font-size: 11.5px;">#${j.id}</span>
               </div>
 
-              <p class="ow-card-desc">${escapeHtml(j.description ? (j.description.length > 130 ? j.description.substring(0, 130) + '...' : j.description) : 'Verified student opening.')}</p>
+              <p style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.45; margin-bottom: 10px;">${escapeHtml(j.description ? (j.description.length > 130 ? j.description.substring(0, 130) + '...' : j.description) : 'Verified student opening.')}</p>
 
               <div class="skills-wrapper">
                 ${skillsList.slice(0, 4).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}
               </div>
 
-              <div class="vp-price-row">
-                <div class="timer-tag${isExpired ? ' is-closed' : ''}">
-                  ${isExpired ? 'Expired / Inactive' : 'Auto-expires in 7 days (' + hoursLeft + 'h left)'}
+              <div class="vp-price-row" style="margin-top: 10px;">
+                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: ${isExpired ? 'var(--color-text-danger)' : 'var(--color-text-success)'};">
+                  ⏱️ ${isExpired ? 'Expired / Inactive' : 'Auto-Expires in 7 Days (' + hoursLeft + 'h left)'}
                 </div>
               </div>
 
-              <div class="card-action-bar">
-                <div class="ow-act-2">
-                  <button type="button" class="btn btn-secondary btn-edit-job" data-id="${j.id}">
-                    Edit
+              <div class="card-action-bar" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <button type="button" class="btn btn-primary btn-edit-job" data-id="${j.id}" style="height: 38px;">
+                    ✏️ Edit Lead
                   </button>
-                  <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
-                    Apply URL ↗
+                  <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="height: 38px;">
+                    ↗ Apply URL
                   </a>
                 </div>
-                <div class="ow-act-3">
-                  <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}" title="Move or assign this requirement to a specific group">
-                    Move
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                  <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}" style="height: 34px; font-size: 12px;" title="Move or assign this requirement to a specific group">
+                    ⇄ Move
                   </button>
-                  <button type="button" class="btn btn-ghost btn-toggle-job${isExpired ? ' is-publish' : ''}" data-id="${j.id}">
-                    ${isExpired ? 'Publish' : 'Unpublish'}
+                  <button type="button" class="btn btn-ghost btn-toggle-job" data-id="${j.id}" style="height: 34px; font-size: 12px; color: ${isExpired ? 'var(--color-text-success)' : 'var(--color-text-secondary)'};">
+                    ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
                   </button>
-                  <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="${j.id}" title="Delete lead">
-                    Delete
+                  <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="${j.id}" style="height: 34px; font-size: 12px;" title="Delete lead">
+                    🗑️ Delete
                   </button>
                 </div>
               </div>
@@ -1209,17 +1212,17 @@ document.addEventListener('DOMContentLoaded', () => {
         `}).join('')}
       </div>
 
-      <div class="ow-pager">
-        <p class="ow-pager-info">
-          Showing <strong>${startNum}-${endNum}</strong> of <strong>${totalCount}</strong> (page ${curPage} of ${totalPages})
-        </p>
-        <div class="ow-pager-nav">
-          <button id="btnPrevPage" class="pag-btn" ${curPage <= 1 ? 'disabled' : ''}>
-            Previous
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
+        <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
+          Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalCount}</strong> verified leads (Page ${curPage} of ${totalPages})
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <button id="btnPrevPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage <= 1 ? 'disabled' : ''}>
+            ← Previous
           </button>
           ${pagesHtml}
-          <button id="btnNextPage" class="pag-btn" ${curPage >= totalPages ? 'disabled' : ''}>
-            Next
+          <button id="btnNextPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage >= totalPages ? 'disabled' : ''}>
+            Next →
           </button>
         </div>
       </div>
@@ -1475,13 +1478,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/categories/');
       const data = await res.json();
       categoryListContainer.innerHTML = data.categories.map(c => `
-        <div class="ow-cat-item">
-          <div class="ow-cat-name">
-            <strong>${escapeHtml(c.name)}</strong>
-            <span class="ow-mono">/${escapeHtml(c.slug)}</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: rgba(13, 18, 31, 0.8); border: 1px solid var(--crm-border); border-radius: 16px;">
+          <div>
+            <strong style="font-size: 14.5px; color: #ffffff;">${escapeHtml(c.name)}</strong>
+            <div style="font-size: 12px; color: var(--crm-muted); font-family: monospace; margin-top: 2px;">/${escapeHtml(c.slug)}</div>
           </div>
-          <span class="ow-count-pill">
-            ${c.active_count} active
+          <span style="font-size: 12px; font-weight: 800; color: var(--crm-cyan); background: rgba(6, 182, 212, 0.15); padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(6, 182, 212, 0.3);">
+            ${c.active_count} Active Leads
           </span>
         </div>
       `).join('');
@@ -1559,7 +1562,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!container) return;
 
     currentGroupsPage = page;
-    container.innerHTML = '<p class="ow-empty" role="status"><span class="ow-spinner ow-spinner-sm" aria-hidden="true"></span>Loading requirement groups...</p>';
+    container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--color-text-muted);">Loading requirement groups...</div>';
 
     const searchInput = document.getElementById('ownerGroupsSearch');
     const filterSelect = document.getElementById('ownerGroupsFilter');
@@ -1586,20 +1589,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (groups.length === 0) {
         container.innerHTML = `
-          <div class="ow-state">
-            <h3 class="ow-state-title">
+          <div style="padding: 48px 24px; text-align: center;">
+            <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
+            <h3 style="font-size: 16px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 6px;">
               ${q || filterVal !== 'all' ? 'No Matching Groups Found' : 'No Requirement Groups Yet'}
             </h3>
-            <p class="ow-state-text">
+            <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">
               ${q || filterVal !== 'all' ? 'Try adjusting your search keywords or filter selection.' : 'Whenever you use the Bulk Parser or Create Group, a bundle is automatically created with direct shareable links!'}
             </p>
             ${q || filterVal !== 'all' ? `
-              <button class="btn btn-secondary" onclick="if(document.getElementById('ownerGroupsSearch')) document.getElementById('ownerGroupsSearch').value=''; if(document.getElementById('ownerGroupsFilter')) document.getElementById('ownerGroupsFilter').value='all'; loadGroupsList(1);">
+              <button class="btn btn-secondary" style="height: 38px; font-size: 13px;" onclick="if(document.getElementById('ownerGroupsSearch')) document.getElementById('ownerGroupsSearch').value=''; if(document.getElementById('ownerGroupsFilter')) document.getElementById('ownerGroupsFilter').value='all'; loadGroupsList(1);">
                 Reset Filters
               </button>
             ` : `
-              <button class="btn btn-primary" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
-                Open bulk parser
+              <button class="btn btn-primary" style="height: 38px; font-size: 13px;" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
+                ⚡ Open Bulk Parser
               </button>
             `}
           </div>
@@ -1608,14 +1612,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       let html = `
-        <table class="data-table ow-groups-table">
+        <table class="data-table" style="width: 100%;">
           <thead>
             <tr>
-              <th scope="col" class="ow-col-name">Group / Drive Name</th>
-              <th scope="col">Active Jobs</th>
-              <th scope="col">Created Date (IST)</th>
-              <th scope="col">Views</th>
-              <th scope="col" class="ow-col-actions">Actions</th>
+              <th style="width: 30%;">Group / Drive Name</th>
+              <th style="width: 15%;">Active Jobs</th>
+              <th style="width: 20%;">Created Date (IST)</th>
+              <th style="width: 10%;">Views</th>
+              <th style="width: 25%; text-align: right;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -1624,81 +1628,85 @@ document.addEventListener('DOMContentLoaded', () => {
       groups.forEach(g => {
         const jobsCount = g.jobs ? g.jobs.length : (g.total_jobs_count || 0);
         const tierBadge = g.tier_type === 'FRESHER' 
-          ? '<span class="status-pill is-fresher">Fresher</span>'
+          ? '<span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 10px; font-weight: 800; padding: 1px 6px;">🎓 FRESHER</span>'
           : (g.tier_type === 'EXPERIENCED' 
-              ? '<span class="status-pill is-experienced">Experienced</span>'
+              ? '<span class="status-pill" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25); font-size: 10px; font-weight: 800; padding: 1px 6px;">💼 EXPERIENCED</span>'
               : '');
         html += `
           <tr data-group-id="${g.id}">
             <td>
-              <div class="ow-group-name">
-                <span>${escapeHtml(g.name)}</span>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <span style="font-weight: 800; color: var(--color-text-primary); font-size: 14px;">${escapeHtml(g.name)}</span>
                 ${tierBadge}
               </div>
-              <div class="ow-group-slug">/group/${escapeHtml(g.slug)}/</div>
+              <div style="font-size: 11px; color: var(--blue-primary); font-family: ui-monospace, monospace; margin-top: 2px;">/group/${escapeHtml(g.slug)}/</div>
             </td>
             <td>
-              <button type="button" class="btn-toggle-group-jobs btn btn-ghost ow-btn-sm" data-group-id="${g.id}" title="Click to view & move requirements">
-                ${g.active_jobs_count} Jobs ▾
+              <button type="button" class="btn-toggle-group-jobs btn btn-ghost" data-group-id="${g.id}" style="height: 28px; padding: 0 8px; font-size: 12px; background: var(--blue-light); color: var(--blue-primary); border-radius: var(--radius-sm); border: 1px solid var(--blue-border);" title="Click to view & move requirements">
+                📂 ${g.active_jobs_count} Jobs ▾
               </button>
             </td>
-            <td class="ow-td-muted">${escapeHtml(g.created_at)}</td>
-            <td class="ow-td-num">${g.views_count}</td>
-            <td class="ow-col-actions">
-              <div class="ow-row-actions">
-                <button type="button" class="btn-toggle-group-jobs btn btn-secondary ow-btn-sm" data-group-id="${g.id}">
-                  Move jobs
+            <td style="color: var(--color-text-muted); font-size: 12.5px;">${escapeHtml(g.created_at)}</td>
+            <td style="font-weight: 700; color: var(--color-text-primary); font-size: 13px;">👁️ ${g.views_count}</td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <button type="button" class="btn-toggle-group-jobs btn btn-secondary" data-group-id="${g.id}" style="padding: 4px 9px; font-size: 12px; height: 32px;">
+                  ⇄ Move Jobs
                 </button>
-                <a href="${escapeHtml(g.url)}" target="_blank" class="btn btn-secondary ow-btn-sm" title="Open live public group page">
+                <a href="${escapeHtml(g.url)}" target="_blank" class="btn btn-secondary" style="padding: 4px 9px; font-size: 12px; height: 32px;" title="Open live public group page">
                   Open ↗
                 </a>
-                <button type="button" class="btn btn-secondary btn-group-broadcast ow-btn-sm" data-id="${g.id}" title="Get WhatsApp / Telegram broadcast message">
+                <button type="button" class="btn btn-secondary btn-group-broadcast" data-id="${g.id}" style="padding: 4px 9px; font-size: 12px; height: 32px; background: #ecfdf5; color: #059669; border-color: #a7f3d0;" title="Get WhatsApp / Telegram broadcast message">
                   Broadcast
                 </button>
-                <button type="button" class="btn btn-danger-ghost btn-group-delete ow-btn-sm" data-id="${g.id}" data-name="${escapeHtml(g.name)}" title="Delete group bundle" aria-label="Delete group">
-                  Delete
+                <button type="button" class="btn btn-danger-ghost btn-group-delete" data-id="${g.id}" data-name="${escapeHtml(g.name)}" style="padding: 4px 8px; font-size: 12px; height: 32px;" title="Delete group bundle">
+                  🗑️
                 </button>
               </div>
             </td>
           </tr>
           <!-- Expandable Group Requirements Drawer Row -->
-          <tr id="group-jobs-drawer-${g.id}" class="group-jobs-drawer-row" style="display: none;">
-            <td colspan="5">
-              <div class="ow-drawer">
-                <div class="ow-drawer-head">
-                  <label class="ow-check-label">
-                    <input type="checkbox" class="select-all-group-jobs" data-group-id="${g.id}">
-                    <span>Select all (${jobsCount})</span>
-                  </label>
-                  <button type="button" class="btn-bulk-move-jobs btn btn-primary ow-btn-sm" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" style="display: none;">
-                    Move selected (<span class="selected-count">0</span>)
-                  </button>
+          <tr id="group-jobs-drawer-${g.id}" class="group-jobs-drawer-row" style="display: none; background: #f8fafc;">
+            <td colspan="5" style="padding: 16px 20px; border-bottom: 2px solid var(--blue-border);">
+              <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <label style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                      <input type="checkbox" class="select-all-group-jobs" data-group-id="${g.id}">
+                      <span>Select All (${jobsCount})</span>
+                    </label>
+                  </div>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-bulk-move-jobs btn btn-primary" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" style="height: 30px; font-size: 12px; padding: 0 10px; display: none;">
+                      ⇄ Move Selected (<span class="selected-count">0</span>)
+                    </button>
+                  </div>
                 </div>
 
-                <div class="group-jobs-list" data-group-id="${g.id}">
+                <div class="group-jobs-list" data-group-id="${g.id}" style="display: flex; flex-direction: column; gap: 6px;">
                   ${(!g.jobs || g.jobs.length === 0) ? `
-                    <div class="ow-empty">
+                    <div style="padding: 14px; text-align: center; color: var(--color-text-muted); font-size: var(--text-xs);">
                       No requirements currently in this group. Use the Bulk Parser or Move tools to assign jobs here.
                     </div>
                   ` : g.jobs.map(j => `
-                    <div class="group-job-item">
-                      <div class="ow-job-item-main">
-                        <input type="checkbox" class="group-job-checkbox" data-group-id="${g.id}" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" aria-label="Select ${escapeHtml(j.title)}">
-                        <div class="ow-job-item-text">
-                          <div class="ow-job-item-title">
-                            ${escapeHtml(j.title)} <span>at ${escapeHtml(j.company_name)}</span>
+                    <div class="group-job-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-sm); gap: 10px;">
+                      <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                        <input type="checkbox" class="group-job-checkbox" data-group-id="${g.id}" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}">
+                        <div style="min-width: 0; flex: 1;">
+                          <div style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${escapeHtml(j.title)} <span style="font-weight: 500; color: var(--color-text-muted);">at ${escapeHtml(j.company_name)}</span>
                           </div>
-                          <div class="ow-job-item-meta">
-                            ${escapeHtml(j.location || 'India')} · ${escapeHtml(j.stipend_salary || 'Competitive')} · ${escapeHtml(j.posted_date || '')}
+                          <div style="font-size: 11px; color: var(--color-text-muted);">
+                            📍 ${escapeHtml(j.location || 'India')} • 💰 ${escapeHtml(j.stipend_salary || 'Competitive')} • 📅 ${escapeHtml(j.posted_date || '')}
                           </div>
                         </div>
                       </div>
-                      <div class="ow-row-actions">
-                        <button type="button" class="btn-move-single-job btn btn-secondary ow-btn-sm" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-from-group-id="${g.id}" data-from-group-name="${escapeHtml(g.name)}">
-                          Move
+                      <div style="display: inline-flex; gap: 6px; align-items: center; flex-shrink: 0;">
+                        <button type="button" class="btn-move-single-job btn btn-secondary" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-from-group-id="${g.id}" data-from-group-name="${escapeHtml(g.name)}" style="height: 28px; padding: 0 9px; font-size: 11.5px; border-color: var(--blue-border); color: var(--blue-primary);">
+                          ⇄ Move
                         </button>
-                        <button type="button" class="btn-remove-single-job btn btn-danger-ghost ow-btn-sm" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" title="Remove from this group only">
-                          Remove
+                        <button type="button" class="btn-remove-single-job btn btn-danger-ghost" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" style="height: 28px; padding: 0 8px; font-size: 11.5px;" title="Remove from this group only">
+                          ✕ Remove
                         </button>
                       </div>
                     </div>
@@ -1731,27 +1739,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const pagesHtml = pageNumbers.map(p => {
           if (p === '...') {
-            return `<span class="ow-pag-gap" aria-hidden="true">…</span>`;
+            return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>`;
           }
           return `
-            <button type="button" class="groups-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}"${p === curPage ? ' aria-current="page"' : ''}>
+            <button type="button" class="groups-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid ${p === curPage ? '#2563eb' : '#e2e8f0'}; background: ${p === curPage ? '#2563eb' : '#ffffff'}; color: ${p === curPage ? '#ffffff' : '#0f172a'}; cursor: pointer;">
               ${p}
             </button>
           `;
         }).join('');
 
         html += `
-          <div class="ow-pager ow-pager-sticky">
-            <p class="ow-pager-info">
-              Showing <strong>${startNum}-${endNum}</strong> of <strong>${totalCount}</strong> groups (page ${curPage} of ${totalPages})
-            </p>
-            <div class="ow-pager-nav">
-              <button type="button" id="btnPrevGroupsPage" class="pag-btn" ${curPage <= 1 ? 'disabled' : ''}>
-                Previous
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
+            <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
+              Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalCount}</strong> groups (Page ${curPage} of ${totalPages})
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              <button type="button" id="btnPrevGroupsPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage <= 1 ? 'disabled' : ''}>
+                ← Previous
               </button>
               ${pagesHtml}
-              <button type="button" id="btnNextGroupsPage" class="pag-btn" ${curPage >= totalPages ? 'disabled' : ''}>
-                Next
+              <button type="button" id="btnNextGroupsPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage >= totalPages ? 'disabled' : ''}>
+                Next →
               </button>
             </div>
           </div>
@@ -1797,7 +1805,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (drawer) {
             const isHidden = drawer.style.display === 'none';
             drawer.style.display = isHidden ? 'table-row' : 'none';
-            btn.textContent = isHidden ? `Hide jobs ▴` : `Jobs ▾`;
+            btn.textContent = isHidden ? `📂 Hide Jobs ▴` : `📂 Jobs ▾`;
           }
         });
       });
@@ -1883,7 +1891,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const groupWord = groupCount === 1 ? '1 group' : `${groupCount} different groups`;
             globalText.textContent = `${totalChecked} requirement${totalChecked !== 1 ? 's' : ''} selected across ${groupWord}`;
             if (globalMoveBtn) {
-              globalMoveBtn.textContent = `Move selected (${totalChecked}) to group`;
+              globalMoveBtn.textContent = `⇄ Move Selected (${totalChecked}) to Group`;
             }
             globalBar.style.display = 'flex';
           } else {
@@ -2018,7 +2026,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     } catch (err) {
       console.error('Error loading groups:', err);
-      container.innerHTML = '<p class="ow-empty is-bad" role="alert">Failed to load requirement groups.</p>';
+      container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--color-text-danger);">Failed to load requirement groups.</div>';
     }
   }
 
@@ -2097,14 +2105,14 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       let optionsHtml = '<option value="">-- Choose Target Specific Group --</option>';
-      optionsHtml += '<option value="NEW" class="ow-opt-new">+ Create new group and move...</option>';
+      optionsHtml += '<option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
 
       if (filteredGroups.length > 0) {
         filteredGroups.forEach(g => {
-          optionsHtml += `<option value="${g.id}">${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`;
+          optionsHtml += `<option value="${g.id}">📁 ${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`;
         });
       } else if (allGroupsData && allGroupsData.length === 0) {
-        optionsHtml = '<option value="NEW" selected class="ow-opt-new">+ Create new group and move...</option>';
+        optionsHtml = '<option value="NEW" selected style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
         if (newGroupDrawer) newGroupDrawer.style.display = 'block';
       }
 
@@ -2115,7 +2123,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (allGroupsData && allGroupsData.length > 0) {
       renderTargetGroupOptions('');
     } else if (targetSelect) {
-      targetSelect.innerHTML = '<option value="">Loading existing groups...</option><option value="NEW" class="ow-opt-new">+ Create new group and move...</option>';
+      targetSelect.innerHTML = '<option value="">⏳ Loading existing groups...</option><option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
     }
 
     // Fetch lean summary groups from API
@@ -2171,7 +2179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnVerifyJobLinks.addEventListener('click', async () => {
       if (!confirm('Scan active requirements and automatically soft-expire dead, 404, closed, or redirected links?')) return;
       btnVerifyJobLinks.disabled = true;
-      btnVerifyJobLinks.textContent = 'Verifying links...';
+      btnVerifyJobLinks.textContent = '⏳ Verifying Links...';
       try {
         const res = await authFetch('/api/owner/verify-links/?limit=40');
         const data = await res.json();
@@ -2185,7 +2193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Verification error: ' + err.message);
       } finally {
         btnVerifyJobLinks.disabled = false;
-        btnVerifyJobLinks.textContent = 'Verify links';
+        btnVerifyJobLinks.textContent = '🛡️ Verify Links';
       }
     });
   }
@@ -2322,9 +2330,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCopyLink) {
       btnCopyLink.onclick = () => {
         navigator.clipboard.writeText(groupUrl).then(() => {
-          btnCopyLink.textContent = 'Copied';
+          btnCopyLink.textContent = '✅ Copied!';
           showToast('Direct group URL copied to clipboard!', 'success');
-          setTimeout(() => { btnCopyLink.textContent = 'Copy link'; }, 2000);
+          setTimeout(() => { btnCopyLink.textContent = '🔗 Copy Link'; }, 2000);
         });
       };
     }
@@ -2335,9 +2343,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btnCopyWhatsApp.onclick = () => {
         const text = data.whatsapp_broadcast || '';
         navigator.clipboard.writeText(text).then(() => {
-          btnCopyWhatsApp.textContent = 'WhatsApp text copied';
+          btnCopyWhatsApp.textContent = '✅ WhatsApp Text Copied!';
           showToast('WhatsApp Broadcast message copied to clipboard!', 'success');
-          setTimeout(() => { btnCopyWhatsApp.textContent = 'Copy WhatsApp Broadcast'; }, 2500);
+          setTimeout(() => { btnCopyWhatsApp.textContent = '📱 Copy WhatsApp Broadcast'; }, 2500);
         });
       };
     }
@@ -2348,9 +2356,9 @@ document.addEventListener('DOMContentLoaded', () => {
       btnCopyTelegram.onclick = () => {
         const text = data.telegram_broadcast || data.whatsapp_broadcast || '';
         navigator.clipboard.writeText(text).then(() => {
-          btnCopyTelegram.textContent = 'Telegram post copied';
+          btnCopyTelegram.textContent = '✅ Telegram Post Copied!';
           showToast('Telegram Post format copied to clipboard!', 'success');
-          setTimeout(() => { btnCopyTelegram.textContent = 'Copy Telegram Post'; }, 2500);
+          setTimeout(() => { btnCopyTelegram.textContent = '✈️ Copy Telegram Post'; }, 2500);
         });
       };
     }
@@ -2410,10 +2418,10 @@ document.addEventListener('DOMContentLoaded', () => {
         chartContainer.innerHTML = data.daily_traffic.map(d => {
           const heightPct = Math.max(Math.round((d.views / maxViews) * 100), 8);
           return `
-            <div class="ow-bar-col" title="${d.full_date}: ${d.views} views, ${d.unique_visitors} unique visitors">
-              <span class="ow-bar-num">${d.views > 0 ? d.views : ''}</span>
-              <div class="ow-bar" style="height: ${heightPct}%;"></div>
-              <span class="ow-bar-date">${d.date}</span>
+            <div style="flex: 1; min-width: 22px; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end;" title="${d.full_date}: ${d.views} views, ${d.unique_visitors} unique visitors">
+              <span style="font-size: 9.5px; font-weight: 700; color: #38bdf8;">${d.views > 0 ? d.views : ''}</span>
+              <div style="width: 100%; max-width: 28px; height: ${heightPct}%; background: linear-gradient(180deg, #38bdf8 0%, #2563eb 100%); border-radius: 6px 6px 0 0; transition: height 0.3s ease;"></div>
+              <span style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; margin-top: 4px;">${d.date}</span>
             </div>
           `;
         }).join('');
@@ -2423,24 +2431,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const topPagesContainer = document.getElementById('anaTopPagesList');
       if (topPagesContainer) {
         if (!data.top_pages || data.top_pages.length === 0) {
-          topPagesContainer.innerHTML = '<p class="ow-hint">No page views recorded yet.</p>';
+          topPagesContainer.innerHTML = '<div style="color: var(--color-text-muted); font-size: var(--text-sm); padding: 12px 0;">No page views recorded yet.</div>';
         } else {
           topPagesContainer.innerHTML = data.top_pages.map((p, idx) => `
             <div class="ana-page-row">
-              <div class="ow-grow">
+              <div style="flex: 1; min-width: 0;">
                 <a href="${escapeHtml(p.path)}" target="_blank" rel="noopener noreferrer" class="ana-page-link" title="Open ${escapeHtml(p.path)} in new tab">
                   <div class="ana-page-title">
-                    <span class="ow-rank">#${idx + 1}</span>
+                    <span style="color: var(--blue-primary); font-weight: 800; margin-right: 4px;">#${idx + 1}</span>
                     <span>${escapeHtml(p.page_title || p.path)}</span>
                   </div>
                   <div class="ana-page-path">
-                    ${escapeHtml(p.path)} <span aria-hidden="true">↗</span>
+                    ${escapeHtml(p.path)} <span style="font-size: 10px; opacity: 0.7;">↗</span>
                   </div>
                 </a>
               </div>
-              <div class="ow-page-stats">
-                <div class="ow-page-views">${Number(p.views || 0).toLocaleString()} views</div>
-                <div class="ow-hint">${Number(p.unique_visitors || 0).toLocaleString()} unique</div>
+              <div style="text-align: right; flex-shrink: 0;">
+                <div style="font-size: var(--text-sm); font-weight: 800; color: var(--blue-primary);">${Number(p.views || 0).toLocaleString()} views</div>
+                <div style="font-size: var(--text-xs); color: var(--color-text-muted);">${Number(p.unique_visitors || 0).toLocaleString()} unique</div>
               </div>
             </div>
           `).join('');
@@ -2451,16 +2459,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const referrersContainer = document.getElementById('anaReferrersList');
       if (referrersContainer) {
         if (!data.referrers || data.referrers.length === 0) {
-          referrersContainer.innerHTML = '<p class="ow-hint">No referrer data yet.</p>';
+          referrersContainer.innerHTML = '<div style="color: var(--color-text-muted); font-size: var(--text-sm);">No referrer data yet.</div>';
         } else {
           referrersContainer.innerHTML = data.referrers.map(r => `
-            <div class="ow-ref">
-              <div class="ow-ref-head">
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: var(--text-xs); font-weight: 600; color: var(--color-text-secondary); margin-bottom: 4px;">
                 <span>${escapeHtml(r.source)}</span>
-                <span class="ow-ref-count">${r.count} hits (${r.percentage}%)</span>
+                <span style="color: var(--blue-primary); font-weight: 700;">${r.count} hits (${r.percentage}%)</span>
               </div>
-              <div class="ow-meter">
-                <div class="ow-meter-fill" style="width: ${r.percentage}%;"></div>
+              <div style="height: 6px; width: 100%; background: var(--surface-hover); border-radius: var(--radius-full); overflow: hidden; border: 1px solid var(--subtle-border);">
+                <div style="height: 100%; width: ${r.percentage}%; background: linear-gradient(90deg, #2563eb, #38bdf8); border-radius: var(--radius-full);"></div>
               </div>
             </div>
           `).join('');
@@ -2472,44 +2480,44 @@ document.addEventListener('DOMContentLoaded', () => {
       if (platformsContainer) {
         const osItems = (data.operating_systems || []).map(o => `
           <div class="platform-card-item">
-            <span>${escapeHtml(o.os)}</span>
-            <strong>${o.count}</strong>
+            <span style="font-weight: 600;">💻 ${escapeHtml(o.os)}</span>
+            <strong style="color: var(--color-text-primary); font-weight: 700;">${o.count}</strong>
           </div>
         `);
         const browserItems = (data.browsers || []).map(b => `
           <div class="platform-card-item">
-            <span>${escapeHtml(b.browser)}</span>
-            <strong>${b.count}</strong>
+            <span style="font-weight: 600;">🌐 ${escapeHtml(b.browser)}</span>
+            <strong style="color: var(--blue-primary); font-weight: 700;">${b.count}</strong>
           </div>
         `);
-        platformsContainer.innerHTML = [...osItems, ...browserItems].join('') || '<p class="ow-hint">No platform data yet</p>';
+        platformsContainer.innerHTML = [...osItems, ...browserItems].join('') || '<div style="color: var(--color-text-muted); font-size: var(--text-xs);">No platform data yet</div>';
       }
 
       // 6. Recent Real-Time Visitors Table
       const visitsBody = document.getElementById('anaRecentVisitsBody');
       if (visitsBody) {
         if (!data.recent_visits || data.recent_visits.length === 0) {
-          visitsBody.innerHTML = '<tr><td colspan="5" class="ow-td-empty">No recent live visits yet.</td></tr>';
+          visitsBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--color-text-muted); padding: 20px;">No recent live visits yet.</td></tr>';
         } else {
           visitsBody.innerHTML = data.recent_visits.map(v => `
             <tr>
-              <td class="ow-td-time">
-                <strong>${escapeHtml(v.time)}</strong><br>
+              <td style="white-space: nowrap; font-size: var(--text-xs); color: var(--color-text-muted);">
+                <strong style="color: var(--blue-primary);">${escapeHtml(v.time)}</strong><br>
                 <small>${escapeHtml(v.date)}</small>
               </td>
               <td>
-                <div class="ow-td-title">${escapeHtml(v.page_title || v.path)}</div>
-                <div class="ow-mono ow-td-muted">${escapeHtml(v.path)}</div>
+                <div style="font-weight: 700; color: var(--color-text-primary); font-size: var(--text-sm);">${escapeHtml(v.page_title || v.path)}</div>
+                <div style="font-size: 11px; color: var(--color-text-muted); font-family: monospace;">${escapeHtml(v.path)}</div>
               </td>
               <td>
-                <span class="ow-source">
+                <span class="company-badge" style="font-size: 11px;">
                   ${escapeHtml(v.referrer || 'Direct')}
                 </span>
               </td>
-              <td class="ow-td-small">
-                ${v.device === 'Mobile' ? 'Mobile' : (v.device === 'Tablet' ? 'Tablet' : 'Desktop')} · ${escapeHtml(v.os || '')} (${escapeHtml(v.browser || '')})
+              <td style="font-size: var(--text-xs); color: var(--color-text-secondary);">
+                ${v.device === 'Mobile' ? '📱 Mobile' : (v.device === 'Tablet' ? '📟 Tablet' : '💻 Desktop')} • ${escapeHtml(v.os || '')} (${escapeHtml(v.browser || '')})
               </td>
-              <td class="ow-mono ow-td-muted">
+              <td style="font-family: monospace; font-size: 11.5px; color: var(--color-text-muted);">
                 ${escapeHtml(v.ip)}
               </td>
             </tr>
@@ -2531,8 +2539,8 @@ document.addEventListener('DOMContentLoaded', () => {
     item.innerHTML = `
       <div class="crm-activity-dot"></div>
       <div>
-        <strong>${escapeHtml(action)}</strong>
-        <div>${escapeHtml(details)} · ${timeStr}</div>
+        <strong style="color: var(--color-text-primary); font-size: 13.5px;">${escapeHtml(action)}</strong>
+        <div style="font-size: 11.5px; color: var(--color-text-muted); margin-top: 2px;">${escapeHtml(details)} • ${timeStr}</div>
       </div>
     `;
     activityStream.prepend(item);
@@ -2544,9 +2552,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('toastContainer');
     if (!container) return;
     const toast = document.createElement('div');
-    toast.className = `toast ow-toast ${type === 'success' ? 'is-ok' : 'is-bad'}`;
+    toast.className = 'toast';
     toast.innerHTML = `
-      <span class="ow-toast-mark" aria-hidden="true"></span>
+      <span>${type === 'success' ? '✅' : '⚠️'}</span>
       <span>${escapeHtml(message)}</span>
     `;
     container.appendChild(toast);

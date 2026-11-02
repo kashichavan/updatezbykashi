@@ -5,634 +5,1642 @@
 {% block meta_description %}{{ current_topic.seo_description }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/learn.css' %}?v=2026110201">
+<style>
+  :root {
+    --academy-accent: {{ lang_data.color }};
+  }
+
+  .learn-container {
+    max-width: 1400px;
+    margin: 20px auto 60px;
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: 290px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* Language Switcher Bar */
+  .lang-switcher-bar {
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 16px;
+    padding: 8px 12px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    overflow-x: auto;
+  }
+  .lang-pill {
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .lang-pill:hover {
+    background: #f1f5f9;
+    color: var(--ink);
+  }
+  .lang-pill.active {
+    background: #0f172a;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(15,23,42,0.15);
+  }
+
+  /* Sidebar Navigation */
+  .learn-sidebar {
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    position: sticky;
+    top: 84px;
+    max-height: calc(100vh - 104px);
+    overflow-y: auto;
+  }
+  .sidebar-header {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .topic-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .topic-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .topic-link:hover {
+    background: #f8fafc;
+    color: var(--blue-primary);
+  }
+  .topic-link.active {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 700;
+    border-left: 3px solid #2563eb;
+  }
+
+  /* Main Content Card */
+  .learn-content-card {
+    background: #ffffff;
+    border: 1px solid var(--subtle-border);
+    border-radius: 24px;
+    padding: 44px 40px;
+    box-shadow: var(--card-shadow);
+    color: #334155;
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .lesson-section {
+    margin: 36px 0;
+    padding-top: 10px;
+  }
+  .lesson-section-title {
+    font: 800 22px var(--font-serif);
+    color: var(--ink);
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 10px;
+  }
+
+  /* Notion-style Table of Contents */
+  .lesson-toc {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #2563eb;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin: 0 0 28px;
+  }
+  .lesson-toc-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748b;
+    margin-bottom: 10px;
+  }
+  .lesson-toc ol {
+    margin: 0; padding-left: 20px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4px 24px;
+  }
+  .lesson-toc li { font-size: 13px; color: #475569; line-height: 1.6; }
+  .lesson-toc a { color: #2563eb; text-decoration: none; font-weight: 600; }
+  .lesson-toc a:hover { text-decoration: underline; }
+
+  /* Callout Boxes */
+  .callout-box {
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin: 20px 0;
+    line-height: 1.65;
+  }
+  .analogy-box {
+    background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+    border: 1px solid #fef08a;
+    color: #713f12;
+  }
+  .usecase-box {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #bbf7d0;
+    color: #14532d;
+  }
+  .model-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+  }
+
+  /* Notion-style Tip / Warning / Info / Danger callouts */
+  .notion-callout {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px 20px; border-radius: 12px; margin: 16px 0;
+    font-size: 14px; line-height: 1.65;
+  }
+  .notion-callout-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .notion-callout-content { flex: 1; }
+  .notion-callout strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .callout-tip { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+  .callout-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+  .callout-info { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+  .callout-danger { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
+  /* Step-by-step numbered boxes (like Notion's numbered steps) */
+  .steps-list { list-style: none; padding: 0; margin: 16px 0; counter-reset: steps; }
+  .steps-list li {
+    counter-increment: steps;
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 14px 18px; margin-bottom: 8px;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+    font-size: 14px; line-height: 1.6;
+  }
+  .steps-list li::before {
+    content: counter(steps);
+    min-width: 28px; height: 28px;
+    background: #2563eb; color: white;
+    border-radius: 50%; font-weight: 800; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* Key term highlight chips */
+  .term-chip {
+    display: inline-block;
+    background: #eff6ff; color: #1d4ed8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 6px;
+    border: 1px solid #bfdbfe;
+  }
+
+  /* Notion-style divider */
+  .notion-divider {
+    height: 1px; background: linear-gradient(to right, #e2e8f0, transparent);
+    margin: 32px 0; border: none;
+  }
+
+  /* Interview Q&A blocks */
+  .interview-block {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 12px 0;
+  }
+  .interview-q {
+    background: #f8fafc; padding: 14px 18px;
+    font-weight: 700; font-size: 14px; color: #1e293b;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .interview-tier-badge {
+    font-size: 10px; font-weight: 800; padding: 3px 8px;
+    border-radius: 999px; flex-shrink: 0; margin-top: 2px;
+    font-family: monospace; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tier-beginner { background: #dcfce7; color: #15803d; }
+  .tier-mid { background: #dbeafe; color: #1d4ed8; }
+  .tier-senior { background: #fef3c7; color: #b45309; }
+  .tier-expert { background: #fce7f3; color: #be185d; }
+  .interview-a {
+    padding: 14px 18px; background: #ffffff;
+    font-size: 14px; color: #334155; line-height: 1.7;
+  }
+
+  /* Video Masterclasses & YouTube Hub Styles */
+  .video-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+  .video-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .video-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+  }
+  .video-embed-wrap {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+    overflow: hidden;
+    background: #090f1d;
+  }
+  .video-embed-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+  }
+  .video-card-body {
+    padding: 16px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .video-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .channel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-family: monospace;
+  }
+  .channel-pythonkashi { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+  .channel-freecodecamp { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+  .channel-fireship { background: #fff7ed; color: #ea580c; border: 1px solid #fdba74; }
+  .channel-brocode { background: #f0f9ff; color: #0284c7; border: 1px solid #7dd3fc; }
+  .channel-chaiaurcode { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
+  .channel-telusko { background: #faf5ff; color: #7e22ce; border: 1px solid #d8b4fe; }
+  .channel-mosh { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+  
+  .video-duration-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .video-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 6px;
+    line-height: 1.4;
+  }
+  .video-card-desc {
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0 0 12px;
+    flex: 1;
+  }
+  .video-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+  }
+  .video-yt-link {
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .video-yt-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Code Blocks & Cards */
+  .code-display-card {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 14px;
+    overflow: hidden;
+    margin: 18px 0;
+  }
+  .code-header-bar {
+    background: #161b22;
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #94a3b8;
+    border-bottom: 1px solid #30363d;
+  }
+  .code-pre {
+    margin: 0;
+    padding: 16px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #58a6ff;
+    overflow-x: auto;
+  }
+  .output-box {
+    background: #070c18;
+    border-top: 1px solid #30363d;
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #a7f3d0;
+  }
+
+  /* Tables */
+  .lesson-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 18px 0;
+    font-size: 14px;
+  }
+  .lesson-table th {
+    background: #f8fafc;
+    color: var(--ink);
+    font-weight: 700;
+    text-align: left;
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+  }
+  .lesson-table td {
+    padding: 10px 14px;
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  .lesson-table tr:nth-child(even) { background: #fafafa; }
+
+  /* Mistake Cards */
+  .mistake-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .mistake-bad {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 16px;
+    color: #991b1b;
+  }
+  .mistake-good {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    padding: 16px;
+    color: #166534;
+  }
+
+  /* Collapsible Details */
+  .interactive-details {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    transition: all 0.2s;
+  }
+  .interactive-details[open] {
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  }
+  .interactive-details summary {
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+    font-size: 14px;
+  }
+
+  /* Quick Revision Chips */
+  .revision-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0;
+  }
+  .revision-chip {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px; font-weight: 600; color: #1e3a8a;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+
+  /* Embedded Interactive Debugger Sandbox (IDE Theme Matched) */
+  .interactive-debugger-widget {
+    background: #0d1117;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 36px 0;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.15);
+  }
+  .debugger-top-bar {
+    background: #161b22;
+    padding: 12px 20px;
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .debugger-code-area {
+    padding: 16px;
+    position: relative;
+    background: #090d13;
+  }
+  .code-editor-textarea {
+    width: 100%;
+    height: 190px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    color: #58a6ff;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 14px;
+    box-sizing: border-box;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .code-editor-textarea:focus {
+    border-color: #58a6ff;
+    box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+  }
+  .debugger-controls {
+    background: #161b22;
+    padding: 12px 20px;
+    border-top: 1px solid #30363d;
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .dbg-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .dbg-btn-run {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+  }
+  .dbg-btn-run:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+  }
+  .dbg-btn-step {
+    background: #21262d;
+    color: #c9d1d9;
+    border-color: #30363d;
+  }
+  .dbg-btn-step:hover:not(:disabled) {
+    background: #30363d;
+    color: #ffffff;
+    border-color: #8b949e;
+  }
+  .dbg-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .debugger-panels-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: #30363d;
+  }
+  .debugger-panel {
+    background: #0d1117;
+    padding: 16px;
+    min-height: 140px;
+  }
+  .panel-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #8b949e;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Variables Watcher Table */
+  .var-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .var-table th {
+    text-align: left;
+    color: #8b949e;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-bottom: 1px solid #30363d;
+  }
+  .var-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #161b22;
+    color: #c9d1d9;
+  }
+  .var-type-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: monospace;
+  }
+  .var-type-number { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+  .var-type-string { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .var-type-boolean { background: rgba(192, 132, 252, 0.15); color: #c084fc; }
+  .var-type-object { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+  .var-changed {
+    color: #4ade80 !important;
+    font-weight: 700;
+    background: rgba(74,222,128,0.12) !important;
+  }
+
+  /* Terminal Output */
+  .terminal-box {
+    background: #040810;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #79c0ff;
+    min-height: 90px;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.55;
+    border: 1px solid #21262d;
+  }
+
+  /* Global Overflow Safety for Mobile */
+  pre, .code-pre, table, .comparison-table, .var-table {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Floating Mobile Jump to Debugger Button */
+  .mobile-dbg-jump-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 10px 25px rgba(37,99,235,0.5), 0 0 15px rgba(56,189,248,0.4);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(8px);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .mobile-dbg-jump-btn:active {
+    transform: scale(0.95);
+  }
+
+  @media (max-width: 960px) {
+    .learn-container {
+      grid-template-columns: 1fr !important;
+      padding: 0 12px 60px !important;
+    }
+    .learn-sidebar {
+      position: static !important;
+      max-height: none !important;
+      margin-bottom: 20px !important;
+    }
+    .debugger-panels-grid {
+      grid-template-columns: 1fr !important;
+    }
+    .mistake-card {
+      grid-template-columns: 1fr !important;
+    }
+    .learn-content-card {
+      padding: 20px 14px !important;
+      border-radius: 16px !important;
+    }
+    .mobile-dbg-jump-btn {
+      display: inline-flex !important;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .debugger-controls {
+      padding: 10px 12px;
+      gap: 10px;
+    }
+    .debugger-controls > div:first-child {
+      width: 100%;
+      display: grid !important;
+      grid-template-columns: repeat(5, 1fr) !important;
+      gap: 4px !important;
+    }
+    .dbg-btn-run {
+      grid-column: span 5 !important;
+      justify-content: center !important;
+      padding: 10px !important;
+      font-size: 13px !important;
+      margin-bottom: 4px !important;
+    }
+    .dbg-btn-step {
+      padding: 8px 2px !important;
+      font-size: 11px !important;
+      justify-content: center !important;
+    }
+    .debugger-controls > div:last-child {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-top: 4px !important;
+    }
+    .code-editor-textarea {
+      font-size: 12px;
+      height: 160px;
+      padding: 10px;
+    }
+    #codeTraceView {
+      font-size: 12px;
+      max-height: 180px;
+    }
+    .interactive-debugger-widget {
+      margin: 24px -6px;
+      border-radius: 14px;
+    }
+  }
+
+  /* ── Desktop Recommended Mobile Blocker Overlay ── */
+  .mobile-blocker-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 999999;
+    background: rgba(4, 9, 20, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @media (max-width: 900px) {
+    .mobile-blocker-overlay {
+      display: flex !important;
+    }
+  }
+
+  .mobile-blocker-card {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 24px;
+    padding: 30px 24px 26px;
+    max-width: 380px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.2);
+    box-sizing: border-box;
+  }
+
+  .mobile-blocker-x {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-blocker-x:active {
+    background: rgba(239, 68, 68, 0.4);
+    transform: scale(0.95);
+  }
+
+  .mobile-blocker-btn {
+    background: linear-gradient(135deg, #2563eb, #0284c7);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.5);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-blocker-btn:active {
+    transform: scale(0.98);
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 <script>
-  /* Kept for old links that call these. The phone notice is gone: lessons work on a phone. */
   function goBackToHome(evt) {
-    if (evt) { try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {} }
+    if (evt) {
+      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
+    }
     window.location.href = '/';
   }
+
   function forceCloseMobileBlocker(evt) {
-    if (evt) { try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {} }
+    if (evt) {
+      try { evt.stopPropagation(); evt.preventDefault(); } catch (err) {}
+    }
+    var overlay = document.getElementById('mobileBlockerOverlay');
+    if (overlay) {
+      overlay.style.setProperty('display', 'none', 'important');
+    }
   }
 </script>
 
-<main class="wrap learn">
+<!-- Desktop Recommended Mobile Blocker Overlay Modal -->
+<div class="mobile-blocker-overlay" id="mobileBlockerOverlay" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)">
+  <div class="mobile-blocker-card" onclick="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+    <button class="mobile-blocker-x" onclick="goBackToHome(event)" ontouchstart="goBackToHome(event)" title="Go back to home">✕</button>
+    <div style="font-size:46px; margin-bottom:12px;">🖥️</div>
+    <h2 style="font-size:20px; font-weight:800; color:#ffffff; margin:0 0 8px;">Desktop / Laptop Recommended</h2>
+    <p style="color:#94a3b8; font-size:13px; line-height:1.6; margin:0 0 16px;">
+      The <strong style="color:#38bdf8;">DevAcademy &amp; Visual Code Debugger</strong> are high-density learning environments optimized for larger screens.
+    </p>
 
-  <nav class="learn-crumbs" aria-label="Breadcrumb">
-    <ol>
-      <li><a href="/">Home</a></li>
-      <li><a href="{% url 'debugger:learn_root' %}">Learn</a></li>
-      <li><a href="{% url 'debugger:learn_lang' active_lang %}">{{ lang_data.short_title }}</a></li>
-      <li aria-current="page">{{ current_topic.title }}</li>
-    </ol>
-  </nav>
+    <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🌐 Chrome</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🦊 Firefox</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🧭 Safari</div>
+      <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:8px 10px; color:#e2e8f0; font-size:11px; font-weight:700;">🔷 Edge</div>
+    </div>
 
-  <nav class="lang-switcher-bar" aria-label="Language">
+    <div style="color:#94a3b8; font-size:11px; background:rgba(15,23,42,0.8); border:1px solid rgba(56,189,248,0.2); border-radius:10px; padding:10px 12px; line-height:1.5;">
+      📋 Open <strong style="color:#38bdf8;">kashiiupdatez.online/learn/</strong> on your PC or Laptop for the full visual trace experience.
+    </div>
+
+    <button class="mobile-blocker-btn" onclick="forceCloseMobileBlocker(event)" ontouchstart="forceCloseMobileBlocker(event)">
+      Continue on Mobile Anyway →
+    </button>
+  </div>
+</div>
+
+<!-- Floating Mobile Quick Jump Button -->
+<a href="#interactiveDebuggerSection" class="mobile-dbg-jump-btn">
+  ⚡ Live Debugger
+</a>
+
+<div class="wrap" style="max-width: 1400px; padding: 16px 16px 0;">
+  
+  <!-- Breadcrumb -->
+  <div style="font-size: 13px; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+    <a href="/" style="color: var(--blue-primary); text-decoration: none; font-weight: 600;">Home</a>
+    <span>/</span>
+    <a href="/learn/" style="color: var(--blue-primary); text-decoration: none; font-weight: 600;">Learn Academy</a>
+    <span>/</span>
+    <a href="/learn/{{ active_lang }}/" style="color: var(--blue-primary); text-decoration: none; font-weight: 600;">{{ lang_data.short_title }}</a>
+    <span>/</span>
+    <span style="color: var(--ink); font-weight: 700;">{{ current_topic.title }}</span>
+  </div>
+
+  <!-- Multi-Language Selector Tabs -->
+  <div class="lang-switcher-bar">
     {% for l in all_languages %}
-    <a href="{% url 'debugger:learn_lang' l.key %}" class="lang-pill {% if l.key == active_lang %}active{% endif %}"{% if l.key == active_lang %} aria-current="true"{% endif %}>
-      <span class="lang-pill-name">{{ l.title }}</span>
-      <span class="lang-pill-badge">{{ l.badge }}</span>
+    <a href="/learn/{{ l.key }}/" class="lang-pill {% if l.key == active_lang %}active{% endif %}">
+      <span>{{ l.icon }}</span>
+      <span>{{ l.title }}</span>
+      <span style="font-size: 11px; opacity: 0.7; font-weight: 500;">({{ l.badge }})</span>
     </a>
     {% endfor %}
-  </nav>
+  </div>
 
-  <div class="learn-container">
+</div>
 
-    <aside class="learn-sidebar" aria-label="{{ lang_data.short_title }} syllabus">
-      <details class="sidebar-details-wrapper" id="syllabusDetails" open>
-        <summary class="sidebar-header">
-          <span>{{ lang_data.short_title }} syllabus</span>
-          <span class="sidebar-count">{{ topics|length }} topics</span>
-          <i data-lucide="chevron-down" class="sidebar-chevron" aria-hidden="true"></i>
-        </summary>
-        <ul class="topic-list">
-          {% for topic in topics %}
-          <li>
-            <a href="{% url 'debugger:learn_topic_detail' active_lang topic.slug %}" class="topic-link {% if topic.slug == current_topic.slug %}active{% endif %}"{% if topic.slug == current_topic.slug %} aria-current="page"{% endif %}>
-              <span>{{ topic.title }}</span>
-              <span class="topic-time">{{ topic.read_time }}</span>
-            </a>
-          </li>
-          {% endfor %}
-        </ul>
-        <a href="/debugger/" class="button sidebar-ide-link">
-          <i data-lucide="code-2" aria-hidden="true"></i>
-          <span>Open the full debugger</span>
-        </a>
-      </details>
-      <script>
-        /* On a phone the syllabus starts closed so the lesson comes first. */
-        if (window.matchMedia('(max-width: 999px)').matches) document.getElementById('syllabusDetails').removeAttribute('open');
-      </script>
-    </aside>
-
-    <article class="learn-content-card">
-
-      <header class="lesson-head">
-        <p class="lesson-meta">
-          <span class="lesson-chip">{{ current_topic.category }}</span>
-          <span>{{ current_topic.read_time }}</span>
-          <span>{{ lang_data.short_title }} lesson</span>
-        </p>
-        <h1>{{ current_topic.title }}</h1>
-        {% if current_topic.takeaway %}
-        <div class="notion-callout callout-info">
-          <i data-lucide="lightbulb" class="notion-callout-icon" aria-hidden="true"></i>
-          <div class="notion-callout-content">
-            <strong>Key takeaway</strong>
-            {{ current_topic.takeaway }}
+<div class="learn-container">
+  
+  <!-- Left Topic Sidebar (Collapsible on Mobile) -->
+  <aside class="learn-sidebar">
+    <details class="sidebar-details-wrapper" open style="border: none; padding: 0;">
+      <summary style="cursor: pointer; list-style: none; user-select: none;" class="sidebar-header">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span>{{ lang_data.icon }}</span>
+            <span>{{ lang_data.short_title }} Syllabus ({{ topics|length }})</span>
           </div>
+          <span style="font-size: 11px; opacity: 0.7;">▾</span>
         </div>
-        {% endif %}
-        <a href="#interactiveDebuggerSection" class="button button-primary mobile-dbg-jump-btn">
-          <i data-lucide="play" aria-hidden="true"></i>
-          <span>Try it in the live debugger</span>
-        </a>
-      </header>
-
-      <details class="lesson-toc">
-        <summary class="lesson-toc-title">
-          <span>On this page</span>
-          <i data-lucide="chevron-down" class="sidebar-chevron" aria-hidden="true"></i>
-        </summary>
-        <ol>
-          <li><a href="#section-intro">Introduction</a></li>
-          <li><a href="#section-analogy">Real-world analogy</a></li>
-          <li><a href="#section-mental-model">Mental model</a></li>
-          <li><a href="#section-why">Why does this exist?</a></li>
-          <li><a href="#section-usecase">Industry use case</a></li>
-          <li><a href="#section-syntax">Syntax breakdown</a></li>
-          <li><a href="#section-example">First example</a></li>
-          <li><a href="#section-internals">Under the hood</a></li>
-          <li><a href="#section-examples">Progressive examples</a></li>
-          <li><a href="#section-videos">Video lessons</a></li>
-          <li><a href="#interactiveDebuggerSection">Live debugger</a></li>
-          <li><a href="#section-mistakes">Common mistakes</a></li>
-          <li><a href="#section-comparison">Comparison</a></li>
-          <li><a href="#section-interview">Interview questions</a></li>
-          <li><a href="#section-revision">Quick revision</a></li>
-          <li><a href="#section-challenge">Final challenge</a></li>
-        </ol>
-      </details>
-
-      {% if current_topic.introduction %}
-      <section id="section-intro" class="lesson-section">
-        <h2 class="lesson-section-title">Introduction</h2>
-        <div class="lesson-prose">
-          {{ current_topic.introduction|safe }}
-        </div>
-      </section>
-      {% endif %}
-
-      {% if current_topic.analogy %}
-      <section id="section-analogy" class="lesson-section">
-        <h2 class="lesson-section-title">Real-world analogy</h2>
-        <div class="callout-box analogy-box">
-          <p class="callout-kicker">Analogy</p>
-          <h3 class="callout-title">{{ current_topic.analogy.title }}</h3>
-          <p>{{ current_topic.analogy.text }}</p>
-          {% if current_topic.analogy.mapping %}
-          <div class="table-scroll">
-            <table class="lesson-table">
-              <caption>How the real world maps to code</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Real world</th>
-                  <th scope="col">In code</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for map_item in current_topic.analogy.mapping %}
-                <tr>
-                  <td>{{ map_item.real }}</td>
-                  <td><strong>{{ map_item.prog }}</strong></td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% endif %}
-        </div>
-      </section>
-      {% endif %}
-
-      {% if current_topic.mental_model %}
-      <section id="section-mental-model" class="lesson-section">
-        <h2 class="lesson-section-title">Mental model and visual flow</h2>
-        <div class="callout-box model-box">
-          {{ current_topic.mental_model|safe }}
-        </div>
-      </section>
-      {% endif %}
-
-      {% if current_topic.why_exists %}
-      <section id="section-why" class="lesson-section">
-        <h2 class="lesson-section-title">Why does this exist?</h2>
-        <div class="lesson-prose">
-          {{ current_topic.why_exists|safe }}
-        </div>
-      </section>
-      {% endif %}
-
-      {% if current_topic.use_case %}
-      <section id="section-usecase" class="lesson-section">
-        <h2 class="lesson-section-title">Real-world industry usage</h2>
-        <div class="callout-box usecase-box">
-          <p class="callout-kicker">Production scenario</p>
-          <h3 class="callout-title">{{ current_topic.use_case.company }}</h3>
-          <p>{{ current_topic.use_case.text }}</p>
-        </div>
-      </section>
-      {% endif %}
-
-      {% if current_topic.syntax_guide %}
-      <section id="section-syntax" class="lesson-section">
-        <h2 class="lesson-section-title">Syntax breakdown</h2>
-        <div class="lesson-prose">
-          {{ current_topic.syntax_guide|safe }}
-        </div>
-      </section>
-      {% endif %}
-
-      {% if current_topic.first_example %}
-      <section id="section-example" class="lesson-section">
-        <h2 class="lesson-section-title">First simple example</h2>
-        <div class="code-display-card">
-          <div class="code-header-bar">
-            <span>{{ current_topic.first_example.title|default:"Basic Example" }}</span>
-            <button type="button" class="dbg-btn dbg-btn-step code-load-btn" onclick="loadSnippetIntoDebugger(`{{ current_topic.first_example.code|escapejs }}`)">
-              <i data-lucide="play" aria-hidden="true"></i>
-              <span>Load in debugger</span>
-            </button>
-          </div>
-          <pre class="code-pre"><code>{{ current_topic.first_example.code }}</code></pre>
-          {% if current_topic.first_example.output %}
-          <div class="output-box">
-            <strong>Output</strong>
-            <div>{{ current_topic.first_example.output|linebreaksbr }}</div>
-          </div>
-          {% endif %}
-        </div>
-        {% if current_topic.first_example.explanation %}
-        <div class="lesson-prose">
-          {{ current_topic.first_example.explanation|safe }}
-        </div>
-        {% endif %}
-      </section>
-      {% endif %}
-
-      {% if current_topic.how_it_works %}
-      <section id="section-internals" class="lesson-section">
-        <h2 class="lesson-section-title">How does it work under the hood?</h2>
-        <div class="lesson-prose">
-          {{ current_topic.how_it_works|safe }}
-        </div>
-      </section>
-      {% endif %}
-
-      {% if current_topic.progressive_examples %}
-      <section id="section-examples" class="lesson-section">
-        <h2 class="lesson-section-title">Progressive code examples</h2>
-        {% for eg in current_topic.progressive_examples %}
-        <div class="example-block">
-          <h3 class="example-title">{{ eg.tier }}: {{ eg.title }}</h3>
-          <p class="example-desc">{{ eg.description }}</p>
-          <div class="code-display-card">
-            <div class="code-header-bar">
-              <span>{{ eg.title }}</span>
-              <button type="button" class="dbg-btn dbg-btn-step code-load-btn" onclick="loadSnippetIntoDebugger(`{{ eg.code|escapejs }}`)">
-                <i data-lucide="play" aria-hidden="true"></i>
-                <span>Load in debugger</span>
-              </button>
-            </div>
-            <pre class="code-pre"><code>{{ eg.code }}</code></pre>
-            {% if eg.output %}
-            <div class="output-box">
-              <strong>Output</strong>
-              <div>{{ eg.output|linebreaksbr }}</div>
-            </div>
-            {% endif %}
-          </div>
-          {% if eg.notes %}
-          <p class="example-note">{{ eg.notes }}</p>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if current_topic.video_tutorials %}
-      <section id="section-videos" class="lesson-section">
-        <div class="video-head">
-          <div>
-            <h2 class="lesson-section-title">Video lessons</h2>
-            <p class="example-desc">Step-by-step lessons from <strong>@pythonkashi</strong>, <strong>freeCodeCamp</strong>, <strong>Fireship</strong> and other teachers.</p>
-          </div>
-          <a href="https://www.youtube.com/@pythonkashi?sub_confirmation=1" target="_blank" rel="noopener" class="button channel-badge channel-pythonkashi">
-            <i data-lucide="youtube" aria-hidden="true"></i>
-            <span>Subscribe to @pythonkashi</span>
+      </summary>
+      
+      <ul class="topic-list" style="margin-top: 10px;">
+        {% for topic in topics %}
+        <li>
+          <a href="/learn/{{ active_lang }}/{{ topic.slug }}/" class="topic-link {% if topic.slug == current_topic.slug %}active{% endif %}">
+            <span>{{ topic.title }}</span>
+            <span style="font-size: 11px; opacity: 0.6;">{{ topic.read_time }}</span>
           </a>
-        </div>
-
-        <div class="video-hub-grid">
-          {% for vid in current_topic.video_tutorials %}
-          <div class="video-card">
-            <div class="video-embed-wrap">
-              <iframe src="https://www.youtube-nocookie.com/embed/{{ vid.youtube_id }}" title="{{ vid.title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
-            </div>
-            <div class="video-card-body">
-              <div class="video-card-header">
-                <span class="channel-badge {% if 'pythonkashi' in vid.channel|lower %}channel-pythonkashi{% elif 'freecodecamp' in vid.channel|lower %}channel-freecodecamp{% elif 'fireship' in vid.channel|lower %}channel-fireship{% elif 'bro code' in vid.channel|lower %}channel-brocode{% elif 'chai' in vid.channel|lower %}channel-chaiaurcode{% elif 'telusko' in vid.channel|lower %}channel-telusko{% else %}channel-mosh{% endif %}">{{ vid.channel }}</span>
-                <span class="video-duration-badge">{{ vid.duration }}</span>
-              </div>
-              <h3 class="video-card-title">{{ vid.title }}</h3>
-              <p class="video-card-desc">{{ vid.description }}</p>
-              <div class="video-card-footer">
-                <span class="video-level">{{ vid.level }}</span>
-                <a href="https://www.youtube.com/watch?v={{ vid.youtube_id }}" target="_blank" rel="noopener" class="video-yt-link">
-                  <span>Watch on YouTube</span>
-                  <i data-lucide="external-link" aria-hidden="true"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </section>
-      {% endif %}
-
-      <!-- Live debugger for this lesson. Editor, then run, then what happened. -->
-      <section id="interactiveDebuggerSection" class="interactive-debugger-widget" aria-labelledby="labHeading">
-        <div class="debugger-top-bar">
-          <div class="lab-title">
-            <h2 id="labHeading">Try it in the live debugger</h2>
-            <span class="lab-lang">{{ lang_data.short_title }}</span>
-          </div>
-          <div class="lab-tools">
-            <button type="button" id="btnToggleEdit" class="dbg-btn dbg-btn-step">Edit code</button>
-            <button type="button" id="btnResetCode" class="dbg-btn dbg-btn-step">Reset code</button>
-          </div>
-        </div>
-
-        <div class="debugger-code-area">
-          <div id="codeTraceView" class="trace-view" tabindex="0" aria-label="Code, with the line that is running marked"></div>
-          <label for="codeEditorInput" class="sr-only">Edit the code</label>
-          <textarea id="codeEditorInput" class="code-editor-textarea" spellcheck="false" autocapitalize="off" autocomplete="off" hidden>{{ current_topic.starter_code }}</textarea>
-        </div>
-
-        <div class="debugger-controls">
-          <button type="button" id="btnExecuteTrace" class="dbg-btn dbg-btn-run">Start debugging</button>
-          <div class="lab-steps" role="group" aria-label="Step through the trace">
-            <button type="button" id="btnFirst" class="dbg-btn dbg-btn-step" disabled>First</button>
-            <button type="button" id="btnStepPrev" class="dbg-btn dbg-btn-step" disabled>Back</button>
-            <button type="button" id="btnStepNext" class="dbg-btn dbg-btn-step dbg-btn-next" disabled>Next</button>
-            <button type="button" id="btnLast" class="dbg-btn dbg-btn-step" disabled>Last</button>
-            <button type="button" id="btnAutoPlay" class="dbg-btn dbg-btn-step" disabled>Auto play</button>
-          </div>
-          <div class="lab-timeline">
-            <label for="timelineSlider">Timeline</label>
-            <input type="range" id="timelineSlider" min="0" max="0" value="0" disabled>
-            <span id="stepCounterLabel" class="lab-step-label">Step 0 / 0</span>
-          </div>
-        </div>
-
-        <div id="stepStoryBanner" class="step-story">
-          <span id="stepStoryIcon" class="step-story-icon"><i data-lucide="info" aria-hidden="true"></i></span>
-          <span id="stepStoryText" role="status" aria-live="polite">Press <strong>Start debugging</strong>, then <strong>Next</strong> to run the code one line at a time.</span>
-        </div>
-
-        <div class="debugger-panels-grid">
-          <div class="debugger-panel">
-            <h3 class="panel-title">Variables</h3>
-            <div class="panel-scroll">
-              <table class="var-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Variable</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Value</th>
-                  </tr>
-                </thead>
-                <tbody id="variablesTableBody">
-                  <tr><td colspan="3" class="var-empty">Press Start debugging to see each variable as it changes.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="debugger-panel">
-            <h3 class="panel-title">Output</h3>
-            <div id="terminalOutput" class="terminal-box">Waiting for execution...</div>
-          </div>
-        </div>
-      </section>
-
-      {% if current_topic.common_mistakes %}
-      <section id="section-mistakes" class="lesson-section">
-        <h2 class="lesson-section-title">Common mistakes and how to avoid them</h2>
-        {% for m in current_topic.common_mistakes %}
-        <div class="mistake-item">
-          <h3 class="example-title">{{ m.title }}</h3>
-          <div class="mistake-card">
-            <div class="mistake-bad">
-              <p class="mistake-label"><i data-lucide="x" aria-hidden="true"></i> Incorrect</p>
-              <pre class="code-pre code-pre-inline"><code>{{ m.bad }}</code></pre>
-              <p>{{ m.why_bad }}</p>
-            </div>
-            <div class="mistake-good">
-              <p class="mistake-label"><i data-lucide="check" aria-hidden="true"></i> Correct</p>
-              <pre class="code-pre code-pre-inline"><code>{{ m.good }}</code></pre>
-              <p>{{ m.why_good }}</p>
-            </div>
-          </div>
-        </div>
+        </li>
         {% endfor %}
-      </section>
-      {% endif %}
+      </ul>
 
-      {% if current_topic.rules %}
-      <section class="lesson-section">
-        <h2 class="lesson-section-title">Rules to remember</h2>
-        <ol class="rules-list">
-          {% for r in current_topic.rules %}
-          <li><strong>{{ r.rule }}:</strong> {{ r.detail }}</li>
-          {% endfor %}
-        </ol>
-      </section>
-      {% endif %}
+      <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--subtle-border); text-align: center;">
+        <a href="/debugger/" style="font-size: 12px; font-weight: 700; color: var(--blue-primary); text-decoration: none;">
+          🖥️ Open Fullscreen IDE Debugger &rarr;
+        </a>
+      </div>
+    </details>
+  </aside>
 
-      {% if current_topic.comparison %}
-      <section id="section-comparison" class="lesson-section">
-        <h2 class="lesson-section-title">Comparison: {{ current_topic.comparison.title }}</h2>
-        <div class="table-scroll">
-          <table class="lesson-table">
+  <!-- Right Main Learning Content Reader -->
+  <main class="learn-content-card">
+    
+    <!-- Topic Title Header -->
+    <header style="margin-bottom: 28px; border-bottom: 1px solid var(--subtle-border); padding-bottom: 20px;">
+      <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+        <span style="background: linear-gradient(135deg,#eff6ff,#dbeafe); color: #2563eb; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 6px; font-family: monospace; border: 1px solid #bfdbfe;">
+          {{ current_topic.category }}
+        </span>
+        <span style="font-size: 12px; color: var(--muted); font-weight: 600;">
+          ⏱️ {{ current_topic.read_time }}
+        </span>
+        <span style="background: #f1f5f9; color: #475569; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px;">
+          {{ lang_data.short_title }} Interactive Masterclass
+        </span>
+      </div>
+
+      <h1 style="font: 800 32px var(--font-serif); color: var(--ink); margin: 0 0 14px; line-height: 1.3;">
+        {{ current_topic.title }}
+      </h1>
+
+      {% if current_topic.takeaway %}
+      <div class="notion-callout callout-info" style="margin: 0;">
+        <span class="notion-callout-icon">💡</span>
+        <div class="notion-callout-content">
+          <strong>Key Takeaway</strong>
+          {{ current_topic.takeaway }}
+        </div>
+      </div>
+      {% endif %}
+    </header>
+
+    <!-- Table of Contents -->
+    <div class="lesson-toc">
+      <div class="lesson-toc-title">📋 On This Page</div>
+      <ol>
+        <li><a href="#section-intro">Introduction</a></li>
+        <li><a href="#section-analogy">Real-World Analogy</a></li>
+        <li><a href="#section-mental-model">Mental Model</a></li>
+        <li><a href="#section-why">Why Does This Exist?</a></li>
+        <li><a href="#section-usecase">Industry Use Case</a></li>
+        <li><a href="#section-syntax">Syntax Breakdown</a></li>
+        <li><a href="#section-example">First Example</a></li>
+        <li><a href="#section-internals">Under the Hood</a></li>
+        <li><a href="#section-examples">Progressive Examples</a></li>
+        <li><a href="#section-videos">🎬 Video Masterclasses</a></li>
+        <li><a href="#interactiveDebuggerSection">Live Debugger</a></li>
+        <li><a href="#section-mistakes">Common Mistakes</a></li>
+        <li><a href="#section-comparison">Comparison</a></li>
+        <li><a href="#section-interview">Interview Questions</a></li>
+        <li><a href="#section-revision">Quick Revision</a></li>
+        <li><a href="#section-challenge">Final Challenge</a></li>
+      </ol>
+    </div>
+
+    <!-- 1. Topic Introduction -->
+    {% if current_topic.introduction %}
+    <section id="section-intro" class="lesson-section">
+      <h2 class="lesson-section-title">1. 📖 Introduction</h2>
+      <div style="font-size: 15px; line-height: 1.8; color: #334155;">
+        {{ current_topic.introduction|safe }}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 2. Real-World Analogy -->
+    {% if current_topic.analogy %}
+    <section id="section-analogy" class="lesson-section">
+      <h2 class="lesson-section-title">2. 🧠 Real-World Analogy</h2>
+      <div class="callout-box analogy-box">
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; opacity: 0.75;">
+          🎯 Analogy
+        </div>
+        <div style="font-size: 17px; font-weight: 700; margin-bottom: 10px;">
+          {{ current_topic.analogy.title }}
+        </div>
+        <p style="margin: 0 0 16px; font-size: 15px; line-height: 1.75;">
+          {{ current_topic.analogy.text }}
+        </p>
+        {% if current_topic.analogy.mapping %}
+        <div style="margin-top: 14px; border-top: 1px dashed rgba(113,63,18,0.3); padding-top: 14px;">
+          <strong style="font-size: 13px; display: block; margin-bottom: 8px;">🔗 Real World → Programming Mapping</strong>
+          <table class="lesson-table" style="background: rgba(255,255,255,0.7); margin-top: 8px;">
             <thead>
-              <tr>
-                <th scope="col">Feature</th>
-                <th scope="col">{{ current_topic.comparison.item_a }}</th>
-                <th scope="col">{{ current_topic.comparison.item_b }}</th>
+              <tr style="background: rgba(254,240,138,0.6);">
+                <th>🌍 Real World Element</th>
+                <th>💻 Programming Concept</th>
               </tr>
             </thead>
             <tbody>
-              {% for row in current_topic.comparison.rows %}
+              {% for map_item in current_topic.analogy.mapping %}
               <tr>
-                <th scope="row">{{ row.feature }}</th>
-                <td>{{ row.val_a }}</td>
-                <td>{{ row.val_b }}</td>
+                <td>{{ map_item.real }}</td>
+                <td><strong>{{ map_item.prog }}</strong></td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-      </section>
-      {% endif %}
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
 
-      {% if current_topic.performance %}
-      <section class="lesson-section">
-        <h2 class="lesson-section-title">Performance and complexity</h2>
-        <div class="lesson-prose">
-          {{ current_topic.performance|safe }}
+    <!-- 3. Mental Model -->
+    {% if current_topic.mental_model %}
+    <section id="section-mental-model" class="lesson-section">
+      <h2 class="lesson-section-title">3. 🗺️ Mental Model &amp; Visual Flow</h2>
+      <div class="callout-box model-box" style="font-family: 'JetBrains Mono', monospace;">
+        {{ current_topic.mental_model|safe }}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 4. Why Does This Exist? -->
+    {% if current_topic.why_exists %}
+    <section id="section-why" class="lesson-section">
+      <h2 class="lesson-section-title">4. ❓ Why Does This Exist?</h2>
+      <div style="font-size: 15px; line-height: 1.8; color: #334155;">
+        {{ current_topic.why_exists|safe }}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 5. Real-World Industry Usage -->
+    {% if current_topic.use_case %}
+    <section id="section-usecase" class="lesson-section">
+      <h2 class="lesson-section-title">5. 🏢 Real-World Industry Usage</h2>
+      <div class="callout-box usecase-box">
+        <div style="font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; opacity: 0.75;">
+          🏭 Production Scenario
         </div>
-      </section>
-      {% endif %}
+        <div style="font-size: 16px; font-weight: 700; margin-bottom: 8px;">{{ current_topic.use_case.company }}</div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.75;">
+          {{ current_topic.use_case.text }}
+        </p>
+      </div>
+    </section>
+    {% endif %}
 
-      {% if current_topic.mini_project %}
-      <section class="lesson-section">
-        <h2 class="lesson-section-title">Real-world mini project</h2>
-        <div class="glass lesson-card">
-          <h3 class="callout-title">{{ current_topic.mini_project.title }}</h3>
-          <p>{{ current_topic.mini_project.problem }}</p>
-          {% if current_topic.mini_project.requirements %}
-          <p class="callout-kicker">Requirements</p>
-          <ul class="lesson-list">
-            {% for req in current_topic.mini_project.requirements %}
-            <li>{{ req }}</li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-          <details class="interactive-details">
-            <summary>View the full solution and explanation</summary>
-            <div class="code-display-card">
-              <div class="code-header-bar">
-                <span>Solution: {{ current_topic.mini_project.title }}</span>
-                <button type="button" class="dbg-btn dbg-btn-step code-load-btn" onclick="loadSnippetIntoDebugger(`{{ current_topic.mini_project.solution_code|escapejs }}`)">
-                  <i data-lucide="play" aria-hidden="true"></i>
-                  <span>Load in debugger</span>
-                </button>
-              </div>
-              <pre class="code-pre"><code>{{ current_topic.mini_project.solution_code }}</code></pre>
-            </div>
-            <p class="details-text">{{ current_topic.mini_project.solution_explanation }}</p>
-          </details>
-        </div>
-      </section>
-      {% endif %}
+    <!-- 6. Syntax Breakdown -->
+    {% if current_topic.syntax_guide %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">6. 📖 Syntax Breakdown</h2>
+      {{ current_topic.syntax_guide|safe }}
+    </section>
+    {% endif %}
 
-      {% if current_topic.practice_exercises %}
-      <section class="lesson-section">
-        <h2 class="lesson-section-title">Practice exercises</h2>
-        {% for ex in current_topic.practice_exercises %}
-        <div class="glass lesson-card">
-          <div class="lesson-card-head">
-            <h3 class="example-title">{{ ex.title }}</h3>
-            <span class="lesson-chip">{{ ex.level }}</span>
-          </div>
-          <p>{{ ex.prompt }}</p>
-          {% if ex.hint %}
-          <details class="interactive-details">
-            <summary>Hint</summary>
-            <p class="details-text">{{ ex.hint }}</p>
-          </details>
-          {% endif %}
-          <details class="interactive-details">
-            <summary>Show solution</summary>
-            <div class="code-display-card">
-              <pre class="code-pre"><code>{{ ex.solution }}</code></pre>
-            </div>
-          </details>
-        </div>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if current_topic.predict_quizzes %}
-      <section class="lesson-section">
-        <h2 class="lesson-section-title">Predict the output</h2>
-        {% for q in current_topic.predict_quizzes %}
-        <div class="glass lesson-card">
-          <h3 class="example-title">Question {{ forloop.counter }}: what will be printed?</h3>
-          <pre class="code-pre code-pre-inline"><code>{{ q.code }}</code></pre>
-          <ul class="quiz-options">
-            {% for opt in q.options %}
-            <li>{{ opt }}</li>
-            {% endfor %}
-          </ul>
-          <details class="interactive-details">
-            <summary>Check the answer</summary>
-            <p class="details-text"><strong>Answer:</strong> {{ q.answer }}</p>
-            <p class="details-text"><strong>Explanation:</strong> {{ q.explanation }}</p>
-          </details>
-        </div>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if current_topic.debug_challenges %}
-      <section class="lesson-section">
-        <h2 class="lesson-section-title">Debug this code</h2>
-        {% for dbg in current_topic.debug_challenges %}
-        <div class="glass lesson-card debug-card">
-          <h3 class="example-title">Challenge {{ forloop.counter }}: fix the bug</h3>
-          <p class="example-desc">{{ dbg.context }}</p>
-          <pre class="code-pre code-pre-inline is-broken"><code>{{ dbg.broken_code }}</code></pre>
-          <details class="interactive-details">
-            <summary>See the bug and the fix</summary>
-            <p class="details-text"><strong>Bug cause:</strong> {{ dbg.bug_reason }}</p>
-            <pre class="code-pre code-pre-inline is-fixed"><code>{{ dbg.fixed_code }}</code></pre>
-          </details>
-        </div>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if current_topic.interview_questions %}
-      <section id="section-interview" class="lesson-section">
-        <h2 class="lesson-section-title">Technical interview questions</h2>
-        <div class="notion-callout callout-info">
-          <i data-lucide="briefcase" class="notion-callout-icon" aria-hidden="true"></i>
-          <div class="notion-callout-content">
-            <strong>Interview preparation</strong>
-            These are common technical interview questions on this topic. Study the detailed answers, not just the surface-level response.
-          </div>
-        </div>
-        {% for iq in current_topic.interview_questions %}
-        <div class="interview-block">
-          <div class="interview-q">
-            <span class="interview-tier-badge {% if iq.tier == 'Beginner' %}tier-beginner{% elif iq.tier == 'Mid' %}tier-mid{% elif iq.tier == 'Senior' %}tier-senior{% else %}tier-expert{% endif %}">{{ iq.tier }}</span>
-            <h3>{{ iq.question }}</h3>
-          </div>
-          <div class="interview-a lesson-prose">
-            {{ iq.answer|safe }}
-          </div>
-        </div>
-        {% endfor %}
-      </section>
-      {% endif %}
-
-      {% if current_topic.quick_revision %}
-      <section id="section-revision" class="lesson-section">
-        <h2 class="lesson-section-title">Quick revision</h2>
-        <ul class="revision-grid">
-          {% for pt in current_topic.quick_revision %}
-          <li class="revision-chip">
-            <span>{{ pt }}</span>
-          </li>
-          {% endfor %}
-        </ul>
-      </section>
-      {% endif %}
-
-      {% if current_topic.final_challenge %}
-      <section id="section-challenge" class="lesson-section">
-        <h2 class="lesson-section-title">Final challenge</h2>
-        <div class="glass lesson-card">
-          <h3 class="callout-title">{{ current_topic.final_challenge.title }}</h3>
-          <p>{{ current_topic.final_challenge.prompt }}</p>
-          {% if current_topic.final_challenge.requirements %}
-          <p class="callout-kicker">Acceptance criteria</p>
-          <ul class="lesson-list">
-            {% for cr in current_topic.final_challenge.requirements %}
-            <li>{{ cr }}</li>
-            {% endfor %}
-          </ul>
-          {% endif %}
-          <button type="button" class="button dbg-btn-run challenge-btn" onclick="loadSnippetIntoDebugger(`{{ current_topic.final_challenge.starter_template|escapejs }}`)">
-            <i data-lucide="play" aria-hidden="true"></i>
-            <span>Load the challenge in the debugger</span>
+    <!-- 7. First Simple Example -->
+    {% if current_topic.first_example %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">7. 🚀 First Simple Example</h2>
+      <div class="code-display-card">
+        <div class="code-header-bar">
+          <span>{{ current_topic.first_example.title|default:"Basic Example" }}</span>
+          <button class="dbg-btn dbg-btn-step" style="font-size: 11px; padding: 3px 8px;" onclick="loadSnippetIntoDebugger(`{{ current_topic.first_example.code|escapejs }}`)">
+            ▶ Load in Debugger
           </button>
         </div>
-      </section>
+        <pre class="code-pre"><code>{{ current_topic.first_example.code }}</code></pre>
+        {% if current_topic.first_example.output %}
+        <div class="output-box">
+          <strong style="color: #6ee7b7;">Output:</strong><br/>
+          {{ current_topic.first_example.output|linebreaksbr }}
+        </div>
+        {% endif %}
+      </div>
+      {% if current_topic.first_example.explanation %}
+      <div style="margin-top: 12px;">
+        {{ current_topic.first_example.explanation|safe }}
+      </div>
       {% endif %}
+    </section>
+    {% endif %}
 
-      <nav class="lesson-pager" aria-label="More {{ lang_data.short_title }} lessons">
+    <!-- 8. How It Actually Works (Runtime Internals) -->
+    {% if current_topic.how_it_works %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">8. ⚙️ How Does It Work Under the Hood?</h2>
+      <div style="font-size: 15px; line-height: 1.7;">
+        {{ current_topic.how_it_works|safe }}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 9. Progressive Examples (Beginner to Advanced) -->
+    {% if current_topic.progressive_examples %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">9. 📚 Progressive Code Examples</h2>
+      {% for eg in current_topic.progressive_examples %}
+      <div style="margin: 20px 0;">
+        <h3 style="font: 700 16px var(--font-sans); color: var(--ink); margin: 0 0 8px;">
+          {{ eg.tier }} — {{ eg.title }}
+        </h3>
+        <p style="font-size: 14px; color: var(--muted); margin: 0 0 8px;">{{ eg.description }}</p>
+        <div class="code-display-card">
+          <div class="code-header-bar">
+            <span>{{ eg.title }}</span>
+            <button class="dbg-btn dbg-btn-step" style="font-size: 11px; padding: 3px 8px;" onclick="loadSnippetIntoDebugger(`{{ eg.code|escapejs }}`)">
+              ▶ Load in Debugger
+            </button>
+          </div>
+          <pre class="code-pre"><code>{{ eg.code }}</code></pre>
+          {% if eg.output %}
+          <div class="output-box">
+            <strong style="color: #6ee7b7;">Output:</strong><br/>
+            {{ eg.output|linebreaksbr }}
+          </div>
+          {% endif %}
+        </div>
+        {% if eg.notes %}
+        <p style="font-size: 13px; color: #475569; margin: 6px 0 0;">💡 <em>{{ eg.notes }}</em></p>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- 10. Video Masterclasses & Curated YouTube Tutorials -->
+    {% if current_topic.video_tutorials %}
+    <section id="section-videos" class="lesson-section">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">
+        <div>
+          <h2 class="lesson-section-title" style="margin: 0 0 4px; border-bottom: none; padding-bottom: 0;">🎬 Video Masterclasses &amp; YouTube Tutorials</h2>
+          <p style="font-size: 14px; color: var(--muted); margin: 0;">
+            Watch step-by-step visual lessons from <strong>@pythonkashi</strong>, <strong>freeCodeCamp</strong>, <strong>Fireship</strong>, and top educators.
+          </p>
+        </div>
+        <a href="https://www.youtube.com/@pythonkashi?sub_confirmation=1" target="_blank" rel="noopener" class="channel-badge channel-pythonkashi" style="padding: 7px 14px; font-size: 12px; text-decoration: none; box-shadow: 0 2px 8px rgba(220,38,38,0.15);">
+          🔥 Subscribe @pythonkashi
+        </a>
+      </div>
+
+      <div class="video-hub-grid">
+        {% for vid in current_topic.video_tutorials %}
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube-nocookie.com/embed/{{ vid.youtube_id }}" title="{{ vid.title }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <div class="video-card-header">
+              <span class="channel-badge {% if 'pythonkashi' in vid.channel|lower %}channel-pythonkashi{% elif 'freecodecamp' in vid.channel|lower %}channel-freecodecamp{% elif 'fireship' in vid.channel|lower %}channel-fireship{% elif 'bro code' in vid.channel|lower %}channel-brocode{% elif 'chai' in vid.channel|lower %}channel-chaiaurcode{% elif 'telusko' in vid.channel|lower %}channel-telusko{% else %}channel-mosh{% endif %}">
+                {% if 'pythonkashi' in vid.channel|lower %}🔥 {% elif 'fireship' in vid.channel|lower %}⚡ {% else %}▶ {% endif %}{{ vid.channel }}
+              </span>
+              <span class="video-duration-badge">⏱ {{ vid.duration }}</span>
+            </div>
+            <h3 class="video-card-title">{{ vid.title }}</h3>
+            <p class="video-card-desc">{{ vid.description }}</p>
+            <div class="video-card-footer">
+              <span style="font-size: 11px; font-weight: 700; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px;">{{ vid.level }}</span>
+              <a href="https://www.youtube.com/watch?v={{ vid.youtube_id }}" target="_blank" rel="noopener" class="video-yt-link">
+                Watch on YouTube ↗
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 11. Interactive Embedded Code Debugger & Live Visual Execution -->
+    <section id="interactiveDebuggerSection" class="interactive-debugger-widget">
+      <!-- macOS Style Header Bar -->
+      <div class="debugger-top-bar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <!-- Traffic Light Dots -->
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
+            <span style="width: 11px; height: 11px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+          </div>
+          <span style="font-size: 13px; font-weight: 800; color: #f8fafc;">
+            ⚡ 10. Interactive Code Lab &amp; Visual Execution Tracer
+          </span>
+          <span style="background: rgba(56,189,248,0.15); color: #38bdf8; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(56,189,248,0.3);">
+            {{ lang_data.short_title }}
+          </span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button id="btnToggleEdit" class="dbg-btn dbg-btn-step" style="font-size: 11px; padding: 4px 10px;" title="Toggle between editable code and visual line tracer">
+            ✏️ Edit Code
+          </button>
+          <button id="btnResetCode" class="dbg-btn dbg-btn-step" style="font-size: 11px; padding: 4px 10px;">
+            ↺ Reset Code
+          </button>
+        </div>
+      </div>
+
+      <!-- Playback Controls Bar (Same as IDE Debugger) -->
+      <div class="debugger-controls">
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <button id="btnExecuteTrace" class="dbg-btn dbg-btn-run">
+            ▶ Start Debugging
+          </button>
+          <button id="btnFirst" class="dbg-btn dbg-btn-step" disabled title="Jump to First Step">
+            ⏮ First
+          </button>
+          <button id="btnStepPrev" class="dbg-btn dbg-btn-step" disabled title="Step Back to Previous Line">
+            ◀ Back
+          </button>
+          <button id="btnStepNext" class="dbg-btn dbg-btn-step" disabled title="Step to Next Line" style="background: #1e3a8a; color: #93c5fd; border-color: #3b82f6;">
+            Next ▶
+          </button>
+          <button id="btnLast" class="dbg-btn dbg-btn-step" disabled title="Jump to Last Step">
+            Last ⏭
+          </button>
+          <button id="btnAutoPlay" class="dbg-btn dbg-btn-step" disabled title="Auto Play Line by Line">
+            ▶ Auto Play
+          </button>
+        </div>
+
+        <!-- Timeline Slider & Step Counter -->
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; max-width: 380px;">
+          <span style="font-size: 11px; font-weight: 700; color: #94a3b8; white-space: nowrap;">Timeline:</span>
+          <input type="range" id="timelineSlider" min="0" max="0" value="0" style="flex: 1; cursor: pointer;" disabled>
+          <span id="stepCounterLabel" style="font-size: 12px; font-weight: 800; color: #38bdf8; font-family: monospace; white-space: nowrap; background: rgba(56,189,248,0.1); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(56,189,248,0.25);">
+            Step 0 / 0
+          </span>
+        </div>
+      </div>
+
+      <!-- Live Step Story Banner -->
+      <div id="stepStoryBanner" style="background: #131d33; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; padding: 10px 18px; font-size: 13px; color: #e2e8f0; display: flex; align-items: center; gap: 8px;">
+        <span id="stepStoryIcon" style="font-size: 15px;">💡</span>
+        <span id="stepStoryText">Click <strong>"Start Debugging"</strong> or <strong>"Next ▶"</strong> to trace code line-by-line.</span>
+      </div>
+
+      <!-- Code Area: Line Highlight View + Editable Textarea -->
+      <div class="debugger-code-area">
+        <!-- Visual Trace Line Highlighting Container -->
+        <div id="codeTraceView" style="background: #0d1117; border: 1px solid #30363d; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; max-height: 220px; overflow-y: auto;">
+          <!-- Dynamically populated by JS with line numbers and active pointer -->
+        </div>
+
+        <!-- Hidden / Editable Fallback Textarea -->
+        <textarea id="codeEditorInput" class="code-editor-textarea" style="display: none;" spellcheck="false">{{ current_topic.starter_code }}</textarea>
+      </div>
+
+      <!-- Real-Time Inspection Panels -->
+      <div class="debugger-panels-grid">
+        
+        <!-- Variable Watcher Panel -->
+        <div class="debugger-panel" style="border-right: 1px solid #1e293b;">
+          <div class="panel-title">
+            <span>📊</span> Live Variable Watcher
+          </div>
+          <div style="max-height: 150px; overflow-y: auto;">
+            <table class="var-table">
+              <thead>
+                <tr>
+                  <th>Variable</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody id="variablesTableBody">
+                <tr>
+                  <td colspan="3" style="color: #64748b; font-style: italic; text-align: center; padding: 20px 0;">
+                    Click "Start Debugging" to inspect memory in real-time.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Terminal Output Panel -->
+        <div class="debugger-panel">
+          <div class="panel-title">
+            <span>💻</span> Console Output (stdout)
+          </div>
+          <div id="terminalOutput" class="terminal-box">Waiting for execution...</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 11. Common Mistakes -->
+    {% if current_topic.common_mistakes %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">11. ⚠️ Common Mistakes &amp; How to Avoid Them</h2>
+      {% for m in current_topic.common_mistakes %}
+      <div style="margin: 16px 0;">
+        <div style="font-weight: 700; color: var(--ink); margin-bottom: 6px;">
+          {{ forloop.counter }}. {{ m.title }}
+        </div>
+        <div class="mistake-card">
+          <div class="mistake-bad">
+            <strong style="color: #dc2626;">❌ Incorrect:</strong>
+            <pre style="margin: 6px 0; font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.04); padding: 8px; border-radius: 6px;"><code>{{ m.bad }}</code></pre>
+            <span style="font-size: 13px;">{{ m.why_bad }}</span>
+          </div>
+          <div class="mistake-good">
+            <strong style="color: #16a34a;">✅ Correct:</strong>
+            <pre style="margin: 6px 0; font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.04); padding: 8px; border-radius: 6px;"><code>{{ m.good }}</code></pre>
+            <span style="font-size: 13px;">{{ m.why_good }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- 12. Important Rules to Remember -->
+    {% if current_topic.rules %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">12. 📌 Rules to Remember</h2>
+      <ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+        {% for r in current_topic.rules %}
+        <li><strong>{{ r.rule }}:</strong> {{ r.detail }}</li>
+        {% endfor %}
+      </ol>
+    </section>
+    {% endif %}
+
+    <!-- 13. Comparison Section -->
+    {% if current_topic.comparison %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">13. ⚖️ Comparison: {{ current_topic.comparison.title }}</h2>
+      <table class="lesson-table">
+        <thead>
+          <tr>
+            <th>Feature / Dimension</th>
+            <th>{{ current_topic.comparison.item_a }}</th>
+            <th>{{ current_topic.comparison.item_b }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in current_topic.comparison.rows %}
+          <tr>
+            <td><strong>{{ row.feature }}</strong></td>
+            <td>{{ row.val_a }}</td>
+            <td>{{ row.val_b }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+
+    <!-- 14. Performance & Complexity -->
+    {% if current_topic.performance %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">14. 🚀 Performance &amp; Complexity</h2>
+      <div style="font-size: 15px; line-height: 1.7;">
+        {{ current_topic.performance|safe }}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 15. Mini Project -->
+    {% if current_topic.mini_project %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">15. 🏗️ Real-World Mini Project</h2>
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+        <h3 style="font: 800 18px var(--font-serif); color: var(--ink); margin: 0 0 10px;">
+          {{ current_topic.mini_project.title }}
+        </h3>
+        <p style="margin: 0 0 14px; font-size: 15px;">{{ current_topic.mini_project.problem }}</p>
+        
+        {% if current_topic.mini_project.requirements %}
+        <strong style="font-size: 13px; text-transform: uppercase; color: var(--muted);">Requirements:</strong>
+        <ul style="margin: 6px 0 16px; padding-left: 20px; font-size: 14px;">
+          {% for req in current_topic.mini_project.requirements %}
+          <li>{{ req }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        <details class="interactive-details">
+          <summary>💡 View Full Solution Code &amp; Explanation</summary>
+          <div class="code-display-card" style="margin-top: 12px;">
+            <div class="code-header-bar">
+              <span>Solution: {{ current_topic.mini_project.title }}</span>
+              <button class="dbg-btn dbg-btn-step" style="font-size: 11px; padding: 3px 8px;" onclick="loadSnippetIntoDebugger(`{{ current_topic.mini_project.solution_code|escapejs }}`)">
+                ▶ Load in Debugger
+              </button>
+            </div>
+            <pre class="code-pre"><code>{{ current_topic.mini_project.solution_code }}</code></pre>
+          </div>
+          <p style="font-size: 14px; margin: 10px 0 0; color: #475569;">
+            {{ current_topic.mini_project.solution_explanation }}
+          </p>
+        </details>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 16. Practice Exercises -->
+    {% if current_topic.practice_exercises %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">16. 🧪 Practice Exercises</h2>
+      {% for ex in current_topic.practice_exercises %}
+      <div style="margin: 16px 0; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <strong style="color: var(--ink); font-size: 15px;">{{ ex.level }} — {{ ex.title }}</strong>
+          <span style="font-size: 11px; background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 4px; font-weight: 700;">{{ ex.level }}</span>
+        </div>
+        <p style="margin: 0 0 10px; font-size: 14px;">{{ ex.prompt }}</p>
+        
+        {% if ex.hint %}
+        <details class="interactive-details" style="margin: 6px 0;">
+          <summary>💡 Hint</summary>
+          <p style="margin: 8px 0 0; font-size: 13px; color: #64748b;">{{ ex.hint }}</p>
+        </details>
+        {% endif %}
+
+        <details class="interactive-details" style="margin: 6px 0;">
+          <summary>✅ Show Solution</summary>
+          <div class="code-display-card" style="margin-top: 8px;">
+            <pre class="code-pre"><code>{{ ex.solution }}</code></pre>
+          </div>
+        </details>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- 17. Predict the Output Quiz -->
+    {% if current_topic.predict_quizzes %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">17. 🔍 Predict the Output</h2>
+      {% for q in current_topic.predict_quizzes %}
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; margin: 14px 0;">
+        <div style="font-weight: 700; color: var(--ink); margin-bottom: 8px;">Question {{ forloop.counter }}: What will be printed?</div>
+        <pre class="code-pre" style="background: #0d1527; border-radius: 8px; margin-bottom: 12px;"><code>{{ q.code }}</code></pre>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; font-size: 13px;">
+          {% for opt in q.options %}
+          <div style="background: #ffffff; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px;">{{ opt }}</div>
+          {% endfor %}
+        </div>
+        <details class="interactive-details">
+          <summary>✅ Check Answer &amp; Explanation</summary>
+          <p style="margin: 8px 0 0; font-size: 14px; color: #166534;">
+            <strong>Answer:</strong> {{ q.answer }}<br/>
+            <strong>Explanation:</strong> {{ q.explanation }}
+          </p>
+        </details>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- 18. Debug This Broken Code -->
+    {% if current_topic.debug_challenges %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">18. 🐞 Debug This Code</h2>
+      {% for dbg in current_topic.debug_challenges %}
+      <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 12px; padding: 18px; margin: 14px 0;">
+        <strong style="color: #9f1239;">Challenge {{ forloop.counter }}: Fix the Bug in this snippet</strong>
+        <p style="font-size: 13px; color: #881337; margin: 4px 0 10px;">{{ dbg.context }}</p>
+        <div class="code-display-card">
+          <pre class="code-pre" style="color: #fca5a5;"><code>{{ dbg.broken_code }}</code></pre>
+        </div>
+        <details class="interactive-details">
+          <summary>🔍 View Bug Analysis &amp; Fixed Solution</summary>
+          <p style="margin: 8px 0; font-size: 13px; color: #991b1b;"><strong>Bug Cause:</strong> {{ dbg.bug_reason }}</p>
+          <div class="code-display-card">
+            <pre class="code-pre" style="color: #86efac;"><code>{{ dbg.fixed_code }}</code></pre>
+          </div>
+        </details>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- 19. Interview Questions -->
+    {% if current_topic.interview_questions %}
+    <section id="section-interview" class="lesson-section">
+      <h2 class="lesson-section-title">19. 🎯 Technical Interview Questions</h2>
+      <div class="notion-callout callout-info" style="margin-bottom: 20px;">
+        <span class="notion-callout-icon">💼</span>
+        <div class="notion-callout-content">
+          <strong>Interview Preparation</strong>
+          These are real questions asked in technical interviews at companies like Google, Meta, Amazon, and Microsoft. Study the detailed answers, not just the surface-level response.
+        </div>
+      </div>
+      {% for iq in current_topic.interview_questions %}
+      <div class="interview-block">
+        <div class="interview-q">
+          <span class="interview-tier-badge {% if iq.tier == 'Beginner' %}tier-beginner{% elif iq.tier == 'Mid' %}tier-mid{% elif iq.tier == 'Senior' %}tier-senior{% else %}tier-expert{% endif %}">
+            {{ iq.tier }}
+          </span>
+          <span>{{ forloop.counter }}. {{ iq.question }}</span>
+        </div>
+        <div class="interview-a">
+          {{ iq.answer|safe }}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <!-- 20. Quick Revision -->
+    {% if current_topic.quick_revision %}
+    <section id="section-revision" class="lesson-section">
+      <h2 class="lesson-section-title">20. ⚡ Quick Revision Cheatsheet</h2>
+      <div class="revision-grid">
+        {% for pt in current_topic.quick_revision %}
+        <div class="revision-chip">
+          <span style="color: #2563eb; font-weight: 800; flex-shrink:0;">✓</span>
+          <span>{{ pt }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 21. Final Challenge -->
+    {% if current_topic.final_challenge %}
+    <section class="lesson-section">
+      <h2 class="lesson-section-title">21. 🏆 Final Capstone Challenge</h2>
+      <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 16px; padding: 26px; color: #f8fafc;">
+        <h3 style="font: 800 20px var(--font-serif); color: #38bdf8; margin: 0 0 10px;">
+          {{ current_topic.final_challenge.title }}
+        </h3>
+        <p style="color: #cbd5e1; font-size: 15px; margin: 0 0 14px;">
+          {{ current_topic.final_challenge.prompt }}
+        </p>
+        
+        {% if current_topic.final_challenge.requirements %}
+        <strong style="color: #94a3b8; font-size: 12px; text-transform: uppercase;">Acceptance Criteria:</strong>
+        <ul style="margin: 6px 0 16px; padding-left: 20px; color: #e2e8f0; font-size: 14px;">
+          {% for cr in current_topic.final_challenge.requirements %}
+          <li>{{ cr }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        <button class="dbg-btn dbg-btn-run" onclick="loadSnippetIntoDebugger(`{{ current_topic.final_challenge.starter_template|escapejs }}`)">
+          🚀 Load Challenge into Live Debugger
+        </button>
+      </div>
+    </section>
+    {% endif %}
+
+    <!-- 22. Related Topics & Internal Linking -->
+    <section class="lesson-section" style="border-top: 1px solid var(--subtle-border); padding-top: 24px;">
+      <h3 style="font: 700 18px var(--font-sans); color: var(--ink); margin: 0 0 14px;">
+        🔗 Next Steps &amp; Related Topics
+      </h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px;">
         {% if prev_topic %}
-        <a href="{% url 'debugger:learn_topic_detail' active_lang prev_topic.slug %}" class="button pager-prev">
-          <i data-lucide="chevron-left" aria-hidden="true"></i>
-          <span><small>Previous</small>{{ prev_topic.title }}</span>
+        <a href="/learn/{{ active_lang }}/{{ prev_topic.slug }}/" style="background: #f1f5f9; color: #334155; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;">
+          &larr; Previous: {{ prev_topic.title }}
         </a>
         {% endif %}
         {% if next_topic %}
-        <a href="{% url 'debugger:learn_topic_detail' active_lang next_topic.slug %}" class="button button-primary pager-next">
-          <span><small>Next</small>{{ next_topic.title }}</span>
-          <i data-lucide="chevron-right" aria-hidden="true"></i>
+        <a href="/learn/{{ active_lang }}/{{ next_topic.slug }}/" style="background: #eff6ff; color: #2563eb; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 700;">
+          Next: {{ next_topic.title }} &rarr;
         </a>
         {% endif %}
-        <a href="{% url 'debugger:learn_lang' active_lang %}" class="pager-all">Full {{ lang_data.short_title }} syllabus</a>
-      </nav>
+        <a href="/learn/{{ active_lang }}/" style="background: #f8fafc; color: var(--muted); padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600;">
+          📚 View Full {{ lang_data.short_title }} Syllabus
+        </a>
+      </div>
+    </section>
 
-    </article>
-  </div>
-</main>
+    <!-- Bottom Pagination Footer -->
+    <nav style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--subtle-border); flex-wrap: wrap; gap: 16px;">
+      {% if prev_topic %}
+      <a href="/learn/{{ active_lang }}/{{ prev_topic.slug }}/" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--ink); text-decoration: none; padding: 10px 18px; background: #f8fafc; border: 1px solid var(--subtle-border); border-radius: 12px;">
+        &larr; {{ prev_topic.title|truncatechars:28 }}
+      </a>
+      {% else %}
+      <div></div>
+      {% endif %}
+
+      {% if next_topic %}
+      <a href="/learn/{{ active_lang }}/{{ next_topic.slug }}/" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #ffffff; text-decoration: none; padding: 10px 20px; background: var(--blue-primary); border-radius: 12px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+        {{ next_topic.title|truncatechars:28 }} &rarr;
+      </a>
+      {% endif %}
+    </nav>
+
+  </main>
+
+</div>
 
 <script>
 function loadSnippetIntoDebugger(codeStr) {
   const codeInput = document.getElementById('codeEditorInput');
   const traceView = document.getElementById('codeTraceView');
   const btnToggle = document.getElementById('btnToggleEdit');
-
+  
   if (codeInput) {
     codeInput.value = codeStr;
     codeInput.style.display = 'none';
     if (traceView) traceView.style.display = 'block';
-    if (btnToggle) btnToggle.textContent = 'Edit code';
-
+    if (btnToggle) btnToggle.textContent = '✏️ Edit Code';
+    
     if (window.renderTraceView) {
       window.renderTraceView(-1);
     }
-
+    
     const widget = document.getElementById('interactiveDebuggerSection');
     if (widget) {
       widget.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -647,7 +1655,7 @@ function loadSnippetIntoDebugger(codeStr) {
 (function() {
   const activeLang = "{{ active_lang }}";
   const defaultCode = `{{ current_topic.starter_code|escapejs }}`;
-
+  
   const codeInput = document.getElementById('codeEditorInput');
   const traceView = document.getElementById('codeTraceView');
   const btnToggleEdit = document.getElementById('btnToggleEdit');
@@ -663,28 +1671,26 @@ function loadSnippetIntoDebugger(codeStr) {
   const stepStoryText = document.getElementById('stepStoryText');
   const varsTbody = document.getElementById('variablesTableBody');
   const termOut = document.getElementById('terminalOutput');
-  const storyBanner = document.getElementById('stepStoryBanner');
 
   let traceSteps = [];
   let currentStepIdx = -1;
   let autoPlayTimer = null;
   let isEditing = false;
 
-  function setStoryTone(tone) {
-    if (storyBanner) storyBanner.classList.toggle('is-error', tone === 'error');
-  }
-
   window.renderTraceView = function(activeLineNum = -1) {
     if (!codeInput || !traceView) return;
     const code = codeInput.value;
     const lines = code.split('\n');
-    let html = '<div class="trace-lines">';
+    let html = '<div style="padding: 6px 0;">';
     for (let i = 0; i < lines.length; i++) {
       const lineNum = i + 1;
       const isActive = (lineNum === activeLineNum);
-      html += `<div id="trace-line-${lineNum}" class="trace-line${isActive ? ' is-active' : ''}"${isActive ? ' aria-current="step"' : ''}>
-        <span class="trace-num" aria-hidden="true">${lineNum}</span>
-        <span class="trace-text">${escapeHtml(lines[i]) || ' '}</span>
+      const bgStyle = isActive ? 'background: rgba(56, 189, 248, 0.22); border-left: 4px solid #38bdf8; box-shadow: inset 0 0 12px rgba(56, 189, 248, 0.2);' : 'border-left: 4px solid transparent;';
+      const ptr = isActive ? '<span style="color:#38bdf8;font-weight:900;margin-right:6px;">👉</span>' : '<span style="color:transparent;margin-right:6px;">👉</span>';
+      const numColor = isActive ? '#38bdf8;font-weight:900;' : '#64748b;';
+      html += `<div id="trace-line-${lineNum}" style="display:flex;align-items:center;padding:3px 12px;font-family:monospace;${bgStyle}">
+        <span style="min-width:38px;text-align:right;margin-right:14px;user-select:none;color:${numColor}">${ptr}${lineNum}</span>
+        <span style="color:${isActive ? '#ffffff' : '#c9d1d9'};font-weight:${isActive ? '700' : '400'};white-space:pre;flex:1;">${escapeHtml(lines[i]) || ' '}</span>
       </div>`;
     }
     html += '</div>';
@@ -693,9 +1699,7 @@ function loadSnippetIntoDebugger(codeStr) {
     if (activeLineNum > 0) {
       const activeEl = document.getElementById(`trace-line-${activeLineNum}`);
       if (activeEl && traceView) {
-        /* Scroll only the code pane, never the page. */
-        const top = activeEl.offsetTop - traceView.clientHeight / 2 + activeEl.offsetHeight / 2;
-        traceView.scrollTop = Math.max(0, top);
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
   };
@@ -708,12 +1712,12 @@ function loadSnippetIntoDebugger(codeStr) {
       isEditing = !isEditing;
       if (isEditing) {
         if (traceView) traceView.style.display = 'none';
-        if (codeInput) { codeInput.style.display = 'block'; codeInput.focus(); }
-        btnToggleEdit.textContent = 'Show trace';
+        if (codeInput) codeInput.style.display = 'block';
+        btnToggleEdit.textContent = '👁️ Trace View';
       } else {
         if (codeInput) codeInput.style.display = 'none';
         if (traceView) traceView.style.display = 'block';
-        btnToggleEdit.textContent = 'Edit code';
+        btnToggleEdit.textContent = '✏️ Edit Code';
         window.renderTraceView(-1);
       }
     });
@@ -738,7 +1742,7 @@ function loadSnippetIntoDebugger(codeStr) {
     if (btnLast) btnLast.disabled = true;
     if (btnAutoPlay) {
       btnAutoPlay.disabled = true;
-      btnAutoPlay.textContent = "Auto play";
+      btnAutoPlay.textContent = "▶ Auto Play";
     }
     if (timelineSlider) {
       timelineSlider.disabled = true;
@@ -747,10 +1751,9 @@ function loadSnippetIntoDebugger(codeStr) {
       timelineSlider.value = 0;
     }
     if (stepLabel) stepLabel.textContent = "Step 0 / 0";
-    setStoryTone('');
-    if (stepStoryText) stepStoryText.innerHTML = 'Press <strong>Start debugging</strong>, then <strong>Next</strong> to run the code one line at a time.';
-    if (varsTbody) varsTbody.innerHTML = '<tr><td colspan="3" class="var-empty">Press Start debugging to see each variable as it changes.</td></tr>';
-    if (termOut) { termOut.textContent = "Waiting for execution..."; termOut.classList.remove('is-error'); }
+    if (stepStoryText) stepStoryText.innerHTML = 'Click <strong>"Start Debugging"</strong> or <strong>"Next ▶"</strong> to trace code line-by-line.';
+    if (varsTbody) varsTbody.innerHTML = '<tr><td colspan="3" style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;">Click "Start Debugging" to inspect memory.</td></tr>';
+    if (termOut) termOut.textContent = "Waiting for execution...";
     window.renderTraceView(-1);
   }
 
@@ -761,16 +1764,15 @@ function loadSnippetIntoDebugger(codeStr) {
 
       stopAutoPlay();
       btnRun.disabled = true;
-      btnRun.textContent = "Tracing…";
-      setStoryTone('');
-      if (stepStoryText) stepStoryText.textContent = "Running your code line by line…";
+      btnRun.textContent = "⚙️ Tracing...";
+      if (stepStoryText) stepStoryText.textContent = "Executing AST tracer engine...";
 
       // Switch to visual trace view
       if (isEditing) {
         isEditing = false;
         if (codeInput) codeInput.style.display = 'none';
         if (traceView) traceView.style.display = 'block';
-        if (btnToggleEdit) btnToggleEdit.textContent = 'Edit code';
+        if (btnToggleEdit) btnToggleEdit.textContent = '✏️ Edit Code';
       }
 
       try {
@@ -785,8 +1787,7 @@ function loadSnippetIntoDebugger(codeStr) {
         if (data.status === 'success' && data.steps && data.steps.length > 0) {
           traceSteps = data.steps;
           currentStepIdx = 0;
-          if (termOut) termOut.classList.remove('is-error');
-
+          
           if (timelineSlider) {
             timelineSlider.disabled = false;
             timelineSlider.min = 0;
@@ -800,12 +1801,11 @@ function loadSnippetIntoDebugger(codeStr) {
           if (stepLabel) stepLabel.textContent = "Finished";
         }
       } catch (err) {
-        if (termOut) { termOut.textContent = "Execution Error: " + err.message; termOut.classList.add('is-error'); }
-        setStoryTone('error');
-        if (stepStoryText) stepStoryText.textContent = "Could not reach the debugger. Check your connection and try again.";
+        if (termOut) termOut.textContent = "Execution Error: " + err.message;
+        if (stepStoryText) stepStoryText.textContent = "Error during execution: " + err.message;
       } finally {
         btnRun.disabled = false;
-        btnRun.textContent = "Start debugging";
+        btnRun.textContent = "▶ Start Debugging";
       }
     });
   }
@@ -815,7 +1815,7 @@ function loadSnippetIntoDebugger(codeStr) {
 
     const step = traceSteps[currentStepIdx];
     const total = traceSteps.length;
-
+    
     if (stepLabel) stepLabel.textContent = `Step ${currentStepIdx + 1} / ${total} (Line ${step.line_number})`;
     if (timelineSlider) timelineSlider.value = currentStepIdx;
 
@@ -828,7 +1828,6 @@ function loadSnippetIntoDebugger(codeStr) {
     window.renderTraceView(step.line_number);
 
     // Step story explanation
-    setStoryTone(step.event_type === 'exception' ? 'error' : '');
     if (stepStoryText) {
       const expl = step.ai_explanation || step.step_explanation || '';
       const ltext = step.line_text || step.line_content || '';
@@ -837,7 +1836,7 @@ function loadSnippetIntoDebugger(codeStr) {
       } else if (ltext) {
         stepStoryText.innerHTML = `<strong>Line ${step.line_number}:</strong> <code>${escapeHtml(ltext)}</code>`;
       } else {
-        stepStoryText.innerHTML = `Running <strong>line ${step.line_number}</strong>, step ${currentStepIdx + 1} of ${total}.`;
+        stepStoryText.innerHTML = `Executing <strong>Line ${step.line_number}</strong> — State captured at Step ${currentStepIdx + 1} of ${total}.`;
       }
     }
 
@@ -847,7 +1846,7 @@ function loadSnippetIntoDebugger(codeStr) {
 
     if (varsTbody) {
       if (varKeys.length === 0) {
-        varsTbody.innerHTML = '<tr><td colspan="3" class="var-empty">No local variables in this frame.</td></tr>';
+        varsTbody.innerHTML = '<tr><td colspan="3" style="color:#94a3b8;font-style:italic;text-align:center;padding:12px 0;">No local variables in current frame.</td></tr>';
       } else {
         let html = '';
         for (const k of varKeys) {
@@ -860,9 +1859,9 @@ function loadSnippetIntoDebugger(codeStr) {
           else if (vType.includes('bool')) badgeClass = 'var-type-boolean';
 
           html += `<tr class="${isChanged ? 'var-changed' : ''}">
-            <td class="var-name">${escapeHtml(k)}</td>
+            <td style="color:#58a6ff;font-weight:700;">${escapeHtml(k)}</td>
             <td><span class="var-type-badge ${badgeClass}">${escapeHtml(v.type || 'Object')}</span></td>
-            <td class="var-val">${escapeHtml(v.raw !== undefined ? String(v.raw) : String(v.value))}</td>
+            <td style="font-family:monospace;color:#f0f6fc;">${escapeHtml(v.raw !== undefined ? v.raw : String(v.value))}</td>
           </tr>`;
         }
         varsTbody.innerHTML = html;
@@ -870,10 +1869,7 @@ function loadSnippetIntoDebugger(codeStr) {
     }
 
     // Render stdout
-    if (termOut) {
-      termOut.textContent = step.stdout || "(No stdout yet)";
-      termOut.classList.toggle('is-error', step.event_type === 'exception');
-    }
+    if (termOut) termOut.textContent = step.stdout || "(No stdout yet)";
   }
 
   function goToStep(idx) {
@@ -935,7 +1931,7 @@ function loadSnippetIntoDebugger(codeStr) {
       currentStepIdx = 0;
       renderCurrentStep();
     }
-    if (btnAutoPlay) btnAutoPlay.textContent = "Pause";
+    if (btnAutoPlay) btnAutoPlay.textContent = "⏸ Pause";
     autoPlayTimer = setInterval(function() {
       if (currentStepIdx < traceSteps.length - 1) {
         currentStepIdx++;
@@ -951,7 +1947,7 @@ function loadSnippetIntoDebugger(codeStr) {
       clearInterval(autoPlayTimer);
       autoPlayTimer = null;
     }
-    if (btnAutoPlay) btnAutoPlay.textContent = "Auto play";
+    if (btnAutoPlay) btnAutoPlay.textContent = "▶ Auto Play";
   }
 
   function escapeHtml(str) {

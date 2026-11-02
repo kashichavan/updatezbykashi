@@ -3,108 +3,131 @@
 
 {% block title %}📁 {{ category.name }} Opportunities — Kashii Updatez{% endblock %}
 
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/category.css' %}?v=2026110201">
-{% endblock %}
-
 {% block content %}
-<main class="wrap cat">
-  <nav class="cat-crumbs" aria-label="Breadcrumb">
-    <ol>
-      <li><a href="/">Home</a></li>
-      <li><span aria-current="page">{{ category.name }}</span></li>
-    </ol>
-  </nav>
+<div class="wrap" style="margin-top: 24px;">
 
-  <header class="page-head cat-head">
-    <h1>{{ category.name }}</h1>
-    <p class="sub">{{ category.description|default:"All open student jobs and internships in this category. Each one closes seven days after it is posted." }}</p>
-  </header>
-
-  <section aria-label="Find a job in {{ category.name }}">
-    <div class="search-box">
-      <svg height="20" width="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-      <input type="text" id="searchInput" aria-label="Search within {{ category.name }}" placeholder="Search a role or skill" autocomplete="off">
+  <!-- Dedicated Category Hero Banner -->
+  <div style="background: #ffffff; border-radius: 24px; border: 1px solid var(--subtle-border); padding: 36px 28px; box-shadow: var(--card-shadow); margin-bottom: 32px;">
+    <div style="font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px;">
+      <a href="/" style="color: var(--blue-primary); text-decoration: underline;">Home</a> &nbsp;›&nbsp; <span>{{ category.name }}</span>
     </div>
 
-    <div id="catalogSection" class="cat-catalog">
-      <div class="filter-bar cat-filter-bar">
-        <h2 class="jl-jobs-heading" id="jobsFoundHeading">Loading jobs</h2>
-        <div class="cat-selects">
-          <label class="sr-only" for="filterJobType">Job type</label>
-          <select id="filterJobType" class="cat-select">
-            <option value="all">All types</option>
-            <option value="INTERNSHIP">Internships</option>
-            <option value="FULL_TIME">Full-time</option>
-            <option value="PART_TIME">Part-time</option>
-          </select>
-          <label class="sr-only" for="filterSort">Sort jobs</label>
-          <select id="filterSort" class="cat-select">
-            <option value="newest">Newest first</option>
-            <option value="deadline">Closing soon</option>
-            {# app.js writes the home sorter values back after each load; these two only display them. #}
-            <option value="Date" hidden>Newest first</option>
-            <option value="Proximity" hidden>Closing soon</option>
-          </select>
-        </div>
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: var(--blue-light); color: var(--blue-primary); font-size: 11px; font-weight: 800; font-family: monospace; border-radius: 6px; margin-bottom: 8px;">
+          <i data-lucide="tag" style="width: 14px; height: 14px;"></i> DEDICATED CATEGORY FEED
+        </span>
+        <h1 style="font: 700 36px var(--font-serif); margin: 0 0 8px; color: var(--ink);">{{ category.name }}</h1>
+        <p style="color: var(--muted); font-size: 15px; margin: 0; max-width: 650px;">
+          {{ category.description|default:"All active student requirements, internships, and opportunities in this category." }}
+        </p>
       </div>
 
-      <div id="jobsGrid" class="vp-catalog-grid" aria-live="polite">
-        <div class="vp-product-card vp-shimmer-card" aria-hidden="true"></div>
-        <div class="vp-product-card vp-shimmer-card" aria-hidden="true"></div>
+      <a href="/" class="button button-light" style="padding: 10px 18px; font-size: 13px;">
+        ← Back to All Categories
+      </a>
+    </div>
+  </div>
+
+  <!-- Category Search & Filter Bar -->
+  <section id="catalogSection" class="vp-filter-bar">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 14px; font-weight: 800; color: var(--blue-primary);">Filtering Category:</span>
+      <span class="company-badge" style="font-size: 13px; padding: 6px 14px;">{{ category.name }}</span>
+    </div>
+
+    <div style="display: flex; gap: 10px; width: 100%; max-width: 500px; flex-wrap: wrap;">
+      <div class="search-box">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search within {{ category.name }}...">
       </div>
 
-      <div id="paginationContainer" class="cat-pagination"></div>
+      <div class="filter-selects" style="display: flex; gap: 6px;">
+        <select id="filterJobType">
+          <option value="all">All Types</option>
+          <option value="INTERNSHIP">Internships</option>
+          <option value="FULL_TIME">Full-Time</option>
+          <option value="PART_TIME">Part-Time</option>
+        </select>
+
+        <select id="filterSort">
+          <option value="newest">Newest</option>
+          <option value="deadline">Closing Soon</option>
+        </select>
+      </div>
     </div>
   </section>
 
-  <p class="cat-back"><a href="/" class="text-link"><i data-lucide="arrow-left" aria-hidden="true"></i> All jobs, every category</a></p>
-</main>
+  <!-- Paginated Grid Feed for Category -->
+  <main>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
+      <div>
+        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink); display:flex; align-items:center; gap:6px;"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="18" height="18" alt="Requirements"> Active Requirements</h2>
+        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Sorted newest first — click any card to view details & apply</p>
+      </div>
+    </div>
 
-<!-- Job detail and official application link -->
-<div id="detailModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
-  <div class="modal-content cat-detail">
+    <div id="jobsGrid" class="vp-catalog-grid">
+      <!-- Rendered via JS -->
+    </div>
+
+    <div id="paginationContainer" style="margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <!-- Dynamically populated via JS -->
+    </div>
+  </main>
+
+</div>
+
+<!-- Job Detail & Official Application Link Drawer -->
+<div id="detailModal" class="modal-overlay">
+  <div class="modal-content">
     <div class="modal-header">
-      <div class="cat-detail-badges">
+      <div>
         <span id="detailCompany" class="company-badge">Company</span>
         <span id="detailJobType" class="type-badge">Type</span>
       </div>
-      <button id="btnCloseDetail" class="close-btn" type="button" aria-label="Close"><i data-lucide="x" aria-hidden="true"></i></button>
+      <button id="btnCloseDetail" class="close-btn">✕</button>
     </div>
 
-    <h2 id="detailTitle" class="modal-title">Job title</h2>
-
-    <dl class="cat-detail-facts">
-      <div><dt>Stipend or salary</dt><dd id="detailSalary"></dd></div>
-      <div><dt>Location</dt><dd id="detailLocation"></dd></div>
-      <div><dt>Posted</dt><dd id="detailPostedDate">Today</dd></div>
-    </dl>
-
-    <div class="cat-detail-block">
-      <h3>Required skills</h3>
-      <div id="detailSkills" class="skills-wrapper"></div>
+    <h2 id="detailTitle" class="modal-title" style="margin-bottom: 8px;">Job Title</h2>
+    
+    <div style="display: flex; gap: 14px; margin-bottom: 16px; font-size: 14px; font-weight: 600; color: var(--muted); flex-wrap: wrap; align-items: center;">
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-salary.png' %}" class="nav-icon" width="16" height="16" alt="Salary"> Stipend / Salary: <strong id="detailSalary" style="color: var(--blue-primary);">$0</strong></span>
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-location.png' %}" class="nav-icon" width="16" height="16" alt="Location"> Location: <span id="detailLocation">Remote</span></span>
+      <span style="display:inline-flex;align-items:center;gap:5px;"><img src="{% static 'images/icon-date.png' %}" class="nav-icon" width="16" height="16" alt="Date"> Posted: <span id="detailPostedDate">Today</span></span>
     </div>
 
-    <div class="cat-detail-block">
-      <h3>Eligibility</h3>
-      <p id="detailEligibility"></p>
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Required Skills</div>
+      <div id="detailSkills" style="display: flex; flex-wrap: wrap; gap: 4px;"></div>
     </div>
 
-    <div class="cat-detail-block">
-      <h3>Job description and responsibilities</h3>
-      <p id="detailDescription" class="cat-detail-desc"></p>
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Eligibility Criteria</div>
+      <p id="detailEligibility" style="color: var(--ink); font-size: 14px; margin: 0;"></p>
     </div>
 
-    <div class="cat-detail-apply">
-      <p>This opens the official application page from the recruiter.</p>
-      <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="button button-primary">Apply on the official site <i data-lucide="external-link" aria-hidden="true"></i></a>
+    <div style="margin-bottom: 24px;">
+      <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.6px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px;">Job Description & Responsibilities</div>
+      <p id="detailDescription" style="color: #475569; line-height: 1.6; white-space: pre-line; font-size: 14px; margin: 0;"></p>
     </div>
+
+    <div style="text-align: center; background: var(--blue-light); padding: 22px; border-radius: 16px; border: 1px solid var(--blue-border);">
+      <h4 style="font-size: 16px; font-weight: 700; margin: 0 0 6px;">Official Application Link</h4>
+      <p style="font-size: 13px; color: var(--muted); margin: 0 0 16px;">Click below to open the official application portal provided by the recruiter:</p>
+      <a id="detailExternalLink" href="#" target="_blank" rel="noopener" class="button button-dark" style="width: 100%; justify-content: center; font-size: 15px; padding: 13px;">
+        Apply via Official Application Link ↗
+      </a>
+    </div>
+
   </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  window.CATEGORY_SLUG_OVERRIDE = "{{ category.slug|escapejs }}";
+  window.CATEGORY_SLUG_OVERRIDE = "{{ category.slug }}";
 </script>
 {% endblock %}

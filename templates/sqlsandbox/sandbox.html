@@ -5,245 +5,953 @@
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block extra_css %}
+<!-- Monaco Editor CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/editor/editor.main.min.css">
-<link rel="stylesheet" href="{% static 'css/pages/sql.css' %}?v=2026110201">
+<style>
+  :root {
+    --sql-bg: #070b14;
+    --sql-card: #0d1527;
+    --sql-card-border: rgba(56, 189, 248, 0.16);
+    --sql-accent: #38bdf8;
+    --sql-accent-glow: rgba(56, 189, 248, 0.25);
+    --sql-green: #10b981;
+    --sql-purple: #a855f7;
+    --sql-amber: #f59e0b;
+    --sql-pink: #ec4899;
+    --sql-text: #f1f5f9;
+    --sql-muted: #94a3b8;
+  }
+
+  body {
+    background-color: var(--sql-bg);
+    color: var(--sql-text);
+    overflow-x: hidden;
+  }
+
+  .sql-studio-wrapper {
+    max-width: 100%;
+    margin: 8px 12px 30px;
+    padding: 0;
+  }
+
+  /* Compact Top Header & Control Strip (Pixel-Perfect Alignment) */
+  .sql-compact-topbar {
+    background: linear-gradient(135deg, #0b1324 0%, #111d35 100%);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 12px;
+    padding: 8px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.45);
+  }
+
+  .sql-brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sql-brand-title h1 {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0;
+    color: #ffffff;
+    letter-spacing: -0.2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .dataset-select-compact {
+    background: #17233d;
+    color: #38bdf8;
+    border: 1px solid #233554;
+    padding: 0 10px;
+    height: 30px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+  }
+  .dataset-select-compact:hover {
+    border-color: var(--sql-accent);
+    transform: translateY(-1px);
+  }
+  .dataset-select-compact:active {
+    transform: scale(0.97);
+  }
+
+  /* Compact Playback Controls */
+  .sql-playback-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .btn-dbg-start-compact {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+    padding: 0 12px;
+    height: 30px;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 11px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+    box-sizing: border-box;
+  }
+  .btn-dbg-start-compact:hover {
+    filter: brightness(1.15);
+  }
+
+  .dbg-btn-compact {
+    background: #17233d;
+    color: #cbd5e1;
+    border: 1px solid #233554;
+    padding: 0 9px;
+    height: 30px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+    box-sizing: border-box;
+  }
+  .dbg-btn-compact:hover:not(:disabled) {
+    background: #233554;
+    color: #ffffff;
+    border-color: #38bdf8;
+  }
+  .dbg-btn-compact:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* Compact Step Banner */
+  .sql-step-banner-compact {
+    background: rgba(13, 21, 39, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-left: 3px solid #38bdf8;
+    border-radius: 8px;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* Logical Pipeline Stage Pills */
+  .pipeline-strip-compact {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .pipeline-pill {
+    font-size: 10px;
+    font-weight: 800;
+    font-family: monospace;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #111d35;
+    color: #64748b;
+    border: 1px solid #1e293b;
+    transition: all 0.2s;
+  }
+
+  .pipeline-pill.active {
+    background: rgba(56, 189, 248, 0.2);
+    color: #38bdf8;
+    border-color: #38bdf8;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.35);
+  }
+
+  .pipeline-pill.passed {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  /* High Density Grid Layout (Maximize screen space for data & code) */
+  .sql-workspace-grid {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 10px;
+  }
+
+  @media (max-width: 1024px) {
+    .sql-workspace-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Left Sidebar (Compact & Collapsible) */
+  .sql-sidebar-card {
+    background: var(--sql-card);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: calc(100vh - 160px);
+    min-height: 520px;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),   /* Top specular highlight */
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),          /* Bottom ambient shadow */
+      0 10px 30px -10px rgba(0, 0, 0, 0.5);         /* Soft drop elevation */
+  }
+
+  /* Sidebar Collapsed Mode: Expands editor & results across 100% screen width */
+  body.sidebar-collapsed .sql-sidebar-card {
+    display: none !important;
+  }
+  body.sidebar-collapsed .sql-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid #1e293b;
+    background: #080e1a;
+  }
+
+  .sidebar-tab-btn {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sql-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    border-bottom: 2px solid transparent;
+  }
+
+  .sidebar-tab-btn.active {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.08);
+    border-bottom-color: #38bdf8;
+  }
+
+  .sidebar-content-pane {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  /* Schema Table Tree */
+  .schema-table-item {
+    background: #111d35;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+
+  .schema-table-header {
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    background: #152442;
+    transition: background 0.15s;
+  }
+
+  .schema-table-header:hover {
+    background: #1b2d52;
+  }
+
+  .table-title {
+    font-weight: 700;
+    font-size: 11px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .schema-columns-list {
+    padding: 4px 8px;
+    display: none;
+    background: #09101f;
+  }
+
+  .schema-columns-list.open {
+    display: block;
+  }
+
+  .schema-col-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 4px;
+    font-size: 10px;
+    font-family: monospace;
+    color: #cbd5e1;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .schema-col-row:hover {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+  }
+
+  .col-type-tag {
+    font-size: 9px;
+    color: #94a3b8;
+    background: #17233d;
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  .pk-badge {
+    color: #eab308;
+    font-weight: 800;
+    font-size: 9px;
+    margin-right: 3px;
+  }
+
+  /* Challenge Item */
+  .challenge-item-card {
+    background: #111d35;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .challenge-item-card:hover {
+    border-color: #38bdf8;
+    background: #152442;
+  }
+
+  .diff-badge-Easy { background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
+  .diff-badge-Medium { background: rgba(245, 158, 11, 0.2); color: #fbbf24; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
+  .diff-badge-Hard { background: rgba(239, 68, 68, 0.2); color: #f87171; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 3px; }
+
+  /* Right Main Panel: Monaco Editor & Live Results Grid */
+  .sql-main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Editor Card (Compact 175px height so table gets maximum vertical room) */
+  .editor-card {
+    background: var(--sql-card);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),   /* Top specular highlight */
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),          /* Bottom ambient shadow */
+      0 10px 30px -10px rgba(0, 0, 0, 0.5);         /* Soft drop elevation */
+  }
+
+  .editor-toolbar {
+    background: #080e1a;
+    padding: 5px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  #monacoSqlContainer {
+    height: 175px;
+    width: 100%;
+  }
+
+  /* Monaco Line Execution Highlight (Shown ONLY when executing/stepping) */
+  .sql-debug-active-line {
+    background: rgba(56, 189, 248, 0.18) !important;
+    border-left: 3px solid #38bdf8 !important;
+  }
+
+  .sql-debug-glyph {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sql-debug-glyph::after {
+    content: "👉";
+    font-size: 13px;
+    display: block;
+    animation: pulseArrow 0.8s infinite alternate;
+  }
+
+  @keyframes pulseArrow {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(3px); }
+  }
+
+  /* Results Card (Expanded to fit all 14 rows comfortably with zero vertical scroll) */
+  .results-card {
+    background: var(--sql-card);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 350px);
+    min-height: 460px;
+    transition: all 0.25s ease-in-out;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),   /* Top specular highlight */
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),          /* Bottom ambient shadow */
+      0 10px 30px -10px rgba(0, 0, 0, 0.5);         /* Soft drop elevation */
+  }
+
+  /* Maximize Table Fullscreen Mode: Collapses sidebar and editor */
+  body.table-maximized-mode .sql-sidebar-card,
+  body.table-maximized-mode .editor-card {
+    display: none !important;
+  }
+
+  body.table-maximized-mode .sql-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.table-maximized-mode .results-card {
+    height: calc(100vh - 160px) !important;
+    min-height: 560px;
+    box-shadow: 0 0 35px rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+
+  .btn-maximize-toggle {
+    background: #17233d;
+    color: #38bdf8;
+    border: 1px solid #233554;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s;
+    margin-left: 6px;
+  }
+  .btn-maximize-toggle:hover {
+    background: #233554;
+    color: #ffffff;
+    border-color: #38bdf8;
+  }
+
+  .results-header-tabs {
+    background: #080e1a;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .tab-group {
+    display: flex;
+    gap: 2px;
+  }
+
+  .res-tab-btn {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sql-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+
+  .res-tab-btn.active {
+    color: #38bdf8;
+    border-bottom-color: #38bdf8;
+  }
+
+  .meta-stats {
+    font-size: 11px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .results-body {
+    padding: 10px;
+    overflow: auto;
+    flex: 1;
+  }
+
+  /* Data Table (Compact, Crisp, High-Density for 22-column JOIN datasets) */
+  .sql-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  .sql-data-table th {
+    background: #152442;
+    color: #38bdf8;
+    padding: 5px 8px;
+    text-align: left;
+    border: 1px solid #233554;
+    font-weight: 700;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+  }
+
+  .sql-data-table td {
+    padding: 5px 8px;
+    border: 1px solid #1e293b;
+    color: #e2e8f0;
+    white-space: nowrap;
+  }
+
+  .sql-data-table tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .sql-data-table tr:hover {
+    background: rgba(56, 189, 248, 0.08);
+  }
+
+  .null-cell {
+    color: #64748b;
+    font-style: italic;
+    font-size: 10px;
+  }
+
+  .row-badge-kept {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+  }
+  .row-badge-joined {
+    background: rgba(168, 85, 247, 0.18);
+    color: #c084fc;
+  }
+  .row-badge-projected {
+    background: rgba(56, 189, 248, 0.18);
+    color: #38bdf8;
+  }
+  .row-badge-sorted {
+    background: rgba(236, 72, 153, 0.18);
+    color: #f472b6;
+  }
+
+  /* Error Banner */
+  .sql-error-alert {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .plan-tree-box {
+    background: #080e1a;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.6;
+  }
+
+  /* ── Mobile Advisory / Blocker Modal ── */
+  .mobile-blocker-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(7, 11, 20, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .mobile-blocker-card {
+    background: radial-gradient(120% 120% at 50% 0%, var(--sql-card) 0%, var(--sql-bg) 100%);
+    border: 1px solid var(--sql-card-border);
+    border-radius: 16px;
+    padding: 24px 20px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),   /* Top specular highlight */
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.4),          /* Bottom ambient shadow */
+      0 10px 30px -10px rgba(0, 0, 0, 0.5);         /* Soft drop elevation */
+  }
+
+  .mobile-blocker-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: inline-block;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));
+  }
+
+  .btn-blocker-continue {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    color: #ffffff;
+    border: 1px solid #38bdf8;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .btn-blocker-continue:hover {
+    filter: brightness(1.1);
+  }
+
+  .btn-blocker-copy {
+    background: #1e293b;
+    color: #cbd5e1;
+    border: 1px solid #334155;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .btn-blocker-copy:hover {
+    background: #28374d;
+    color: #ffffff;
+  }
+
+  @media (max-width: 768px) {
+    .sql-compact-topbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .sql-brand-title {
+      justify-content: space-between;
+    }
+    .sql-playback-group {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 4px;
+    }
+    .sql-sidebar-card {
+      height: 220px;
+      min-height: 180px;
+    }
+    #monacoSqlContainer {
+      height: 200px;
+    }
+    .results-card {
+      height: auto;
+      min-height: 320px;
+    }
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-
-<main class="wrap sql sql-studio-wrapper">
-
-  <header class="page-head sql-head">
-    <div class="sql-head-top">
-      <p class="kicker">SQL Debugger</p>
-      <div class="sql-head-links">
-        <a href="/debugger/" class="sql-text-link">
-          <i data-lucide="code-2" aria-hidden="true"></i>
-          <span>Code Debugger</span>
-        </a>
-        <button type="button" id="btnToggleSidebar" class="sql-text-link sql-desktop-only" aria-pressed="false" onclick="toggleSidebar()" title="Show or hide the tables panel">
-          <span id="sidebarToggleIcon" class="sql-swap" aria-hidden="true">
-            <i data-lucide="panel-left-close" class="sql-when-off"></i>
-            <i data-lucide="panel-left-open" class="sql-when-on"></i>
-          </span>
-          <span id="sidebarToggleText">Hide tables</span>
-        </button>
-      </div>
+<!-- Mobile Experience Advisory / Blocker Modal -->
+<div id="mobileBlockerModal" class="mobile-blocker-overlay" style="display: none;">
+  <div class="mobile-blocker-card">
+    <div class="mobile-blocker-icon">💻</div>
+    <h3 style="margin: 0 0 8px; color: #ffffff; font-size: 17px; font-weight: 800;">
+      Desktop Screen Recommended
+    </h3>
+    <p style="color: #94a3b8; font-size: 12px; line-height: 1.5; margin: 0 0 14px;">
+      The <strong>SQL Visual Debugger &amp; Studio</strong> is engineered for multi-column relational data grids, Monaco code editor, and AST execution tracing that are best viewed on a desktop or laptop display.
+    </p>
+    <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; font-size: 11px; color: #cbd5e1; display: flex; align-items: center; gap: 8px; text-align: left;">
+      <span>💡</span>
+      <span>You can still continue on mobile with touch-scrollable tables and step execution.</span>
     </div>
-    <h1>Run a query and watch every step.</h1>
-    <p class="sub">See how each clause changes the rows, in the order the database runs them. Practice tables, no login.</p>
-  </header>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button class="btn-blocker-continue" onclick="dismissMobileBlocker()">
+        ⚡ Continue on Mobile Anyway
+      </button>
+      <button class="btn-blocker-copy" onclick="copyStudioLink()">
+        📋 Copy Link for Desktop
+      </button>
+    </div>
+  </div>
+</div>
 
+<div class="sql-studio-wrapper">
+  
+  <!-- Compact Unified Header & Controls Strip -->
+  <div class="sql-compact-topbar">
+    <div class="sql-brand-title">
+      <h1>⚡ SQL Debugger Studio</h1>
+      <select id="datasetSelector" class="dataset-select-compact" onchange="changeActiveDataset(this.value)">
+        {% for d in datasets %}
+        <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} Tables)</option>
+        {% endfor %}
+      </select>
+      <a href="/debugger/" class="dataset-select-compact" style="text-decoration:none; display:inline-flex; align-items:center; gap:5px; color:#ffffff; background:#1e293b; border-color:#334155;">
+        <span>💻</span> Code Debugger ↗
+      </a>
+    </div>
+
+    <!-- Playback Controls -->
+    <div class="sql-playback-group">
+      <button id="btnStartDebug" class="btn-dbg-start-compact" onclick="startSqlDebugger()">
+        <span>🚀</span> Start SQL Debugger
+      </button>
+      <button id="btnStepFirst" class="dbg-btn-compact" onclick="goToStep(0)" disabled>⏮ First</button>
+      <button id="btnStepPrev" class="dbg-btn-compact" onclick="prevStep()" disabled>◀ Back</button>
+      <button id="btnStepNext" class="dbg-btn-compact" onclick="nextStep()" disabled>Step Next ▶</button>
+      <button id="btnStepLast" class="dbg-btn-compact" onclick="lastStep()" disabled>Last ⏭</button>
+      <button id="btnAutoPlay" class="dbg-btn-compact" onclick="toggleAutoPlay()" disabled>▶ Auto Play</button>
+      
+      <!-- Slider & Step Tag -->
+      <input type="range" id="timelineSlider" min="0" max="0" value="0"
+             style="width: 85px; cursor: pointer;" oninput="goToStep(parseInt(this.value))" disabled>
+      <span id="stepBadge" style="font-size: 11px; font-weight: 800; color: #38bdf8; font-family: monospace;">
+        Step 0 / 0
+      </span>
+
+      <!-- Remove/Toggle Left Tables Sidebar Button -->
+      <button id="btnToggleSidebar" class="dbg-btn-compact" style="color: #38bdf8; margin-left: 4px;" onclick="toggleSidebar()" title="Toggle Tables / Schema Sidebar (Full Width)">
+        <span id="sidebarToggleIcon">◀</span> <span id="sidebarToggleText">Hide Tables</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Compact AI Step Story Banner -->
+  <div id="sqlStepStoryBanner" class="sql-step-banner-compact">
+    <span id="sqlStepStoryText">
+      💡 <strong>SQL Debugger:</strong> Click <strong>"🚀 Start SQL Debugger"</strong> to trace your query through each logical execution phase.
+    </span>
+    <span id="currentPhaseBadge" style="font-size: 10px; font-weight: 800; font-family: monospace; background: rgba(56,189,248,0.2); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">
+      READY
+    </span>
+  </div>
+
+  <!-- Compact Dynamic Pipeline Strip (Populated strictly based on query clauses) -->
+  <div class="pipeline-strip-compact" id="pipelinePillsWrap">
+    <span class="pipeline-pill active">1. FROM</span>
+    <span class="pipeline-pill">2. WHERE</span>
+    <span class="pipeline-pill">3. SELECT</span>
+    <span class="pipeline-pill">4. ORDER BY</span>
+  </div>
+
+  <!-- High Density Grid Layout -->
   <div class="sql-workspace-grid">
-
-    <!-- Tables, practice and history -->
-    <aside class="sql-panel sql-sidebar-card" aria-label="Tables, practice and history">
-      <div class="sidebar-tabs" role="tablist" aria-label="Side panel">
-        <button type="button" role="tab" id="btnTabSchema" class="sidebar-tab-btn active" aria-selected="true" aria-controls="paneSchema" onclick="switchSidebarTab('schema')">Tables</button>
-        <button type="button" role="tab" id="btnTabChallenges" class="sidebar-tab-btn" aria-selected="false" aria-controls="paneChallenges" onclick="switchSidebarTab('challenges')">Practice ({{ challenges|length }})</button>
-        <button type="button" role="tab" id="btnTabHistory" class="sidebar-tab-btn" aria-selected="false" aria-controls="paneHistory" onclick="switchSidebarTab('history')">History</button>
+    
+    <!-- Left Sidebar: Schema & Challenges -->
+    <div class="sql-sidebar-card">
+      <div class="sidebar-tabs">
+        <button id="btnTabSchema" class="sidebar-tab-btn active" onclick="switchSidebarTab('schema')">🗂️ Tables</button>
+        <button id="btnTabChallenges" class="sidebar-tab-btn" onclick="switchSidebarTab('challenges')">🏆 Practice ({{ challenges|length }})</button>
+        <button id="btnTabHistory" class="sidebar-tab-btn" onclick="switchSidebarTab('history')">📜 History</button>
       </div>
 
-      <div id="paneSchema" class="sidebar-content-pane" role="tabpanel" aria-labelledby="btnTabSchema">
+      <!-- Tab 1: Tables & Schema Explorer -->
+      <div id="paneSchema" class="sidebar-content-pane">
         <div id="schemaContainer">
-          <p class="sql-empty">Loading tables...</p>
+          <p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">Loading schema...</p>
         </div>
       </div>
 
-      <div id="paneChallenges" class="sidebar-content-pane" role="tabpanel" aria-labelledby="btnTabChallenges" hidden>
+      <!-- Tab 2: Challenges -->
+      <div id="paneChallenges" class="sidebar-content-pane" style="display: none;">
         {% for c in challenges %}
-        <button type="button" class="challenge-item-card" onclick="loadChallenge('{{ c.id }}')">
-          <span class="sql-card-meta">
-            <span class="diff-badge diff-badge-{{ c.difficulty }}">{{ c.difficulty }}</span>
-            <span>{{ c.category }}</span>
-          </span>
-          <span class="sql-card-title">{{ c.title }}</span>
-        </button>
+        <div class="challenge-item-card" onclick="loadChallenge('{{ c.id }}')">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span class="diff-badge-{{ c.difficulty }}">{{ c.difficulty }}</span>
+            <span style="font-size: 10px; color: #94a3b8;">{{ c.category }}</span>
+          </div>
+          <div style="font-weight: 700; font-size: 11px; color: #ffffff;">{{ c.title }}</div>
+        </div>
         {% endfor %}
       </div>
 
-      <div id="paneHistory" class="sidebar-content-pane" role="tabpanel" aria-labelledby="btnTabHistory" hidden>
+      <!-- Tab 3: History -->
+      <div id="paneHistory" class="sidebar-content-pane" style="display: none;">
         <div id="historyContainer">
-          <p class="sql-empty">No query history yet.</p>
+          <p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">No query history yet.</p>
         </div>
       </div>
-    </aside>
+    </div>
 
+    <!-- Right Main Panel: Editor & Live Results Grid -->
     <div class="sql-main-panel">
-
-      <!-- Query editor -->
-      <section class="sql-panel editor-card" aria-label="Query editor">
+      
+      <!-- Editor Card -->
+      <div class="editor-card">
         <div class="editor-toolbar">
-          <label for="datasetSelector" class="sql-label">Database</label>
-          <select id="datasetSelector" class="sql-input" onchange="changeActiveDataset(this.value)">
-            {% for d in datasets %}
-            <option value="{{ d.id }}" {% if forloop.first %}selected{% endif %}>{{ d.name }} ({{ d.tables_count }} tables)</option>
-            {% endfor %}
-          </select>
-        </div>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button id="btnRunQuery" class="dbg-btn-compact" style="background: #0284c7; color: #ffffff; border-color: #38bdf8;" onclick="runSqlQuery()">
+              <span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>
+            </button>
+            <button id="btnVerifyChallenge" class="dbg-btn-compact" style="display: none; background: #065f46; border-color: #10b981; color: #6ee7b7;" onclick="verifyChallengeSubmission()">
+              🧪 Test Challenge
+            </button>
+            <button class="dbg-btn-compact" onclick="formatSqlQuery()">
+              🧹 Format
+            </button>
+          </div>
 
-        <div id="monacoSqlContainer" class="sql-editor" aria-label="SQL query"></div>
-
-        <div class="editor-actions">
-          <button type="button" id="btnRunQuery" class="button button-primary sql-run" onclick="runSqlQuery()">
-            <i data-lucide="play" aria-hidden="true"></i>
-            <span class="sql-btn-label">Run query</span>
-            <kbd class="sql-kbd">Ctrl+Enter</kbd>
-          </button>
-          <button type="button" id="btnVerifyChallenge" class="button sql-verify" onclick="verifyChallengeSubmission()" hidden>
-            <i data-lucide="flask-conical" aria-hidden="true"></i>
-            <span class="sql-btn-label">Test challenge</span>
-          </button>
-          <div class="sql-secondary-actions">
-            <button type="button" id="btnStartDebug" class="button" onclick="startSqlDebugger()">
-              <i data-lucide="footprints" aria-hidden="true"></i>
-              <span class="sql-btn-label">Step through</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <button class="dbg-btn-compact" onclick="resetActiveDatabase()" title="Reset current database to factory state">
+              🔄 Reset DB
             </button>
-            <button type="button" class="button" onclick="formatSqlQuery()">
-              <i data-lucide="case-upper" aria-hidden="true"></i>
-              <span>Format</span>
-            </button>
-            <button type="button" class="button" onclick="resetActiveDatabase()" title="Reset this database to its starting data">
-              <i data-lucide="rotate-ccw" aria-hidden="true"></i>
-              <span>Reset DB</span>
-            </button>
-            <button type="button" class="button" onclick="exportResultsCsv()" title="Download results as CSV">
-              <i data-lucide="download" aria-hidden="true"></i>
-              <span>CSV</span>
+            <button class="dbg-btn-compact" onclick="exportResultsCsv()" title="Download CSV">
+              📥 CSV
             </button>
           </div>
         </div>
-      </section>
 
-      <!-- Step tracer -->
-      <section class="sql-panel sql-trace" aria-labelledby="sqlTraceTitle">
-        <div class="sql-trace-head">
-          <h2 id="sqlTraceTitle" class="sql-panel-title">Step by step</h2>
-          <span id="stepBadge" class="sql-step-badge">Step 0 / 0</span>
-        </div>
+        <!-- Monaco SQL Editor Mount Point -->
+        <div id="monacoSqlContainer"></div>
+      </div>
 
-        <div id="sqlStepStoryBanner" class="sql-step-banner-compact" aria-live="polite">
-          <span id="currentPhaseBadge" class="sql-phase">READY</span>
-          <p id="sqlStepStoryText">Press <strong>Step through</strong> to follow your query through each clause in the order the database runs it.</p>
-        </div>
-
-        <div class="pipeline-strip-compact" id="pipelinePillsWrap">
-          <span class="pipeline-pill active">1. FROM</span>
-          <span class="pipeline-pill">2. WHERE</span>
-          <span class="pipeline-pill">3. SELECT</span>
-          <span class="pipeline-pill">4. ORDER BY</span>
-        </div>
-
-        <div class="sql-playback-group">
-          <button type="button" id="btnStepFirst" class="sql-icon-btn" onclick="goToStep(0)" aria-label="First step" disabled>
-            <i data-lucide="skip-back" aria-hidden="true"></i>
-          </button>
-          <button type="button" id="btnStepPrev" class="sql-icon-btn" onclick="prevStep()" aria-label="Previous step" disabled>
-            <i data-lucide="chevron-left" aria-hidden="true"></i>
-          </button>
-          <button type="button" id="btnStepNext" class="sql-icon-btn sql-next" onclick="nextStep()" disabled>
-            <span>Next</span>
-            <i data-lucide="chevron-right" aria-hidden="true"></i>
-          </button>
-          <button type="button" id="btnStepLast" class="sql-icon-btn" onclick="lastStep()" aria-label="Last step" disabled>
-            <i data-lucide="skip-forward" aria-hidden="true"></i>
-          </button>
-          <button type="button" id="btnAutoPlay" class="sql-icon-btn sql-autoplay" title="Play every step automatically" onclick="toggleAutoPlay()" aria-pressed="false" disabled>
-            <span class="sql-swap" aria-hidden="true">
-              <i data-lucide="play" class="sql-when-off"></i>
-              <i data-lucide="pause" class="sql-when-on"></i>
-            </span>
-            <span class="sql-btn-label">Play</span>
-          </button>
-        </div>
-
-        <label for="timelineSlider" class="sr-only">Jump to step</label>
-        <input type="range" id="timelineSlider" class="sql-slider" min="0" max="0" value="0" oninput="goToStep(parseInt(this.value))" disabled>
-      </section>
-
-      <!-- Results -->
-      <section class="sql-panel results-card" aria-label="Results">
+      <!-- Live Results & Execution Insights Card -->
+      <div class="results-card">
         <div class="results-header-tabs">
-          <div class="tab-group" role="tablist" aria-label="Result views">
-            <button type="button" role="tab" id="btnResTabStep" class="res-tab-btn active" aria-selected="true" aria-controls="paneResStep" onclick="switchResultTab('step')">Step table</button>
-            <button type="button" role="tab" id="btnResTabOutput" class="res-tab-btn" aria-selected="false" aria-controls="paneResOutput" onclick="switchResultTab('output')">Full output</button>
-            <button type="button" role="tab" id="btnResTabPlan" class="res-tab-btn" aria-selected="false" aria-controls="paneResPlan" onclick="switchResultTab('plan')">Query plan</button>
-            <button type="button" role="tab" id="btnResTabVerify" class="res-tab-btn" aria-selected="false" aria-controls="paneResVerify" onclick="switchResultTab('verify')" hidden>Challenge</button>
-            <button type="button" role="tab" id="btnResTabCheatsheet" class="res-tab-btn" aria-selected="false" aria-controls="paneResCheatsheet" onclick="switchResultTab('cheatsheet')">Cheatsheet</button>
+          <div class="tab-group">
+            <button id="btnResTabStep" class="res-tab-btn active" onclick="switchResultTab('step')">🔍 Live Step Table</button>
+            <button id="btnResTabOutput" class="res-tab-btn" onclick="switchResultTab('output')">📊 Full Output</button>
+            <button id="btnResTabPlan" class="res-tab-btn" onclick="switchResultTab('plan')">⚡ Query Plan (EXPLAIN)</button>
+            <button id="btnResTabVerify" class="res-tab-btn" style="display: none;" onclick="switchResultTab('verify')">🧪 Challenge</button>
+            <button id="btnResTabCheatsheet" class="res-tab-btn" onclick="switchResultTab('cheatsheet')">📖 Cheatsheet</button>
           </div>
 
           <div class="meta-stats">
             <span id="statRowCount">0 rows</span>
-            <span aria-hidden="true">&middot;</span>
+            <span>&bull;</span>
             <span id="statExecTime">0.00 ms</span>
-            <button type="button" id="btnMaximizeTable" class="sql-text-link btn-maximize-toggle" aria-pressed="false" onclick="toggleMaximizeTable()" title="Give the results the full width. Esc to restore.">
-              <span id="maxTableIcon" class="sql-swap" aria-hidden="true">
-                <i data-lucide="maximize-2" class="sql-when-off"></i>
-                <i data-lucide="minimize-2" class="sql-when-on"></i>
-              </span>
-              <span id="maxTableText">Maximize table</span>
+            <button id="btnMaximizeTable" class="btn-maximize-toggle" onclick="toggleMaximizeTable()" title="Maximize / Fullscreen Result Table View (Collapse Editor & Sidebar)">
+              <span id="maxTableIcon">⛶</span> <span id="maxTableText">Maximize Table</span>
             </button>
           </div>
         </div>
 
-        <div id="paneResStep" class="results-body" role="tabpanel" aria-labelledby="btnResTabStep">
+        <!-- Result Tab 1: Live Step Virtual Table Output -->
+        <div id="paneResStep" class="results-body">
           <div id="stepResultsOutput">
-            <p class="sql-empty">Press <strong>Step through</strong> to see the rows the database holds after each clause.</p>
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
+              Click <strong>🚀 Start SQL Debugger</strong> above to inspect intermediate virtual tables at each line of execution.
+            </p>
           </div>
         </div>
 
-        <div id="paneResOutput" class="results-body" role="tabpanel" aria-labelledby="btnResTabOutput" hidden>
+        <!-- Result Tab 2: Full Query Output Data Grid -->
+        <div id="paneResOutput" class="results-body" style="display: none;">
           <div id="queryResultsOutput">
-            <p class="sql-empty">Press <strong>Run query</strong> to run it without stepping.</p>
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
+              Press <strong>▶ Run Full Query</strong> to execute without stepping.
+            </p>
           </div>
         </div>
 
-        <div id="paneResPlan" class="results-body" role="tabpanel" aria-labelledby="btnResTabPlan" hidden>
+        <!-- Result Tab 3: Query Plan Visualizer -->
+        <div id="paneResPlan" class="results-body" style="display: none;">
           <div id="queryPlanOutput">
-            <p class="sql-empty">Run a <code>SELECT</code> query to see how the database plans to read the tables.</p>
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
+              Run a <code>SELECT</code> query to inspect the internal B-Tree index traversal and execution plan.
+            </p>
           </div>
         </div>
 
-        <div id="paneResVerify" class="results-body" role="tabpanel" aria-labelledby="btnResTabVerify" hidden>
+        <!-- Result Tab 4: Challenge Verification -->
+        <div id="paneResVerify" class="results-body" style="display: none;">
           <div id="challengeVerifyOutput">
-            <p class="sql-empty">Pick a challenge and press <strong>Test challenge</strong> to check your answer.</p>
+            <p style="color: #64748b; font-size: 13px; text-align: center; padding: 24px;">
+              Select a challenge and click <strong>Test Challenge</strong> to verify.
+            </p>
           </div>
         </div>
 
-        <div id="paneResCheatsheet" class="results-body" role="tabpanel" aria-labelledby="btnResTabCheatsheet" hidden>
-          <div class="sql-cheats">
-            <div class="sql-cheat">
-              <h3>Window ranking functions</h3>
-              <pre><code>ROW_NUMBER() OVER (PARTITION BY d ORDER BY sal DESC)
-DENSE_RANK() OVER (PARTITION BY d ORDER BY sal DESC)</code></pre>
+        <!-- Result Tab 5: Cheatsheet -->
+        <div id="paneResCheatsheet" class="results-body" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+            <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
+              <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">Window Ranking Functions</h4>
+              <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
+                ROW_NUMBER() OVER (PARTITION BY d ORDER BY sal DESC)<br/>
+                DENSE_RANK() OVER (PARTITION BY d ORDER BY sal DESC)
+              </code>
             </div>
-            <div class="sql-cheat">
-              <h3>Time series and offsets</h3>
-              <pre><code>LAG(val, 1) OVER (ORDER BY date_col)
-LEAD(val, 1) OVER (ORDER BY date_col)</code></pre>
+            <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
+              <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">Time Series &amp; Offsets</h4>
+              <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
+                LAG(val, 1) OVER (ORDER BY date_col)<br/>
+                LEAD(val, 1) OVER (ORDER BY date_col)
+              </code>
             </div>
-            <div class="sql-cheat">
-              <h3>NULL handling and COALESCE</h3>
-              <pre><code>COALESCE(comm, 0)
-NULLIF(a, b)</code></pre>
+            <div style="background: #111d35; border: 1px solid #1e293b; border-radius: 8px; padding: 10px;">
+              <h4 style="margin: 0 0 6px; color: #38bdf8; font-size: 11px;">NULL Handling &amp; Coalesce</h4>
+              <code style="font-size: 11px; color: #cbd5e1; display: block; line-height: 1.5;">
+                COALESCE(comm, 0)<br/>
+                NULLIF(a, b)
+              </code>
             </div>
           </div>
         </div>
-      </section>
+
+      </div>
 
     </div>
+
   </div>
-</main>
 
-{% endblock %}
+</div>
 
-{% block extra_js %}
-<!-- Monaco loads after lucide.min.js (base.html): its AMD loader would otherwise
-     capture lucide's UMD build and window.lucide would never be set. -->
+<!-- Monaco Script & Client Logic -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script>
   if (typeof require === 'undefined') {
-    document.getElementById('monacoSqlContainer').innerHTML = '<p class="sql-editor-fail">The code editor could not load. Check your connection and <a href="">reload this page</a>.</p>';
+    document.getElementById('monacoSqlContainer').innerHTML = '<p style="padding:24px;font:14px/1.6 sans-serif;color:#b91c1c;">The code editor could not load. Check your connection and <a href="" style="color:inherit;font-weight:700;">reload this page</a>.</p>';
   }
 </script>
 <script>
@@ -251,7 +959,7 @@ NULLIF(a, b)</code></pre>
   let activeDatasetId = "{{ default_dataset.id|default:'scott_tiger' }}";
   let activeChallengeId = null;
   let currentResults = { columns: [], rows: [] };
-
+  
   // Debugger state
   let debugSteps = [];
   let currentStepIdx = 0;
@@ -278,84 +986,65 @@ NULLIF(a, b)</code></pre>
     {% endfor %}
   };
 
-  // Text inserted into generated markup is always escaped.
-  function esc(value) {
-    return escapeHtml(String(value));
-  }
-
-  function setBtnLabel(btn, text) {
-    if (!btn) return;
-    const label = btn.querySelector('.sql-btn-label');
-    if (label) label.textContent = text;
-  }
-
   // Configure Monaco AMD Loader
-  if (typeof require !== 'undefined') {
-    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
+  require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
 
-    require(['vs/editor/editor.main'], function() {
-      // Colours mirror the bus.css tokens: --solid ground, --accent keywords, --ok strings, --muted comments.
-      monaco.editor.defineTheme('sqlDarkStudio', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [
-          { token: 'keyword', foreground: 'ffd79a', fontStyle: 'bold' },
-          { token: 'keyword.flow', foreground: 'ffd79a', fontStyle: 'bold' },
-          { token: 'predefined', foreground: 'ffc46b' },
-          { token: 'predefined.sql', foreground: 'ffc46b' },
-          { token: 'string', foreground: '86e3b5' },
-          { token: 'string.sql', foreground: '86e3b5' },
-          { token: 'number', foreground: 'ffc46b' },
-          { token: 'comment', foreground: 'b4c4d6', fontStyle: 'italic' },
-          { token: 'operator.sql', foreground: 'd6e2ef' }
-        ],
-        colors: {
-          'editor.background': '#13243f',
-          'editor.foreground': '#f4f8fd',
-          'editor.lineHighlightBackground': '#1a2f5080',
-          'editorCursor.foreground': '#ffd79a',
-          'editorLineNumber.foreground': '#8094ab',
-          'editorLineNumber.activeForeground': '#ffd79a',
-          'editor.selectionBackground': '#ffd79a33',
-          'editorGutter.background': '#13243f'
-        }
-      });
-
-      const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp LIMIT 10;";
-
-      editor = monaco.editor.create(document.getElementById('monacoSqlContainer'), {
-        value: initialSql,
-        language: 'sql',
-        theme: 'sqlDarkStudio',
-        fontSize: 14,
-        fontFamily: "'Fira Code', ui-monospace, Menlo, Consolas, monospace",
-        lineNumbers: 'on',
-        glyphMargin: true,
-        roundedSelection: true,
-        scrollBeyondLastLine: false,
-        readOnly: false,
-        automaticLayout: true,
-        minimap: { enabled: false }
-      });
-
-      // Clear the line highlight when the user types.
-      editor.onDidChangeModelContent(function() {
-        if (!isExecutingOrStepping) {
-          clearExecutionHighlight();
-        }
-      });
-
-      // Keybinding: Ctrl+Enter / Cmd+Enter to Run SQL
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
-        runSqlQuery();
-      });
-
-      fetchSchema(activeDatasetId);
-      setTimeout(function() {
-        startSqlDebugger();
-      }, 150);
+  require(['vs/editor/editor.main'], function() {
+    monaco.editor.defineTheme('sqlDarkStudio', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' },
+        { token: 'string', foreground: '34d399' },
+        { token: 'number', foreground: 'fbbf24' },
+        { token: 'comment', foreground: '64748b', fontStyle: 'italic' },
+        { token: 'operator.sql', foreground: 'f472b6' }
+      ],
+      colors: {
+        'editor.background': '#0d1527',
+        'editor.lineHighlightBackground': '#1e293b40',
+        'editorCursor.foreground': '#38bdf8',
+        'editorLineNumber.foreground': '#475569',
+        'editorLineNumber.activeForeground': '#38bdf8',
+        'editor.selectionBackground': '#38bdf833'
+      }
     });
-  }
+
+    const initialSql = DATASET_QUERIES[activeDatasetId] || "SELECT * FROM emp LIMIT 10;";
+
+    editor = monaco.editor.create(document.getElementById('monacoSqlContainer'), {
+      value: initialSql,
+      language: 'sql',
+      theme: 'sqlDarkStudio',
+      fontSize: 13,
+      fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
+      lineNumbers: 'on',
+      glyphMargin: true,
+      roundedSelection: true,
+      scrollBeyondLastLine: false,
+      readOnly: false,
+      automaticLayout: true,
+      minimap: { enabled: false }
+    });
+
+    // ── CRITICAL: CLEAR HAND/LINE HIGHLIGHT WHEN USER TYPES ──
+    editor.onDidChangeModelContent(function() {
+      if (!isExecutingOrStepping) {
+        clearExecutionHighlight();
+      }
+    });
+
+    // Keybinding: Ctrl+Enter / Cmd+Enter to Run SQL
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+      runSqlQuery();
+    });
+
+    fetchSchema(activeDatasetId);
+    checkMobileAdvisory();
+    setTimeout(function() {
+      startSqlDebugger();
+    }, 150);
+  });
 
   function clearExecutionHighlight() {
     if (editor && activeDecorations.length > 0) {
@@ -363,40 +1052,51 @@ NULLIF(a, b)</code></pre>
     }
   }
 
-  function showTab(btnId, paneId, on) {
-    const btn = document.getElementById(btnId);
-    const pane = document.getElementById(paneId);
-    if (btn) {
-      btn.classList.toggle('active', on);
-      btn.setAttribute('aria-selected', on ? 'true' : 'false');
-    }
-    if (pane) pane.hidden = !on;
-    // Keep the active tab visible inside its sideways-scrolling strip.
-    if (on && btn && btn.parentElement) {
-      const strip = btn.parentElement;
-      const b = btn.getBoundingClientRect();
-      const st = strip.getBoundingClientRect();
-      if (b.left < st.left || b.right > st.right) {
-        strip.scrollLeft += b.left - st.left - 8;
-      }
-    }
-  }
-
   // Switch Sidebar Tabs
   function switchSidebarTab(tabName) {
-    showTab('btnTabSchema', 'paneSchema', tabName === 'schema');
-    showTab('btnTabChallenges', 'paneChallenges', tabName === 'challenges');
-    showTab('btnTabHistory', 'paneHistory', tabName === 'history');
-    if (tabName === 'history') renderHistory();
+    document.querySelectorAll('.sidebar-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('paneSchema').style.display = 'none';
+    document.getElementById('paneChallenges').style.display = 'none';
+    document.getElementById('paneHistory').style.display = 'none';
+
+    if (tabName === 'schema') {
+      document.getElementById('btnTabSchema').classList.add('active');
+      document.getElementById('paneSchema').style.display = 'block';
+    } else if (tabName === 'challenges') {
+      document.getElementById('btnTabChallenges').classList.add('active');
+      document.getElementById('paneChallenges').style.display = 'block';
+    } else if (tabName === 'history') {
+      document.getElementById('btnTabHistory').classList.add('active');
+      document.getElementById('paneHistory').style.display = 'block';
+      renderHistory();
+    }
   }
 
   // Switch Results Tabs
   function switchResultTab(tabName) {
-    showTab('btnResTabStep', 'paneResStep', tabName === 'step');
-    showTab('btnResTabOutput', 'paneResOutput', tabName === 'output');
-    showTab('btnResTabPlan', 'paneResPlan', tabName === 'plan');
-    showTab('btnResTabVerify', 'paneResVerify', tabName === 'verify');
-    showTab('btnResTabCheatsheet', 'paneResCheatsheet', tabName === 'cheatsheet');
+    document.querySelectorAll('.res-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('paneResStep').style.display = 'none';
+    document.getElementById('paneResOutput').style.display = 'none';
+    document.getElementById('paneResPlan').style.display = 'none';
+    document.getElementById('paneResVerify').style.display = 'none';
+    document.getElementById('paneResCheatsheet').style.display = 'none';
+
+    if (tabName === 'step') {
+      document.getElementById('btnResTabStep').classList.add('active');
+      document.getElementById('paneResStep').style.display = 'block';
+    } else if (tabName === 'output') {
+      document.getElementById('btnResTabOutput').classList.add('active');
+      document.getElementById('paneResOutput').style.display = 'block';
+    } else if (tabName === 'plan') {
+      document.getElementById('btnResTabPlan').classList.add('active');
+      document.getElementById('paneResPlan').style.display = 'block';
+    } else if (tabName === 'verify') {
+      document.getElementById('btnResTabVerify').classList.add('active');
+      document.getElementById('paneResVerify').style.display = 'block';
+    } else if (tabName === 'cheatsheet') {
+      document.getElementById('btnResTabCheatsheet').classList.add('active');
+      document.getElementById('paneResCheatsheet').style.display = 'block';
+    }
   }
 
   // Fetch and Render Database Schema
@@ -418,21 +1118,24 @@ NULLIF(a, b)</code></pre>
     let isFirst = true;
 
     for (const [tblName, tblInfo] of Object.entries(schema)) {
-      const isOpen = isFirst;
+      const openClass = isFirst ? 'open' : '';
       isFirst = false;
-      const safeName = esc(tblName);
       html += `
         <div class="schema-table-item">
-          <button type="button" class="schema-table-header" id="hdr_${safeName}" aria-expanded="${isOpen}" aria-controls="cols_${safeName}" onclick="toggleTableColumns('${safeName}')">
-            <span class="table-title">${safeName}</span>
-            <span class="sql-tag">${esc(tblInfo.row_count)} rows</span>
-          </button>
-          <div id="cols_${safeName}" class="schema-columns-list ${isOpen ? 'open' : ''}">
+          <div class="schema-table-header" onclick="toggleTableColumns('${tblName}')">
+            <span class="table-title">
+              <span style="color: #38bdf8;">🗃️</span> ${tblName}
+            </span>
+            <span style="font-size: 10px; background: #17233d; padding: 1px 5px; border-radius: 3px; color: #94a3b8;">
+              ${tblInfo.row_count} rows
+            </span>
+          </div>
+          <div id="cols_${tblName}" class="schema-columns-list ${openClass}">
             ${tblInfo.columns.map(c => `
-              <button type="button" class="schema-col-row" onclick="insertColumnToEditor('${esc(c.name)}')" title="Insert ${esc(c.name)} into the editor">
-                <span class="schema-col-name">${c.is_pk ? '<span class="pk-badge">PK</span>' : ''}${esc(c.name)}</span>
-                <span class="col-type-tag">${esc(c.type)}</span>
-              </button>
+              <div class="schema-col-row" onclick="insertColumnToEditor('${c.name}')" title="Click to insert '${c.name}' into editor">
+                <span>${c.is_pk ? '<span class="pk-badge">PK</span>' : ''}${c.name}</span>
+                <span class="col-type-tag">${c.type}</span>
+              </div>
             `).join('')}
           </div>
         </div>
@@ -444,9 +1147,7 @@ NULLIF(a, b)</code></pre>
   function toggleTableColumns(tblName) {
     const el = document.getElementById(`cols_${tblName}`);
     if (el) {
-      const open = el.classList.toggle('open');
-      const hdr = document.getElementById(`hdr_${tblName}`);
-      if (hdr) hdr.setAttribute('aria-expanded', open ? 'true' : 'false');
+      el.classList.toggle('open');
     }
   }
 
@@ -465,10 +1166,10 @@ NULLIF(a, b)</code></pre>
   function changeActiveDataset(newDatasetId) {
     activeDatasetId = newDatasetId;
     activeChallengeId = null;
-    document.getElementById('btnVerifyChallenge').hidden = true;
-    document.getElementById('btnResTabVerify').hidden = true;
+    document.getElementById('btnVerifyChallenge').style.display = 'none';
+    document.getElementById('btnResTabVerify').style.display = 'none';
     clearExecutionHighlight();
-
+    
     if (DATASET_QUERIES[newDatasetId] && editor) {
       editor.setValue(DATASET_QUERIES[newDatasetId]);
     }
@@ -491,8 +1192,8 @@ NULLIF(a, b)</code></pre>
       editor.setValue(challenge.starter_sql);
     }
 
-    document.getElementById('btnVerifyChallenge').hidden = false;
-    document.getElementById('btnResTabVerify').hidden = false;
+    document.getElementById('btnVerifyChallenge').style.display = 'inline-flex';
+    document.getElementById('btnResTabVerify').style.display = 'block';
 
     fetchSchema(activeDatasetId);
   }
@@ -502,7 +1203,7 @@ NULLIF(a, b)</code></pre>
     if (!editor) return;
     const sql = editor.getValue();
     const btn = document.getElementById('btnStartDebug');
-    setBtnLabel(btn, 'Tracing...');
+    btn.innerHTML = '<span>⏳</span> Tracing...';
     btn.disabled = true;
 
     stopAutoPlay();
@@ -515,14 +1216,14 @@ NULLIF(a, b)</code></pre>
     })
     .then(res => res.json())
     .then(data => {
-      setBtnLabel(btn, 'Step through');
+      btn.innerHTML = '<span>🚀</span> Start SQL Debugger';
       btn.disabled = false;
 
       if (data.success && data.steps && data.steps.length > 0) {
         debugSteps = data.steps;
         currentStepIdx = 0;
-
-        // Rebuild pipeline pills from the clauses this query really has
+        
+        // Rebuild dynamic pipeline pills strictly based on query clauses present
         rebuildPipelinePills(debugSteps);
 
         // Setup slider
@@ -547,9 +1248,9 @@ NULLIF(a, b)</code></pre>
       isExecutingOrStepping = false;
     })
     .catch(err => {
-      setBtnLabel(btn, 'Step through');
+      btn.innerHTML = '<span>🚀</span> Start SQL Debugger';
       btn.disabled = false;
-      renderError("Could not reach the SQL Debugger. Please try again.");
+      renderError("Failed to communicate with SQL Debugger tracer endpoint.");
       isExecutingOrStepping = false;
     });
   }
@@ -559,13 +1260,15 @@ NULLIF(a, b)</code></pre>
     if (!wrap) return;
 
     if (!steps || steps.length === 0) {
-      wrap.innerHTML = '<span class="pipeline-pill is-empty">No clauses detected</span>';
+      wrap.innerHTML = '<span class="pipeline-pill" style="opacity:0.5;">No clauses detected</span>';
       return;
     }
 
     let html = '';
     steps.forEach((s, idx) => {
-      html += `<button type="button" class="pipeline-pill" id="pill_step_${idx}" onclick="goToStep(${idx})" title="Jump to step ${idx + 1}: ${esc(s.phase_name)}">${idx + 1}. ${esc(s.clause)}</button>`;
+      html += `<span class="pipeline-pill" id="pill_step_${idx}" onclick="goToStep(${idx})" style="cursor: pointer;" title="Jump to Step ${idx + 1}: ${s.phase_name}">
+        ${idx + 1}. ${s.clause}
+      </span>`;
     });
     wrap.innerHTML = html;
   }
@@ -583,14 +1286,17 @@ NULLIF(a, b)</code></pre>
     document.getElementById('stepBadge').innerText = `Step ${stepIdx + 1} / ${debugSteps.length}`;
 
     // Update Banner
-    document.getElementById('sqlStepStoryText').innerHTML =
-      `<strong>Step ${stepIdx + 1} of ${debugSteps.length}, line ${esc(step.line_number)}, ${esc(step.clause)}:</strong> ${esc(step.explanation)}`;
-    document.getElementById('currentPhaseBadge').innerText = step.phase_badge;
+    document.getElementById('sqlStepStoryText').innerHTML = `
+      💡 <strong>Step ${stepIdx + 1}/${debugSteps.length} [Line ${step.line_number} - ${step.clause}]:</strong> ${step.explanation}
+    `;
+    const phaseBadge = document.getElementById('currentPhaseBadge');
+    phaseBadge.innerText = step.phase_badge;
+    phaseBadge.style.color = step.badge_color || '#38bdf8';
 
     // Update Dynamic Pipeline Pills based on active step index
     updatePipelinePills(stepIdx);
 
-    // Highlight the line only while stepping
+    // ── SHOW HAND 👉 AND LINE HIGHLIGHT ONLY WHEN EXECUTING/STEPPING ──
     if (editor && step.line_number) {
       activeDecorations = editor.deltaDecorations(activeDecorations, [
         {
@@ -644,8 +1350,9 @@ NULLIF(a, b)</code></pre>
 
   function startAutoPlay() {
     const btn = document.getElementById('btnAutoPlay');
-    setBtnLabel(btn, 'Pause');
-    btn.setAttribute('aria-pressed', 'true');
+    btn.innerHTML = '⏸ Pause';
+    btn.style.background = '#0284c7';
+    btn.style.color = '#ffffff';
 
     if (currentStepIdx >= debugSteps.length - 1) {
       goToStep(0);
@@ -667,8 +1374,9 @@ NULLIF(a, b)</code></pre>
     }
     const btn = document.getElementById('btnAutoPlay');
     if (btn) {
-      setBtnLabel(btn, 'Play');
-      btn.setAttribute('aria-pressed', 'false');
+      btn.innerHTML = '▶ Auto Play';
+      btn.style.background = '#17233d';
+      btn.style.color = '#cbd5e1';
     }
   }
 
@@ -678,69 +1386,75 @@ NULLIF(a, b)</code></pre>
       const pill = document.getElementById(`pill_step_${idx}`);
       if (!pill) return;
       pill.classList.remove('active', 'passed');
-      pill.removeAttribute('aria-current');
 
       if (idx === activeStepIdx) {
         pill.classList.add('active');
-        pill.setAttribute('aria-current', 'step');
       } else if (idx < activeStepIdx) {
         pill.classList.add('passed');
       }
     });
   }
 
-  function cellHtml(val) {
-    if (val === null || val === undefined) {
-      return `<td class="null-cell">NULL</td>`;
-    }
-    return `<td${typeof val === 'number' ? ' class="is-num"' : ''}>${esc(val)}</td>`;
-  }
-
   function renderStepTable(step) {
     const container = document.getElementById('stepResultsOutput');
     if (!step.columns || step.columns.length === 0) {
-      container.innerHTML = `<p class="sql-empty">No table columns in buffer.</p>`;
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:#94a3b8;">No table columns in buffer.</div>`;
       return;
     }
 
     let statusBadgeClass = 'row-badge-kept';
-    let statusText = 'Candidate';
-    if (step.clause === 'JOIN') { statusBadgeClass = 'row-badge-joined'; statusText = 'Joined'; }
-    else if (step.clause === 'WHERE') { statusBadgeClass = 'row-badge-kept'; statusText = 'Qualified'; }
-    else if (step.clause === 'SELECT') { statusBadgeClass = 'row-badge-projected'; statusText = 'Projected'; }
-    else if (step.clause === 'ORDER BY') { statusBadgeClass = 'row-badge-sorted'; statusText = 'Sorted'; }
+    let statusText = '✨ CANDIDATE';
+    if (step.clause === 'JOIN') { statusBadgeClass = 'row-badge-joined'; statusText = '🔗 JOINED'; }
+    else if (step.clause === 'WHERE') { statusBadgeClass = 'row-badge-kept'; statusText = '✅ QUALIFIED'; }
+    else if (step.clause === 'SELECT') { statusBadgeClass = 'row-badge-projected'; statusText = '📐 PROJECTED'; }
+    else if (step.clause === 'ORDER BY') { statusBadgeClass = 'row-badge-sorted'; statusText = '📊 SORTED'; }
 
     let html = `
-      <div class="sql-step-head">
-        <p class="sql-step-name">${esc(step.phase_name)}</p>
-        <p class="sql-step-meta">
-          <span class="sql-tag">${esc(step.row_count)} rows &middot; ${step.columns.length} cols</span>
-          <span>${esc(step.status_note || '')}</span>
-        </p>
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #111d35; padding: 6px 10px; border-radius: 6px; border: 1px solid #1e293b;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 12px;">📦</span>
+          <span style="font-size: 11px; color: #cbd5e1; font-weight: 700;">
+            Live Virtual Table State: <strong style="color: ${step.badge_color || '#38bdf8'}">${step.phase_name}</strong>
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 10px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700; font-family: monospace;">
+            ${step.row_count} Rows &bull; ${step.columns.length} Cols
+          </span>
+          <span style="font-size: 11px; color: #94a3b8;">
+            ${step.status_note || ''}
+          </span>
+        </div>
       </div>
-      <div class="sql-table-scroll" role="region" aria-label="Rows at this step" tabindex="0">
+      <div style="overflow-x: auto; border-radius: 6px; border: 1px solid #1e293b; background: #09101f;">
         <table class="sql-data-table">
           <thead>
             <tr>
-              <th class="sql-status-col">Status</th>
+              <th style="width: 100px; background: #080e1a; color: #94a3b8; font-size: 10px; text-transform: uppercase;">STATUS</th>
     `;
 
     step.columns.forEach(col => {
-      html += `<th>${esc(col)}</th>`;
+      html += `<th>${col}</th>`;
     });
     html += `</tr></thead><tbody>`;
 
     if (step.rows.length === 0) {
-      html += `<tr><td colspan="${step.columns.length + 1}" class="sql-empty-cell">0 rows in buffer at this stage.</td></tr>`;
+      html += `<tr><td colspan="${step.columns.length + 1}" style="text-align: center; color: #64748b; padding: 20px;">0 rows in buffer at this stage.</td></tr>`;
     } else {
       step.rows.forEach((row, rIdx) => {
         let rowCustomBadge = statusText;
         if (step.clause === 'ORDER BY') {
-          rowCustomBadge = `#${rIdx + 1}`;
+          rowCustomBadge = `📊 #${rIdx + 1}`;
         }
         html += `<tr>`;
-        html += `<td><span class="row-badge ${statusBadgeClass}">${rowCustomBadge}</span></td>`;
-        row.forEach(val => { html += cellHtml(val); });
+        html += `<td><span class="${statusBadgeClass}" style="padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 800; font-family: monospace;">${rowCustomBadge}</span></td>`;
+        row.forEach(val => {
+          if (val === null || val === undefined) {
+            html += `<td class="null-cell">NULL</td>`;
+          } else {
+            html += `<td>${val}</td>`;
+          }
+        });
         html += `</tr>`;
       });
     }
@@ -754,7 +1468,7 @@ NULLIF(a, b)</code></pre>
     if (!editor) return;
     const sql = editor.getValue();
     const btn = document.getElementById('btnRunQuery');
-    setBtnLabel(btn, 'Running...');
+    btn.innerHTML = '<span>⏳</span> Running...';
     btn.disabled = true;
 
     clearExecutionHighlight();
@@ -766,7 +1480,7 @@ NULLIF(a, b)</code></pre>
     })
     .then(res => res.json())
     .then(data => {
-      setBtnLabel(btn, 'Run query');
+      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>';
       btn.disabled = false;
 
       document.getElementById('statExecTime').innerText = `${data.execution_time_ms || 0} ms`;
@@ -786,9 +1500,9 @@ NULLIF(a, b)</code></pre>
       }
     })
     .catch(err => {
-      setBtnLabel(btn, 'Run query');
+      btn.innerHTML = '<span>▶</span> Run Full Query <kbd style="font-size: 9px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 3px;">Ctrl+Enter</kbd>';
       btn.disabled = false;
-      renderError("Network or server error. Please try again.");
+      renderError("Network / Server connection error. Please try again.");
     });
   }
 
@@ -796,22 +1510,28 @@ NULLIF(a, b)</code></pre>
   function renderResultsTable(columns, rows) {
     const container = document.getElementById('queryResultsOutput');
     if (!columns || columns.length === 0) {
-      container.innerHTML = `<p class="sql-ok">Statement ran. 0 output rows returned.</p>`;
+      container.innerHTML = `<div style="text-align: center; padding: 24px; color: #10b981; font-size: 12px;">✅ Statement executed successfully. 0 output rows returned.</div>`;
       return;
     }
 
-    let html = `<div class="sql-table-scroll" role="region" aria-label="Query output" tabindex="0"><table class="sql-data-table"><thead><tr>`;
+    let html = `<div style="overflow-x: auto; border-radius: 6px; border: 1px solid #1e293b; background: #09101f;"><table class="sql-data-table"><thead><tr>`;
     columns.forEach(col => {
-      html += `<th>${esc(col)}</th>`;
+      html += `<th>${col}</th>`;
     });
     html += `</tr></thead><tbody>`;
 
     if (rows.length === 0) {
-      html += `<tr><td colspan="${columns.length}" class="sql-empty-cell">Query returned 0 rows.</td></tr>`;
+      html += `<tr><td colspan="${columns.length}" style="text-align: center; color: #64748b; padding: 20px;">Query returned 0 rows.</td></tr>`;
     } else {
       rows.forEach(row => {
         html += `<tr>`;
-        row.forEach(val => { html += cellHtml(val); });
+        row.forEach(val => {
+          if (val === null || val === undefined) {
+            html += `<td class="null-cell">NULL</td>`;
+          } else {
+            html += `<td>${val}</td>`;
+          }
+        });
         html += `</tr>`;
       });
     }
@@ -824,9 +1544,9 @@ NULLIF(a, b)</code></pre>
   function renderError(errMsg) {
     const container = document.getElementById('stepResultsOutput');
     container.innerHTML = `
-      <div class="sql-error-alert" role="alert">
-        <p class="sql-error-title">SQL error</p>
-        <pre class="sql-error-text">${esc(errMsg || 'Unknown error.')}</pre>
+      <div class="sql-error-alert">
+        <strong>❌ SQL Execution Error:</strong><br/>
+        ${errMsg}
       </div>
     `;
     const out = document.getElementById('queryResultsOutput');
@@ -837,15 +1557,15 @@ NULLIF(a, b)</code></pre>
   function renderQueryPlan(plan) {
     const container = document.getElementById('queryPlanOutput');
     if (!plan || plan.length === 0) {
-      container.innerHTML = `<p class="sql-empty">No query plan for this query.</p>`;
+      container.innerHTML = `<p style="color: #64748b; text-align: center; padding: 16px; font-size: 12px;">No execution plan available for this query.</p>`;
       return;
     }
 
-    let html = `<div class="plan-tree-box"><p class="sql-plan-title">EXPLAIN QUERY PLAN</p><ul class="sql-plan-list">`;
+    let html = `<div class="plan-tree-box"><strong>EXPLAIN QUERY PLAN Execution Tree:</strong><br/><br/>`;
     plan.forEach(step => {
-      html += `<li><span class="sql-tag">Node ${esc(step.id)}</span> <code>${esc(step.detail)}</code></li>`;
+      html += `&bull; [Node ${step.id}] ${step.detail}<br/>`;
     });
-    html += `</ul></div>`;
+    html += `</div>`;
     container.innerHTML = html;
   }
 
@@ -854,7 +1574,7 @@ NULLIF(a, b)</code></pre>
     if (!activeChallengeId || !editor) return;
     const sql = editor.getValue();
     const btn = document.getElementById('btnVerifyChallenge');
-    setBtnLabel(btn, 'Testing...');
+    btn.innerHTML = '⏳ Testing...';
 
     clearExecutionHighlight();
 
@@ -865,12 +1585,12 @@ NULLIF(a, b)</code></pre>
     })
     .then(res => res.json())
     .then(data => {
-      setBtnLabel(btn, 'Test challenge');
+      btn.innerHTML = '🧪 Test Challenge';
       renderChallengeVerification(data);
       switchResultTab('verify');
     })
     .catch(err => {
-      setBtnLabel(btn, 'Test challenge');
+      btn.innerHTML = '🧪 Test Challenge';
       console.error(err);
     });
   }
@@ -879,16 +1599,17 @@ NULLIF(a, b)</code></pre>
     const container = document.getElementById('challengeVerifyOutput');
     if (data.passed) {
       container.innerHTML = `
-        <div class="sql-verdict is-pass" role="status">
-          <h3>Accepted. Challenge solved.</h3>
-          <p>Your query matched every expected row and column in <strong>${esc(data.execution_time_ms)} ms</strong>.</p>
+        <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; padding: 18px; text-align: center;">
+          <div style="font-size: 28px; margin-bottom: 6px;">🎉</div>
+          <h3 style="color: #34d399; margin: 0 0 4px; font-size: 14px;">Accepted! Challenge Solved Successfully!</h3>
+          <p style="color: #cbd5e1; font-size: 12px; margin: 0;">Your SQL query matched all expected rows and column structures in <strong>${data.execution_time_ms} ms</strong>.</p>
         </div>
       `;
     } else {
       container.innerHTML = `
-        <div class="sql-verdict is-fail" role="status">
-          <h3>Not yet: the output does not match</h3>
-          <p>${esc(data.error || 'Your query output differed from the expected output.')}</p>
+        <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; padding: 16px;">
+          <h3 style="color: #f87171; margin: 0 0 4px; font-size: 13px;">❌ Wrong Answer / Output Mismatch</h3>
+          <p style="color: #fca5a5; font-size: 12px; margin: 0;">${data.error || 'Your query output differed from the canonical expected output.'}</p>
         </div>
       `;
     }
@@ -958,30 +1679,22 @@ NULLIF(a, b)</code></pre>
     try {
       const history = JSON.parse(localStorage.getItem('kashii_sql_history') || '[]');
       if (history.length === 0) {
-        container.innerHTML = `<p class="sql-empty">No query history yet.</p>`;
+        container.innerHTML = `<p style="color: #64748b; font-size: 12px; text-align: center; padding: 16px;">No query history yet.</p>`;
         return;
       }
       let html = '';
-      history.forEach((item, idx) => {
+      history.forEach(item => {
         html += `
-          <button type="button" class="challenge-item-card" onclick="loadHistoryIndex(${idx})">
-            <span class="sql-card-meta">
-              <span>${esc(item.dataset_id)}</span>
-              <span>${esc(item.timestamp)}</span>
-            </span>
-            <code class="sql-history-sql">${esc(item.sql)}</code>
-          </button>
+          <div class="challenge-item-card" onclick="loadHistoryItem(\`${escapeHtml(item.sql)}\`, '${item.dataset_id}')">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; color: #94a3b8; margin-bottom: 3px;">
+              <span>🗄️ ${item.dataset_id}</span>
+              <span>${item.timestamp}</span>
+            </div>
+            <pre style="margin: 0; font-family: monospace; font-size: 10px; color: #cbd5e1; white-space: pre-wrap; overflow: hidden; max-height: 36px;">${escapeHtml(item.sql)}</pre>
+          </div>
         `;
       });
       container.innerHTML = html;
-    } catch(e) {}
-  }
-
-  function loadHistoryIndex(idx) {
-    try {
-      const history = JSON.parse(localStorage.getItem('kashii_sql_history') || '[]');
-      const item = history[idx];
-      if (item) loadHistoryItem(item.sql, item.dataset_id);
     } catch(e) {}
   }
 
@@ -991,7 +1704,6 @@ NULLIF(a, b)</code></pre>
       const sel = document.getElementById('datasetSelector');
       if (sel) sel.value = datasetId;
       changeActiveDataset(datasetId);
-      if (editor) editor.setValue(sql);
     }
   }
 
@@ -999,22 +1711,56 @@ NULLIF(a, b)</code></pre>
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
-  // ── MAXIMIZE / FULL WIDTH RESULT TABLE MODE ──
+  // ── MAXIMIZE / FULLSCREEN RESULT TABLE MODE ──
   function toggleMaximizeTable() {
     const isMax = document.body.classList.toggle('table-maximized-mode');
+    const icon = document.getElementById('maxTableIcon');
     const text = document.getElementById('maxTableText');
     const btn = document.getElementById('btnMaximizeTable');
-    if (text) text.innerText = isMax ? 'Restore view' : 'Maximize table';
-    if (btn) btn.setAttribute('aria-pressed', isMax ? 'true' : 'false');
+
+    if (isMax) {
+      if (icon) icon.innerText = '🗗';
+      if (text) text.innerText = 'Restore View';
+      if (btn) {
+        btn.style.background = '#0284c7';
+        btn.style.color = '#ffffff';
+        btn.style.borderColor = '#38bdf8';
+      }
+    } else {
+      if (icon) icon.innerText = '⛶';
+      if (text) text.innerText = 'Maximize Table';
+      if (btn) {
+        btn.style.background = '#17233d';
+        btn.style.color = '#38bdf8';
+        btn.style.borderColor = '#233554';
+      }
+    }
   }
 
-  // ── SHOW / HIDE THE TABLES PANEL ──
+  // ── TOGGLE / REMOVE LEFT TABLES SIDEBAR (EXPAND DEBUGGER TO FULL WIDTH) ──
   function toggleSidebar() {
     const isCollapsed = document.body.classList.toggle('sidebar-collapsed');
+    const icon = document.getElementById('sidebarToggleIcon');
     const text = document.getElementById('sidebarToggleText');
     const btn = document.getElementById('btnToggleSidebar');
-    if (text) text.innerText = isCollapsed ? 'Show tables' : 'Hide tables';
-    if (btn) btn.setAttribute('aria-pressed', isCollapsed ? 'true' : 'false');
+
+    if (isCollapsed) {
+      if (icon) icon.innerText = '▶';
+      if (text) text.innerText = 'Show Tables';
+      if (btn) {
+        btn.style.background = '#0284c7';
+        btn.style.color = '#ffffff';
+        btn.style.borderColor = '#38bdf8';
+      }
+    } else {
+      if (icon) icon.innerText = '◀';
+      if (text) text.innerText = 'Hide Tables';
+      if (btn) {
+        btn.style.background = '#17233d';
+        btn.style.color = '#38bdf8';
+        btn.style.borderColor = '#233554';
+      }
+    }
 
     if (editor) {
       setTimeout(() => { editor.layout(); }, 120);
@@ -1028,6 +1774,40 @@ NULLIF(a, b)</code></pre>
     }
   });
 
+  // ── MOBILE ADVISORY & BLOCKER LOGIC ──
+  function checkMobileAdvisory() {
+    if (window.innerWidth <= 768) {
+      const isDismissed = sessionStorage.getItem('dismiss_sql_mobile_blocker');
+      if (!isDismissed) {
+        const modal = document.getElementById('mobileBlockerModal');
+        if (modal) modal.style.display = 'flex';
+      }
+    }
+  }
 
+  function dismissMobileBlocker() {
+    sessionStorage.setItem('dismiss_sql_mobile_blocker', 'true');
+    const modal = document.getElementById('mobileBlockerModal');
+    if (modal) {
+      modal.style.opacity = '0';
+      modal.style.transition = 'opacity 0.2s';
+      setTimeout(() => { modal.style.display = 'none'; }, 200);
+    }
+  }
+
+  function copyStudioLink() {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("✅ Link copied! Open this URL on your Desktop browser.");
+      }).catch(() => {
+        prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
+      });
+    } else {
+      prompt("Copy this SQL Studio URL for Desktop:", window.location.href);
+    }
+  }
+
+  // Check on load
+  window.addEventListener('DOMContentLoaded', checkMobileAdvisory);
 </script>
 {% endblock %}

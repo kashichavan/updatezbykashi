@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
-{% load static display %}
+{% load static %}
 
-{% block title %}Kashii Updates (Kashii Updatez): daily student jobs and internships 2026{% endblock %}
+{% block title %}⚡ Kashii Updates (Kashii Updatez) — Daily Student Jobs & Internships 2026{% endblock %}
 {% block meta_description %}Official Kashii Updates & Kashii Updatez portal by Python Kashi. Discover daily off-campus student jobs, tech internships, and direct career apply links with 7-day freshness guarantee.{% endblock %}
-{% block og_title %}Kashii Updates (Kashii Updatez): daily student jobs and internships{% endblock %}
+{% block og_title %}⚡ Kashii Updates (Kashii Updatez) — Daily Student Jobs & Internships{% endblock %}
 {% block og_description %}Official Kashii Updates portal by Python Kashi. Access daily student job drives, fresher internships, and programming tutorials.{% endblock %}
 
 {% block schema_markup %}
@@ -29,207 +29,512 @@
 {% endblock %}
 
 {% block content %}
-<main class="wrap">
-  <section class="hero">
-    <h1>Fresh jobs for students and freshers</h1>
-    <p class="sub">Every listing closes seven days after it is posted, and every one has an apply link.</p>
-    <p class="live-counts"><span><b>{{ hero_stats.open }}</b> open now</span><span><b>{{ hero_stats.internships }}</b> internships</span><span><b>{{ hero_stats.week }}</b> added this week</span></p>
+<div class="wrap">
+
+  <section class="vp-hero kx-hero">
+    <div class="kx-hero-copy">
+      <span class="kx-eyebrow"><span class="kx-live-dot" aria-hidden="true"></span> Updated daily</span>
+      <h1>Daily jobs and internships for <em>students and freshers</em></h1>
+      <p class="lead"><strong>Kashii Updates</strong> (also known as Kashii Updatez) lists fresh openings with apply links. Each listing closes seven days after it is posted.</p>
+      <div class="kx-hero-actions">
+        <a href="#browse-jobs" class="button kx-btn-primary"><i data-lucide="search" aria-hidden="true"></i> Browse jobs</a>
+        <a href="/resume-builder/" class="button kx-btn-ghost"><i data-lucide="file-text" aria-hidden="true"></i> Build my resume</a>
+      </div>
+    </div>
+    <div class="kx-hero-panel">
+      <div class="kx-bento" aria-label="Current listings">
+        <a class="kx-card kx-card-main" href="#browse-jobs">
+          <span class="kx-card-label"><span class="kx-live-dot" aria-hidden="true"></span> Open now</span>
+          <strong>{{ hero_stats.open }}</strong>
+          <div class="kx-chart" role="img" aria-label="Jobs posted on each of the last 7 days">
+            {% for day in hero_stats.daily %}
+            <span class="kx-chart-col" title="{{ day.label }}: {{ day.count }} jobs">
+              <i class="kx-chart-bar" style="height: {{ day.height }}%"></i>
+              <small>{{ day.label }}</small>
+            </span>
+            {% endfor %}
+          </div>
+        </a>
+        <a class="kx-card" href="#browse-jobs">
+          <span class="kx-card-label">Added this week</span>
+          <strong>{{ hero_stats.week }}</strong>
+        </a>
+        <a class="kx-card" href="#browse-jobs">
+          <span class="kx-card-label">Internships</span>
+          <strong>{{ hero_stats.internships }}</strong>
+        </a>
+      </div>
+      <nav class="kx-tools" aria-label="Free tools">
+        <a class="kx-tool" href="/resume-builder/">
+          <span class="kx-tool-icon"><i data-lucide="file-pen-line" aria-hidden="true"></i></span>
+          <span class="kx-tool-text"><b>Resume Builder</b>Fill in, improve, download</span>
+          <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
+        </a>
+        <a class="kx-tool" href="/ai-resume-analysis/">
+          <span class="kx-tool-icon"><i data-lucide="gauge" aria-hidden="true"></i></span>
+          <span class="kx-tool-text"><b>ATS Score</b>Upload and see what to fix</span>
+          <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
+        </a>
+        <a class="kx-tool" href="/debugger/">
+          <span class="kx-tool-icon"><i data-lucide="bug-play" aria-hidden="true"></i></span>
+          <span class="kx-tool-text"><b>Code Debugger</b>Step through your code</span>
+          <i data-lucide="arrow-up-right" class="kx-tool-arrow" aria-hidden="true"></i>
+        </a>
+      </nav>
+    </div>
   </section>
 
-  <section id="browse-jobs" aria-label="Find a job">
-    <div class="search-box">
-      <svg height="20" width="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-      <input aria-label="Search jobs by title, skill or keyword" data-locator-id="joblisting_search_keywordsearch" id="header-keyword-search" placeholder="Search a role or skill, like Python" autocomplete="off" type="text" value="" name="keyword">
-      <button type="button" id="headerSearchClearBtn" class="rel_icon-button" style="display: none;" aria-label="Clear search">&times;</button>
+
+  <!-- 3D Infinite Seamless Marquee: YouTube Video Tutorials (INSTANT PRE-RENDERED) -->
+  <section style="margin-bottom: 32px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: #dc2626; font-weight: 800; font-size: 16px;">▶</span>
+        <h3 style="font: 700 18px var(--font-sans); margin: 0; color: var(--ink);">Latest Tutorials from @pythonkashi</h3>
+      </div>
+      <a href="/youtube/" style="font-size: 13px; font-weight: 700; color: #dc2626;">View All Videos ↗</a>
     </div>
 
-    <div id="catalogSection">
-      <div class="filter-bar">
-        <h2 class="jl-jobs-heading" id="jobsFoundHeading">{% if initial_jobs_count %}{{ initial_jobs_count }} jobs found{% else %}Loading jobs{% endif %}</h2>
-        <div class="filter-actions">
-          <div class="sorter-select-wrapper">
-            <select aria-label="Sort jobs" data-locator-id="joblisting_search_sortby" id="sorter">
-              <option value="Date" selected>Newest first</option>
-              <option value="Relevance">Most relevant</option>
-              <option value="Proximity">Closing soon</option>
-            </select>
+    <div class="logo-marquee-wrapper" style="margin-bottom: 0; min-height: 160px;">
+      <div id="ytMarqueeTrack" class="logo-marquee-track">
+        <!-- Set 1: eager load so thumbnails appear immediately for first-time visitors -->
+        {% for v in youtube_videos %}
+          <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
+            <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="eager" fetchpriority="high" width="240" height="135">
+            <div class="yt-play-overlay">▶</div>
+            <div class="yt-title-bar">{{ v.title }}</div>
+          </a>
+        {% endfor %}
+        <!-- Set 2: duplicate for seamless infinite scroll -->
+        {% for v in youtube_videos %}
+          <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
+            <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="lazy" width="240" height="135">
+            <div class="yt-play-overlay">▶</div>
+            <div class="yt-title-bar">{{ v.title }}</div>
+          </a>
+        {% endfor %}
+        <!-- Set 3: extra duplicate to keep scroll gap-free on wide screens -->
+        {% for v in youtube_videos %}
+          <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="client-card-3d" title="{{ v.title }}">
+            <img src="{{ v.thumbnail_url }}" alt="{{ v.title }}" loading="lazy" width="240" height="135">
+            <div class="yt-play-overlay">▶</div>
+            <div class="yt-title-bar">{{ v.title }}</div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Search Keyword Bar Section -->
+  <div class="rel_header_search_wrapper" id="browse-jobs">
+    <div class="rel_header_search_container">
+      <svg height="20" width="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2" class="rel_header_search_icon" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      <input aria-label="job title or keyword" data-locator-id="joblisting_search_keywordsearch" id="header-keyword-search" class="rel_form-field__control--input-text rel_truncate rel_bg-transparent rel_outline-none" placeholder="Search by job title, skills, or keyword (e.g. Python, React, SDE, Intern)..." autocomplete="off" role="combobox" aria-invalid="false" aria-expanded="false" aria-autocomplete="list" type="text" value="" name="keyword">
+      <button type="button" id="headerSearchClearBtn" class="rel_icon-button" style="display: none;" aria-label="Clear search">
+        <svg height="16" width="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter & Sort Bar Section -->
+  <section id="catalogSection" class="rel_filter_section" style="margin-bottom: 24px;">
+    <!-- Inline SVG sprite definitions -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <defs>
+        <symbol id="view-list" viewBox="0 0 16 16">
+          <rect x="2" y="3" width="12" height="2" rx="0.6" fill="currentColor"/>
+          <rect x="2" y="7" width="12" height="2" rx="0.6" fill="currentColor"/>
+          <rect x="2" y="11" width="12" height="2" rx="0.6" fill="currentColor"/>
+        </symbol>
+        <symbol id="view-grid" viewBox="0 0 16 16">
+          <rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+          <rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor"/>
+        </symbol>
+        <symbol id="check" viewBox="0 0 12 12">
+          <path d="M2 6.5L4.5 9L10 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="chevron-down" viewBox="0 0 20 20">
+          <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="filter" viewBox="0 0 16 16">
+          <path d="M2 3.5h12M4 8h8M6.5 12.5h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+        <symbol id="close" viewBox="0 0 20 20">
+          <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="jl-filter-shell">
+
+      <!-- Sortbar Row: Heading & Controls -->
+      <div class="sortbar-row">
+        <h1 class="jl-jobs-heading" id="jobsFoundHeading">{% if initial_jobs_count %}{{ initial_jobs_count }} jobs found.{% else %}Loading opportunities...{% endif %}</h1>
+
+        <div class="sortbar-controls">
+          <!-- View Switcher -->
+          <div class="view-toggle-container" data-locator-id="joblisting_toggle_sortview">
+            <button data-locator-id="joblisting_toggle_listview" type="button" aria-pressed="false" class="view-toggle-btn" title="List view">
+              <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#view-list" xlink:href="#view-list"></use></svg>
+              <span class="vt-label">List</span>
+            </button>
+            <button data-locator-id="joblisting_toggle_sortview" type="button" aria-pressed="true" class="view-toggle-btn active rel_bg-trigger-active" title="Card view">
+              <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#view-grid" xlink:href="#view-grid"></use></svg>
+              <span class="vt-label">Cards</span>
+            </button>
           </div>
-          <button type="button" data-rs-modal-trigger="mobile-filters" class="filter-trigger-btn filter-mobile-only" aria-expanded="false">Filters</button>
+
+          <!-- Sorter Dropdown -->
+          <div class="sorter-select-wrapper">
+            <select aria-label="sort:" data-locator-id="joblisting_search_sortby" id="sorter">
+              <option value="Date" selected>Newest First</option>
+              <option value="Relevance">Most Relevant</option>
+              <option value="Proximity">Closing Soon</option>
+            </select>
+            <span class="sorter-chevron">
+              <svg height="16" width="16" aria-hidden="true" focusable="false"><use href="#chevron-down" xlink:href="#chevron-down"></use></svg>
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="filters-desktop">
+      <!-- Filters Row -->
+      <div class="filters-row">
+        <div class="filters-left-group">
+
+          <!-- Location Filter Popover -->
           <div class="rel_filter_dropdown_wrapper">
             <button data-locator-id="searchjobs_filters_location" type="button" class="filter-trigger-btn" aria-expanded="false" aria-haspopup="dialog">
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               <span id="locationFilterBtnText">Location</span>
               <span class="filter-badge-counter" id="locationFilterBadgeCount" style="display:none;">1</span>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2.5" class="rel_chevron" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div id="popoverLocation" class="rel_popover" style="display: none;">
               <div class="rel_popover_header">
-                <span class="rel_popover_title">Location</span>
-                <button type="button" class="rel_popover_close" data-close-popover="popoverLocation" aria-label="Close">&times;</button>
+                <span class="rel_popover_title">Filter by Location</span>
+                <button type="button" class="rel_popover_close" data-close-popover="popoverLocation">×</button>
               </div>
               <div class="rel_popover_options">
-                <button type="button" class="rel_filter_option active" data-city="">All locations</button>
-                <button type="button" class="rel_filter_option" data-city="Bengaluru">Bengaluru</button>
-                <button type="button" class="rel_filter_option" data-city="Hyderabad">Hyderabad</button>
-                <button type="button" class="rel_filter_option" data-city="Pune">Pune</button>
-                <button type="button" class="rel_filter_option" data-city="Mumbai">Mumbai</button>
-                <button type="button" class="rel_filter_option" data-city="Delhi NCR">Delhi NCR</button>
-                <button type="button" class="rel_filter_option" data-city="Remote">Remote</button>
+                <button type="button" class="rel_filter_option active" data-city="">🌐 All Locations</button>
+                <button type="button" class="rel_filter_option" data-city="Bengaluru">🏙️ Bengaluru</button>
+                <button type="button" class="rel_filter_option" data-city="Hyderabad">🏙️ Hyderabad</button>
+                <button type="button" class="rel_filter_option" data-city="Pune">🏙️ Pune</button>
+                <button type="button" class="rel_filter_option" data-city="Mumbai">🏙️ Mumbai</button>
+                <button type="button" class="rel_filter_option" data-city="Delhi NCR">🏙️ Delhi NCR</button>
+                <button type="button" class="rel_filter_option" data-city="Remote">🌐 Remote</button>
               </div>
             </div>
           </div>
+
+          <!-- Job Type Filter Popover -->
           <div class="rel_filter_dropdown_wrapper">
             <button data-locator-id="searchjobs_filters_jobType" type="button" class="filter-trigger-btn" aria-expanded="false" aria-haspopup="dialog">
-              <span id="jobTypeFilterBtnText">Job type</span>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              <span id="jobTypeFilterBtnText">Job Type</span>
               <span class="filter-badge-counter" id="jobTypeFilterBadgeCount" style="display:none;">1</span>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2.5" class="rel_chevron" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div id="popoverJobType" class="rel_popover" style="display: none;">
               <div class="rel_popover_header">
-                <span class="rel_popover_title">Job type</span>
-                <button type="button" class="rel_popover_close" data-close-popover="popoverJobType" aria-label="Close">&times;</button>
+                <span class="rel_popover_title">Filter by Type</span>
+                <button type="button" class="rel_popover_close" data-close-popover="popoverJobType">×</button>
               </div>
               <div class="rel_popover_options">
-                <button type="button" class="rel_filter_option active" data-job-type="all">All types</button>
-                <button type="button" class="rel_filter_option" data-job-type="FULL_TIME">Full time</button>
-                <button type="button" class="rel_filter_option" data-job-type="INTERNSHIP">Internships</button>
+                <button type="button" class="rel_filter_option active" data-job-type="all">✨ All Types</button>
+                <button type="button" class="rel_filter_option" data-job-type="FULL_TIME">💼 Full-Time</button>
+                <button type="button" class="rel_filter_option" data-job-type="INTERNSHIP">🎓 Internships</button>
               </div>
             </div>
           </div>
+
+          <!-- Professional Field Filter Popover -->
           <div class="rel_filter_dropdown_wrapper">
             <button data-locator-id="searchjobs_filters_specialism" type="button" class="filter-trigger-btn" aria-expanded="false" aria-haspopup="dialog">
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
               <span id="specialismFilterBtnText">Field</span>
               <span class="filter-badge-counter" id="specialismFilterBadgeCount" style="display:none;">1</span>
+              <svg height="13" width="13" fill="none" stroke="currentColor" stroke-width="2.5" class="rel_chevron" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
             <div id="popoverSpecialism" class="rel_popover" style="display: none;">
               <div class="rel_popover_header">
-                <span class="rel_popover_title">Field</span>
-                <button type="button" class="rel_popover_close" data-close-popover="popoverSpecialism" aria-label="Close">&times;</button>
+                <span class="rel_popover_title">Professional Field</span>
+                <button type="button" class="rel_popover_close" data-close-popover="popoverSpecialism">×</button>
               </div>
               <div class="rel_popover_options">
-                <button type="button" class="rel_filter_option active" data-category="all">All fields</button>
-                <button type="button" class="rel_filter_option" data-category="software-tech">Software &amp; Tech</button>
-                <button type="button" class="rel_filter_option" data-category="freshers">Freshers (0-1 years)</button>
-                <button type="button" class="rel_filter_option" data-category="experienced">Experienced (1+ years)</button>
-                <button type="button" class="rel_filter_option" data-category="qa-testing">QA &amp; Testing</button>
-                <button type="button" class="rel_filter_option" data-category="hr-recruitment">HR &amp; Hiring</button>
-                <button type="button" class="rel_filter_option" data-category="mba-business">MBA &amp; Business</button>
-                <button type="button" class="rel_filter_option" data-category="non-it">Non IT</button>
+                <button type="button" class="rel_filter_option active" data-category="all">✨ All Fields</button>
+                <button type="button" class="rel_filter_option" data-category="software-tech">💻 Software &amp; Tech</button>
+                <button type="button" class="rel_filter_option" data-category="freshers">🎓 Fresher (0-1 Yrs)</button>
+                <button type="button" class="rel_filter_option" data-category="experienced">🏆 Experienced (1-5+ Yrs)</button>
+                <button type="button" class="rel_filter_option" data-category="qa-testing">🧪 QA &amp; Testing</button>
+                <button type="button" class="rel_filter_option" data-category="hr-recruitment">👥 HR &amp; Hiring</button>
+                <button type="button" class="rel_filter_option" data-category="mba-business">📈 MBA &amp; Business</button>
+                <button type="button" class="rel_filter_option" data-category="non-it">📞 Non IT &amp; Ops</button>
               </div>
             </div>
           </div>
-        <button data-locator-id="searchjobs_filters_allFilters" type="button" class="filter-trigger-btn" aria-expanded="false">
-          <span>All filters</span>
-          <span class="filter-badge-counter" id="allFiltersBadgeCount" style="display:none;">0</span>
+
+          <!-- All Filters Button -->
+          <button data-locator-id="searchjobs_filters_allFilters" type="button" class="filter-trigger-btn filter-all-btn" aria-expanded="false" aria-label="All filters">
+            <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
+            <span>All Filters</span>
+            <span class="filter-badge-counter" id="allFiltersBadgeCount" style="display:none;">0</span>
+          </button>
+        </div>
+
+        <!-- Alert / Mobile Filters Right Side -->
+        <div class="filters-right-group">
+          <!-- Mobile Filters Trigger (hidden on desktop) -->
+          <button type="button" data-rs-modal-trigger="mobile-filters" class="filter-trigger-btn filter-mobile-only" aria-expanded="false" aria-label="Open filters">
+            <svg height="14" width="14" aria-hidden="true" focusable="false"><use href="#filter" xlink:href="#filter"></use></svg>
+            <span>Filters</span>
+          </button>
+
+          <!-- Save Search Alert Button (desktop) -->
+          <a href="https://www.instagram.com/ikashii_07/" target="_blank" rel="noopener" class="button-saved-jobs-alerts filter-desktop-only" title="New jobs are shared on Instagram">
+            <i data-lucide="instagram" aria-hidden="true" style="width:14px;height:14px;"></i>
+            <span>Follow for updates</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Selected Active Filters Row -->
+      <div class="selected-tags-row" id="selectedFiltersRow" style="display: none;">
+        <span class="selected-tags-label">Active:</span>
+
+        <span class="filter-active-tag" id="selectedCityTag" style="display: none;">
+          <span id="selectedCityTagName"></span>
+          <button type="button" id="btnClearCityTag" aria-label="Clear city filter">×</button>
+        </span>
+
+        <span class="filter-active-tag" id="selectedJobTypeTag" style="display: none;">
+          <span id="selectedJobTypeTagName"></span>
+          <button type="button" id="btnClearJobTypeTag" aria-label="Clear job type filter">×</button>
+        </span>
+
+        <span class="filter-active-tag" id="selectedSpecialismTag" style="display: none;">
+          <span id="selectedSpecialismTagName"></span>
+          <button type="button" id="btnClearSpecialismTag" aria-label="Clear field filter">×</button>
+        </span>
+
+        <span class="filter-active-tag" id="selectedKeywordTag" style="display: none;">
+          <span id="selectedKeywordTagName"></span>
+          <button type="button" id="btnClearKeywordTag" aria-label="Clear keyword filter">×</button>
+        </span>
+
+        <button type="button" id="btnClearAllFilters" class="clear-all-btn" title="Clear all active filters">
+          <svg height="11" width="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><use href="#close" xlink:href="#close"></use></svg>
+          Clear all
         </button>
       </div>
 
-      <div class="selected-tags-row" id="selectedFiltersRow" style="display: none;">
-        <span class="selected-tags-label">Active:</span>
-      <span class="filter-active-tag" id="selectedCityTag" style="display: none;"><span id="selectedCityTagName"></span><button type="button" id="btnClearCityTag" aria-label="Clear city filter">&times;</button></span>
-      <span class="filter-active-tag" id="selectedJobTypeTag" style="display: none;"><span id="selectedJobTypeTagName"></span><button type="button" id="btnClearJobTypeTag" aria-label="Clear job type filter">&times;</button></span>
-      <span class="filter-active-tag" id="selectedSpecialismTag" style="display: none;"><span id="selectedSpecialismTagName"></span><button type="button" id="btnClearSpecialismTag" aria-label="Clear field filter">&times;</button></span>
-      <span class="filter-active-tag" id="selectedKeywordTag" style="display: none;"><span id="selectedKeywordTagName"></span><button type="button" id="btnClearKeywordTag" aria-label="Clear keyword filter">&times;</button></span>
-        <button type="button" id="btnClearAllFilters" class="clear-all-btn">Clear all</button>
+      <!-- Mobile Save Alert Strip -->
+      <div class="filter-mobile-alert-strip filter-mobile-only">
+        <a href="https://www.instagram.com/ikashii_07/" target="_blank" rel="noopener" class="button-saved-jobs-alerts filter-desktop-only" title="New jobs are shared on Instagram">
+            <i data-lucide="instagram" aria-hidden="true" style="width:14px;height:14px;"></i>
+            <span>Follow for updates</span>
+          </a>
       </div>
+
     </div>
-  </section>
 
-  <section aria-label="Latest jobs" style="margin-top: var(--s3);">
-    <div id="jobsGrid" class="vp-catalog-grid">
-      {% for job in initial_jobs %}
-        {% include 'components/job_card.html' %}
-      {% empty %}
-        {% for i in "123456" %}<div class="vp-product-card vp-shimmer-card" aria-hidden="true"></div>{% endfor %}
-      {% endfor %}
-    </div>
-    <div id="paginationContainer"></div>
-  </section>
-
-  {% include 'components/adsense_unit.html' %}
-
-  <section class="section" aria-labelledby="tools-heading">
-    <h2 id="tools-heading">Free tools</h2>
-    <ul class="tool-list">
-      <li><a class="tool-link" href="/resume-builder/"><i data-lucide="file-pen-line" aria-hidden="true"></i><b>Resume Builder</b><span>Fill in, improve, download</span></a></li>
-      <li><a class="tool-link" href="/resume-builder/?paste_jd=1"><i data-lucide="clipboard-paste" aria-hidden="true"></i><b>Resume from Job Post</b><span>Paste a job and get a resume for it</span></a></li>
-      <li><a class="tool-link" href="/ai-resume-analysis/"><i data-lucide="gauge" aria-hidden="true"></i><b>ATS Score</b><span>Upload and see what to fix</span></a></li>
-      <li><a class="tool-link" href="/resume-studio/"><i data-lucide="layout-template" aria-hidden="true"></i><b>Resume Studio</b><span>Choose a design and edit it</span></a></li>
-      <li><a class="tool-link" href="/debugger/"><i data-lucide="bug-play" aria-hidden="true"></i><b>Code Debugger</b><span>Step through your code</span></a></li>
-      <li><a class="tool-link" href="/sql/"><i data-lucide="database" aria-hidden="true"></i><b>SQL Debugger</b><span>Run and understand queries</span></a></li>
-    </ul>
-  </section>
-
-  {% if youtube_videos %}
-  <section class="section" aria-labelledby="videos-heading">
-    <div class="section-head">
-      <h2 id="videos-heading">Latest tutorials</h2>
-      <a href="/youtube/">All videos</a>
-    </div>
-    <div class="video-row">
-      {% for v in youtube_videos|slice:":6" %}
-      <a href="{{ v.watch_url }}" target="_blank" rel="noopener" class="video-card">
-        <img src="{{ v.thumbnail_url }}" alt="" loading="lazy" decoding="async" width="240" height="135">
-        <span>{{ v.title }}</span>
-      </a>
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-  <section class="section" aria-label="From the founder">
-    <div class="glass founder-note">
-      <blockquote>&ldquo;I saw students wasting hours on outdated job posts and fake requirements.&rdquo;</blockquote>
-      <cite>Kashinath, founder. <a href="/about/">Why this site exists</a></cite>
-    </div>
-  </section>
-
-  {% include 'components/adsense_unit.html' with ad_type='multiplex' margin_y='40px' %}
-</main>
-
-<div id="modalAllFilters" class="rel_modal_backdrop" style="display: none;" role="dialog" aria-modal="true" aria-label="Filters">
-  <div class="rel_modal_container">
-    <div class="rel_modal_header">
-      <h3 class="rel_modal_title">Filters</h3>
-      <button type="button" class="rel_popover_close rel_modal_close_btn" id="btnCloseAllFilters" aria-label="Close filters">&times;</button>
-    </div>
-    <div class="rel_modal_body">
-      <div class="rel_filter_group"><span class="rel_filter_group_title">Location</span><div class="rel_filter_chips" id="modalLocationChips">
-              <button type="button" class="rel_chip active" data-city="">All locations</button>
+    <!-- All Filters Modal -->
+    <div id="modalAllFilters" class="rel_modal_backdrop" style="display: none;" role="dialog" aria-modal="true" aria-label="All Filters">
+      <div class="rel_modal_container">
+        <div class="rel_modal_header">
+          <h3 class="rel_modal_title">Filters</h3>
+          <button type="button" class="rel_popover_close rel_modal_close_btn" id="btnCloseAllFilters" aria-label="Close filters">&times;</button>
+        </div>
+        <div class="rel_modal_body">
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Location</span>
+            <div class="rel_filter_chips" id="modalLocationChips">
+              <button type="button" class="rel_chip active" data-city="">All Locations</button>
               <button type="button" class="rel_chip" data-city="Bengaluru">Bengaluru</button>
               <button type="button" class="rel_chip" data-city="Hyderabad">Hyderabad</button>
               <button type="button" class="rel_chip" data-city="Pune">Pune</button>
               <button type="button" class="rel_chip" data-city="Mumbai">Mumbai</button>
               <button type="button" class="rel_chip" data-city="Delhi NCR">Delhi NCR</button>
               <button type="button" class="rel_chip" data-city="Remote">Remote</button>
-      </div></div>
-      <div class="rel_filter_group"><span class="rel_filter_group_title">Job type</span><div class="rel_filter_chips" id="modalJobTypeChips">
-              <button type="button" class="rel_chip active" data-job-type="all">All types</button>
-              <button type="button" class="rel_chip" data-job-type="FULL_TIME">Full time</button>
+            </div>
+          </div>
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Job Type</span>
+            <div class="rel_filter_chips" id="modalJobTypeChips">
+              <button type="button" class="rel_chip active" data-job-type="all">All Types</button>
+              <button type="button" class="rel_chip" data-job-type="FULL_TIME">Full-Time</button>
               <button type="button" class="rel_chip" data-job-type="INTERNSHIP">Internships</button>
-      </div></div>
-      <div class="rel_filter_group"><span class="rel_filter_group_title">Field</span><div class="rel_filter_chips" id="modalCategoryChips">
-              <button type="button" class="rel_chip active" data-category="all">All fields</button>
+            </div>
+          </div>
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Professional Field</span>
+            <div class="rel_filter_chips" id="modalCategoryChips">
+              <button type="button" class="rel_chip active" data-category="all">All Fields</button>
               <button type="button" class="rel_chip" data-category="software-tech">Software &amp; Tech</button>
-              <button type="button" class="rel_chip" data-category="freshers">Freshers (0-1 years)</button>
-              <button type="button" class="rel_chip" data-category="experienced">Experienced (1+ years)</button>
+              <button type="button" class="rel_chip" data-category="freshers">Freshers (0-1 Y)</button>
+              <button type="button" class="rel_chip" data-category="experienced">Experienced (1+ Y)</button>
               <button type="button" class="rel_chip" data-category="qa-testing">QA &amp; Testing</button>
               <button type="button" class="rel_chip" data-category="hr-recruitment">HR &amp; Hiring</button>
               <button type="button" class="rel_chip" data-category="mba-business">MBA &amp; Business</button>
               <button type="button" class="rel_chip" data-category="non-it">Non IT</button>
-      </div></div>
-      <div class="rel_filter_group"><span class="rel_filter_group_title">Sort by</span><div class="rel_filter_chips" id="modalSortChips">
-              <button type="button" class="rel_chip active" data-sort="newest">Newest first</button>
-              <button type="button" class="rel_chip" data-sort="relevance">Most relevant</button>
-              <button type="button" class="rel_chip" data-sort="deadline">Closing soon</button>
-      </div></div>
+            </div>
+          </div>
+          <div class="rel_filter_group">
+            <span class="rel_filter_group_title">Sort By</span>
+            <div class="rel_filter_chips" id="modalSortChips">
+              <button type="button" class="rel_chip active" data-sort="newest">Newest First</button>
+              <button type="button" class="rel_chip" data-sort="relevance">Relevancy</button>
+              <button type="button" class="rel_chip" data-sort="deadline">Closing Soon</button>
+            </div>
+          </div>
+        </div>
+        <div class="rel_modal_footer">
+          <button type="button" class="rel_modal_btn_reset" id="btnResetModalFilters">Reset</button>
+          <button type="button" class="rel_modal_btn_apply" id="btnApplyModalFilters">Apply Filters</button>
+        </div>
+      </div>
     </div>
-    <div class="rel_modal_footer">
-      <button type="button" class="rel_modal_btn_reset" id="btnResetModalFilters">Reset</button>
-      <button type="button" class="rel_modal_btn_apply" id="btnApplyModalFilters">Show jobs</button>
+
+
+  </section>
+
+
+  <!-- High-Visibility Google AdSense Display Unit -->
+  {% include 'components/adsense_unit.html' %}
+
+  <!-- Paginated Grid Feed (Displays 9 Opportunities per Page) -->
+  <main>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 2px;">
+      <div>
+        <h2 style="font: 700 20px var(--font-sans); margin: 0; color: var(--ink);"><img src="{% static 'images/icon-feed.png' %}" class="nav-icon" width="18" height="18" alt="Requirements"> Latest Requirements</h2>
+        <p style="font-size: 13px; color: var(--muted); margin: 4px 0 0;">Newest first</p>
+      </div>
+      <a href="/category/software-tech/" style="font-size: 13px; font-weight: 700; color: var(--blue-primary);">View All ↗</a>
     </div>
-  </div>
+
+    <div id="jobsGrid" class="vp-catalog-grid">
+      {% for job in initial_jobs %}
+      <div class="vp-product-card" data-id="{{ job.id }}" data-share-url="/category/{{ job.category.slug }}/job/{{ job.uuid }}/">
+        <div class="vp-card-header">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+            <span class="company-badge">{{ job.company_name }}</span>
+            <span class="source-tag" title="Verified Source" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;">{{ job.get_discreet_source_code }}</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="type-badge">{{ job.get_job_type_display }}</span>
+          </div>
+        </div>
+
+        <div class="vp-card-content">
+          <h3><a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/" style="color:inherit;text-decoration:none;">{{ job.title }}</a></h3>
+          
+          <div class="vp-salary-row">
+            <span style="display:inline-flex;align-items:center;gap:4px;"><i data-lucide="badge-dollar-sign" class="nav-icon" style="width: 15px; height: 15px;"></i> {{ job.stipend_salary }}</span>
+            <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><i data-lucide="map-pin" class="nav-icon" style="width: 15px; height: 15px;"></i> {{ job.location }}</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+            <div style="display:flex;align-items:center;gap:4px;">
+              <i data-lucide="calendar" class="nav-icon" style="width: 14px; height: 14px;"></i> Posted: <strong style="color:var(--ink);">{{ job.get_posted_date_display }}</strong>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;color:var(--blue-primary);font-weight:700;">
+              <i data-lucide="briefcase" class="nav-icon" style="width: 13px; height: 13px;"></i> <span>Exp: {{ job.get_experience_display }}</span>
+            </div>
+          </div>
+
+          {% if job.contact_phone %}
+          <div style="font-size:11.5px;font-weight:700;color:#059669;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);padding:3px 8px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:5px;">
+            <i data-lucide="phone-call" style="width:12px;height:12px;"></i>
+            <span>HR Contact: <strong style="color:#047857;">{{ job.contact_phone }}</strong></span>
+          </div>
+          {% endif %}
+
+          <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ job.description|default:"Open this listing for the full job description."|cut:"**"|truncatewords:22 }}</p>
+
+          <div class="skills-wrapper" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 4px;">
+            {% for skill in job.get_skills_list|slice:":4" %}
+              <span class="skill-tag">{{ skill }}</span>
+            {% empty %}
+              <span class="skill-tag">Software Engineering</span>
+            {% endfor %}
+          </div>
+
+          <div class="vp-price-row">
+            <div class="timer-tag" data-timer="{{ job.id }}" data-seconds="{{ job.get_time_left_seconds }}">
+              <i data-lucide="clock" style="width: 13px; height: 13px;"></i> <span>Auto-Expires in 7 Days</span>
+            </div>
+          </div>
+
+          <div class="card-action-grid">
+            {% if job.apply_url %}
+            <a href="{{ job.apply_url }}" target="_blank" rel="noopener noreferrer"
+               class="external-apply-btn"
+               onclick="event.stopPropagation();">
+              <i data-lucide="external-link" style="width: 14px; height: 14px;"></i> Apply Now ↗
+            </a>
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+               class="detail-page-btn"
+               onclick="event.stopPropagation();">
+              <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> Detail Page
+            </a>
+            {% else %}
+            <a href="/category/{{ job.category.slug }}/job/{{ job.uuid }}/"
+               class="external-apply-btn"
+               onclick="event.stopPropagation();"
+               style="grid-column: 1 / -1;">
+              <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i> View Requirement Page ↗
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      {% for i in "123456" %}
+      <div class="vp-product-card vp-shimmer-card">
+        <div class="vp-card-header" style="margin-bottom: 16px;">
+          <div class="shimmer-placeholder" style="width: 100px; height: 22px; border-radius: 9999px;"></div>
+          <div class="shimmer-placeholder" style="width: 75px; height: 22px; border-radius: 9999px;"></div>
+        </div>
+        <div class="vp-card-content">
+          <div class="shimmer-placeholder" style="width: 85%; height: 20px; margin-bottom: 12px; border-radius: 6px;"></div>
+          <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+            <div class="shimmer-placeholder" style="width: 90px; height: 16px; border-radius: 4px;"></div>
+            <div class="shimmer-placeholder" style="width: 70px; height: 16px; border-radius: 4px;"></div>
+          </div>
+          <div class="shimmer-placeholder" style="width: 110px; height: 14px; margin-bottom: 12px; border-radius: 4px;"></div>
+          <div class="shimmer-placeholder" style="width: 100%; height: 13px; margin-bottom: 6px; border-radius: 4px;"></div>
+          <div class="shimmer-placeholder" style="width: 70%; height: 13px; margin-bottom: 16px; border-radius: 4px;"></div>
+          <div class="skills-wrapper" style="display: flex; gap: 6px; margin-bottom: 18px;">
+            <div class="shimmer-placeholder" style="width: 55px; height: 22px; border-radius: 6px;"></div>
+            <div class="shimmer-placeholder" style="width: 65px; height: 22px; border-radius: 6px;"></div>
+            <div class="shimmer-placeholder" style="width: 50px; height: 22px; border-radius: 6px;"></div>
+          </div>
+          <div class="shimmer-placeholder" style="width: 140px; height: 18px; margin-bottom: 16px; border-radius: 6px;"></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;">
+            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
+            <div class="shimmer-placeholder" style="height: 38px; border-radius: 10px;"></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+
+    <!-- Clean Pagination Bar -->
+    <div id="paginationContainer" style="margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+      <!-- Dynamically populated via JS -->
+    </div>
+  </main>
+
+
+
+  <!-- High-RPM Multiplex Discovery Ad Grid -->
+  {% include 'components/adsense_unit.html' with ad_type='multiplex' margin_y='40px' %}
+
 </div>
 
 <!-- Job Detail Drawer -->
@@ -277,3 +582,4 @@
   </div>
 </div>
 {% endblock %}
+
