@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (flashClose && flashBanner) {
       flashClose.addEventListener('click', () => {
         flashBanner.style.display = 'none';
+        try { localStorage.setItem('kashii_flash_dismissed', '1'); } catch (e) {}
       });
     }
 
@@ -1265,13 +1266,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    if (sortSelect) {
-      sortSelect.addEventListener('change', (e) => {
-        state.sort = e.target.value;
-        state.page = 1;
-        loadJobs();
-      });
-    }
+    // Sort changes are handled once, with the value mapping, in setupFilterPopovers.
 
     if (btnCloseDetail && detailModal) {
       btnCloseDetail.addEventListener('click', () => detailModal.classList.remove('active'));

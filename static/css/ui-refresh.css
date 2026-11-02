@@ -623,3 +623,19 @@ html input:focus-visible, html textarea:focus-visible, html select:focus-visible
 html .vp-product-card { overflow: clip; }
 html .client-card-3d { transition: box-shadow .25s ease, border-color .25s ease; }
 html .client-card-3d:hover { transform: none; }
+
+/* Phone polish, 2026-11-02 */
+html.flash-dismissed #flashBanner { display: none; }
+@media (max-width: 768px) {
+  /* The Instagram button covered charts, links and buttons on every page.
+     Instagram stays one tap away in the menu. */
+  html .floating-chat-widget { display: none; }
+
+  /* Job pages: one bottom bar, not two. The apply bar takes the nav's place. */
+  html body:has(.jd-sticky) .mobile-bottom-nav { display: none; }
+  html body:has(.jd-sticky) .jd-sticky {
+    bottom: 0;
+    padding-bottom: calc(9px + env(safe-area-inset-bottom, 0px));
+  }
+  html body:has(.jd-sticky) .jd-wrap { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+}
