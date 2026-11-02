@@ -673,3 +673,8 @@ html .vp-pill .card-mini-icon, html .button .card-mini-icon { width: 14px; heigh
 }
 @keyframes kxGrow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes kxRise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* In-page links (Browse jobs, table of contents) glide instead of jumping. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
