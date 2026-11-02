@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!jobs || jobs.length === 0) {
       jobsGrid.innerHTML = `
         <div class="empty-jobs-container" style="grid-column: 1 / -1; text-align: center; padding: 4rem 1.5rem; background: #ffffff; border-radius: 16px; border: 1px solid var(--subtle-border, #e2e8f0); box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);">
-          <div style="font-size: 38px; margin-bottom: 12px;">🔍</div>
+          <div style="margin-bottom: 12px; color: var(--blue-primary, #2563eb);"><i data-lucide="search-x" style="width:36px;height:36px;" aria-hidden="true"></i></div>
           <h3 style="font-family: var(--font-serif); font-size: 20px; font-weight: 800; color: var(--ink, #0f172a); margin-bottom: 8px;">No jobs found matching your filters.</h3>
           <p style="color: var(--muted, #64748b); font-size: 14px; max-width: 440px; margin: 0 auto 18px; line-height: 1.5;">Try selecting a different location, removing specific job type criteria, or clearing all filters.</p>
           <button type="button" id="btnEmptyClearFilters" class="rel_modal_btn_apply" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; cursor: pointer;">
@@ -396,26 +396,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const isNewToday = postedDate === 'Today';
 
       let catStyle = 'background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;';
-      let catIcon = '💻';
+      let catIcon = 'monitor';
       let catLabel = j.category_name || 'Software Eng';
 
       const catSlug = (j.category_slug || '').toLowerCase();
       const titleLower = (j.title || '').toLowerCase();
       if (catSlug.includes('qa') || titleLower.includes('test') || titleLower.includes('qa')) {
         catStyle = 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;';
-        catIcon = '🧪';
+        catIcon = 'flask-conical';
         catLabel = 'QA & Testing';
       } else if (catSlug.includes('hr') || titleLower.includes('recruiter') || titleLower.includes('talent') || titleLower.includes('hr ')) {
         catStyle = 'background:#faf5ff;color:#7e22ce;border:1px solid #e9d5ff;';
-        catIcon = '👥';
+        catIcon = 'users';
         catLabel = 'HR & Hiring';
       } else if (catSlug.includes('mba') || titleLower.includes('mba') || titleLower.includes('management trainee') || titleLower.includes('business analyst')) {
         catStyle = 'background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8;';
-        catIcon = '📈';
+        catIcon = 'trending-up';
         catLabel = 'MBA & Business';
       } else if (catSlug.includes('non') || j.industry_domain === 'NON_TECHNICAL') {
         catStyle = 'background:#fef3c7;color:#b45309;border:1px solid #fde68a;';
-        catIcon = '📞';
+        catIcon = 'phone';
         catLabel = 'Non IT';
       }
       const srcCode = j.source_code || ((j.source_name || '').toLowerCase().includes('linkedin') ? 'L' : ((j.source_name || '').toLowerCase().includes('naukri') ? 'N' : ((j.source_name || '').toLowerCase().includes('startup') ? 'S' : 'JD')));
@@ -429,8 +429,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="source-tag" title="Verified Opportunity" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;letter-spacing:0.3px;">${srcCode}</span>
             </div>
             <div class="vp-badge-cluster">
-              ${j.is_referral ? '<span style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #bfdbfe;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:3px;">🤝 Referral</span>' : ''}
-              <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;">${catIcon} ${escapeHtml(j.category_name || catLabel)}</span>
+              ${j.is_referral ? '<span style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #bfdbfe;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="handshake" class="card-mini-icon" aria-hidden="true"></i>Referral</span>' : ''}
+              <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${catIcon}" class="card-mini-icon" aria-hidden="true"></i>${escapeHtml(j.category_name || catLabel)}</span>
               ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:4px;"><span class="badge-live-pulse"></span>NEW</span>' : ''}
               <span class="type-badge">${j.job_type_display}</span>
             </div>
@@ -449,13 +449,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">${escapeHtml(postedDate)}</strong>
               </div>
               <div style="display:flex;align-items:center;gap:4px;color:var(--blue-primary);font-weight:700;">
-                <span>💼</span> <span>Exp: ${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
+                <i data-lucide="briefcase" class="card-mini-icon" aria-hidden="true"></i> <span>Exp: ${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
               </div>
             </div>
 
             ${j.contact_phone ? `
               <div style="font-size:11.5px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:3px 8px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:5px;">
-                <span>📞 HR Contact:</span> <a href="tel:${escapeHtml(j.contact_phone)}" style="color:#047857;text-decoration:none;font-weight:800;" onclick="event.stopPropagation();">${escapeHtml(j.contact_phone)}</a>
+                <i data-lucide="phone" class="card-mini-icon" aria-hidden="true"></i><span>HR Contact:</span> <a href="tel:${escapeHtml(j.contact_phone)}" style="color:#047857;text-decoration:none;font-weight:800;" onclick="event.stopPropagation();">${escapeHtml(j.contact_phone)}</a>
               </div>
             ` : ''}
 
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <div class="vp-price-row">
               <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">
-                ⏱️ <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
+                <i data-lucide="clock" class="card-mini-icon" aria-hidden="true"></i> <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
               </div>
             </div>
 

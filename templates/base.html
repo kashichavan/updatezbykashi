@@ -145,9 +145,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="shortcut icon" href="{% static 'images/icon-apply.png' %}" type="image/png">
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Playfair+Display:ital,wght@0,700;0,900;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script>try { if (localStorage.getItem('kashii_flash_dismissed')) document.documentElement.classList.add('flash-dismissed'); } catch (e) {}</script>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      try { if (localStorage.getItem('kashii_flash_dismissed')) root.classList.add('flash-dismissed'); } catch (e) {}
+      var conn = navigator.connection || {};
+      if (conn.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2)) root.classList.add('lite');
+    })();
+  </script>
   <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2026110201">
-  <link rel="stylesheet" href="{% static 'css/ui-refresh.css' %}?v=2026110204">
+  <link rel="stylesheet" href="{% static 'css/ui-refresh.css' %}?v=2026110206">
   {% block extra_css %}{% endblock %}
   {% block schema_markup %}{% endblock %}
 </head>
@@ -193,7 +200,11 @@
   <script src="{% static 'js/spider_mesh.js' %}?v=202609270120"></script>
 
   <!-- Core App Scripts -->
-  <script src="{% static 'js/app.js' %}?v=2026110201"></script>
+  <script src="{% static 'js/app.js' %}?v=2026110202"></script>
+  <!-- Motion: self-hosted GSAP, deferred so it never delays the page. -->
+  <script defer src="{% static 'js/vendor/gsap.min.js' %}?v=3.12.5"></script>
+  <script defer src="{% static 'js/vendor/ScrollTrigger.min.js' %}?v=3.12.5"></script>
+  <script defer src="{% static 'js/site-motion.js' %}?v=2026110201"></script>
   {% block extra_js %}{% endblock %}
   <script>
     if (window.lucide) {
