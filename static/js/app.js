@@ -396,26 +396,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const isNewToday = postedDate === 'Today';
 
       let catStyle = 'background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe;';
-      let catIcon = 'monitor';
+      let catIcon = '💻';
       let catLabel = j.category_name || 'Software Eng';
 
       const catSlug = (j.category_slug || '').toLowerCase();
       const titleLower = (j.title || '').toLowerCase();
       if (catSlug.includes('qa') || titleLower.includes('test') || titleLower.includes('qa')) {
         catStyle = 'background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;';
-        catIcon = 'flask-conical';
+        catIcon = '🧪';
         catLabel = 'QA & Testing';
       } else if (catSlug.includes('hr') || titleLower.includes('recruiter') || titleLower.includes('talent') || titleLower.includes('hr ')) {
         catStyle = 'background:#faf5ff;color:#7e22ce;border:1px solid #e9d5ff;';
-        catIcon = 'users';
+        catIcon = '👥';
         catLabel = 'HR & Hiring';
       } else if (catSlug.includes('mba') || titleLower.includes('mba') || titleLower.includes('management trainee') || titleLower.includes('business analyst')) {
         catStyle = 'background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8;';
-        catIcon = 'trending-up';
+        catIcon = '📈';
         catLabel = 'MBA & Business';
       } else if (catSlug.includes('non') || j.industry_domain === 'NON_TECHNICAL') {
         catStyle = 'background:#fef3c7;color:#b45309;border:1px solid #fde68a;';
-        catIcon = 'phone';
+        catIcon = '📞';
         catLabel = 'Non IT';
       }
       const srcCode = j.source_code || ((j.source_name || '').toLowerCase().includes('linkedin') ? 'L' : ((j.source_name || '').toLowerCase().includes('naukri') ? 'N' : ((j.source_name || '').toLowerCase().includes('startup') ? 'S' : 'JD')));
@@ -426,12 +426,12 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="vp-card-header">
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
               <span class="company-badge" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
-              <span class="source-tag" title="Verified Opportunity" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color: var(--muted);border:1px solid #cbd5e1;letter-spacing:0.3px;">${srcCode}</span>
+              <span class="source-tag" title="Verified Opportunity" style="font-size:10px;font-weight:800;padding:1px 6px;border-radius:4px;background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;letter-spacing:0.3px;">${srcCode}</span>
             </div>
             <div class="vp-badge-cluster">
-              ${j.is_referral ? '<span style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #bfdbfe;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:3px;"><i data-lucide="handshake" class="card-mini-icon" aria-hidden="true"></i>Referral</span>' : ''}
-              <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:4px;"><i data-lucide="${catIcon}" class="card-mini-icon" aria-hidden="true"></i>${escapeHtml(j.category_name || catLabel)}</span>
-              ${isNewToday ? '<span class="badge-new">New today</span>' : ''}
+              ${j.is_referral ? '<span style="background:#eff6ff;color:#2563eb;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #bfdbfe;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:3px;">🤝 Referral</span>' : ''}
+              <span style="${catStyle}font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;letter-spacing:0.3px;">${catIcon} ${escapeHtml(j.category_name || catLabel)}</span>
+              ${isNewToday ? '<span style="background:#fef2f2;color:#dc2626;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;border:1px solid #fecaca;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:4px;"><span class="badge-live-pulse"></span>NEW</span>' : ''}
               <span class="type-badge">${j.job_type_display}</span>
             </div>
           </div>
@@ -449,23 +449,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 <img src="/static/images/icon-date.png" class="nav-icon" width="14" height="14" alt="Date"> Posted: <strong style="color:var(--ink);">${escapeHtml(postedDate)}</strong>
               </div>
               <div style="display:flex;align-items:center;gap:4px;color:var(--blue-primary);font-weight:700;">
-                <i data-lucide="briefcase" class="card-mini-icon" aria-hidden="true"></i> <span>Exp: ${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
+                <span>💼</span> <span>Exp: ${escapeHtml(j.experience_display || 'Fresher / All Levels')}</span>
               </div>
             </div>
 
             ${j.contact_phone ? `
               <div style="font-size:11.5px;font-weight:700;color:#047857;background:#ecfdf5;border:1px solid #a7f3d0;padding:3px 8px;border-radius:6px;margin-bottom:8px;display:inline-flex;align-items:center;gap:5px;">
-                <i data-lucide="phone" class="card-mini-icon" aria-hidden="true"></i><span>HR Contact:</span> <a href="tel:${escapeHtml(j.contact_phone)}" style="color:#047857;text-decoration:none;font-weight:800;" onclick="event.stopPropagation();">${escapeHtml(j.contact_phone)}</a>
+                <span>📞 HR Contact:</span> <a href="tel:${escapeHtml(j.contact_phone)}" style="color:#047857;text-decoration:none;font-weight:800;" onclick="event.stopPropagation();">${escapeHtml(j.contact_phone)}</a>
               </div>
             ` : ''}
 
-            <p style="font-size:13px;color: var(--muted);line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, ''))}</p>
+            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, ''))}</p>
 
             ${skillsHtml ? `<div class="skills-wrapper" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;">${skillsHtml}</div>` : ''}
 
             <div class="vp-price-row">
               <div class="timer-tag" data-timer="${j.id}" data-seconds="${j.time_left_seconds}">
-                <i data-lucide="clock" class="card-mini-icon" aria-hidden="true"></i> <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
+                ⏱️ <span>${isDeactivated ? 'Closed / Expired' : formattedTime}</span>
               </div>
             </div>
 

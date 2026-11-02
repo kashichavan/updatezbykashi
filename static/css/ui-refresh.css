@@ -642,14 +642,6 @@ html.flash-dismissed #flashBanner { display: none; }
 
 /* Card icons: one line-icon set instead of emoji. */
 html .card-mini-icon { width: 13px; height: 13px; flex: none; stroke-width: 2.25; }
-html .timer-tag { display: inline-flex; align-items: center; gap: 5px; }
-@media (max-width: 768px) {
-  /* Tighter job cards on phones: same look, less scrolling. */
-  html .vp-product-card { padding: 16px; }
-  html .vp-card-header { margin-bottom: 8px; }
-  html .vp-card-content h3 { margin-bottom: 6px; }
-  html .vp-price-row { padding-top: 10px; }
-}
 html .vp-pill .card-mini-icon, html .button .card-mini-icon { width: 14px; height: 14px; }
 @media (max-width: 768px) {
   /* Group page: heading gets the full width, the back link sits under it. */
@@ -689,12 +681,6 @@ html .vp-pill .card-mini-icon, html .button .card-mini-icon { width: 14px; heigh
   --accent-border: #fde68a;
 }
 /* Days left: the site's promise, in the accent. */
-html .timer-tag {
-  color: var(--accent-ink);
-  background: var(--accent-soft);
-  border-color: var(--accent-border);
-}
-html .timer-tag .card-mini-icon { color: var(--accent); }
 /* New today */
 html .badge-new {
   display: inline-flex; align-items: center; gap: 4px;
