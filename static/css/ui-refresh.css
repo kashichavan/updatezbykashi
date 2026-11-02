@@ -760,3 +760,23 @@ html a.button-primary:hover, html .button-primary:hover, html .btn-primary:hover
   /* AI status sits under the score instead of in a squeezed column. */
   html .rb-ai-status { width: 100%; justify-content: center; }
 }
+
+/* ── Resume Studio + ATS Score ───────────────────────────────────────── */
+/* One brand blue instead of the blue-violet wash. */
+html .rs-fasttrack { background: var(--blue-light) !important; border: 1px solid var(--blue-border) !important; }
+@media (max-width: 768px) {
+  /* Shorter headers on phones, so the form starts on the first screen. */
+  html .rs-sub, html .rs-points, html .analysis-subtitle { display: none; }
+  html .rs-hero { margin-bottom: 12px; }
+  html .rs-title, html .analysis-title { font-size: 26px; line-height: 1.15; }
+  html .analysis-hero { padding-top: 8px; padding-bottom: 8px; margin-bottom: 8px; }
+  html .rs-fasttrack { padding: 12px 14px !important; }
+}
+
+/* ── Code + SQL debuggers ─────────────────────────────────────────────── */
+/* The "best on desktop" pop-ups covered the whole first screen on phones. The tools work on
+   phones (one column, sideways scroll), so they open straight away. */
+html .mobile-blocker-overlay, html body .mobile-blocker-overlay:not(.dismissed) { display: none !important; }
+
+/* SQL page is dark: keep the site header solid white so it reads the same as everywhere else. */
+html body:has(.sql-studio-wrapper) .site-header { background: #ffffff; }
