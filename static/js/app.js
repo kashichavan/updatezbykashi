@@ -440,8 +440,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <h3><a href="${escapeHtml(shareUrl)}" style="color:inherit;text-decoration:none;">${escapeHtml(j.title)}</a></h3>
             
             <div class="vp-salary-row">
-              <span style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-salary.png" class="nav-icon" width="16" height="16" alt="Salary"> <span class="kx-trunc" title="${escapeHtml(j.stipend_salary)}">${escapeHtml(j.stipend_salary)}</span></span>
-              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> <span class="kx-trunc" title="${escapeHtml(j.normalized_city || j.location)}">${escapeHtml(j.normalized_city || j.location)}</span></span>
+              <span style="display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-salary.png" class="nav-icon" width="16" height="16" alt="Salary"> ${escapeHtml(j.stipend_salary)}</span>
+              <span style="color: var(--muted); font-weight: 500; display:inline-flex;align-items:center;gap:4px;"><img src="/static/images/icon-location.png" class="nav-icon" width="16" height="16" alt="Location"> ${escapeHtml(j.normalized_city || j.location)}</span>
             </div>
 
             <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">

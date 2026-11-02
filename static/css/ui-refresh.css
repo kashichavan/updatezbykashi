@@ -780,36 +780,3 @@ html .mobile-blocker-overlay, html body .mobile-blocker-overlay:not(.dismissed) 
 
 /* SQL page is dark: keep the site header solid white so it reads the same as everywhere else. */
 html body:has(.sql-studio-wrapper) .site-header { background: #ffffff; }
-
-/* ── Job card alignment: every card in a grid row keeps the same rhythm ──
-   header rows → title (2 lines) → salary/location (1 line) → meta → text → skills (≤2 rows)
-   → timer + buttons pinned to the bottom. */
-html .vp-catalog-grid > .vp-product-card { min-width: 0; }
-html .vp-catalog-grid:not(.is-list-view) .vp-product-card { display: flex; flex-direction: column; }
-html .vp-card-header, html .vp-card-header > * { min-width: 0; max-width: 100%; }
-html .vp-catalog-grid:not(.is-list-view) .vp-card-content { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
-html .vp-catalog-grid:not(.is-list-view) .vp-card-header:has(.vp-badge-cluster) {
-  flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 8px;
-}
-html .vp-catalog-grid:not(.is-list-view) .vp-card-header .vp-badge-cluster {
-  width: 100%; justify-content: flex-start; flex-wrap: nowrap; overflow: hidden;
-}
-html .vp-catalog-grid:not(.is-list-view) .vp-badge-cluster > * { flex: none; }
-html .vp-catalog-grid:not(.is-list-view) .vp-card-content h3 {
-  min-height: calc(2em * 1.35); line-height: 1.35; margin-bottom: 8px;
-}
-html .vp-salary-row { flex-wrap: nowrap; min-width: 0; }
-html .vp-salary-row > span { min-width: 0; }
-html .vp-salary-row > span:first-child { flex: 0 1 auto; max-width: 62%; }
-html .vp-salary-row > span:last-child { flex: 1 1 0; }
-html .kx-trunc { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-html .vp-catalog-grid:not(.is-list-view) .vp-card-content > p {
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-html .vp-catalog-grid:not(.is-list-view) .vp-product-card .skills-wrapper {
-  max-height: 58px; overflow: hidden; align-content: flex-start;
-}
-html .vp-catalog-grid:not(.is-list-view) .vp-price-row { margin-top: auto; }
-@media (max-width: 640px) {
-  html .vp-catalog-grid:not(.is-list-view) .vp-card-content h3 { min-height: 0; }
-}
