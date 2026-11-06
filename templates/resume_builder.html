@@ -2809,7 +2809,7 @@
 
   // Automatic AI pass: after a pause in typing, new text is improved and the
   // whole resume is scored. Every caller of recalculateAtsScore lands here.
-  const AI_REVIEW_DELAY = 5000;
+  const AI_REVIEW_DELAY = 1500;
   const AI_UPGRADE_BATCH = 6;
   const aiUpgradedText = new Set();
   const AI_SEEN_KEY = 'kashii_ai_seen_text';
@@ -3068,7 +3068,7 @@
           aiRetries += 1;
           aiLastKey = '';
           clearTimeout(aiReviewTimer);
-          aiReviewTimer = setTimeout(runAiReview, 20000);
+          aiReviewTimer = setTimeout(runAiReview, 8000);
         }
         return;
       }
