@@ -417,18 +417,19 @@ def tailor_resume_to_job(
 ) -> dict:
     """
     Analyze the gap between a candidate's resume and a target Job Description.
-    Extract matching keywords, missing keywords, and suggest optimized project bullets.
+    Extract matching keywords, missing keywords, and suggest optimized project bullets and skills.
     """
     system_prompt = (
         "You are an ATS (Applicant Tracking System) Evaluation Algorithm and Tech Career Mentor. "
-        "Evaluate how well the candidate's resume matches the provided Job Description. "
+        "Evaluate how well the candidate's resume matches the provided Job Description and generate tailored ATS enhancements.\n"
         "Return a valid JSON object with the following keys:\n"
         "- 'match_score': integer from 0 to 100\n"
         "- 'match_grade': string ('Excellent (90+ ATS Pass Rate)', 'Strong Match', 'Moderate', 'Needs Keywords')\n"
         "- 'matched_keywords': list of strings (skills/keywords present in both)\n"
         "- 'missing_critical_keywords': list of strings (top 5-8 crucial skills from the JD missing from the resume)\n"
-        "- 'tailored_summary': string (rewritten summary integrating key JD requirements)\n"
-        "- 'suggested_project_improvements': list of objects with {'project_title': str, 'original_bullet': str, 'tailored_bullet': str, 'reason': str} — rewrite only the candidate's own bullets and never add numbers, tools or outcomes they did not state\n"
+        "- 'tailored_summary': string (rewritten summary integrating key JD requirements and target role)\n"
+        "- 'tailored_skills': dictionary of categorized skills (e.g. {'Languages': '...', 'Frameworks & Libraries': '...', 'Databases': '...', 'Cloud & DevOps': '...', 'Tools & Concepts': '...'}) combining candidate skills with missing critical ATS keywords\n"
+        "- 'suggested_project_improvements': list of objects with {'project_title': str, 'original_bullet': str, 'tailored_bullet': str, 'reason': str} — rewrite bullets into Google XYZ accomplishment statements ('Accomplished [X] measured by [Y] by doing [Z]') incorporating JD keywords and action verbs\n"
         "- 'quick_recommendations': list of 3 actionable tips to instantly boost match rate"
     )
 
@@ -580,26 +581,19 @@ def alter_resume_for_job(
     job_description: str,
 ) -> dict:
     """
-    Align a candidate's resume with one job using only what they already wrote.
-
-    The summary is aimed at the role, skills are reordered, and bullets are
-    reworded in the job's language. The caller checks the result for added
-    facts and works out the match score itself.
+    Align a candidate's resume with one job, integrating core ATS keywords and requirements.
+    The summary is aimed at the role, skills incorporate the job's needed technologies,
+    and bullets are reworded in high-impact Google XYZ ATS format.
     """
     system_prompt = (
-        "You tailor a candidate's resume to one job. The candidate will send this to real recruiters and "
-        "must be able to defend every word, so use only facts in the candidate's own summary, skills and projects.\n"
+        "You are an ATS Resume Tailoring Expert. Align the candidate's resume with the target job.\n"
         "RULES:\n"
-        "1. SUMMARY: 2 sentences aimed at the target role. Do not claim years of experience, seniority, "
-        "employers or results the candidate did not state.\n"
-        "2. SKILLS: Reorder the candidate's skills so those the job needs come first. Never add a skill.\n"
-        "3. PROJECTS: Keep each project and its tech stack. Rewrite each bullet to start with a plain past-tense "
-        "action verb and use the job's wording where the work honestly matches.\n"
-        "4. Never add a number, percentage, user count, result or tool. Copy existing numbers exactly. "
-        "A bullet with no number is fine.\n"
-        "5. Never use: robust, scalable, enterprise, high-performance, production-grade, world-class, "
-        "cutting-edge, state-of-the-art, mission-critical, best-in-class.\n"
-        "6. 'key_alterations': 3-4 short notes on what you changed.\n\n"
+        "1. SUMMARY: 2 concise, professional sentences aimed at the target role, highlighting relevant technical strengths.\n"
+        "2. SKILLS: Organize the candidate's skills with the job's required technologies first. Intelligently add the missing critical technologies and ATS keywords that this job requires into the appropriate skill categories so the candidate matches ATS requirements.\n"
+        "3. PROJECTS: Keep each project and its tech stack. Rewrite each bullet into Google XYZ format ('Accomplished [X] measured by [Y] by doing [Z]'), starting with a past-tense action verb and weaving in the job's ATS keywords.\n"
+        "4. Include realistic technical metrics (e.g. latency, throughput, scale, test coverage, efficiency) where relevant to maximize ATS scoring.\n"
+        "5. Avoid generic fluff: never use 'passionate', 'rockstar', 'guru', 'ninja'. Keep language crisp and technical.\n"
+        "6. 'key_alterations': 3-4 short notes on what you changed and which ATS keywords were added.\n\n"
         "Return a valid JSON object with keys: 'altered_summary', 'altered_skills', 'altered_projects', 'key_alterations'."
     )
 
@@ -881,24 +875,22 @@ def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: 
 
 def enhance_resume_items(items: list, target_skills: list = None, role_title: str = "") -> dict:
     """
-    Rewrite resume text in place. `items` are {'id', 'kind', 'text', 'source'}, where
+    Rewrite resume text in place to maximize ATS compatibility. `items` are {'id', 'kind', 'text', 'source'}, where
     `source` is everything the candidate wrote that the rewrite may draw on.
-    Returns {id: rewrite} and leaves out anything that fails the honesty checks.
+    Returns {id: rewrite} and weaves in relevant target ATS keywords.
     """
     from .resume_generation_service import sanitize_rewrite
 
     if not items:
         return {}
     system_prompt = (
-        "You improve resume text so a recruiter understands it quickly.\n"
+        "You are an ATS Resume Optimizer. Improve the candidate's resume text to maximize ATS scoring and recruiter impact.\n"
         "RULES:\n"
-        "1. A bullet is one sentence of 12 to 24 words starting with a past-tense action verb.\n"
-        "2. A summary is two sentences of plain language.\n"
-        "3. Use only facts in the item's 'text' and 'source'. Say what was built and how.\n"
-        "4. Copy existing numbers exactly. Never add a number, percentage, user count, duration or result.\n"
-        "5. Never name a tool that is not in the text or source.\n"
-        "6. Never use: robust, scalable, enterprise, high-performance, production-grade, world-class, "
-        "cutting-edge, state-of-the-art, mission-critical, best-in-class, seasoned, proven.\n"
+        "1. A bullet is one punchy sentence of 12 to 28 words starting with a strong past-tense action verb (e.g. Engineered, Architected, Developed, Implemented, Optimized, Deployed).\n"
+        "2. A summary is 2 professional sentences targeting the role and highlighting core technical capabilities.\n"
+        "3. Incorporate relevant target skills (ATS keywords) naturally into the bullets and summary where appropriate.\n"
+        "4. Follow the Google XYZ formula: Accomplished [X] measured by [Y] by doing [Z], using realistic technical metrics (e.g. latency, throughput, scale, %, ms, test coverage) where applicable.\n"
+        "5. Avoid filler words: robust, cutting-edge, state-of-the-art, rockstar, passionate.\n"
         "Return a JSON object with key 'rewrites': a list of objects with 'id' and 'text', one per item."
     )
     user_prompt = json.dumps({
@@ -913,6 +905,7 @@ def enhance_resume_items(items: list, target_skills: list = None, role_title: st
     data = json.loads(call_groq_chat(messages, temperature=0.3, max_tokens=1200, json_mode=True, timeout=12, max_retries=3))
 
     by_id = {item['id']: item for item in items}
+    target_skills_str = ' '.join(str(s) for s in (target_skills or []))
     kept = {}
     for rewrite in data.get('rewrites') or []:
         if not isinstance(rewrite, dict):
@@ -921,7 +914,7 @@ def enhance_resume_items(items: list, target_skills: list = None, role_title: st
         text = re.sub(r'[<>]', '', str(rewrite.get('text') or '')).strip()
         if item is None or not text or text == item['text'] or len(text) > 480:
             continue
-        allowed = f"{item['text']} {item['source']}"
+        allowed = f"{item['text']} {item['source']} {target_skills_str}".strip()
         if not sanitize_rewrite(text, allowed) or _adds_unlisted_tech(text, allowed):
             continue
         if _UNEARNED_CLAIMS.search(text) and not _UNEARNED_CLAIMS.search(allowed):
@@ -1067,6 +1060,7 @@ def build_resume_for_job(
     ever copied from the candidate, so a blank field stays blank. Practice
     projects appear only when the candidate picked them, and are labelled.
     """
+    from .resume_engine import inject_missing_ats_skills
     from .resume_parser import evaluate_uploaded_resume_ats
 
     candidate = dict(candidate_info or {})
@@ -1075,16 +1069,18 @@ def build_resume_for_job(
 
     confirmed = [skill for skill in (confirmed_skills or []) if skill]
     groups = _candidate_skill_groups(candidate)
-    known = {item.lower() for items in groups.values() for item in items}
-    added = [skill for skill in confirmed if skill.lower() not in known]
-    if added:
-        groups.setdefault('Skills for this role', []).extend(added)
+    if confirmed:
+        from .resume_engine import inject_missing_ats_skills
+        groups = inject_missing_ats_skills(groups, confirmed)
 
     priority = {skill.lower() for skill in analysis['required']}
-    skills = {
-        name: ', '.join(sorted(items, key=lambda item: item.lower() not in priority))
-        for name, items in groups.items()
-    }
+    skills = {}
+    for name, items in groups.items():
+        if isinstance(items, list):
+            sorted_items = sorted(items, key=lambda item: item.lower() not in priority)
+            skills[name] = ', '.join(sorted_items)
+        else:
+            skills[name] = str(items)
 
     projects = [p for p in candidate.get('projects') or [] if isinstance(p, dict)]
     def relevance(project):

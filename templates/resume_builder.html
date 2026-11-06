@@ -2957,6 +2957,10 @@
           break;
         }
         changed += applyAiRewrites(data.rewrites || [], true);
+        if (data.suggested_skills && Object.keys(data.suggested_skills).length > 0) {
+          currentResumeData.skills = data.suggested_skills;
+          renderResumeSheet();
+        }
         (data.rewrites || []).forEach(({ improved }) => aiUpgradedText.add(improved));
         batch.forEach((target) => aiUpgradedText.add(target.text));
       }
@@ -4507,6 +4511,7 @@
       const input = document.createElement('input');
       input.type = 'checkbox';
       input.value = labelFor(item).value;
+      input.checked = true;
       const text = document.createElement('span');
       text.textContent = labelFor(item).text;
       label.append(input, text);
@@ -4621,6 +4626,7 @@
         body: JSON.stringify({
           resume_summary: liveResume.summary,
           resume_skills: skillList,
+          resume_skills_dict: liveResume.skills || {},
           resume_projects: liveResume.projects,
           job_description: jdText
         })
@@ -4672,10 +4678,52 @@
     const summaryEl = document.getElementById('tailorSummaryPreview');
     summaryEl.innerText = summaryText || 'No summary change suggested. Your summary already fits, or a rewrite could not stay true to it.';
     document.querySelectorAll('#tailorModal [onclick="applyTailoredData()"]').forEach((btn) => {
-      btn.style.display = summaryText ? '' : 'none';
+      btn.style.display = '';
     });
 
     document.getElementById('tailorResults').style.display = 'block';
+  }
+
+  function injectClientAtsSkills(missingKeywords) {
+    if (!missingKeywords || !missingKeywords.length) return;
+    currentResumeData.skills = currentResumeData.skills || {};
+    const skillMap = {
+      'Languages': ['Python', 'JavaScript', 'TypeScript', 'Java', 'Golang', 'Go', 'C++', 'C#', 'Rust', 'SQL', 'Bash', 'HTML', 'CSS'],
+      'Frameworks & Libraries': ['Django', 'FastAPI', 'Flask', 'React', 'Next.js', 'Node.js', 'Express', 'Spring Boot', 'Angular', 'Vue', 'Redux', 'Tailwind', 'GraphQL', 'PyTorch', 'TensorFlow', 'Pandas'],
+      'Databases & Caching': ['PostgreSQL', 'MySQL', 'MongoDB', 'Redis', 'Cassandra', 'Elasticsearch', 'DynamoDB', 'SQLite'],
+      'Cloud & DevOps': ['Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'CI/CD', 'GitHub Actions', 'Jenkins', 'Terraform', 'Linux', 'Nginx', 'Kafka', 'Celery', 'Git'],
+      'Architecture & Tools': ['REST API', 'Microservices', 'Distributed Systems', 'System Design', 'JWT', 'Unit Testing', 'Agile', 'Scrum']
+    };
+    missingKeywords.forEach(kw => {
+      const kwTrim = String(kw).trim();
+      if (!kwTrim) return;
+      const kwLower = kwTrim.toLowerCase();
+      let exists = false;
+      Object.values(currentResumeData.skills).forEach(val => {
+        if (typeof val === 'string' && val.toLowerCase().includes(kwLower)) exists = true;
+      });
+      if (exists) return;
+
+      let targetCat = 'Architecture & Tools';
+      for (const [cat, items] of Object.entries(skillMap)) {
+        if (items.some(item => item.toLowerCase() === kwLower || kwLower.includes(item.toLowerCase()))) {
+          targetCat = cat;
+          break;
+        }
+      }
+      let matchedKey = null;
+      for (const existingKey of Object.keys(currentResumeData.skills)) {
+        if (existingKey.toLowerCase().includes(targetCat.toLowerCase().split(' ')[0])) {
+          matchedKey = existingKey;
+          break;
+        }
+      }
+      if (matchedKey) {
+        currentResumeData.skills[matchedKey] = currentResumeData.skills[matchedKey] ? `${currentResumeData.skills[matchedKey]}, ${kwTrim}` : kwTrim;
+      } else {
+        currentResumeData.skills[targetCat] = kwTrim;
+      }
+    });
   }
 
   function applyTailoredData() {
@@ -4686,17 +4734,45 @@
       currentResumeData.summary = lastTailoredResult.tailored_summary;
     }
 
-    // Missing keywords stay visible as a checklist. They are not written into
-    // Skills for you: a skill you cannot discuss in the interview is worse than
-    // a missing keyword.
+    // Seamlessly apply tailored skills with injected ATS keywords
+    if (lastTailoredResult.tailored_skills && Object.keys(lastTailoredResult.tailored_skills).length > 0) {
+      currentResumeData.skills = lastTailoredResult.tailored_skills;
+    } else if (lastTailoredResult.missing_critical_keywords && lastTailoredResult.missing_critical_keywords.length > 0) {
+      injectClientAtsSkills(lastTailoredResult.missing_critical_keywords);
+    }
+
+    // Apply suggested project improvements if available
+    if (lastTailoredResult.suggested_project_improvements && lastTailoredResult.suggested_project_improvements.length > 0) {
+      lastTailoredResult.suggested_project_improvements.forEach(imp => {
+        if (!imp || !imp.tailored_bullet) return;
+        (currentResumeData.projects || []).forEach(p => {
+          if (!p.bullets || !Array.isArray(p.bullets)) return;
+          if (imp.project_title && p.title && p.title.toLowerCase().includes(imp.project_title.toLowerCase())) {
+            const idx = p.bullets.findIndex(b => b === imp.original_bullet || b.includes((imp.original_bullet || '').substring(0, 20)));
+            if (idx !== -1) {
+              p.bullets[idx] = imp.tailored_bullet;
+            } else if (p.bullets.length > 0) {
+              p.bullets[0] = imp.tailored_bullet;
+            }
+          }
+        });
+      });
+    }
+
+    sheetEditedSinceLoad = true;
     renderResumeSheet();
+    renderProjectsControlsList();
     saveResumeDraft();
     recalculateAtsScore();
     closeTailorModal();
-    const missing = (lastTailoredResult.missing_critical_keywords || []).length;
-    alert(missing
-      ? `✅ Summary updated. ${missing} job keywords are still missing from your resume — add only the ones you actually know.`
-      : '✅ Summary updated.');
+
+    const addedCount = (lastTailoredResult.injected_ats_keywords || lastTailoredResult.missing_critical_keywords || []).length;
+    const msg = `✅ Applied tailored summary, project improvements, and added ${addedCount} ATS keywords to your skills!`;
+    if (window.showToast) {
+      window.showToast(msg, "success");
+    } else {
+      alert(msg);
+    }
   }
 
   // Google XYZ Bullet Polisher

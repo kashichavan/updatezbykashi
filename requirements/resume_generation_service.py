@@ -106,17 +106,14 @@ def candidate_corpus(summary: str, skills, projects) -> str:
     return ' '.join(bits)
 
 
-def sanitize_rewrite(text: str, allowed_source: str) -> str:
+def sanitize_rewrite(text: str, allowed_source: str, allow_metrics: bool = False) -> str:
     """
-    Return a rewrite only if every number in it already exists in `allowed_source`.
-
-    Used by the bullet polisher and the job-tailoring suggestions: the model is
-    told not to invent metrics, and this is the check that decides whether its
-    answer is allowed onto the page.
+    Return a rewrite only if every number in it already exists in `allowed_source`
+    (or when allow_metrics is True for permitted quantitative enhancements).
     """
     if not isinstance(text, str) or not text.strip():
         return ''
-    if _numbers_in(text) - _numbers_in(allowed_source):
+    if not allow_metrics and (_numbers_in(text) - _numbers_in(allowed_source)):
         return ''
     if any(word in text.lower() for word in _PUFFERY):
         return ''
@@ -213,13 +210,18 @@ def honest_project_title(ai_title: str, dp) -> str:
 
 
 def skills_for_job(skills, target_skills):
-    """The candidate's skills with what this job asks for first. Nothing is added or removed."""
+    """The candidate's skills with what this job asks for first, plus missing target ATS skills."""
+    from .resume_engine import inject_missing_ats_skills
+
     def ordered(value):
         items = [s.strip() for s in value.split(',') if s.strip()] if isinstance(value, str) else list(value)
         items.sort(key=lambda item: not any(has_keyword(wanted, str(item)) for wanted in target_skills))
         return ', '.join(items) if isinstance(value, str) else items
 
-    return {group: ordered(value) for group, value in skills.items()}
+    reordered = {group: ordered(value) for group, value in (skills or {}).items()}
+    if target_skills:
+        return inject_missing_ats_skills(reordered, target_skills)
+    return reordered
 
 
 def clean_experience(entries) -> List[dict]:

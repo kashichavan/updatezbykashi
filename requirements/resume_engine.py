@@ -347,6 +347,124 @@ def pick_role_for_skills(skills) -> str:
     return best
 
 
+ATS_SKILL_CATEGORIES = {
+    'Languages': [
+        'Python', 'JavaScript', 'TypeScript', 'Java', 'Golang', 'Go', 'C++', 'C#', 'Rust', 'SQL',
+        'PHP', 'Ruby', 'Swift', 'Kotlin', 'Scala', 'Bash', 'Shell', 'HTML', 'CSS', 'HTML/CSS',
+    ],
+    'Frameworks & Libraries': [
+        'Django', 'Django REST Framework', 'DRF', 'FastAPI', 'Flask', 'React', 'Next.js', 'Node.js',
+        'Express', 'Express.js', 'Spring Boot', 'Spring', 'Angular', 'Vue.js', 'Vue', 'Redux',
+        'Tailwind CSS', 'Tailwind', 'GraphQL', 'gRPC', 'PyTorch', 'TensorFlow', 'Pandas', 'NumPy',
+        'Scikit-Learn', 'Selenium', 'Playwright', 'Flutter', 'React Native',
+    ],
+    'Databases & Caching': [
+        'PostgreSQL', 'Postgres', 'MySQL', 'MongoDB', 'Redis', 'Cassandra', 'Elasticsearch',
+        'DynamoDB', 'SQLite', 'Oracle', 'Snowflake', 'BigQuery', 'Firebase',
+    ],
+    'Cloud & DevOps': [
+        'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'CI/CD', 'GitHub Actions', 'Jenkins',
+        'Terraform', 'Linux', 'Nginx', 'Kafka', 'Celery', 'RabbitMQ', 'Prometheus', 'Grafana', 'Git',
+    ],
+    'Architecture & Tools': [
+        'REST API', 'RESTful APIs', 'Microservices', 'Distributed Systems', 'System Design', 'JWT',
+        'Unit Testing', 'Pytest', 'Postman', 'Agile', 'Scrum', 'Machine Learning', 'AI', 'OOP',
+    ],
+}
+
+
+def categorize_skill(skill: str) -> str:
+    """Map a skill or technology keyword to its standard ATS category."""
+    s_clean = skill.strip()
+    s_lower = s_clean.lower()
+    for cat, items in ATS_SKILL_CATEGORIES.items():
+        for item in items:
+            if item.lower() == s_lower:
+                return cat
+    for cat, items in ATS_SKILL_CATEGORIES.items():
+        for item in items:
+            if s_lower in item.lower() or item.lower() in s_lower:
+                return cat
+    return 'Architecture & Tools'
+
+
+def inject_missing_ats_skills(current_skills, missing_skills):
+    """
+    Intelligently injects missing ATS keywords and skills into the resume's skills data.
+    Preserves existing candidate skills and organizes new skills under appropriate standard categories.
+    """
+    if not missing_skills:
+        return current_skills
+
+    if isinstance(missing_skills, str):
+        missing_list = [s.strip() for s in missing_skills.split(',') if s.strip()]
+    elif isinstance(missing_skills, (list, tuple, set)):
+        missing_list = [str(s).strip() for s in missing_skills if str(s).strip()]
+    else:
+        missing_list = []
+
+    if not missing_list:
+        return current_skills
+
+    if isinstance(current_skills, dict):
+        result = {k: v for k, v in current_skills.items()}
+        existing = set()
+        for v in result.values():
+            if isinstance(v, list):
+                existing.update(str(x).strip().lower() for x in v)
+            elif isinstance(v, str):
+                existing.update(str(x).strip().lower() for x in v.split(','))
+
+        to_add = [s for s in missing_list if s.lower() not in existing]
+        if not to_add:
+            return result
+
+        for skill in to_add:
+            cat = categorize_skill(skill)
+            matched_cat = None
+            for existing_cat in result.keys():
+                if existing_cat.lower() in cat.lower() or cat.lower() in existing_cat.lower():
+                    matched_cat = existing_cat
+                    break
+            if not matched_cat:
+                if 'Technical Skills' in result:
+                    matched_cat = 'Technical Skills'
+                elif 'Skills' in result:
+                    matched_cat = 'Skills'
+                elif len(result) == 1:
+                    matched_cat = next(iter(result.keys()))
+                else:
+                    matched_cat = cat
+                    result[matched_cat] = ''
+
+            curr_val = result.get(matched_cat, '')
+            if isinstance(curr_val, list):
+                result[matched_cat] = curr_val + [skill]
+            else:
+                items = [x.strip() for x in str(curr_val).split(',') if x.strip()]
+                if skill not in items:
+                    items.append(skill)
+                result[matched_cat] = ', '.join(items)
+        return result
+    elif isinstance(current_skills, list):
+        existing = {str(x).strip().lower() for x in current_skills}
+        new_items = list(current_skills)
+        for s in missing_list:
+            if s.lower() not in existing:
+                new_items.append(s)
+                existing.add(s.lower())
+        return new_items
+    elif isinstance(current_skills, str):
+        existing = {x.strip().lower() for x in current_skills.split(',') if x.strip()}
+        items = [x.strip() for x in current_skills.split(',') if x.strip()]
+        for s in missing_list:
+            if s.lower() not in existing:
+                items.append(s)
+                existing.add(s.lower())
+        return ', '.join(items)
+    return current_skills
+
+
 def calculate_ats_score(resume_data, role_key='python-backend'):
     """Score a resume against a role, using the same evaluator as every other page."""
     from .resume_parser import evaluate_uploaded_resume_ats
