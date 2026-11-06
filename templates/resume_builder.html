@@ -2427,7 +2427,13 @@
         return;
       }
       if (d.altered_summary) currentResumeData.summary = d.altered_summary;
-      if (d.reordered_skills) currentResumeData.skills = d.reordered_skills;
+      if (d.suggested_skills && Object.keys(d.suggested_skills).length > 0) {
+        currentResumeData.skills = d.suggested_skills;
+      } else if (d.reordered_skills && Object.keys(d.reordered_skills).length > 0) {
+        currentResumeData.skills = d.reordered_skills;
+      } else if (d.altered_skills) {
+        currentResumeData.skills = d.altered_skills;
+      }
       if (d.altered_projects && d.altered_projects.length > 0) {
         currentResumeData.projects = d.altered_projects;
       }
@@ -2847,8 +2853,20 @@
     return Array.from(document.querySelectorAll('#previewProjects .ats-bullet-list li, #previewExperience .ats-bullet-list li, #previewSummary'));
   }
 
+  function cleanDomBullet(str) {
+    return (str || '')
+      .replace(/^[\s•\-\*\u2022\u2023\u25E6\u2043\u2219]+/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   function aiNodeForText(text) {
-    return aiEditableNodes().find((node) => node.innerText.trim() === text) || null;
+    if (!text) return null;
+    const cleanTarget = cleanDomBullet(text);
+    return aiEditableNodes().find((node) => {
+      const nodeText = cleanDomBullet(node.innerText);
+      return nodeText === cleanTarget || nodeText.includes(cleanTarget) || cleanTarget.includes(nodeText);
+    }) || null;
   }
 
   function aiCaretNode() {
@@ -2902,7 +2920,9 @@
       aiUndoList = keepUndo ? aiUndoList.concat(applied) : applied;
       showAiUndo(true);
       extractFullResumeFromDom();
+      renderProjectsControlsList();
       saveResumeDraft();
+      recalculateAtsScore();
       if (typeof WordEditor !== 'undefined') WordEditor.updateCounts();
     }
     return applied.length;
@@ -2937,7 +2957,11 @@
     if (document.activeElement) document.activeElement.blur();
     clearTimeout(aiReviewTimer);
     aiReviewRun += 1;
-    const targets = aiUpgradeTargets(extractFullResumeFromDom());
+    let targets = aiUpgradeTargets(extractFullResumeFromDom());
+    if (!targets.length) {
+      aiUpgradedText.clear();
+      targets = aiUpgradeTargets(extractFullResumeFromDom());
+    }
     if (!targets.length) {
       setUpgradeProgress('done', 'Your resume is already upgraded');
       return;
@@ -2954,7 +2978,7 @@
         const end = Math.min(start + AI_UPGRADE_BATCH, targets.length);
         setUpgradeProgress('working', `AI is upgrading ${end} of ${targets.length} lines`);
         const batch = targets.slice(start, end);
-        const payload = { role: currentRoleKey, resume: extractFullResumeFromDom(), enhance: batch, score: false };
+        const payload = { role: currentRoleKey, resume: extractFullResumeFromDom(), enhance: batch, score: false, allow_metrics: true };
         if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills_list) {
           payload.job_skills = targetJobData.skills_list;
         }
@@ -3678,9 +3702,11 @@
   }
 
   // Track selection state to highlight toolbar buttons
-  document.addEventListener('selectionchange', function() {
-    WordEditor.saveSelection();
-    WordEditor.updateToolbarState();
+  ['selectionchange', 'mouseup', 'keyup', 'touchend'].forEach(function(evt) {
+    document.addEventListener(evt, function() {
+      WordEditor.saveSelection();
+      WordEditor.updateToolbarState();
+    });
   });
 
   /* ==========================================================
@@ -4764,7 +4790,8 @@
           resume_skills: skillList,
           resume_skills_dict: liveResume.skills || {},
           resume_projects: liveResume.projects,
-          job_description: jdText
+          job_description: jdText,
+          allow_metrics: true
         })
       });
 
@@ -5124,7 +5151,13 @@
 
       const d = json.data;
       if (d.altered_summary) currentResumeData.summary = d.altered_summary;
-      if (d.reordered_skills) currentResumeData.skills = d.reordered_skills;
+      if (d.suggested_skills && Object.keys(d.suggested_skills).length > 0) {
+        currentResumeData.skills = d.suggested_skills;
+      } else if (d.reordered_skills && Object.keys(d.reordered_skills).length > 0) {
+        currentResumeData.skills = d.reordered_skills;
+      } else if (d.altered_skills) {
+        currentResumeData.skills = d.altered_skills;
+      }
       if (d.altered_projects && d.altered_projects.length > 0) {
         currentResumeData.projects = d.altered_projects;
       }

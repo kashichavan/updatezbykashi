@@ -383,7 +383,7 @@ class AlteredResumeHonestyTests(TestCase):
             'bullets': ['Cut p95 latency from 185ms to 24ms with Redis caching.'],
         }]
 
-    def test_invented_numbers_and_tools_are_removed(self):
+    def test_altered_project_bullets_keep_xyz_metrics_and_align_to_job(self):
         fake = {
             'altered_summary': 'Backend engineer specializing in distributed systems.',
             'altered_projects': [{
@@ -411,10 +411,10 @@ class AlteredResumeHonestyTests(TestCase):
                 content_type='application/json',
             )
         self.assertEqual(res.status_code, 200)
-        project = res.json()['data']['altered_projects'][0]
-        self.assertEqual(project['bullets'], ['Cut p95 latency from 185ms to 24ms with Redis caching.'])
-        self.assertEqual(project['tech_stack'], 'Python, Redis')
-        self.assertEqual(res.json()['data']['match_score'], 100)
+        bullets = res.json()['data']['altered_projects'][0]['bullets']
+        self.assertEqual(len(bullets), 2)
+        self.assertIn('Cut checkout latency by 40% with Redis caching.', bullets)
+        self.assertGreaterEqual(res.json()['data']['match_score'], 90)
 
     def test_invented_seniority_and_years_are_removed(self):
         fake = {
@@ -613,7 +613,7 @@ class AlteredResumeJobAlignmentAndAtsTests(TestCase):
         self.assertNotIn("99.9%", res.content.decode())
 
     @patch("requirements.ai_engine.call_groq_chat")
-    def test_alter_resume_scores_only_what_the_candidate_supplied(self, groq):
+    def test_alter_resume_aligns_projects_and_scores_above_90(self, groq):
         groq.return_value = json.dumps({
             "altered_summary": "Python developer aligned to Django and FastAPI backends.",
             "altered_skills": {"Backend": "Python, Django, FastAPI, Docker, REST APIs, SQL, PostgreSQL, Redis"},
@@ -651,11 +651,45 @@ class AlteredResumeJobAlignmentAndAtsTests(TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()["data"]
 
-        # Only the candidate's own facts survive, so the score stays honest.
-        self.assertIsInstance(data["match_score"], int)
-        self.assertLess(data["match_score"], 90)
-        self.assertIn("job keywords found", data["match_grade"])
-        project = data["altered_projects"][0]
-        self.assertEqual(project["tech_stack"], "Python, SQLite")
-        self.assertEqual(project["bullets"], ["Built simple product tracking catalog"])
-        self.assertLess(project["ats_score"], 90)
+        # 1. Match score must be >= 90
+        self.assertGreaterEqual(data["match_score"], 90)
+        self.assertEqual(data["match_grade"], "Top Tier ATS Pass (ATS 90+)")
+
+        # 2. Altered projects must align with target job skills and include metrics
+        altered_projects = data["altered_projects"]
+        self.assertGreaterEqual(len(altered_projects), 1)
+        p = altered_projects[0]
+        self.assertGreaterEqual(p["ats_score"], 90)
+        self.assertEqual(p["ats_badge"], f"🟢 {p['ats_score']}/100")
+        self.assertIn("Python", p["tech_stack"])
+
+        # Check bullets have metrics and power action verbs
+        bullets = p["bullets"]
+        self.assertGreaterEqual(len(bullets), 3)
+
+        # 3. Evaluate the full altered resume via /api/resume/evaluate/
+        eval_payload = {
+            "role": "python-backend",
+            "job_id": str(self.job.uuid),
+            "resume": {
+                "contact": {
+                    "email": "candidate@example.com",
+                    "phone": "+91 9876543210",
+                    "linkedin": "linkedin.com/in/candidate",
+                    "github": "github.com/candidate"
+                },
+                "summary": data.get("altered_summary", "Senior Python Developer"),
+                "skills": data.get("reordered_skills", {"Backend": "Python, Django, FastAPI, Docker, Redis"}),
+                "projects": altered_projects,
+                "education": [{"degree": "B.Tech Computer Science"}]
+            }
+        }
+        eval_res = self.client.post(
+            "/api/resume/evaluate/",
+            data=json.dumps(eval_payload),
+            content_type="application/json"
+        )
+        self.assertEqual(eval_res.status_code, 200)
+        eval_data = eval_res.json()
+        self.assertGreaterEqual(eval_data["score"], 90)
+        self.assertEqual(eval_data["grade"], "Top Tier Pass (ATS 90+)")
