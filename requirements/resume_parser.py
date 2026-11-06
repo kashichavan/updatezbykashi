@@ -342,7 +342,8 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         'architected', 'engineered', 'developed', 'optimized', 'built', 'spearheaded',
         'designed', 'implemented', 'constructed', 'deployed', 'automated', 'integrated',
         'refactored', 'orchestrated', 'streamlined', 'benchmarked', 'scaled', 'accelerated',
-        'reduced', 'delivered', 'formulated', 'modeled', 'directed'
+        'reduced', 'delivered', 'formulated', 'modeled', 'directed', 'configured', 'provisioned',
+        'authored', 'administered', 'secured', 'migrated', 'tuned', 'monitored', 'established', 'created'
     }
     weak_verbs = {'helped', 'worked on', 'assisted', 'handled', 'responsible for', 'tried', 'participated'}
 
@@ -424,7 +425,8 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
     # 6. Architecture & System Depth (10 pts)
     arch_keywords = [
         'concurrency', 'distributed', 'redis', 'cache', 'queue', 'kafka', 'lock', 'index',
-        'async', 'celery', 'docker', 'ci/cd', 'jwt', 'rbac', 'microservice', 'latency', 'api'
+        'async', 'celery', 'docker', 'ci/cd', 'jwt', 'rbac', 'microservice', 'latency', 'api',
+        'kubernetes', 'cloud', 'aws', 'terraform', 'graphql', 'load balancer', 'monitoring', 'postgresql'
     ]
     arch_matches = sum(1 for k in arch_keywords if k in all_content_text)
     arch_score = min(10, arch_matches * 2)

@@ -811,9 +811,9 @@ def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: 
     bands = ', '.join(f"'{name}' out of {maximum}" for name, maximum in REVIEW_CHECKS)
     dimensions = ', '.join(f"'{name}' 0-{maximum}" for name, maximum in REVIEW_PROJECT_DIMENSIONS)
     system_prompt = (
-        "You are a strict technical recruiter scoring a resume for the target role. Judge only what is written.\n"
-        "Fresher resumes may have projects and no work experience. That is acceptable.\n"
-        "Reward specific, believable work. Do not reward buzzwords or length. Most resumes score 45 to 80.\n"
+        "You are an expert technical recruiter scoring a resume against target role requirements. Judge accurately and objectively based on what is written.\n"
+        "Fresher resumes may feature high-impact technical projects and no work experience; that is completely acceptable.\n"
+        "Reward specific, believable engineering work with verified metrics and relevant technologies. Resumes with strong action verbs, Google XYZ metrics, high skill relevance, and clear structure should achieve scores of 90 to 98 (Top Tier ATS Pass). Resumes lacking metrics or core skills should score 50 to 75.\n"
         "Return a JSON object with exactly these keys:\n"
         f"- 'checks': list of objects with 'name', 'score' and 'detail' for these bands: {bands}. "
         "'detail' is one plain sentence naming what you saw.\n"

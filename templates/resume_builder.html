@@ -366,16 +366,16 @@
 
           <!-- Character Formatting -->
           <div class="word-tool-group">
-            <button type="button" id="wordBtnBold" onclick="WordEditor.exec('bold')" class="word-tool-btn" title="Bold (Ctrl+B)">
+            <button type="button" id="wordBtnBold" onmousedown="event.preventDefault()" onclick="WordEditor.exec('bold')" class="word-tool-btn" title="Bold (Ctrl+B)">
               <strong>B</strong>
             </button>
-            <button type="button" id="wordBtnItalic" onclick="WordEditor.exec('italic')" class="word-tool-btn" title="Italic (Ctrl+I)">
+            <button type="button" id="wordBtnItalic" onmousedown="event.preventDefault()" onclick="WordEditor.exec('italic')" class="word-tool-btn" title="Italic (Ctrl+I)">
               <em>I</em>
             </button>
-            <button type="button" id="wordBtnUnderline" onclick="WordEditor.exec('underline')" class="word-tool-btn" title="Underline (Ctrl+U)">
+            <button type="button" id="wordBtnUnderline" onmousedown="event.preventDefault()" onclick="WordEditor.exec('underline')" class="word-tool-btn" title="Underline (Ctrl+U)">
               <u>U</u>
             </button>
-            <button type="button" id="wordBtnStrike" onclick="WordEditor.exec('strikeThrough')" class="word-tool-btn" title="Strikethrough">
+            <button type="button" id="wordBtnStrike" onmousedown="event.preventDefault()" onclick="WordEditor.exec('strikeThrough')" class="word-tool-btn" title="Strikethrough">
               <s>S</s>
             </button>
             
@@ -385,13 +385,18 @@
               <input type="color" value="#0f172a" onchange="WordEditor.setTextColor(this.value)" class="word-color-input">
             </label>
 
+            <!-- Quick Text Highlighter Button -->
+            <button type="button" id="wordBtnHighlight" onmousedown="event.preventDefault()" onclick="WordEditor.toggleHighlight()" class="word-tool-btn" title="Highlight Selected Text (Yellow)">
+              <i data-lucide="highlighter" style="width: 14px; height: 14px; color: #ca8a04;"></i>
+            </button>
+
+            <!-- Highlight Color Picker -->
             <label class="word-color-picker-label" title="Highlight Color">
-              <i data-lucide="highlighter" style="width: 12px; height: 12px;"></i>
               <span class="word-color-bar" id="wordHighlightIndicator" style="background: #fef08a;"></span>
               <input type="color" value="#fef08a" onchange="WordEditor.setHighlightColor(this.value)" class="word-color-input">
             </label>
 
-            <button type="button" onclick="WordEditor.exec('removeFormat')" class="word-tool-btn" title="Clear Formatting">
+            <button type="button" onmousedown="event.preventDefault()" onclick="WordEditor.exec('removeFormat')" class="word-tool-btn" title="Clear Formatting">
               <span style="font-size: 11px; text-decoration: line-through;">T</span>
             </button>
           </div>
@@ -400,29 +405,29 @@
 
           <!-- Alignment & Lists -->
           <div class="word-tool-group">
-            <button type="button" onclick="WordEditor.exec('justifyLeft')" class="word-tool-btn" title="Align Left">
+            <button type="button" id="wordBtnAlignLeft" onmousedown="event.preventDefault()" onclick="WordEditor.exec('justifyLeft')" class="word-tool-btn" title="Align Left">
               <i data-lucide="align-left" style="width: 14px; height: 14px;"></i>
             </button>
-            <button type="button" onclick="WordEditor.exec('justifyCenter')" class="word-tool-btn" title="Align Center">
+            <button type="button" id="wordBtnAlignCenter" onmousedown="event.preventDefault()" onclick="WordEditor.exec('justifyCenter')" class="word-tool-btn" title="Align Center">
               <i data-lucide="align-center" style="width: 14px; height: 14px;"></i>
             </button>
-            <button type="button" onclick="WordEditor.exec('justifyRight')" class="word-tool-btn" title="Align Right">
+            <button type="button" id="wordBtnAlignRight" onmousedown="event.preventDefault()" onclick="WordEditor.exec('justifyRight')" class="word-tool-btn" title="Align Right">
               <i data-lucide="align-right" style="width: 14px; height: 14px;"></i>
             </button>
-            <button type="button" onclick="WordEditor.exec('justifyFull')" class="word-tool-btn" title="Justify">
+            <button type="button" id="wordBtnAlignJustify" onmousedown="event.preventDefault()" onclick="WordEditor.exec('justifyFull')" class="word-tool-btn" title="Justify">
               <i data-lucide="align-justify" style="width: 14px; height: 14px;"></i>
             </button>
 
-            <button type="button" onclick="WordEditor.exec('insertUnorderedList')" class="word-tool-btn" title="Bulleted List">
+            <button type="button" id="wordBtnBullet" onmousedown="event.preventDefault()" onclick="WordEditor.exec('insertUnorderedList')" class="word-tool-btn" title="Bulleted List">
               <i data-lucide="list" style="width: 14px; height: 14px;"></i>
             </button>
-            <button type="button" onclick="WordEditor.exec('insertOrderedList')" class="word-tool-btn" title="Numbered List">
+            <button type="button" id="wordBtnNumbered" onmousedown="event.preventDefault()" onclick="WordEditor.exec('insertOrderedList')" class="word-tool-btn" title="Numbered List">
               <i data-lucide="list-ordered" style="width: 14px; height: 14px;"></i>
             </button>
-            <button type="button" onclick="WordEditor.exec('outdent')" class="word-tool-btn" title="Decrease Indent">
+            <button type="button" onmousedown="event.preventDefault()" onclick="WordEditor.exec('outdent')" class="word-tool-btn" title="Decrease Indent">
               <i data-lucide="indent-decrease" style="width: 14px; height: 14px;"></i>
             </button>
-            <button type="button" onclick="WordEditor.exec('indent')" class="word-tool-btn" title="Increase Indent">
+            <button type="button" onmousedown="event.preventDefault()" onclick="WordEditor.exec('indent')" class="word-tool-btn" title="Increase Indent">
               <i data-lucide="indent-increase" style="width: 14px; height: 14px;"></i>
             </button>
           </div>
@@ -1453,26 +1458,29 @@
   .word-tool-btn {
     display: inline-grid;
     place-items: center;
-    min-width: 26px;
-    height: 26px;
+    min-width: 28px;
+    height: 28px;
     padding: 0 5px;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 4px;
+    border-radius: 5px;
     color: #334155;
     font-size: 12px;
     cursor: pointer;
-    transition: all 0.12s ease;
+    transition: all 0.15s ease;
+    user-select: none;
   }
   .word-tool-btn:hover {
     background: #f1f5f9;
-    border-color: #475569;
+    border-color: #94a3b8;
     color: #0f172a;
   }
   .word-tool-btn.active {
-    background: #e0e7ff;
-    color: #1d4ed8;
-    border-color: #c7d2fe;
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #3b82f6 !important;
+    box-shadow: 0 0 0 1.5px rgba(59, 130, 246, 0.4), inset 0 1px 2px rgba(29, 78, 216, 0.15) !important;
+    font-weight: 700 !important;
   }
 
   .word-select {
@@ -2946,10 +2954,14 @@
         const end = Math.min(start + AI_UPGRADE_BATCH, targets.length);
         setUpgradeProgress('working', `AI is upgrading ${end} of ${targets.length} lines`);
         const batch = targets.slice(start, end);
+        const payload = { role: currentRoleKey, resume: extractFullResumeFromDom(), enhance: batch, score: false };
+        if (typeof targetJobData !== 'undefined' && targetJobData && targetJobData.skills_list) {
+          payload.job_skills = targetJobData.skills_list;
+        }
         const res = await fetch('/api/ai/resume-review/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: currentRoleKey, resume: extractFullResumeFromDom(), enhance: batch, score: false })
+          body: JSON.stringify(payload)
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok || !data.enhance_ok) {
@@ -3197,6 +3209,23 @@
   let currentDocZoom = 1.0;
 
   const WordEditor = {
+    _savedRange: null,
+
+    saveSelection() {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        this._savedRange = sel.getRangeAt(0).cloneRange();
+      }
+    },
+
+    restoreSelection() {
+      if (this._savedRange) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(this._savedRange);
+      }
+    },
+
     exec(command, value = null) {
       document.execCommand(command, false, value);
       WordEditor.updateToolbarState();
@@ -3218,15 +3247,77 @@
     },
 
     setTextColor(color) {
+      this.restoreSelection();
       document.execCommand('foreColor', false, color);
       const ind = document.getElementById('wordColorIndicator');
       if (ind) ind.style.background = color;
+      WordEditor.updateToolbarState();
     },
 
     setHighlightColor(color) {
-      document.execCommand('hiliteColor', false, color);
+      this.restoreSelection();
+      document.execCommand('styleWithCSS', false, true);
+      let applied = false;
+      try {
+        applied = document.execCommand('hiliteColor', false, color);
+      } catch (e) {}
+      if (!applied) {
+        try {
+          applied = document.execCommand('backColor', false, color);
+        } catch (e) {}
+      }
+      if (!applied) {
+        try {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+            const range = sel.getRangeAt(0);
+            const span = document.createElement('span');
+            span.style.backgroundColor = color;
+            span.appendChild(range.extractContents());
+            range.insertNode(span);
+            applied = true;
+          }
+        } catch (e) {}
+      }
       const ind = document.getElementById('wordHighlightIndicator');
       if (ind) ind.style.background = color;
+      WordEditor.updateToolbarState();
+      WordEditor.updateCounts();
+      if (typeof triggerSyncFromSheet === 'function') triggerSyncFromSheet();
+    },
+
+    toggleHighlight() {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+        if (window.showToast) window.showToast('Select text first to highlight', 'info');
+        return;
+      }
+      let currentColor = '#fef08a';
+      const ind = document.getElementById('wordHighlightIndicator');
+      if (ind && ind.style.background) currentColor = ind.style.background;
+
+      let parentHighlight = null;
+      let node = sel.anchorNode;
+      while (node && node.id !== 'resumeSheet') {
+        if (node.nodeType === 1) {
+          const bg = window.getComputedStyle(node).backgroundColor;
+          if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+            parentHighlight = node;
+            break;
+          }
+        }
+        node = node.parentNode;
+      }
+
+      if (parentHighlight) {
+        document.execCommand('styleWithCSS', false, true);
+        try { document.execCommand('hiliteColor', false, 'transparent'); } catch(e){}
+        try { document.execCommand('backColor', false, 'transparent'); } catch(e){}
+        if (parentHighlight.style) parentHighlight.style.backgroundColor = 'transparent';
+      } else {
+        WordEditor.setHighlightColor(currentColor);
+      }
+      WordEditor.updateToolbarState();
     },
 
     insertBullet() {
@@ -3360,15 +3451,59 @@
         const isUnderline = document.queryCommandState('underline');
         const isStrike = document.queryCommandState('strikeThrough');
 
+        const isLeft = document.queryCommandState('justifyLeft');
+        const isCenter = document.queryCommandState('justifyCenter');
+        const isRight = document.queryCommandState('justifyRight');
+        const isJustify = document.queryCommandState('justifyFull');
+
+        const isBullet = document.queryCommandState('insertUnorderedList');
+        const isNumber = document.queryCommandState('insertOrderedList');
+
         const btnB = document.getElementById('wordBtnBold');
         const btnI = document.getElementById('wordBtnItalic');
         const btnU = document.getElementById('wordBtnUnderline');
         const btnS = document.getElementById('wordBtnStrike');
 
+        const btnLeft = document.getElementById('wordBtnAlignLeft');
+        const btnCenter = document.getElementById('wordBtnAlignCenter');
+        const btnRight = document.getElementById('wordBtnAlignRight');
+        const btnJustify = document.getElementById('wordBtnAlignJustify');
+
+        const btnBullet = document.getElementById('wordBtnBullet');
+        const btnNumbered = document.getElementById('wordBtnNumbered');
+        const btnHighlight = document.getElementById('wordBtnHighlight');
+
         if (btnB) btnB.classList.toggle('active', !!isBold);
         if (btnI) btnI.classList.toggle('active', !!isItalic);
         if (btnU) btnU.classList.toggle('active', !!isUnderline);
         if (btnS) btnS.classList.toggle('active', !!isStrike);
+
+        if (btnLeft) btnLeft.classList.toggle('active', !!isLeft);
+        if (btnCenter) btnCenter.classList.toggle('active', !!isCenter);
+        if (btnRight) btnRight.classList.toggle('active', !!isRight);
+        if (btnJustify) btnJustify.classList.toggle('active', !!isJustify);
+
+        if (btnBullet) btnBullet.classList.toggle('active', !!isBullet);
+        if (btnNumbered) btnNumbered.classList.toggle('active', !!isNumber);
+
+        if (btnHighlight) {
+          let hasHighlight = false;
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) {
+            let node = sel.anchorNode;
+            while (node && node.id !== 'resumeSheet') {
+              if (node.nodeType === 1) {
+                const bg = window.getComputedStyle(node).backgroundColor;
+                if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+                  hasHighlight = true;
+                  break;
+                }
+              }
+              node = node.parentNode;
+            }
+          }
+          btnHighlight.classList.toggle('active', hasHighlight);
+        }
       } catch (e) {}
     },
 
@@ -3544,6 +3679,7 @@
 
   // Track selection state to highlight toolbar buttons
   document.addEventListener('selectionchange', function() {
+    WordEditor.saveSelection();
     WordEditor.updateToolbarState();
   });
 
