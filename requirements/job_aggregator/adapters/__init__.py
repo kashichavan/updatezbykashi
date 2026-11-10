@@ -5,6 +5,7 @@ from .indian_startup_adapter import IndianStartupSourceAdapter
 from .greenhouse_adapter import GreenhousePublicSourceAdapter
 from .ashby_adapter import AshbyPublicSourceAdapter
 from .public_feeds_adapter import PublicFeedsSourceAdapter
+from .adzuna_adapter import AdzunaSourceAdapter
 
 __all__ = [
     'NaukriSourceAdapter',
@@ -14,4 +15,5 @@ __all__ = [
     'GreenhousePublicSourceAdapter',
     'AshbyPublicSourceAdapter',
     'PublicFeedsSourceAdapter',
+    'AdzunaSourceAdapter',
 ]

@@ -160,7 +160,7 @@ def trigger_async_india_jobs_refresh(force=False, limit=25):
                 from .job_aggregator.orchestrator import orchestrator
                 from django.db import close_old_connections
                 close_old_connections()
-                orchestrator.run_aggregation(sources=["Naukri", "LinkedIn", "Startup", "Jobdexo"], limit_per_source=limit, last_hours=48)
+                orchestrator.run_aggregation(sources=["Naukri", "LinkedIn", "Startup", "Jobdexo", "Adzuna"], limit_per_source=limit, last_hours=48)
             except Exception as e:
                 logger.error(f"Background India jobs ingestion failed: {e}")
             finally:

@@ -345,6 +345,8 @@ class JobPosting(models.Model):
             return 'N'
         elif any(k in src for k in ['startup', 'ashby', 'lever', 'greenhouse']):
             return 'S'
+        elif 'adzuna' in src:
+            return 'A'
         return 'JD'
 
     def get_contact_phone(self):

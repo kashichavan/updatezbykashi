@@ -1,0 +1,125 @@
+{
+  "_comment": "Official public career-board APIs of employers hiring in India. Each entry was probed live (board exists, has India postings, JD present). Add boards with: python manage.py discover_career_boards --save",
+  "boards": [
+    {
+      "ats": "lever",
+      "slug": "paytm",
+      "company": "Paytm"
+    },
+    {
+      "ats": "lever",
+      "slug": "meesho",
+      "company": "Meesho"
+    },
+    {
+      "ats": "lever",
+      "slug": "cred",
+      "company": "CRED"
+    },
+    {
+      "ats": "lever",
+      "slug": "zeta",
+      "company": "Zeta"
+    },
+    {
+      "ats": "lever",
+      "slug": "mindtickle",
+      "company": "Mindtickle"
+    },
+    {
+      "ats": "lever",
+      "slug": "fampay",
+      "company": "FamPay"
+    },
+    {
+      "ats": "lever",
+      "slug": "pocketfm",
+      "company": "Pocket FM"
+    },
+    {
+      "ats": "greenhouse",
+      "slug": "groww",
+      "company": "Groww"
+    },
+    {
+      "ats": "greenhouse",
+      "slug": "razorpaysoftwareprivatelimited",
+      "company": "Razorpay"
+    },
+    {
+      "ats": "greenhouse",
+      "slug": "inmobi",
+      "company": "InMobi"
+    },
+    {
+      "ats": "greenhouse",
+      "slug": "druva",
+      "company": "Druva"
+    },
+    {
+      "ats": "greenhouse",
+      "slug": "highradius",
+      "company": "HighRadius"
+    },
+    {
+      "ats": "greenhouse",
+      "slug": "zenoti",
+      "company": "Zenoti"
+    },
+    {
+      "ats": "ashby",
+      "slug": "sarvam",
+      "company": "Sarvam AI"
+    },
+    {
+      "ats": "ashby",
+      "slug": "spotdraft",
+      "company": "SpotDraft"
+    },
+    {
+      "ats": "ashby",
+      "slug": "atlan",
+      "company": "Atlan"
+    },
+    {
+      "ats": "smartrecruiters",
+      "slug": "Swiggy",
+      "company": "Swiggy"
+    },
+    {
+      "ats": "smartrecruiters",
+      "slug": "Freshworks",
+      "company": "Freshworks"
+    },
+    {
+      "ats": "smartrecruiters",
+      "slug": "Cars24",
+      "company": "CARS24"
+    },
+    {
+      "ats": "smartrecruiters",
+      "slug": "Unacademy",
+      "company": "Unacademy"
+    },
+    {
+      "ats": "smartrecruiters",
+      "slug": "Whatfix",
+      "company": "Whatfix"
+    },
+    {
+      "ats": "smartrecruiters",
+      "slug": "NoBroker",
+      "company": "NoBroker"
+    },
+    {
+      "ats": "greenhouse",
+      "slug": "glance",
+      "company": "Glance"
+    },
+    {
+      "ats": "smartrecruiters",
+      "slug": "Ixigo",
+      "company": "ixigo"
+    }
+  ]
+}

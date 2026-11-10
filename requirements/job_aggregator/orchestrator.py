@@ -18,6 +18,7 @@ from .adapters import (
     NaukriSourceAdapter,
     LinkedInSourceAdapter,
     IndianStartupSourceAdapter,
+    AdzunaSourceAdapter,
 )
 from .deduplicator import merge_or_create_job, purge_all_database_duplicates
 
@@ -36,6 +37,7 @@ class JobAggregationOrchestrator:
             NaukriSourceAdapter(),
             LinkedInSourceAdapter(),
             IndianStartupSourceAdapter(),
+            AdzunaSourceAdapter(),  # off unless ADZUNA_APP_ID/ADZUNA_APP_KEY are set
         ]
 
     def get_registered_sources(self) -> List[Dict[str, Any]]:
