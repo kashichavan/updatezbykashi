@@ -73,7 +73,9 @@ TITLE_NOISE_PATTERNS = [
 TRACKING_QUERY_PARAMS = {
     'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
     'ref', 'refid', 'trackingid', 'position', 'pagenum', 'mid', 'f_tpr',
-    'origin', 'source', 'src', 'gh_jid', 'ashby_jid', 'trk'
+    'origin', 'source', 'src', 'trk'
+    # gh_jid / ashby_jid are NOT tracking: on employer career pages
+    # (e.g. company.com/careers/?gh_jid=123) they are the job's only identifier.
 }
 
 
@@ -226,6 +228,11 @@ def find_existing_job_duplicate(job_data: Dict[str, Any], seen_in_batch: Optiona
         candidates = JobPosting.objects.filter(company_query)
 
         for candidate in candidates:
+            # Two postings from the same source with different posting IDs are
+            # different jobs by definition (e.g. "SDE" vs "Senior SDE" on one board).
+            if (source_name and source_job_id and candidate.source_name == source_name
+                    and candidate.source_job_id and candidate.source_job_id != source_job_id):
+                continue
             cand_comp = normalize_company_name(candidate.company_name)
             cand_title = normalize_job_title(candidate.title)
             cand_city = (candidate.normalized_city or '').strip().lower()
@@ -261,6 +268,14 @@ def merge_or_create_job(job_data: Dict[str, Any], batch_id: str = "") -> Tuple[J
         existing.last_seen_at = now
         changed = ['last_seen_at']
 
+        # An employer's own board (or Adzuna) listing the posting right now means it
+        # is open, so an auto-expired row reopens for another 7 days. Other sources
+        # can show stale postings, and manually CLOSED rows always stay closed.
+        if existing.status == 'EXPIRED' and job_data.get('source_name') in ('Startup', 'Adzuna'):
+            existing.status = 'ACTIVE'
+            existing.deadline = now + timedelta(days=7)
+            changed.extend(['status', 'deadline'])
+
         # If new record provides an exact publication timestamp and existing only had date/unknown
         if job_data.get('source_published_at') and existing.timestamp_precision in ['DATE_ONLY', 'UNKNOWN']:
             existing.source_published_at = job_data['source_published_at']
@@ -276,8 +291,16 @@ def merge_or_create_job(job_data: Dict[str, Any], batch_id: str = "") -> Tuple[J
         # Upgrade description if existing description was short or placeholder
         new_desc = job_data.get('description', '')
         if len(new_desc) > len(existing.description or ''):
+            was_placeholder = len(existing.description or '') < 200
             existing.description = new_desc
             changed.append('description')
+            # A real JD replacing a placeholder: the old eligibility, salary and
+            # classification were derived from nothing, so take the source's values.
+            if was_placeholder and len(new_desc) >= 200:
+                for field in ('eligibility', 'stipend_salary', 'experience_tier', 'job_type', 'industry_domain'):
+                    if job_data.get(field):
+                        setattr(existing, field, job_data[field])
+                        changed.append(field)
 
         # Upgrade skills if new skills are richer
         new_skills = job_data.get('skills_required', '')
@@ -307,7 +330,9 @@ def merge_or_create_job(job_data: Dict[str, Any], batch_id: str = "") -> Tuple[J
         location=job_data.get('location', 'Bengaluru, India'),
         is_remote=job_data.get('is_remote', False),
         skills_required=job_data.get('skills_required', 'Problem Solving, Engineering'),
-        apply_url=clean_canonical_job_url(job_data.get('apply_url', '')),
+        # Adzuna's redirect_url must be used verbatim (its query string carries attribution).
+        apply_url=(job_data.get('apply_url', '') if job_data.get('source_name') == 'Adzuna'
+                   else clean_canonical_job_url(job_data.get('apply_url', ''))),
         allow_direct_apply=True,
         description=job_data.get('description', ''),
         eligibility=job_data.get('eligibility', 'Open to all graduates and working professionals'),

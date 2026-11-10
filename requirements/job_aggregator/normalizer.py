@@ -101,14 +101,21 @@ def classify_experience_tier(title: str = "", eligibility: str = "", description
     title_lower = (title or '').lower()
     text = f"{title_lower} {eligibility} {description}".lower()
 
-    # 1. Internship check
+    def has(kw: str, haystack: str) -> bool:
+        # Whole words only: "intern" must not match "internal"/"international",
+        # "lead" must not match "leading", "associate" must not match "associated".
+        return re.search(rf'(?<![a-z]){re.escape(kw)}(?:s)?(?![a-z])', haystack) is not None
+
+    # 1. Internship: only the title or the stated eligibility decide this. Full
+    #    JDs mention internships, interns and trainees for unrelated reasons.
+    head = f"{title_lower} {(eligibility or '').lower()}"
     for kw in EXPERIENCE_KEYWORDS['INTERNSHIP']:
-        if kw in text:
+        if has(kw, head):
             return 'INTERNSHIP'
 
     # 2. Senior / Lead check in title
     for kw in EXPERIENCE_KEYWORDS['SENIOR_LEVEL']:
-        if kw in title_lower:
+        if has(kw, title_lower):
             return 'SENIOR_LEVEL'
 
     # 3. Numeric range check (e.g. 10-13 Yrs, 5-8 Yrs, 0-1 Yrs)
@@ -140,17 +147,17 @@ def classify_experience_tier(title: str = "", eligibility: str = "", description
 
     # 4. Fresher signals
     for kw in EXPERIENCE_KEYWORDS['FRESHER']:
-        if kw in text:
+        if has(kw, text):
             return 'FRESHER'
 
     # 5. Mid level signals
     for kw in EXPERIENCE_KEYWORDS['MID_LEVEL']:
-        if kw in text:
+        if has(kw, text):
             return 'MID_LEVEL'
 
     # 6. Early career signals
     for kw in EXPERIENCE_KEYWORDS['EARLY_CAREER']:
-        if kw in text:
+        if has(kw, text):
             return 'EARLY_CAREER'
 
     return 'FRESHER'
