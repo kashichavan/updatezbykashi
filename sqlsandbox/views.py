@@ -25,7 +25,7 @@ def sql_sandbox_view(request):
         'challenges': challenges,
         'default_dataset': dataset_catalog[0] if dataset_catalog else None,
         'page_title': '⚡ SQL Visual Debugger & Interactive Database Studio',
-        'meta_description': 'Line-by-line interactive SQL Debugger. Step through query clauses (FROM, JOIN, WHERE, GROUP BY, SELECT, ORDER BY) with visual execution pipeline, active row memory inspector, and Scott/Tiger schema.'
+        'meta_description': 'Step through SQL queries clause by clause (FROM, JOIN, WHERE, GROUP BY, SELECT, ORDER BY) with a visual pipeline and row inspector on the Scott/Tiger schema.'
     }
     return render(request, 'sqlsandbox/sandbox.html', context)
 

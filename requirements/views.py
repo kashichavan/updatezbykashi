@@ -413,13 +413,8 @@ def sitemap_xml_view(request):
     # Interactive Learning Academy Topics
     try:
         from debugger.learn_curriculum import CURRICULUM
+        # Language index URLs 301 to their first lesson, so only lesson URLs are listed.
         for lang_key, l_data in CURRICULUM.items():
-            xml_lines.append(f'  <url>')
-            xml_lines.append(f'    <loc>{host}/debugger/learn/{lang_key}/</loc>')
-            xml_lines.append(f'    <lastmod>{now_str}</lastmod>')
-            xml_lines.append(f'    <changefreq>weekly</changefreq>')
-            xml_lines.append(f'    <priority>0.85</priority>')
-            xml_lines.append(f'  </url>')
             for top in l_data.get('topics', []):
                 xml_lines.append(f'  <url>')
                 xml_lines.append(f'    <loc>{host}/debugger/learn/{lang_key}/{top["slug"]}/</loc>')

@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}⚡ {{ group.name }} — Kashii Updatez{% endblock %}
-{% block meta_description %}{{ group.description|default:"Explore all requirements in this hiring drive bundle with direct official apply links on Kashii Updatez." }}{% endblock %}
+{% block title %}{{ group.name }} | Kashii Updatez{% endblock %}
+{% block meta_description %}{% filter truncatechars:158 %}{{ group.description|default:"Every requirement in this hiring drive bundle, each with an official apply link on Kashii Updatez." }}{% endfilter %}{% endblock %}
+{% block og_title %}{{ group.name }}{% endblock %}
+{% block og_description %}{% filter truncatechars:158 %}{{ group.description|default:"Every requirement in this hiring drive bundle, each with an official apply link on Kashii Updatez." }}{% endfilter %}{% endblock %}
 
 {% block content %}
 <div class="wrap">

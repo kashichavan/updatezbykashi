@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}⚡ Kashii Updates (Kashii Updatez) — Daily Student Jobs & Internships 2026{% endblock %}
-{% block meta_description %}Official Kashii Updates & Kashii Updatez portal by Python Kashi. Discover daily off-campus student jobs, tech internships, and direct career apply links with 7-day freshness guarantee.{% endblock %}
-{% block og_title %}⚡ Kashii Updates (Kashii Updatez) — Daily Student Jobs & Internships{% endblock %}
-{% block og_description %}Official Kashii Updates portal by Python Kashi. Access daily student job drives, fresher internships, and programming tutorials.{% endblock %}
+{% block title %}Kashii Updatez: Daily Student Jobs & Internships 2026{% endblock %}
+{% block meta_description %}Kashii Updatez by Python Kashi: daily off-campus student jobs, tech internships and official apply links. Every listing stays fresh for 7 days.{% endblock %}
+{% block og_title %}Kashii Updatez: Daily Student Jobs & Internships 2026{% endblock %}
+{% block og_description %}Kashii Updatez by Python Kashi: daily off-campus student jobs, tech internships and official apply links. Every listing stays fresh for 7 days.{% endblock %}
+
+
 
 {% block schema_markup %}
 <!-- Google Job Directory ItemList Structured Data -->
@@ -23,6 +25,48 @@
       "name": "{{ j.company_name|escapejs }} Hiring: {{ j.title|escapejs }}"
     }{% if not forloop.last %},{% endif %}
     {% endfor %}
+  ]
+}
+</script>
+<!-- FAQ structured data: mirrors the visible FAQ section below -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://kashiiupdatez.online/#faq",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is Kashii Update?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Kashii Update (kashiiupdatez.online) is a dedicated career portal and technical learning hub founded by Kashinath (Python Kashi). It publishes daily off-campus job recruitment drives, software engineering internships, non-IT opportunities, and comprehensive Python and Django programming masterclasses."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where can I get daily job updates from Kashii Update?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can access daily job requirements directly on the official website at https://kashiiupdatez.online/, via the official YouTube channel @pythonkashi, and on Instagram @ikashii_07."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Who is the creator of Kashii Update and Python Kashi?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Kashinath (Kashii) is the founder of Kashii Update and creator of the @pythonkashi YouTube channel, guiding students in Python development, coding interviews, and job placements."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Are the job postings on Kashii Update free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Browsing and applying through Kashii Update is free. Each listing links to where you apply, on the company site or a job board, and closes seven days after it is posted."
+      }
+    }
   ]
 }
 </script>
@@ -532,6 +576,38 @@
       </div>
     </div>
   </section>
+
+  <!-- Frequently asked questions (visible copy of the FAQPage schema) -->
+  <section id="faq" class="kx-faq" aria-labelledby="faqHeading">
+    <h2 id="faqHeading">Frequently asked questions</h2>
+    <div class="kx-faq-list">
+      <details class="kx-faq-item">
+        <summary>What is Kashii Update?</summary>
+        <p>Kashii Update (kashiiupdatez.online) is a dedicated career portal and technical learning hub founded by Kashinath (Python Kashi). It publishes daily off-campus job recruitment drives, software engineering internships, non-IT opportunities, and comprehensive Python and Django programming masterclasses.</p>
+      </details>
+      <details class="kx-faq-item">
+        <summary>Where can I get daily job updates from Kashii Update?</summary>
+        <p>You can access daily job requirements directly on the official website at https://kashiiupdatez.online/, via the official YouTube channel @pythonkashi, and on Instagram @ikashii_07.</p>
+      </details>
+      <details class="kx-faq-item">
+        <summary>Who is the creator of Kashii Update and Python Kashi?</summary>
+        <p>Kashinath (Kashii) is the founder of Kashii Update and creator of the @pythonkashi YouTube channel, guiding students in Python development, coding interviews, and job placements.</p>
+      </details>
+      <details class="kx-faq-item">
+        <summary>Are the job postings on Kashii Update free?</summary>
+        <p>Yes. Browsing and applying through Kashii Update is free. Each listing links to where you apply, on the company site or a job board, and closes seven days after it is posted.</p>
+      </details>
+    </div>
+  </section>
+  <style>
+    .kx-faq { margin: 0 0 32px; padding: 0 4px; }
+    .kx-faq h2 { font: 700 20px var(--font-sans); color: var(--ink); margin: 0 0 12px; }
+    .kx-faq-list { display: grid; gap: 10px; }
+    .kx-faq-item { border: 1px solid var(--subtle-border, #e2e8f0); border-radius: 12px; background: #fff; padding: 0 16px; }
+    .kx-faq-item summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink); padding: 14px 0; list-style-position: inside; }
+    .kx-faq-item summary:focus-visible { outline: 2px solid var(--blue-primary, #2563eb); outline-offset: 2px; border-radius: 6px; }
+    .kx-faq-item p { margin: 0 0 14px; color: #475569; font-size: 14px; line-height: 1.65; }
+  </style>
 
   <!-- High-RPM Multiplex Discovery Ad Grid -->
   {% include 'components/adsense_unit.html' with ad_type='multiplex' margin_y='40px' %}
