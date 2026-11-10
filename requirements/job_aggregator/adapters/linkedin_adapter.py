@@ -15,6 +15,7 @@ import re
 import html
 import logging
 from typing import List, Dict, Any, Optional
+from django.core.cache import cache
 from django.utils import timezone
 
 from ..base_adapter import BaseJobSourceAdapter
@@ -34,6 +35,24 @@ LINKEDIN_JOB_POSTING_URL = "https://www.linkedin.com/jobs-guest/jobs/api/jobPost
 # A posting is only published with its real job description. Anything shorter
 # than this is treated as "no JD" and the job is skipped, never padded.
 MIN_JD_CHARS = 200
+
+# Roles searched across India, a few per cycle in rotation (fresher and early-career first).
+SEARCH_KEYWORDS = [
+    "software engineer fresher", "software developer", "python developer", "java developer",
+    "full stack developer", "frontend developer", "react developer", "backend developer",
+    "node.js developer", "android developer", "flutter developer", "ios developer",
+    "data analyst", "data scientist", "machine learning engineer", "ai engineer",
+    "data engineer", "devops engineer", "cloud engineer", "cyber security analyst",
+    "qa engineer", "software testing fresher", "automation test engineer", "sde 1",
+    "graduate engineer trainee", "software engineer intern", "data analyst intern",
+    "business analyst", "product analyst", "associate product manager", "ui ux designer",
+    "technical support engineer", "network engineer", "embedded engineer", "sap consultant",
+    "salesforce developer", "hr recruiter", "hr intern", "management trainee",
+    "digital marketing", "content writer", "business development associate",
+    "customer success associate", "financial analyst", "accountant fresher",
+    "startup software engineer",
+]
+_KEYWORD_CURSOR_KEY = "linkedin_keyword_cursor"
 
 
 def _html_to_text(fragment: str) -> str:
@@ -89,17 +108,18 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
             )
             return []
 
-        search_terms = [keywords] if keywords else [
-            "Startup Software Engineer Bengaluru",
-            "Software Testing Fresher",
-            "QA Automation Tester",
-            "HR Recruiter Intern",
-            "MBA Management Trainee",
-            "Python Developer Pune",
-            "Full Stack Developer Hyderabad",
-            "Data Analyst Fresher",
-        ]
+        from requirements.models import JobPosting
         search_loc = location or "India"
+        if keywords:
+            search_terms = [keywords]
+        else:
+            # Rotate through the role list so every cycle searches different roles,
+            # instead of the first keyword filling the whole limit every time.
+            per_run = max(1, int(os.getenv("LINKEDIN_KEYWORDS_PER_RUN", "3")))
+            cursor = cache.get(_KEYWORD_CURSOR_KEY, 0) % len(SEARCH_KEYWORDS)
+            search_terms = [SEARCH_KEYWORDS[(cursor + i) % len(SEARCH_KEYWORDS)] for i in range(per_run)]
+            cache.set(_KEYWORD_CURSOR_KEY, (cursor + per_run) % len(SEARCH_KEYWORDS), None)
+        limit = max(limit, int(os.getenv("LINKEDIN_JOBS_PER_RUN", "15")))
 
         headers = {
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -107,47 +127,64 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
             "Accept-Language": "en-US,en;q=0.9",
         }
 
-        # Apply freshness filter: default to past 24h / 1h for real-time postings
-        time_filter = "r86400"  # past 24 hours
-        if last_hours == 1:
-            time_filter = "r3600"  # past 1 hour (10-60 min fresh)
-        elif last_hours and last_hours > 24:
+        # Each keyword comes round only every few hours, so search the past 24h
+        # (or longer if asked); already-stored jobs are skipped below.
+        time_filter = "r86400"
+        if last_hours and last_hours > 24:
             time_filter = f"r{last_hours * 3600}"
 
         results = []
         seen_ids = set()
+        seen_roles = set()
+        per_keyword = max(3, limit // len(search_terms))
 
         for kw in search_terms:
             if len(results) >= limit:
                 break
-
-            # Search page 1 (and page 2 if needed for 20+ jobs)
-            offsets = (0, 25) if limit > 12 else (0,)
-            for start_idx in offsets:
-                if len(results) >= limit:
+            kw_count = 0
+            for start_idx in (0, 25):
+                if len(results) >= limit or kw_count >= per_keyword:
                     break
-
                 params = {
                     "keywords": kw,
                     "location": search_loc,
                     "f_TPR": time_filter,
                     "start": start_idx,
                 }
-
                 res = self.safe_get(LINKEDIN_GUEST_API_URL, params=params, headers=headers)
-                if not res or res.status_code != 200:
+                if res is None:
+                    logger.warning("[LinkedIn] Search blocked or rate limited; ending this cycle early.")
+                    return results
+                if res.status_code != 200:
                     break
 
-                batch = self.parse_linkedin_guest_html(res.text, limit=(limit - len(results)))
+                batch = self.parse_linkedin_guest_html(res.text, limit=25)
+                if not batch:
+                    break
+                ids = [j['source_job_id'] for j in batch]
+                stored = set(
+                    JobPosting.objects.filter(source_name=self.source_name, source_job_id__in=ids)
+                    .values_list('source_job_id', flat=True)
+                )
                 for j in batch:
-                    if j['source_job_id'] in seen_ids:
+                    jid = j['source_job_id']
+                    # LinkedIn often lists the same job twice under different IDs.
+                    role_key = (j['company_name'].strip().lower(), j['title'].strip().lower())
+                    if jid in seen_ids or jid in stored or role_key in seen_roles:
                         continue
-                    seen_ids.add(j['source_job_id'])
+                    seen_ids.add(jid)
+                    seen_roles.add(role_key)
+                    if JobPosting.objects.filter(
+                        source_name=self.source_name, status='ACTIVE',
+                        company_name__iexact=j['company_name'].strip(), title__iexact=j['title'].strip(),
+                    ).exists():
+                        continue
                     # JD is required: fetch the real posting; skip the job if it can't be read.
                     if not self.enrich_with_job_posting(j, headers):
                         continue
                     results.append(j)
-                    if len(results) >= limit:
+                    kw_count += 1
+                    if len(results) >= limit or kw_count >= per_keyword:
                         break
 
         return results
