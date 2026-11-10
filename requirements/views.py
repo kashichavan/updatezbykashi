@@ -99,6 +99,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# At most one in-process refresh of each kind may run at a time. Without this,
+# every homepage hit could spawn another scraper thread and starve the single
+# gunicorn worker (even /healthz stopped answering on Render's 0.1 CPU plan).
+_INDIA_REFRESH_LOCK = threading.Lock()
+_JOBDEXO_REFRESH_LOCK = threading.Lock()
+
 def cleanup_empty_groups(grace_period_minutes=120):
     """Safe no-op to preserve historical groups and prevent data loss."""
     return 0
@@ -146,6 +152,8 @@ def trigger_async_india_jobs_refresh(force=False, limit=25):
     """Triggers non-blocking background auto-import for Naukri, LinkedIn, Indian Startups, and Jobdexo."""
     last_sync = cache.get('last_auto_india_jobs_sync_ts')
     if force or not last_sync:
+        if not _INDIA_REFRESH_LOCK.acquire(blocking=False):
+            return  # a refresh is already running; never stack threads
         cache.set('last_auto_india_jobs_sync_ts', time.time(), 300)  # 5 min throttle
         def _bg_run():
             try:
@@ -161,27 +169,34 @@ def trigger_async_india_jobs_refresh(force=False, limit=25):
                     close_old_connections()
                 except Exception:
                     pass
+                _INDIA_REFRESH_LOCK.release()
 
-        t = threading.Thread(
-            target=_bg_run,
-            daemon=True,
-            name="AsyncIndiaJobsRefresh"
-        )
-        t.start()
+        try:
+            threading.Thread(target=_bg_run, daemon=True, name="AsyncIndiaJobsRefresh").start()
+        except Exception:
+            _INDIA_REFRESH_LOCK.release()
+            raise
 
 
 def trigger_async_jobdexo_refresh(force=False, limit=15):
     """Triggers non-blocking background auto-import if 5 minutes have elapsed since last crawl."""
     last_sync = cache.get('last_auto_jobdexo_sync_ts')
     if force or not last_sync:
+        if not _JOBDEXO_REFRESH_LOCK.acquire(blocking=False):
+            return  # a refresh is already running
         cache.set('last_auto_jobdexo_sync_ts', time.time(), 300)  # 5 min throttle
-        t = threading.Thread(
-            target=_safe_bg_jobdexo_import,
-            kwargs={'limit': limit},
-            daemon=True,
-            name="AsyncJobdexoRefresh"
-        )
-        t.start()
+
+        def _run(limit=limit):
+            try:
+                _safe_bg_jobdexo_import(limit=limit)
+            finally:
+                _JOBDEXO_REFRESH_LOCK.release()
+
+        try:
+            threading.Thread(target=_run, daemon=True, name="AsyncJobdexoRefresh").start()
+        except Exception:
+            _JOBDEXO_REFRESH_LOCK.release()
+            raise
 
 def api_ping(request):
     """Ultra-fast Keep-Alive Heartbeat endpoint for UptimeRobot auto pings."""
@@ -274,7 +289,7 @@ def index_view(request):
     try:
         active_alt_sources = JobPosting.objects.filter(source_name__in=['Naukri', 'LinkedIn'], status='ACTIVE').count()
         if active_alt_sources < 15:
-            trigger_async_india_jobs_refresh(force=True, limit=25)
+            trigger_async_india_jobs_refresh(limit=25)  # throttled: at most once per 5 min
     except Exception:
         pass
 
