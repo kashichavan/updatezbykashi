@@ -108,6 +108,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'reqpulse.wsgi.application'
 ASGI_APPLICATION = 'reqpulse.asgi.application'
 
+# SQLite: IMMEDIATE makes write transactions take the write lock up front, so
+# they queue on the busy timeout instead of failing instantly on a lock upgrade.
+# Journal mode (WAL) and other pragmas are set in reqpulse/__init__.py.
+_SQLITE_OPTIONS = {
+    "timeout": 20,
+    "transaction_mode": "IMMEDIATE",
+}
+
 # Database Configuration: PostgreSQL on Render or Local/Internal SQLite3
 _db_url = os.environ.get("DATABASE_URL", "").strip()
 if _db_url.startswith(("postgres://", "postgresql://")):
@@ -136,7 +144,7 @@ if _db_url.startswith(("postgres://", "postgresql://")):
             "default": {
                 "ENGINE": "django.db.backends.sqlite3",
                 "NAME": BASE_DIR / "db.sqlite3",
-                "OPTIONS": {"timeout": 30},
+                "OPTIONS": dict(_SQLITE_OPTIONS),
             }
         }
 elif os.environ.get("DB_ENGINE"):
@@ -153,9 +161,7 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
-            "OPTIONS": {
-                "timeout": 30,
-            }
+            "OPTIONS": dict(_SQLITE_OPTIONS),
         }
     }
 
