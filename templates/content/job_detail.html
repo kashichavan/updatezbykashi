@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}💼 {{ job.company_name }} Hiring: {{ job.title }} (Apply Online) | Kashii Updatez{% endblock %}
-{% block meta_description %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Compensation: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}. 100% student job requirement with direct official application link on Kashii Updatez.{% endblock %}
+{% block title %}{{ job.company_name }} Hiring: {{ job.title }}{% endblock %}
+{% block meta_description %}{% filter truncatechars:158 %}Apply for {{ job.title }} at {{ job.company_name }} in {{ job.location }}. Pay: {{ job.stipend_salary }}. Eligibility: {{ job.eligibility }}. Official apply link.{% endfilter %}{% endblock %}
+{% block og_title %}{{ job.company_name }} Hiring: {{ job.title }}{% endblock %}
+{% block og_description %}Location: {{ job.location }} • Pay: {{ job.stipend_salary }} • Eligibility: {{ job.eligibility }}{% endblock %}
 
 {% block schema_markup %}
 <!-- Google for Jobs Structured Data (JSON-LD) -->
@@ -87,14 +89,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<!-- Open Graph & Social Media Share Meta Tags -->
-<meta property="og:title" content="{{ job.company_name }} Hiring: {{ job.title }}">
-<meta property="og:description" content="Location: {{ job.location }} • Pay: {{ job.stipend_salary }} • Eligibility: {{ job.eligibility }}">
-<meta property="og:url" content="{{ share_url }}">
-<meta property="og:type" content="article">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{{ job.company_name }} Hiring — {{ job.title }}">
-<meta name="twitter:description" content="Apply directly via official recruiter application link on Kashii Updatez.">
+<!-- OG/Twitter tags come from base.html via the og_title / og_description blocks above (no duplicates). -->
 
 <style>
   /* ==========================================================================

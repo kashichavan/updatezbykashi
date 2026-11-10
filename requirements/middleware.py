@@ -339,12 +339,12 @@ class SecurityHeadersMiddleware:
 
     CSP_POLICY = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://pagead2.googlesyndication.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms https://*.googlesyndication.com https://*.adtrafficquality.google https://*.doubleclick.net https://*.googleadservices.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
         "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; "
         "img-src 'self' data: https:; "
         "connect-src 'self' https:; "
-        "frame-src 'self' https://www.youtube.com https://googleads.g.doubleclick.net; "
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.doubleclick.net https://*.googlesyndication.com https://*.adtrafficquality.google https://www.google.com; "
         "worker-src 'self' blob:; "
         "object-src 'none'; "
         "base-uri 'self';"

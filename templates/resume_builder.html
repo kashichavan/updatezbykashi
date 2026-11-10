@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{% if target_job %}Tailored resume for {{ target_job.title }} at {{ target_job.company_name }} | Kashii Updatez{% else %}Live A4 Resume Editor — edit, score and export | Kashii Updatez{% endif %}{% endblock %}
-{% block meta_description %}Edit your resume directly on an A4 sheet, check it against the same ATS evaluator used for uploaded resumes, and export to PDF or DOCX. The score is calculated from your text.{% endblock %}
+{% block title %}{% if target_job %}Resume for {{ target_job.title }} at {{ target_job.company_name }}{% else %}Free A4 Resume Editor with ATS Score | Kashii Updatez{% endif %}{% endblock %}
+{% block meta_description %}Edit your resume on a live A4 sheet, check its ATS score with the same evaluator used for uploads, and export to PDF or DOCX.{% endblock %}
+{% block og_title %}{% if target_job %}Resume for {{ target_job.title }} at {{ target_job.company_name }}{% else %}Free A4 Resume Editor with ATS Score{% endif %}{% endblock %}
+{% block og_description %}Edit your resume on a live A4 sheet, check its ATS score with the same evaluator used for uploads, and export to PDF or DOCX.{% endblock %}
 
 {% block content %}
 <main class="resume-builder-main wrap">

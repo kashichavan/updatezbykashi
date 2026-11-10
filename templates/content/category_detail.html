@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}📁 {{ category.name }} Opportunities — Kashii Updatez{% endblock %}
+{% block title %}{{ category.name }} Jobs & Internships | Kashii Updatez{% endblock %}
+{% block meta_description %}Latest {{ category.name }} jobs and internships for students and freshers, each with an official apply link. Updated daily on Kashii Updatez.{% endblock %}
+{% block og_title %}{{ category.name }} Jobs & Internships{% endblock %}
+{% block og_description %}Latest {{ category.name }} jobs and internships for students and freshers, each with an official apply link. Updated daily on Kashii Updatez.{% endblock %}
 
 {% block content %}
 <div class="wrap" style="margin-top: 24px;">

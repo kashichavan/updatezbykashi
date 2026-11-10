@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Recruiter Connect Studio — {{ clean_company_name }} | Kashii Updatez{% endblock %}
-{% block meta_description %}Find a real, publicly published recruiter email for {{ job.title }} at {{ clean_company_name }}. Source-linked discovery across job posts, GitHub, and the public web. No guessed addresses, ever.{% endblock %}
+{% block title %}{{ clean_company_name }} Recruiter Contact | Kashii Updatez{% endblock %}
+{% block meta_description %}{% filter truncatechars:158 %}Find a real, publicly published recruiter email for {{ job.title }} at {{ clean_company_name }}. Source-linked, never guessed.{% endfilter %}{% endblock %}
+{% block og_title %}{{ clean_company_name }} Recruiter Contact{% endblock %}
+{% block og_description %}{% filter truncatechars:158 %}Find a real, publicly published recruiter email for {{ job.title }} at {{ clean_company_name }}. Source-linked, never guessed.{% endfilter %}{% endblock %}
 
 {% block extra_css %}
 <style>

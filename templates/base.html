@@ -4,12 +4,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}⚡ Kashii Update — Daily Student Jobs & Internships | Kashii Updatez{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Official Kashii Update & Kashii Updatez (kashiiupdatez.online) by Python Kashi. Explore daily student job opportunities, freshers off-campus drives, tech internships, and Python tutorials.{% endblock %}">
+  <title>{% block title %}Kashii Updatez: Daily Student Jobs & Internships{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Kashii Updatez by Python Kashi: daily off-campus drives, fresher jobs and tech internships with official apply links, plus free Python tutorials.{% endblock %}">
   <meta name="keywords" content="code editor online, online code editor, run code online, online compiler, python online compiler, javascript compiler, java online compiler, student jobs, off campus drives 2026, fresher jobs, tech jobs online, software engineering jobs, bangalore internships, kashii update, kashi update, kashii updatez, python kashi, kashiiupdatez.online">
   <meta name="author" content="Python Kashi (Kashinath)">
   <!-- Official Google AdSense Site Ownership Verification -->
   <meta name="google-adsense-account" content="ca-pub-2115508498538506">
+  {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
+  {% if bing_site_verification %}<meta name="msvalidate.01" content="{{ bing_site_verification }}">{% endif %}
+  {% if ga_measurement_id %}
+  <!-- Google Analytics 4 (set GA_MEASUREMENT_ID env var) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ ga_measurement_id }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ ga_measurement_id }}');
+  </script>
+  {% endif %}
+  {% if clarity_project_id %}
+  <!-- Microsoft Clarity (set CLARITY_PROJECT_ID env var) -->
+  <script>
+    (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+    t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+    y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","{{ clarity_project_id }}");
+  </script>
+  {% endif %}
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2115508498538506" crossorigin="anonymous"></script>
 
   <!-- SEO, Brand Identity & Crawler Indexing Directives -->
@@ -22,14 +42,18 @@
   <meta property="og:site_name" content="Kashii Updatez">
   <meta property="og:title" content="{% block og_title %}⚡ Kashii Updatez — Daily Student Requirements & Internships{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Discover daily student job requirements, tech internships, and deep-dive programming tutorials by Python Kashi. Every listing includes an apply link.{% endblock %}">
-  <meta property="og:image" content="https://kashiiupdatez.online{% static 'images/icon-feed.png' %}">
+  <meta property="og:image" content="https://kashiiupdatez.online{% static 'images/og-default.png' %}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Kashii Updatez: daily student jobs and internships">
+  <meta property="og:locale" content="en_IN">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@ikashii_07">
   <meta name="twitter:creator" content="@ikashii_07">
-  <meta name="twitter:title" content="Kashii Updatez — Daily Student Jobs & Internships">
-  <meta name="twitter:description" content="Off-campus drives, fresher internships, and technical tutorials by Python Kashi.">
+  <meta name="twitter:image" content="https://kashiiupdatez.online{% static 'images/og-default.png' %}">
+  <!-- twitter:title / twitter:description intentionally omitted: X falls back to og:title / og:description per page. -->
 
   <!-- JSON-LD Entity Schema for Search Engine Authority -->
   <script type="application/ld+json">
@@ -85,44 +109,6 @@
           "https://www.youtube.com/@pythonkashi",
           "https://www.instagram.com/ikashii_07/",
           "https://github.com/kashichavan"
-        ]
-      },
-      {
-        "@type": "FAQPage",
-        "@id": "https://kashiiupdatez.online/#faq",
-        "mainEntity": [
-          {
-            "@type": "Question",
-            "name": "What is Kashii Update?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Kashii Update (kashiiupdatez.online) is a dedicated career portal and technical learning hub founded by Kashinath (Python Kashi). It publishes daily off-campus job recruitment drives, software engineering internships, non-IT opportunities, and comprehensive Python and Django programming masterclasses."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Where can I get daily job updates from Kashii Update?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "You can access daily job requirements directly on the official website at https://kashiiupdatez.online/, via the official YouTube channel @pythonkashi, and on Instagram @ikashii_07."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Who is the creator of Kashii Update and Python Kashi?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Kashinath (Kashii) is the founder of Kashii Update and creator of the @pythonkashi YouTube channel, guiding students in Python development, coding interviews, and job placements."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Are the job postings on Kashii Update free?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes. Browsing and applying through Kashii Update is free. Each listing links to where you apply, on the company site or a job board, and closes seven days after it is posted."
-            }
-          }
         ]
       }
     ]

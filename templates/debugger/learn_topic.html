@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ current_topic.title }} — Complete {{ lang_data.short_title }} Interactive Lesson{% endblock %}
+{% block title %}{{ current_topic.title }} | {{ lang_data.short_title }} Tutorial{% endblock %}
 {% block meta_description %}{{ current_topic.seo_description }}{% endblock %}
+{% block og_title %}{{ current_topic.title }} | {{ lang_data.short_title }} Tutorial{% endblock %}
+{% block og_description %}{{ current_topic.seo_description }}{% endblock %}
 
 {% block extra_css %}
 <style>

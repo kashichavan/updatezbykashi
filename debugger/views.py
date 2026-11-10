@@ -1,6 +1,6 @@
 import json
-from django.shortcuts import render
-from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.http import JsonResponse, Http404
 from django.views.decorators.csrf import csrf_exempt
 from .models import CodeSnippet, DebugSession
 from .python_tracer import PythonExecutionTracer
@@ -276,23 +276,28 @@ def learn_topic_view(request, lang='python', topic_slug=None):
     """Interactive W3Schools/GeeksforGeeks style Academy with Real-World Analogies & Embedded Debugger."""
     lang = (lang or 'python').lower()
     if lang not in CURRICULUM:
-        lang = 'python'
+        raise Http404("Unknown language")
 
     lang_data = CURRICULUM[lang]
     topics = lang_data['topics']
+    if not topics:
+        raise Http404("No lessons")
+
+    # The language index renders the same page as lesson 1; 301 to it so
+    # search engines see one URL instead of two duplicates.
+    if not topic_slug:
+        return redirect('debugger:learn_topic_detail', lang=lang, topic_slug=topics[0]['slug'], permanent=True)
 
     current_topic = None
     topic_index = 0
-    if topic_slug:
-        for idx, t in enumerate(topics):
-            if t['slug'] == topic_slug:
-                current_topic = t
-                topic_index = idx
-                break
+    for idx, t in enumerate(topics):
+        if t['slug'] == topic_slug:
+            current_topic = t
+            topic_index = idx
+            break
 
-    if not current_topic and topics:
-        current_topic = topics[0]
-        topic_index = 0
+    if not current_topic:
+        raise Http404("Unknown lesson")
 
     prev_topic = topics[topic_index - 1] if topic_index > 0 else None
     next_topic = topics[topic_index + 1] if topic_index < len(topics) - 1 else None

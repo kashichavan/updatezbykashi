@@ -16,3 +16,12 @@ services:
 
 
 
+      # SEO & analytics IDs: set the values in the Render dashboard (Environment tab)
+      - key: GA_MEASUREMENT_ID
+        sync: false
+      - key: CLARITY_PROJECT_ID
+        sync: false
+      - key: GOOGLE_SITE_VERIFICATION
+        sync: false
+      - key: BING_SITE_VERIFICATION
+        sync: false
