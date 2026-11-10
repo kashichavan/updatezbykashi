@@ -58,6 +58,15 @@ def _background_aggregation_loop():
 
         except Exception as e:
             logger.warning(f"Notice in Job Aggregator scheduler cycle: {e}")
+
+        # Fill in real job descriptions for LinkedIn jobs that only have a placeholder.
+        try:
+            from .adapters.linkedin_adapter import backfill_linkedin_descriptions
+            stats = backfill_linkedin_descriptions(limit=int(os.getenv("LINKEDIN_JD_BACKFILL_BATCH", "10")))
+            if any(stats.values()):
+                logger.info(f"[LinkedIn JD backfill] {stats}")
+        except Exception as e:
+            logger.warning(f"[LinkedIn JD backfill] {e}")
         finally:
             try:
                 from django.db import close_old_connections, reset_queries

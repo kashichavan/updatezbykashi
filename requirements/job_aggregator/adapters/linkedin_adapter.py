@@ -29,6 +29,38 @@ from requirements.skill_extractor import extract_technical_skills
 logger = logging.getLogger(__name__)
 
 LINKEDIN_GUEST_API_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+LINKEDIN_JOB_POSTING_URL = "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id}"
+
+# A posting is only published with its real job description. Anything shorter
+# than this is treated as "no JD" and the job is skipped, never padded.
+MIN_JD_CHARS = 200
+
+
+def _html_to_text(fragment: str) -> str:
+    """Convert LinkedIn's JD HTML to readable plain text, keeping paragraph and bullet breaks."""
+    text = re.sub(r'(?i)<br\s*/?>', '\n', fragment)
+    text = re.sub(r'(?i)</(p|div|h[1-6]|ul|ol)>', '\n\n', text)
+    text = re.sub(r'(?i)<li[^>]*>', '\n• ', text)
+    text = re.sub(r'<[^>]+>', '', text)
+    text = html.unescape(text)
+    text = re.sub(r'[ \t\u00a0]+', ' ', text)
+    text = re.sub(r' *\n *', '\n', text)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    return text.strip()
+
+
+def parse_linkedin_job_posting(html_text: str) -> Dict[str, Any]:
+    """Extract the real JD and job criteria from a guest jobPosting page."""
+    out: Dict[str, Any] = {'description': '', 'criteria': {}}
+    m = re.search(r'show-more-less-html__markup[^>]*>([\s\S]*?)</div>', html_text)
+    if m:
+        out['description'] = _html_to_text(m.group(1))
+    for key, val in re.findall(
+        r'description__job-criteria-subheader"[^>]*>\s*([\s\S]*?)\s*</h3>\s*<span[^>]*>\s*([\s\S]*?)\s*</span>',
+        html_text,
+    ):
+        out['criteria'][re.sub(r'<[^>]+>', '', key).strip()] = html.unescape(re.sub(r'<[^>]+>', '', val)).strip()
+    return out
 
 
 class LinkedInSourceAdapter(BaseJobSourceAdapter):
@@ -108,13 +140,36 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
 
                 batch = self.parse_linkedin_guest_html(res.text, limit=(limit - len(results)))
                 for j in batch:
-                    if j['source_job_id'] not in seen_ids:
-                        seen_ids.add(j['source_job_id'])
-                        results.append(j)
-                        if len(results) >= limit:
-                            break
+                    if j['source_job_id'] in seen_ids:
+                        continue
+                    seen_ids.add(j['source_job_id'])
+                    # JD is required: fetch the real posting; skip the job if it can't be read.
+                    if not self.enrich_with_job_posting(j, headers):
+                        continue
+                    results.append(j)
+                    if len(results) >= limit:
+                        break
 
         return results
+
+    def fetch_job_posting(self, job_id: str, headers: Optional[Dict[str, str]] = None) -> Optional[Dict[str, Any]]:
+        """Fetch one public guest job posting and return its real JD + criteria, or None."""
+        res = self.safe_get(LINKEDIN_JOB_POSTING_URL.format(job_id=job_id), headers=headers)
+        if not res or res.status_code != 200:
+            return None
+        detail = parse_linkedin_job_posting(res.text)
+        if len(detail['description']) < MIN_JD_CHARS:
+            return None
+        return detail
+
+    def enrich_with_job_posting(self, job: Dict[str, Any], headers: Optional[Dict[str, str]] = None) -> bool:
+        """Replace card-level placeholders with the posting's real JD, skills and criteria."""
+        detail = self.fetch_job_posting(job['source_job_id'], headers)
+        if not detail:
+            logger.info(f"[LinkedIn] Skipping {job['source_job_id']}: no job description available.")
+            return False
+        apply_job_posting_detail(job, detail)
+        return True
 
     def parse_linkedin_guest_html(self, html_text: str, limit: int = 15) -> List[Dict[str, Any]]:
         """
@@ -189,7 +244,7 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
                     'title': raw_title,
                     'company_name': raw_comp,
                     'company_logo_icon': 'building',
-                    'description': f"{raw_title} requirement at {raw_comp} ({norm_city}). Candidates can review requirements and apply directly via official link.",
+                    'description': '',  # filled from the real posting by enrich_with_job_posting
                     'location': f"{norm_city}, India" if norm_city != "Remote" else "Remote, India",
                     'normalized_city': norm_city,
                     'is_remote': is_remote,
@@ -198,7 +253,7 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
                     'experience_tier': exp_tier,
                     'skills_required': skills_str,
                     'stipend_salary': 'Competitive Package',
-                    'eligibility': 'Open to eligible candidates',
+                    'eligibility': '',
                     'source_published_at': pub_dt,
                     'source_updated_at': pub_dt,
                     'timestamp_precision': precision,
@@ -213,3 +268,90 @@ class LinkedInSourceAdapter(BaseJobSourceAdapter):
 
         return results
 
+
+
+def apply_job_posting_detail(job: Dict[str, Any], detail: Dict[str, Any]) -> Dict[str, Any]:
+    """Merge a fetched posting into a job dict (shared by ingestion and backfill)."""
+    desc = detail['description']
+    crit = detail.get('criteria', {})
+    seniority = crit.get('Seniority level', '')
+    emp_type = crit.get('Employment type', '')
+
+    job['description'] = desc
+    job['skills_required'] = extract_technical_skills(
+        title=job['title'], raw_skills="", description=desc,
+        category_slug=(job.get('industry_domain') or '').lower(),
+    )
+    job['industry_domain'] = classify_industry_domain(job['title'], job['skills_required'], desc)
+    job['experience_tier'] = classify_experience_tier(job['title'], seniority, desc)
+    if emp_type.lower() == 'internship' or job['experience_tier'] == 'INTERNSHIP':
+        job['job_type'] = 'INTERNSHIP'
+    elif emp_type.lower() in ('contract', 'temporary'):
+        job['job_type'] = 'FREELANCE'
+    elif emp_type.lower() == 'part-time':
+        job['job_type'] = 'PART_TIME'
+    facts = [f"{k}: {v}" for k, v in (('Seniority', seniority), ('Employment type', emp_type)) if v and v != 'Not Applicable']
+    job['eligibility'] = '. '.join(facts) or 'See the job description for eligibility.'
+    return job
+
+
+PLACEHOLDER_MARKER = "Candidates can review requirements and apply directly via official link."
+
+
+def backfill_linkedin_descriptions(limit: int = 10) -> Dict[str, int]:
+    """
+    Replace placeholder descriptions on active LinkedIn jobs with the real JD.
+    Runs in small batches (called each aggregation cycle) to stay polite.
+    A posting LinkedIn reports as gone (404/410) is closed; on rate limits or
+    other failures the job is left as is and retried next cycle.
+    """
+    from django.db.models import Q
+    from django.db.models.functions import Length
+    from requirements.models import JobPosting
+
+    stats = {'updated': 0, 'closed': 0, 'skipped': 0}
+    adapter = LinkedInSourceAdapter()
+    if not adapter.is_enabled:
+        return stats
+
+    candidates = (
+        JobPosting.objects.annotate(desc_len=Length('description'))
+        .filter(source_name='LinkedIn', status='ACTIVE')
+        .filter(Q(description__contains=PLACEHOLDER_MARKER) | Q(desc_len__lt=MIN_JD_CHARS))
+        .exclude(source_job_id='')
+        .order_by('-created_at')[:limit]
+    )
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    for job in candidates:
+        res = adapter.safe_get(LINKEDIN_JOB_POSTING_URL.format(job_id=job.source_job_id), headers=headers)
+        if res is not None and res.status_code in (404, 410):
+            job.status = 'CLOSED'
+            job.save(update_fields=['status'])
+            stats['closed'] += 1
+            continue
+        detail = parse_linkedin_job_posting(res.text) if res is not None and res.status_code == 200 else None
+        if not detail or len(detail['description']) < MIN_JD_CHARS:
+            stats['skipped'] += 1
+            continue
+        data = apply_job_posting_detail(
+            {'title': job.title, 'industry_domain': getattr(job, 'industry_domain', '') or '', 'job_type': job.job_type},
+            detail,
+        )
+        job.description = data['description']
+        job.skills_required = data['skills_required'] or job.skills_required
+        job.eligibility = data['eligibility']
+        job.job_type = data['job_type']
+        fields = ['description', 'skills_required', 'eligibility', 'job_type']
+        if hasattr(job, 'experience_tier'):
+            job.experience_tier = data['experience_tier']
+            fields.append('experience_tier')
+        if hasattr(job, 'industry_domain'):
+            job.industry_domain = data['industry_domain']
+            fields.append('industry_domain')
+        job.save(update_fields=fields)
+        stats['updated'] += 1
+    return stats
