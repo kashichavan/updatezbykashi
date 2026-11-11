@@ -111,6 +111,18 @@ python manage.py sync_jobdexo --count 20 || true
 # 8. Seed Indian Market Demonstration Projects Library (36 curated projects)
 python manage.py seed_indian_projects || true
 
-
-
-
+# 9. Ship one self-contained database file. Fold the WAL back into db.sqlite3,
+# drop the -wal/-shm side files, and fail the build (keeping the previous
+# deploy live) if the result is not a healthy SQLite database.
+python -c "
+import sqlite3, sys
+conn = sqlite3.connect('db.sqlite3', timeout=60)
+conn.execute('PRAGMA wal_checkpoint(TRUNCATE);')
+conn.execute('PRAGMA journal_mode=DELETE;')
+res = conn.execute('PRAGMA quick_check;').fetchone()
+conn.close()
+if not res or res[0] != 'ok':
+    sys.exit(f'==> Database failed quick_check after build: {res}')
+print('==> Database checkpointed to a single file and passed quick_check.')
+"
+rm -f db.sqlite3-wal db.sqlite3-shm

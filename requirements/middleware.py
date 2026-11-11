@@ -158,14 +158,38 @@ class RateLimitMiddleware:
         return self.get_response(request)
 
 
+# SQLite errors that mean the file itself is unusable. Only these fail the
+# health check; a busy or locked database is still a healthy one.
+_CORRUPT_DB_MARKERS = ('file is not a database', 'database disk image is malformed')
+
+
+def database_is_corrupt() -> bool:
+    from django.db import connection
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1 FROM django_migrations LIMIT 1')
+            cursor.fetchone()
+    except Exception as e:
+        msg = str(e).lower()
+        if any(m in msg for m in _CORRUPT_DB_MARKERS):
+            return True
+    return False
+
+
 class HealthCheckMiddleware:
-    """Answers Render first, so a health check needs no database, redirect or host match."""
+    """
+    Answers Render first, with no redirect or host match. It returns 503 only
+    when the database file is corrupt, so Render restarts the instance, which
+    brings back the clean database from the deploy.
+    """
 
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
         if request.path == '/healthz':
+            if database_is_corrupt():
+                return HttpResponse('database corrupt', status=503, content_type='text/plain')
             return HttpResponse('ok', content_type='text/plain')
         return self.get_response(request)
 
