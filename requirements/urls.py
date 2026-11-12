@@ -141,6 +141,10 @@ urlpatterns = [
     path('api/jobs/<int:pk>/publish-ig-story/', views.api_publish_job_ig_story, name='api_publish_job_ig_story'),
     path('api/jobs/<int:pk>/ig-story-video/', views.api_job_ig_story_video, name='api_job_ig_story_video'),
     path('api/owner/jobs/<int:pk>/story-status/', views.api_owner_job_story_status, name='api_owner_job_story_status'),
+    path('api/jobs/<int:pk>/ig-reel-video/', views.api_job_ig_reel_video, name='api_job_ig_reel_video'),
+    path('api/owner/reels/today/', views.api_owner_reels_today, name='api_owner_reels_today'),
+    path('api/owner/reels/<int:pk>/status/', views.api_owner_reel_status, name='api_owner_reel_status'),
+    path('api/owner/reels/enable-automation/', views.api_owner_reels_enable_automation, name='api_owner_reels_enable_automation'),
     path('api/youtube/videos/', views.api_youtube_videos, name='api_youtube_videos'),
 
     # Owner Admin Portal Endpoints

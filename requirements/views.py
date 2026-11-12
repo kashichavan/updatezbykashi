@@ -2169,6 +2169,94 @@ def api_job_ig_story_video(request, pk):
     return response
 
 
+def api_job_ig_reel_video(request, pk):
+    """Animated 9:16 reel (12 s, 'Comment LINK' CTA, silent so trending audio is added in the app)."""
+    from django.http import FileResponse, HttpResponse
+    from .services.daily_reels import REEL_SECONDS
+    from .services.story_render import render_video
+
+    job = get_object_or_404(JobPosting, pk=pk)
+    from .services.instagram_story import _public_base_url
+    base = _public_base_url(request.build_absolute_uri('/').rstrip('/'))
+    try:
+        path = render_video(job, base, reply_cta='comment', seconds=REEL_SECONDS)
+    except Exception as exc:
+        logger.exception("Reel render failed for job %s", pk)
+        return HttpResponse(f"Reel render failed: {type(exc).__name__}", status=503, content_type='text/plain')
+    response = FileResponse(open(path, 'rb'), content_type='video/mp4')
+    if request.GET.get('download'):
+        response['Content-Disposition'] = f'attachment; filename="reel_{job.id}.mp4"'
+    response['Cache-Control'] = 'private, max-age=3600'
+    return response
+
+
+def _reel_json(d):
+    return {
+        'id': d.id, 'job_id': d.job_id, 'company': d.job.company_name, 'title': d.job.title,
+        'slot_at': d.slot_at.isoformat(), 'slot_label': timezone.localtime(d.slot_at).strftime('%-I:%M %p'),
+        'status': d.status, 'caption': d.caption,
+        'video_url': f"/api/jobs/{d.job_id}/ig-reel-video/",
+    }
+
+
+def api_owner_reels_today(request):
+    """Owner-only: today's daily reel drafts (created lazily as each slot starts)."""
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    from .services.daily_reels import ensure_due_drafts, next_slot, slot_hours
+    from .services.instagram_story import _public_base_url
+    drafts = ensure_due_drafts(_public_base_url(request.build_absolute_uri('/').rstrip('/')))
+    nxt = next_slot()
+    return JsonResponse({
+        'reels': [_reel_json(d) for d in drafts],
+        'slots': [f"{h % 12 or 12} {'AM' if h < 12 else 'PM'}" for h in slot_hours()],
+        'next_slot': timezone.localtime(nxt).strftime('%-I:%M %p') if nxt else None,
+        'account': getattr(settings, 'REEL_ACCOUNT_HANDLE', ''),
+    })
+
+
+def api_owner_reel_status(request, pk):
+    """Owner-only: mark a reel draft posted / skipped / ready."""
+    from .models import ReelDraft
+    if request.method != 'POST':
+        return JsonResponse({'error': 'METHOD_NOT_ALLOWED'}, status=405)
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    draft = get_object_or_404(ReelDraft, pk=pk)
+    try:
+        status = json.loads(request.body or b'{}').get('status')
+    except ValueError:
+        status = None
+    if status not in dict(ReelDraft.STATUS_CHOICES):
+        return JsonResponse({'error': 'INVALID_STATUS'}, status=400)
+    draft.status = status
+    draft.posted_at = timezone.now() if status == ReelDraft.STATUS_POSTED else None
+    draft.save(update_fields=['status', 'posted_at'])
+    return JsonResponse({'success': True, 'reel': _reel_json(draft)})
+
+
+def api_owner_reels_enable_automation(request):
+    """Owner-only: set up 'comment LINK → follow → DM apply link' on the reels account (Insta Automation)."""
+    import requests as _rq
+    if request.method != 'POST':
+        return JsonResponse({'error': 'METHOD_NOT_ALLOWED'}, status=405)
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    token = getattr(settings, 'REELFLOW_STORY_TOKEN', '')
+    handle = getattr(settings, 'REEL_ACCOUNT_HANDLE', '')
+    if not token or not handle:
+        return JsonResponse({'success': False, 'message': 'Set REELFLOW_STORY_TOKEN and REEL_ACCOUNT_HANDLE on Render first.'})
+    try:
+        r = _rq.post(f"{settings.REELFLOW_URL}/internal/reels/link-automation/", headers={'X-Story-Token': token},
+                     json={'username': handle, 'keyword': 'LINK'}, timeout=30)
+        return JsonResponse(r.json())
+    except Exception as exc:
+        return JsonResponse({'success': False, 'message': f'Insta Automation unreachable ({type(exc).__name__}).'})
+
+
 def api_owner_job_story_status(request, pk):
     """Owner-only: progress of a background story publish (queued/rendering/posting/done/error)."""
     is_auth, _owner = is_authenticated_owner(request)

@@ -957,3 +957,28 @@ class JobIngestionRun(models.Model):
 
 
 
+
+
+class ReelDraft(models.Model):
+    """A daily job reel (animated MP4 + caption) waiting to be posted from the Instagram app.
+
+    One per daily slot (default 9:00, 13:00, 19:00 IST). Posted by hand so trending
+    in-app audio can be added; the 'comment LINK' DM automation then runs on it.
+    """
+    STATUS_READY = 'ready'
+    STATUS_POSTED = 'posted'
+    STATUS_SKIPPED = 'skipped'
+    STATUS_CHOICES = [(STATUS_READY, 'Ready'), (STATUS_POSTED, 'Posted'), (STATUS_SKIPPED, 'Skipped')]
+
+    job = models.ForeignKey(JobPosting, on_delete=models.CASCADE, related_name='reel_drafts')
+    slot_at = models.DateTimeField(unique=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_READY, db_index=True)
+    caption = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    posted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-slot_at']
+
+    def __str__(self):
+        return f"Reel {self.slot_at:%Y-%m-%d %H:%M} · {self.job}"

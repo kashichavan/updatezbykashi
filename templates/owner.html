@@ -116,6 +116,16 @@
   /* ==========================================
      TOP OWNER HEADER & WORKSPACE NAVIGATION
      ========================================== */
+  .reels-btn { display: inline-flex; align-items: center; gap: 6px; font-weight: 750; font-size: 12px; }
+  .reels-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); color: #fff; font-size: 11px; font-weight: 800; display: inline-grid; place-items: center; }
+  .reel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .reel-card { border: 1px solid var(--subtle-border); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: var(--color-bg-surface, #fff); }
+  .reel-card video { width: 100%; aspect-ratio: 9/16; border-radius: 12px; background: #070a12; object-fit: cover; }
+  .reel-card[data-status="posted"] { opacity: .65; }
+  .reel-chip { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 99px; }
+  .reel-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .reel-actions .btn { height: 34px; font-size: 12px; font-weight: 750; }
+  @media (max-width: 640px) { .reel-grid { grid-template-columns: 1fr; } }
   .ig-connect-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 750; text-decoration: none; white-space: nowrap; }
   .ig-connect-pill .ig-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.18); }
   .ig-connect-pill[data-state="on"] .ig-pill-dot { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.18); }
@@ -1159,6 +1169,9 @@
         <span class="btn-text-full">📸 Insta App ↗</span>
         <span class="btn-text-short">📸 Insta ↗</span>
       </a>
+      <button type="button" id="btnOpenReels" class="btn btn-secondary reels-btn" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-haspopup="dialog" title="Today's 3 auto-made job reels">
+        🎬 <span class="btn-text-full">Reels</span> <span class="reels-badge" id="reelsBadge" hidden>0</span>
+      </button>
       <a href="https://insta.kashiiupdatez.online/instagram/connect/start/?publish=1" id="igConnectPill" class="btn btn-secondary ig-connect-pill" data-state="off" target="_blank" rel="noopener noreferrer" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
         <span class="ig-pill-dot" aria-hidden="true"></span>
         <span class="ig-pill-label">Checking Instagram…</span>
@@ -2455,6 +2468,24 @@
     </div>
   </div>
 
+  <!-- DAILY REELS MODAL -->
+  <div id="ownerReelsModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="ownerReelsTitle" style="display: none;">
+    <div class="modal-box" style="max-width: 980px; max-height: 92vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--subtle-border); padding-bottom: 12px;">
+        <div>
+          <h2 id="ownerReelsTitle" style="font-size: 18px; font-weight: 800; margin: 0;">🎬 Today's Job Reels</h2>
+          <div id="ownerReelsSub" style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">Auto-made at 9 AM · 1 PM · 7 PM IST. Share → pick a trending audio in Instagram → post.</div>
+        </div>
+        <button type="button" id="btnCloseReels" class="btn btn-ghost" aria-label="Close" style="width: 36px; height: 36px; border-radius: 50%;">✕</button>
+      </div>
+      <div id="ownerReelsAutomation" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #faf5ff; border: 1px solid #e9d5ff; margin-bottom: 14px; font-size: 12.5px;">
+        <span>💬 <b>Comment “LINK”</b> → must follow → DM with that reel's apply link</span>
+        <button type="button" id="btnEnableReelAutomation" class="btn btn-secondary" style="height: 32px; font-size: 12px; font-weight: 750; margin-left: auto;">Enable on reels account</button>
+      </div>
+      <div id="ownerReelsList" class="reel-grid"><div style="color: var(--color-text-muted); font-size: 13px;">Loading…</div></div>
+    </div>
+  </div>
+
   <!-- ==========================================
        MOBILE BOTTOM DOCK (For Phone Travelling)
        ========================================== -->
@@ -2485,7 +2516,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026111204"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111206"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

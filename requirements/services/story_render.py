@@ -132,8 +132,26 @@ class Sprite:
     meta: dict = field(default_factory=dict)
 
 
+CTA_TEXT = {
+    'reply': "REPLY “APPLY” · GET THE LINK IN DM",
+    'comment': "COMMENT “LINK” · GET THE APPLY LINK",
+}
+
+
+def _cta_mode(reply_cta):
+    if reply_cta is True:
+        return 'reply'
+    if reply_cta is False or reply_cta is None:
+        return 'sticker'
+    return reply_cta
+
+
 def build_layout(job, base_url, reply_cta, k):
-    """Return (W, H, sprites) for a story scaled by k (1.0 = 1080x1920)."""
+    """Return (W, H, sprites) for a story scaled by k (1.0 = 1080x1920).
+
+    reply_cta: True/'reply' (story replies), 'comment' (reels), False/'sticker' (manual Link sticker).
+    """
+    cta_mode = _cta_mode(reply_cta)
     def u(v):
         return int(round(v * k))
 
@@ -151,7 +169,8 @@ def build_layout(job, base_url, reply_cta, k):
     d = ImageDraw.Draw(row)
     d.text((row_h // 2, row_h // 2), "K", fill=WHITE, font=font(u(34), 900), anchor='mm')
     d.text((row_h + u(18), row_h // 2), "KASHII UPDATEZ", fill=WHITE, font=font(u(28), 800), anchor='lm')
-    handle = f"@{getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')}"
+    reel_handle = getattr(settings, 'REEL_ACCOUNT_HANDLE', '') if cta_mode == 'comment' else ''
+    handle = f"@{reel_handle or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')}"
     d.text((CW, row_h // 2), handle, fill=MUTED, font=font(u(26), 600), anchor='rm')
     sprites.append(Sprite(row, L, u(250), start=0.15, kind='drop'))
 
@@ -282,10 +301,10 @@ def build_layout(job, base_url, reply_cta, k):
 
     # CTA
     cta_h = u(96)
-    if reply_cta:
+    if cta_mode in CTA_TEXT:
         cta = Image.new('RGBA', (CW, cta_h), (0, 0, 0, 0))
         cta.paste(ig_gradient(CW, cta_h).convert('RGBA'), (0, 0), rounded_mask(CW, cta_h, cta_h // 2))
-        ImageDraw.Draw(cta).text((CW // 2, cta_h // 2), "REPLY “APPLY” · GET THE LINK IN DM",
+        ImageDraw.Draw(cta).text((CW // 2, cta_h // 2), CTA_TEXT[cta_mode],
                                  fill=WHITE, font=font(u(32), 900), anchor='mm')
         sprites.append(Sprite(cta, L, y, start=t, kind='pop', dur=0.55, loop='shimmer'))
         aw, ah = u(60), u(56)
@@ -456,11 +475,11 @@ def _ffmpeg_exe():
         return 'ffmpeg'
 
 
-def video_cache_path(job):
+def video_cache_path(job, variant='reply', seconds=7.0):
     ts = int(job.updated_at.timestamp()) if getattr(job, 'updated_at', None) else 0
     folder = os.path.join(tempfile.gettempdir(), 'story_videos')
     os.makedirs(folder, exist_ok=True)
-    return os.path.join(folder, f"job_{job.id}_{ts}_{_video_width()}.mp4")
+    return os.path.join(folder, f"job_{job.id}_{ts}_{_video_width()}_{variant}_{int(seconds)}s.mp4")
 
 
 def _video_width():
@@ -472,7 +491,7 @@ def _video_width():
 
 def render_video(job, base_url, reply_cta=True, seconds=7.0, fps=24) -> str:
     """Render (or reuse) an animated MP4 story; returns the file path."""
-    path = video_cache_path(job)
+    path = video_cache_path(job, _cta_mode(reply_cta), seconds)
     if os.path.exists(path) and os.path.getsize(path) > 0:
         return path
     w = _video_width()

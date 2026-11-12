@@ -1613,6 +1613,125 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // --- DAILY JOB REELS (semi-auto: made automatically, posted from the Instagram app) ---
+  const reelsModal = document.getElementById('ownerReelsModal');
+  const reelsList = document.getElementById('ownerReelsList');
+
+  function setReelsModal(open) {
+    if (!reelsModal) return;
+    reelsModal.style.display = open ? 'flex' : 'none';
+    reelsModal.classList.toggle('active', open);
+    if (!open) reelsModal.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
+  }
+
+  function reelCard(r) {
+    const posted = r.status === 'posted';
+    const chip = posted ? '<span class="reel-chip" style="background:#dcfce7;color:#166534;">Posted ✅</span>'
+      : r.status === 'skipped' ? '<span class="reel-chip" style="background:#f1f5f9;color:#475569;">Skipped</span>'
+      : '<span class="reel-chip" style="background:#fef3c7;color:#92400e;">Ready to post</span>';
+    return `
+      <article class="reel-card" data-id="${r.id}" data-status="${r.status}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+          <b style="font-size:13px;">⏰ ${escapeHtml(r.slot_label)}</b>${chip}
+        </div>
+        <video muted loop playsinline preload="none" data-src="${r.video_url}" aria-label="Reel preview for ${escapeHtml(r.title)}"></video>
+        <div style="font-size:13px;font-weight:800;line-height:1.3;">${escapeHtml(r.company)} — ${escapeHtml(r.title)}</div>
+        <div class="reel-actions">
+          <button type="button" class="btn btn-reel-share" data-id="${r.id}" style="grid-column:1/-1;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;border:none;">📲 Share to Instagram</button>
+          <button type="button" class="btn btn-secondary btn-reel-caption" data-id="${r.id}">📋 Caption</button>
+          <a class="btn btn-ghost" href="${r.video_url}?download=1" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">⬇ MP4</a>
+          <button type="button" class="btn btn-secondary btn-reel-status" data-id="${r.id}" data-status="${posted ? 'ready' : 'posted'}">${posted ? '↩ Undo' : '✅ Posted'}</button>
+          <button type="button" class="btn btn-ghost btn-reel-status" data-id="${r.id}" data-status="skipped">Skip</button>
+        </div>
+      </article>`;
+  }
+
+  let reelsCache = [];
+  async function loadReels() {
+    try {
+      const res = await authFetch('/api/owner/reels/today/');
+      if (!res.ok) return;
+      const data = await res.json();
+      reelsCache = data.reels || [];
+      const ready = reelsCache.filter(r => r.status === 'ready').length;
+      const badge = document.getElementById('reelsBadge');
+      if (badge) { badge.textContent = ready; badge.hidden = ready === 0; }
+      const sub = document.getElementById('ownerReelsSub');
+      if (sub) sub.textContent = `Auto-made at ${(data.slots || []).join(' · ')} IST${data.account ? ` for @${data.account}` : ''}. ` +
+        `Share → pick a trending audio in Instagram → post.${data.next_slot ? ` Next reel at ${data.next_slot}.` : ''}`;
+      if (!reelsList) return;
+      reelsList.innerHTML = reelsCache.length ? reelsCache.map(reelCard).join('')
+        : `<div style="color:var(--color-text-muted);font-size:13px;">No reels yet today.${data.next_slot ? ` The first one is made at ${data.next_slot}.` : ''}</div>`;
+      bindReelCards();
+    } catch (err) { console.error('Reels load failed', err); }
+  }
+
+  function bindReelCards() {
+    reelsList.querySelectorAll('video[data-src]').forEach(v => {
+      v.preload = 'auto';
+      v.src = v.dataset.src; v.removeAttribute('data-src');
+      v.load();
+      v.play().catch(() => {});  // muted, so autoplay is allowed
+    });
+    reelsList.querySelectorAll('.btn-reel-caption').forEach(b => {
+      b.onclick = async () => {
+        const r = reelsCache.find(x => String(x.id) === b.dataset.id);
+        if (r && await copyText(r.caption)) showToast('📋 Caption copied (includes the apply link + “Comment LINK”).', 'success');
+      };
+    });
+    reelsList.querySelectorAll('.btn-reel-status').forEach(b => {
+      b.onclick = async () => {
+        const res = await authFetch(`/api/owner/reels/${b.dataset.id}/status/`, { method: 'POST', body: JSON.stringify({ status: b.dataset.status }) });
+        if (res.ok) loadReels();
+      };
+    });
+    reelsList.querySelectorAll('.btn-reel-share').forEach(b => {
+      b.onclick = () => shareReel(b);
+    });
+  }
+
+  // Opens the phone share sheet with the MP4; caption is copied first so it can be pasted in Instagram.
+  async function shareReel(btn) {
+    const r = reelsCache.find(x => String(x.id) === btn.dataset.id);
+    if (!r) return;
+    const original = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '⏳ Preparing video…';
+    try {
+      await copyText(r.caption);
+      const blob = await (await fetch(r.video_url)).blob();
+      const file = new File([blob], `reel_${r.job_id}.mp4`, { type: 'video/mp4' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        showToast('📋 Caption copied. In Instagram: Reel → add a trending audio → paste caption → Share.', 'success');
+        await navigator.share({ files: [file] });
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(file); a.download = file.name; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        showToast('📋 Caption copied and video downloaded. Open this page on your phone to share straight to Instagram.', 'success');
+      }
+    } catch (err) {
+      if (err && err.name !== 'AbortError') showToast('Could not share: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false; btn.innerHTML = original;
+    }
+  }
+
+  document.getElementById('btnOpenReels')?.addEventListener('click', () => { setReelsModal(true); loadReels(); });
+  document.getElementById('btnCloseReels')?.addEventListener('click', () => setReelsModal(false));
+  reelsModal?.addEventListener('click', e => { if (e.target === reelsModal) setReelsModal(false); });
+  document.getElementById('btnEnableReelAutomation')?.addEventListener('click', async (e) => {
+    const b = e.currentTarget; b.disabled = true; b.textContent = 'Enabling…';
+    try {
+      const data = await (await authFetch('/api/owner/reels/enable-automation/', { method: 'POST', body: '{}' })).json();
+      if (data.success) { b.textContent = `✅ Active on @${data.username}`; showToast(`Comment “${data.keyword}” automation is live on @${data.username}.`, 'success'); return; }
+      showToast(data.message || data.error || 'Could not enable automation.', 'error');
+      if (data.connect_url) window.open(data.connect_url, '_blank', 'noopener');
+      b.textContent = 'Enable on reels account';
+    } catch (err) { showToast(err.message, 'error'); b.textContent = 'Enable on reels account'; }
+    finally { b.disabled = false; }
+  });
+  if (document.getElementById('btnOpenReels')) loadReels();  // fills the badge
+
   // --- EDIT JOB MODAL DRAWER LOGIC ---
   const editModal = document.getElementById('editJobModal');
   const formEditJob = document.getElementById('formEditJob');
