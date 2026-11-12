@@ -1488,13 +1488,34 @@ document.addEventListener('DOMContentLoaded', () => {
       label.textContent = `@${u} connected`;
       pill.dataset.state = 'on';
       pill.title = igState.error ? `Needs attention: ${igState.error}` : 'Stories and daily reels post automatically. Click to add or reconnect an account.';
+    } else if (igState.setup_error) {
+      label.textContent = 'Instagram not set up';
+      pill.dataset.state = 'off';
+      pill.title = igState.setup_error;
     } else {
       label.textContent = 'Connect Instagram';
       pill.dataset.state = 'off';
-      pill.title = 'Connect your Instagram account to post stories and daily reels automatically.';
+      pill.title = igState.error || 'Connect your Instagram account to post stories and daily reels automatically.';
     }
-    pill.href = igState.connect_url;
+    pill.href = igState.connect_url || '#';
   }
+
+  // Sends the owner to the right connect page, or explains what is missing on the server.
+  function goConnectInstagram(url) {
+    const target = url || igState.connect_url;
+    if (!target) {
+      showToast(igState.setup_error || 'Instagram is not set up on this server.', 'error');
+      return false;
+    }
+    location.href = target;
+    return true;
+  }
+  document.getElementById('igConnectPill')?.addEventListener('click', e => {
+    if (igState.connected) return;  // let the link open to add or reconnect an account
+    e.preventDefault();
+    if (igState.error && !igState.setup_error) showToast(igState.error, 'error');
+    setTimeout(() => goConnectInstagram(), igState.error ? 1500 : 0);
+  });
 
   async function loadIgStatus() {
     try {
@@ -1523,8 +1544,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Posts the animated (MP4) story in the background and reports progress on the button.
   async function oneClickStory(jobId, btn) {
     if (!igState.connected) {
+      if (igState.setup_error) { showToast(igState.setup_error, 'error'); return; }
       showToast('Connect your Instagram account first…', 'error');
-      setTimeout(() => { location.href = igState.connect_url || '/instagram/connect/'; }, 900);
+      setTimeout(() => goConnectInstagram(), 900);
       return;
     }
     const original = btn.dataset.label || btn.innerHTML;
@@ -1566,7 +1588,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (st.needs_reconnect) {
       igState.connected = false; renderIgPill();
       showToast('Instagram needs reconnecting (permission expired or missing)…', 'error');
-      setTimeout(() => { location.href = '/instagram/connect/'; }, 1200);
+      setTimeout(() => goConnectInstagram(st.connect_url), 1200);
     } else {
       showToast(`Story not posted: ${st.message || 'unknown error'}`, 'error');
     }
@@ -1665,7 +1687,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ? `✅ Auto-posting to <b>@${escapeHtml(data.account)}</b> · 💬 Comment “LINK” → must follow → DM with that reel's apply link`
         : '⚠️ No Instagram account connected: reels are made but <b>not posted</b>. Connect your account to turn on auto-posting.';
       if (connectBtn) connectBtn.textContent = data.account ? 'Add / reconnect account' : 'Connect Instagram';
-      if (connectBtn && data.connect_url) connectBtn.href = data.connect_url;
+      if (connectBtn) {
+        connectBtn.href = data.connect_url || '#';
+        connectBtn.title = data.setup_error || '';
+        connectBtn.onclick = data.connect_url ? null : (e) => { e.preventDefault(); showToast(data.setup_error, 'error'); };
+      }
       const linkBtn = document.getElementById('btnEnableLinkAuto');
       if (linkBtn) {
         linkBtn.hidden = data.mode !== 'insta_automation';
@@ -1765,7 +1791,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!ig) return;
     const msg = { connected: `✅ Instagram @${q.get('account') || ''} connected. Stories and daily reels will post automatically.`,
       denied: 'Instagram connection was cancelled.', error: 'Instagram connection failed. Please try again.',
-      state_error: 'Instagram connection expired. Please try again.' }[ig];
+      state_error: 'Instagram connection expired. Please try again.',
+      not_configured: 'Instagram is not set up on this server: INSTAGRAM_APP_ID / INSTAGRAM_APP_SECRET (or REELFLOW_STORY_TOKEN) are missing.' }[ig];
     if (msg) showToast(msg, ig === 'connected' ? 'success' : 'error');
     history.replaceState(null, '', location.pathname);
   })();

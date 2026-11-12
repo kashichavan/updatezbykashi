@@ -189,10 +189,24 @@ class ReelFlowStoryTests(TestCase):
         self.assertEqual(Client().get("/api/owner/instagram/status/").status_code, 401)
 
     def test_status_reports_not_configured(self):
-        with self.settings(REELFLOW_STORY_TOKEN="", INSTAGRAM_ACCESS_TOKEN=""):
+        with self.settings(REELFLOW_STORY_TOKEN="", INSTAGRAM_ACCESS_TOKEN="",
+                           INSTAGRAM_APP_ID="", INSTAGRAM_APP_SECRET=""):
             data = self.client.get("/api/owner/instagram/status/").json()
+            connect = self.client.get("/instagram/connect/")
         self.assertFalse(data["connected"])
-        self.assertTrue(data["connect_url"])
+        self.assertEqual(data["connect_url"], "")
+        self.assertIn("REELFLOW_STORY_TOKEN", data["setup_error"])
+        # No broken Instagram login page with an empty client_id.
+        self.assertEqual(connect["Location"], "/owner/?ig=not_configured")
+
+    def test_status_points_to_own_app_when_configured(self):
+        with self.settings(REELFLOW_STORY_TOKEN="", INSTAGRAM_ACCESS_TOKEN="",
+                           INSTAGRAM_APP_ID="123", INSTAGRAM_APP_SECRET="s"):
+            data = self.client.get("/api/owner/instagram/status/").json()
+            connect = self.client.get("/instagram/connect/")
+        self.assertEqual(data["connect_url"], "/instagram/connect/")
+        self.assertEqual(data["setup_error"], "")
+        self.assertIn("client_id=123", connect["Location"])
 
 
 class AnimatedStoryTests(TestCase):

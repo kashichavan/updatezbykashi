@@ -85,6 +85,22 @@ def posting_handle():
     return (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')).lstrip('@')
 
 
+def connect_info():
+    """Where every "Connect Instagram" button should send the owner, from one place.
+
+    Returns dict(connect_url, setup_error). connect_url is '' when nothing is configured,
+    and setup_error then names the env vars to set instead of opening a broken login page.
+    """
+    if getattr(settings, 'REELFLOW_STORY_TOKEN', ''):
+        return {'connect_url': getattr(settings, 'REELFLOW_URL', '').rstrip('/') + '/instagram/connect/start/?publish=1',
+                'setup_error': ''}
+    if getattr(settings, 'INSTAGRAM_APP_ID', '') and getattr(settings, 'INSTAGRAM_APP_SECRET', ''):
+        return {'connect_url': '/instagram/connect/', 'setup_error': ''}
+    return {'connect_url': '', 'setup_error': (
+        'Instagram is not set up on this server. Set REELFLOW_STORY_TOKEN (to post through Insta Automation) '
+        'or INSTAGRAM_APP_ID and INSTAGRAM_APP_SECRET (own Meta app) in the environment, then redeploy.')}
+
+
 def get_poster(for_reels=False):
     """Insta Automation when its token is set (default), else an own connected account, else None.
 

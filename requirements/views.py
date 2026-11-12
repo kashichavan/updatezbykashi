@@ -2212,7 +2212,7 @@ def api_owner_reels_today(request):
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
     from .services.daily_reels import ensure_due_drafts, next_slot, slot_hours
     from .services.instagram_story import _public_base_url
-    from .services.ig_autopilot import get_poster
+    from .services.ig_autopilot import connect_info, get_poster
     poster = get_poster(for_reels=True)
     # With a posting account the autopilot posts the reels; don't pre-render previews here.
     drafts = ensure_due_drafts(_public_base_url(request.build_absolute_uri('/').rstrip('/')), prerender=not poster)
@@ -2223,8 +2223,7 @@ def api_owner_reels_today(request):
         'next_slot': timezone.localtime(nxt).strftime('%-I:%M %p') if nxt else None,
         'account': poster.username if poster else '',
         'mode': poster.mode if poster else None,
-        'connect_url': (settings.REELFLOW_URL.rstrip('/') + '/instagram/connect/start/?publish=1')
-        if getattr(settings, 'REELFLOW_STORY_TOKEN', '') else '/instagram/connect/',
+        **connect_info(),
         'autopost': True,
     })
 
@@ -2311,6 +2310,11 @@ def instagram_connect(request):
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return redirect('/owner/')
+    if not (settings.INSTAGRAM_APP_ID and settings.INSTAGRAM_APP_SECRET):
+        # Without these Instagram shows "Invalid platform app"; explain it in the portal instead.
+        from .services.ig_autopilot import connect_info
+        target = connect_info()['connect_url']
+        return redirect(target if target.startswith('http') else '/owner/?ig=not_configured')
     from .services.ig_graph import authorize_url
     state = secrets.token_urlsafe(24)
     request.session['ig_oauth_state'] = state
@@ -2459,18 +2463,23 @@ def api_owner_instagram_status(request):
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
-    from .services.ig_autopilot import OwnPoster, get_poster
+    from .services.ig_autopilot import OwnPoster, connect_info, get_poster
+    info = connect_info()
     poster = get_poster()
     if isinstance(poster, OwnPoster):
         return JsonResponse({'configured': True, 'connected': True, 'mode': 'own',
                              'account': {'username': poster.username}, 'error': poster.account.last_error or None,
-                             'connect_url': '/instagram/connect/'})
+                             **info})
     from .services.instagram_story import reelflow_status
     data = reelflow_status()
     if not data.get('configured') and getattr(settings, 'INSTAGRAM_ACCESS_TOKEN', ''):
         # Legacy direct-token mode still works without Insta Automation.
         data.update({'connected': True, 'mode': 'direct',
                      'account': {'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}})
+    data.update(info)
+    if not data.get('connected') and data.get('configured') and not data.get('error'):
+        data['error'] = ('Not connected yet. Open Connect Instagram, sign in to Insta Automation and connect '
+                         f"@{getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}.")
     return JsonResponse(data)
 
 # ==============================================================================
