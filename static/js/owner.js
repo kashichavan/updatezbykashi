@@ -1534,8 +1534,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function oneClickStory(jobId, btn) {
+    if (igState.configured === false) {
+      showToast('Instagram link not set up: add REELFLOW_STORY_TOKEN on Render (Updatez) and the same value as UPDATEZ_STORY_TOKEN (Insta Automation).', 'error');
+      return;
+    }
+    if (igState.error) {
+      showToast(`Insta Automation: ${igState.error}`, 'error');
+      return;
+    }
     if (!igState.connected) {
-      showToast('Connect Instagram first: opening Insta Automation…', 'error');
+      showToast('No Instagram account connected yet: opening Insta Automation to connect…', 'error');
       window.open(igState.connect_url, '_blank', 'noopener');
       return;
     }
