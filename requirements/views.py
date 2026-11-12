@@ -2141,7 +2141,10 @@ def api_job_ig_story_image(request, pk):
 
     job = get_object_or_404(JobPosting, pk=pk)
     host_url = request.build_absolute_uri('/').rstrip('/')
-    buf = generate_job_story_image(job, base_url=host_url)
+    # Default: "Reply APPLY" prompt (Insta Automation DMs the link). mode=sticker is for
+    # stories shared by hand, where a Link sticker is added in the Instagram app instead.
+    reply_cta = request.GET.get('mode') != 'sticker' and bool(getattr(settings, 'REELFLOW_STORY_TOKEN', ''))
+    buf = generate_job_story_image(job, base_url=host_url, reply_cta=reply_cta)
 
     response = HttpResponse(buf.getvalue(), content_type='image/jpeg')
     response['Cache-Control'] = 'public, max-age=3600'

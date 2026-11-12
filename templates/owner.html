@@ -1473,6 +1473,14 @@
                 </div>
                 <!-- Direct Instagram Story Studio Row -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                  <button type="button" class="btn btn-ig-oneclick" data-id="{{ j.id }}" style="height: 34px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Post this job as an Instagram story right now">
+                    ⚡ Post Story
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-ig-share-app" data-id="{{ j.id }}" style="height: 34px; font-size: 12px; font-weight: 750; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open in the Instagram app with the job link copied, so you can add a Link sticker">
+                    📲 Story + Link
+                  </button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
                   <button type="button" class="btn btn-secondary btn-open-story-studio" data-id="{{ j.id }}" data-title="{{ j.title|escapejs }}" data-company="{{ j.company_name|escapejs }}" style="height: 34px; font-size: 12px; font-weight: 750; background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open Instagram Story Studio">
                     📸 Story Studio
                   </button>
@@ -2476,7 +2484,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026111201"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111203"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

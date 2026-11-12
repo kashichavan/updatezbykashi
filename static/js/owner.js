@@ -1362,6 +1362,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeOwnerStoryStudioModal() {
     if (storyModal) {
+      storyModal.classList.remove('active');
       storyModal.style.display = 'none';
     }
   }
@@ -1424,7 +1425,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (titleEl) titleEl.textContent = 'Loading Story Assets...';
     if (imgEl) imgEl.src = '';
 
+    // .modal-overlay is opacity:0/visibility:hidden until it has the .active class.
     storyModal.style.display = 'flex';
+    storyModal.classList.add('active');
 
     try {
       const res = await fetch(`/api/jobs/${jobId}/`);
@@ -1583,7 +1586,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const [jobRes, imgRes] = await Promise.all([
         fetch(`/api/jobs/${jobId}/`),
-        fetch(`/api/jobs/${jobId}/ig-story-image/`)
+        fetch(`/api/jobs/${jobId}/ig-story-image/?mode=sticker`)
       ]);
       const job = (await jobRes.json()).job || {};
       const link = job.story_sticker_url || `${location.origin}/job/${jobId}/`;
@@ -1591,7 +1594,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const file = new File([blob], `story_${jobId}.jpg`, { type: blob.type || 'image/jpeg' });
       await copyText(link);
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        showToast('🔗 Link copied. In Instagram choose Story → Sticker → Link → paste.', 'success');
+        showToast('🔗 Job link copied. In Instagram: Story → Sticker → Link → paste, place it under the button.', 'success');
         await navigator.share({ files: [file] });
       } else {
         const a = document.createElement('a');
