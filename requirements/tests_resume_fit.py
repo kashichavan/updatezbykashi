@@ -327,3 +327,64 @@ class DownloadReadabilityTests(SimpleTestCase):
             self.assertEqual(response["X-ATS-Readable"], "yes", url)
             passed, total = response["X-ATS-Checks"].split("/")
             self.assertEqual(passed, total)
+
+
+class HonestEvaluatorTests(SimpleTestCase):
+    """The ATS score treats every role alike and never claims a pass."""
+
+    MARKETER = {
+        "name": "Riya", "contact": {"email": "riya@example.com", "phone": "9876543210",
+                                    "linkedin": "linkedin.com/in/riya"},
+        "summary": "BBA graduate who ran social media and wrote content for a college fest of 3000 visitors.",
+        "skills": {"Skills": "SEO, Canva, Instagram, Content Writing, Google Analytics, Excel, Copywriting, Email Marketing"},
+        "experience": [{"company": "College Fest Committee", "role": "Social Media Head", "period": "2024", "bullets": [
+            "Grew the Instagram page from 400 to 2100 followers in 3 months.",
+            "Wrote 12 blog posts using SEO keyword research for the fest website.",
+            "Designed 40 posters in Canva for the fest campaign.",
+            "Tracked campaign traffic in Google Analytics and reported it weekly in Excel.",
+        ]}],
+        "education": {"degree": "BBA", "institution": "ABC University", "year": "2025"},
+    }
+
+    def test_a_non_tech_resume_is_not_marked_down_for_lacking_tech_words(self):
+        from requirements.resume_parser import evaluate_uploaded_resume_ats
+        result = evaluate_uploaded_resume_ats(self.MARKETER)
+        pillars = {p["id"]: p for p in result["pillars"]}
+        self.assertEqual(pillars["tech_skills"]["score"], 16)
+        self.assertGreaterEqual(pillars["architecture_depth"]["score"], 6)
+        self.assertGreaterEqual(result["score"], 75)
+
+    def test_grades_never_claim_an_ats_pass(self):
+        from requirements.resume_parser import evaluate_uploaded_resume_ats
+        for resume in (self.MARKETER, {"summary": "x"}):
+            grade = evaluate_uploaded_resume_ats(resume)["grade"]
+            self.assertNotIn("Pass", grade)
+            self.assertNotIn("ATS", grade)
+
+    def test_skills_only_in_the_list_are_flagged(self):
+        from requirements.resume_parser import evaluate_uploaded_resume_ats
+        resume = dict(self.MARKETER, skills={"Skills": "Kafka, Docker, Kubernetes, Terraform"})
+        result = evaluate_uploaded_resume_ats(resume)
+        shown = next(p for p in result["pillars"] if p["id"] == "architecture_depth")
+        self.assertEqual(shown["score"], 0)
+        self.assertTrue(any("Mention where you used" in tip for tip in result["improvements"]))
+
+    def test_a_job_with_a_blueprint_is_scored_by_it(self):
+        from requirements.models import JobPosting
+        job = JobPosting(skills_required="Python, Django",
+                         ats_blueprint={"must_have": ["Python", "Power BI"], "good_to_have": ["Jira"]})
+        self.assertEqual(job.ats_target_skills(), ["Python", "Power BI", "Jira"])
+        self.assertEqual(JobPosting(skills_required="Python, Django").ats_target_skills(), ["Python", "Django"])
+
+
+class NoFakeContactTests(SimpleTestCase):
+    def test_missing_contact_details_are_not_filled_in_before_scoring(self):
+        resume = dict(HonestEvaluatorTests.MARKETER, contact={})
+        response = self.client.post(
+            "/api/resume/evaluate/",
+            json.dumps({"resume": resume, "job_skills": ["SEO", "Canva"]}),
+            content_type="application/json",
+        )
+        contact = next(p for p in response.json()["pillars"] if p["id"] == "contact_header")
+        self.assertEqual(contact["score"], 0)
+        self.assertNotIn("example.com", response.content.decode())
