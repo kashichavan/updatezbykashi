@@ -21,273 +21,21 @@ import time
 import logging
 import requests
 import qrcode
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
 from django.conf import settings
 from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
-_FONT_PATH = os.path.join(settings.BASE_DIR, 'static', 'fonts', 'Inter-Variable.ttf')
-_FALLBACK_FONTS = [
-    "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-]
-_WEIGHTS = {400: b'Regular', 500: b'Medium', 600: b'SemiBold', 700: b'Bold', 800: b'ExtraBold', 900: b'Black'}
-
-
-def _font(size: int, weight: int = 700):
-    """Inter at the given weight; falls back to a system font if the bundled file is missing."""
-    try:
-        f = ImageFont.truetype(_FONT_PATH, size)
-        try:
-            f.set_variation_by_name(_WEIGHTS.get(weight, b'Bold'))
-        except Exception:
-            pass
-        return f
-    except Exception:
-        for path in _FALLBACK_FONTS:
-            try:
-                return ImageFont.truetype(path, size)
-            except Exception:
-                continue
-    return ImageFont.load_default()
-
-
-def _get_font(size: int, bold: bool = False):
-    """Backward-compatible helper."""
-    return _font(size, 700 if bold else 400)
-
-
-def _fit(draw, text, font, max_w):
-    """Truncate text with an ellipsis so it fits max_w pixels."""
-    text = (text or '').strip()
-    if draw.textlength(text, font=font) <= max_w:
-        return text
-    while text and draw.textlength(text + '…', font=font) > max_w:
-        text = text[:-1]
-    return text.rstrip(' ,.-/') + '…'
-
-
-def _wrap(draw, text, font, max_w, max_lines):
-    words, lines, cur = (text or '').split(), [], ''
-    for w in words:
-        t = f'{cur} {w}'.strip()
-        if draw.textlength(t, font=font) <= max_w or not cur:
-            cur = t
-        else:
-            lines.append(cur)
-            cur = w
-    if cur:
-        lines.append(cur)
-    if len(lines) > max_lines:
-        lines = lines[:max_lines]
-        lines[-1] = _fit(draw, lines[-1] + ' …', font, max_w)
-    return lines
-
-
-def _ig_gradient(w, h):
-    """Horizontal Instagram-style gradient (purple → pink → orange)."""
-    stops = [(0.0, (131, 58, 180)), (0.5, (253, 29, 29)), (1.0, (252, 176, 69))]
-    grad = Image.new('RGB', (w, 1))
-    px = grad.load()
-    for x in range(w):
-        t = x / max(w - 1, 1)
-        for (t0, c0), (t1, c1) in zip(stops, stops[1:]):
-            if t0 <= t <= t1:
-                k = (t - t0) / (t1 - t0)
-                px[x, 0] = tuple(int(c0[i] + (c1[i] - c0[i]) * k) for i in range(3))
-                break
-    return grad.resize((w, h))
-
-
-def _paste_rounded(img, src, box, radius):
-    x0, y0, x1, y1 = box
-    mask = Image.new('L', (x1 - x0, y1 - y0), 0)
-    ImageDraw.Draw(mask).rounded_rectangle([0, 0, x1 - x0 - 1, y1 - y0 - 1], radius=radius, fill=255)
-    img.paste(src.resize((x1 - x0, y1 - y0)), (x0, y0), mask)
-
-
-def _job_apply_url(job, base_url):
-    if getattr(job, 'category', None) and getattr(job, 'uuid', None):
-        return f"{base_url}/category/{job.category.slug}/job/{job.uuid}/"
-    if getattr(job, 'uuid', None):
-        return f"{base_url}/job/{job.uuid}/"
-    return base_url
-
-
 def generate_job_story_image(job, base_url="https://kashiiupdatez.online", reply_cta=True) -> io.BytesIO:
-    """
-    Renders a 1080x1920 Instagram Story (JPEG) for a JobPosting.
+    """1080x1920 JPEG story for a job (design lives in story_render)."""
+    from .story_render import render_still
+    return render_still(job, base_url, reply_cta=reply_cta)
 
-    Content stays inside Instagram's safe area (top ~250px and bottom ~250px are covered
-    by the progress bar and reply bar). Rendered at 2x then downscaled for smooth edges.
-    reply_cta adds the "Reply APPLY" prompt that Insta Automation answers with the job link.
-    """
-    S = 2
-    W, H = 1080 * S, 1920 * S
 
-    def u(v):
-        return int(v * S)
-
-    # Background: near-black with soft blurred colour glows.
-    img = Image.new('RGB', (W, H), (7, 10, 18))
-    glow = Image.new('RGB', (W // 8, H // 8), (7, 10, 18))
-    gd = ImageDraw.Draw(glow)
-    for (cx, cy, r, col) in [(980, 160, 420, (110, 40, 170)), (60, 330, 300, (200, 60, 40)),
-                             (120, 1700, 460, (30, 70, 200)), (1000, 1250, 300, (180, 30, 110))]:
-        gd.ellipse([(cx - r) // 8, (cy - r) // 8, (cx + r) // 8, (cy + r) // 8], fill=col)
-    glow = glow.filter(ImageFilter.GaussianBlur(28)).resize((W, H), Image.Resampling.BICUBIC)
-    img = Image.blend(img, glow, 0.55)
-    draw = ImageDraw.Draw(img, 'RGBA')
-    # Faint grid texture
-    for gx in range(0, W, u(60)):
-        draw.line([(gx, 0), (gx, H)], fill=(255, 255, 255, 6), width=1)
-    for gy in range(0, H, u(60)):
-        draw.line([(0, gy), (W, gy)], fill=(255, 255, 255, 6), width=1)
-
-    L, R = u(84), u(1080 - 84)
-    CW = R - L
-    white, muted, faint = (255, 255, 255), (161, 170, 189), (100, 110, 130)
-
-    # 1. Brand row
-    y = u(250)
-    logo = u(56)
-    _paste_rounded(img, _ig_gradient(logo, logo), (L, y, L + logo, y + logo), u(16))
-    draw.text((L + logo // 2, y + logo // 2), "K", fill=white, font=_font(u(34), 900), anchor='mm')
-    draw.text((L + logo + u(18), y + logo // 2), "KASHII UPDATEZ", fill=white, font=_font(u(28), 800), anchor='lm')
-    handle = f"@{getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')}"
-    draw.text((R, y + logo // 2), handle, fill=muted, font=_font(u(26), 600), anchor='rm')
-
-    # 2. Status pills
-    y += u(100)
-    exp_display = job.get_experience_display() if hasattr(job, 'get_experience_display') else "Fresher"
-    is_fresher = any(k in exp_display.lower() for k in ['fresher', '0-', '0 yr', 'intern', 'entry'])
-    pill_font = _font(u(24), 800)
-    t1 = "NOW HIRING"
-    pw = int(draw.textlength(t1, font=pill_font)) + u(56)
-    ph = u(56)
-    _paste_rounded(img, _ig_gradient(pw, ph), (L, y, L + pw, y + ph), ph // 2)
-    draw.text((L + pw // 2, y + ph // 2), t1, fill=white, font=pill_font, anchor='mm')
-    if is_fresher:
-        t2 = "FRESHERS WELCOME"
-        x2 = L + pw + u(14)
-        pw2 = int(draw.textlength(t2, font=pill_font)) + u(56)
-        draw.rounded_rectangle([x2, y, x2 + pw2, y + ph], radius=ph // 2, fill=(16, 185, 129, 40),
-                               outline=(52, 211, 153), width=u(2))
-        draw.text((x2 + pw2 // 2, y + ph // 2), t2, fill=(110, 231, 183), font=pill_font, anchor='mm')
-
-    # 3. Company + title
-    y += ph + u(44)
-    company = (job.company_name or "Top Tech Company").strip().upper()
-    draw.text((L, y), _fit(draw, company, _font(u(38), 800), CW), fill=(125, 211, 252), font=_font(u(38), 800))
-    y += u(62)
-    title = job.title or "Software Engineer"
-    for size in (88, 78, 68, 60):
-        tf = _font(u(size), 800)
-        lines = _wrap(draw, title, tf, CW, 3)
-        if len(lines) <= 2 or size == 60:
-            break
-    lh = int(tf.size * 1.12)
-    for line in lines:
-        draw.text((L, y), line, fill=white, font=tf)
-        y += lh
-    y += u(34)
-
-    # 4. 2x2 detail tiles
-    def tile(x0, y0, x1, y1, label, value, accent):
-        draw.rounded_rectangle([x0, y0, x1, y1], radius=u(28), fill=(255, 255, 255, 14),
-                               outline=(255, 255, 255, 30), width=u(2))
-        draw.rounded_rectangle([x0 + u(26), y0 + u(30), x0 + u(34), y0 + u(52)], radius=u(4), fill=accent)
-        draw.text((x0 + u(48), y0 + u(41)), label, fill=muted, font=_font(u(21), 700), anchor='lm')
-        vf = _font(u(34), 700)
-        draw.text((x0 + u(26), y0 + u(78)), _fit(draw, value, vf, x1 - x0 - u(52)), fill=white, font=vf)
-
-    gap = u(18)
-    tw = (CW - gap) // 2
-    th = u(150)
-    skills_list = job.get_skills_list() if hasattr(job, 'get_skills_list') else []
-    tiles = [
-        ("EXPERIENCE", exp_display, (52, 211, 153) if is_fresher else (129, 140, 248)),
-        ("SALARY", job.stipend_salary or "Competitive", (250, 204, 21)),
-        ("LOCATION", job.location or "Pan India", (56, 189, 248)),
-        ("ELIGIBILITY", (job.eligibility or "Any Graduate").strip(), (244, 114, 182)),
-    ]
-    for i, (lab, val, acc) in enumerate(tiles):
-        cx = L + (i % 2) * (tw + gap)
-        cy = y + (i // 2) * (th + gap)
-        tile(cx, cy, cx + tw, cy + th, lab, val, acc)
-    y += 2 * th + gap + u(30)
-
-    # 5. Skill chips (one row; overflow is dropped rather than crowding the apply card)
-    if not skills_list and getattr(job, 'skills_required', ''):
-        skills_list = [x.strip() for x in job.skills_required.split(',') if x.strip()]
-    chip_f = _font(u(25), 600)
-    cx, row, chip_h = L, 0, u(52)
-    for sk in skills_list[:8]:
-        label = _fit(draw, sk, chip_f, u(300))
-        cw = int(draw.textlength(label, font=chip_f)) + u(40)
-        if cx + cw > R:
-            row += 1
-            cx = L
-            if row > 0:
-                row = 0
-                break
-        cy = y + row * (chip_h + u(12))
-        draw.rounded_rectangle([cx, cy, cx + cw, cy + chip_h], radius=chip_h // 2, fill=(59, 130, 246, 30),
-                               outline=(96, 165, 250, 120), width=u(2))
-        draw.text((cx + cw // 2, cy + chip_h // 2), label, fill=(191, 219, 254), font=chip_f, anchor='mm')
-        cx += cw + u(12)
-    if skills_list:
-        y += (row + 1) * (chip_h + u(12)) + u(22)
-
-    # 6. Apply card (white) with QR + website link
-    apply_url = _job_apply_url(job, base_url)
-    card_h = u(250)
-    y = min(y, u(1560) - card_h - u(110))
-    draw.rounded_rectangle([L, y, R, y + card_h], radius=u(36), fill=(255, 255, 255))
-    qs = card_h - u(50)
-    try:
-        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_M, box_size=10, border=1)
-        qr.add_data(apply_url)
-        qr.make(fit=True)
-        qimg = qr.make_image(fill_color=(7, 10, 18), back_color='white').convert('RGB')
-        img.paste(qimg.resize((qs, qs), Image.Resampling.NEAREST), (L + u(25), y + u(25)))
-    except Exception as qr_err:
-        logger.warning(f"Failed to generate story QR code: {qr_err}")
-    tx = L + u(25) + qs + u(32)
-    tmax = R - tx - u(24)
-    draw.text((tx, y + u(40)), "APPLY ON", fill=(100, 116, 139), font=_font(u(22), 800))
-    draw.text((tx, y + u(72)), _fit(draw, "kashiiupdatez.online", _font(u(40), 800), tmax),
-              fill=(7, 10, 18), font=_font(u(40), 800))
-    path = apply_url.replace(base_url, '') or '/'
-    draw.text((tx, y + u(130)), _fit(draw, path, _font(u(22), 500), tmax), fill=(100, 116, 139), font=_font(u(22), 500))
-    draw.text((tx, y + u(178)), "Scan the QR with your camera", fill=(37, 99, 235), font=_font(u(23), 700))
-    y += card_h + u(28)
-
-    # 7. Reply CTA (Insta Automation DMs the link) pointing at the reply bar
-    cta_h = u(96)
-    if reply_cta:
-        _paste_rounded(img, _ig_gradient(CW, cta_h), (L, y, R, y + cta_h), cta_h // 2)
-        draw.text(((L + R) // 2, y + cta_h // 2), "REPLY “APPLY” · GET THE LINK IN DM",
-                  fill=white, font=_font(u(32), 900), anchor='mm')
-        ay = y + cta_h + u(34)
-        mid = (L + R) // 2
-        for k in range(2):
-            yy = ay + k * u(26)
-            draw.line([(mid - u(26), yy), (mid, yy + u(20)), (mid + u(26), yy)],
-                      fill=(255, 255, 255, 200 - k * 90), width=u(5), joint='curve')
-    else:
-        # Leave room just below for the Link sticker added in the Instagram app.
-        draw.rounded_rectangle([L, y, R, y + cta_h], radius=cta_h // 2, outline=(255, 255, 255, 90), width=u(3))
-        draw.text(((L + R) // 2, y + cta_h // 2), "TAP THE LINK BELOW TO APPLY",
-                  fill=white, font=_font(u(32), 900), anchor='mm')
-
-    out = img.resize((1080, 1920), Image.Resampling.LANCZOS)
-    buf = io.BytesIO()
-    # Instagram's Content Publishing API accepts JPEG only.
-    out.save(buf, format='JPEG', quality=93, optimize=True)
-    buf.seek(0)
-    return buf
+def generate_job_story_video(job, base_url="https://kashiiupdatez.online", reply_cta=True) -> str:
+    """Animated MP4 story for a job; returns a cached file path."""
+    from .story_render import render_video
+    return render_video(job, base_url, reply_cta=reply_cta)
 
 
 class InstagramStoryPublisher:
@@ -489,22 +237,38 @@ def reelflow_status():
     return data
 
 
-def publish_via_reelflow(job, base_url=''):
-    """Post the job's 9:16 story through Insta Automation's connected account."""
+def publish_via_reelflow(job, base_url='', fmt='image', on_stage=None):
+    """Post the job's 9:16 story through Insta Automation's connected account.
+
+    fmt='video' renders the animated MP4 first (falls back to the still image if that fails).
+    on_stage(stage) is called with 'rendering' / 'posting' for progress reporting.
+    """
     url = getattr(settings, 'REELFLOW_URL', '')
     base = _public_base_url(base_url)
     ts = int(job.updated_at.timestamp()) if getattr(job, 'updated_at', None) else 1
     image_url = f"{base}/api/jobs/{job.id}/ig-story-image/?v={ts}"
     share_url = job.get_story_sticker_url(base_url=base) if hasattr(job, 'get_story_sticker_url') else f"{base}/job/{job.id}/"
-    out = {'story_image_url': image_url, 'story_sticker_url': share_url, 'job_id': job.id}
+    media = {'image_url': image_url}
+    if fmt == 'video':
+        if on_stage:
+            on_stage('rendering')
+        try:
+            # Warm the cache so Meta's download is served instantly from disk.
+            generate_job_story_video(job, base_url=base, reply_cta=True)
+            media = {'video_url': f"{base}/api/jobs/{job.id}/ig-story-video/?v={ts}"}
+        except Exception as exc:
+            logger.warning("Story video render failed for job %s, using image: %s", job.id, exc)
+    if on_stage:
+        on_stage('posting')
+    out = {'story_image_url': image_url, 'story_sticker_url': share_url, 'job_id': job.id, **media}
     try:
         r = requests.post(f"{url}/internal/story/publish/",
                           headers={'X-Story-Token': settings.REELFLOW_STORY_TOKEN},
-                          json={'image_url': image_url,
+                          json={**media,
                                 'link_url': share_url,
                                 'title': f"{job.company_name} - {job.title}"[:255],
                                 'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')},
-                          timeout=90)
+                          timeout=150)
         data = r.json()
     except Exception as exc:
         data = {'success': False, 'error': 'REELFLOW_UNREACHABLE', 'message': f'Insta Automation unreachable ({type(exc).__name__}).'}
@@ -520,6 +284,55 @@ def publish_via_reelflow(job, base_url=''):
         job.insta_story_error = str(data.get('message') or data.get('error') or 'Unknown error')[:2000]
         job.save(update_fields=['insta_story_error'])
     return out
+
+
+_STATE_TTL = 60 * 30
+
+
+def story_state_key(job_id):
+    return f"ig_story_publish_state_{job_id}"
+
+
+def get_story_publish_state(job_id):
+    from django.core.cache import cache
+    return cache.get(story_state_key(job_id)) or {'state': 'idle'}
+
+
+def publish_story_async(job_id, base_url='', fmt='video'):
+    """Run publish_via_reelflow in a background thread; progress is kept in the cache."""
+    import threading
+    from django.core.cache import cache
+
+    current = get_story_publish_state(job_id)
+    if current.get('state') in ('queued', 'rendering', 'posting'):
+        return current
+    key = story_state_key(job_id)
+    state = {'state': 'queued'}
+    cache.set(key, state, _STATE_TTL)
+
+    def _run():
+        from django.db import close_old_connections
+        from ..models import JobPosting
+        try:
+            job = JobPosting.objects.get(pk=job_id)
+            res = publish_via_reelflow(job, base_url=base_url, fmt=fmt,
+                                       on_stage=lambda st: cache.set(key, {'state': st}, _STATE_TTL))
+            if res.get('success'):
+                cache.set(key, {'state': 'done', 'message': res.get('message', ''),
+                                'media_id': res.get('media_id', ''), 'format': 'video' if res.get('video_url') else 'image'},
+                          _STATE_TTL)
+            else:
+                cache.set(key, {'state': 'error', 'message': res.get('message') or res.get('error') or 'Unknown error',
+                                'needs_reconnect': bool(res.get('needs_reconnect')),
+                                'connect_url': res.get('connect_url', '')}, _STATE_TTL)
+        except Exception as exc:
+            logger.exception("Async story publish failed for job %s", job_id)
+            cache.set(key, {'state': 'error', 'message': type(exc).__name__}, _STATE_TTL)
+        finally:
+            close_old_connections()
+
+    threading.Thread(target=_run, daemon=True, name=f"IGStory-{job_id}").start()
+    return state
 
 
 def auto_publish_story_if_enabled(job, base_url="https://kashiiupdatez.online"):

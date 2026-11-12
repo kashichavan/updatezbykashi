@@ -2151,6 +2151,33 @@ def api_job_ig_story_image(request, pk):
     return response
 
 
+def api_job_ig_story_video(request, pk):
+    """Animated 9:16 MP4 story (motion graphics). Rendered once per job version, then cached."""
+    from django.http import FileResponse, HttpResponse
+    from .services.instagram_story import generate_job_story_video
+
+    job = get_object_or_404(JobPosting, pk=pk)
+    host_url = request.build_absolute_uri('/').rstrip('/')
+    reply_cta = request.GET.get('mode') != 'sticker' and bool(getattr(settings, 'REELFLOW_STORY_TOKEN', ''))
+    try:
+        path = generate_job_story_video(job, base_url=host_url, reply_cta=reply_cta)
+    except Exception as exc:
+        logger.exception("Story video render failed for job %s", pk)
+        return HttpResponse(f"Video render failed: {type(exc).__name__}", status=503, content_type='text/plain')
+    response = FileResponse(open(path, 'rb'), content_type='video/mp4')
+    response['Cache-Control'] = 'public, max-age=3600'
+    return response
+
+
+def api_owner_job_story_status(request, pk):
+    """Owner-only: progress of a background story publish (queued/rendering/posting/done/error)."""
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    from .services.instagram_story import get_story_publish_state
+    return JsonResponse(get_story_publish_state(pk))
+
+
 @csrf_exempt
 def api_publish_job_ig_story(request, pk):
     """
@@ -2164,10 +2191,19 @@ def api_publish_job_ig_story(request, pk):
     if not is_auth:
         return JsonResponse({'success': False, 'error': 'UNAUTHORIZED', 'message': 'Owner login required.'}, status=401)
 
-    from .services.instagram_story import InstagramStoryPublisher
+    from .services.instagram_story import InstagramStoryPublisher, publish_story_async
 
     job = get_object_or_404(JobPosting, pk=pk)
     host_url = request.build_absolute_uri('/').rstrip('/')
+    try:
+        opts = json.loads(request.body or b'{}')
+    except ValueError:
+        opts = {}
+    if opts.get('async') and getattr(settings, 'REELFLOW_STORY_TOKEN', ''):
+        # Rendering video + Instagram processing can take a minute: run it in the background.
+        fmt = 'video' if opts.get('format', 'video') == 'video' else 'image'
+        state = publish_story_async(job.id, base_url=host_url, fmt=fmt)
+        return JsonResponse({'success': True, 'queued': True, 'state': state.get('state'), 'job_id': job.id}, status=202)
     publisher = InstagramStoryPublisher()
     result = publisher.publish_job_story(job, base_url=host_url)
 

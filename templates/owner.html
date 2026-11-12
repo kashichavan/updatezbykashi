@@ -2388,8 +2388,9 @@
         <div style="text-align: center;">
           <div style="border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); border: 2px solid #334155; background: #090d16; position: relative;">
             <img id="ownerStoryPreviewImg" src="" alt="Instagram Story Preview" style="width: 100%; height: auto; display: block; aspect-ratio: 9/16; object-fit: cover;">
+            <video id="ownerStoryPreviewVideo" muted loop playsinline preload="auto" aria-label="Animated story preview" style="width: 100%; height: auto; display: none; aspect-ratio: 9/16; object-fit: cover;"></video>
           </div>
-          <div style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); margin-top: 8px;">1080 × 1920 (9:16 HD)</div>
+          <div style="font-size: 11px; font-weight: 700; color: var(--color-text-muted); margin-top: 8px;">🎬 Animated 9:16 story · <a id="ownerStoryVideoLink" href="#" target="_blank" rel="noopener" style="color: #7e22ce;">MP4 ↗</a></div>
         </div>
 
         <!-- Right: Actions, Links, and Direct Captions -->
@@ -2484,7 +2485,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026111203"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111204"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

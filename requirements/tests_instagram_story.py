@@ -193,3 +193,51 @@ class ReelFlowStoryTests(TestCase):
             data = self.client.get("/api/owner/instagram/status/").json()
         self.assertFalse(data["connected"])
         self.assertIn("publish=1", data["connect_url"])
+
+
+class AnimatedStoryTests(TestCase):
+    def setUp(self):
+        category = Category.objects.create(name="Motion", slug="motion-story")
+        self.job = JobPosting.objects.create(
+            title="Frontend Engineer", company_name="Gamma", category=category,
+            location="Bengaluru", deadline=timezone.now() + timezone.timedelta(days=7),
+        )
+        self.client = Client()
+        self.client.force_login(User.objects.create_user("mv_owner", password="x", is_staff=True))
+
+    def test_video_endpoint_serves_mp4(self):
+        resp = self.client.get(f"/api/jobs/{self.job.id}/ig-story-video/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "video/mp4")
+        body = b"".join(resp.streaming_content)
+        self.assertIn(b"ftyp", body[:32])
+
+    def test_async_publish_posts_video_and_reports_done(self):
+        from django.core.cache import cache
+        cache.clear()
+
+        class SyncThread:
+            def __init__(self, target, **kw):
+                self.target = target
+
+            def start(self):
+                self.target()
+
+        ok = Mock(status_code=200)
+        ok.json.return_value = {"success": True, "media_id": "vid1", "username": "ikashii_07"}
+        with self.settings(REELFLOW_STORY_TOKEN="tok"), \
+             patch("threading.Thread", SyncThread), \
+             patch("requirements.services.instagram_story.requests.post", return_value=ok) as post:
+            resp = self.client.post(f"/api/jobs/{self.job.id}/publish-ig-story/",
+                                    data='{"async": true, "format": "video"}', content_type="application/json",
+                                    HTTP_ORIGIN="http://testserver")
+        self.assertEqual(resp.status_code, 202)
+        body = post.call_args.kwargs["json"]
+        self.assertIn("/ig-story-video/", body["video_url"])
+        self.assertNotIn("image_url", body)
+        status = self.client.get(f"/api/owner/jobs/{self.job.id}/story-status/").json()
+        self.assertEqual(status["state"], "done")
+        self.assertEqual(status["format"], "video")
+
+    def test_story_status_requires_owner(self):
+        self.assertEqual(Client().get(f"/api/owner/jobs/{self.job.id}/story-status/").status_code, 401)

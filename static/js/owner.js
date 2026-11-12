@@ -1364,6 +1364,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (storyModal) {
       storyModal.classList.remove('active');
       storyModal.style.display = 'none';
+      const v = document.getElementById('ownerStoryPreviewVideo');
+      if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
     }
   }
 
@@ -1456,41 +1458,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (btnPush) {
-        btnPush.onclick = async () => {
-          btnPush.disabled = true;
-          btnPush.textContent = 'Posting story…';
-          try {
-            const pushRes = await authFetch(`/api/jobs/${jobId}/publish-ig-story/`, { method: 'POST', body: '{}' });
-            const pushData = await pushRes.json();
-            if (pushMsg) {
-              pushMsg.style.display = 'block';
-              if (pushData.success) {
-                pushMsg.style.background = '#dcfce7';
-                pushMsg.style.color = '#166534';
-                pushMsg.innerHTML = `✅ Successfully published story to Instagram! Media ID: <code>${pushData.media_id || ''}</code>`;
-                if (badgeEl) {
-                  badgeEl.textContent = 'Published to @ikashii_07 ✅';
-                  badgeEl.style.background = '#dcfce7';
-                  badgeEl.style.color = '#166534';
-                }
-              } else {
-                pushMsg.style.background = '#fef3c7';
-                pushMsg.style.color = '#92400e';
-                pushMsg.innerHTML = `⚠️ Note: ${pushData.message || pushData.error || 'Meta API returned an error.'}. You can still download the 9:16 image and post directly to @ikashii_07!`;
-              }
-            }
-          } catch (err) {
-            if (pushMsg) {
-              pushMsg.style.display = 'block';
-              pushMsg.style.background = '#fef2f2';
-              pushMsg.style.color = '#991b1b';
-              pushMsg.textContent = 'Error connecting to Meta API: ' + err.message;
-            }
-          } finally {
-            btnPush.disabled = false;
-            btnPush.textContent = '⚡ Post Story Now (1-Click)';
-          }
-        };
+        btnPush.onclick = () => oneClickStory(jobId, btnPush);
+      }
+      const videoEl = document.getElementById('ownerStoryPreviewVideo');
+      const videoLink = document.getElementById('ownerStoryVideoLink');
+      if (videoLink) videoLink.href = `/api/jobs/${jobId}/ig-story-video/`;
+      if (videoEl && imgEl) {
+        // Show the animated version when it is ready; keep the still image meanwhile.
+        videoEl.style.display = 'none';
+        imgEl.style.display = '';
+        videoEl.onloadeddata = () => { videoEl.style.display = ''; imgEl.style.display = 'none'; videoEl.play().catch(() => {}); };
+        videoEl.src = `/api/jobs/${jobId}/ig-story-video/`;
       }
     } catch (err) {
       console.error('Failed to load story assets:', err);
@@ -1536,6 +1514,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  const STORY_STAGE_LABEL = {
+    queued: '⏳ Queued…',
+    rendering: '🎬 Rendering video…',
+    posting: '📤 Posting to Instagram…'
+  };
+
+  // Posts the animated (MP4) story in the background and reports progress on the button.
   async function oneClickStory(jobId, btn) {
     if (igState.configured === false) {
       showToast('Instagram link not set up: add REELFLOW_STORY_TOKEN on Render (Updatez) and the same value as UPDATEZ_STORY_TOKEN (Insta Automation).', 'error');
@@ -1550,30 +1535,48 @@ document.addEventListener('DOMContentLoaded', () => {
       window.open(igState.connect_url, '_blank', 'noopener');
       return;
     }
-    const original = btn.innerHTML;
+    const original = btn.dataset.label || btn.innerHTML;
+    btn.dataset.label = original;
     btn.disabled = true;
-    btn.innerHTML = '⏳ Posting…';
+    btn.innerHTML = STORY_STAGE_LABEL.queued;
     try {
-      const res = await authFetch(`/api/jobs/${jobId}/publish-ig-story/`, { method: 'POST', body: '{}' });
+      const res = await authFetch(`/api/jobs/${jobId}/publish-ig-story/`, {
+        method: 'POST', body: JSON.stringify({ async: true, format: 'video' })
+      });
       const data = await res.json();
-      if (data.success) {
-        btn.innerHTML = '✅ Posted';
-        showToast(data.message || 'Story is live on Instagram!', 'success');
+      if (!data.queued) {  // server fell back to a direct (synchronous) publish
+        finishStory(btn, original, data.success ? { state: 'done', message: data.message } :
+          { state: 'error', message: data.message || data.error, needs_reconnect: data.needs_reconnect, connect_url: data.connect_url });
         return;
       }
-      if (data.needs_reconnect) {
-        igState.connected = false; renderIgPill();
-        showToast('Instagram needs reconnecting (story permission). Opening Insta Automation…', 'error');
-        window.open(data.connect_url || igState.connect_url, '_blank', 'noopener');
-      } else {
-        showToast(`Story not posted: ${data.message || data.error || 'unknown error'}`, 'error');
+      const started = Date.now();
+      while (Date.now() - started < 5 * 60 * 1000) {
+        await new Promise(r => setTimeout(r, 2500));
+        const st = await (await authFetch(`/api/owner/jobs/${jobId}/story-status/`)).json();
+        if (st.state === 'done' || st.state === 'error') { finishStory(btn, original, st); return; }
+        if (STORY_STAGE_LABEL[st.state]) btn.innerHTML = STORY_STAGE_LABEL[st.state];
       }
-      btn.innerHTML = original;
+      finishStory(btn, original, { state: 'error', message: 'Still processing after 5 minutes. Check Instagram before retrying.' });
     } catch (err) {
-      showToast('Story not posted: ' + err.message, 'error');
-      btn.innerHTML = original;
-    } finally {
-      btn.disabled = false;
+      finishStory(btn, original, { state: 'error', message: err.message });
+    }
+  }
+
+  function finishStory(btn, original, st) {
+    btn.disabled = false;
+    if (st.state === 'done') {
+      btn.innerHTML = '✅ Posted';
+      showToast(`🎬 Animated story is live! ${st.message || ''} Replies get the apply link by DM.`, 'success');
+      setTimeout(() => { btn.innerHTML = original; }, 6000);
+      return;
+    }
+    btn.innerHTML = original;
+    if (st.needs_reconnect) {
+      igState.connected = false; renderIgPill();
+      showToast('Instagram needs reconnecting (story permission). Opening Insta Automation…', 'error');
+      window.open(st.connect_url || igState.connect_url, '_blank', 'noopener');
+    } else {
+      showToast(`Story not posted: ${st.message || 'unknown error'}`, 'error');
     }
   }
 
