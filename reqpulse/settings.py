@@ -302,4 +302,9 @@ INSTAGRAM_API_VERSION = os.environ.get('INSTAGRAM_API_VERSION', 'v26.0')
 INSTAGRAM_AUTO_POST_STORY = os.environ.get('INSTAGRAM_AUTO_POST_STORY', 'false').lower() in ('true', '1', 'yes')
 INSTAGRAM_REDIRECT_URI = os.environ.get('INSTAGRAM_REDIRECT_URI', 'https://kashiiupdatez.online/instagram/oauth/callback/')
 META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN', '')
+# Insta Automation (ReelFlow) posts stories with the Instagram account connected there.
+# Both apps must share the same token (ReelFlow env: UPDATEZ_STORY_TOKEN).
+REELFLOW_URL = os.environ.get('REELFLOW_URL', 'https://insta.kashiiupdatez.online').rstrip('/')
+REELFLOW_STORY_TOKEN = os.environ.get('REELFLOW_STORY_TOKEN', '')
+PUBLIC_SITE_URL = os.environ.get('PUBLIC_SITE_URL', 'https://kashiiupdatez.online').rstrip('/')
 

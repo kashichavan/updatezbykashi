@@ -145,6 +145,7 @@ urlpatterns = [
     path('api/admin/login/', views.api_admin_login, name='api_admin_login'),
     path('api/admin/logout/', views.api_admin_logout, name='api_admin_logout'),
     path('api/admin/status/', views.api_admin_status, name='api_admin_status'),
+    path('api/owner/instagram/status/', views.api_owner_instagram_status, name='api_owner_instagram_status'),
     path('api/owner/categories/', views.api_owner_categories, name='api_owner_categories'),
     path('api/owner/groups/', views.api_owner_groups, name='api_owner_groups'),
     path('api/owner/groups/move-jobs/', views.api_owner_groups_move_jobs, name='api_owner_groups_move_jobs'),

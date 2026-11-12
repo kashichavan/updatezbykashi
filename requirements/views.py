@@ -2168,8 +2168,23 @@ def api_publish_job_ig_story(request, pk):
     publisher = InstagramStoryPublisher()
     result = publisher.publish_job_story(job, base_url=host_url)
 
-    status_code = 200 if result.get('success') else (200 if result.get('error') == 'MISSING_ACCESS_TOKEN' else 400)
+    soft_errors = ('MISSING_ACCESS_TOKEN', 'NOT_CONNECTED', 'NEEDS_RECONNECT')
+    status_code = 200 if result.get('success') or result.get('error') in soft_errors or result.get('needs_reconnect') else 400
     return JsonResponse(result, status=status_code)
+
+
+def api_owner_instagram_status(request):
+    """Owner-only: is an Instagram account connected (via Insta Automation) for 1-click stories?"""
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    from .services.instagram_story import reelflow_status
+    data = reelflow_status()
+    if not data.get('configured') and getattr(settings, 'INSTAGRAM_ACCESS_TOKEN', ''):
+        # Legacy direct-token mode still works without Insta Automation.
+        data.update({'connected': True, 'mode': 'direct',
+                     'account': {'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}})
+    return JsonResponse(data)
 
 # ==============================================================================
 # REQUIREMENT GROUPS & MULTI-JOB BUNDLES

@@ -136,3 +136,60 @@ class InstagramPublisherHardeningTests(TestCase):
         result = InstagramStoryPublisher(access_token="IGAAtest", account_id="1").publish_job_story(self.job)
         self.assertEqual(result["error"], "CONTAINER_NOT_READY")
         self.assertEqual(mock_requests.post.call_count, 1)
+
+
+class ReelFlowStoryTests(TestCase):
+    """Stories go through Insta Automation (ReelFlow) when a story token is configured."""
+
+    def setUp(self):
+        category = Category.objects.create(name="Data", slug="data-reelflow")
+        self.job = JobPosting.objects.create(
+            title="Analyst", company_name="Beta", category=category,
+            location="Pune", deadline=timezone.now() + timezone.timedelta(days=7),
+        )
+        self.client = Client()
+        self.client.force_login(User.objects.create_user("rf_owner", password="x", is_staff=True))
+
+    def _mock(self, data, status=200):
+        from unittest import mock
+        r = mock.Mock(status_code=status)
+        r.json.return_value = data
+        return r
+
+    def test_publish_delegates_to_reelflow_with_public_https_image(self):
+        from unittest import mock
+        with self.settings(REELFLOW_STORY_TOKEN="tok", REELFLOW_URL="https://insta.example"), \
+             mock.patch("requirements.services.instagram_story.requests.post",
+                        return_value=self._mock({"success": True, "media_id": "m1", "username": "ikashii_07"})) as post:
+            resp = self.client.post(f"/api/jobs/{self.job.id}/publish-ig-story/", HTTP_ORIGIN="http://testserver")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.json()["success"])
+        url = post.call_args.args[0]
+        body = post.call_args.kwargs["json"]
+        self.assertEqual(url, "https://insta.example/internal/story/publish/")
+        self.assertEqual(post.call_args.kwargs["headers"]["X-Story-Token"], "tok")
+        self.assertTrue(body["image_url"].startswith("https://kashiiupdatez.online/api/jobs/"))
+        self.job.refresh_from_db()
+        self.assertTrue(self.job.insta_story_published)
+        self.assertEqual(self.job.insta_story_media_id, "m1")
+
+    def test_needs_reconnect_is_soft_error(self):
+        from unittest import mock
+        with self.settings(REELFLOW_STORY_TOKEN="tok"), \
+             mock.patch("requirements.services.instagram_story.requests.post",
+                        return_value=self._mock({"success": False, "error": "NEEDS_RECONNECT", "needs_reconnect": True,
+                                                 "connect_url": "https://x/connect"}, 502)):
+            resp = self.client.post(f"/api/jobs/{self.job.id}/publish-ig-story/", HTTP_ORIGIN="http://testserver")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.json()["needs_reconnect"])
+        self.job.refresh_from_db()
+        self.assertFalse(self.job.insta_story_published)
+
+    def test_status_requires_owner(self):
+        self.assertEqual(Client().get("/api/owner/instagram/status/").status_code, 401)
+
+    def test_status_reports_not_configured(self):
+        with self.settings(REELFLOW_STORY_TOKEN="", INSTAGRAM_ACCESS_TOKEN=""):
+            data = self.client.get("/api/owner/instagram/status/").json()
+        self.assertFalse(data["connected"])
+        self.assertIn("publish=1", data["connect_url"])

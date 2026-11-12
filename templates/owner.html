@@ -116,6 +116,10 @@
   /* ==========================================
      TOP OWNER HEADER & WORKSPACE NAVIGATION
      ========================================== */
+  .ig-connect-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 750; text-decoration: none; white-space: nowrap; }
+  .ig-connect-pill .ig-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.18); }
+  .ig-connect-pill[data-state="on"] .ig-pill-dot { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,.18); }
+  @media (max-width: 640px) { .ig-connect-pill .ig-pill-label { max-width: 92px; overflow: hidden; text-overflow: ellipsis; } }
   .owner-header-navbar {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(16px);
@@ -1154,6 +1158,10 @@
       <a href="https://insta.kashiiupdatez.online" target="_blank" class="btn btn-secondary owner-btn-insta" title="Open Instagram Automation Studio (ReelFlow)" rel="noopener noreferrer" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; font-weight: 750;">
         <span class="btn-text-full">📸 Insta App ↗</span>
         <span class="btn-text-short">📸 Insta ↗</span>
+      </a>
+      <a href="https://insta.kashiiupdatez.online/instagram/connect/start/?publish=1" id="igConnectPill" class="btn btn-secondary ig-connect-pill" data-state="off" target="_blank" rel="noopener noreferrer" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+        <span class="ig-pill-dot" aria-hidden="true"></span>
+        <span class="ig-pill-label">Checking Instagram…</span>
       </a>
       <a href="/" target="_blank" class="btn btn-secondary owner-btn-view-site" title="Open student website in new tab" rel="noopener noreferrer">
         <span class="btn-text-full">Student Site ↗</span>
@@ -2429,7 +2437,7 @@
           <!-- 5. Meta API Push (Automated) -->
           <div style="border-top: 1px solid var(--subtle-border); padding-top: 12px;">
             <button type="button" id="btnOwnerPushStoryMeta" class="btn btn-primary" style="width: 100%; height: 42px; background: linear-gradient(135deg, #1e293b, #0f172a); border: none; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
-              🚀 Push Story Directly to @ikashii_07 (Meta API)
+              ⚡ Post Story Now (1-Click)
             </button>
             <div id="ownerStoryPushMsg" style="display: none; font-size: 11.5px; margin-top: 8px; padding: 8px 12px; border-radius: 8px; line-height: 1.4;"></div>
           </div>

@@ -1197,6 +1197,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <!-- Direct Instagram Story Studio Row -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                  <button type="button" class="btn btn-ig-oneclick" data-id="${j.id}" style="height: 34px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Post this job as an Instagram story right now">
+                    ⚡ Post Story
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-ig-share-app" data-id="${j.id}" style="height: 34px; font-size: 12px; font-weight: 750; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open in the Instagram app with the job link copied, so you can add a Link sticker">
+                    📲 Story + Link
+                  </button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
                   <button type="button" class="btn btn-secondary btn-open-story-studio" data-id="${j.id}" data-title="${escapeHtml(j.title)}" data-company="${escapeHtml(j.company_name)}" style="height: 34px; font-size: 12px; font-weight: 750; background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open Instagram Story Studio">
                     📸 Story Studio
                   </button>
@@ -1332,6 +1340,13 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
+    document.querySelectorAll('.btn-ig-oneclick').forEach(btn => {
+      btn.onclick = (e) => { e.stopPropagation(); oneClickStory(btn.dataset.id, btn); };
+    });
+    document.querySelectorAll('.btn-ig-share-app').forEach(btn => {
+      btn.onclick = (e) => { e.stopPropagation(); shareStoryToInstagramApp(btn.dataset.id, btn); };
+    });
+
     document.querySelectorAll('.btn-open-story-studio').forEach(btn => {
       btn.onclick = (e) => {
         e.stopPropagation();
@@ -1440,15 +1455,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnPush) {
         btnPush.onclick = async () => {
           btnPush.disabled = true;
-          btnPush.textContent = 'Pushing to Meta API...';
+          btnPush.textContent = 'Posting story…';
           try {
-            const pushRes = await fetch(`/api/jobs/${jobId}/publish-ig-story/`, {
-              method: 'POST',
-              headers: {
-                'X-CSRFToken': getCsrfToken(),
-                'Content-Type': 'application/json'
-              }
-            });
+            const pushRes = await authFetch(`/api/jobs/${jobId}/publish-ig-story/`, { method: 'POST', body: '{}' });
             const pushData = await pushRes.json();
             if (pushMsg) {
               pushMsg.style.display = 'block';
@@ -1476,7 +1485,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           } finally {
             btnPush.disabled = false;
-            btnPush.textContent = '🚀 Push Story Directly to @ikashii_07 (Meta API)';
+            btnPush.textContent = '⚡ Post Story Now (1-Click)';
           }
         };
       }
@@ -1485,6 +1494,109 @@ document.addEventListener('DOMContentLoaded', () => {
       if (titleEl) titleEl.textContent = 'Error loading story assets';
     }
   }
+
+  // --- INSTAGRAM 1-CLICK STORIES (via Insta Automation) ---
+  let igState = { connected: false, connect_url: 'https://insta.kashiiupdatez.online/instagram/connect/start/?publish=1' };
+
+  function renderIgPill() {
+    const pill = document.getElementById('igConnectPill');
+    if (!pill) return;
+    const label = pill.querySelector('.ig-pill-label');
+    if (igState.connected) {
+      const u = (igState.account && igState.account.username) || 'instagram';
+      label.textContent = `@${u} connected`;
+      pill.dataset.state = 'on';
+      pill.title = 'Stories post in 1 click through Insta Automation. Click to reconnect.';
+    } else {
+      label.textContent = igState.configured === false ? 'Set up Instagram' : 'Connect Instagram';
+      pill.dataset.state = 'off';
+      pill.title = igState.error || 'Connect @ikashii_07 in Insta Automation to post stories in 1 click.';
+    }
+    pill.href = igState.connect_url;
+  }
+
+  async function loadIgStatus() {
+    try {
+      const res = await authFetch('/api/owner/instagram/status/');
+      if (res.ok) igState = { ...igState, ...(await res.json()) };
+    } catch (_) { /* keep defaults */ }
+    renderIgPill();
+  }
+  loadIgStatus();
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; }
+    catch (_) {
+      const t = document.createElement('textarea');
+      t.value = text; document.body.appendChild(t); t.select();
+      const ok = document.execCommand('copy'); t.remove(); return ok;
+    }
+  }
+
+  async function oneClickStory(jobId, btn) {
+    if (!igState.connected) {
+      showToast('Connect Instagram first: opening Insta Automation…', 'error');
+      window.open(igState.connect_url, '_blank', 'noopener');
+      return;
+    }
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Posting…';
+    try {
+      const res = await authFetch(`/api/jobs/${jobId}/publish-ig-story/`, { method: 'POST', body: '{}' });
+      const data = await res.json();
+      if (data.success) {
+        btn.innerHTML = '✅ Posted';
+        showToast(data.message || 'Story is live on Instagram!', 'success');
+        return;
+      }
+      if (data.needs_reconnect) {
+        igState.connected = false; renderIgPill();
+        showToast('Instagram needs reconnecting (story permission). Opening Insta Automation…', 'error');
+        window.open(data.connect_url || igState.connect_url, '_blank', 'noopener');
+      } else {
+        showToast(`Story not posted: ${data.message || data.error || 'unknown error'}`, 'error');
+      }
+      btn.innerHTML = original;
+    } catch (err) {
+      showToast('Story not posted: ' + err.message, 'error');
+      btn.innerHTML = original;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Phone path: the API can't add Link stickers, so open the Instagram app with the image
+  // and the job link on the clipboard. In Instagram: Sticker → Link → paste.
+  async function shareStoryToInstagramApp(jobId, btn) {
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Preparing…';
+    try {
+      const [jobRes, imgRes] = await Promise.all([
+        fetch(`/api/jobs/${jobId}/`),
+        fetch(`/api/jobs/${jobId}/ig-story-image/`)
+      ]);
+      const job = (await jobRes.json()).job || {};
+      const link = job.story_sticker_url || `${location.origin}/job/${jobId}/`;
+      const blob = await imgRes.blob();
+      const file = new File([blob], `story_${jobId}.jpg`, { type: blob.type || 'image/jpeg' });
+      await copyText(link);
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        showToast('🔗 Link copied. In Instagram choose Story → Sticker → Link → paste.', 'success');
+        await navigator.share({ files: [file] });
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(file); a.download = file.name; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        showToast('🔗 Link copied and image downloaded. Share it from your phone for the Instagram app.', 'success');
+      }
+    } catch (err) {
+      if (err && err.name !== 'AbortError') showToast('Could not open share sheet: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
   }
 
   // --- EDIT JOB MODAL DRAWER LOGIC ---

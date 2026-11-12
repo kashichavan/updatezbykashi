@@ -362,6 +362,8 @@ class InstagramStoryPublisher:
         Returns:
             dict containing success boolean, media_id, error message, and story text.
         """
+        if getattr(settings, 'REELFLOW_STORY_TOKEN', ''):
+            return publish_via_reelflow(job, base_url=base_url)
         # Build public image URL for Meta's crawler
         ts = int(job.updated_at.timestamp()) if hasattr(job, 'updated_at') and job.updated_at else 1
         story_image_url = f"{base_url}/api/jobs/{job.id}/ig-story-image/?v={ts}"
@@ -484,6 +486,64 @@ class InstagramStoryPublisher:
                 'story_text': story_text,
                 'job_id': job.id,
             }
+
+
+def _public_base_url(base_url=''):
+    """Meta must fetch the image over public HTTPS, so never hand it a localhost URL."""
+    if base_url.startswith('https://') and 'localhost' not in base_url and '127.0.0.1' not in base_url:
+        return base_url.rstrip('/')
+    return getattr(settings, 'PUBLIC_SITE_URL', 'https://kashiiupdatez.online')
+
+
+def reelflow_status():
+    """Connection state of the Instagram account in Insta Automation (no secrets)."""
+    url = getattr(settings, 'REELFLOW_URL', '')
+    token = getattr(settings, 'REELFLOW_STORY_TOKEN', '')
+    if not token:
+        return {'configured': False, 'connected': False, 'connect_url': f"{url}/instagram/connect/start/?publish=1"}
+    try:
+        r = requests.get(f"{url}/internal/story/status/", headers={'X-Story-Token': token},
+                         params={'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}, timeout=15)
+        data = r.json()
+    except Exception as exc:
+        return {'configured': True, 'connected': False, 'error': f'Insta Automation unreachable ({type(exc).__name__})',
+                'connect_url': f"{url}/instagram/connect/start/?publish=1"}
+    if r.status_code == 403:
+        return {'configured': True, 'connected': False, 'error': 'Story token rejected by Insta Automation.',
+                'connect_url': f"{url}/instagram/connect/start/?publish=1"}
+    data['configured'] = True
+    return data
+
+
+def publish_via_reelflow(job, base_url=''):
+    """Post the job's 9:16 story through Insta Automation's connected account."""
+    url = getattr(settings, 'REELFLOW_URL', '')
+    base = _public_base_url(base_url)
+    ts = int(job.updated_at.timestamp()) if getattr(job, 'updated_at', None) else 1
+    image_url = f"{base}/api/jobs/{job.id}/ig-story-image/?v={ts}"
+    share_url = job.get_story_sticker_url(base_url=base) if hasattr(job, 'get_story_sticker_url') else f"{base}/job/{job.id}/"
+    out = {'story_image_url': image_url, 'story_sticker_url': share_url, 'job_id': job.id}
+    try:
+        r = requests.post(f"{url}/internal/story/publish/",
+                          headers={'X-Story-Token': settings.REELFLOW_STORY_TOKEN},
+                          json={'image_url': image_url,
+                                'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')},
+                          timeout=90)
+        data = r.json()
+    except Exception as exc:
+        data = {'success': False, 'error': 'REELFLOW_UNREACHABLE', 'message': f'Insta Automation unreachable ({type(exc).__name__}).'}
+    out.update(data)
+    if data.get('success'):
+        job.insta_story_published = True
+        job.insta_story_media_id = str(data.get('media_id', ''))
+        job.insta_story_published_at = timezone.now()
+        job.insta_story_error = ''
+        job.save(update_fields=['insta_story_published', 'insta_story_media_id', 'insta_story_published_at', 'insta_story_error'])
+        out['message'] = f"Story posted to @{data.get('username', '')}."
+    else:
+        job.insta_story_error = str(data.get('message') or data.get('error') or 'Unknown error')[:2000]
+        job.save(update_fields=['insta_story_error'])
+    return out
 
 
 def auto_publish_story_if_enabled(job, base_url="https://kashiiupdatez.online"):
