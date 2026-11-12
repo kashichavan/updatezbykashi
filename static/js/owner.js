@@ -56,16 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const tabTitles = {
-    'tabJobs': { title: 'Opportunity Pipeline CRM', sub: 'Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.' },
-    'tabLinkedin': { title: 'LinkedIn Post Scraper & Referrals Ingestion', sub: 'Scrape LinkedIn posts, extract requirements & employee referrals, validate quality scorecard, and pass directly to live pipeline.' },
-    'tabBulkParse': { title: 'Bulk Multi-Job Automation', sub: 'Parse multi-job Telegram/WhatsApp messages & auto-publish all leads in 1 click.' },
-    'tabJobdexo': { title: 'Jobdexo Auto-Sync Engine', sub: 'Automatically crawl & import off-campus drives directly from Jobdexo with official apply links.' },
-    'tabAnalytics': { title: 'Website Traffic & Visitor Analytics', sub: 'Real-time student visitor volume, daily trends, referrer sources, and top viewed requirements.' },
-    'tabGroups': { title: 'Requirement Groups & Drives', sub: 'Shareable collections of multiple requirements for 1-click WhatsApp/Telegram broadcasting.' },
-    'tabSmartParse': { title: '1-Click Single Parser', sub: 'Extract details from a single job requirement snippet & publish instantly.' },
-    'tabPost': { title: 'Publish New Opportunity', sub: 'Manual form to publish structured student job or internship postings.' },
-    'tabCategory': { title: 'Taxonomy & Categories', sub: 'Manage job categories, view active posting counts, and organize leads.' },
-    'tabActivity': { title: 'System Activity & Audit Log', sub: 'Real-time audit log of owner parsing actions, status toggles, and publishing events.' }
+    'tabJobs': { title: 'Jobs', sub: 'Every job post on the site. Edit, share as a story, move to a group, or unpublish.' },
+    'tabLinkedin': { title: 'LinkedIn & referrals', sub: 'Paste a LinkedIn post to pull out the job and any referral contact, check it, and publish it.' },
+    'tabBulkParse': { title: 'Bulk parser', sub: 'Paste a Telegram or WhatsApp message with several jobs and publish them together as one group.' },
+    'tabJobdexo': { title: 'Jobdexo import', sub: 'Import the newest off-campus drives from Jobdexo with their official apply links.' },
+    'tabAnalytics': { title: 'Traffic', sub: 'Visitors, daily trend, referrers, devices and most-viewed pages.' },
+    'tabGroups': { title: 'Groups', sub: 'Shareable lists of several jobs, ready to send on WhatsApp or Telegram.' },
+    'tabSmartParse': { title: 'Single-job parser', sub: 'Paste one job message; the parser fills in the fields and publishes it.' },
+    'tabPost': { title: 'Post a job', sub: 'Fill in the form to publish one job or internship.' },
+    'tabCategory': { title: 'Categories', sub: 'Add or edit job categories and see how many posts each one has.' },
+    'tabActivity': { title: 'Activity log', sub: 'Parses, status changes and publishes made from this portal.' }
   };
 
   const tabUrlMap = {
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (targetId === 'tabJobs') {
-      const hasPreRenderedCards = jobsTableContainer && jobsTableContainer.querySelector('.vp-product-card');
+      const hasPreRenderedCards = jobsTableContainer && jobsTableContainer.querySelector('.job-card:not(.skeleton)');
       if (!updateHistory && hasPreRenderedCards) {
         bindJobActionEvents();
       } else {
@@ -299,6 +299,12 @@ document.addEventListener('DOMContentLoaded', () => {
       crmRecencyFilter.addEventListener('change', () => {
         loadJobsList(1);
       });
+    }
+
+    const crmGroupFilter = document.getElementById('crmGroupFilter');
+    if (crmGroupFilter) {
+      crmGroupFilter.addEventListener('change', () => loadJobsList(1));
+      loadGroupFilterOptions();
     }
 
     const ownerGroupsSearch = document.getElementById('ownerGroupsSearch');
@@ -472,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadKpiStats();
 
     // If server rendered login page before client JWT auth, fetch pipeline
-    if (!document.querySelector('#ownerJobsTableContainer .vp-product-card')) {
+    if (!document.querySelector('#ownerJobsTableContainer .job-card:not(.skeleton)')) {
       loadJobsList(1);
     }
   }
@@ -986,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modalSelect) modalSelect.innerHTML = optionsHtml;
 
       if (filterCategorySelect) {
-        filterCategorySelect.innerHTML = '<option value="ALL">All Categories</option>' + data.categories.map(c => `<option value="${c.slug}">${escapeHtml(c.name)}</option>`).join('');
+        filterCategorySelect.innerHTML = '<option value="ALL">Any category</option>' + data.categories.map(c => `<option value="${c.slug}">${escapeHtml(c.name)}</option>`).join('');
       }
     } catch (err) {
       console.error('Failed to load categories:', err);
@@ -1002,32 +1008,10 @@ document.addEventListener('DOMContentLoaded', () => {
     currentJobsPage = page;
     
     // Skeleton loading state
-    jobsTableContainer.innerHTML = `
-      <div class="vp-catalog-grid" style="margin-bottom: 24px;">
-        ${[1, 2, 3, 4, 5, 6].map(() => `
-          <div class="vp-product-card" style="opacity: 0.7; pointer-events: none;">
-            <div class="vp-card-header">
-              <div style="width: 90px; height: 22px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
-              <div style="width: 60px; height: 20px; background: #e2e8f0; border-radius: var(--radius-full);"></div>
-            </div>
-            <div style="width: 75%; height: 20px; background: #e2e8f0; border-radius: var(--radius-sm); margin: 10px 0 8px;"></div>
-            <div style="width: 45%; height: 16px; background: #f1f5f9; border-radius: var(--radius-sm); margin-bottom: 12px;"></div>
-            <div style="width: 100%; height: 40px; background: #f8fafc; border-radius: var(--radius-sm); margin-bottom: 14px;"></div>
-            <div style="display: flex; gap: 6px; margin-bottom: 14px;">
-              <div style="width: 50px; height: 20px; background: #f1f5f9; border-radius: var(--radius-sm);"></div>
-              <div style="width: 60px; height: 20px; background: #f1f5f9; border-radius: var(--radius-sm);"></div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px;">
-              <div style="height: 38px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
-              <div style="height: 38px; background: #e2e8f0; border-radius: var(--radius-sm);"></div>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
+    jobsTableContainer.innerHTML = `<div class="job-grid" aria-busy="true">${'<div class="job-card skeleton"><div class="sk w40"></div><div class="sk w80"></div><div class="sk w60"></div><div class="sk w40"></div></div>'.repeat(12)}</div>`;
 
     const pageSizeSelect = document.getElementById('ownerPageSize');
-    const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) : 10;
+    const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) : 48;
     const statusVal = filterStatusSelect ? filterStatusSelect.value : 'ALL';
     const query = searchInput ? searchInput.value.trim() : '';
     const selectedCat = filterCategorySelect ? filterCategorySelect.value : 'ALL';
@@ -1039,9 +1023,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const expVal = expSelect ? expSelect.value : 'ALL';
 
     let url = `/api/jobs/?sort=newest&page=${page}&page_size=${pageSize}`;
-    if (statusVal && statusVal !== 'ALL') {
-      url += `&status=${encodeURIComponent(statusVal)}`;
-    }
+    // Always send it: with no status the API returns only active jobs, which hid every expired post here.
+    url += `&status=${encodeURIComponent(statusVal || 'ALL')}`;
     if (query) {
       url += `&q=${encodeURIComponent(query)}`;
     }
@@ -1064,11 +1047,18 @@ document.addEventListener('DOMContentLoaded', () => {
       url += `&time_window=7d`;
     }
 
+    const groupVal = document.getElementById('crmGroupFilter')?.value || 'ALL';
+    if (groupVal !== 'ALL') url += `&group=${encodeURIComponent(groupVal)}`;
+
+    // The public API sends Cache-Control: max-age=60; the owner list must show edits immediately.
+    url += `&_=${Date.now()}`;
     try {
-      const res = await authFetch(url);
+      const res = await authFetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       allLoadedJobs = data.jobs || [];
       renderFilteredJobs(data);
+      updateFilterSummary(data.total_count || 0);
     } catch (err) {
       console.error('Failed to load jobs:', err);
       jobsTableContainer.innerHTML = `
@@ -1084,6 +1074,82 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Groups that hold at least one job, newest first, for the "Any group" filter.
+  async function loadGroupFilterOptions(selectId = null) {
+    const sel = document.getElementById('crmGroupFilter');
+    if (!sel) return;
+    try {
+      const res = await authFetch('/api/owner/groups/?summary=true');
+      if (!res.ok) return;
+      const groups = ((await res.json()).groups || []).filter(g => g.total_jobs_count > 0);
+      const keep = selectId != null ? String(selectId) : sel.value;
+      sel.querySelectorAll('option[data-group]').forEach(o => o.remove());
+      groups.forEach(g => {
+        const o = document.createElement('option');
+        o.value = g.id;
+        o.dataset.group = '1';
+        o.textContent = `${g.name} (${g.total_jobs_count})`;
+        sel.appendChild(o);
+      });
+      sel.value = [...sel.options].some(o => o.value === keep) ? keep : 'ALL';
+    } catch (_) { /* filter stays usable with the built-in options */ }
+  }
+
+  // ---- Filters dialog: every dropdown lives here; the toolbar shows what is active ----
+  const JOB_FILTERS = [
+    ['crmExperienceFilter', 'Experience'], ['crmCategoryFilter', 'Category'], ['crmGroupFilter', 'Group'],
+    ['crmSourceFilter', 'Source'], ['crmRecencyFilter', 'Posted'], ['crmStatusFilter', 'Status']
+  ];
+  const filtersDialog = document.getElementById('jobFiltersDialog');
+
+  function updateFilterSummary(total) {
+    const active = JOB_FILTERS
+      .map(([id, label]) => ({ id, label, el: document.getElementById(id) }))
+      .filter(f => f.el && f.el.value !== 'ALL')
+      .map(f => ({ ...f, text: f.el.options[f.el.selectedIndex].textContent.replace(/\s*\(\d+\)$/, '') }));
+    const badge = document.getElementById('jobFilterCount');
+    if (badge) { badge.textContent = active.length; badge.hidden = active.length === 0; }
+    const bar = document.getElementById('jobActiveFilters');
+    if (bar) {
+      bar.hidden = active.length === 0;
+      bar.innerHTML = active.map(f =>
+        `<button type="button" class="jobs-chip" data-filter="${f.id}" aria-label="Remove filter ${escapeHtml(f.label)}: ${escapeHtml(f.text)}">` +
+        `<span>${escapeHtml(f.label)}:</span> ${escapeHtml(f.text)} <span aria-hidden="true">&times;</span></button>`
+      ).join('') + (active.length > 1 ? '<button type="button" class="jobs-chip-clear" id="btnClearAllJobFilters">Clear all</button>' : '');
+      bar.querySelectorAll('.jobs-chip').forEach(chip => chip.onclick = () => {
+        const el = document.getElementById(chip.dataset.filter);
+        if (el) { el.value = 'ALL'; el.dispatchEvent(new Event('change')); }
+      });
+      document.getElementById('btnClearAllJobFilters')?.addEventListener('click', resetJobFilters);
+    }
+    const apply = document.getElementById('btnApplyJobFilters');
+    if (apply) apply.textContent = `Show ${total} job${total === 1 ? '' : 's'}`;
+  }
+
+  document.getElementById('btnOpenJobFilters')?.addEventListener('click', () => filtersDialog?.showModal());
+  filtersDialog?.addEventListener('click', e => { if (e.target === filtersDialog) filtersDialog.close(); });  // backdrop
+  document.getElementById('btnResetJobFilters')?.addEventListener('click', () => resetJobFilters());
+
+  function resetJobFilters() {
+    if (searchInput) searchInput.value = '';
+    ['crmExperienceFilter', 'crmCategoryFilter', 'crmSourceFilter', 'crmGroupFilter', 'crmRecencyFilter', 'crmStatusFilter']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.value = 'ALL'; });
+    document.querySelectorAll('.owner-exp-pill').forEach(p => p.classList.toggle('active', p.dataset.exp === 'ALL'));
+    loadJobsList(1);
+  }
+
+  function setGroupFilter(id, name) {
+    const sel = document.getElementById('crmGroupFilter');
+    if (!sel) return;
+    if (id !== 'ALL' && ![...sel.options].some(o => o.value === String(id))) {
+      const o = document.createElement('option');
+      o.value = id; o.dataset.group = '1'; o.textContent = name || `Group #${id}`;
+      sel.appendChild(o);
+    }
+    sel.value = String(id);
+    loadJobsList(1);
+  }
+
   function renderFilteredJobs(serverPaginationData = null) {
     if (!jobsTableContainer) return;
 
@@ -1092,21 +1158,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!filtered || filtered.length === 0) {
       jobsTableContainer.innerHTML = `
         <div style="padding: 48px 20px; text-align: center; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-lg); margin-bottom: 20px;">
-          <div style="font-size: 32px; margin-bottom: 8px;">📋</div>
-          <strong style="color: var(--color-text-primary); font-size: var(--text-base); display: block; margin-bottom: 4px;">No opportunity leads found</strong>
-          <p style="color: var(--color-text-muted); font-size: var(--text-sm); margin: 0 0 16px;">Try clearing your search filters or post a new job requirement.</p>
-          <button type="button" class="btn btn-primary" onclick="switchTab('tabPost')">
-            ✍️ + Post New Job
-          </button>
+          <strong style="color: var(--color-text-primary); font-size: var(--text-base); display: block; margin-bottom: 4px;">No jobs match these filters</strong>
+          <p style="color: var(--color-text-muted); font-size: var(--text-sm); margin: 0 0 16px;">Clear the filters, or post a new job.</p>
+          <div style="display: inline-flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary" id="btnJobsResetFilters">Clear filters</button>
+            <button type="button" class="btn btn-primary" onclick="switchTab('tabPost')">Post a job</button>
+          </div>
         </div>
       `;
+      document.getElementById('btnJobsResetFilters')?.addEventListener('click', resetJobFilters);
       return;
     }
     const curPage = serverPaginationData ? (serverPaginationData.current_page || 1) : 1;
     const totalPages = serverPaginationData ? (serverPaginationData.total_pages || 1) : 1;
     const totalCount = serverPaginationData ? (serverPaginationData.total_count || filtered.length) : filtered.length;
     const pageSizeSelect = document.getElementById('ownerPageSize');
-    const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) : 10;
+    const pageSize = pageSizeSelect ? parseInt(pageSizeSelect.value, 10) : 48;
     const startNum = (curPage - 1) * pageSize + 1;
     const endNum = Math.min(totalCount, curPage * pageSize);
 
@@ -1124,128 +1191,101 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    const pagesHtml = pageNumbers.map(p => {
-      if (p === '...') {
-        return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>`;
-      }
+    const groupChips = (groups) => {
+      if (!Array.isArray(groups) || !groups.length) return '';
+      const g = groups[0];
+      const more = groups.length > 1 ? ` +${groups.length - 1}` : '';
+      const all = groups.map(x => x.name).join(', ');
+      return `<button type="button" class="jr-group" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" title="Show only jobs in: ${escapeHtml(all)}">${escapeHtml(g.name)}${more}</button>`;
+    };
+    const groupSel = document.getElementById('crmGroupFilter');
+    const activeGroup = groupSel && groupSel.value !== 'ALL' ? groupSel.options[groupSel.selectedIndex].textContent : '';
+
+    const rowsHtml = filtered.map(j => {
+      const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
+      const hoursLeft = Math.max(0, Math.ceil((j.time_left_seconds || 0) / 3600));
+      const timeLeft = hoursLeft >= 48 ? `${Math.floor(hoursLeft / 24)}d left` : `${hoursLeft}h left`;
+      const isFresher = (j.experience_tier === 'FRESHER' || j.experience_tier === 'INTERNSHIP' || j.job_type === 'INTERNSHIP' || (j.title && /fresher|intern|trainee|0-1/i.test(j.title))) && j.experience_tier !== 'SENIOR_LEVEL' && j.experience_tier !== 'MID_LEVEL';
+      const meta = [j.location || 'India', j.stipend_salary].filter(Boolean).map(escapeHtml).join('<span class="jr-sep">·</span>');
       return `
-        <button class="pag-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid ${p === curPage ? '#2563eb' : '#e2e8f0'}; background: ${p === curPage ? '#2563eb' : '#ffffff'}; color: ${p === curPage ? '#ffffff' : '#0f172a'}; cursor: pointer;">
-          ${p}
-        </button>
-      `;
+        <article class="job-card${isExpired ? ' is-expired' : ''}" data-id="${j.id}">
+          <div class="jc-top">
+            <span class="jc-company" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
+            <span class="jr-status ${isExpired ? 'off' : 'on'}">${isExpired ? 'Expired' : timeLeft}</span>
+          </div>
+          <h3 class="jc-title" title="${escapeHtml(j.title)}">${escapeHtml(j.title)}</h3>
+          <div class="jc-meta">${meta}</div>
+          <div class="jc-sub">
+            <span class="jr-tier ${isFresher ? 'fresher' : 'exp'}">${isFresher ? 'Fresher' : 'Experienced'}</span>
+            <span class="jr-sep">·</span><span class="jr-date">${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</span>
+            <span class="jr-id">#${j.id}</span>
+          </div>
+          ${groupChips(j.groups)}
+          <div class="jr-actions">
+            <button type="button" class="jr-btn primary btn-edit-job" data-id="${j.id}">Edit</button>
+            <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener noreferrer" class="jr-btn" aria-label="Open apply link for ${escapeHtml(j.title)}">Apply ↗</a>
+            <button type="button" class="jr-btn btn-ig-oneclick" data-id="${j.id}" title="Post this job as an Instagram story now">Story</button>
+            <details class="jr-more">
+              <summary class="jr-btn" aria-label="More actions for #${j.id}">More</summary>
+              <div class="jr-menu" role="menu">
+                <button type="button" role="menuitem" class="btn-ig-share-app" data-id="${j.id}">Story with link sticker</button>
+                <button type="button" role="menuitem" class="btn-open-story-studio" data-id="${j.id}" data-title="${escapeHtml(j.title)}" data-company="${escapeHtml(j.company_name)}">Open story studio</button>
+                <a role="menuitem" href="/api/jobs/${j.id}/ig-story-image/" target="_blank" rel="noopener">Story image (9:16) ↗</a>
+                <button type="button" role="menuitem" class="btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}">Move to group</button>
+                <button type="button" role="menuitem" class="btn-toggle-job" data-id="${j.id}">${isExpired ? 'Publish' : 'Unpublish'}</button>
+                <button type="button" role="menuitem" class="btn-delete-job danger" data-id="${j.id}">Delete</button>
+              </div>
+            </details>
+          </div>
+        </article>`;
     }).join('');
 
+    const pagesHtml = pageNumbers.map(p => p === '...'
+      ? '<span class="jl-gap">…</span>'
+      : `<button type="button" class="jl-page btn-page-number pag-page-btn${p === curPage ? ' active' : ''}" data-page="${p}"${p === curPage ? ' aria-current="page"' : ''}>${p}</button>`
+    ).join('');
+
     jobsTableContainer.innerHTML = `
-      <div class="vp-catalog-grid" style="margin-bottom: 24px;">
-        ${filtered.map(j => {
-          const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
-          const hoursLeft = Math.ceil(j.time_left_seconds / 3600);
-          const skillsList = Array.isArray(j.skills_list) && j.skills_list.length > 0 
-            ? j.skills_list 
-            : (j.skills_required ? j.skills_required.split(',').map(s => s.trim()).filter(Boolean) : []);
-          const isFresher = (j.experience_tier === 'FRESHER' || j.experience_tier === 'INTERNSHIP' || j.job_type === 'INTERNSHIP' || (j.title && /fresher|intern|trainee|0-1/i.test(j.title))) && j.experience_tier !== 'SENIOR_LEVEL' && j.experience_tier !== 'MID_LEVEL';
-          const expBadge = isFresher 
-            ? `<span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 10.5px; font-weight: 700;">🎓 Fresher (0-1 Y)</span>`
-            : `<span class="status-pill" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25); font-size: 10.5px; font-weight: 700;">💼 Experienced</span>`;
-
-          return `
-          <div class="vp-product-card" data-id="${j.id}">
-            <div class="vp-card-header">
-              <span class="company-badge">${escapeHtml(j.company_name)}</span>
-              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                ${expBadge}
-                <span class="type-badge">${escapeHtml(j.job_type_display || j.job_type || 'Full-Time')}</span>
-                <span class="status-pill ${isExpired ? 'status-expired' : 'status-active'}" style="font-size: 11px;">
-                  ${isExpired ? '🔴 Expired' : '🟢 ' + hoursLeft + 'h left'}
-                </span>
-              </div>
-            </div>
-
-            <div class="vp-card-content">
-              <h2 class="job-card-title">${escapeHtml(j.title)}</h2>
-
-              <div class="vp-salary-row">
-                <span>💰 ${escapeHtml(j.stipend_salary || 'Competitive')}</span>
-                <span style="color: var(--color-text-muted); font-weight: 500;">📍 ${escapeHtml(j.location || 'India')}</span>
-              </div>
-
-              <div style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
-                <span>📅 Posted:</span> <strong style="color: var(--color-text-primary);">${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</strong>
-                <span style="margin-left: auto; color: var(--color-text-muted); font-family: monospace; font-size: 11.5px;">#${j.id}</span>
-              </div>
-
-              <p style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.45; margin-bottom: 10px;">${escapeHtml(j.description ? (j.description.length > 130 ? j.description.substring(0, 130) + '...' : j.description) : 'Verified student opening.')}</p>
-
-              <div class="skills-wrapper">
-                ${skillsList.slice(0, 4).map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('')}
-              </div>
-
-              <div class="vp-price-row" style="margin-top: 10px;">
-                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: ${isExpired ? 'var(--color-text-danger)' : 'var(--color-text-success)'};">
-                  ⏱️ ${isExpired ? 'Expired / Inactive' : 'Auto-Expires in 7 Days (' + hoursLeft + 'h left)'}
-                </div>
-              </div>
-
-              <div class="card-action-bar" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                  <button type="button" class="btn btn-primary btn-edit-job" data-id="${j.id}" style="height: 38px;">
-                    ✏️ Edit Lead
-                  </button>
-                  <a href="${escapeHtml(j.apply_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="height: 38px;">
-                    ↗ Apply URL
-                  </a>
-                </div>
-                <!-- Direct Instagram Story Studio Row -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                  <button type="button" class="btn btn-ig-oneclick" data-id="${j.id}" style="height: 34px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Post this job as an Instagram story right now">
-                    ⚡ Post Story
-                  </button>
-                  <button type="button" class="btn btn-secondary btn-ig-share-app" data-id="${j.id}" style="height: 34px; font-size: 12px; font-weight: 750; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open in the Instagram app with the job link copied, so you can add a Link sticker">
-                    📲 Story + Link
-                  </button>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                  <button type="button" class="btn btn-secondary btn-open-story-studio" data-id="${j.id}" data-title="${escapeHtml(j.title)}" data-company="${escapeHtml(j.company_name)}" style="height: 34px; font-size: 12px; font-weight: 750; background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open Instagram Story Studio">
-                    📸 Story Studio
-                  </button>
-                  <a href="/api/jobs/${j.id}/ig-story-image/" target="_blank" class="btn btn-ghost" style="height: 34px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" title="Direct link to 9:16 Story Image">
-                    🖼️ 9:16 Image ↗
-                  </a>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
-                  <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}" style="height: 34px; font-size: 12px;" title="Move or assign this requirement to a specific group">
-                    ⇄ Move
-                  </button>
-                  <button type="button" class="btn btn-ghost btn-toggle-job" data-id="${j.id}" style="height: 34px; font-size: 12px; color: ${isExpired ? 'var(--color-text-success)' : 'var(--color-text-secondary)'};">
-                    ${isExpired ? '🚀 Publish' : '⏸️ Unpublish'}
-                  </button>
-                  <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="${j.id}" style="height: 34px; font-size: 12px;" title="Delete lead">
-                    🗑️ Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        `}).join('')}
-      </div>
-
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
-        <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
-          Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalCount}</strong> verified leads (Page ${curPage} of ${totalPages})
-        </div>
-        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-          <button id="btnPrevPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage <= 1 ? 'disabled' : ''}>
-            ← Previous
-          </button>
+      ${activeGroup ? `<div class="job-filter-bar">Showing jobs in <strong>${escapeHtml(activeGroup)}</strong><button type="button" class="jr-btn" id="btnClearGroupFilter">Clear</button></div>` : ''}
+      <div class="job-grid">${rowsHtml}</div>
+      <div class="job-list-foot">
+        <span>${startNum}–${endNum} of ${totalCount}</span>
+        <div class="jl-pages">
+          <button type="button" id="btnPrevPage" class="jl-page" ${curPage <= 1 ? 'disabled' : ''} aria-label="Previous page">←</button>
           ${pagesHtml}
-          <button id="btnNextPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage >= totalPages ? 'disabled' : ''}>
-            Next →
-          </button>
+          <button type="button" id="btnNextPage" class="jl-page" ${curPage >= totalPages ? 'disabled' : ''} aria-label="Next page">→</button>
         </div>
       </div>
     `;
 
+    document.getElementById('btnClearGroupFilter')?.addEventListener('click', () => setGroupFilter('ALL'));
+    jobsTableContainer.querySelectorAll('.jr-group').forEach(chip => {
+      chip.onclick = () => setGroupFilter(chip.dataset.groupId, chip.dataset.groupName);
+    });
     bindJobActionEvents(curPage, totalPages);
+  }
+
+  document.addEventListener('click', e => {
+    document.querySelectorAll('.jr-more[open]').forEach(d => {
+      if (!d.contains(e.target) || e.target.closest('.jr-menu button, .jr-menu a')) d.open = false;
+    });
+  });
+  document.addEventListener('click', e => {
+    const item = e.target.closest('.jr-menu button, .jr-menu a');
+    if (item) item.closest('.jr-more').open = false;
+  }, true);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.jr-more[open]').forEach(d => { d.open = false; d.querySelector('summary')?.focus(); });
+  });
+  document.addEventListener('toggle', e => {
+    if (e.target.classList?.contains('jr-more') && e.target.open) {
+      document.querySelectorAll('.jr-more[open]').forEach(d => { if (d !== e.target) d.open = false; });
+    }
+  }, true);
+
+  function scrollJobsIntoView() {
+    const top = document.querySelector('#tabJobs .standard-toolbar');
+    if (top && top.getBoundingClientRect().top < 0) top.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function bindJobActionEvents(curPage = null, totalPages = null) {
@@ -1274,7 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnPrev.onclick = (e) => {
         e.preventDefault();
         if (curPage > 1) {
-          loadJobsList(curPage - 1);
+          loadJobsList(curPage - 1).then(scrollJobsIntoView);
         }
       };
     }
@@ -1283,7 +1323,7 @@ document.addEventListener('DOMContentLoaded', () => {
       btnNext.onclick = (e) => {
         e.preventDefault();
         if (curPage < totalPages) {
-          loadJobsList(curPage + 1);
+          loadJobsList(curPage + 1).then(scrollJobsIntoView);
         }
       };
     }
@@ -1297,7 +1337,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (m) targetPage = parseInt(m[1], 10);
         }
         if (targetPage && targetPage !== curPage) {
-          loadJobsList(targetPage);
+          loadJobsList(targetPage).then(scrollJobsIntoView);
         }
       };
     });
@@ -1932,7 +1972,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (res.ok && data.success) {
         showToast('Lead deleted from pipeline.', 'success');
         logActivity(`Lead deleted #${id}`, 'Permanently removed from CRM');
-        const card = document.querySelector(`.vp-product-card[data-id="${id}"]`);
+        const card = document.querySelector(`.job-card[data-id="${id}"]`);
         if (card) card.remove();
         loadKpiStats();
       } else {
@@ -2764,6 +2804,7 @@ document.addEventListener('DOMContentLoaded', () => {
           logActivity('Transferred requirements', data.message);
           closeMoveRequirementsModal();
           loadGroupsList(currentGroupsPage || 1);
+          loadGroupFilterOptions();  // group sizes changed, and a new group may exist
           loadJobsList(currentJobsPage);
           loadKpiStats();
         } else {

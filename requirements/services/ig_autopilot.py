@@ -204,6 +204,8 @@ def publish_story(job, poster):
 def run_due(now=None):
     """Create today's due drafts and publish every due, unposted one. Safe to call repeatedly."""
     from ..models import ReelDraft
+    if not getattr(settings, 'REELS_ENABLED', False):
+        return {'skipped': 'reels paused'}
     if not _run_lock.acquire(blocking=False):
         return {'skipped': 'already running'}
     try:

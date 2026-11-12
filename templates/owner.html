@@ -1143,6 +1143,151 @@
     .mobile-tab-dock { display: none !important; }
     .mobile-subnav-strip { display: none !important; }
   }
+
+  /* ---------- Jobs tab: toolbar, filters dialog, compact card grid ---------- */
+  /* The animated particle background reads as noise on a data screen. */
+  #spiderWebCanvas { display: none !important; }
+
+  .kpi-card::before { display: none; }
+  .kpi-card:hover { transform: none; box-shadow: var(--card-shadow); border-color: var(--subtle-border); }
+  .kpi-card { padding: 14px 16px; }
+  .kpi-card .kpi-value { color: var(--color-text-primary); }
+  .kpi-card-blue .kpi-value { color: var(--blue-primary); }
+  .kpi-sub-danger { color: var(--color-text-muted) !important; }
+
+  .owner-exp-label { font-size: 12px; font-weight: 600; color: #64748b; margin-right: 2px; }
+  .owner-exp-pill, .owner-exp-pill.fresher, .owner-exp-pill.exp { background: #fff; color: #334155; border: 1px solid #e2e8f0; font-weight: 600; }
+  .owner-exp-pill.active, .owner-exp-pill.fresher.active, .owner-exp-pill.exp.active { background: var(--blue-primary); color: #fff; border-color: var(--blue-primary); }
+  .pill-count { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 4px; font-weight: 500; }
+
+  /* Toolbar */
+  .jobs-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 4px 0 10px; }
+  .jobs-search { position: relative; flex: 1 1 320px; min-width: 0; }
+  .jobs-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none; }
+  .jobs-search input {
+    width: 100%; height: 40px; padding: 0 36px 0 38px; font: inherit; font-size: 14px; color: #0f172a;
+    background: #fff; border: 1px solid #cbd5e1; border-radius: 9px;
+  }
+  .jobs-search input::-webkit-search-cancel-button { display: none; }
+  .jobs-search input:focus { outline: none; border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+  .jobs-search-clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border: 0; background: none; font-size: 18px; color: #64748b; cursor: pointer; border-radius: 6px; }
+  .jobs-search-clear:hover { background: #f1f5f9; }
+  .jobs-tool-btn, .jobs-primary-btn {
+    height: 40px; padding: 0 14px; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+    font: inherit; font-size: 13.5px; font-weight: 600; border-radius: 9px; cursor: pointer;
+  }
+  .jobs-tool-btn { background: #fff; color: #0f172a; border: 1px solid #cbd5e1; }
+  .jobs-tool-btn:hover { background: #f8fafc; border-color: #94a3b8; }
+  .jobs-primary-btn { background: var(--blue-primary); color: #fff; border: 1px solid var(--blue-primary); }
+  .jobs-primary-btn:hover { background: #1d4ed8; }
+  .jobs-filter-count[hidden], .jobs-active-filters[hidden] { display: none; }
+  .jobs-filter-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--blue-primary); color: #fff; font-size: 11.5px; display: inline-grid; place-items: center; }
+  .jobs-active-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .jobs-chip, .jobs-chip-clear { font: inherit; font-size: 12.5px; height: 28px; padding: 0 10px; border-radius: 999px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; max-width: 100%; }
+  .jobs-chip { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jobs-chip span:first-child { color: #3b5bab; }
+  .jobs-chip:hover { border-color: #93c5fd; }
+  .jobs-chip-clear { background: none; border: 0; color: #475569; text-decoration: underline; }
+
+  /* Filters dialog */
+  .filters-dialog { position: fixed; inset: 0; margin: auto; height: fit-content; border: 0; padding: 0; border-radius: 14px; width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 48px); box-shadow: 0 24px 60px rgba(15, 23, 42, .25); color: #0f172a; }
+  .filters-dialog::backdrop { background: rgba(15, 23, 42, .45); }
+  .filters-form { display: flex; flex-direction: column; max-height: calc(100vh - 48px); }
+  .filters-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+  .filters-head h2 { margin: 0; font-size: 17px; font-weight: 700; }
+  .filters-x { width: 32px; height: 32px; border: 0; background: none; font-size: 22px; line-height: 1; color: #475569; border-radius: 8px; cursor: pointer; }
+  .filters-x:hover { background: #f1f5f9; }
+  .filters-body { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; padding: 18px 20px; overflow-y: auto; }
+  .filter-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: #334155; min-width: 0; }
+  .filter-field.filter-wide { grid-column: 1 / -1; }
+  .filter-field select { height: 40px; width: 100%; padding: 0 10px; font: inherit; font-size: 14px; font-weight: 500; color: #0f172a; background: #fff; border: 1px solid #cbd5e1; border-radius: 9px; }
+  .filter-field select:focus { outline: none; border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+  .filters-foot { display: flex; justify-content: space-between; gap: 10px; padding: 14px 20px; border-top: 1px solid #e2e8f0; background: #f8fafc; border-radius: 0 0 14px 14px; }
+  @media (max-width: 520px) { .filters-body { grid-template-columns: 1fr; } }
+
+  /* Card grid: 4 columns on a laptop, compact so ~12-16 cards fit on screen */
+  .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .job-card {
+    display: flex; flex-direction: column; gap: 4px; min-width: 0;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 12px 10px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .job-card:hover { border-color: #cbd5e1; box-shadow: 0 2px 10px rgba(15, 23, 42, .06); }
+  .job-card.is-expired { background: #fbfcfd; }
+  .job-card.is-expired .jc-title { color: #64748b; }
+  .jc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .jc-company { font-size: 12.5px; font-weight: 600; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .jc-title {
+    margin: 0; font-size: 14.5px; font-weight: 650; line-height: 1.3; color: #0f172a;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.6em;
+  }
+  .jc-meta, .jc-sub { font-size: 12.5px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .jc-sub { font-size: 12px; display: flex; align-items: center; }
+  .jr-sep { color: #cbd5e1; margin: 0 5px; }
+  .jr-tier { font-weight: 600; }
+  .jr-tier.fresher { color: #047857; }
+  .jr-tier.exp { color: #4338ca; }
+  .jr-date { font-variant-numeric: tabular-nums; }
+  .jr-id { margin-left: auto; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
+  .jr-status { flex-shrink: 0; font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 5px; }
+  .jr-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .jr-status.on { color: #047857; }
+  .jr-status.off { color: #94a3b8; }
+  .jr-group {
+    align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font: inherit; font-size: 11.5px; color: #1d4ed8; background: #eff6ff; border: 1px solid #dbeafe;
+    border-radius: 999px; padding: 0 8px; line-height: 20px; cursor: pointer; margin-top: 2px;
+  }
+  .jr-group:hover { border-color: #93c5fd; }
+
+  .jr-actions { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 5px; margin-top: auto; padding-top: 8px; }
+  .jr-btn {
+    font: inherit; font-size: 12.5px; font-weight: 600; height: 30px; padding: 0 9px;
+    display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
+    border-radius: 7px; border: 1px solid #e2e8f0; background: #fff; color: #0f172a;
+    text-decoration: none; cursor: pointer; list-style: none;
+  }
+  .jr-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+  .jr-btn.primary { background: var(--blue-primary); border-color: var(--blue-primary); color: #fff; }
+  .jr-btn.primary:hover { background: #1d4ed8; }
+  .jr-btn:disabled { opacity: .55; cursor: default; }
+  .jr-btn:focus-visible, .jr-group:focus-visible, .jl-page:focus-visible, .jr-menu > *:focus-visible,
+  .jobs-tool-btn:focus-visible, .jobs-primary-btn:focus-visible, .jobs-chip:focus-visible { outline: 2px solid var(--blue-primary); outline-offset: 2px; }
+  .jr-more { position: relative; }
+  .jr-more > summary::-webkit-details-marker { display: none; }
+  .jr-more[open] > summary { background: #f1f5f9; }
+  .jr-menu {
+    position: absolute; right: 0; bottom: calc(100% + 4px); z-index: 40; min-width: 210px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; padding: 4px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .14);
+  }
+  .jr-menu > button, .jr-menu > a {
+    display: block; width: 100%; text-align: left; font: inherit; font-size: 13px; color: #0f172a;
+    padding: 8px 10px; border: 0; border-radius: 6px; background: none; text-decoration: none; cursor: pointer;
+  }
+  .jr-menu > button:hover, .jr-menu > a:hover { background: #f1f5f9; }
+  .jr-menu > .danger { color: #b91c1c; border-top: 1px solid #f1f5f9; margin-top: 4px; }
+
+  .job-filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; padding: 8px 12px; font-size: 13px; color: #1e3a8a; background: #eff6ff; border: 1px solid #dbeafe; border-radius: 9px; }
+  .job-filter-bar .jr-btn { margin-left: auto; height: 26px; }
+
+  .job-list-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; color: #475569; font-variant-numeric: tabular-nums; }
+  .jl-pages { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+  .jl-page { min-width: 34px; height: 34px; padding: 0 8px; border-radius: 8px; border: 1px solid #e2e8f0; background: #fff; color: #0f172a; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .jl-page:hover:not(:disabled):not(.active) { background: #f1f5f9; }
+  .jl-page.active { background: var(--blue-primary); border-color: var(--blue-primary); color: #fff; }
+  .jl-page:disabled { opacity: .4; cursor: default; }
+  .jl-gap { min-width: 24px; text-align: center; color: #94a3b8; }
+
+  .job-card.skeleton { min-height: 150px; }
+  .job-card.skeleton .sk { height: 11px; border-radius: 4px; background: #eef2f6; margin: 5px 0; }
+  .job-card.skeleton .w40 { width: 40%; } .job-card.skeleton .w60 { width: 60%; } .job-card.skeleton .w80 { width: 85%; height: 14px; }
+
+  @media (max-width: 640px) {
+    .jobs-toolbar .jobs-tool-btn { flex: 1 1 auto; justify-content: center; }
+    .job-grid { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .job-card { transition: none; } }
 </style>
 {% endblock %}
 
@@ -1166,12 +1311,14 @@
     <!-- Right Actions: View Public Site & Post & Logout (Zero screen overflow) -->
     <div class="owner-right-actions" id="ownerRightActions">
       <a href="https://insta.kashiiupdatez.online" target="_blank" class="btn btn-secondary owner-btn-insta" title="Open Instagram Automation Studio (ReelFlow)" rel="noopener noreferrer" style="background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #ffffff; border: none; font-weight: 750;">
-        <span class="btn-text-full">📸 Insta App ↗</span>
-        <span class="btn-text-short">📸 Insta ↗</span>
+        <span class="btn-text-full">Insta App ↗</span>
+        <span class="btn-text-short">Insta ↗</span>
       </a>
+      {% if reels_enabled %}
       <button type="button" id="btnOpenReels" class="btn btn-secondary reels-btn" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-haspopup="dialog" title="Today's 3 auto-made job reels">
         🎬 <span class="btn-text-full">Reels</span> <span class="reels-badge" id="reelsBadge" hidden>0</span>
       </button>
+      {% endif %}
       <a href="/instagram/connect/" id="igConnectPill" class="btn btn-secondary ig-connect-pill" data-state="off" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
         <span class="ig-pill-dot" aria-hidden="true"></span>
         <span class="ig-pill-label">Checking Instagram…</span>
@@ -1196,40 +1343,40 @@
   <nav class="owner-subnav-rail" id="ownerSubNav" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-label="Owner Studio Navigation">
     <div class="owner-link-nav">
       <button type="button" class="owner-link-item owner-nav-item active" data-tab="tabJobs">
-        <span>📊 Pipeline</span>
+        <span>Jobs</span>
         <span class="owner-link-badge" id="sidebarActiveCount">{{ active_jobs_count|default:"0" }}</span>
       </button>
       <a href="https://insta.kashiiupdatez.online" target="_blank" class="owner-link-item" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
-        <span>📸 Insta Automation</span>
+        <span>Insta Automation</span>
         <span class="owner-link-badge" style="background: #fdf2f8; color: #be185d; border-color: #fbcfe8;">ReelFlow ↗</span>
       </a>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabLinkedin">
-        <span>💼 LinkedIn &amp; Referrals</span>
+        <span>LinkedIn</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabPost">
-        <span>✍️ + Post</span>
+        <span>Post a job</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabSmartParse">
-        <span>🎯 1-Parser</span>
+        <span>Single parser</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabBulkParse">
-        <span>⚡ Bulk</span>
+        <span>Bulk parser</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabJobdexo">
-        <span>🤖 Jobdexo</span>
+        <span>Jobdexo</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabGroups">
-        <span>📦 Groups</span>
+        <span>Groups</span>
         <span class="owner-link-badge" id="sidebarGroupsCount">{{ total_groups_count|default:"0" }}</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabAnalytics">
-        <span>📈 Analytics</span>
+        <span>Traffic</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabCategory">
-        <span>🏷️ Categories</span>
+        <span>Categories</span>
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabActivity">
-        <span>📋 Logs</span>
+        <span>Activity</span>
       </button>
     </div>
   </nav>
@@ -1281,15 +1428,15 @@
     <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
       <div>
         <h1 id="crmWorkspaceHeading" style="font-size: var(--text-2xl); font-weight: 800; margin: 0 0 6px; color: var(--color-text-primary); letter-spacing: -0.025em;">
-          Opportunity Pipeline CRM
+          Jobs
         </h1>
         <p id="crmWorkspaceSubheading" style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 0;">
-          Track active student requirements, manage postings, run bulk parsers, and execute workflow actions.
+          Every job post on the site. Edit, share as a story, move to a group, or unpublish.
         </p>
       </div>
       <div style="display: flex; gap: 8px;">
         <span class="status-pill status-active" style="font-size: 12px;">
-          👨‍💻 {{ owner_username|default:"Owner" }} (Executive Admin)
+          Signed in as {{ owner_username|default:"owner" }}
         </span>
       </div>
     </div>
@@ -1298,47 +1445,42 @@
     <div class="kpi-grid">
       <div class="kpi-card kpi-card-blue">
         <div class="kpi-header">
-          <span class="kpi-title">Active Opportunities</span>
-          <span class="kpi-icon-bubble">⚡</span>
+          <span class="kpi-title">Active jobs</span>
         </div>
         <div class="kpi-value" id="kpiActiveJobs">{{ active_jobs_count|default:"0" }}</div>
-        <div class="kpi-sub kpi-sub-active">● Live on student feed</div>
+        <div class="kpi-sub kpi-sub-active">Live on the site now</div>
       </div>
 
       <div class="kpi-card kpi-card-indigo">
         <div class="kpi-header">
-          <span class="kpi-title">Total Postings</span>
-          <span class="kpi-icon-bubble">📋</span>
+          <span class="kpi-title">All jobs</span>
         </div>
         <div class="kpi-value" id="kpiTotalJobs">{{ total_jobs_count|default:"0" }}</div>
-        <div class="kpi-sub">Lifetime published leads</div>
+        <div class="kpi-sub">Posted since launch</div>
       </div>
 
       <div class="kpi-card kpi-card-emerald">
         <div class="kpi-header">
-          <span class="kpi-title">Requirement Groups</span>
-          <span class="kpi-icon-bubble">📦</span>
+          <span class="kpi-title">Groups</span>
         </div>
         <div class="kpi-value" id="kpiTotalGroups">{{ total_groups_count|default:"0" }}</div>
-        <div class="kpi-sub">Curated drives &amp; bundles</div>
+        <div class="kpi-sub">Shareable job lists</div>
       </div>
 
       <div class="kpi-card kpi-card-amber">
         <div class="kpi-header">
-          <span class="kpi-title">Expired / Archived</span>
-          <span class="kpi-icon-bubble">⏳</span>
+          <span class="kpi-title">Expired</span>
         </div>
         <div class="kpi-value" id="kpiExpiredJobs">{{ expired_jobs_count|default:"0" }}</div>
-        <div class="kpi-sub kpi-sub-danger">Auto-cleaned after 72h</div>
+        <div class="kpi-sub kpi-sub-danger">Past deadline or unpublished</div>
       </div>
 
       <div class="kpi-card kpi-card-violet">
         <div class="kpi-header">
           <span class="kpi-title">Categories</span>
-          <span class="kpi-icon-bubble">🏷️</span>
         </div>
         <div class="kpi-value" id="kpiCategories">{{ categories|length|default:"0" }}</div>
-        <div class="kpi-sub">Taxonomy categories</div>
+        <div class="kpi-sub">Job categories</div>
       </div>
     </div>
 
@@ -1351,214 +1493,108 @@
       
       <!-- Experience Tier Segregation Bar -->
       <div class="owner-exp-segregation-bar">
-        <span style="font-size: var(--text-xs); font-weight: 800; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px;">Segregate By:</span>
+        <span class="owner-exp-label">Show</span>
         <button type="button" class="owner-exp-pill active" data-exp="ALL">
-          ⚡ All Postings ({{ total_jobs_count|default:"1000+" }})
+          All <span class="pill-count">{{ total_jobs_count|default:"0" }}</span>
         </button>
         <button type="button" class="owner-exp-pill fresher" data-exp="FRESHER">
-          🎓 Freshers (0-1 Yrs) ({{ fresher_jobs_count|default:"470+" }})
+          Freshers (0–1 yrs) <span class="pill-count">{{ fresher_jobs_count|default:"0" }}</span>
         </button>
         <button type="button" class="owner-exp-pill exp" data-exp="EXPERIENCED">
-          💼 Experienced (1-5+ Yrs) ({{ experienced_jobs_count|default:"560+" }})
+          Experienced (1+ yrs) <span class="pill-count">{{ experienced_jobs_count|default:"0" }}</span>
         </button>
         <button type="button" class="owner-exp-pill" data-exp="INTERNSHIP">
-          🌱 Internships
+          Internships
         </button>
       </div>
 
-      <div class="standard-toolbar">
-        <div class="search-wrapper" style="position: relative; flex: 1;">
-          <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-muted);">🔍</span>
-          <input type="text" id="crmSearchJobs" class="search-input" placeholder="Search by company, role, skills, location..." style="width: 100%; padding-left: 42px; padding-right: 36px;">
-          <button id="btnSearchClear" type="button" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: var(--color-text-muted); cursor: pointer; padding: 4px;" title="Clear search">✕</button>
+      <div class="jobs-toolbar">
+        <div class="jobs-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="crmSearchJobs" aria-label="Search jobs" placeholder="Search company, role, skill or city" autocomplete="off">
+          <button id="btnSearchClear" type="button" class="jobs-search-clear" style="display: none;" aria-label="Clear search">&times;</button>
         </div>
-
-        <div class="filters-group">
-          <button id="btnVerifyJobLinks" type="button" class="btn btn-secondary" style="font-weight: 700;" title="Scan active job URLs and automatically soft-expire dead, 404, or redirected links">
-            🛡️ Verify Links
-          </button>
-
-          <button id="btnOpenMoveByIdPipeline" type="button" class="btn btn-secondary" style="font-weight: 700;" title="Move or assign any requirement by typing its Job ID">
-            ⇄ Move by Job ID
-          </button>
-
-          <select id="crmExperienceFilter" class="standard-select" title="Filter by experience tier">
-            <option value="ALL" selected>All Experience Levels</option>
-            <option value="FRESHER">🎓 Freshers (0-1 Yrs)</option>
-            <option value="EXPERIENCED">💼 Experienced (1+ Yrs)</option>
-            <option value="INTERNSHIP">🌱 Internships</option>
-            <option value="EARLY_CAREER">1–3 Yrs (Early)</option>
-            <option value="MID_LEVEL">3–5 Yrs (Mid)</option>
-            <option value="SENIOR_LEVEL">5+ Yrs (Senior)</option>
-          </select>
-
-          <select id="crmCategoryFilter" class="standard-select">
-            <option value="ALL">All Categories</option>
-            {% for c in categories %}
-              <option value="{{ c.slug }}">{{ c.name }}</option>
-            {% endfor %}
-          </select>
-
-          <select id="crmSourceFilter" class="standard-select" title="Filter by job source">
-            <option value="ALL" selected>All Sources (770+)</option>
-            <option value="Naukri">Naukri (340+)</option>
-            <option value="Jobdexo">Jobdexo (250+)</option>
-            <option value="LinkedIn">LinkedIn (150+)</option>
-            <option value="Startup">Indian Startups (20+)</option>
-          </select>
-
-          <select id="crmRecencyFilter" class="standard-select" title="Filter by posting date">
-            <option value="ALL" selected>All Dates</option>
-            <option value="today">Today's Jobs</option>
-            <option value="yesterday">Yesterday's Jobs</option>
-            <option value="3d">Past 3 Days</option>
-            <option value="7d">Past 7 Days</option>
-          </select>
-
-          <select id="crmStatusFilter" class="standard-select">
-            <option value="ALL" selected>All Status</option>
-            <option value="ACTIVE">Active Only (72h)</option>
-            <option value="EXPIRED">Expired / Unpublished</option>
-          </select>
-
-          <select id="ownerPageSize" class="standard-select">
-            <option value="10" selected>10 per page</option>
-            <option value="25">25 per page</option>
-            <option value="50">50 per page</option>
-          </select>
-        </div>
+        <button id="btnOpenJobFilters" type="button" class="jobs-tool-btn" aria-haspopup="dialog" aria-controls="jobFiltersDialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 5h18M6 12h12M10 19h4"/></svg>
+          Filters <span class="jobs-filter-count" id="jobFilterCount" hidden>0</span>
+        </button>
+        <button id="btnVerifyJobLinks" type="button" class="jobs-tool-btn" title="Check active jobs' apply links and expire the ones that are dead or redirect">Verify links</button>
+        <button id="btnOpenMoveByIdPipeline" type="button" class="jobs-tool-btn" title="Move jobs into a group by typing their job IDs">Move by job ID</button>
       </div>
+      <div class="jobs-active-filters" id="jobActiveFilters" hidden></div>
 
-      <div id="ownerJobsTableContainer" class="table-responsive">
-        {% if page_obj %}
-        <div class="vp-catalog-grid" style="margin-bottom: 24px;">
-          {% for j in page_obj %}
-          <div class="vp-product-card" data-id="{{ j.id }}">
-            <div class="vp-card-header">
-              <span class="company-badge">{{ j.company_name }}</span>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <span class="type-badge">{{ j.get_job_type_display }}</span>
-                {% if j.status == 'EXPIRED' %}
-                  <span class="status-pill status-expired" style="font-size: 11px;">🔴 Expired</span>
-                {% else %}
-                  <span class="status-pill status-active" style="font-size: 11px;">🟢 Active</span>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="vp-card-content">
-              <h2 class="job-card-title">{{ j.title }}</h2>
-
-              <div class="vp-salary-row">
-                <span>💰 {{ j.stipend_salary }}</span>
-                <span style="color: var(--color-text-muted); font-weight: 500;">📍 {{ j.location|default:"India" }}</span>
-              </div>
-
-              <div style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">
-                <span>📅 Posted:</span> <strong style="color: var(--color-text-primary);">{{ j.get_posted_date_display }}</strong>
-                <span style="margin-left: auto; color: var(--color-text-muted); font-family: monospace; font-size: 11.5px;">#{{ j.id }}</span>
-              </div>
-
-              <p style="font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.45; margin-bottom: 10px;">{{ j.description|truncatewords:18 }}</p>
-
-              <div class="skills-wrapper">
-                {% for skill in j.get_skills_list %}
-                  {% if forloop.counter <= 4 %}
-                    <span class="skill-tag">{{ skill }}</span>
-                  {% endif %}
-                {% endfor %}
-              </div>
-
-              <div class="vp-price-row" style="margin-top: 10px;">
-                <div class="timer-tag" style="font-size: 11.5px; font-weight: 700; color: var(--color-text-success);">
-                  ⏱️ Auto-Expires in 7 Days
-                </div>
-              </div>
-
-              <div class="card-action-bar" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                  <button type="button" class="btn btn-primary btn-edit-job" data-id="{{ j.id }}" style="height: 38px;">
-                    ✏️ Edit Lead
-                  </button>
-                  <a href="{{ j.apply_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="height: 38px;">
-                    ↗ Apply URL
-                  </a>
-                </div>
-                <!-- Direct Instagram Story Studio Row -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                  <button type="button" class="btn btn-ig-oneclick" data-id="{{ j.id }}" style="height: 34px; font-size: 12px; font-weight: 800; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Post this job as an Instagram story right now">
-                    ⚡ Post Story
-                  </button>
-                  <button type="button" class="btn btn-secondary btn-ig-share-app" data-id="{{ j.id }}" style="height: 34px; font-size: 12px; font-weight: 750; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open in the Instagram app with the job link copied, so you can add a Link sticker">
-                    📲 Story + Link
-                  </button>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                  <button type="button" class="btn btn-secondary btn-open-story-studio" data-id="{{ j.id }}" data-title="{{ j.title|escapejs }}" data-company="{{ j.company_name|escapejs }}" style="height: 34px; font-size: 12px; font-weight: 750; background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open Instagram Story Studio">
-                    📸 Story Studio
-                  </button>
-                  <a href="/api/jobs/{{ j.id }}/ig-story-image/" target="_blank" class="btn btn-ghost" style="height: 34px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" title="Direct link to 9:16 Story Image">
-                    🖼️ 9:16 Image ↗
-                  </a>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
-                  <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="{{ j.id }}" data-title="{{ j.title|escapejs }}" style="height: 34px; font-size: 12px;" title="Move or assign this requirement to a specific group">
-                    ⇄ Move
-                  </button>
-                  <button type="button" class="btn btn-ghost btn-toggle-job" data-id="{{ j.id }}" style="height: 34px; font-size: 12px; color: {% if j.status == 'EXPIRED' %}var(--color-text-success){% else %}var(--color-text-secondary){% endif %};">
-                    {% if j.status == 'EXPIRED' %}🚀 Publish{% else %}⏸️ Unpublish{% endif %}
-                  </button>
-                  <button type="button" class="btn btn-danger-ghost btn-delete-job" data-id="{{ j.id }}" style="height: 34px; font-size: 12px;" title="Delete lead">
-                    🗑️ Delete
-                  </button>
-                </div>
-              </div>
-            </div>
+      <dialog id="jobFiltersDialog" class="filters-dialog" aria-labelledby="jobFiltersTitle">
+        <form method="dialog" class="filters-form">
+          <header class="filters-head">
+            <h2 id="jobFiltersTitle">Filters</h2>
+            <button type="submit" class="filters-x" aria-label="Close filters">&times;</button>
+          </header>
+          <div class="filters-body">
+            <label class="filter-field"><span>Experience</span>
+              <select id="crmExperienceFilter">
+                <option value="ALL" selected>Any experience</option>
+                <option value="FRESHER">Freshers (0–1 yrs)</option>
+                <option value="EXPERIENCED">Experienced (1+ yrs)</option>
+                <option value="INTERNSHIP">Internships</option>
+                <option value="EARLY_CAREER">1–3 yrs</option>
+                <option value="MID_LEVEL">3–5 yrs</option>
+                <option value="SENIOR_LEVEL">5+ yrs</option>
+              </select>
+            </label>
+            <label class="filter-field"><span>Category</span>
+              <select id="crmCategoryFilter">
+                <option value="ALL">Any category</option>
+                {% for c in categories %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}
+              </select>
+            </label>
+            <label class="filter-field filter-wide"><span>Group</span>
+              <select id="crmGroupFilter">
+                <option value="ALL" selected>Any group</option>
+                <option value="none">Not in a group</option>
+              </select>
+            </label>
+            <label class="filter-field"><span>Source</span>
+              <select id="crmSourceFilter">
+                <option value="ALL" selected>Any source</option>
+                <option value="Naukri">Naukri</option>
+                <option value="Jobdexo">Jobdexo</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Startup">Indian startups</option>
+              </select>
+            </label>
+            <label class="filter-field"><span>Posted</span>
+              <select id="crmRecencyFilter">
+                <option value="ALL" selected>Any date</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="3d">Last 3 days</option>
+                <option value="7d">Last 7 days</option>
+              </select>
+            </label>
+            <label class="filter-field"><span>Status</span>
+              <select id="crmStatusFilter">
+                <option value="ALL" selected>Any status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="EXPIRED">Expired or unpublished</option>
+              </select>
+            </label>
+            <label class="filter-field"><span>Jobs per page</span>
+              <select id="ownerPageSize">
+                <option value="24">24</option>
+                <option value="48" selected>48</option>
+                <option value="96">96</option>
+              </select>
+            </label>
           </div>
-          {% endfor %}
-        </div>
+          <footer class="filters-foot">
+            <button type="button" class="jobs-tool-btn" id="btnResetJobFilters">Reset</button>
+            <button type="submit" class="jobs-primary-btn" id="btnApplyJobFilters">Show jobs</button>
+          </footer>
+        </form>
+      </dialog>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
-          <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
-            Showing <strong>{{ page_obj.start_index }}–{{ page_obj.end_index }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> verified leads (Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }})
-          </div>
-          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-            {% if page_obj.has_previous %}
-              <a id="btnPrevPage" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
-                ← Previous
-              </a>
-            {% else %}
-              <button id="btnPrevPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
-                ← Previous
-              </button>
-            {% endif %}
-
-            {% for p in page_numbers %}
-              {% if p == '...' %}
-                <span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>
-              {% else %}
-                <a href="?page={{ p }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="pag-page-btn pag-btn-link {% if page_obj.number == p %}active{% endif %}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid {% if page_obj.number == p %}#2563eb{% else %}#e2e8f0{% endif %}; background: {% if page_obj.number == p %}#2563eb{% else %}#ffffff{% endif %}; color: {% if page_obj.number == p %}#ffffff{% else %}#0f172a{% endif %}; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
-                  {{ p }}
-                </a>
-              {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-              <a id="btnNextPage" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_category and selected_category != 'ALL' %}&category={{ selected_category }}{% endif %}{% if selected_status and selected_status != 'ALL' %}&status={{ selected_status }}{% endif %}&page_size={{ page_size }}" class="btn-action-light pag-btn-link" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center;">
-                Next →
-              </a>
-            {% else %}
-              <button id="btnNextPage" class="btn-action-light" style="height: 36px; padding: 0 14px; font-size: 13px; border-radius: 8px;" disabled>
-                Next →
-              </button>
-            {% endif %}
-          </div>
-        </div>
-        {% else %}
-        <div style="padding: 40px; text-align: center; color: var(--muted); font-size: 14px; font-weight: 600;">
-          ✨ No opportunity leads found in pipeline. Click "+ Post Job" or "🎯 Parse Lead" to add one!
-        </div>
-        {% endif %}
+      <div id="ownerJobsTableContainer" aria-live="polite">
+        <div class="job-grid" aria-busy="true">{% for _ in "123456789012" %}<div class="job-card skeleton"><div class="sk w40"></div><div class="sk w80"></div><div class="sk w60"></div><div class="sk w40"></div></div>{% endfor %}</div>
       </div>
     </div>
 
@@ -1979,7 +2015,7 @@
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <button id="btnOpenMoveByIdGroups" type="button" class="btn btn-primary" title="Move or assign any requirement by typing its Job ID">
-            ⇄ Move by Job ID
+            Move by job ID
           </button>
           <button id="btnAutoOrganizeGroups" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border);" title="Automatically segregate active requirements into dedicated Freshers and Experienced hiring drives and clean empty groups">
             ⚡ Auto-Segregate Freshers &amp; Experience Groups
@@ -2517,7 +2553,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026111209"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111301"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

@@ -314,4 +314,7 @@ PUBLIC_SITE_URL = os.environ.get('PUBLIC_SITE_URL', 'https://kashiiupdatez.onlin
 # Daily reels: GitHub Actions calls /internal/reels/run/ with this secret at each slot.
 REELS_CRON_SECRET = os.environ.get('REELS_CRON_SECRET', '')
 REEL_ACCOUNT_HANDLE = os.environ.get('REEL_ACCOUNT_HANDLE', '').lstrip('@')
+# Daily reels are paused: each video render costs ~230 MB on the 512 MB instance.
+# Set REELS_ENABLED=true to turn drafting, rendering and auto-posting back on.
+REELS_ENABLED = os.environ.get('REELS_ENABLED', 'false').lower() in ('true', '1', 'yes')
 

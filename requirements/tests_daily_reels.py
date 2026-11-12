@@ -2,7 +2,7 @@ from datetime import datetime, time
 from unittest.mock import Mock, patch
 
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
 from requirements.models import Category, JobPosting, ReelDraft
@@ -14,6 +14,7 @@ def at(hour, minute=0):
     return timezone.make_aware(datetime.combine(today, time(hour, minute)))
 
 
+@override_settings(REELS_ENABLED=True)
 class DailyReelsTests(TestCase):
     def setUp(self):
         cat = Category.objects.create(name="Reels", slug="reels-cat")
@@ -54,3 +55,29 @@ class DailyReelsTests(TestCase):
         resp = Client().get(f"/api/jobs/{self.jobs[0].id}/ig-reel-video/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "video/mp4")
+
+
+class ReelsPausedTests(TestCase):
+    """REELS_ENABLED is off by default: nothing drafts, renders or posts reels."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        self.owner = User.objects.create_user("owner_paused", password="x", is_staff=True)
+        self.client = Client()
+        self.client.force_login(self.owner)
+
+    @override_settings(REELS_ENABLED=False, REELS_CRON_SECRET="s3cret")
+    def test_paused_reels_do_no_work(self):
+        from unittest.mock import patch
+        from requirements.models import ReelDraft
+        with patch("requirements.services.story_render.render_video") as render:
+            data = self.client.get("/api/owner/reels/today/").json()
+            cron = self.client.post("/internal/reels/run/", HTTP_X_CRON_SECRET="s3cret")
+            video = self.client.get("/api/jobs/1/ig-reel-video/")
+        self.assertTrue(data["disabled"])
+        self.assertEqual(data["reels"], [])
+        self.assertEqual(cron.status_code, 200)
+        self.assertTrue(cron.json()["disabled"])
+        self.assertEqual(video.status_code, 404)
+        self.assertEqual(ReelDraft.objects.count(), 0)
+        render.assert_not_called()

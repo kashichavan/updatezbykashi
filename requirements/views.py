@@ -1047,6 +1047,7 @@ def owner_view(request):
                 page_numbers = [1, '...', curr_page - 1, curr_page, curr_page + 1, '...', total_pages]
 
     return render(request, 'owner.html', {
+        'reels_enabled': settings.REELS_ENABLED,
         'is_owner_authenticated': is_admin,
         'owner_username': request.user.username if is_admin else '',
         'login_error': login_error,
@@ -1750,9 +1751,10 @@ def api_jobs(request):
             source_filter = request.GET.get('source', '').strip()
             time_window = request.GET.get('time_window', '').strip()
             exp_filter = request.GET.get('experience', '').strip() or request.GET.get('exp', '').strip()
+            group_filter = request.GET.get('group', '').strip()  # a group id, or 'none' for jobs in no group
 
             # Cache key including all filter dimensions
-            raw_key = f"jobs_feed_{query}_{category_slug}_{exp_filter}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}_{domain_filter}_{city_filter}_{source_filter}_{time_window}"
+            raw_key = f"jobs_feed_{query}_{category_slug}_{exp_filter}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}_{domain_filter}_{city_filter}_{source_filter}_{time_window}_{group_filter}"
             cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
             
             # Don't use stale cache if searching with query or specific filters
@@ -1905,6 +1907,11 @@ def api_jobs(request):
             if source_filter:
                 qs = qs.filter(source_name__iexact=source_filter)
 
+            if group_filter == 'none':
+                qs = qs.filter(groups__isnull=True)
+            elif group_filter.isdigit():
+                qs = qs.filter(groups__id=int(group_filter))
+
             # Time window filtering (e.g. '1h', '6h', '24h', '7d')
             now = timezone.now()
             if time_window == '1h':
@@ -1941,7 +1948,7 @@ def api_jobs(request):
                 page_int = 1
 
             try:
-                page_size_int = int(page_size)
+                page_size_int = max(1, min(100, int(page_size)))
             except ValueError:
                 page_size_int = 18
 
@@ -1951,7 +1958,9 @@ def api_jobs(request):
 
             start_idx = (page_int - 1) * page_size_int
             end_idx = start_idx + page_size_int
-            paginated_qs = qs[start_idx:end_idx]
+            from django.db.models import Prefetch
+            paginated_qs = qs[start_idx:end_idx].prefetch_related(
+                Prefetch('groups', queryset=JobGroup.objects.only('id', 'name').order_by('-id')))
 
             results = []
             now = timezone.now()
@@ -1987,6 +1996,7 @@ def api_jobs(request):
                     'posted_by': j.posted_by,
                     'status': j.status,
                     'status_display': j.get_status_display(),
+                    'groups': [{'id': g.id, 'name': g.name} for g in j.groups.all()],
                     'views_count': j.views_count,
                     'is_featured': j.is_featured,
                     'deadline': j.deadline.isoformat() if j.deadline else None,
@@ -2178,6 +2188,8 @@ def api_job_ig_story_video(request, pk):
 def api_job_ig_reel_video(request, pk):
     """Animated 9:16 reel (12 s, 'Comment LINK' CTA, silent so trending audio is added in the app)."""
     from django.http import FileResponse, HttpResponse
+    if not settings.REELS_ENABLED:
+        return HttpResponse('Reels are paused.', status=404, content_type='text/plain')
     from .services.daily_reels import REEL_SECONDS
     from .services.story_render import pick_track, render_video
 
@@ -2210,6 +2222,8 @@ def api_owner_reels_today(request):
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    if not settings.REELS_ENABLED:
+        return JsonResponse({'reels': [], 'disabled': True, 'slots': [], 'account': '', 'connect_url': ''})
     from .services.daily_reels import ensure_due_drafts, next_slot, slot_hours
     from .services.instagram_story import _public_base_url
     from .services.ig_autopilot import connect_info, get_poster
@@ -2258,6 +2272,8 @@ def api_owner_reel_post_now(request, pk):
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    if not settings.REELS_ENABLED:
+        return JsonResponse({'success': False, 'message': 'Reels are paused (REELS_ENABLED is off).'}, status=409)
     draft = get_object_or_404(ReelDraft, pk=pk)
     from .services.ig_autopilot import get_poster, publish_reel
     poster = get_poster(for_reels=True)
@@ -2298,6 +2314,8 @@ def internal_reels_run(request):
     expected = getattr(settings, 'REELS_CRON_SECRET', '')
     if not expected or not hmac.compare_digest(expected, request.headers.get('X-Cron-Secret', '')):
         return JsonResponse({'error': 'FORBIDDEN'}, status=403)
+    if not settings.REELS_ENABLED:
+        return JsonResponse({'accepted': False, 'disabled': True})  # 200 so the cron job doesn't fail
     from .services.ig_autopilot import run_due_async
     run_due_async()  # rendering + Instagram processing outlast the proxy timeout
     return JsonResponse({'accepted': True}, status=202)

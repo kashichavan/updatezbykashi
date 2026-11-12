@@ -62,7 +62,8 @@ _measure = ImageDraw.Draw(Image.new('L', (1, 1)))
 
 
 def fit(text, f, max_w):
-    text = (text or '').strip()
+    # Pillow can't measure text with line breaks, and job fields often contain them.
+    text = ' '.join(str(text or '').split())
     if _measure.textlength(text, font=f) <= max_w:
         return text
     while text and _measure.textlength(text + '…', font=f) > max_w:
