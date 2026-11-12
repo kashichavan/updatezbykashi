@@ -13,7 +13,7 @@ from .models import ResumeGenerationJob, DiscoveredProject, JobPosting
 from .github_discovery import search_github_repositories
 from .resume_parser import evaluate_uploaded_resume_ats, parse_resume_into_structured_json
 from .resume_engine import has_keyword, score_project_ats, RESUME_ROLES
-from .ai_engine import generate_github_project_bullets, alter_resume_for_job
+from .ai_engine import generate_github_project_bullets
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ _NUMBER_RE = re.compile(r"\d[\d,.]*")
 # Words that only exist to make an ordinary repository sound impressive.
 _PUFFERY = (
     'enterprise', 'production-grade', 'production ready', 'high-performance',
-    'scalable', 'robust', 'world-class', 'cutting-edge', 'state-of-the-art',
+    'scalable', 'scalability', 'robust', 'world-class', 'cutting-edge', 'state-of-the-art',
     'mission-critical', 'best-in-class',
 )
 
@@ -120,77 +120,6 @@ def sanitize_rewrite(text: str, allowed_source: str, allow_metrics: bool = False
     return text.strip()
 
 
-def _keep_candidate_skills(altered, original):
-    """The new order of the skills, without any the candidate never listed."""
-    if not isinstance(altered, dict) or not isinstance(original, dict):
-        return original
-    def split(value):
-        parts = value if isinstance(value, (list, tuple)) else str(value or '').split(',')
-        return [str(part).strip() for part in parts if str(part).strip()]
-
-    listed = {part.lower() for value in original.values() for part in split(value)}
-    kept = {}
-    for group, value in altered.items():
-        parts = [part for part in split(value) if part.lower() in listed]
-        if parts:
-            kept[group] = parts if isinstance(value, (list, tuple)) else ', '.join(parts)
-    return kept or original
-
-
-def sanitize_altered_resume(result: dict, summary: str, skills, projects) -> dict:
-    """
-    Sanitize altered resume response from AI.
-    Ensures bullets are clean and strings are formatted properly.
-    Preserves quantified Google XYZ metrics so the resume passes ATS 90+ criteria.
-    """
-    if not isinstance(result, dict):
-        return result
-
-    allowed = candidate_corpus(summary, skills, projects)
-
-    altered = result.get('altered_projects')
-    if isinstance(altered, list) and altered:
-        originals = [p for p in (projects or []) if isinstance(p, dict)]
-        cleaned = []
-        for idx, project in enumerate(altered):
-            if not isinstance(project, dict):
-                continue
-            bullets = project.get('bullets') or []
-            if isinstance(bullets, str):
-                bullets = [part for part in re.split(r"(?<=[.!?])\s+|\n+", bullets) if part.strip()]
-            kept = []
-            for bullet in bullets:
-                if not isinstance(bullet, str):
-                    continue
-                text = bullet.strip()
-                if not text:
-                    continue
-                # Keep high-impact Google XYZ bullets with numbers/metrics so ATS score achieves 90+
-                kept.append(text)
-            if kept:
-                project = dict(project)
-                project['bullets'] = kept
-                cleaned.append(project)
-            elif idx < len(originals):
-                cleaned.append(originals[idx])
-        cleaned.extend(originals[len(altered):])
-        result['altered_projects'] = cleaned
-
-    altered_summary = result.get('altered_summary')
-    if isinstance(altered_summary, str) and altered_summary.strip():
-        text = altered_summary.strip()
-        for claim in _UNEARNED_CLAIM_RE.findall(text):
-            if claim.lower() not in allowed.lower():
-                text = summary
-                break
-        result['altered_summary'] = text
-    else:
-        result['altered_summary'] = summary
-
-    result['altered_skills'] = _keep_candidate_skills(result.get('altered_skills'), skills)
-    return result
-
-
 def honest_project_title(ai_title: str, dp) -> str:
     """
     Keep the AI title only if it still names the repository.
@@ -257,6 +186,8 @@ def resolve_target_profile(job) -> Dict[str, Any]:
     location = (posting.location if posting else '') or extra.get('location') or ''
 
     skills_list = [s.strip() for s in raw_skills.split(',') if s.strip()]
+    if posting:
+        skills_list = posting.ats_target_skills()
 
     return {
         'title': title or 'Software Engineer',

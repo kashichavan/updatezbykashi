@@ -32,6 +32,8 @@ else:
     ALLOWED_HOSTS = [
         "kashiiupdatez.online",
         "www.kashiiupdatez.online",
+        "insta.kashiiupdatez.online",
+        ".kashiiupdatez.online",
         ".onrender.com",
         "localhost",
         "127.0.0.1",

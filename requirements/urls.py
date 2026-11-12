@@ -26,7 +26,7 @@ urlpatterns = [
     path('ai-resume-analysis/', views.resume_analysis_view, name='resume_analysis'),
     path('resume-checker/', views.resume_analysis_view, name='resume_checker'),
 
-    # ATS 90+ Score Resume Generator & Enterprise Project Matcher
+    # Resume editor, ATS score and job tailoring
     path('resume/', views.resume_builder_view, name='resume_builder'),
     path('resume-builder/', views.resume_builder_view, name='resume_builder_alias'),
     path('api/resume/download-pdf/', views.api_download_resume_pdf, name='api_download_resume_pdf'),
@@ -66,7 +66,8 @@ urlpatterns = [
     path('api/ai/polish-bullet/', views.api_ai_polish_bullet, name='api_ai_polish_bullet'),
     path('api/ai/generate-project-bullets/', views.api_ai_generate_project_bullets, name='api_ai_generate_project_bullets'),
     path('api/ai/tailor-resume/', views.api_ai_tailor_resume, name='api_ai_tailor_resume'),
-    path('api/ai/alter-resume/', views.api_ai_alter_resume, name='api_ai_alter_resume'),
+    path('api/ai/alter-resume/', views.api_ai_fit_resume, name='api_ai_alter_resume'),
+    path('api/ai/fit-resume/', views.api_ai_fit_resume, name='api_ai_fit_resume'),
     path('api/ai/generate-summary/', views.api_ai_generate_summary, name='api_ai_generate_summary'),
     path('api/ai/github-project/', views.api_ai_github_project, name='api_ai_github_project'),
     path('api/ai/auto-upgrade-resume/', views.api_ai_auto_upgrade_resume, name='api_ai_auto_upgrade_resume'),

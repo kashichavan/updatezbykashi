@@ -1,5 +1,5 @@
 """
-ATS 90+ Score Resume Generator & Enterprise Project Matching Engine.
+Resume role templates, keyword matching and project scoring.
 Tailored for college students, freshers, and off-campus tech drives.
 All projects use Google XYZ formula: Action Verb + Accomplished [X] + Measured by [Y] + Using [Z].
 """
@@ -301,6 +301,26 @@ def has_keyword(skill: str, text: str) -> bool:
         if re.search(rf'(?<![A-Za-z0-9+#.]){re.escape(stem)}s?(?![A-Za-z0-9+#])', haystack):
             return True
     return False
+
+
+
+def term_forms(term: str) -> list:
+    """
+    The ways a job's skill can be written on a resume.
+
+    "Search Engine Optimization (SEO)" is found by either of its two forms, and
+    "Power BI" on a posting is the same skill as "PowerBI" on a resume.
+    """
+    match = re.match(r'^(.*?)\s*\(([^)]+)\)\s*$', term or '')
+    forms = [match.group(1), match.group(2)] if match else [term or '']
+    forms = [form.strip() for form in forms if form.strip()]
+    joined = [re.sub(r'[\s-]+', '', form) for form in forms if re.search(r'[\s-]', form) and len(form) <= 20]
+    return forms + [form for form in joined if len(form) >= 4]
+
+
+def has_term(term: str, text: str) -> bool:
+    """has_keyword, for any of the forms a job's skill can take."""
+    return any(has_keyword(form, text) for form in term_forms(term))
 
 
 # Parts of a resume the candidate did not write as a claim about themselves.

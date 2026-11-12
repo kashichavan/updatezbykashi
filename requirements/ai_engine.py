@@ -73,7 +73,9 @@ def _groq_error_code(response) -> str:
         return "unknown"
 
 
-def _call_nvidia_chat(messages: list[dict], temperature: float, max_tokens: int, json_mode: bool) -> str:
+def _call_nvidia_chat(
+    messages: list[dict], temperature: float, max_tokens: int, json_mode: bool, timeout: float = NVIDIA_TIMEOUT,
+) -> str:
     """Backup provider. It speaks the same chat format as Groq."""
     payload = {
         "model": os.getenv("NVIDIA_MODEL") or DEFAULT_NVIDIA_MODEL,
@@ -89,7 +91,7 @@ def _call_nvidia_chat(messages: list[dict], temperature: float, max_tokens: int,
         NVIDIA_ENDPOINT,
         json=payload,
         headers={"Authorization": f"Bearer {get_nvidia_api_key()}", "Content-Type": "application/json"},
-        timeout=NVIDIA_TIMEOUT,
+        timeout=timeout,
     )
     if response.status_code != 200:
         raise RuntimeError(f"NVIDIA API Error {response.status_code}")
@@ -107,19 +109,40 @@ def call_groq_chat(
     json_mode: bool = False,
     timeout: int = 15,
     max_retries: int = 3,
+    budget: float = None,
 ) -> str:
-    """Chat completion through Groq, then NVIDIA when Groq cannot answer."""
+    """
+    Chat completion through Groq, then NVIDIA when Groq cannot answer.
+
+    `budget` is the most seconds the whole call may take, both providers and
+    every retry included. A caller inside a web request passes it so that a bad
+    minute at the providers ends in a clean failure instead of a hung page.
+    """
+    import time
+
+    started = time.monotonic()
+
+    def left():
+        return None if budget is None else budget - (time.monotonic() - started)
+
     has_groq = bool(get_groq_api_key())
     if has_groq:
         try:
-            return _call_groq_chat(messages, temperature, max_tokens, json_mode, timeout, max_retries)
+            if budget is None:
+                return _call_groq_chat(messages, temperature, max_tokens, json_mode, timeout, max_retries)
+            return _call_groq_chat(
+                messages, temperature, max_tokens, json_mode, min(timeout, budget), max_retries, time_budget=budget)
         except Exception as e:
             if not get_nvidia_api_key():
                 raise
+            if budget is not None and left() < 4:
+                raise RuntimeError(f"AI time budget of {budget:.0f}s used up: {str(e)[:120]}")
             logger.warning(f"Groq failed, trying NVIDIA: {str(e)[:200]}")
     elif not get_nvidia_api_key():
         raise ValueError("GROQ_API_KEY is not configured in environment.")
-    return _call_nvidia_chat(messages, temperature, max_tokens, json_mode)
+    if budget is None:
+        return _call_nvidia_chat(messages, temperature, max_tokens, json_mode)
+    return _call_nvidia_chat(messages, temperature, max_tokens, json_mode, timeout=min(NVIDIA_TIMEOUT, left()))
 
 
 def _call_groq_chat(
@@ -129,6 +152,7 @@ def _call_groq_chat(
     json_mode: bool,
     timeout: int,
     max_retries: int,
+    time_budget: float = GROQ_TIME_BUDGET,
 ) -> str:
     """Execute a low-latency chat completion using Groq with SSL verification and rate-limit backoff."""
     import time
@@ -156,9 +180,18 @@ def _call_groq_chat(
     models = _groq_models_to_try(model)
     started = time.monotonic()
     for attempt in range(max_retries):
-        if time.monotonic() - started > GROQ_TIME_BUDGET:
+        spent = time.monotonic() - started
+        if spent > time_budget or (attempt and time_budget - spent < 3):
             break
+        timeout = max(1, min(timeout, time_budget - spent))
         payload["model"] = models[attempt % len(models)]
+        # The gpt-oss models think before answering, and that thinking is paid for
+        # out of max_tokens. Left at the default it used up the allowance on a long
+        # resume and the JSON came back cut off (json_validate_failed).
+        if payload["model"].startswith("openai/gpt-oss"):
+            payload["reasoning_effort"] = "low"
+        else:
+            payload.pop("reasoning_effort", None)
         try:
             response = requests.post(GROQ_ENDPOINT, json=payload, headers=headers, timeout=timeout)
             if response.status_code == 200:
@@ -424,7 +457,7 @@ def tailor_resume_to_job(
         "Evaluate how well the candidate's resume matches the provided Job Description and generate tailored ATS enhancements.\n"
         "Return a valid JSON object with the following keys:\n"
         "- 'match_score': integer from 0 to 100\n"
-        "- 'match_grade': string ('Excellent (90+ ATS Pass Rate)', 'Strong Match', 'Moderate', 'Needs Keywords')\n"
+        "- 'match_grade': string ('Excellent', 'Strong Match', 'Moderate', 'Needs Keywords')\n"
         "- 'matched_keywords': list of strings (skills/keywords present in both)\n"
         "- 'missing_critical_keywords': list of strings (top 5-8 crucial skills from the JD missing from the resume)\n"
         "- 'tailored_summary': string (rewritten summary integrating key JD requirements and target role)\n"
@@ -481,7 +514,9 @@ Target Environment: {target_company_type}
     return json.loads(response_text)
 
 
-def write_tailored_summary(candidate_summary: str, role: str, company: str, skills: str, projects: str) -> str:
+def write_tailored_summary(
+    candidate_summary: str, role: str, company: str, skills: str, projects: str, budget: float = None,
+) -> str:
     """Two lines aimed at the role, or '' if the model is unavailable or adds facts."""
     from .resume_generation_service import sanitize_rewrite
 
@@ -501,7 +536,8 @@ def write_tailored_summary(candidate_summary: str, role: str, company: str, skil
         )},
     ]
     try:
-        data = json.loads(call_groq_chat(messages, temperature=0.3, max_tokens=400, json_mode=True, timeout=12))
+        data = json.loads(call_groq_chat(
+            messages, temperature=0.3, max_tokens=400, json_mode=True, timeout=12, budget=budget))
     except Exception as e:
         logger.warning(f"AI summary unavailable: {e}")
         return ""
@@ -571,81 +607,6 @@ Candidate relationship: {relationship}
     return json.loads(response_text)
 
 
-def alter_resume_for_job(
-    candidate_summary: str,
-    candidate_skills: dict,
-    candidate_projects: list[dict],
-    job_title: str,
-    company_name: str,
-    job_skills: str,
-    job_description: str,
-) -> dict:
-    """
-    Reverse-engineered 1-Click Resume Alteration Engine.
-    Aligns a candidate's resume with a target job:
-    1. Rewrites Professional Summary tailored to role and company.
-    2. Aligns Technical Skills placing matching target keywords first and adding missing core skills.
-    3. Alters project bullets into 95+ score Google XYZ bullets embedding target skills.
-    Guarantees an ATS score above 90 (92–98+).
-    """
-    system_prompt = (
-        "You are an elite ex-FAANG Principal Technical Resume Architect and ATS Optimization Algorithm. "
-        "A candidate is tailoring their resume for a specific job posting. Your mission is to alter, upgrade, "
-        "and align their resume so it achieves a 95+ ATS Match Score (Top Tier ATS Pass 90+) against the target job.\n"
-        "CRITICAL REQUIREMENTS:\n"
-        "1. SUMMARY: A 2-3 line punchy elevator pitch highlighting experience with the target role and key skills.\n"
-        "2. SKILLS: Reorder and map categories placing the target skills prominently first, seamlessly incorporating required job technologies.\n"
-        "3. PROJECTS: CRITICAL REQUIREMENT — Directly align the candidate's projects with the target job's tech stack and domain: "
-        "- For each project, update 'tech_stack' to explicitly include relevant technologies from the target job skills. "
-        "- Write 3-4 high-impact accomplishment bullets per project strictly following the Google XYZ Formula: 'Accomplished [X] as measured by [Y], by doing [Z]'. "
-        "- Every single bullet MUST start with a power action verb (Architected, Engineered, Optimized, Spearheaded, Implemented, Deployed, Benchmarked, Scaled). "
-        "- Every single bullet MUST include quantified metrics and numbers (e.g. 'reducing API response latency by 42% (from 280ms to 160ms)', 'supporting 15,000+ daily active users', 'processing 2.5M+ requests daily with 99.9% uptime', 'cutting query execution time by 35%'). "
-        "- Embed system architecture and scale depth keywords (e.g. Redis caching, Celery queues, Docker containerization, PostgreSQL indexing, RESTful APIs, JWT/RBAC security, CI/CD pipeline). "
-        "- Ensure the projects feel realistic, coherent, and directly prove mastery of the required job skills.\n"
-        "4. MATCH SCORE & EVALUATION: "
-        "- 'overall_match_score': integer between 93 and 98 (guaranteed Top Tier ATS Pass 90+). "
-        "- 'match_grade': 'Top Tier ATS Pass (ATS 90+)'. "
-        "- 'matching_keywords': list of matched skills between resume and target job. "
-        "- 'missing_keywords_injected': list of target skills that were integrated into the summary, skills, and projects. "
-        "- 'key_alterations': list of 3-4 specific notes explaining how projects and skills were aligned with the role.\n\n"
-        "Return a valid JSON object with keys: 'altered_summary', 'altered_skills', 'altered_projects', 'overall_match_score', 'match_grade', 'matching_keywords', 'missing_keywords_injected', 'key_alterations'."
-    )
-
-    user_payload = {
-        "job_title": job_title,
-        "company_name": company_name,
-        "job_skills": job_skills,
-        "job_description": job_description[:3000] if job_description else "",
-        "candidate_summary": candidate_summary or "",
-        "candidate_skills": candidate_skills or {},
-        "candidate_projects": candidate_projects or [],
-    }
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": json.dumps(user_payload)},
-    ]
-
-    try:
-        response_text = call_groq_chat(messages, temperature=0.3, json_mode=True, timeout=12)
-        parsed = json.loads(response_text)
-        score = parsed.get("overall_match_score")
-        if not isinstance(score, (int, float)) or score < 90:
-            parsed["overall_match_score"] = 95
-        parsed["match_grade"] = "Top Tier ATS Pass (ATS 90+)"
-        return parsed
-    except Exception as e:
-        logger.warning(f"Error calling Groq for resume alteration: {e}. Leaving the resume unchanged.")
-        return {
-            "ai": False,
-            "altered_summary": candidate_summary,
-            "altered_skills": candidate_skills,
-            "altered_projects": candidate_projects or [],
-            "overall_match_score": 95,
-            "match_grade": "Top Tier ATS Pass (ATS 90+)",
-        }
-
-
 def _clean_critique(critique: dict, parsed_resume: dict, sections_present: list) -> dict:
     """Remove model claims the parsed resume disproves, and rewrites with invented numbers."""
     from .resume_generation_service import sanitize_rewrite
@@ -688,7 +649,7 @@ def generate_ai_resume_critique_and_suggestions(
         "List such gaps as things to learn, and never put made-up numbers in an example. "
         "Return a valid JSON object with the following keys:\n"
         "- 'overall_score': integer from 20 to 98 (accurate ATS score)\n"
-        "- 'grade': string (e.g. 'Strong Match (90+ ATS Pass Rate)', 'Moderate - Needs Optimization', 'Critical Gaps Detected')\n"
+        "- 'grade': string (e.g. 'Strong match', 'Moderate - needs keywords', 'Critical gaps'). Never claim an ATS pass or pass rate: nobody can know one from outside.\n"
         "- 'executive_summary': string (2-3 sentences candid critique of the resume's strengths and weaknesses)\n"
         "- 'top_changes_to_make': list of objects with {'category': str, 'issue': str, 'fix': str}\n"
         "- 'missing_critical_skills': list of strings (top 4-7 crucial skills from target role/JD missing from resume)\n"
@@ -832,7 +793,7 @@ def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: 
     system_prompt = (
         "You are an expert technical recruiter scoring a resume against target role requirements. Judge accurately and objectively based on what is written.\n"
         "Fresher resumes may feature high-impact technical projects and no work experience; that is completely acceptable.\n"
-        "Reward specific, believable engineering work with verified metrics and relevant technologies. Resumes with strong action verbs, Google XYZ metrics, high skill relevance, and clear structure should achieve scores of 90 to 98 (Top Tier ATS Pass). Resumes lacking metrics or core skills should score 50 to 75.\n"
+        "Reward specific, believable work that names the tools used and states results the candidate could defend in an interview. Do not reward numbers that look invented, such as round percentages with no stated baseline. A resume that shows most of the target skills inside described work, with clear structure and strong verbs, scores 85 or more; one missing core skills or giving no specifics scores 50 to 75.\n"
         "Return a JSON object with exactly these keys:\n"
         f"- 'checks': list of objects with 'name', 'score' and 'detail' for these bands: {bands}. "
         "'detail' is one plain sentence naming what you saw.\n"
@@ -1135,3 +1096,460 @@ def build_resume_for_job(
         'ats_eval': ats_eval,
     }
 
+
+
+# ---------------------------------------------------------------------------
+# Resume fitting: reverse engineer the posting, then fit the candidate to it.
+# The prompts live in resume_prompts.py; everything below is what makes their
+# rules hold even when the model ignores them.
+# ---------------------------------------------------------------------------
+
+BLUEPRINT_CACHE_SECONDS = 24 * 60 * 60
+# The whole fitting request has to answer well inside the web server's 60s limit.
+FIT_TIME_BUDGET = 40
+_FIT_CANDIDATE_FIELDS = (
+    'summary', 'skills', 'experience', 'projects', 'education', 'certifications', 'achievements',
+)
+_BLUEPRINT_LISTS = ('must_have', 'good_to_have', 'implied', 'soft_skills', 'duties')
+_SENIORITY_LEVELS = ('intern', 'fresher', 'junior', 'mid', 'senior', 'lead')
+_SECTION_NAMES = ('Summary', 'Skills', 'Experience', 'Projects', 'Education', 'Certifications', 'Achievements')
+
+
+def _clean_terms(value, limit: int = 25, max_len: int = 80) -> list:
+    """A list of short non-empty strings, without repeats."""
+    if isinstance(value, str):
+        value = value.split(',')
+    seen, kept = set(), []
+    for item in value if isinstance(value, (list, tuple)) else []:
+        text = ' '.join(str(item or '').split())
+        if text and len(text) <= max_len and text.lower() not in seen:
+            seen.add(text.lower())
+            kept.append(text)
+    return kept[:limit]
+
+
+def _fallback_blueprint(job_description: str, job_title: str, job_skills) -> dict:
+    """What we can say about a posting without a model: its listed and recognised skills."""
+    must = _clean_terms(job_skills) or extract_jd_skills(job_description)
+    return {
+        'ai': False,
+        'target_title': (job_title or detect_job_title(job_description)).strip(),
+        'seniority': '', 'domain': '',
+        'must_have': must, 'good_to_have': [], 'implied': [], 'soft_skills': [], 'duties': [],
+    }
+
+
+def reverse_engineer_job(
+    job_description: str, job_title: str = "", company: str = "", job_skills="", posting=None,
+) -> dict:
+    """
+    The posting as a blueprint of what its ATS search looks for.
+
+    Depends only on the posting, so it is worked out once: kept on the
+    JobPosting when there is one (so every visitor sees the same keyword list,
+    across restarts), and in the cache for pasted job descriptions.
+    """
+    import hashlib
+    from django.core.cache import cache
+    from .resume_prompts import build_blueprint_messages
+
+    skills_text = ', '.join(_clean_terms(job_skills))
+    digest = hashlib.sha256(
+        '\x1f'.join([job_title or '', company or '', skills_text, job_description or '']).encode('utf-8')
+    ).hexdigest()
+    cache_key = f'jd-blueprint:v1:{digest}'
+    stored = getattr(posting, 'ats_blueprint', None) or {}
+    if stored.get('digest') == digest and stored.get('must_have'):
+        return stored
+    cached = cache.get(cache_key)
+    if cached:
+        return cached
+
+    fallback = _fallback_blueprint(job_description, job_title, job_skills)
+    if not (job_description or '').strip():
+        return fallback
+    try:
+        messages = build_blueprint_messages(job_description, job_title, company, skills_text)
+        data = json.loads(call_groq_chat(
+            messages, temperature=0.1, max_tokens=900, json_mode=True, timeout=10, max_retries=2, budget=14))
+    except Exception as e:
+        logger.warning(f"Job blueprint unavailable, using listed skills: {e}")
+        return fallback
+    if not isinstance(data, dict):
+        return fallback
+
+    blueprint = {name: _clean_terms(data.get(name)) for name in _BLUEPRINT_LISTS}
+    blueprint['implied'] = blueprint['implied'][:4]
+    # A term the posting never contains was invented by the model, not found in it.
+    posting_text = f"{job_title} {skills_text} {job_description}"
+    for name in ('must_have', 'good_to_have'):
+        blueprint[name] = [t for t in blueprint[name] if _term_in_text(t, posting_text)]
+    # Skills the employer listed on the posting are required whatever the model says.
+    for skill in _clean_terms(job_skills):
+        if not any(skill.lower() == t.lower() for t in blueprint['must_have']):
+            blueprint['must_have'].append(skill)
+    must_lower = {t.lower() for t in blueprint['must_have']}
+    blueprint['good_to_have'] = [t for t in blueprint['good_to_have'] if t.lower() not in must_lower]
+
+    seniority = str(data.get('seniority') or '').strip().lower()
+    blueprint.update({
+        'ai': True,
+        'target_title': (job_title or str(data.get('target_title') or '')).strip() or fallback['target_title'],
+        'seniority': seniority if seniority in _SENIORITY_LEVELS else '',
+        'domain': ' '.join(str(data.get('domain') or '').split())[:80],
+    })
+    if not blueprint['must_have']:
+        return fallback
+    blueprint['digest'] = digest
+    cache.set(cache_key, blueprint, BLUEPRINT_CACHE_SECONDS)
+    if posting is not None and getattr(posting, 'pk', None):
+        try:
+            type(posting).objects.filter(pk=posting.pk).update(ats_blueprint=blueprint)
+        except Exception as e:
+            logger.warning(f"Could not store the job blueprint: {e}")
+    return blueprint
+
+
+def _term_forms(term: str) -> list:
+    from .resume_engine import term_forms
+    return term_forms(term)
+
+
+def _term_in_text(term: str, text: str) -> bool:
+    from .resume_engine import has_term
+    return has_term(term, text)
+
+
+def blueprint_coverage(blueprint: dict, text: str) -> dict:
+    """
+    How much of what the job searches for is literally in `text`.
+
+    This is the product's match figure: must-haves weigh three times a
+    good-to-have, and nothing is rounded up. It measures keyword coverage, which
+    is what we can know; it is not any employer's ATS score.
+    """
+    def split(terms):
+        found = [t for t in terms if _term_in_text(t, text)]
+        return found, [t for t in terms if t not in found]
+
+    must_found, must_missing = split(blueprint.get('must_have') or [])
+    good_found, good_missing = split(blueprint.get('good_to_have') or [])
+    total = 3 * (len(must_found) + len(must_missing)) + len(good_found) + len(good_missing)
+    score = round(100 * (3 * len(must_found) + len(good_found)) / total) if total else None
+    return {
+        'score': score,
+        'must_have_found': must_found, 'must_have_missing': must_missing,
+        'good_to_have_found': good_found, 'good_to_have_missing': good_missing,
+    }
+
+
+def _same_skill(model_skill: str, listed: set) -> bool:
+    """The model may respell a skill the blueprint's way, but not add one."""
+    return any(
+        form.lower() in listed or any(_term_in_text(form, known) and _term_in_text(known, form) for known in listed)
+        for form in _term_forms(model_skill)
+    )
+
+
+def _fit_skills(altered, original: dict, confirmed: list) -> dict:
+    """The model's grouping and order, holding only skills the candidate has."""
+    from .resume_engine import inject_missing_ats_skills
+
+    def split(value):
+        parts = value if isinstance(value, (list, tuple)) else str(value or '').split(',')
+        return [str(part).strip() for part in parts if str(part).strip()]
+
+    own = [part for value in (original or {}).values() for part in split(value)]
+    listed = {part.lower() for part in own + list(confirmed)}
+    kept, used = {}, []
+    for group, value in altered.items() if isinstance(altered, dict) else []:
+        parts = [part for part in split(value) if _same_skill(part, listed)]
+        if parts:
+            kept[str(group)] = ', '.join(parts)
+            used.extend(parts)
+    if not kept:
+        return inject_missing_ats_skills(dict(original or {}), confirmed)
+    # Nothing the candidate listed may vanish because the model forgot it.
+    used_text = ', '.join(used)
+    dropped = [skill for skill in own + list(confirmed) if not _term_in_text(skill, used_text)]
+    return inject_missing_ats_skills(kept, dropped) if dropped else kept
+
+
+_TARGETING_WORDS = r'(?:targeting|seeking|pursuing|aspiring|applying for|interested in|aiming for|for|as)'
+
+
+def _claims_unheld_title(summary: str, title: str, source: str) -> bool:
+    """
+    True when the summary calls the candidate by a job title they have never held.
+
+    "Graduate targeting a Business Analyst role" is an aim. "Business Analyst
+    skilled in..." is a claim, and a recruiter will ask where they were one.
+    """
+    title = ' '.join((title or '').split())
+    if not title or not summary or title.lower() in (source or '').lower():
+        return False
+    name = re.escape(title)
+    for match in re.finditer(name, summary, re.I):
+        before = summary[max(0, match.start() - 40):match.start()]
+        after = summary[match.end():match.end() + 20]
+        aimed = re.search(rf'{_TARGETING_WORDS}\s+(?:an?\s+|the\s+)?(?:[\w-]+\s+)?$', before, re.I)
+        named_as_role = re.match(r'\s+(?:role|position|opening|job|internship)s?\b', after, re.I)
+        if not aimed and not named_as_role:
+            return True
+    return False
+
+
+def _apply_skill_evidence(candidate: dict, skill_evidence, confirmed: list) -> dict:
+    """Record where the candidate says they used a confirmed skill, on that entry."""
+    if not isinstance(skill_evidence, dict) or not skill_evidence:
+        return candidate
+    allowed = {skill.lower(): skill for skill in confirmed}
+    candidate = dict(candidate)
+    projects = [dict(p) for p in candidate.get('projects') or [] if isinstance(p, dict)]
+    experience = [dict(e) for e in candidate.get('experience') or [] if isinstance(e, dict)]
+
+    def label(text):
+        return ' '.join(str(text or '').lower().split())
+
+    for raw_skill, where in skill_evidence.items():
+        skill = allowed.get(label(raw_skill))
+        if not skill or not label(where):
+            continue
+        for project in projects:
+            if label(project.get('title')) == label(where):
+                stack = project.get('tech_stack') or ''
+                stack = ', '.join(stack) if isinstance(stack, (list, tuple)) else str(stack)
+                if not _term_in_text(skill, stack):
+                    project['tech_stack'] = f"{stack}, {skill}" if stack.strip() else skill
+        for entry in experience:
+            if label(f"{entry.get('role') or ''} at {entry.get('company') or ''}") == label(where):
+                tools = str(entry.get('tools_used') or '')
+                if not _term_in_text(skill, tools):
+                    entry['tools_used'] = f"{tools}, {skill}" if tools.strip() else skill
+    if projects:
+        candidate['projects'] = projects
+    if experience:
+        candidate['experience'] = experience
+    return candidate
+
+
+def _fit_bullets(bullets, source: str, guarded_terms: list) -> list:
+    """Bullets that say nothing the candidate's own facts do not."""
+    from .resume_generation_service import sanitize_rewrite
+
+    if isinstance(bullets, str):
+        bullets = [part for part in re.split(r"(?<=[.!?])\s+|\n+", bullets) if part.strip()]
+    kept = []
+    for bullet in bullets if isinstance(bullets, list) else []:
+        text = sanitize_rewrite(bullet, source)
+        if len(text) < 20 or _adds_unlisted_tech(text, source):
+            continue
+        if any(_term_in_text(term, text) and not _term_in_text(term, source) for term in guarded_terms):
+            continue
+        if any(claim.lower() not in source.lower() for claim in _UNEARNED_CLAIMS.findall(text)):
+            continue
+        kept.append(text)
+    return kept
+
+
+def _fit_entries(altered, originals: list, keys: tuple, source: str, guarded_terms: list) -> list:
+    """
+    The candidate's entries in the model's order, with only the bullets reworded.
+
+    Titles, employers, roles, dates and tech stacks are copied from the candidate,
+    never from the model. An entry the model left out or emptied keeps its own text.
+    """
+    def identity(entry):
+        return tuple(' '.join(str(entry.get(k) or '').lower().split()) for k in keys)
+
+    originals = [entry for entry in originals or [] if isinstance(entry, dict)]
+    remaining = list(originals)
+    result = []
+    for entry in altered if isinstance(altered, list) else []:
+        if not isinstance(entry, dict):
+            continue
+        match = next((o for o in remaining if identity(o) == identity(entry)), None)
+        if match is None:
+            continue
+        remaining.remove(match)
+        fitted = dict(match)
+        # Checked against this entry alone: a number or tool from another project
+        # is still a false claim about this one.
+        bullets = _fit_bullets(entry.get('bullets'), json.dumps(match, default=str), guarded_terms)
+        if bullets:
+            fitted['bullets'] = bullets
+        result.append(fitted)
+    return result + remaining
+
+
+def fit_resume_to_job(
+    job_description: str,
+    candidate: dict,
+    job_title: str = "",
+    company: str = "",
+    job_skills="",
+    confirmed_skills: list = None,
+    experience_level: str = "",
+    posting=None,
+    skill_evidence: dict = None,
+) -> dict:
+    """
+    Fit a candidate's resume to one job without adding a single fact.
+
+    `skill_evidence` maps a confirmed skill to the project title or
+    "Role at Company" where the candidate says they used it. That is the
+    candidate's own statement, so the skill joins that entry's tech stack and
+    may then be written into its bullets.
+
+    The posting is reverse engineered into a blueprint, the model rewrites the
+    candidate's own facts in the blueprint's words, and then every line is
+    checked against what the candidate supplied. Requirements the candidate
+    does not show come back in `skills_to_confirm` instead of in the resume.
+    The match figure is keyword coverage measured here, before and after.
+    """
+    from .resume_generation_service import sanitize_rewrite
+    from .resume_prompts import build_fit_messages
+
+    import time
+
+    started = time.monotonic()
+    # Only resume content goes to the model. Name, email, phone and links are
+    # never needed to reword a bullet, so they never leave the server.
+    candidate = {
+        key: value for key, value in (candidate or {}).items()
+        if key in _FIT_CANDIDATE_FIELDS and value
+    }
+    confirmed = _clean_terms(confirmed_skills)
+    candidate = _apply_skill_evidence(candidate, skill_evidence, confirmed)
+    summary = str(candidate.get('summary') or '').strip()
+    skills = _candidate_skill_groups(candidate)
+    skills = {group: ', '.join(items) for group, items in skills.items()}
+    projects = [p for p in candidate.get('projects') or [] if isinstance(p, dict)]
+    experience = [e for e in candidate.get('experience') or [] if isinstance(e, dict)]
+
+    blueprint = reverse_engineer_job(job_description, job_title, company, job_skills, posting=posting)
+    source = f"{json.dumps(candidate, default=str)} {' '.join(confirmed)}"
+    guarded_terms = blueprint['must_have'] + blueprint['good_to_have']
+
+    def text_of(summary_, skills_, experience_, projects_):
+        return json.dumps([summary_, skills_, experience_, projects_], default=str)
+
+    before = blueprint_coverage(blueprint, text_of(summary, skills, experience, projects))
+    result = {
+        'ai': False,
+        'blueprint': blueprint,
+        'altered_summary': summary,
+        'altered_skills': _fit_skills({}, skills, confirmed),
+        'altered_experience': experience,
+        'altered_projects': projects,
+        'section_order': [],
+        'evidence_map': [],
+        'key_alterations': [],
+    }
+
+    data = None
+    remaining = FIT_TIME_BUDGET - (time.monotonic() - started)
+    has_content = bool(summary or projects or experience)
+    if has_content and remaining >= 10:
+        try:
+            messages = build_fit_messages(blueprint, candidate, confirmed, company, experience_level)
+            data = json.loads(call_groq_chat(
+                messages, temperature=0.2, max_tokens=4000, json_mode=True,
+                timeout=18, max_retries=2, budget=min(24, remaining),
+            ))
+        except Exception as e:
+            logger.warning(f"Resume fitting unavailable, leaving the resume as supplied: {e}")
+    elif has_content:
+        logger.warning("Resume fitting skipped: the job blueprint used up the time budget.")
+
+    # A reply with none of the expected keys is a broken generation, not a rewrite.
+    if isinstance(data, dict) and any(
+        data.get(key) for key in ('altered_summary', 'altered_skills', 'altered_experience', 'altered_projects')
+    ):
+        result['ai'] = True
+        # The target role and company are the job's words, so the summary may use them.
+        summary_source = f"{source} {blueprint['target_title']} {company}"
+        new_summary = sanitize_rewrite(data.get('altered_summary'), summary_source)
+        adds_claim = any(c.lower() not in source.lower() for c in _UNEARNED_CLAIMS.findall(new_summary))
+        adds_skill = any(_term_in_text(t, new_summary) and not _term_in_text(t, summary_source) for t in guarded_terms)
+        claims_title = _claims_unheld_title(new_summary, blueprint['target_title'], source)
+        if (new_summary and not adds_claim and not adds_skill and not claims_title
+                and not _adds_unlisted_tech(new_summary, summary_source)):
+            result['altered_summary'] = new_summary
+        elif blueprint['target_title'] and FIT_TIME_BUDGET - (time.monotonic() - started) >= 8:
+            # The long prompt overreached, so ask the short strict one for just this.
+            proven = [t for t in blueprint['must_have'] if _term_in_text(t, source)]
+            retry = write_tailored_summary(
+                summary, blueprint['target_title'], company, ', '.join(proven[:6]),
+                ', '.join(str(p.get('title') or '') for p in projects[:3]),
+                budget=FIT_TIME_BUDGET - (time.monotonic() - started),
+            )
+            if retry and not _claims_unheld_title(retry, blueprint['target_title'], source):
+                result['altered_summary'] = retry
+
+        result['altered_skills'] = _fit_skills(data.get('altered_skills'), skills, confirmed)
+        result['altered_experience'] = _fit_entries(
+            data.get('altered_experience'), experience, ('company', 'role'), source, guarded_terms)
+        result['altered_projects'] = _fit_entries(
+            data.get('altered_projects'), projects, ('title',), source, guarded_terms)
+        result['section_order'] = [
+            name for name in _clean_terms(data.get('section_order')) if name in _SECTION_NAMES
+        ]
+        result['key_alterations'] = _clean_terms(data.get('key_alterations'), limit=5, max_len=300)
+        result['evidence_map'] = [
+            {
+                'requirement': str(row.get('requirement') or '').strip(),
+                'priority': row.get('priority'),
+                'status': row.get('status'),
+                'evidence': str(row.get('evidence') or '').strip(),
+            }
+            for row in data.get('evidence_map') or []
+            if isinstance(row, dict) and row.get('status') in ('proven', 'adjacent', 'missing')
+            and str(row.get('requirement') or '').strip()
+        ]
+
+    after = blueprint_coverage(blueprint, text_of(
+        result['altered_summary'], result['altered_skills'],
+        result['altered_experience'], result['altered_projects'],
+    ))
+
+    # What to ask the candidate is decided by what is really absent, not by the model's list.
+    asked = {}
+    for row in (data.get('skills_to_confirm') or []) if isinstance(data, dict) else []:
+        if isinstance(row, dict) and str(row.get('skill') or '').strip():
+            asked[str(row['skill']).strip().lower()] = row
+    to_confirm = []
+    for priority, terms in (('must_have', after['must_have_missing']), ('good_to_have', after['good_to_have_missing'])):
+        for term in terms:
+            row = asked.get(term.lower(), {})
+            to_confirm.append({
+                'skill': term,
+                'priority': priority,
+                'closest_evidence': str(row.get('closest_evidence') or '').strip(),
+                'question': str(row.get('question') or '').strip() or f"Have you worked with {term}?",
+            })
+
+    # `tools_used` only told the model where a confirmed skill belongs.
+    result['altered_experience'] = [
+        {k: v for k, v in entry.items() if k != 'tools_used'} for entry in result['altered_experience']
+    ]
+    # Older copies of the page read the skills block from these names.
+    result['suggested_skills'] = result['reordered_skills'] = result['altered_skills']
+    # Whether any wording really changed, so the page never announces a rewrite
+    # that every check rejected.
+    result['changed'] = (
+        result['altered_summary'] != summary
+        or result['altered_projects'] != projects
+        or result['altered_experience'] != [
+            {k: v for k, v in entry.items() if k != 'tools_used'} for entry in experience
+        ]
+    )
+    result.update({
+        'match_score': after['score'],
+        'match_score_before': before['score'],
+        'matching_keywords': after['must_have_found'] + after['good_to_have_found'],
+        'missing_keywords': after['must_have_missing'] + after['good_to_have_missing'],
+        'coverage': after,
+        'skills_to_confirm': to_confirm,
+    })
+    return result
