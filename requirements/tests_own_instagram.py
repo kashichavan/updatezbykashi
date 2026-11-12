@@ -185,6 +185,12 @@ class InstaAutomationPosterTests(TestCase):
         self.assertIsInstance(p, ig_autopilot.InstaAutomationPoster)
         self.assertEqual(p.username, "jobs_account")
 
+    def test_reels_never_fall_back_to_story_account(self):
+        from requirements.services import ig_autopilot
+        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="", INSTAGRAM_ACCOUNT_HANDLE="ikashii_07"):
+            self.assertIsNone(ig_autopilot.get_poster(for_reels=True))
+            self.assertEqual(ig_autopilot.get_poster().username, "ikashii_07")
+
     def test_get_poster_none_without_config(self):
         from requirements.services import ig_autopilot
         with self.settings(REELFLOW_STORY_TOKEN="", REEL_ACCOUNT_HANDLE="", INSTAGRAM_ACCOUNT_HANDLE=""):

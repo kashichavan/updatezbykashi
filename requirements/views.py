@@ -2213,7 +2213,7 @@ def api_owner_reels_today(request):
     from .services.daily_reels import ensure_due_drafts, next_slot, slot_hours
     from .services.instagram_story import _public_base_url
     from .services.ig_autopilot import get_poster
-    poster = get_poster()
+    poster = get_poster(for_reels=True)
     # With a posting account the autopilot posts the reels; don't pre-render previews here.
     drafts = ensure_due_drafts(_public_base_url(request.build_absolute_uri('/').rstrip('/')), prerender=not poster)
     nxt = next_slot()
@@ -2261,7 +2261,7 @@ def api_owner_reel_post_now(request, pk):
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
     draft = get_object_or_404(ReelDraft, pk=pk)
     from .services.ig_autopilot import get_poster, publish_reel
-    poster = get_poster()
+    poster = get_poster(for_reels=True)
     if not poster:
         return JsonResponse({'success': False, 'message': 'Connect the Instagram account in Insta Automation and set REELFLOW_STORY_TOKEN + REEL_ACCOUNT_HANDLE.'}, status=409)
     if draft.status in (ReelDraft.STATUS_POSTING, ReelDraft.STATUS_POSTED):
@@ -2278,8 +2278,8 @@ def api_owner_reels_enable_automation(request):
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
-    from .services.ig_autopilot import posting_handle
-    token, handle = getattr(settings, 'REELFLOW_STORY_TOKEN', ''), posting_handle()
+    token = getattr(settings, 'REELFLOW_STORY_TOKEN', '')
+    handle = getattr(settings, 'REEL_ACCOUNT_HANDLE', '').lstrip('@')
     if not token or not handle:
         return JsonResponse({'success': False, 'message': 'Set REELFLOW_STORY_TOKEN and REEL_ACCOUNT_HANDLE on Render first.'})
     try:

@@ -146,11 +146,11 @@ def _cta_mode(reply_cta):
     return reply_cta
 
 
-def _posting_handle():
-    """Handle shown on the design: the connected primary account, else the configured one."""
+def _posting_handle(for_reels=False):
+    """Handle shown on the design: the account it is posted to."""
     try:
         from .ig_autopilot import get_poster
-        poster = get_poster()
+        poster = get_poster(for_reels=for_reels)
         if poster:
             return poster.username
     except Exception:
@@ -181,7 +181,7 @@ def build_layout(job, base_url, reply_cta, k):
     d = ImageDraw.Draw(row)
     d.text((row_h // 2, row_h // 2), "K", fill=WHITE, font=font(u(34), 900), anchor='mm')
     d.text((row_h + u(18), row_h // 2), "KASHII UPDATEZ", fill=WHITE, font=font(u(28), 800), anchor='lm')
-    handle = f"@{_posting_handle()}"
+    handle = f"@{_posting_handle(for_reels=_cta_mode(reply_cta) == 'comment')}"
     d.text((CW, row_h // 2), handle, fill=MUTED, font=font(u(26), 600), anchor='rm')
     sprites.append(Sprite(row, L, u(250), start=0.15, kind='drop'))
 

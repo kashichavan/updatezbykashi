@@ -85,11 +85,19 @@ def posting_handle():
     return (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')).lstrip('@')
 
 
-def get_poster():
-    """Insta Automation when its token is set (default), else an own connected account, else None."""
+def get_poster(for_reels=False):
+    """Insta Automation when its token is set (default), else an own connected account, else None.
+
+    Reels only go to REEL_ACCOUNT_HANDLE: they never fall back to the main (story) account.
+    """
     from ..models import IGAccount
-    if getattr(settings, 'REELFLOW_STORY_TOKEN', '') and posting_handle():
-        return InstaAutomationPoster(posting_handle())
+    reel_handle = getattr(settings, 'REEL_ACCOUNT_HANDLE', '').lstrip('@')
+    if getattr(settings, 'REELFLOW_STORY_TOKEN', ''):
+        handle = reel_handle if for_reels else posting_handle()
+        if handle:
+            return InstaAutomationPoster(handle)
+        if for_reels:
+            return None
     own = IGAccount.primary()
     return OwnPoster(own) if own else None
 
@@ -182,9 +190,9 @@ def run_due(now=None):
     if not _run_lock.acquire(blocking=False):
         return {'skipped': 'already running'}
     try:
-        poster = get_poster()
+        poster = get_poster(for_reels=True)
         if not poster:
-            return {'error': 'NO_ACCOUNT'}
+            return {'error': 'NO_ACCOUNT', 'message': 'Set REEL_ACCOUNT_HANDLE to the reels account.'}
         poster.prepare()
         now = now or timezone.now()
         drafts = ensure_due_drafts(public_base(), now=now, prerender=False)
