@@ -46,6 +46,9 @@ class JobPosting(models.Model):
     allow_direct_apply = models.BooleanField(default=True)
 
     description = models.TextField(help_text="Detailed job description and responsibilities")
+    # What this posting's ATS search looks for, worked out once by
+    # ai_engine.reverse_engineer_job and reused for every resume fitted to it.
+    ats_blueprint = models.JSONField(default=dict, blank=True, editable=False)
     eligibility = models.TextField(blank=True, default="Open to all students")
     selection_process = models.TextField(
         blank=True,

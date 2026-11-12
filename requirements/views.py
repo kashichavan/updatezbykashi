@@ -3753,9 +3753,36 @@ def api_download_resume_pdf(request):
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response['Content-Length'] = len(pdf_bytes)
+        _add_ats_readability_headers(response, pdf_bytes, 'resume.pdf', resume_data)
         return response
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def _add_ats_readability_headers(response, file_bytes, filename, resume_data):
+    """
+    Read the file we are about to send back the way an ATS will, and say how it went.
+
+    The page shows the result next to the download. A failed check never blocks
+    the download: the candidate still gets their file.
+    """
+    try:
+        from .resume_parser import check_ats_readability
+
+        skills = resume_data.get('skills') if isinstance(resume_data, dict) else None
+        groups = skills.values() if isinstance(skills, dict) else [skills] if isinstance(skills, (str, list)) else []
+        keywords = []
+        for group in groups:
+            parts = group if isinstance(group, list) else re.split(r',(?![^()]*\))', str(group or ''))
+            keywords.extend(re.sub(r'\s*\(.*?\)', '', str(part)).strip() for part in parts)
+        keywords = [k for k in keywords if k][:60]
+        report = check_ats_readability(file_bytes, filename, resume_data, keywords)
+        passed = sum(1 for check in report['checks'] if check['passed']) + len(report['keywords_found'])
+        total = len(report['checks']) + len(keywords)
+        response['X-ATS-Readable'] = 'yes' if report['readable'] else 'no'
+        response['X-ATS-Checks'] = f'{passed}/{total}'
+    except Exception as e:
+        logger.warning(f"ATS readability check failed for {filename}: {e}")
 
 
 @csrf_exempt
@@ -3811,6 +3838,7 @@ def api_download_resume_docx(request):
         )
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response['Content-Length'] = len(docx_bytes)
+        _add_ats_readability_headers(response, docx_bytes, 'resume.docx', resume_data)
         return response
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -4035,118 +4063,96 @@ def api_score_project_ats(request):
 
 
 @csrf_exempt
-def api_ai_alter_resume(request):
-    """1-Click AI Resume Alteration for a specific Job Description and Tech Stack."""
+def api_ai_fit_resume(request):
+    """
+    Fit the candidate's own resume to one job, adding nothing they did not supply.
+
+    Also served at /api/ai/alter-resume/, the address older copies of the
+    resume page still call; it accepts their request shape too.
+
+    Returns the reworded resume, the keyword coverage before and after, and the
+    job's requirements the resume does not show, as questions the candidate can
+    confirm. Send those back in `confirmed_skills` to have them added.
+    """
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
 
-    from .ai_engine import alter_resume_for_job
-    from .resume_engine import score_project_ats
-    from .resume_generation_service import sanitize_altered_resume
+    from .ai_engine import fit_resume_to_job
 
     try:
         body = json.loads(request.body.decode('utf-8'))
-        job_title = body.get('job_title', '')
-        company_name = body.get('company_name', '')
-        job_skills = body.get('job_skills', '')
-        job_description = body.get('job_description', '')
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
+    if not isinstance(body, dict):
+        return JsonResponse({'success': False, 'error': 'Invalid JSON.'}, status=400)
 
-        # A real posting always wins over the client copy. The page may hold a
-        # shortened description, and a caller could send anything at all; when a
-        # job is named, tailor against the description stored with that job.
-        job_id = body.get('job_id') or ''
-        if job_id:
-            from .models import JobPosting
-            import uuid
-            posting = None
-            try:
-                posting = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
-            except (ValueError, AttributeError, TypeError):
-                if str(job_id).isdigit():
-                    posting = JobPosting.objects.filter(pk=int(job_id)).first()
-            if posting:
-                job_title = posting.title or job_title
-                company_name = posting.company_name or company_name
-                job_skills = posting.skills_required or job_skills
-                job_description = posting.description or job_description
+    job_title = str(body.get('job_title') or '')[:200]
+    company_name = str(body.get('company_name') or '')[:200]
+    job_skills = body.get('job_skills') or ''
+    job_description = str(body.get('job_description') or '')[:20000]
 
-        if not job_description and not job_skills:
-            return JsonResponse({'success': False, 'error': 'Job Description or skills are required.'}, status=400)
+    # A real posting always wins over the client copy.
+    job_id = body.get('job_id') or ''
+    posting = None
+    if job_id:
+        from .models import JobPosting
+        import uuid
+        try:
+            posting = JobPosting.objects.filter(uuid=uuid.UUID(str(job_id))).first()
+        except (ValueError, AttributeError, TypeError):
+            if str(job_id).isdigit():
+                posting = JobPosting.objects.filter(pk=int(job_id)).first()
+        if posting:
+            job_title = posting.title or job_title
+            company_name = posting.company_name or company_name
+            job_skills = posting.skills_required or job_skills
+            job_description = posting.description or job_description
 
-        candidate_summary = body.get('candidate_summary', '')
-        candidate_skills = body.get('candidate_skills', {})
-        candidate_projects = body.get('candidate_projects', [])
+    # With only a role name there are no keywords to measure against, so the
+    # wording is improved and no coverage is reported.
+    if not job_description and not job_skills and not job_title.strip():
+        return JsonResponse({'success': False, 'error': 'A job description, skills or a job title is required.'}, status=400)
 
-        result = alter_resume_for_job(
-            candidate_summary=candidate_summary,
-            candidate_skills=candidate_skills,
-            candidate_projects=candidate_projects,
-            job_title=job_title,
-            company_name=company_name,
-            job_skills=job_skills,
+    candidate = body.get('candidate')
+    if not isinstance(candidate, dict):
+        candidate = {
+            'summary': body.get('candidate_summary') or '',
+            'skills': body.get('candidate_skills') or {},
+            'projects': body.get('candidate_projects') or [],
+            'experience': body.get('candidate_experience') or [],
+        }
+    if len(json.dumps(candidate, default=str)) > 60000:
+        return JsonResponse({'success': False, 'error': 'Resume is too large.'}, status=413)
+    confirmed = body.get('confirmed_skills') or []
+    if not isinstance(confirmed, list):
+        confirmed = []
+    evidence = body.get('skill_evidence')
+    evidence = {
+        str(skill)[:80]: str(where)[:200]
+        for skill, where in list(evidence.items())[:30]
+    } if isinstance(evidence, dict) else {}
+
+    try:
+        result = fit_resume_to_job(
             job_description=job_description,
+            candidate=candidate,
+            job_title=job_title,
+            company=company_name,
+            job_skills=job_skills,
+            confirmed_skills=[str(s)[:80] for s in confirmed[:30]],
+            experience_level=str(body.get('experience_level') or '')[:40],
+            posting=posting,
+            skill_evidence=evidence,
         )
-        # Text the model invented may not survive into the exported resume.
-        if result.get('ai') is False:
-            return JsonResponse({'success': True, 'data': result})
-        result = sanitize_altered_resume(
-            result, candidate_summary, candidate_skills, candidate_projects
-        )
-
-        from .skill_extractor import extract_technical_skills
-        if isinstance(job_skills, str):
-            keywords = [s.strip() for s in job_skills.split(',') if s.strip()]
-        else:
-            keywords = [str(s).strip() for s in (job_skills or []) if str(s).strip()]
-        if not keywords:
-            keywords = [k.strip() for k in extract_technical_skills(description=job_description, max_skills=12).split(',') if k.strip()]
-
-        from .resume_engine import inject_missing_ats_skills
-        altered_skills = result.get('altered_skills') or candidate_skills
-        suggested_skills = inject_missing_ats_skills(altered_skills, keywords)
-
-        final_text = json.dumps(
-            [result.get('altered_summary'), result.get('altered_skills'), result.get('altered_projects')],
-            default=str,
-        )
-        found = [k for k in keywords if has_keyword(k, final_text)]
-        missing = [k for k in keywords if k not in found]
-        raw_score = result.get('overall_match_score') or result.get('match_score')
-        if isinstance(raw_score, (int, float)):
-            match_score = max(90, min(99, int(raw_score)))
-            result['match_grade'] = 'Top Tier ATS Pass (ATS 90+)'
-        else:
-            match_score = round(100 * len(found) / len(keywords)) if keywords else None
-            result['match_grade'] = (
-                f"{len(found)} of {len(keywords)} job keywords found" if keywords
-                else 'No clear skills found in this job'
-            )
-
-        result['match_score'] = match_score
-        result['overall_match_score'] = match_score
-        result['matching_keywords'] = found
-        result['missing_keywords'] = missing
-        result['suggested_skills'] = suggested_skills
-        result['injected_keywords'] = result.get('missing_keywords_injected') or [k for k in keywords if has_keyword(k, json.dumps(suggested_skills, default=str))]
-        result['reordered_skills'] = suggested_skills
-
-        scored_projects = []
-        for p in result.get('altered_projects', []):
-            p = dict(p)
-            eval_data = score_project_ats(p, keywords)
-            p_score = max(90, eval_data.get('score', 92))
-            p['ats_score'] = p_score
-            p['ats_badge'] = f"🟢 {p_score}/100"
-            p['ats_grade'] = 'Top Tier Pass (ATS 90+)'
-            p['breakdown'] = eval_data.get('breakdown', {
-                'action_verbs': 25, 'google_xyz': 25, 'quantified_metrics': 20, 'tech_relevance': 20, 'architecture_scale': 10
-            })
-            scored_projects.append(p)
-
-        result['altered_projects'] = scored_projects
-        return JsonResponse({'success': True, 'data': result})
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        logger.exception(f"Resume fitting failed: {e}")
+        return JsonResponse({'success': False, 'error': 'Could not fit the resume right now.'}, status=500)
+
+    found, total = len(result['matching_keywords']), len(result['matching_keywords']) + len(result['missing_keywords'])
+    result['match_grade'] = (
+        f"{found} of {total} job keywords found" if total else 'No clear skills found in this job'
+    )
+    return JsonResponse({'success': True, 'data': result})
 
 
 @csrf_exempt

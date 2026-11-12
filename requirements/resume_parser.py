@@ -498,3 +498,52 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         "bullet_count": len(all_bullets),
         "bullets_with_metrics": bullets_with_metrics
     }
+
+
+def check_ats_readability(file_bytes: bytes, filename: str, resume: Dict[str, Any], keywords: Optional[List[str]] = None) -> Dict[str, Any]:
+    """
+    Read an exported resume back the way an ATS does and report what survived.
+
+    An ATS never sees the layout, only the text it can extract from the file.
+    This extracts that text and checks that the candidate's name, contact
+    details, section headings and keywords are all in it, so a file that looks
+    fine but parses badly is caught before the candidate sends it.
+    """
+    from .resume_engine import has_keyword
+
+    text = extract_text_from_file_bytes(file_bytes, filename) or ''
+    flat = ' '.join(text.split()).lower()
+    contact = resume.get('contact') if isinstance(resume.get('contact'), dict) else {}
+
+    def present(value) -> bool:
+        value = ' '.join(str(value or '').split()).lower()
+        return bool(value) and value in flat
+
+    checks = []
+    for label, value in (
+        ('Name', resume.get('name')),
+        ('Email', contact.get('email') or resume.get('email')),
+        ('Phone', contact.get('phone') or resume.get('phone')),
+    ):
+        if str(value or '').strip():
+            checks.append({'check': label, 'passed': present(value)})
+
+    sections = (
+        ('Skills', resume.get('skills'), ('skills',)),
+        ('Experience', resume.get('experience'), ('experience', 'employment', 'work history')),
+        ('Projects', resume.get('projects'), ('projects',)),
+        ('Education', resume.get('education'), ('education',)),
+    )
+    for label, content, headings in sections:
+        if content:
+            checks.append({'check': f'{label} heading', 'passed': any(h in flat for h in headings)})
+
+    wanted = [str(k).strip() for k in (keywords or []) if str(k).strip()]
+    lost = [k for k in wanted if not has_keyword(k, text)]
+    return {
+        'readable': bool(flat) and all(c['passed'] for c in checks) and not lost,
+        'characters': len(flat),
+        'checks': checks,
+        'keywords_found': [k for k in wanted if k not in lost],
+        'keywords_lost': lost,
+    }

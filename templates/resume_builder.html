@@ -1011,6 +1011,138 @@
     gap: 12px;
   }
 
+  .job-gap-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+  }
+
+  .job-gap-panel[hidden] {
+    display: none;
+  }
+
+  .job-gap-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .job-gap-head h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .job-gap-meter {
+    flex: 0 0 160px;
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .job-gap-meter span {
+    display: block;
+    height: 100%;
+    background: #2563eb;
+    border-radius: 99px;
+  }
+
+  .job-gap-found {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+
+  .job-gap-pill {
+    font-size: 11px;
+    font-weight: 650;
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #15803d;
+  }
+
+  .job-gap-note {
+    margin: 0 0 8px;
+    font-size: 12.5px;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  .job-gap-list {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+    gap: 8px;
+  }
+
+  .job-gap-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+  }
+
+  .job-gap-list input {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .job-gap-body {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .job-gap-where {
+    width: 100%;
+    min-width: 0;
+    font-size: 11.5px;
+    color: #334155;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 6px;
+  }
+
+  .job-gap-list label {
+    display: grid;
+    gap: 2px;
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.4;
+    cursor: pointer;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .job-gap-list strong {
+    font-size: 12.5px;
+    color: #0f172a;
+  }
+
+  .job-gap-add {
+    padding: 9px 14px;
+    font-size: 12px;
+  }
+
   .target-badge {
     background: #eff6ff;
     border: 1px solid #bfdbfe;
@@ -2348,6 +2480,166 @@
 
   let targetTailorInFlight = false;
 
+  /**
+   * The server reads every exported file back as plain text, the way an ATS
+   * does, and reports how many of its fields and skills survived.
+   */
+  function atsReadabilityNote(res) {
+    const readable = res.headers.get('X-ATS-Readable');
+    const checks = res.headers.get('X-ATS-Checks');
+    if (!readable || !checks) return '';
+    const parts = checks.split('/');
+    return readable === 'yes'
+      ? ` ATS read-back check passed: all ${parts[1]} fields and skills are readable.`
+      : ` ATS read-back check: only ${parts[0]} of ${parts[1]} fields and skills were readable. Remove symbols or unusual characters and download again.`;
+  }
+  // Skills the visitor has said they really have for this job. Only these are
+  // ever added to the resume beyond what it already showed.
+  const confirmedJobSkills = [];
+  // Where the visitor says they used each confirmed skill: a project title or "Role at Company".
+  const jobSkillEvidence = {};
+
+  /**
+   * Show what this job asks for that the resume does not show, as questions.
+   * Nothing is added until the visitor says it is true.
+   */
+  function renderJobGapPanel(d) {
+    const workspace = document.querySelector('.resume-workspace');
+    if (!workspace) return;
+    let panel = document.getElementById('jobGapPanel');
+    if (!panel) {
+      panel = document.createElement('section');
+      panel.id = 'jobGapPanel';
+      panel.className = 'job-gap-panel';
+      panel.setAttribute('aria-live', 'polite');
+      workspace.parentNode.insertBefore(panel, workspace);
+    }
+    panel.textContent = '';
+
+    const found = d.matching_keywords || [];
+    const gaps = d.skills_to_confirm || [];
+    const total = found.length + (d.missing_keywords || []).length;
+    if (!total) { panel.hidden = true; return; }
+    panel.hidden = false;
+
+    const head = document.createElement('div');
+    head.className = 'job-gap-head';
+    const title = document.createElement('h3');
+    title.textContent = `Your resume shows ${found.length} of ${total} things this job searches for`;
+    head.appendChild(title);
+    if (typeof d.match_score === 'number') {
+      const meter = document.createElement('div');
+      meter.className = 'job-gap-meter';
+      meter.setAttribute('role', 'progressbar');
+      meter.setAttribute('aria-valuemin', '0');
+      meter.setAttribute('aria-valuemax', '100');
+      meter.setAttribute('aria-valuenow', String(d.match_score));
+      meter.setAttribute('aria-label', 'Job keyword coverage');
+      const fill = document.createElement('span');
+      fill.style.width = d.match_score + '%';
+      meter.appendChild(fill);
+      head.appendChild(meter);
+    }
+    panel.appendChild(head);
+
+    if (found.length) {
+      const row = document.createElement('div');
+      row.className = 'job-gap-found';
+      found.forEach((skill) => {
+        const pill = document.createElement('span');
+        pill.className = 'job-gap-pill is-found';
+        pill.textContent = skill;
+        row.appendChild(pill);
+      });
+      panel.appendChild(row);
+    }
+
+    if (!gaps.length) {
+      const done = document.createElement('p');
+      done.className = 'job-gap-note';
+      done.textContent = 'Every skill this posting names is on your resume.';
+      panel.appendChild(done);
+      return;
+    }
+
+    const note = document.createElement('p');
+    note.className = 'job-gap-note';
+    note.textContent = 'The job also asks for the skills below. Tick only the ones you can talk about in an interview. If you say where you used one, it can be written into that project or job too.';
+    panel.appendChild(note);
+
+    // Naming the project or job where a skill was used lets it be written into
+    // that entry's bullets, which counts for more than the skills list alone.
+    const places = []
+      .concat((currentResumeData.projects || []).map((p) => (p && p.title) || ''))
+      .concat((currentResumeData.experience || []).map((e) => (e && e.role && e.company) ? `${e.role} at ${e.company}` : ''))
+      .filter(Boolean);
+
+    const list = document.createElement('ul');
+    list.className = 'job-gap-list';
+    gaps.forEach((gap, index) => {
+      const item = document.createElement('li');
+      const id = 'jobGap' + index;
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.id = id;
+      box.value = gap.skill;
+      const label = document.createElement('label');
+      label.htmlFor = id;
+      const name = document.createElement('strong');
+      name.textContent = gap.skill + (gap.priority === 'must_have' ? ' · required' : ' · nice to have');
+      const question = document.createElement('span');
+      question.textContent = gap.question || '';
+      label.appendChild(name);
+      label.appendChild(question);
+      const body = document.createElement('div');
+      body.className = 'job-gap-body';
+      body.appendChild(label);
+      if (places.length) {
+        const where = document.createElement('select');
+        where.className = 'job-gap-where';
+        where.dataset.skill = gap.skill;
+        where.setAttribute('aria-label', 'Where did you use ' + gap.skill + '?');
+        const none = document.createElement('option');
+        none.value = '';
+        none.textContent = 'Where did you use it? (optional)';
+        where.appendChild(none);
+        places.forEach((place) => {
+          const option = document.createElement('option');
+          option.value = place;
+          option.textContent = place;
+          where.appendChild(option);
+        });
+        where.addEventListener('change', () => { if (where.value) box.checked = true; });
+        body.appendChild(where);
+      }
+      item.appendChild(box);
+      item.appendChild(body);
+      list.appendChild(item);
+    });
+    panel.appendChild(list);
+
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'studio-btn studio-btn-magic job-gap-add';
+    add.textContent = 'Add the skills I ticked';
+    add.addEventListener('click', () => {
+      const ticked = Array.from(list.querySelectorAll('input:checked')).map((el) => el.value);
+      if (!ticked.length) {
+        if (window.showToast) window.showToast('Tick at least one skill you really have.', 'error');
+        return;
+      }
+      ticked.forEach((skill) => {
+        if (!confirmedJobSkills.includes(skill)) confirmedJobSkills.push(skill);
+      });
+      list.querySelectorAll('.job-gap-where').forEach((where) => {
+        if (where.value && ticked.includes(where.dataset.skill)) jobSkillEvidence[where.dataset.skill] = where.value;
+      });
+      autoAlterResumeForTargetJob();
+    });
+    panel.appendChild(add);
+  }
+
+
   function setTargetTailorStatus(state, message) {
     const el = document.getElementById('targetJobStatus');
     if (!el) return;
@@ -2394,7 +2686,7 @@
     setTargetTailorStatus('running', 'Tailoring to this job…');
 
     try {
-      const res = await fetch('/api/ai/alter-resume/', {
+      const res = await fetch('/api/ai/fit-resume/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2403,9 +2695,17 @@
           company_name: targetJobData.company,
           job_skills: targetJobData.skills,
           job_description: targetJobData.description,
-          candidate_summary: currentResumeData.summary,
-          candidate_skills: currentResumeData.skills,
-          candidate_projects: currentResumeData.projects
+          experience_level: currentProfileLevel,
+          confirmed_skills: confirmedJobSkills,
+          skill_evidence: jobSkillEvidence,
+          // Resume content only: name and contact details stay in the browser.
+          candidate: {
+            summary: currentResumeData.summary,
+            skills: currentResumeData.skills,
+            projects: currentResumeData.projects,
+            experience: currentResumeData.experience || [],
+            education: currentResumeData.education
+          }
         })
       });
 
@@ -2423,38 +2723,44 @@
       }
 
       const d = json.data || {};
-      if (d.ai === false) {
-        setTargetTailorStatus('', 'AI is busy, so your resume was not changed. Try again in a minute.');
-        setTargetTailorButton('Tailor to this job', false);
-        return;
-      }
-      if (d.altered_summary) currentResumeData.summary = d.altered_summary;
-      if (d.suggested_skills && Object.keys(d.suggested_skills).length > 0) {
-        currentResumeData.skills = d.suggested_skills;
-      } else if (d.reordered_skills && Object.keys(d.reordered_skills).length > 0) {
-        currentResumeData.skills = d.reordered_skills;
-      } else if (d.altered_skills) {
+      // The skills block and the list of gaps are computed on the server from
+      // the resume itself, so they are correct even when the AI was busy.
+      if (d.altered_skills && Object.keys(d.altered_skills).length > 0) {
         currentResumeData.skills = d.altered_skills;
       }
-      if (d.altered_projects && d.altered_projects.length > 0) {
-        currentResumeData.projects = d.altered_projects;
+      if (d.ai !== false) {
+        if (d.altered_summary) currentResumeData.summary = d.altered_summary;
+        if (d.altered_projects && d.altered_projects.length > 0) {
+          currentResumeData.projects = d.altered_projects;
+        }
+        if (d.altered_experience && d.altered_experience.length > 0) {
+          currentResumeData.experience = d.altered_experience;
+        }
       }
 
       renderResumeSheet();
       renderProjectsControlsList();
       recalculateAtsScore();
+      renderJobGapPanel(d);
 
-      const matchScore = (typeof d.match_score === 'number') ? d.match_score : null;
-      const doneMsg = matchScore === null
-        ? `Tailored for this job`
-        : `Tailored · job-match ${matchScore}/100`;
-      setTargetTailorStatus('done', doneMsg);
+      const found = (d.matching_keywords || []).length;
+      const total = found + (d.missing_keywords || []).length;
+      const coverage = total ? `${found} of ${total} job keywords` : '';
+      if (d.ai === false) {
+        setTargetTailorStatus('', coverage
+          ? `${coverage} · AI is busy, wording unchanged`
+          : 'AI is busy, so your wording was not changed. Try again in a minute.');
+        setTargetTailorButton('Tailor to this job', false);
+        return;
+      }
+      const verb = d.changed === false ? 'Checked' : 'Tailored';
+      setTargetTailorStatus('done', coverage ? `${verb} · ${coverage}` : `${verb} for this job`);
       setTargetTailorButton('Tailor again', false);
       if (!silent) {
         if (window.showToast) window.showToast(
-          matchScore === null
-            ? 'Resume tailored to this posting. The ATS score was recalculated from your text.'
-            : `Resume tailored to this posting. Estimated job match: ${matchScore}/100.`,
+          coverage
+            ? `Resume ${verb.toLowerCase()}. It now shows ${coverage} from this posting.`
+            : `Resume ${verb.toLowerCase()} against this posting.`,
           'success'
         );
       }
@@ -4047,7 +4353,7 @@
         downloadLink.remove();
       }, 3000);
 
-      if (window.showToast) window.showToast(`Saved native Microsoft Word ${filename}!`, 'success');
+      if (window.showToast) window.showToast(`Saved Microsoft Word file ${filename}.` + atsReadabilityNote(res), 'success');
       return;
     } catch (err) {
       console.warn('Backend DOCX download error, attempting fallback:', err);
@@ -4209,7 +4515,7 @@
       }, 3000);
 
       if (btnText) btnText.innerText = '✅ PDF Downloaded!';
-      if (window.showToast) window.showToast(`Saved ${filename} to your device.`, 'success');
+      if (window.showToast) window.showToast(`Saved ${filename} to your device.` + atsReadabilityNote(res), 'success');
       setTimeout(() => {
         if (btnText) btnText.innerText = origText;
       }, 3000);
@@ -5127,60 +5433,53 @@
 
     const roleLabel = (currentRoleKey || 'software-engineer').replace(/-/g, ' ');
     const targetJobTitle = roleLabel.replace(/\b\w/g, (c) => c.toUpperCase());
-    const targetJobSkills = "Python, SQL, REST APIs, Git, Docker, System Design";
-    const targetJobDesc = "High performance engineering, scalable architecture, clean code, quantified accomplishments.";
 
     try {
-      const res = await fetch('/api/ai/alter-resume/', {
+      // No posting is open, so there are no job keywords to chase. The wording
+      // is tightened for the chosen role and nothing is added to the resume.
+      const res = await fetch('/api/ai/fit-resume/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           job_title: targetJobTitle,
-          company_name: "",
-          job_skills: targetJobSkills,
-          job_description: targetJobDesc,
-          candidate_summary: currentResumeData.summary,
-          candidate_skills: currentResumeData.skills,
-          candidate_projects: currentResumeData.projects
+          experience_level: currentProfileLevel,
+          candidate: {
+            summary: currentResumeData.summary,
+            skills: currentResumeData.skills,
+            projects: currentResumeData.projects,
+            experience: currentResumeData.experience || [],
+            education: currentResumeData.education
+          }
         })
       });
 
       const json = await res.json();
       if (!json.success) {
-        alert("AI Boost failed: " + (json.error || "Server error"));
+        if (window.showToast) window.showToast('AI rewrite failed: ' + (json.error || 'Server error'), 'error');
         return;
       }
 
-      const d = json.data;
+      const d = json.data || {};
+      if (d.ai === false) {
+        if (window.showToast) window.showToast('The AI is busy, so your resume was not changed. Try again in a minute.', 'error');
+        return;
+      }
       if (d.altered_summary) currentResumeData.summary = d.altered_summary;
-      if (d.suggested_skills && Object.keys(d.suggested_skills).length > 0) {
-        currentResumeData.skills = d.suggested_skills;
-      } else if (d.reordered_skills && Object.keys(d.reordered_skills).length > 0) {
-        currentResumeData.skills = d.reordered_skills;
-      } else if (d.altered_skills) {
-        currentResumeData.skills = d.altered_skills;
-      }
-      if (d.altered_projects && d.altered_projects.length > 0) {
-        currentResumeData.projects = d.altered_projects;
-      }
+      if (d.altered_projects && d.altered_projects.length > 0) currentResumeData.projects = d.altered_projects;
+      if (d.altered_experience && d.altered_experience.length > 0) currentResumeData.experience = d.altered_experience;
 
       renderResumeSheet();
       renderProjectsControlsList();
       recalculateAtsScore();
 
-      // No invented score: when the model did not return one, say so instead of
-      // printing a number the evaluator never produced.
-      const newScore = (typeof d.match_score === 'number') ? d.match_score : null;
-      const msg = newScore === null
-        ? '✨ AI rewrite applied. The ATS score below was recalculated from your text.'
-        : `✨ AI rewrite applied. Estimated job match: ${newScore}/100 — the ATS score below is recalculated from your text.`;
-      if (window.showToast) {
-        window.showToast(msg, "success");
-      } else {
-        alert(msg);
-      }
+      if (window.showToast) window.showToast(
+        d.changed
+          ? 'Wording tightened using only what your resume already says. Open a job to see which of its keywords you cover.'
+          : 'Nothing was changed: the AI had no rewrite that stayed true to your resume.',
+        'success'
+      );
     } catch (err) {
-      alert("Network error: " + err.message);
+      if (window.showToast) window.showToast('Network error: ' + err.message, 'error'); else alert('Network error: ' + err.message);
     } finally {
       if (btn) {
         btn.disabled = false;
