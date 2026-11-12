@@ -1095,6 +1095,131 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (_) { /* filter stays usable with the built-in options */ }
   }
 
+  // ---- Picker: every <select> inside a modal opens as its own modal list ----
+  // The native <select> stays (hidden) as the source of truth, so existing code that reads
+  // .value, sets .value, rebuilds options or listens for 'change' keeps working unchanged.
+  const pickerDialog = document.getElementById('pickerDialog');
+  const pickerList = document.getElementById('pickerList');
+  const pickerSearch = document.getElementById('pickerSearch');
+  const selectValueProp = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+  const CHEVRON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  const CHECK = '<svg class="picker-check" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  let pickerTarget = null;
+
+  function pickerLabel(sel) {
+    const own = sel.closest('label')?.querySelector('span');
+    const forLabel = sel.id && document.querySelector(`label[for="${sel.id}"]`);
+    return ((own || forLabel)?.textContent || 'Choose').replace(/\*/g, '').trim();
+  }
+
+  function enhanceSelect(sel) {
+    if (!sel || !pickerDialog || sel.dataset.picker) return;
+    sel.dataset.picker = '1';
+    const label = pickerLabel(sel);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'picker-trigger';
+    btn.setAttribute('aria-haspopup', 'dialog');
+    btn.innerHTML = `<span class="picker-value"></span>${CHEVRON}`;
+    sel.classList.add('picker-native');
+    sel.tabIndex = -1;
+    sel.setAttribute('aria-hidden', 'true');
+    sel.after(btn);
+    const refresh = () => {
+      const o = sel.options[sel.selectedIndex];
+      const text = o ? o.textContent.trim() : '';
+      btn.querySelector('.picker-value').textContent = text;
+      btn.setAttribute('aria-label', `${label}: ${text || 'none'}`);
+      btn.disabled = sel.disabled;
+    };
+    Object.defineProperty(sel, 'value', {  // keep the button in sync when code sets the value
+      configurable: true,
+      get() { return selectValueProp.get.call(this); },
+      set(v) { selectValueProp.set.call(this, v); refresh(); }
+    });
+    sel.addEventListener('change', refresh);
+    new MutationObserver(refresh).observe(sel, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+    btn.addEventListener('click', e => { e.preventDefault(); openPicker(sel, label, btn); });
+    // A wrapping <label> would otherwise focus the hidden select; send the click to the picker.
+    sel.closest('label')?.addEventListener('click', e => {
+      if (!btn.contains(e.target)) { e.preventDefault(); btn.click(); }
+    });
+    sel.pickerRefresh = refresh;
+    refresh();
+  }
+
+  function renderPickerOptions(filter = '') {
+    const sel = pickerTarget?.sel;
+    if (!sel) return;
+    const q = filter.trim().toLowerCase();
+    const opts = [...sel.options].filter(o => !o.disabled && !o.hidden && !(o.value === '' && sel.options.length > 1));
+    const shown = opts.filter(o => !q || o.textContent.toLowerCase().includes(q));
+    pickerList.innerHTML = shown.map(o => {
+      const m = o.textContent.trim().match(/^(.*?)\s*\((\d+)\)$/);  // "Name (12)" -> name + count
+      const text = m ? m[1] : o.textContent.trim();
+      const selected = o.value === sel.value;
+      return `<button type="button" class="picker-option" role="option" aria-selected="${selected}" data-value="${escapeHtml(o.value)}">` +
+        `${CHECK}<span class="picker-text">${escapeHtml(text)}</span>${m ? `<span class="picker-count">${m[2]}</span>` : ''}</button>`;
+    }).join('');
+    document.getElementById('pickerEmpty').hidden = shown.length > 0;
+  }
+
+  function openPicker(sel, label, trigger) {
+    pickerTarget = { sel, trigger };
+    document.getElementById('pickerTitle').textContent = label;
+    const long = sel.options.length > 8;
+    document.getElementById('pickerSearchWrap').hidden = !long;
+    pickerSearch.value = '';
+    renderPickerOptions();
+    pickerDialog.showModal();
+    const current = pickerList.querySelector('[aria-selected="true"]');
+    if (long) pickerSearch.focus();
+    else (current || pickerList.querySelector('.picker-option'))?.focus();
+    current?.scrollIntoView({ block: 'nearest' });
+  }
+
+  function choosePickerValue(value) {
+    const { sel, trigger } = pickerTarget || {};
+    if (!sel) return;
+    pickerDialog.close();
+    if (sel.value !== value) {
+      sel.value = value;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    trigger?.focus();
+  }
+
+  if (pickerDialog) {
+    pickerList.addEventListener('click', e => {
+      const opt = e.target.closest('.picker-option');
+      if (opt) choosePickerValue(opt.dataset.value);
+    });
+    pickerSearch.addEventListener('input', () => renderPickerOptions(pickerSearch.value));
+    pickerSearch.addEventListener('keydown', e => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); pickerList.querySelector('.picker-option')?.focus(); }
+      if (e.key === 'Enter') { e.preventDefault(); const only = pickerList.querySelectorAll('.picker-option'); if (only.length) choosePickerValue(only[0].dataset.value); }
+    });
+    pickerList.addEventListener('keydown', e => {
+      const items = [...pickerList.querySelectorAll('.picker-option')];
+      const i = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); items[Math.min(items.length - 1, i + 1)]?.focus(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); i <= 0 && !pickerSearchWrapHidden() ? pickerSearch.focus() : items[Math.max(0, i - 1)]?.focus(); }
+      if (e.key === 'Home') { e.preventDefault(); items[0]?.focus(); }
+      if (e.key === 'End') { e.preventDefault(); items[items.length - 1]?.focus(); }
+    });
+    const pickerSearchWrapHidden = () => document.getElementById('pickerSearchWrap').hidden;
+    // Escape closes only the picker, not the modal underneath it.
+    pickerDialog.addEventListener('keydown', e => { if (e.key === 'Escape') e.stopPropagation(); });
+    pickerDialog.addEventListener('close', () => { pickerTarget?.trigger?.focus(); });
+    pickerDialog.addEventListener('click', e => { if (e.target === pickerDialog) pickerDialog.close(); });
+    document.getElementById('pickerClose').addEventListener('click', () => pickerDialog.close());
+
+    document.querySelectorAll('#jobFiltersDialog select, #editJobModal select, #moveRequirementsModal select').forEach(enhanceSelect);
+    // The move dialog had its own search box for this list; the picker has search built in.
+    const moveSearch = document.getElementById('filterTargetGroupInput');
+    if (moveSearch) moveSearch.parentElement.style.display = 'none';
+  }
+
   // ---- Filters dialog: every dropdown lives here; the toolbar shows what is active ----
   const JOB_FILTERS = [
     ['crmExperienceFilter', 'Experience'], ['crmCategoryFilter', 'Category'], ['crmGroupFilter', 'Group'],
@@ -1201,22 +1326,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const groupSel = document.getElementById('crmGroupFilter');
     const activeGroup = groupSel && groupSel.value !== 'ALL' ? groupSel.options[groupSel.selectedIndex].textContent : '';
 
+    // Same company, same colour, on every page: a stable hash picks one of 8 hues.
+    const companyHue = (name) => {
+      let h = 0;
+      for (const ch of String(name || '').toLowerCase()) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+      return h % 8;
+    };
+    const companyInitial = (name) => (String(name || '?').trim().match(/[A-Za-z0-9]/) || ['?'])[0].toUpperCase();
+
     const rowsHtml = filtered.map(j => {
       const isExpired = j.time_left_seconds <= 0 || j.status === 'EXPIRED';
       const hoursLeft = Math.max(0, Math.ceil((j.time_left_seconds || 0) / 3600));
       const timeLeft = hoursLeft >= 48 ? `${Math.floor(hoursLeft / 24)}d left` : `${hoursLeft}h left`;
       const isFresher = (j.experience_tier === 'FRESHER' || j.experience_tier === 'INTERNSHIP' || j.job_type === 'INTERNSHIP' || (j.title && /fresher|intern|trainee|0-1/i.test(j.title))) && j.experience_tier !== 'SENIOR_LEVEL' && j.experience_tier !== 'MID_LEVEL';
+      const isIntern = j.experience_tier === 'INTERNSHIP' || j.job_type === 'INTERNSHIP' || /\bintern/i.test(j.title || '');
+      const tier = isIntern ? ['intern', 'Internship'] : isFresher ? ['fresher', 'Fresher'] : ['exp', 'Experienced'];
+      const statusCls = isExpired ? 'off' : hoursLeft <= 24 ? 'soon' : 'on';
       const meta = [j.location || 'India', j.stipend_salary].filter(Boolean).map(escapeHtml).join('<span class="jr-sep">·</span>');
       return `
-        <article class="job-card${isExpired ? ' is-expired' : ''}" data-id="${j.id}">
+        <article class="job-card tier-${tier[0]}${isExpired ? ' is-expired' : ''}" data-id="${j.id}">
           <div class="jc-top">
+            <span class="jc-avatar hue-${companyHue(j.company_name)}" aria-hidden="true">${escapeHtml(companyInitial(j.company_name))}</span>
             <span class="jc-company" title="${escapeHtml(j.company_name)}">${escapeHtml(j.company_name)}</span>
-            <span class="jr-status ${isExpired ? 'off' : 'on'}">${isExpired ? 'Expired' : timeLeft}</span>
+            <span class="jr-status ${statusCls}">${isExpired ? 'Expired' : timeLeft}</span>
           </div>
           <h3 class="jc-title" title="${escapeHtml(j.title)}">${escapeHtml(j.title)}</h3>
           <div class="jc-meta">${meta}</div>
           <div class="jc-sub">
-            <span class="jr-tier ${isFresher ? 'fresher' : 'exp'}">${isFresher ? 'Fresher' : 'Experienced'}</span>
+            <span class="jr-tier ${tier[0]}">${tier[1]}</span>
             <span class="jr-sep">·</span><span class="jr-date">${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</span>
             <span class="jr-id">#${j.id}</span>
           </div>

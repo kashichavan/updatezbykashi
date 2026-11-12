@@ -1151,13 +1151,21 @@
   .kpi-card::before { display: none; }
   .kpi-card:hover { transform: none; box-shadow: var(--card-shadow); border-color: var(--subtle-border); }
   .kpi-card { padding: 14px 16px; }
-  .kpi-card .kpi-value { color: var(--color-text-primary); }
-  .kpi-card-blue .kpi-value { color: var(--blue-primary); }
+  .kpi-card { border-left: 3px solid var(--kpi, #e2e8f0); }
+  .kpi-card-blue { --kpi: #10b981; } .kpi-card-blue .kpi-value { color: #047857; }
+  .kpi-card-indigo { --kpi: #2563eb; } .kpi-card-indigo .kpi-value { color: #1d4ed8; }
+  .kpi-card-emerald { --kpi: #8b5cf6; } .kpi-card-emerald .kpi-value { color: #6d28d9; }
+  .kpi-card-amber { --kpi: #94a3b8; } .kpi-card-amber .kpi-value { color: #475569; }
+  .kpi-card-violet { --kpi: #f59e0b; } .kpi-card-violet .kpi-value { color: #b45309; }
+  .kpi-sub-active { color: #047857 !important; }
   .kpi-sub-danger { color: var(--color-text-muted) !important; }
 
   .owner-exp-label { font-size: 12px; font-weight: 600; color: #64748b; margin-right: 2px; }
   .owner-exp-pill, .owner-exp-pill.fresher, .owner-exp-pill.exp { background: #fff; color: #334155; border: 1px solid #e2e8f0; font-weight: 600; }
-  .owner-exp-pill.active, .owner-exp-pill.fresher.active, .owner-exp-pill.exp.active { background: var(--blue-primary); color: #fff; border-color: var(--blue-primary); }
+  .owner-exp-pill.active { background: var(--blue-primary); color: #fff; border-color: var(--blue-primary); }
+  .owner-exp-pill.fresher.active { background: #047857; border-color: #047857; color: #fff; }
+  .owner-exp-pill.exp.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+  .owner-exp-pill[data-exp="INTERNSHIP"].active { background: #b45309; border-color: #b45309; color: #fff; }
   .pill-count { font-variant-numeric: tabular-nums; opacity: .7; margin-left: 4px; font-weight: 500; }
 
   /* Toolbar */
@@ -1215,7 +1223,20 @@
   .job-card:hover { border-color: #cbd5e1; box-shadow: 0 2px 10px rgba(15, 23, 42, .06); }
   .job-card.is-expired { background: #fbfcfd; }
   .job-card.is-expired .jc-title { color: #64748b; }
-  .jc-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .jc-top { display: flex; align-items: center; gap: 8px; }
+  .jc-top .jr-status { margin-left: auto; }
+  /* Company badge: 8 hues, each tint/ink pair passes WCAG AA for the letter */
+  .jc-avatar { flex-shrink: 0; width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+  .hue-0 { background: #dbeafe; color: #1e40af; } .hue-1 { background: #dcfce7; color: #166534; }
+  .hue-2 { background: #fef3c7; color: #92400e; } .hue-3 { background: #fce7f3; color: #9d174d; }
+  .hue-4 { background: #ede9fe; color: #5b21b6; } .hue-5 { background: #cffafe; color: #155e75; }
+  .hue-6 { background: #ffedd5; color: #9a3412; } .hue-7 { background: #e0e7ff; color: #3730a3; }
+  /* Experience level: thin top rule + matching tag */
+  .job-card { border-top: 3px solid var(--tier, #e2e8f0); }
+  .job-card.tier-fresher { --tier: #10b981; }
+  .job-card.tier-intern { --tier: #f59e0b; }
+  .job-card.tier-exp { --tier: #6366f1; }
+  .job-card.is-expired { --tier: #cbd5e1; }
   .jc-company { font-size: 12.5px; font-weight: 600; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
   .jc-title {
     margin: 0; font-size: 14.5px; font-weight: 650; line-height: 1.3; color: #0f172a;
@@ -1224,15 +1245,19 @@
   .jc-meta, .jc-sub { font-size: 12.5px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .jc-sub { font-size: 12px; display: flex; align-items: center; }
   .jr-sep { color: #cbd5e1; margin: 0 5px; }
-  .jr-tier { font-weight: 600; }
-  .jr-tier.fresher { color: #047857; }
-  .jr-tier.exp { color: #4338ca; }
+  .jr-tier { font-weight: 600; font-size: 11.5px; padding: 1px 7px; border-radius: 999px; }
+  .jr-tier.fresher { color: #065f46; background: #d1fae5; }
+  .jr-tier.intern { color: #92400e; background: #fef3c7; }
+  .jr-tier.exp { color: #3730a3; background: #e0e7ff; }
+  .is-expired .jr-tier { color: #475569; background: #f1f5f9; }
   .jr-date { font-variant-numeric: tabular-nums; }
   .jr-id { margin-left: auto; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
   .jr-status { flex-shrink: 0; font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 5px; }
   .jr-status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .jr-status.on { color: #047857; }
-  .jr-status.off { color: #94a3b8; }
+  .jr-status { padding: 1px 7px 1px 6px; border-radius: 999px; }
+  .jr-status.on { color: #047857; background: #ecfdf5; }
+  .jr-status.soon { color: #b45309; background: #fffbeb; }
+  .jr-status.off { color: #64748b; background: #f1f5f9; }
   .jr-group {
     align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     font: inherit; font-size: 11.5px; color: #1d4ed8; background: #eff6ff; border: 1px solid #dbeafe;
@@ -1288,6 +1313,58 @@
     .job-grid { grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) { .job-card { transition: none; } }
+
+  /* ---------- Picker: selects inside modals open as their own modal list ---------- */
+  .picker-native { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0 0 0 0) !important; border: 0 !important; opacity: 0 !important; pointer-events: none !important; }
+  .picker-trigger {
+    width: 100%; height: 40px; padding: 0 12px; display: flex; align-items: center; gap: 8px;
+    font: inherit; font-size: 14px; font-weight: 500; color: #0f172a; text-align: left;
+    background: #fff; border: 1px solid #cbd5e1; border-radius: 9px; cursor: pointer;
+  }
+  .picker-trigger:hover { border-color: #94a3b8; }
+  .picker-trigger:focus-visible { outline: none; border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+  .picker-trigger:disabled { opacity: .6; cursor: default; }
+  .picker-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .picker-trigger svg { flex-shrink: 0; color: #64748b; }
+  .picker-dialog {
+    position: fixed; inset: 0; margin: auto; height: fit-content; width: min(440px, calc(100vw - 32px)); max-height: min(560px, calc(100vh - 48px));
+    border: 0; padding: 0; border-radius: 14px; box-shadow: 0 24px 60px rgba(15, 23, 42, .3); color: #0f172a;
+    display: none; flex-direction: column; overflow: hidden;
+  }
+  .picker-dialog[open] { display: flex; }
+  .picker-dialog::backdrop { background: rgba(15, 23, 42, .35); }
+  .picker-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; }
+  .picker-head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+  .picker-search { position: relative; margin: 0 16px 8px; }
+  .picker-search[hidden] { display: none; }
+  .picker-search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #64748b; pointer-events: none; }
+  .picker-search input { width: 100%; height: 38px; padding: 0 12px 0 34px; font: inherit; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 9px; }
+  .picker-search input:focus { outline: none; border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+  .picker-list { overflow-y: auto; padding: 4px 8px 10px; overscroll-behavior: contain; }
+  .picker-option {
+    width: 100%; min-height: 40px; padding: 8px 10px; display: flex; align-items: center; gap: 10px;
+    font: inherit; font-size: 14px; color: #0f172a; text-align: left; background: none; border: 0; border-radius: 8px; cursor: pointer;
+  }
+  .picker-option:hover, .picker-option:focus-visible { background: #f1f5f9; outline: none; }
+  .picker-option[aria-selected="true"] { color: var(--blue-primary); font-weight: 600; background: #eff6ff; }
+  .picker-option .picker-check { width: 16px; flex-shrink: 0; visibility: hidden; }
+  .picker-option[aria-selected="true"] .picker-check { visibility: visible; }
+  .picker-option .picker-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .picker-option .picker-count { color: #64748b; font-size: 12.5px; font-variant-numeric: tabular-nums; font-weight: 500; }
+  .picker-empty { margin: 4px 16px 16px; font-size: 13px; color: #64748b; }
+  @media (max-width: 520px) {
+    .picker-dialog { inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: 80vh; border-radius: 16px 16px 0 0; }
+  }
+
+  /* Phone header: the action buttons wrap onto their own row instead of running off-screen */
+  @media (max-width: 640px) {
+    .owner-header-navbar { flex-wrap: wrap; height: auto !important; row-gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+    #ownerRightActions { width: 100%; flex-wrap: wrap; gap: 6px; justify-content: flex-start; }
+    #ownerRightActions > .btn, #ownerRightActions > a, #ownerRightActions > button { height: 34px; padding: 0 10px; font-size: 12.5px; flex: 1 1 auto; justify-content: center; min-width: 0; }
+    #ownerRightActions > div { display: flex; gap: 6px; flex: 1 1 100%; }
+    #ownerRightActions > div > * { flex: 1 1 0; height: 34px; font-size: 12.5px; justify-content: center; }
+    .ig-connect-pill .ig-pill-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
 </style>
 {% endblock %}
 
@@ -2553,7 +2630,19 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026111301"></script>
+<dialog id="pickerDialog" class="picker-dialog" aria-labelledby="pickerTitle">
+  <div class="picker-head">
+    <h2 id="pickerTitle">Choose</h2>
+    <button type="button" class="filters-x" id="pickerClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="picker-search" id="pickerSearchWrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input type="search" id="pickerSearch" placeholder="Search" autocomplete="off" aria-label="Search options">
+  </div>
+  <div class="picker-list" id="pickerList" role="listbox"></div>
+  <p class="picker-empty" id="pickerEmpty" hidden>No matches</p>
+</dialog>
+<script src="{% static 'js/owner.js' %}?v=2026111304"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}
