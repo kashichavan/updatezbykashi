@@ -12,7 +12,9 @@ except ImportError:
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Security & Environment Settings
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+# render.yaml generates SECRET_KEY; accept either name so the key is stable across restarts.
+# (A random per-boot key logs every owner out whenever the free instance sleeps or redeploys.)
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or os.environ.get("SECRET_KEY")
 DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true" or os.environ.get("DEBUG", "false").lower() == "true"
 
 if not SECRET_KEY:
@@ -21,6 +23,8 @@ if not SECRET_KEY:
     else:
         # Require strong secret key in production
         import secrets
+        import warnings
+        warnings.warn("DJANGO_SECRET_KEY/SECRET_KEY not set: using a random key; logins will not survive restarts.")
         SECRET_KEY = secrets.token_urlsafe(64)
 
 raw_hosts = os.environ.get("ALLOWED_HOSTS", "").strip()
