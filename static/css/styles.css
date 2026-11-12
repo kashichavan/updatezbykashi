@@ -138,9 +138,17 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
   max-width: 100%;
+}
+
+.pag-numbers-cluster {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
 }
 
 .pag-btn {
@@ -159,6 +167,8 @@ a {
   justify-content: center;
   gap: 6px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .pag-btn:hover:not(:disabled) {
@@ -192,6 +202,8 @@ a {
   justify-content: center;
   transition: var(--transition);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .pag-page-btn:hover {
@@ -206,6 +218,41 @@ a {
   color: #ffffff;
   border-color: var(--blue-primary);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+@media (max-width: 640px) {
+  .pagination-nav {
+    gap: 5px;
+    width: 100%;
+    justify-content: center;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0;
+  }
+
+  .pag-btn-label {
+    display: none;
+  }
+
+  .pag-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .pag-numbers-cluster {
+    gap: 4px;
+  }
+
+  .pag-page-btn {
+    min-width: 34px;
+    height: 34px;
+    font-size: 12px;
+    padding: 0 3px;
+  }
 }
 
 /* ==========================================================================
@@ -2385,9 +2432,12 @@ a {
 }
 
 /* ── Outer section wrapper ── */
-.rel_filter_section {
+.rel_filter_section,
+#catalogSection,
+.vp-filter-bar {
   width: 100%;
   font-family: var(--font-sans);
+  scroll-margin-top: 80px;
 }
 
 /* ── Main filter shell — matches .vp-product-card aesthetics ── */

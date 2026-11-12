@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Saved view preference (cards vs list)
   const savedViewMode = localStorage.getItem('kashii_job_view_mode') || 'grid';
 
+  const urlPageParam = parseInt(urlParams.get('page'), 10);
+  const initialPage = (!isNaN(urlPageParam) && urlPageParam > 0) ? urlPageParam : 1;
+
   // CRITICAL: Default state MUST have zero filters applied on initial page load
   const state = {
     searchQuery: urlParams.get('q') || urlParams.get('keyword') || '',
@@ -35,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     isTodayOnly: isTodayOnly,
     isYesterdayOnly: isYesterdayOnly,
     isPreviousOnly: isPreviousOnly,
-    page: 1,
+    page: initialPage,
     pageSize: 18, // 18 opportunities per page (6x3 grid layout)
     totalPages: 1,
     totalCount: 0,
@@ -311,6 +314,17 @@ document.addEventListener('DOMContentLoaded', () => {
       state.totalPages = (data.total_pages !== undefined) ? data.total_pages : 1;
       state.page = (data.current_page !== undefined) ? data.current_page : (data.page || 1);
 
+      // Keep browser URL search params in sync (without triggering reload)
+      try {
+        const currentUrl = new URL(window.location.href);
+        if (state.page > 1) {
+          currentUrl.searchParams.set('page', state.page);
+        } else {
+          currentUrl.searchParams.delete('page');
+        }
+        window.history.replaceState({ page: state.page }, '', currentUrl.toString());
+      } catch (e) {}
+
       updateHeadingAndTags();
       renderJobs(state.jobs);
       renderPagination();
@@ -531,26 +545,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const total = state.totalPages;
     const curr = state.page;
 
-    // Smart windowing for page numbers (e.g. 1 2 3 ... 8)
+    const isMobile = window.innerWidth <= 640;
     let pageNumbers = [];
-    if (total <= 7) {
-      for (let i = 1; i <= total; i++) pageNumbers.push(i);
-    } else {
-      if (curr <= 4) {
-        pageNumbers = [1, 2, 3, 4, 5, '...', total];
-      } else if (curr >= total - 3) {
-        pageNumbers = [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    if (isMobile) {
+      if (total <= 4) {
+        for (let i = 1; i <= total; i++) pageNumbers.push(i);
+      } else if (curr <= 2) {
+        pageNumbers = [1, 2, 3, '...', total];
+      } else if (curr >= total - 1) {
+        pageNumbers = [1, '...', total - 2, total - 1, total];
       } else {
-        pageNumbers = [1, '...', curr - 1, curr, curr + 1, '...', total];
+        pageNumbers = [1, '...', curr, '...', total];
+      }
+    } else {
+      if (total <= 7) {
+        for (let i = 1; i <= total; i++) pageNumbers.push(i);
+      } else {
+        if (curr <= 4) {
+          pageNumbers = [1, 2, 3, 4, 5, '...', total];
+        } else if (curr >= total - 3) {
+          pageNumbers = [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+        } else {
+          pageNumbers = [1, '...', curr - 1, curr, curr + 1, '...', total];
+        }
       }
     }
 
     const pagesHtml = pageNumbers.map(p => {
       if (p === '...') {
-        return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:38px;color:var(--muted);font-weight:700;">…</span>`;
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:36px;color:var(--muted);font-weight:700;">…</span>`;
       }
       return `
-        <button class="pag-page-btn ${p === curr ? 'active' : ''}" data-page="${p}">
+        <button class="pag-page-btn ${p === curr ? 'active' : ''}" data-page="${p}" aria-label="Page ${p}">
           ${p}
         </button>
       `;
@@ -563,16 +589,16 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
 
         <nav class="pagination-nav" aria-label="Requirement pagination">
-          <button class="pag-btn" id="btnPrevPage" ${curr <= 1 ? 'disabled' : ''} aria-label="Previous Page">
-            ‹ Previous
+          <button class="pag-btn pag-btn-prev" id="btnPrevPage" ${curr <= 1 ? 'disabled' : ''} aria-label="Previous Page">
+            ‹ <span class="pag-btn-label">Previous</span>
           </button>
 
-          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center;">
+          <div class="pag-numbers-cluster">
             ${pagesHtml}
           </div>
 
-          <button class="pag-btn" id="btnNextPage" ${curr >= total ? 'disabled' : ''} aria-label="Next Page">
-            Next ›
+          <button class="pag-btn pag-btn-next" id="btnNextPage" ${curr >= total ? 'disabled' : ''} aria-label="Next Page">
+            <span class="pag-btn-label">Next</span> ›
           </button>
         </nav>
       </div>
@@ -581,7 +607,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners for Pagination Buttons
     const btnPrev = document.getElementById('btnPrevPage');
     if (btnPrev && curr > 1) {
-      btnPrev.addEventListener('click', () => {
+      btnPrev.addEventListener('click', (e) => {
+        e.preventDefault();
         state.page--;
         scrollAndLoadJobs();
       });
@@ -589,15 +616,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnNext = document.getElementById('btnNextPage');
     if (btnNext && curr < total) {
-      btnNext.addEventListener('click', () => {
+      btnNext.addEventListener('click', (e) => {
+        e.preventDefault();
         state.page++;
         scrollAndLoadJobs();
       });
     }
 
     paginationContainer.querySelectorAll('.pag-page-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const targetPage = parseInt(btn.dataset.page);
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetPage = parseInt(btn.dataset.page, 10);
         if (targetPage && targetPage !== state.page) {
           state.page = targetPage;
           scrollAndLoadJobs();
@@ -607,8 +636,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function scrollAndLoadJobs() {
+    try {
+      const currentUrl = new URL(window.location.href);
+      if (state.page > 1) {
+        currentUrl.searchParams.set('page', state.page);
+      } else {
+        currentUrl.searchParams.delete('page');
+      }
+      window.history.pushState({ page: state.page }, '', currentUrl.toString());
+    } catch (e) {}
+
     loadJobs();
-    const catalogSection = document.getElementById('catalogSection');
+    const catalogSection = document.getElementById('catalogSection') || document.getElementById('jobsGrid');
     if (catalogSection) {
       catalogSection.scrollIntoView({ behavior: 'smooth' });
     }
@@ -1274,6 +1313,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === detailModal) detailModal.classList.remove('active');
       });
     }
+
+    // Browser navigation back/forward support for pagination
+    window.addEventListener('popstate', () => {
+      const p = parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 1;
+      if (p !== state.page) {
+        state.page = p;
+        loadJobs();
+      }
+    });
+
+    // Window resize handler for smart mobile/desktop pagination windowing
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        renderPagination();
+      }, 200);
+    });
   }
 
   function startCountdownTimer() {
@@ -1317,8 +1374,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>"']/g, function(m) {
+    if (str == null) return '';
+    return String(str).replace(/[&<>"']/g, function(m) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
     });
   }

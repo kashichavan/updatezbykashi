@@ -317,11 +317,20 @@ def index_view(request):
                 Q(title__icontains='architect')
             ).exclude(job_type='INTERNSHIP').exclude(experience_tier__in=['INTERNSHIP', 'FRESHER'])
 
+        page_param = request.GET.get('page', '1')
+        try:
+            page_int = max(1, int(page_param))
+        except (ValueError, TypeError):
+            page_int = 1
+
         initial_jobs_count = jobs_qs.count()
-        initial_jobs = list(jobs_qs.order_by('-posted_date', '-created_at')[:18])
+        start_idx = (page_int - 1) * 18
+        end_idx = start_idx + 18
+        initial_jobs = list(jobs_qs.order_by('-posted_date', '-created_at')[start_idx:end_idx])
     except Exception as e:
         logger.warning(f"Error fetching initial_jobs: {e}")
         initial_jobs_count = 0
+        page_int = 1
 
     hero_stats = {'open': 0, 'week': 0, 'internships': 0, 'daily': []}
     try:
@@ -341,6 +350,7 @@ def index_view(request):
         'youtube_videos': videos,
         'initial_jobs': initial_jobs,
         'initial_jobs_count': initial_jobs_count,
+        'current_page': page_int,
     })
 
 
