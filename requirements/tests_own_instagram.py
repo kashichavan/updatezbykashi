@@ -180,10 +180,13 @@ class OAuthTests(Base):
 class InstaAutomationPosterTests(TestCase):
     def test_get_poster_prefers_insta_automation(self):
         from requirements.services import ig_autopilot
-        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="@jobs_account"):
-            p = ig_autopilot.get_poster()
-        self.assertIsInstance(p, ig_autopilot.InstaAutomationPoster)
-        self.assertEqual(p.username, "jobs_account")
+        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="@jobs_account",
+                           INSTAGRAM_ACCOUNT_HANDLE="ikashii_07"):
+            story = ig_autopilot.get_poster()
+            reel = ig_autopilot.get_poster(for_reels=True)
+        self.assertIsInstance(story, ig_autopilot.InstaAutomationPoster)
+        self.assertEqual(story.username, "ikashii_07")  # stories: main account
+        self.assertEqual(reel.username, "jobs_account")  # reels: reels account
 
     def test_reels_never_fall_back_to_story_account(self):
         from requirements.services import ig_autopilot

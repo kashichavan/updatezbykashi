@@ -2479,7 +2479,7 @@ def api_owner_instagram_status(request):
     data.update(info)
     if not data.get('connected') and data.get('configured') and not data.get('error'):
         data['error'] = ('Not connected yet. Open Connect Instagram, sign in to Insta Automation and connect '
-                         f"@{getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}.")
+                         f"@{getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}.")
     return JsonResponse(data)
 
 # ==============================================================================

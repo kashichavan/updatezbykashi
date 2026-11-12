@@ -13,6 +13,7 @@ import math
 import os
 import subprocess
 import tempfile
+import threading
 from dataclasses import dataclass, field
 
 import qrcode
@@ -155,7 +156,9 @@ def _posting_handle(for_reels=False):
             return poster.username
     except Exception:
         pass
-    return (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07'))
+    if for_reels and getattr(settings, 'REEL_ACCOUNT_HANDLE', ''):
+        return settings.REEL_ACCOUNT_HANDLE.lstrip('@')
+    return getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')
 
 
 def build_layout(job, base_url, reply_cta, k):
@@ -517,12 +520,23 @@ def pick_track(job):
     return tracks[job.id % len(tracks)] if tracks and getattr(job, 'id', None) is not None else None
 
 
+# One encode at a time: each costs ~230 MB, and two at once ran the 512 MB Render instance out of memory.
+_render_lock = threading.Lock()
+
+
 def render_video(job, base_url, reply_cta=True, seconds=7.0, fps=24, music=None) -> str:
     """Render (or reuse) an animated MP4; returns the file path. `music` = audio file path or None."""
     variant = _cta_mode(reply_cta) + ('_m' + os.path.splitext(os.path.basename(music))[0][:20] if music else '')
     path = video_cache_path(job, variant, seconds)
     if os.path.exists(path) and os.path.getsize(path) > 0:
         return path
+    with _render_lock:
+        if os.path.exists(path) and os.path.getsize(path) > 0:  # rendered while we waited
+            return path
+        return _encode(job, base_url, reply_cta, seconds, fps, music, path)
+
+
+def _encode(job, base_url, reply_cta, seconds, fps, music, path):
     w = _video_width()
     k = w / 1080
     W, H, sprites = build_layout(job, base_url, reply_cta, k)
@@ -536,6 +550,8 @@ def render_video(job, base_url, reply_cta=True, seconds=7.0, fps=24, music=None)
         *(['-af', f'afade=t=in:d=0.4,afade=t=out:st={max(seconds - 1.2, 0):.2f}:d=1.2'] if music else []),
         '-t', f'{seconds:.2f}', '-shortest', '-map', '0:v', '-map', '1:a',
         '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-pix_fmt', 'yuv420p',
+        # Cap threads: x264 sizes buffers per CPU core, and Render hosts report many cores.
+        '-threads', '2', '-x264-params', 'rc-lookahead=10:sliced-threads=1',
         '-profile:v', 'high', '-c:a', 'aac', '-b:a', '128k' if music else '64k', '-ar', '44100', '-movflags', '+faststart', tmp,
     ]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)

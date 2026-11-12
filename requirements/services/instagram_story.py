@@ -225,8 +225,7 @@ def reelflow_status():
         return {'configured': False, 'connected': False, 'connect_url': f"{url}/instagram/connect/start/?publish=1"}
     try:
         r = requests.get(f"{url}/internal/story/status/", headers={'X-Story-Token': token},
-                         params={'username': (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or
-                                             getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', ''))}, timeout=15)
+                         params={'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}, timeout=15)
         data = r.json()
     except Exception as exc:
         return {'configured': True, 'connected': False, 'error': f'Insta Automation unreachable ({type(exc).__name__})',
@@ -268,8 +267,7 @@ def publish_via_reelflow(job, base_url='', fmt='image', on_stage=None):
                           json={**media,
                                 'link_url': share_url,
                                 'title': f"{job.company_name} - {job.title}"[:255],
-                                'username': (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or
-                                             getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', ''))},
+                                'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')},
                           timeout=150)
         data = r.json()
     except Exception as exc:
@@ -318,7 +316,9 @@ def publish_story_async(job_id, base_url='', fmt='video'):
         try:
             from .ig_autopilot import get_poster
             job = JobPosting.objects.get(pk=job_id)
-            poster = get_poster()
+            # With Insta Automation configured, stories go exactly as before: publish_via_reelflow to the
+            # main account (INSTAGRAM_ACCOUNT_HANDLE). The own-account path is only a fallback without it.
+            poster = None if getattr(settings, 'REELFLOW_STORY_TOKEN', '') else get_poster()
             if poster:
                 from . import ig_graph
                 from .ig_autopilot import publish_story

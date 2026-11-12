@@ -82,7 +82,8 @@ class InstaAutomationPoster:
 
 
 def posting_handle():
-    return (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')).lstrip('@')
+    """Account stories post to: the main account. Reels use REEL_ACCOUNT_HANDLE instead."""
+    return getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '').lstrip('@')
 
 
 def connect_info():

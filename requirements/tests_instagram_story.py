@@ -237,11 +237,13 @@ class AnimatedStoryTests(TestCase):
             def start(self):
                 self.target()
 
-        accepted = Mock(status_code=202)
-        accepted.json.return_value = {"job_id": "abc"}
+        accepted = Mock(status_code=200)
+        accepted.json.return_value = {"success": True, "media_id": "vid1", "username": "ikashii_07"}
         done = Mock(status_code=200)
         done.json.return_value = {"status": "done", "media_id": "vid1"}
-        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="jobs_account"), \
+        # Stories go to the main account through the story endpoint, as before; never the reels account.
+        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="jobs_account",
+                           INSTAGRAM_ACCOUNT_HANDLE="ikashii_07"), \
              patch("threading.Thread", SyncThread), \
              patch("requirements.services.ig_autopilot._time.sleep"), \
              patch("requests.get", return_value=done), \
@@ -250,10 +252,9 @@ class AnimatedStoryTests(TestCase):
                                     data='{"async": true, "format": "video"}', content_type="application/json",
                                     HTTP_ORIGIN="http://testserver")
         self.assertEqual(resp.status_code, 202)
-        self.assertTrue(post.call_args.args[0].endswith("/internal/media/publish/"))
+        self.assertTrue(post.call_args.args[0].endswith("/internal/story/publish/"))
         body = post.call_args.kwargs["json"]
-        self.assertEqual(body["username"], "jobs_account")
-        self.assertEqual(body["kind"], "story")
+        self.assertEqual(body["username"], "ikashii_07")
         self.assertIn("/ig-story-video/", body["video_url"])
         self.assertTrue(body["link_url"])
         status = self.client.get(f"/api/owner/jobs/{self.job.id}/story-status/").json()
