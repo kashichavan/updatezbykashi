@@ -186,6 +186,8 @@ def resolve_target_profile(job) -> Dict[str, Any]:
     location = (posting.location if posting else '') or extra.get('location') or ''
 
     skills_list = [s.strip() for s in raw_skills.split(',') if s.strip()]
+    if posting:
+        skills_list = posting.ats_target_skills()
 
     return {
         'title': title or 'Software Engineer',

@@ -1195,6 +1195,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     ↗ Apply URL
                   </a>
                 </div>
+                <!-- Direct Instagram Story Studio Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                  <button type="button" class="btn btn-secondary btn-open-story-studio" data-id="${j.id}" data-title="${escapeHtml(j.title)}" data-company="${escapeHtml(j.company_name)}" style="height: 34px; font-size: 12px; font-weight: 750; background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; display: inline-flex; align-items: center; justify-content: center; gap: 5px;" title="Open Instagram Story Studio">
+                    📸 Story Studio
+                  </button>
+                  <a href="/api/jobs/${j.id}/ig-story-image/" target="_blank" class="btn btn-ghost" style="height: 34px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" title="Direct link to 9:16 Story Image">
+                    🖼️ 9:16 Image ↗
+                  </a>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
                   <button type="button" class="btn btn-secondary btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}" style="height: 34px; font-size: 12px;" title="Move or assign this requirement to a specific group">
                     ⇄ Move
@@ -1322,6 +1331,160 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       };
     });
+
+    document.querySelectorAll('.btn-open-story-studio').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        openOwnerStoryStudioModal(id);
+      };
+    });
+  }
+
+  // --- OWNER INSTAGRAM STORY STUDIO MODAL LOGIC ---
+  const storyModal = document.getElementById('ownerStoryStudioModal');
+  const btnCloseStoryModal = document.getElementById('btnCloseStoryModal');
+
+  function closeOwnerStoryStudioModal() {
+    if (storyModal) {
+      storyModal.style.display = 'none';
+    }
+  }
+
+  if (btnCloseStoryModal) {
+    btnCloseStoryModal.addEventListener('click', closeOwnerStoryStudioModal);
+  }
+  if (storyModal) {
+    storyModal.addEventListener('click', (e) => {
+      if (e.target === storyModal) closeOwnerStoryStudioModal();
+    });
+  }
+
+  const btnCopySticker = document.getElementById('btnCopyOwnerStickerUrl');
+  if (btnCopySticker) {
+    btnCopySticker.addEventListener('click', async () => {
+      const input = document.getElementById('ownerStoryStickerUrl');
+      if (!input || !input.value) return;
+      try {
+        await navigator.clipboard.writeText(input.value);
+        showToast('✅ Instagram Link Sticker URL copied!', 'success');
+      } catch (err) {
+        input.select();
+        document.execCommand('copy');
+        showToast('✅ Instagram Link Sticker URL copied!', 'success');
+      }
+    });
+  }
+
+  const btnCopyCaption = document.getElementById('btnCopyOwnerCaption');
+  if (btnCopyCaption) {
+    btnCopyCaption.addEventListener('click', async () => {
+      const textarea = document.getElementById('ownerStoryCaptionText');
+      if (!textarea || !textarea.value) return;
+      try {
+        await navigator.clipboard.writeText(textarea.value);
+        showToast('✅ Formatted Story Caption copied ready to paste!', 'success');
+      } catch (err) {
+        textarea.select();
+        document.execCommand('copy');
+        showToast('✅ Formatted Story Caption copied ready to paste!', 'success');
+      }
+    });
+  }
+
+  async function openOwnerStoryStudioModal(jobId) {
+    if (!storyModal) return;
+
+    const imgEl = document.getElementById('ownerStoryPreviewImg');
+    const directLinkEl = document.getElementById('ownerStoryDirectImgLink');
+    const directViewEl = document.getElementById('ownerStoryDirectViewLink');
+    const stickerInput = document.getElementById('ownerStoryStickerUrl');
+    const captionArea = document.getElementById('ownerStoryCaptionText');
+    const titleEl = document.getElementById('ownerStoryJobTitle');
+    const badgeEl = document.getElementById('ownerStoryPublishBadge');
+    const btnPush = document.getElementById('btnOwnerPushStoryMeta');
+    const pushMsg = document.getElementById('ownerStoryPushMsg');
+
+    if (pushMsg) pushMsg.style.display = 'none';
+    if (titleEl) titleEl.textContent = 'Loading Story Assets...';
+    if (imgEl) imgEl.src = '';
+
+    storyModal.style.display = 'flex';
+
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/`);
+      const data = await res.json();
+      const job = data.job;
+
+      if (titleEl) titleEl.textContent = `${job.company_name} — ${job.title}`;
+      const imgUrl = `/api/jobs/${jobId}/ig-story-image/`;
+      if (imgEl) imgEl.src = imgUrl;
+      if (directLinkEl) {
+        directLinkEl.href = imgUrl;
+        directLinkEl.setAttribute('download', `IG_Story_${(job.company_name || 'Job').replace(/[^a-zA-Z0-9]/g, '_')}_${job.id}.png`);
+      }
+      if (directViewEl) {
+        directViewEl.href = imgUrl;
+      }
+      const stickerUrl = job.story_sticker_url || (window.location.origin + `/job/${job.id}/`);
+      if (stickerInput) stickerInput.value = stickerUrl;
+      if (captionArea) captionArea.value = job.insta_story_text || '';
+
+      if (badgeEl) {
+        const isPublished = Boolean(job.insta_story_published);
+        badgeEl.textContent = isPublished ? 'Published to @ikashii_07 ✅' : 'Ready to Post';
+        badgeEl.style.background = isPublished ? '#dcfce7' : '#fef3c7';
+        badgeEl.style.color = isPublished ? '#166534' : '#92400e';
+      }
+
+      if (btnPush) {
+        btnPush.onclick = async () => {
+          btnPush.disabled = true;
+          btnPush.textContent = 'Pushing to Meta API...';
+          try {
+            const pushRes = await fetch(`/api/jobs/${jobId}/publish-ig-story/`, {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'Content-Type': 'application/json'
+              }
+            });
+            const pushData = await pushRes.json();
+            if (pushMsg) {
+              pushMsg.style.display = 'block';
+              if (pushData.success) {
+                pushMsg.style.background = '#dcfce7';
+                pushMsg.style.color = '#166534';
+                pushMsg.innerHTML = `✅ Successfully published story to Instagram! Media ID: <code>${pushData.media_id || ''}</code>`;
+                if (badgeEl) {
+                  badgeEl.textContent = 'Published to @ikashii_07 ✅';
+                  badgeEl.style.background = '#dcfce7';
+                  badgeEl.style.color = '#166534';
+                }
+              } else {
+                pushMsg.style.background = '#fef3c7';
+                pushMsg.style.color = '#92400e';
+                pushMsg.innerHTML = `⚠️ Note: ${pushData.message || pushData.error || 'Meta API returned an error.'}. You can still download the 9:16 image and post directly to @ikashii_07!`;
+              }
+            }
+          } catch (err) {
+            if (pushMsg) {
+              pushMsg.style.display = 'block';
+              pushMsg.style.background = '#fef2f2';
+              pushMsg.style.color = '#991b1b';
+              pushMsg.textContent = 'Error connecting to Meta API: ' + err.message;
+            }
+          } finally {
+            btnPush.disabled = false;
+            btnPush.textContent = '🚀 Push Story Directly to @ikashii_07 (Meta API)';
+          }
+        };
+      }
+    } catch (err) {
+      console.error('Failed to load story assets:', err);
+      if (titleEl) titleEl.textContent = 'Error loading story assets';
+    }
+  }
   }
 
   // --- EDIT JOB MODAL DRAWER LOGIC ---

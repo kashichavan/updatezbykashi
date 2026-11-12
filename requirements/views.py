@@ -2088,15 +2088,19 @@ def api_job_detail(request, pk):
         # Use the explicit posted_date field
         posted_date_display = job.get_posted_date_display()
 
+        share_url = f"/category/{job.category.slug}/job/{job.uuid}/" if job.category and job.uuid else (f"/job/{job.uuid}/" if job.uuid else f"/job/{job.id}/")
+        full_share_url = request.build_absolute_uri(share_url)
+
         return JsonResponse({
             'job': {
                 'id': job.id,
+                'uuid': str(job.uuid) if job.uuid else None,
                 'title': job.title,
                 'company_name': job.company_name,
                 'company_logo_icon': job.company_logo_icon,
-                'category_id': job.category.id,
-                'category_name': job.category.name,
-                'category_slug': job.category.slug,
+                'category_id': job.category.id if job.category else None,
+                'category_name': job.category.name if job.category else 'Tech',
+                'category_slug': job.category.slug if job.category else 'software-tech',
                 'job_type': job.job_type,
                 'job_type_display': job.get_job_type_display(),
                 'stipend_salary': job.stipend_salary,
@@ -2118,6 +2122,12 @@ def api_job_detail(request, pk):
                 'created_at': job.created_at.isoformat(),
                 'posted_date': job.posted_date.isoformat(),
                 'posted_date_display': posted_date_display,
+                'share_url': share_url,
+                'story_sticker_url': full_share_url,
+                'ig_story_image_url': f"/api/jobs/{job.id}/ig-story-image/",
+                'insta_story_text': job.get_insta_story_text(share_url=full_share_url),
+                'insta_story_published': job.insta_story_published,
+                'insta_story_published_at': job.insta_story_published_at.isoformat() if job.insta_story_published_at else None,
             }
         })
 
@@ -3094,7 +3104,7 @@ def _editor_target(profile):
 
 def resume_builder_view(request):
     """
-    ATS 90+ Score Resume Generator with Enterprise Projects & Role-Specific Tailoring.
+    Resume editor with an ATS score and job tailoring.
     Generates single-column ATS compliant resumes engineered to pass Workday, Taleo, Greenhouse, and Lever.
     """
     from .resume_engine import RESUME_ROLES, calculate_ats_score, pick_role_for_skills
@@ -3167,7 +3177,7 @@ def resume_builder_view(request):
     if not ats_eval:
         if target_job:
             from .resume_parser import evaluate_uploaded_resume_ats
-            ats_eval = evaluate_uploaded_resume_ats(initial_resume, target_job.get_skills_list())
+            ats_eval = evaluate_uploaded_resume_ats(initial_resume, target_job.ats_target_skills())
         else:
             ats_eval = calculate_ats_score(initial_resume, selected_role_id)
 
@@ -3641,12 +3651,12 @@ def api_ats_score_eval(request):
                 val_uuid = uuid.UUID(str(job_id))
                 job = JobPosting.objects.filter(uuid=val_uuid).first()
                 if job:
-                    target_skills = job.get_skills_list()
+                    target_skills = job.ats_target_skills()
             except Exception:
                 if str(job_id).isdigit():
                     job = JobPosting.objects.filter(pk=int(job_id)).first()
                     if job:
-                        target_skills = job.get_skills_list()
+                        target_skills = job.ats_target_skills()
 
         # Every score on the site comes from this one evaluator, so the editor,
         # the upload scorecard and Auto Upgrade always agree on the same resume.
@@ -3656,16 +3666,9 @@ def api_ats_score_eval(request):
             target_skills = role_info.get('target_ats_keywords', [])
 
         if target_skills:
+            # Scored exactly as written. Missing contact details cost points and
+            # show up as a fix, which is the truth about the file being sent.
             data = dict(resume_data)
-            contact = dict(data.get('contact') or {})
-            if not contact.get('email') and (data.get('name') in ('YOUR NAME', 'Your Name', '') or not any(contact.values())):
-                data['contact'] = {
-                    'email': 'candidate.dev@example.com',
-                    'phone': '+91 9876543210',
-                    'linkedin': 'linkedin.com/in/candidate',
-                    'github': 'github.com/candidate',
-                    'location': contact.get('location') or 'Bengaluru, India'
-                }
             eval_res = evaluate_uploaded_resume_ats(data, target_skills)
             score = eval_res.get('overall_score', 0)
             # Build checks array for backward compatibility
@@ -3999,8 +4002,6 @@ def api_ai_tailor_resume(request):
                 data['match_score'] = round(100 * len(found) / len(keywords))
                 data['match_grade'] = f"{len(found)} of {len(keywords)} job keywords found"
                 data['missing_critical_keywords'] = [k for k in keywords if k not in found]
-                data['tailored_match_score'] = 95
-                data['tailored_match_grade'] = "Strong Match (ATS 90+)"
             else:
                 data['match_score'] = None
                 data['match_grade'] = 'No clear skills found in this job description'
@@ -4312,15 +4313,6 @@ def _rule_based_review(resume, target_skills):
     from .resume_parser import evaluate_uploaded_resume_ats
 
     data = dict(resume)
-    contact = dict(data.get('contact') or {})
-    if not contact.get('email') and (data.get('name') in ('Your Name', '') or not any(contact.values())):
-        data['contact'] = {
-            'email': 'candidate.dev@example.com',
-            'phone': '+91 9876543210',
-            'linkedin': 'linkedin.com/in/candidate',
-            'github': 'github.com/candidate',
-            'location': contact.get('location') or 'Bengaluru, India'
-        }
     result = evaluate_uploaded_resume_ats(data, target_skills)
     score = result.get('overall_score', 0)
     return {

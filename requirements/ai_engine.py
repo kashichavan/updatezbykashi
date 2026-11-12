@@ -457,7 +457,7 @@ def tailor_resume_to_job(
         "Evaluate how well the candidate's resume matches the provided Job Description and generate tailored ATS enhancements.\n"
         "Return a valid JSON object with the following keys:\n"
         "- 'match_score': integer from 0 to 100\n"
-        "- 'match_grade': string ('Excellent (90+ ATS Pass Rate)', 'Strong Match', 'Moderate', 'Needs Keywords')\n"
+        "- 'match_grade': string ('Excellent', 'Strong Match', 'Moderate', 'Needs Keywords')\n"
         "- 'matched_keywords': list of strings (skills/keywords present in both)\n"
         "- 'missing_critical_keywords': list of strings (top 5-8 crucial skills from the JD missing from the resume)\n"
         "- 'tailored_summary': string (rewritten summary integrating key JD requirements and target role)\n"
@@ -649,7 +649,7 @@ def generate_ai_resume_critique_and_suggestions(
         "List such gaps as things to learn, and never put made-up numbers in an example. "
         "Return a valid JSON object with the following keys:\n"
         "- 'overall_score': integer from 20 to 98 (accurate ATS score)\n"
-        "- 'grade': string (e.g. 'Strong Match (90+ ATS Pass Rate)', 'Moderate - Needs Optimization', 'Critical Gaps Detected')\n"
+        "- 'grade': string (e.g. 'Strong match', 'Moderate - needs keywords', 'Critical gaps'). Never claim an ATS pass or pass rate: nobody can know one from outside.\n"
         "- 'executive_summary': string (2-3 sentences candid critique of the resume's strengths and weaknesses)\n"
         "- 'top_changes_to_make': list of objects with {'category': str, 'issue': str, 'fix': str}\n"
         "- 'missing_critical_skills': list of strings (top 4-7 crucial skills from target role/JD missing from resume)\n"
@@ -793,7 +793,7 @@ def review_resume_with_ai(resume: dict, target_skills: list = None, role_title: 
     system_prompt = (
         "You are an expert technical recruiter scoring a resume against target role requirements. Judge accurately and objectively based on what is written.\n"
         "Fresher resumes may feature high-impact technical projects and no work experience; that is completely acceptable.\n"
-        "Reward specific, believable engineering work with verified metrics and relevant technologies. Resumes with strong action verbs, Google XYZ metrics, high skill relevance, and clear structure should achieve scores of 90 to 98 (Top Tier ATS Pass). Resumes lacking metrics or core skills should score 50 to 75.\n"
+        "Reward specific, believable work that names the tools used and states results the candidate could defend in an interview. Do not reward numbers that look invented, such as round percentages with no stated baseline. A resume that shows most of the target skills inside described work, with clear structure and strong verbs, scores 85 or more; one missing core skills or giving no specifics scores 50 to 75.\n"
         "Return a JSON object with exactly these keys:\n"
         f"- 'checks': list of objects with 'name', 'score' and 'detail' for these bands: {bands}. "
         "'detail' is one plain sentence naming what you saw.\n"
@@ -1211,17 +1211,13 @@ def reverse_engineer_job(
 
 
 def _term_forms(term: str) -> list:
-    """'Search Engine Optimization (SEO)' is found by either of its two forms."""
-    match = re.match(r'^(.*?)\s*\(([^)]+)\)\s*$', term or '')
-    forms = [match.group(1), match.group(2)] if match else [term or '']
-    forms = [form.strip() for form in forms if form.strip()]
-    # "Power BI" on the posting and "PowerBI" on the resume are one skill.
-    joined = [re.sub(r'[\s-]+', '', form) for form in forms if re.search(r'[\s-]', form) and len(form) <= 20]
-    return forms + [form for form in joined if len(form) >= 4]
+    from .resume_engine import term_forms
+    return term_forms(term)
 
 
 def _term_in_text(term: str, text: str) -> bool:
-    return any(has_keyword(form, text) for form in _term_forms(term))
+    from .resume_engine import has_term
+    return has_term(term, text)
 
 
 def blueprint_coverage(blueprint: dict, text: str) -> dict:

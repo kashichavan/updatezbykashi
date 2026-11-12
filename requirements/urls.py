@@ -26,7 +26,7 @@ urlpatterns = [
     path('ai-resume-analysis/', views.resume_analysis_view, name='resume_analysis'),
     path('resume-checker/', views.resume_analysis_view, name='resume_checker'),
 
-    # ATS 90+ Score Resume Generator & Enterprise Project Matcher
+    # Resume editor, ATS score and job tailoring
     path('resume/', views.resume_builder_view, name='resume_builder'),
     path('resume-builder/', views.resume_builder_view, name='resume_builder_alias'),
     path('api/resume/download-pdf/', views.api_download_resume_pdf, name='api_download_resume_pdf'),

@@ -10,7 +10,7 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 from .ai_engine import call_groq_chat
-from .resume_engine import has_keyword, job_match_limit, resume_text, score_project_ats
+from .resume_engine import has_keyword, has_term, job_match_limit, resume_text, score_project_ats
 
 logger = logging.getLogger(__name__)
 
@@ -256,16 +256,35 @@ def parse_resume_into_structured_json(raw_text: str) -> Dict[str, Any]:
     return parse_resume_regex_fallback(raw_text)
 
 
+def _listed_skills(skills) -> List[str]:
+    """The candidate's skills section as a flat list, from any of the shapes it is stored in."""
+    groups = skills.values() if isinstance(skills, dict) else [skills]
+    found, seen = [], set()
+    for group in groups:
+        parts = group if isinstance(group, (list, tuple)) else re.split(r',(?![^()]*\))', str(group or ''))
+        for part in parts:
+            name = re.sub(r'\s*\([^)]*\)', '', str(part)).strip()
+            if name and len(name) <= 40 and name.lower() not in seen:
+                seen.add(name.lower())
+                found.append(name)
+    return found
+
+
 def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_list: Optional[List[str]] = None) -> Dict[str, Any]:
     """
-    Reverse-Engineered Comprehensive ATS Evaluation.
-    Grades resume across 6 industry-standard ATS dimensions:
-    1. Contact & Header Completeness (15 pts)
-    2. Section Structure & Parseability (15 pts)
-    3. Action Verbs Power (20 pts)
-    4. Quantified Metrics & Google XYZ (20 pts)
-    5. Technical Skills & Depth (20 pts)
-    6. System Depth & Scale (10 pts)
+    Score a resume the way an ATS search and a recruiter's first read treat it.
+
+    Six parts, and none assume the candidate is a software engineer:
+    1. Contact details (15)
+    2. Standard sections present (15)
+    3. Bullets that open with a strong verb (20)
+    4. Bullets that state a measured result (20)
+    5. Job keywords on the resume (20), or the candidate's own skills when no job is given
+    6. Keywords shown inside described work, not only in the skills list (10)
+
+    With a job, the total is also capped by keyword coverage: polish cannot
+    make up for missing skills. The grade never claims an ATS pass, because no
+    one can know an employer's result from outside.
     """
     pillars = []
     total_score = 0
@@ -343,7 +362,10 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
         'designed', 'implemented', 'constructed', 'deployed', 'automated', 'integrated',
         'refactored', 'orchestrated', 'streamlined', 'benchmarked', 'scaled', 'accelerated',
         'reduced', 'delivered', 'formulated', 'modeled', 'directed', 'configured', 'provisioned',
-        'authored', 'administered', 'secured', 'migrated', 'tuned', 'monitored', 'established', 'created'
+        'authored', 'administered', 'secured', 'migrated', 'tuned', 'monitored', 'established', 'created',
+        'wrote', 'led', 'managed', 'launched', 'grew', 'increased', 'planned', 'analyzed', 'analysed', 'organized',
+        'organised', 'negotiated', 'trained', 'coordinated', 'produced', 'prepared', 'ran', 'tested', 'resolved',
+        'improved', 'researched', 'presented', 'cut', 'shipped', 'drafted', 'audited', 'sold', 'taught',
     }
     weak_verbs = {'helped', 'worked on', 'assisted', 'handled', 'responsible for', 'tried', 'participated'}
 
@@ -359,7 +381,7 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
     verb_score = min(20, int((strong_count / max(1, len(all_bullets))) * 20))
     if weak_count > 0:
         verb_score = max(5, verb_score - (weak_count * 3))
-        improvements.append("Replace passive phrases ('worked on', 'helped') with high-impact power verbs ('Architected', 'Spearheaded').")
+        improvements.append("Open bullets with what you did ('Built', 'Wrote', 'Ran') instead of 'worked on' or 'helped'.")
 
     total_score += verb_score
     pillars.append({
@@ -385,59 +407,70 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
     total_score += metric_score
     pillars.append({
         "id": "quantified_metrics",
-        "name": "Quantified Metrics (Google XYZ)",
+        "name": "Measured Results",
         "score": metric_score,
         "max_score": 20,
         "status": "pass" if metric_score >= 14 else ("warn" if metric_score >= 8 else "fail"),
-        "detail": f"{bullets_with_metrics} of {len(all_bullets)} bullets include quantified numerical proof."
+        "detail": f"{bullets_with_metrics} of {len(all_bullets)} bullets state a number."
     })
 
-    # 5. Technical Skills & Depth (20 pts)
+    # 5. Keywords on the resume (20 pts)
     content_text = resume_text(parsed_resume)
-    all_content_text = content_text.lower()
+    own_skills = _listed_skills(parsed_resume.get("skills"))
 
     matched_skills = []
     missing_skills = []
     if target_skills_list:
         for s in target_skills_list:
-            (matched_skills if has_keyword(s, content_text) else missing_skills).append(s)
+            (matched_skills if has_term(s, content_text) else missing_skills).append(s)
         job_match = round(len(matched_skills) / len(target_skills_list) * 100)
         skills_score = int(len(matched_skills) / len(target_skills_list) * 20)
         skills_detail = f"{len(matched_skills)} of {len(target_skills_list)} skills this job asks for are on the resume."
     else:
-        # Measure diversity of technical keywords
-        core_tech = ['Python', 'JavaScript', 'SQL', 'React', 'Django', 'Docker', 'AWS', 'REST', 'Git', 'Linux', 'Node', 'Java', 'C++']
-        matched_skills = [t for t in core_tech if has_keyword(t, content_text)]
+        matched_skills = own_skills
         job_match = None
-        skills_score = min(20, len(matched_skills) * 3)
-        skills_detail = f"{len(matched_skills)} common technical skills found. Pick a job to compare against it."
+        skills_score = min(20, len(own_skills) * 2)
+        skills_detail = f"{len(own_skills)} skills listed. Pick a job to see how many of its keywords you cover."
+        if len(own_skills) < 8:
+            improvements.append("List the tools and methods you have actually used, so searches for them can find you.")
 
     total_score += skills_score
     pillars.append({
         "id": "tech_skills",
-        "name": "Technical Stack Relevance",
+        "name": "Job Keywords" if target_skills_list else "Skills Listed",
         "score": skills_score,
         "max_score": 20,
         "status": "pass" if skills_score >= 15 else "warn",
         "detail": skills_detail
     })
 
-    # 6. Architecture & System Depth (10 pts)
-    arch_keywords = [
-        'concurrency', 'distributed', 'redis', 'cache', 'queue', 'kafka', 'lock', 'index',
-        'async', 'celery', 'docker', 'ci/cd', 'jwt', 'rbac', 'microservice', 'latency', 'api',
-        'kubernetes', 'cloud', 'aws', 'terraform', 'graphql', 'load balancer', 'monitoring', 'postgresql'
-    ]
-    arch_matches = sum(1 for k in arch_keywords if k in all_content_text)
-    arch_score = min(10, arch_matches * 2)
-    total_score += arch_score
+    # 6. Keywords shown in work (10 pts)
+    # A recruiter's search counts a skill for more when it sits inside a
+    # description of work, and an interviewer asks where it was used.
+    work_text = " ".join(
+        [str(parsed_resume.get("summary") or "")] + [str(b) for b in all_bullets]
+    )
+    shown_against = matched_skills if target_skills_list else own_skills
+    shown = [term for term in shown_against if has_term(term, work_text)]
+    if shown_against:
+        shown_score = round(10 * len(shown) / len(shown_against))
+        shown_detail = f"{len(shown)} of {len(shown_against)} of these skills appear in your summary or bullets, not only in the skills list."
+    else:
+        shown_score = 0
+        shown_detail = "No skills to check yet."
+    if shown_against and shown_score < 7:
+        unshown = [term for term in shown_against if term not in shown][:3]
+        improvements.append(
+            "Mention where you used " + ", ".join(unshown) + " in a project or job bullet, if you did."
+        )
+    total_score += shown_score
     pillars.append({
         "id": "architecture_depth",
-        "name": "System Architecture & Scale",
-        "score": arch_score,
+        "name": "Skills Shown in Work",
+        "score": shown_score,
         "max_score": 10,
-        "status": "pass" if arch_score >= 7 else "warn",
-        "detail": f"Detected {arch_matches} enterprise architectural keywords (caching, queues, async, docker)."
+        "status": "pass" if shown_score >= 7 else "warn",
+        "detail": shown_detail,
     })
 
     total_score = min(100, total_score)
@@ -447,17 +480,17 @@ def evaluate_uploaded_resume_ats(parsed_resume: Dict[str, Any], target_skills_li
 
     # Grade & Rating Label
     if total_score >= 90:
-        grade = "Top Tier Pass (ATS 90+)"
+        grade = "Excellent"
         pass_rate = "Strong on every check"
     elif total_score >= 75:
-        grade = "Strong Competitive Pass"
+        grade = "Strong"
         pass_rate = "Good. A few improvements left"
     elif total_score >= 60:
-        grade = "Needs Polish"
+        grade = "Needs polish"
         pass_rate = "Add real, measurable results to improve"
     else:
-        grade = "High Risk of ATS Rejection"
-        pass_rate = "Add role keywords and stronger action verbs"
+        grade = "Needs work"
+        pass_rate = "Add the job's keywords you really have, and stronger action verbs"
 
     # Evaluate each project with reverse-engineered ATS score
     scored_projects = []

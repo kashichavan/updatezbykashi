@@ -216,6 +216,19 @@ class JobPosting(models.Model):
     def get_skills_list(self):
         return [s.strip() for s in self.skills_required.split(',') if s.strip()]
 
+    def ats_target_skills(self):
+        """
+        What a resume for this job is scored against.
+
+        Once the posting has been reverse engineered (see ats_blueprint), that
+        list is used, so the editor's score, the upload scorecard and the
+        tailoring panel all count the same keywords. Before then, the skills
+        the poster listed.
+        """
+        blueprint = self.ats_blueprint or {}
+        terms = list(blueprint.get('must_have') or []) + list(blueprint.get('good_to_have') or [])
+        return terms or self.get_skills_list()
+
     def get_selection_rounds_list(self):
         """Returns a list of structured round steps from the selection_process text."""
         if not self.selection_process:
@@ -402,6 +415,18 @@ class JobPosting(models.Model):
             else:
                 out.append(char)
         return "".join(out)
+
+    def get_story_image_url(self):
+        """Relative endpoint to fetch the high-res 9:16 Story PNG."""
+        return f"/api/jobs/{self.id}/ig-story-image/"
+
+    def get_story_sticker_url(self, base_url="https://kashiiupdatez.online"):
+        """Clean direct URL for Instagram Link Stickers."""
+        if self.category and self.uuid:
+            return f"{base_url}/category/{self.category.slug}/job/{self.uuid}/"
+        elif self.uuid:
+            return f"{base_url}/job/{self.uuid}/"
+        return f"{base_url}/job/{self.id}/"
 
     def get_insta_story_text(self, include_link=True, share_url=None, base_url="https://kashiiupdatez.online"):
         """
