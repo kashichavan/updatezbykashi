@@ -1,8 +1,11 @@
 import hashlib
+import logging
 import time
 from django.utils import timezone
 from django.core.cache import cache
 from django.http import JsonResponse, HttpResponse
+
+logger = logging.getLogger(__name__)
 
 
 class RateLimitMiddleware:
@@ -158,9 +161,13 @@ class RateLimitMiddleware:
         return self.get_response(request)
 
 
-# SQLite errors that mean the file itself is unusable. Only these fail the
-# health check; a busy or locked database is still a healthy one.
-_CORRUPT_DB_MARKERS = ('file is not a database', 'database disk image is malformed')
+# SQLite errors that mean the file itself is unusable. Only these trigger
+# self-healing recovery; a busy or locked database is still a healthy one.
+from .db_recovery import (
+    auto_repair_database,
+    check_database_health,
+    is_database_corrupt_error,
+)
 
 
 def database_is_corrupt() -> bool:
@@ -170,17 +177,16 @@ def database_is_corrupt() -> bool:
             cursor.execute('SELECT 1 FROM django_migrations LIMIT 1')
             cursor.fetchone()
     except Exception as e:
-        msg = str(e).lower()
-        if any(m in msg for m in _CORRUPT_DB_MARKERS):
+        if is_database_corrupt_error(e):
             return True
     return False
 
 
 class HealthCheckMiddleware:
     """
-    Answers Render first, with no redirect or host match. It returns 503 only
-    when the database file is corrupt, so Render restarts the instance, which
-    brings back the clean database from the deploy.
+    Answers Render health checks and monitors database integrity on every request.
+    If database corruption ('file is not a database') is detected, automatically
+    triggers in-place self-healing recovery so the site never stays broken.
     """
 
     def __init__(self, get_response):
@@ -189,9 +195,33 @@ class HealthCheckMiddleware:
     def __call__(self, request):
         if request.path == '/healthz':
             if database_is_corrupt():
-                return HttpResponse('database corrupt', status=503, content_type='text/plain')
+                logger.warning(f"[HealthCheckMiddleware] Database corrupt during /healthz. Self-healing...")
+                if auto_repair_database():
+                    return HttpResponse('ok (repaired)', content_type='text/plain')
+                return HttpResponse('database repair in progress', status=503, content_type='text/plain')
             return HttpResponse('ok', content_type='text/plain')
+
+        # Proactive self-healing check on ping endpoint
+        if request.path == '/api/ping' and database_is_corrupt():
+            logger.warning("[HealthCheckMiddleware] Database corrupt during /api/ping. Self-healing...")
+            auto_repair_database()
+
         return self.get_response(request)
+
+    def process_exception(self, request, exception):
+        """
+        Catches unhandled database corruption errors anywhere in the request pipeline
+        and immediately heals the database in-place.
+        """
+        if is_database_corrupt_error(exception):
+            logger.error(f"[HealthCheckMiddleware] Runtime DB corruption caught: {exception}. Auto-healing...")
+            if auto_repair_database():
+                try:
+                    # Retry the view once repaired
+                    return self.get_response(request)
+                except Exception as retry_err:
+                    logger.error(f"[HealthCheckMiddleware] Post-repair retry error: {retry_err}")
+        return None
 
 
 class VisitorAnalyticsMiddleware:

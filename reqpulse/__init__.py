@@ -18,14 +18,19 @@ def configure_sqlite_pragmas(sender, connection, **kwargs):
     """
     if connection.vendor != 'sqlite':
         return
-    cursor = connection.cursor()
-    # busy_timeout first, so the journal-mode switch can wait for a lock.
-    cursor.execute('PRAGMA busy_timeout = 20000;')
     try:
-        cursor.execute('PRAGMA journal_mode = WAL;')
-    except Exception:
-        pass  # another connection holds a lock; WAL persists once any connection sets it
-    cursor.execute('PRAGMA synchronous = NORMAL;')
-    cursor.execute('PRAGMA cache_size = -16000;')  # 16MB cache
-    cursor.execute('PRAGMA temp_store = MEMORY;')
-    cursor.execute('PRAGMA foreign_keys = ON;')
+        cursor = connection.cursor()
+        cursor.execute('PRAGMA busy_timeout = 20000;')
+        try:
+            cursor.execute('PRAGMA journal_mode = WAL;')
+        except Exception:
+            pass  # another connection holds a lock; WAL persists once any connection sets it
+        cursor.execute('PRAGMA synchronous = NORMAL;')
+        cursor.execute('PRAGMA wal_autocheckpoint = 100;')  # Checkpoint frequently to keep WAL small and safe
+        cursor.execute('PRAGMA cache_size = -16000;')  # 16MB cache
+        cursor.execute('PRAGMA temp_store = MEMORY;')
+        cursor.execute('PRAGMA foreign_keys = ON;')
+    except Exception as e:
+        from requirements.db_recovery import is_database_corrupt_error, auto_repair_database
+        if is_database_corrupt_error(e):
+            auto_repair_database()
