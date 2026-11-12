@@ -314,9 +314,23 @@ def publish_story_async(job_id, base_url='', fmt='video'):
         from django.db import close_old_connections
         from ..models import JobPosting
         try:
+            from ..models import IGAccount
             job = JobPosting.objects.get(pk=job_id)
-            res = publish_via_reelflow(job, base_url=base_url, fmt=fmt,
-                                       on_stage=lambda st: cache.set(key, {'state': st}, _STATE_TTL))
+            own = IGAccount.primary()
+            if own:  # Updatez's own Instagram connection: post directly
+                from . import ig_graph
+                from .ig_autopilot import publish_story
+                cache.set(key, {'state': 'rendering'}, _STATE_TTL)
+                try:
+                    media_id = publish_story(job, own)
+                    res = {'success': True, 'media_id': media_id, 'video_url': True,
+                           'message': f"Story posted to @{own.username}."}
+                except ig_graph.IGError as exc:
+                    res = {'success': False, 'message': str(exc), 'needs_reconnect': exc.needs_reconnect,
+                           'connect_url': '/instagram/connect/'}
+            else:
+                res = publish_via_reelflow(job, base_url=base_url, fmt=fmt,
+                                           on_stage=lambda st: cache.set(key, {'state': st}, _STATE_TTL))
             if res.get('success'):
                 cache.set(key, {'state': 'done', 'message': res.get('message', ''),
                                 'media_id': res.get('media_id', ''), 'format': 'video' if res.get('video_url') else 'image'},

@@ -307,6 +307,7 @@ META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN', '')
 REELFLOW_URL = os.environ.get('REELFLOW_URL', 'https://insta.kashiiupdatez.online').rstrip('/')
 REELFLOW_STORY_TOKEN = os.environ.get('REELFLOW_STORY_TOKEN', '')
 PUBLIC_SITE_URL = os.environ.get('PUBLIC_SITE_URL', 'https://kashiiupdatez.online').rstrip('/')
-# Second Instagram account used for the 3 daily job reels (connected in Insta Automation).
+# Daily reels: GitHub Actions calls /internal/reels/run/ with this secret at each slot.
+REELS_CRON_SECRET = os.environ.get('REELS_CRON_SECRET', '')
 REEL_ACCOUNT_HANDLE = os.environ.get('REEL_ACCOUNT_HANDLE', '').lstrip('@')
 

@@ -1172,7 +1172,7 @@
       <button type="button" id="btnOpenReels" class="btn btn-secondary reels-btn" style="{% if not is_owner_authenticated %}display: none;{% endif %}" aria-haspopup="dialog" title="Today's 3 auto-made job reels">
         🎬 <span class="btn-text-full">Reels</span> <span class="reels-badge" id="reelsBadge" hidden>0</span>
       </button>
-      <a href="https://insta.kashiiupdatez.online/instagram/connect/start/?publish=1" id="igConnectPill" class="btn btn-secondary ig-connect-pill" data-state="off" target="_blank" rel="noopener noreferrer" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
+      <a href="/instagram/connect/" id="igConnectPill" class="btn btn-secondary ig-connect-pill" data-state="off" style="{% if not is_owner_authenticated %}display: none;{% endif %}">
         <span class="ig-pill-dot" aria-hidden="true"></span>
         <span class="ig-pill-label">Checking Instagram…</span>
       </a>
@@ -2474,13 +2474,13 @@
       <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; border-bottom: 1px solid var(--subtle-border); padding-bottom: 12px;">
         <div>
           <h2 id="ownerReelsTitle" style="font-size: 18px; font-weight: 800; margin: 0;">🎬 Today's Job Reels</h2>
-          <div id="ownerReelsSub" style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">Auto-made at 9 AM · 1 PM · 7 PM IST. Share → pick a trending audio in Instagram → post.</div>
+          <div id="ownerReelsSub" style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">Posted automatically at 9 AM · 1 PM · 7 PM IST.</div>
         </div>
         <button type="button" id="btnCloseReels" class="btn btn-ghost" aria-label="Close" style="width: 36px; height: 36px; border-radius: 50%;">✕</button>
       </div>
       <div id="ownerReelsAutomation" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #faf5ff; border: 1px solid #e9d5ff; margin-bottom: 14px; font-size: 12.5px;">
-        <span>💬 <b>Comment “LINK”</b> → must follow → DM with that reel's apply link</span>
-        <button type="button" id="btnEnableReelAutomation" class="btn btn-secondary" style="height: 32px; font-size: 12px; font-weight: 750; margin-left: auto;">Enable on reels account</button>
+        <span id="ownerReelsAutoText">💬 <b>Comment “LINK”</b> → must follow → DM with that reel's apply link</span>
+        <a href="/instagram/connect/" id="btnConnectReelsAccount" class="btn btn-secondary" style="height: 32px; font-size: 12px; font-weight: 750; margin-left: auto; text-decoration: none; display: inline-flex; align-items: center;">Connect Instagram</a>
       </div>
       <div id="ownerReelsList" class="reel-grid"><div style="color: var(--color-text-muted); font-size: 13px;">Loading…</div></div>
     </div>
@@ -2516,7 +2516,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026111206"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111207"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

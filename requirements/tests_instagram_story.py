@@ -192,7 +192,7 @@ class ReelFlowStoryTests(TestCase):
         with self.settings(REELFLOW_STORY_TOKEN="", INSTAGRAM_ACCESS_TOKEN=""):
             data = self.client.get("/api/owner/instagram/status/").json()
         self.assertFalse(data["connected"])
-        self.assertIn("publish=1", data["connect_url"])
+        self.assertEqual(data["connect_url"], "/instagram/connect/")
 
 
 class AnimatedStoryTests(TestCase):

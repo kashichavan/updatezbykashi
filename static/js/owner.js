@@ -1476,8 +1476,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- INSTAGRAM 1-CLICK STORIES (via Insta Automation) ---
-  let igState = { connected: false, connect_url: 'https://insta.kashiiupdatez.online/instagram/connect/start/?publish=1' };
+  // --- INSTAGRAM 1-CLICK STORIES (Updatez's own Instagram connection) ---
+  let igState = { connected: false, connect_url: '/instagram/connect/' };
 
   function renderIgPill() {
     const pill = document.getElementById('igConnectPill');
@@ -1487,11 +1487,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const u = (igState.account && igState.account.username) || 'instagram';
       label.textContent = `@${u} connected`;
       pill.dataset.state = 'on';
-      pill.title = 'Stories post in 1 click through Insta Automation. Click to reconnect.';
+      pill.title = igState.error ? `Needs attention: ${igState.error}` : 'Stories and daily reels post automatically. Click to add or reconnect an account.';
     } else {
-      label.textContent = igState.configured === false ? 'Set up Instagram' : 'Connect Instagram';
+      label.textContent = 'Connect Instagram';
       pill.dataset.state = 'off';
-      pill.title = igState.error || 'Connect @ikashii_07 in Insta Automation to post stories in 1 click.';
+      pill.title = 'Connect your Instagram account to post stories and daily reels automatically.';
     }
     pill.href = igState.connect_url;
   }
@@ -1522,17 +1522,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Posts the animated (MP4) story in the background and reports progress on the button.
   async function oneClickStory(jobId, btn) {
-    if (igState.configured === false) {
-      showToast('Instagram link not set up: add REELFLOW_STORY_TOKEN on Render (Updatez) and the same value as UPDATEZ_STORY_TOKEN (Insta Automation).', 'error');
-      return;
-    }
-    if (igState.error) {
-      showToast(`Insta Automation: ${igState.error}`, 'error');
-      return;
-    }
     if (!igState.connected) {
-      showToast('No Instagram account connected yet: opening Insta Automation to connect…', 'error');
-      window.open(igState.connect_url, '_blank', 'noopener');
+      showToast('Connect your Instagram account first…', 'error');
+      setTimeout(() => { location.href = igState.connect_url || '/instagram/connect/'; }, 900);
       return;
     }
     const original = btn.dataset.label || btn.innerHTML;
@@ -1573,8 +1565,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.innerHTML = original;
     if (st.needs_reconnect) {
       igState.connected = false; renderIgPill();
-      showToast('Instagram needs reconnecting (story permission). Opening Insta Automation…', 'error');
-      window.open(st.connect_url || igState.connect_url, '_blank', 'noopener');
+      showToast('Instagram needs reconnecting (permission expired or missing)…', 'error');
+      setTimeout(() => { location.href = '/instagram/connect/'; }, 1200);
     } else {
       showToast(`Story not posted: ${st.message || 'unknown error'}`, 'error');
     }
@@ -1624,24 +1616,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!open) reelsModal.querySelectorAll('video').forEach(v => { v.pause(); v.removeAttribute('src'); v.load(); });
   }
 
+  const REEL_CHIPS = {
+    ready: ['#fef3c7', '#92400e', 'Scheduled'],
+    posting: ['#e0e7ff', '#3730a3', 'Posting…'],
+    posted: ['#dcfce7', '#166534', 'Posted ✅'],
+    failed: ['#fee2e2', '#991b1b', 'Failed'],
+    skipped: ['#f1f5f9', '#475569', 'Skipped']
+  };
+
   function reelCard(r) {
-    const posted = r.status === 'posted';
-    const chip = posted ? '<span class="reel-chip" style="background:#dcfce7;color:#166534;">Posted ✅</span>'
-      : r.status === 'skipped' ? '<span class="reel-chip" style="background:#f1f5f9;color:#475569;">Skipped</span>'
-      : '<span class="reel-chip" style="background:#fef3c7;color:#92400e;">Ready to post</span>';
+    const [bg, fg, label] = REEL_CHIPS[r.status] || REEL_CHIPS.ready;
+    const canPost = r.status === 'ready' || r.status === 'failed';
     return `
       <article class="reel-card" data-id="${r.id}" data-status="${r.status}">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-          <b style="font-size:13px;">⏰ ${escapeHtml(r.slot_label)}</b>${chip}
+          <b style="font-size:13px;">⏰ ${escapeHtml(r.slot_label)}</b>
+          <span class="reel-chip" style="background:${bg};color:${fg};">${label}</span>
         </div>
         <video muted loop playsinline preload="none" data-src="${r.video_url}" aria-label="Reel preview for ${escapeHtml(r.title)}"></video>
         <div style="font-size:13px;font-weight:800;line-height:1.3;">${escapeHtml(r.company)} — ${escapeHtml(r.title)}</div>
+        ${r.error && r.status !== 'posted' ? `<div style="font-size:11.5px;color:#991b1b;background:#fef2f2;border-radius:8px;padding:6px 8px;">⚠️ ${escapeHtml(r.error.slice(0, 180))}</div>` : ''}
         <div class="reel-actions">
-          <button type="button" class="btn btn-reel-share" data-id="${r.id}" style="grid-column:1/-1;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;border:none;">📲 Share to Instagram</button>
+          ${canPost ? `<button type="button" class="btn btn-reel-post" data-id="${r.id}" style="grid-column:1/-1;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;border:none;">🚀 Post now</button>` : ''}
+          <button type="button" class="btn btn-secondary btn-reel-share" data-id="${r.id}">📲 Share manually</button>
           <button type="button" class="btn btn-secondary btn-reel-caption" data-id="${r.id}">📋 Caption</button>
-          <a class="btn btn-ghost" href="${r.video_url}?download=1" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">⬇ MP4</a>
-          <button type="button" class="btn btn-secondary btn-reel-status" data-id="${r.id}" data-status="${posted ? 'ready' : 'posted'}">${posted ? '↩ Undo' : '✅ Posted'}</button>
-          <button type="button" class="btn btn-ghost btn-reel-status" data-id="${r.id}" data-status="skipped">Skip</button>
+          ${r.status === 'ready' ? `<button type="button" class="btn btn-ghost btn-reel-status" data-id="${r.id}" data-status="skipped" style="grid-column:1/-1;">Skip this slot</button>` : ''}
+          ${r.status === 'skipped' ? `<button type="button" class="btn btn-ghost btn-reel-status" data-id="${r.id}" data-status="ready" style="grid-column:1/-1;">↩ Re-schedule</button>` : ''}
         </div>
       </article>`;
   }
@@ -1659,6 +1659,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const sub = document.getElementById('ownerReelsSub');
       if (sub) sub.textContent = `Auto-made at ${(data.slots || []).join(' · ')} IST${data.account ? ` for @${data.account}` : ''}. ` +
         `Share → pick a trending audio in Instagram → post.${data.next_slot ? ` Next reel at ${data.next_slot}.` : ''}`;
+      const autoText = document.getElementById('ownerReelsAutoText');
+      const connectBtn = document.getElementById('btnConnectReelsAccount');
+      if (autoText) autoText.innerHTML = data.account
+        ? `✅ Auto-posting to <b>@${escapeHtml(data.account)}</b> · 💬 Comment “LINK” → must follow → DM with that reel's apply link`
+        : '⚠️ No Instagram account connected: reels are made but <b>not posted</b>. Connect your account to turn on auto-posting.';
+      if (connectBtn) connectBtn.textContent = data.account ? 'Add / reconnect account' : 'Connect Instagram';
+      if (sub) sub.textContent = `Posted automatically at ${(data.slots || []).join(' · ')} IST${data.account ? ` to @${data.account}` : ''}.` +
+        `${data.next_slot ? ` Next reel at ${data.next_slot}.` : ''}`;
       if (!reelsList) return;
       reelsList.innerHTML = reelsCache.length ? reelsCache.map(reelCard).join('')
         : `<div style="color:var(--color-text-muted);font-size:13px;">No reels yet today.${data.next_slot ? ` The first one is made at ${data.next_slot}.` : ''}</div>`;
@@ -1687,6 +1695,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     reelsList.querySelectorAll('.btn-reel-share').forEach(b => {
       b.onclick = () => shareReel(b);
+    });
+    reelsList.querySelectorAll('.btn-reel-post').forEach(b => {
+      b.onclick = async () => {
+        b.disabled = true; b.textContent = '⏳ Posting… (1–3 min)';
+        const data = await (await authFetch(`/api/owner/reels/${b.dataset.id}/post-now/`, { method: 'POST', body: '{}' })).json();
+        if (!data.queued) { showToast(data.message || 'Could not start posting.', 'error'); b.disabled = false; b.textContent = '🚀 Post now'; return; }
+        showToast('🚀 Rendering with music and posting the reel. This takes 1–3 minutes.', 'success');
+        const poll = setInterval(async () => {
+          await loadReels();
+          const r = reelsCache.find(x => String(x.id) === b.dataset.id);
+          if (!r || (r.status !== 'posting' && r.status !== 'ready')) {
+            clearInterval(poll);
+            if (r && r.status === 'posted') showToast('✅ Reel is live on Instagram!', 'success');
+            else if (r && r.error) showToast('Reel not posted: ' + r.error.slice(0, 160), 'error');
+          }
+        }, 5000);
+      };
     });
   }
 
@@ -1719,18 +1744,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnOpenReels')?.addEventListener('click', () => { setReelsModal(true); loadReels(); });
   document.getElementById('btnCloseReels')?.addEventListener('click', () => setReelsModal(false));
   reelsModal?.addEventListener('click', e => { if (e.target === reelsModal) setReelsModal(false); });
-  document.getElementById('btnEnableReelAutomation')?.addEventListener('click', async (e) => {
-    const b = e.currentTarget; b.disabled = true; b.textContent = 'Enabling…';
-    try {
-      const data = await (await authFetch('/api/owner/reels/enable-automation/', { method: 'POST', body: '{}' })).json();
-      if (data.success) { b.textContent = `✅ Active on @${data.username}`; showToast(`Comment “${data.keyword}” automation is live on @${data.username}.`, 'success'); return; }
-      showToast(data.message || data.error || 'Could not enable automation.', 'error');
-      if (data.connect_url) window.open(data.connect_url, '_blank', 'noopener');
-      b.textContent = 'Enable on reels account';
-    } catch (err) { showToast(err.message, 'error'); b.textContent = 'Enable on reels account'; }
-    finally { b.disabled = false; }
-  });
   if (document.getElementById('btnOpenReels')) loadReels();  // fills the badge
+  (() => {
+    const q = new URLSearchParams(location.search);
+    const ig = q.get('ig');
+    if (!ig) return;
+    const msg = { connected: `✅ Instagram @${q.get('account') || ''} connected. Stories and daily reels will post automatically.`,
+      denied: 'Instagram connection was cancelled.', error: 'Instagram connection failed. Please try again.',
+      state_error: 'Instagram connection expired. Please try again.' }[ig];
+    if (msg) showToast(msg, ig === 'connected' ? 'success' : 'error');
+    history.replaceState(null, '', location.pathname);
+  })();
 
   // --- EDIT JOB MODAL DRAWER LOGIC ---
   const editModal = document.getElementById('editJobModal');

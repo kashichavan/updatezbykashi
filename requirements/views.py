@@ -2131,6 +2131,12 @@ def api_job_detail(request, pk):
             }
         })
 
+def _story_replies_enabled():
+    """Story replies get the apply link by DM when Updatez (or Insta Automation) handles messages."""
+    from .models import IGAccount
+    return IGAccount.objects.filter(is_active=True).exists() or bool(getattr(settings, 'REELFLOW_STORY_TOKEN', ''))
+
+
 def api_job_ig_story_image(request, pk):
     """
     Renders and serves high-resolution 1080x1920 (9:16) Instagram Story image
@@ -2143,7 +2149,7 @@ def api_job_ig_story_image(request, pk):
     host_url = request.build_absolute_uri('/').rstrip('/')
     # Default: "Reply APPLY" prompt (Insta Automation DMs the link). mode=sticker is for
     # stories shared by hand, where a Link sticker is added in the Instagram app instead.
-    reply_cta = request.GET.get('mode') != 'sticker' and bool(getattr(settings, 'REELFLOW_STORY_TOKEN', ''))
+    reply_cta = request.GET.get('mode') != 'sticker' and _story_replies_enabled()
     buf = generate_job_story_image(job, base_url=host_url, reply_cta=reply_cta)
 
     response = HttpResponse(buf.getvalue(), content_type='image/jpeg')
@@ -2158,7 +2164,7 @@ def api_job_ig_story_video(request, pk):
 
     job = get_object_or_404(JobPosting, pk=pk)
     host_url = request.build_absolute_uri('/').rstrip('/')
-    reply_cta = request.GET.get('mode') != 'sticker' and bool(getattr(settings, 'REELFLOW_STORY_TOKEN', ''))
+    reply_cta = request.GET.get('mode') != 'sticker' and _story_replies_enabled()
     try:
         path = generate_job_story_video(job, base_url=host_url, reply_cta=reply_cta)
     except Exception as exc:
@@ -2173,13 +2179,13 @@ def api_job_ig_reel_video(request, pk):
     """Animated 9:16 reel (12 s, 'Comment LINK' CTA, silent so trending audio is added in the app)."""
     from django.http import FileResponse, HttpResponse
     from .services.daily_reels import REEL_SECONDS
-    from .services.story_render import render_video
+    from .services.story_render import pick_track, render_video
 
     job = get_object_or_404(JobPosting, pk=pk)
     from .services.instagram_story import _public_base_url
     base = _public_base_url(request.build_absolute_uri('/').rstrip('/'))
     try:
-        path = render_video(job, base, reply_cta='comment', seconds=REEL_SECONDS)
+        path = render_video(job, base, reply_cta='comment', seconds=REEL_SECONDS, music=pick_track(job))
     except Exception as exc:
         logger.exception("Reel render failed for job %s", pk)
         return HttpResponse(f"Reel render failed: {type(exc).__name__}", status=503, content_type='text/plain')
@@ -2194,7 +2200,7 @@ def _reel_json(d):
     return {
         'id': d.id, 'job_id': d.job_id, 'company': d.job.company_name, 'title': d.job.title,
         'slot_at': d.slot_at.isoformat(), 'slot_label': timezone.localtime(d.slot_at).strftime('%-I:%M %p'),
-        'status': d.status, 'caption': d.caption,
+        'status': d.status, 'caption': d.caption, 'error': d.error, 'media_id': d.media_id,
         'video_url': f"/api/jobs/{d.job_id}/ig-reel-video/",
     }
 
@@ -2206,13 +2212,17 @@ def api_owner_reels_today(request):
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
     from .services.daily_reels import ensure_due_drafts, next_slot, slot_hours
     from .services.instagram_story import _public_base_url
-    drafts = ensure_due_drafts(_public_base_url(request.build_absolute_uri('/').rstrip('/')))
+    from .models import IGAccount
+    primary = IGAccount.primary()
+    # With a connected account the autopilot posts the reels; don't pre-render previews here.
+    drafts = ensure_due_drafts(_public_base_url(request.build_absolute_uri('/').rstrip('/')), prerender=not primary)
     nxt = next_slot()
     return JsonResponse({
         'reels': [_reel_json(d) for d in drafts],
         'slots': [f"{h % 12 or 12} {'AM' if h < 12 else 'PM'}" for h in slot_hours()],
         'next_slot': timezone.localtime(nxt).strftime('%-I:%M %p') if nxt else None,
-        'account': getattr(settings, 'REEL_ACCOUNT_HANDLE', ''),
+        'account': primary.username if primary else '',
+        'autopost': True,
     })
 
 
@@ -2237,24 +2247,144 @@ def api_owner_reel_status(request, pk):
     return JsonResponse({'success': True, 'reel': _reel_json(draft)})
 
 
-def api_owner_reels_enable_automation(request):
-    """Owner-only: set up 'comment LINK → follow → DM apply link' on the reels account (Insta Automation)."""
-    import requests as _rq
+def api_owner_reel_post_now(request, pk):
+    """Owner-only: publish one reel draft right away (background)."""
+    import threading
+    from .models import IGAccount, ReelDraft
     if request.method != 'POST':
         return JsonResponse({'error': 'METHOD_NOT_ALLOWED'}, status=405)
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
-    token = getattr(settings, 'REELFLOW_STORY_TOKEN', '')
-    handle = getattr(settings, 'REEL_ACCOUNT_HANDLE', '')
-    if not token or not handle:
-        return JsonResponse({'success': False, 'message': 'Set REELFLOW_STORY_TOKEN and REEL_ACCOUNT_HANDLE on Render first.'})
+    draft = get_object_or_404(ReelDraft, pk=pk)
+    account = IGAccount.primary()
+    if not account:
+        return JsonResponse({'success': False, 'message': 'Connect an Instagram account first.'}, status=409)
+    if draft.status in (ReelDraft.STATUS_POSTING, ReelDraft.STATUS_POSTED):
+        return JsonResponse({'success': False, 'message': f'Reel is already {draft.status}.'}, status=409)
+    from .services.ig_autopilot import publish_reel
+    threading.Thread(target=publish_reel, args=(draft, account), daemon=True, name=f'Reel-{draft.id}').start()
+    return JsonResponse({'success': True, 'queued': True}, status=202)
+
+
+@csrf_exempt
+def internal_reels_run(request):
+    """Called by the GitHub Actions schedule (9 AM / 1 PM / 7 PM IST): posts any due daily reels."""
+    import hmac
+    if request.method != 'POST':
+        return JsonResponse({'error': 'METHOD_NOT_ALLOWED'}, status=405)
+    expected = getattr(settings, 'REELS_CRON_SECRET', '')
+    if not expected or not hmac.compare_digest(expected, request.headers.get('X-Cron-Secret', '')):
+        return JsonResponse({'error': 'FORBIDDEN'}, status=403)
+    from .services.ig_autopilot import run_due_async
+    run_due_async()  # rendering + Instagram processing outlast the proxy timeout
+    return JsonResponse({'accepted': True}, status=202)
+
+
+def instagram_connect(request):
+    """Owner-only: start Instagram Login for Updatez's own Meta app."""
+    import secrets
+    from django.shortcuts import redirect
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return redirect('/owner/')
+    from .services.ig_graph import authorize_url
+    state = secrets.token_urlsafe(24)
+    request.session['ig_oauth_state'] = state
+    return redirect(authorize_url(state))
+
+
+def instagram_oauth_callback(request):
+    """Finish Instagram Login: store the long-lived token, subscribe webhooks, back to the portal."""
+    import hmac
+    from django.shortcuts import redirect
+    from .models import IGAccount
+    from .services import ig_graph
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return redirect('/owner/')
+    expected = request.session.pop('ig_oauth_state', '')
+    if not expected or not hmac.compare_digest(expected, request.GET.get('state', '')):
+        return redirect('/owner/?ig=state_error')
+    if request.GET.get('error') or not request.GET.get('code'):
+        return redirect('/owner/?ig=denied')
     try:
-        r = _rq.post(f"{settings.REELFLOW_URL}/internal/reels/link-automation/", headers={'X-Story-Token': token},
-                     json={'username': handle, 'keyword': 'LINK'}, timeout=30)
-        return JsonResponse(r.json())
-    except Exception as exc:
-        return JsonResponse({'success': False, 'message': f'Insta Automation unreachable ({type(exc).__name__}).'})
+        data = ig_graph.exchange_code(request.GET['code'])
+    except ig_graph.IGError as exc:
+        logger.warning("Instagram OAuth failed: %s", exc)
+        return redirect('/owner/?ig=error')
+    acc, _ = IGAccount.objects.update_or_create(ig_user_id=data['ig_user_id'], defaults={
+        'username': data['username'], 'access_token': data['access_token'],
+        'token_expires_at': data['expires_at'], 'is_active': True, 'last_error': ''})
+    if not IGAccount.objects.filter(is_primary=True, is_active=True).exclude(pk=acc.pk).exists():
+        acc.is_primary = True
+    acc.webhooks_ok, detail = ig_graph.subscribe_webhooks(acc.access_token)
+    if not acc.webhooks_ok:
+        acc.last_error = f"Webhook subscription: {detail}"[:2000]
+    acc.save()
+    return redirect(f'/owner/?ig=connected&account={acc.username}')
+
+
+@csrf_exempt
+def instagram_webhook(request):
+    """Meta webhook for Updatez's own app: comments (LINK) and DMs/postbacks/story replies."""
+    import hashlib
+    import hmac
+    import threading
+    from django.http import HttpResponse, HttpResponseForbidden
+    if request.method == 'GET':
+        if (request.GET.get('hub.mode') == 'subscribe' and settings.META_VERIFY_TOKEN
+                and hmac.compare_digest(request.GET.get('hub.verify_token', ''), settings.META_VERIFY_TOKEN)):
+            return HttpResponse(request.GET.get('hub.challenge', ''), content_type='text/plain')
+        return HttpResponseForbidden('verification failed')
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+    secret = (settings.INSTAGRAM_APP_SECRET or '').encode()
+    sig = request.headers.get('X-Hub-Signature-256', '')
+    good = 'sha256=' + hmac.new(secret, request.body, hashlib.sha256).hexdigest()
+    if not secret or not hmac.compare_digest(sig, good):
+        return HttpResponseForbidden('bad signature')
+    try:
+        payload = json.loads(request.body)
+    except ValueError:
+        return HttpResponse(status=400)
+    from .services.ig_link_dm import handle_webhook
+
+    def _run():
+        from django.db import close_old_connections
+        try:
+            handle_webhook(payload)
+        finally:
+            close_old_connections()
+    threading.Thread(target=_run, daemon=True, name='IGWebhook').start()  # answer Meta fast
+    return HttpResponse('EVENT_RECEIVED')
+
+
+def api_owner_ig_accounts(request):
+    """Owner-only: list connected accounts (GET) or set primary / disconnect (POST)."""
+    from .models import IGAccount
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body or b'{}')
+        except ValueError:
+            body = {}
+        acc = get_object_or_404(IGAccount, pk=body.get('id'))
+        if body.get('action') == 'primary':
+            IGAccount.objects.update(is_primary=False)
+            acc.is_primary, acc.is_active = True, True
+            acc.save(update_fields=['is_primary', 'is_active'])
+        elif body.get('action') == 'disconnect':
+            acc.delete()
+        else:
+            return JsonResponse({'error': 'INVALID_ACTION'}, status=400)
+    return JsonResponse({'accounts': [{
+        'id': a.id, 'username': a.username, 'is_primary': a.is_primary, 'webhooks_ok': a.webhooks_ok,
+        'token_expires_at': a.token_expires_at.isoformat() if a.token_expires_at else None,
+        'last_error': a.last_error,
+    } for a in IGAccount.objects.filter(is_active=True)], 'connect_url': '/instagram/connect/'})
 
 
 def api_owner_job_story_status(request, pk):
@@ -2287,7 +2417,8 @@ def api_publish_job_ig_story(request, pk):
         opts = json.loads(request.body or b'{}')
     except ValueError:
         opts = {}
-    if opts.get('async') and getattr(settings, 'REELFLOW_STORY_TOKEN', ''):
+    from .models import IGAccount
+    if opts.get('async') and (IGAccount.primary() or getattr(settings, 'REELFLOW_STORY_TOKEN', '')):
         # Rendering video + Instagram processing can take a minute: run it in the background.
         fmt = 'video' if opts.get('format', 'video') == 'video' else 'image'
         state = publish_story_async(job.id, base_url=host_url, fmt=fmt)
@@ -2305,8 +2436,15 @@ def api_owner_instagram_status(request):
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    from .models import IGAccount
+    own = IGAccount.primary()
+    if own:
+        return JsonResponse({'configured': True, 'connected': True, 'mode': 'own',
+                             'account': {'username': own.username}, 'error': own.last_error or None,
+                             'connect_url': '/instagram/connect/'})
     from .services.instagram_story import reelflow_status
     data = reelflow_status()
+    data['connect_url'] = '/instagram/connect/'  # always connect through Updatez's own Meta app
     if not data.get('configured') and getattr(settings, 'INSTAGRAM_ACCESS_TOKEN', ''):
         # Legacy direct-token mode still works without Insta Automation.
         data.update({'connected': True, 'mode': 'direct',

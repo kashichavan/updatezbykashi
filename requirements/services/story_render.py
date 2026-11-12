@@ -146,6 +146,18 @@ def _cta_mode(reply_cta):
     return reply_cta
 
 
+def _posting_handle():
+    """Handle shown on the design: the connected primary account, else the configured one."""
+    try:
+        from ..models import IGAccount
+        acc = IGAccount.primary()
+        if acc:
+            return acc.username
+    except Exception:
+        pass
+    return (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07'))
+
+
 def build_layout(job, base_url, reply_cta, k):
     """Return (W, H, sprites) for a story scaled by k (1.0 = 1080x1920).
 
@@ -169,8 +181,7 @@ def build_layout(job, base_url, reply_cta, k):
     d = ImageDraw.Draw(row)
     d.text((row_h // 2, row_h // 2), "K", fill=WHITE, font=font(u(34), 900), anchor='mm')
     d.text((row_h + u(18), row_h // 2), "KASHII UPDATEZ", fill=WHITE, font=font(u(28), 800), anchor='lm')
-    reel_handle = getattr(settings, 'REEL_ACCOUNT_HANDLE', '') if cta_mode == 'comment' else ''
-    handle = f"@{reel_handle or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07')}"
+    handle = f"@{_posting_handle()}"
     d.text((CW, row_h // 2), handle, fill=MUTED, font=font(u(26), 600), anchor='rm')
     sprites.append(Sprite(row, L, u(250), start=0.15, kind='drop'))
 
@@ -489,9 +500,27 @@ def _video_width():
         return 720
 
 
-def render_video(job, base_url, reply_cta=True, seconds=7.0, fps=24) -> str:
-    """Render (or reuse) an animated MP4 story; returns the file path."""
-    path = video_cache_path(job, _cta_mode(reply_cta), seconds)
+MUSIC_DIR = os.path.join(settings.BASE_DIR, 'static', 'reel_music')
+
+
+def music_tracks():
+    try:
+        return sorted(os.path.join(MUSIC_DIR, f) for f in os.listdir(MUSIC_DIR)
+                      if f.lower().endswith(('.mp3', '.m4a', '.aac', '.wav')))
+    except FileNotFoundError:
+        return []
+
+
+def pick_track(job):
+    """Rotate through the royalty-free tracks in static/reel_music/ (None if there are none)."""
+    tracks = music_tracks()
+    return tracks[job.id % len(tracks)] if tracks and getattr(job, 'id', None) is not None else None
+
+
+def render_video(job, base_url, reply_cta=True, seconds=7.0, fps=24, music=None) -> str:
+    """Render (or reuse) an animated MP4; returns the file path. `music` = audio file path or None."""
+    variant = _cta_mode(reply_cta) + ('_m' + os.path.splitext(os.path.basename(music))[0][:20] if music else '')
+    path = video_cache_path(job, variant, seconds)
     if os.path.exists(path) and os.path.getsize(path) > 0:
         return path
     w = _video_width()
@@ -502,10 +531,12 @@ def render_video(job, base_url, reply_cta=True, seconds=7.0, fps=24) -> str:
     cmd = [
         _ffmpeg_exe(), '-y', '-loglevel', 'error',
         '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(fps), '-i', '-',
-        '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
-        '-shortest', '-map', '0:v', '-map', '1:a',
+        *(['-stream_loop', '-1', '-i', music] if music else
+          ['-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100']),
+        *(['-af', f'afade=t=in:d=0.4,afade=t=out:st={max(seconds - 1.2, 0):.2f}:d=1.2'] if music else []),
+        '-t', f'{seconds:.2f}', '-shortest', '-map', '0:v', '-map', '1:a',
         '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-pix_fmt', 'yuv420p',
-        '-profile:v', 'high', '-c:a', 'aac', '-b:a', '64k', '-movflags', '+faststart', tmp,
+        '-profile:v', 'high', '-c:a', 'aac', '-b:a', '128k' if music else '64k', '-ar', '44100', '-movflags', '+faststart', tmp,
     ]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     try:

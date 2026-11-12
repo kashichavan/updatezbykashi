@@ -966,9 +966,12 @@ class ReelDraft(models.Model):
     in-app audio can be added; the 'comment LINK' DM automation then runs on it.
     """
     STATUS_READY = 'ready'
+    STATUS_POSTING = 'posting'
     STATUS_POSTED = 'posted'
+    STATUS_FAILED = 'failed'
     STATUS_SKIPPED = 'skipped'
-    STATUS_CHOICES = [(STATUS_READY, 'Ready'), (STATUS_POSTED, 'Posted'), (STATUS_SKIPPED, 'Skipped')]
+    STATUS_CHOICES = [(STATUS_READY, 'Ready'), (STATUS_POSTING, 'Posting'), (STATUS_POSTED, 'Posted'),
+                      (STATUS_FAILED, 'Failed'), (STATUS_SKIPPED, 'Skipped')]
 
     job = models.ForeignKey(JobPosting, on_delete=models.CASCADE, related_name='reel_drafts')
     slot_at = models.DateTimeField(unique=True)
@@ -976,9 +979,57 @@ class ReelDraft(models.Model):
     caption = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     posted_at = models.DateTimeField(null=True, blank=True)
+    media_id = models.CharField(max_length=64, blank=True, default='')
+    error = models.TextField(blank=True, default='')
+    attempts = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ['-slot_at']
 
     def __str__(self):
         return f"Reel {self.slot_at:%Y-%m-%d %H:%M} · {self.job}"
+
+
+class IGAccount(models.Model):
+    """Instagram professional account connected to Updatez through its own Meta app (Instagram Login)."""
+    ig_user_id = models.CharField(max_length=64, unique=True)
+    username = models.CharField(max_length=120)
+    access_token = models.TextField()  # never sent to the browser
+    token_expires_at = models.DateTimeField(null=True, blank=True)
+    is_primary = models.BooleanField(default=False, help_text="Account that auto-posts stories and daily reels")
+    is_active = models.BooleanField(default=True)
+    webhooks_ok = models.BooleanField(default=False)
+    last_error = models.TextField(blank=True, default='')
+    connected_at = models.DateTimeField(auto_now_add=True)
+    refreshed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-is_primary', 'username']
+
+    def __str__(self):
+        return f"@{self.username}"
+
+    @classmethod
+    def primary(cls):
+        return cls.objects.filter(is_active=True).order_by('-is_primary', '-connected_at').first()
+
+
+class IGPost(models.Model):
+    """Something Updatez published (story or reel) and the job it advertises, for comment/reply → DM."""
+    KIND_STORY = 'story'
+    KIND_REEL = 'reel'
+    account = models.ForeignKey(IGAccount, on_delete=models.CASCADE, related_name='posts')
+    media_id = models.CharField(max_length=64, unique=True)
+    kind = models.CharField(max_length=10, choices=[(KIND_STORY, 'Story'), (KIND_REEL, 'Reel')])
+    job = models.ForeignKey(JobPosting, on_delete=models.SET_NULL, null=True, related_name='ig_posts')
+    link_url = models.URLField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class IGHandledEvent(models.Model):
+    """Webhook event ids already handled (Meta retries deliveries)."""
+    key = models.CharField(max_length=200, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)

@@ -54,14 +54,3 @@ class DailyReelsTests(TestCase):
         resp = Client().get(f"/api/jobs/{self.jobs[0].id}/ig-reel-video/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "video/mp4")
-
-    def test_enable_automation_calls_insta_automation(self):
-        c = Client()
-        c.force_login(User.objects.create_user("reel_owner2", password="x", is_staff=True))
-        ok = Mock()
-        ok.json.return_value = {"success": True, "username": "kashii_jobs", "keyword": "LINK"}
-        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="kashii_jobs"), \
-             patch("requests.post", return_value=ok) as post:
-            data = c.post("/api/owner/reels/enable-automation/", HTTP_ORIGIN="http://testserver").json()
-        self.assertTrue(data["success"])
-        self.assertEqual(post.call_args.kwargs["json"], {"username": "kashii_jobs", "keyword": "LINK"})
