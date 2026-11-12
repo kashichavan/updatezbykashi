@@ -458,7 +458,7 @@
           </div>
           {% endif %}
 
-          <p style="font-size:13px;color: var(--muted);line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ job.description|default:"Open this listing for the full job description."|cut:"**"|truncatewords:22 }}</p>
+          <p style="font-size:13px;color: var(--muted);line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;overflow-wrap:anywhere;">{{ job.description|default:"Open this listing for the full job description."|cut:"**"|truncatewords:22 }}</p>
 
           <div class="skills-wrapper" style="margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 4px;">
             {% for skill in job.get_skills_list|slice:":4" %}

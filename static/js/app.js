@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             ` : ''}
 
-            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, ''))}</p>
+            <p style="font-size:13px;color:#64748b;line-height:1.5;margin:0 0 10px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;overflow-wrap:anywhere;">${escapeHtml(String(j.description || 'Open this listing for the full job description.').replace(/\*\*/g, '').trim().split(/\s+/).slice(0, 22).join(' '))}</p>
 
             ${skillsHtml ? `<div class="skills-wrapper" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:4px;">${skillsHtml}</div>` : ''}
 
