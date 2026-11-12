@@ -111,7 +111,7 @@ python manage.py sync_jobdexo --count 20 || true
 # 8. Seed Indian Market Demonstration Projects Library (36 curated projects)
 python manage.py seed_indian_projects || true
 
-# 9. Ship one self-contained database file. Fold the WAL back into db.sqlite3,
+# 9. Ship one self-contained database file. Fold any WAL back into db.sqlite3,
 # drop the -wal/-shm side files, and fail the build (keeping the previous
 # deploy live) if the result is not a healthy SQLite database.
 python -c "
@@ -126,3 +126,8 @@ if not res or res[0] != 'ok':
 print('==> Database checkpointed to a single file and passed quick_check.')
 "
 rm -f db.sqlite3-wal db.sqlite3-shm
+
+# 10. Keep a checked copy for runtime recovery (requirements/db_recovery.py):
+# if the live file is ever corrupted, the worker restores this copy and restarts.
+cp db.sqlite3 db.sqlite3.release
+echo "==> Saved db.sqlite3.release for runtime recovery."

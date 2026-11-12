@@ -39,3 +39,42 @@ class HealthCheckDatabaseTests(TestCase):
         healthy, reason = check_database_health()
         self.assertTrue(healthy)
         self.assertEqual(reason, 'ok')
+
+
+class DatabaseRecoveryTests(TestCase):
+    """Runs the real recovery against throwaway files, never the project database."""
+
+    def setUp(self):
+        import sqlite3, tempfile
+        from pathlib import Path
+        self.dir = Path(tempfile.mkdtemp())
+        self.live = self.dir / 'db.sqlite3'
+        conn = sqlite3.connect(self.dir / 'db.sqlite3.release')
+        conn.execute('CREATE TABLE django_migrations (id INTEGER PRIMARY KEY, app TEXT)')
+        conn.execute("INSERT INTO django_migrations (app) VALUES ('requirements')")
+        conn.commit()
+        conn.close()
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self.dir, ignore_errors=True)
+
+    def _repair(self):
+        from requirements import db_recovery
+        with self.settings(BASE_DIR=self.dir):
+            return db_recovery.auto_repair_database()
+
+    def test_corrupt_file_is_replaced_by_release_copy(self):
+        self.live.write_bytes(b'not a sqlite file' * 100)
+        (self.dir / 'db.sqlite3-journal').write_bytes(b'stale journal of the broken file')
+        self.assertTrue(self._repair())
+        healthy, reason = check_database_health(self.live)
+        self.assertTrue(healthy, reason)
+        self.assertFalse((self.dir / 'db.sqlite3-journal').exists())
+
+    def test_healthy_file_is_left_alone(self):
+        import shutil
+        shutil.copyfile(self.dir / 'db.sqlite3.release', self.live)
+        before = self.live.stat().st_mtime_ns
+        self.assertFalse(self._repair())
+        self.assertEqual(self.live.stat().st_mtime_ns, before)

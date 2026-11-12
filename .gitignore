@@ -144,3 +144,7 @@ nextjs-frontend/out/
 
 # bunshin run files
 .bunshin/
+
+# Runtime recovery copy made by build.sh
+db.sqlite3.release
+db.sqlite3.restoring
