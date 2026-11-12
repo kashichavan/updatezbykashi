@@ -145,6 +145,7 @@ urlpatterns = [
     path('api/owner/reels/today/', views.api_owner_reels_today, name='api_owner_reels_today'),
     path('api/owner/reels/<int:pk>/status/', views.api_owner_reel_status, name='api_owner_reel_status'),
     path('api/owner/reels/<int:pk>/post-now/', views.api_owner_reel_post_now, name='api_owner_reel_post_now'),
+    path('api/owner/reels/enable-automation/', views.api_owner_reels_enable_automation, name='api_owner_reels_enable_automation'),
     path('api/owner/instagram/accounts/', views.api_owner_ig_accounts, name='api_owner_ig_accounts'),
     path('internal/reels/run/', views.internal_reels_run, name='internal_reels_run'),
     path('instagram/connect/', views.instagram_connect, name='instagram_connect'),

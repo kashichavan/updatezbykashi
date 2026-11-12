@@ -149,10 +149,10 @@ def _cta_mode(reply_cta):
 def _posting_handle():
     """Handle shown on the design: the connected primary account, else the configured one."""
     try:
-        from ..models import IGAccount
-        acc = IGAccount.primary()
-        if acc:
-            return acc.username
+        from .ig_autopilot import get_poster
+        poster = get_poster()
+        if poster:
+            return poster.username
     except Exception:
         pass
     return (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', 'ikashii_07'))

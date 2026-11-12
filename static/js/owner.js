@@ -1665,6 +1665,20 @@ document.addEventListener('DOMContentLoaded', () => {
         ? `✅ Auto-posting to <b>@${escapeHtml(data.account)}</b> · 💬 Comment “LINK” → must follow → DM with that reel's apply link`
         : '⚠️ No Instagram account connected: reels are made but <b>not posted</b>. Connect your account to turn on auto-posting.';
       if (connectBtn) connectBtn.textContent = data.account ? 'Add / reconnect account' : 'Connect Instagram';
+      if (connectBtn && data.connect_url) connectBtn.href = data.connect_url;
+      const linkBtn = document.getElementById('btnEnableLinkAuto');
+      if (linkBtn) {
+        linkBtn.hidden = data.mode !== 'insta_automation';
+        linkBtn.onclick = async () => {
+          linkBtn.disabled = true;
+          try {
+            const r = await authFetch('/api/owner/reels/enable-automation/', { method: 'POST', body: '{}' });
+            const d = await r.json();
+            showToast(d.success ? '✅ Comment “LINK” → follow → DM is on in Insta Automation.' : (d.message || 'Could not enable automation.'), d.success ? 'success' : 'error');
+          } catch (e) { showToast('Could not reach the server.', 'error'); }
+          linkBtn.disabled = false;
+        };
+      }
       if (sub) sub.textContent = `Posted automatically at ${(data.slots || []).join(' · ')} IST${data.account ? ` to @${data.account}` : ''}.` +
         `${data.next_slot ? ` Next reel at ${data.next_slot}.` : ''}`;
       if (!reelsList) return;

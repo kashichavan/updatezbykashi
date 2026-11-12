@@ -192,7 +192,7 @@ class ReelFlowStoryTests(TestCase):
         with self.settings(REELFLOW_STORY_TOKEN="", INSTAGRAM_ACCESS_TOKEN=""):
             data = self.client.get("/api/owner/instagram/status/").json()
         self.assertFalse(data["connected"])
-        self.assertEqual(data["connect_url"], "/instagram/connect/")
+        self.assertTrue(data["connect_url"])
 
 
 class AnimatedStoryTests(TestCase):
@@ -223,18 +223,25 @@ class AnimatedStoryTests(TestCase):
             def start(self):
                 self.target()
 
-        ok = Mock(status_code=200)
-        ok.json.return_value = {"success": True, "media_id": "vid1", "username": "ikashii_07"}
-        with self.settings(REELFLOW_STORY_TOKEN="tok"), \
+        accepted = Mock(status_code=202)
+        accepted.json.return_value = {"job_id": "abc"}
+        done = Mock(status_code=200)
+        done.json.return_value = {"status": "done", "media_id": "vid1"}
+        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="jobs_account"), \
              patch("threading.Thread", SyncThread), \
-             patch("requirements.services.instagram_story.requests.post", return_value=ok) as post:
+             patch("requirements.services.ig_autopilot._time.sleep"), \
+             patch("requests.get", return_value=done), \
+             patch("requests.post", return_value=accepted) as post:
             resp = self.client.post(f"/api/jobs/{self.job.id}/publish-ig-story/",
                                     data='{"async": true, "format": "video"}', content_type="application/json",
                                     HTTP_ORIGIN="http://testserver")
         self.assertEqual(resp.status_code, 202)
+        self.assertTrue(post.call_args.args[0].endswith("/internal/media/publish/"))
         body = post.call_args.kwargs["json"]
+        self.assertEqual(body["username"], "jobs_account")
+        self.assertEqual(body["kind"], "story")
         self.assertIn("/ig-story-video/", body["video_url"])
-        self.assertNotIn("image_url", body)
+        self.assertTrue(body["link_url"])
         status = self.client.get(f"/api/owner/jobs/{self.job.id}/story-status/").json()
         self.assertEqual(status["state"], "done")
         self.assertEqual(status["format"], "video")

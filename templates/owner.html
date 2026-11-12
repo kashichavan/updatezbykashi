@@ -2480,7 +2480,8 @@
       </div>
       <div id="ownerReelsAutomation" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #faf5ff; border: 1px solid #e9d5ff; margin-bottom: 14px; font-size: 12.5px;">
         <span id="ownerReelsAutoText">💬 <b>Comment “LINK”</b> → must follow → DM with that reel's apply link</span>
-        <a href="/instagram/connect/" id="btnConnectReelsAccount" class="btn btn-secondary" style="height: 32px; font-size: 12px; font-weight: 750; margin-left: auto; text-decoration: none; display: inline-flex; align-items: center;">Connect Instagram</a>
+        <button type="button" id="btnEnableLinkAuto" class="btn btn-secondary" style="height: 32px; font-size: 12px; font-weight: 750; margin-left: auto;">Enable LINK auto-DM</button>
+        <a href="/instagram/connect/" target="_blank" rel="noopener" id="btnConnectReelsAccount" class="btn btn-secondary" style="height: 32px; font-size: 12px; font-weight: 750; text-decoration: none; display: inline-flex; align-items: center;">Connect Instagram</a>
       </div>
       <div id="ownerReelsList" class="reel-grid"><div style="color: var(--color-text-muted); font-size: 13px;">Loading…</div></div>
     </div>
@@ -2516,7 +2517,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/owner.js' %}?v=2026111207"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111208"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

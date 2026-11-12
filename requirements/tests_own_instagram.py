@@ -175,3 +175,43 @@ class OAuthTests(Base):
         self.assertFalse(acc.is_primary)  # existing primary kept
         resp = c.get("/api/owner/instagram/accounts/").json()
         self.assertNotIn("IGnew", json.dumps(resp))  # tokens never leave the server
+
+
+class InstaAutomationPosterTests(TestCase):
+    def test_get_poster_prefers_insta_automation(self):
+        from requirements.services import ig_autopilot
+        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="@jobs_account"):
+            p = ig_autopilot.get_poster()
+        self.assertIsInstance(p, ig_autopilot.InstaAutomationPoster)
+        self.assertEqual(p.username, "jobs_account")
+
+    def test_get_poster_none_without_config(self):
+        from requirements.services import ig_autopilot
+        with self.settings(REELFLOW_STORY_TOKEN="", REEL_ACCOUNT_HANDLE="", INSTAGRAM_ACCOUNT_HANDLE=""):
+            self.assertIsNone(ig_autopilot.get_poster())
+
+    def test_publish_failure_raises(self):
+        from unittest.mock import Mock, patch
+        from requirements.services import ig_autopilot, ig_graph
+        bad = Mock(status_code=400)
+        bad.json.return_value = {"message": "No connected account", "needs_reconnect": True}
+        with self.settings(REELFLOW_STORY_TOKEN="tok"), patch("requests.post", return_value=bad):
+            with self.assertRaises(ig_graph.IGError) as ctx:
+                ig_autopilot.InstaAutomationPoster("x").publish("reel", video_url="https://v")
+        self.assertTrue(ctx.exception.needs_reconnect)
+
+    def test_enable_automation_calls_insta_automation(self):
+        from unittest.mock import Mock, patch
+        from django.contrib.auth.models import User
+        from django.test import Client
+        c = Client()
+        c.force_login(User.objects.create_user("auto_owner", password="x", is_staff=True))
+        ok = Mock(status_code=200)
+        ok.json.return_value = {"success": True}
+        with self.settings(REELFLOW_STORY_TOKEN="tok", REEL_ACCOUNT_HANDLE="jobs_account"), \
+             patch("requests.post", return_value=ok) as post:
+            r = c.post("/api/owner/reels/enable-automation/", data="{}", content_type="application/json",
+                       HTTP_ORIGIN="http://testserver")
+        self.assertTrue(r.json()["success"])
+        self.assertTrue(post.call_args.args[0].endswith("/internal/reels/link-automation/"))
+        self.assertEqual(post.call_args.kwargs["json"]["username"], "jobs_account")

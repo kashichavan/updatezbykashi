@@ -2212,16 +2212,19 @@ def api_owner_reels_today(request):
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
     from .services.daily_reels import ensure_due_drafts, next_slot, slot_hours
     from .services.instagram_story import _public_base_url
-    from .models import IGAccount
-    primary = IGAccount.primary()
-    # With a connected account the autopilot posts the reels; don't pre-render previews here.
-    drafts = ensure_due_drafts(_public_base_url(request.build_absolute_uri('/').rstrip('/')), prerender=not primary)
+    from .services.ig_autopilot import get_poster
+    poster = get_poster()
+    # With a posting account the autopilot posts the reels; don't pre-render previews here.
+    drafts = ensure_due_drafts(_public_base_url(request.build_absolute_uri('/').rstrip('/')), prerender=not poster)
     nxt = next_slot()
     return JsonResponse({
         'reels': [_reel_json(d) for d in drafts],
         'slots': [f"{h % 12 or 12} {'AM' if h < 12 else 'PM'}" for h in slot_hours()],
         'next_slot': timezone.localtime(nxt).strftime('%-I:%M %p') if nxt else None,
-        'account': primary.username if primary else '',
+        'account': poster.username if poster else '',
+        'mode': poster.mode if poster else None,
+        'connect_url': (settings.REELFLOW_URL.rstrip('/') + '/instagram/connect/start/?publish=1')
+        if getattr(settings, 'REELFLOW_STORY_TOKEN', '') else '/instagram/connect/',
         'autopost': True,
     })
 
@@ -2250,21 +2253,41 @@ def api_owner_reel_status(request, pk):
 def api_owner_reel_post_now(request, pk):
     """Owner-only: publish one reel draft right away (background)."""
     import threading
-    from .models import IGAccount, ReelDraft
+    from .models import ReelDraft
     if request.method != 'POST':
         return JsonResponse({'error': 'METHOD_NOT_ALLOWED'}, status=405)
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
     draft = get_object_or_404(ReelDraft, pk=pk)
-    account = IGAccount.primary()
-    if not account:
-        return JsonResponse({'success': False, 'message': 'Connect an Instagram account first.'}, status=409)
+    from .services.ig_autopilot import get_poster, publish_reel
+    poster = get_poster()
+    if not poster:
+        return JsonResponse({'success': False, 'message': 'Connect the Instagram account in Insta Automation and set REELFLOW_STORY_TOKEN + REEL_ACCOUNT_HANDLE.'}, status=409)
     if draft.status in (ReelDraft.STATUS_POSTING, ReelDraft.STATUS_POSTED):
         return JsonResponse({'success': False, 'message': f'Reel is already {draft.status}.'}, status=409)
-    from .services.ig_autopilot import publish_reel
-    threading.Thread(target=publish_reel, args=(draft, account), daemon=True, name=f'Reel-{draft.id}').start()
+    threading.Thread(target=publish_reel, args=(draft, poster), daemon=True, name=f'Reel-{draft.id}').start()
     return JsonResponse({'success': True, 'queued': True}, status=202)
+
+
+def api_owner_reels_enable_automation(request):
+    """Owner-only: set up 'comment LINK → follow → DM that post's apply link' in Insta Automation."""
+    import requests as _rq
+    if request.method != 'POST':
+        return JsonResponse({'error': 'METHOD_NOT_ALLOWED'}, status=405)
+    is_auth, _owner = is_authenticated_owner(request)
+    if not is_auth:
+        return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
+    from .services.ig_autopilot import posting_handle
+    token, handle = getattr(settings, 'REELFLOW_STORY_TOKEN', ''), posting_handle()
+    if not token or not handle:
+        return JsonResponse({'success': False, 'message': 'Set REELFLOW_STORY_TOKEN and REEL_ACCOUNT_HANDLE on Render first.'})
+    try:
+        r = _rq.post(f"{settings.REELFLOW_URL}/internal/reels/link-automation/", headers={'X-Story-Token': token},
+                     json={'username': handle, 'keyword': 'LINK'}, timeout=30)
+        return JsonResponse(r.json())
+    except Exception as exc:
+        return JsonResponse({'success': False, 'message': f'Insta Automation unreachable ({type(exc).__name__}).'})
 
 
 @csrf_exempt
@@ -2417,8 +2440,8 @@ def api_publish_job_ig_story(request, pk):
         opts = json.loads(request.body or b'{}')
     except ValueError:
         opts = {}
-    from .models import IGAccount
-    if opts.get('async') and (IGAccount.primary() or getattr(settings, 'REELFLOW_STORY_TOKEN', '')):
+    from .services.ig_autopilot import get_poster
+    if opts.get('async') and (get_poster() or getattr(settings, 'REELFLOW_STORY_TOKEN', '')):
         # Rendering video + Instagram processing can take a minute: run it in the background.
         fmt = 'video' if opts.get('format', 'video') == 'video' else 'image'
         state = publish_story_async(job.id, base_url=host_url, fmt=fmt)
@@ -2436,15 +2459,14 @@ def api_owner_instagram_status(request):
     is_auth, _owner = is_authenticated_owner(request)
     if not is_auth:
         return JsonResponse({'error': 'UNAUTHORIZED'}, status=401)
-    from .models import IGAccount
-    own = IGAccount.primary()
-    if own:
+    from .services.ig_autopilot import OwnPoster, get_poster
+    poster = get_poster()
+    if isinstance(poster, OwnPoster):
         return JsonResponse({'configured': True, 'connected': True, 'mode': 'own',
-                             'account': {'username': own.username}, 'error': own.last_error or None,
+                             'account': {'username': poster.username}, 'error': poster.account.last_error or None,
                              'connect_url': '/instagram/connect/'})
     from .services.instagram_story import reelflow_status
     data = reelflow_status()
-    data['connect_url'] = '/instagram/connect/'  # always connect through Updatez's own Meta app
     if not data.get('configured') and getattr(settings, 'INSTAGRAM_ACCESS_TOKEN', ''):
         # Legacy direct-token mode still works without Insta Automation.
         data.update({'connected': True, 'mode': 'direct',

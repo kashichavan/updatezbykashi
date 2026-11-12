@@ -225,7 +225,8 @@ def reelflow_status():
         return {'configured': False, 'connected': False, 'connect_url': f"{url}/instagram/connect/start/?publish=1"}
     try:
         r = requests.get(f"{url}/internal/story/status/", headers={'X-Story-Token': token},
-                         params={'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')}, timeout=15)
+                         params={'username': (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or
+                                             getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', ''))}, timeout=15)
         data = r.json()
     except Exception as exc:
         return {'configured': True, 'connected': False, 'error': f'Insta Automation unreachable ({type(exc).__name__})',
@@ -267,7 +268,8 @@ def publish_via_reelflow(job, base_url='', fmt='image', on_stage=None):
                           json={**media,
                                 'link_url': share_url,
                                 'title': f"{job.company_name} - {job.title}"[:255],
-                                'username': getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', '')},
+                                'username': (getattr(settings, 'REEL_ACCOUNT_HANDLE', '') or
+                                             getattr(settings, 'INSTAGRAM_ACCOUNT_HANDLE', ''))},
                           timeout=150)
         data = r.json()
     except Exception as exc:
@@ -314,20 +316,21 @@ def publish_story_async(job_id, base_url='', fmt='video'):
         from django.db import close_old_connections
         from ..models import JobPosting
         try:
-            from ..models import IGAccount
+            from .ig_autopilot import get_poster
             job = JobPosting.objects.get(pk=job_id)
-            own = IGAccount.primary()
-            if own:  # Updatez's own Instagram connection: post directly
+            poster = get_poster()
+            if poster:
                 from . import ig_graph
                 from .ig_autopilot import publish_story
                 cache.set(key, {'state': 'rendering'}, _STATE_TTL)
                 try:
-                    media_id = publish_story(job, own)
+                    media_id = publish_story(job, poster)
                     res = {'success': True, 'media_id': media_id, 'video_url': True,
-                           'message': f"Story posted to @{own.username}."}
+                           'message': f"Story posted to @{poster.username}."}
                 except ig_graph.IGError as exc:
                     res = {'success': False, 'message': str(exc), 'needs_reconnect': exc.needs_reconnect,
-                           'connect_url': '/instagram/connect/'}
+                           'connect_url': getattr(settings, 'REELFLOW_URL', '') + '/instagram/connect/start/?publish=1'
+                           if poster.mode == 'insta_automation' else '/instagram/connect/'}
             else:
                 res = publish_via_reelflow(job, base_url=base_url, fmt=fmt,
                                            on_stage=lambda st: cache.set(key, {'state': st}, _STATE_TTL))
