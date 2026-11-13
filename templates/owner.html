@@ -1250,6 +1250,14 @@
   .jr-tier.intern { color: #92400e; background: #fef3c7; }
   .jr-tier.exp { color: #3730a3; background: #e0e7ff; }
   .is-expired .jr-tier { color: #475569; background: #f1f5f9; }
+  .jr-source { font-weight: 700; font-size: 10.5px; padding: 1px 6px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .jr-source.src-jobdexo { color: #0369a1; background: #e0f2fe; border: 1px solid #bae6fd; }
+  .jr-source.src-naukri { color: #1d4ed8; background: #dbeafe; border: 1px solid #bfdbfe; }
+  .jr-source.src-linkedin, .jr-source.src-linkedinreferral { color: #0284c7; background: #e0f2fe; border: 1px solid #bae6fd; }
+  .jr-source.src-startup { color: #047857; background: #d1fae5; border: 1px solid #a7f3d0; }
+  .jr-source.src-direct, .jr-source.src-manual { color: #475569; background: #f1f5f9; border: 1px solid #e2e8f0; }
+  .jr-source-link { font-size: 11px; color: #0284c7; text-decoration: none; display: inline-flex; align-items: center; gap: 3px; }
+  .jr-source-link:hover { text-decoration: underline; }
   .jr-date { font-variant-numeric: tabular-nums; }
   .jr-id { margin-left: auto; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; }
   .jr-status { flex-shrink: 0; font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; gap: 5px; }
@@ -1354,6 +1362,63 @@
   .picker-empty { margin: 4px 16px 16px; font-size: 13px; color: #64748b; }
   @media (max-width: 520px) {
     .picker-dialog { inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: 80vh; border-radius: 16px 16px 0 0; }
+  }
+
+
+  /* ---------- Groups tab ---------- */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .gp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .gp-head h2 { margin: 0; font-size: 20px; font-weight: 700; color: #0f172a; }
+  .gp-head p { margin: 4px 0 0; font-size: 13.5px; color: #475569; max-width: 60ch; }
+  .gp-head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gp-select { flex: 0 0 190px; min-width: 0; }
+  .gp-select-sm { flex-basis: 150px; }
+  .gp-select select { width: 100%; height: 40px; padding: 0 10px; font: inherit; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; }
+  .gp-select .picker-trigger { height: 40px; }
+  .group-card .jc-title { min-height: 2.6em; }
+  .group-card.tier-gen, .group-card:not([class*="tier-"]) { --tier: #0ea5e9; }
+  .jr-tier.gen { color: #075985; background: #e0f2fe; }
+  .gc-actions { grid-template-columns: 1fr 1.2fr 1fr auto; }
+  .gp-empty { text-align: center; padding: 48px 16px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #fff; }
+  .gp-empty h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; color: #0f172a; }
+  .gp-empty p { margin: 0 0 14px; font-size: 13.5px; color: #475569; }
+  /* Group jobs dialog */
+  .gj-dialog { width: min(720px, calc(100vw - 32px)); }
+  .gj-headtext { min-width: 0; }
+  .gj-headtext h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gj-sub { font-size: 12.5px; color: #475569; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .gj-tools { display: flex; gap: 12px; align-items: center; padding: 10px 20px; border-bottom: 1px solid #e2e8f0; }
+  .gj-all { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: #334155; white-space: nowrap; cursor: pointer; }
+  .gj-tools input[type="search"] { flex: 1; min-width: 0; height: 36px; padding: 0 12px; font: inherit; font-size: 13.5px; border: 1px solid #cbd5e1; border-radius: 9px; }
+  .gj-tools input[type="search"]:focus { outline: none; border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, .15); }
+  .gj-list { overflow-y: auto; padding: 6px 12px; min-height: 120px; overscroll-behavior: contain; }
+  .gj-item { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; }
+  .gj-item[hidden] { display: none; }
+  .gj-item:hover { background: #f8fafc; }
+  .gj-item:has(.gj-check:checked) { background: #eff6ff; }
+  .gj-check { width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--blue-primary); }
+  .gj-main { flex: 1; min-width: 0; display: flex; flex-direction: column; cursor: pointer; }
+  .gj-title { font-size: 14px; font-weight: 600; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .gj-meta { font-size: 12.5px; color: #475569; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; }
+  .gj-meta .jr-id { margin-left: 0; }
+  .gj-item .jr-btn { height: 28px; }
+  .gj-empty { margin: 24px 8px; text-align: center; font-size: 13.5px; color: #475569; }
+  .gj-foot { align-items: center; flex-wrap: wrap; }
+  .gj-count { font-size: 13px; color: #475569; font-variant-numeric: tabular-nums; }
+  .gj-foot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .gj-foot-actions button:disabled { opacity: .45; cursor: default; }
+  .gj-danger { color: #b91c1c; }
+  .gj-danger:hover:not(:disabled) { background: #fef2f2; border-color: #fecaca; }
+  @media (max-width: 640px) {
+    .gp-head-actions { width: 100%; }
+    .gp-head-actions > * { flex: 1 1 auto; justify-content: center; }
+    .gp-select, .gp-select-sm { flex: 1 1 calc(50% - 4px); }
+    .gj-dialog { inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; }
+    .gj-dialog .filters-form { max-height: 88vh; }
+    .gj-dialog .filters-foot { border-radius: 0; padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+    .gj-item .jr-status { display: none; }
+    .gj-foot-actions { width: 100%; }
+    .gj-foot-actions > * { flex: 1 1 0; justify-content: center; padding: 0 8px; }
   }
 
   /* Phone header: the action buttons wrap onto their own row instead of running off-screen */
@@ -1633,10 +1698,11 @@
             <label class="filter-field"><span>Source</span>
               <select id="crmSourceFilter">
                 <option value="ALL" selected>Any source</option>
-                <option value="Naukri">Naukri</option>
                 <option value="Jobdexo">Jobdexo</option>
+                <option value="Naukri">Naukri</option>
                 <option value="LinkedIn">LinkedIn</option>
                 <option value="Startup">Indian startups</option>
+                <option value="Direct">Direct / Careers</option>
               </select>
             </label>
             <label class="filter-field"><span>Posted</span>
@@ -2085,73 +2151,72 @@
          TAB 5: REQUIREMENT GROUPS & MULTI-JOB BUNDLES
          ========================================== -->
     <div id="tabGroups" class="workspace-card tab-content" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+      <div class="gp-head">
         <div>
-          <h2 style="font-size: var(--text-xl); font-weight: 800; margin: 0; color: var(--color-text-primary);">Requirement Groups &amp; Drives</h2>
-          <p style="font-size: var(--text-sm); color: var(--color-text-muted); margin: 4px 0 0;">Shareable collections of multiple requirements with auto-cleanup of empty groups and 1-click requirement transfers.</p>
+          <h2>All groups</h2>
+          <p>Each group is one shareable page of jobs. Open a group to move, copy or remove its jobs.</p>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <button id="btnOpenMoveByIdGroups" type="button" class="btn btn-primary" title="Move or assign any requirement by typing its Job ID">
-            Move by job ID
-          </button>
-          <button id="btnAutoOrganizeGroups" type="button" class="btn btn-secondary" style="background: var(--blue-light); color: var(--blue-primary); border-color: var(--blue-border);" title="Automatically segregate active requirements into dedicated Freshers and Experienced hiring drives and clean empty groups">
-            ⚡ Auto-Segregate Freshers &amp; Experience Groups
-          </button>
-          <button id="btnRefreshGroups" type="button" class="btn btn-secondary">
-            🔄 Refresh Groups
-          </button>
+        <div class="gp-head-actions">
+          <button id="btnAutoOrganizeGroups" type="button" class="jobs-tool-btn" title="Put today's live jobs into one freshers group and one experienced group">Auto-sort by experience</button>
+          <button id="btnRefreshGroups" type="button" class="jobs-tool-btn">Refresh</button>
+          <button id="btnOpenMoveByIdGroups" type="button" class="jobs-primary-btn">Move by job ID</button>
         </div>
       </div>
-      <!-- Global Multi-Group Bulk Action Bar -->
-      <div id="groupsGlobalBulkBar" style="display: none; margin-bottom: 16px; padding: 12px 18px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid var(--blue-border); border-radius: var(--radius-md); justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 18px;">📦</span>
-          <div>
-            <span id="groupsGlobalBulkText" style="font-size: var(--text-sm); font-weight: 800; color: var(--blue-dark);">0 requirements selected</span>
-            <div style="font-size: 11.5px; color: var(--color-text-muted);">Ready to move to a new or existing group</div>
+
+      <div class="jobs-toolbar gp-toolbar">
+        <div class="jobs-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="ownerGroupsSearch" placeholder="Search groups by name" aria-label="Search groups" autocomplete="off">
+          <button id="btnGroupsSearchClear" type="button" class="jobs-search-clear" style="display: none;" aria-label="Clear search">&times;</button>
+        </div>
+        <label class="gp-select">
+          <span class="sr-only">Show</span>
+          <select id="ownerGroupsFilter">
+            <option value="all" selected>All groups</option>
+            <option value="active">With live jobs</option>
+            <option value="freshers">Freshers</option>
+            <option value="experienced">Experienced</option>
+            <option value="empty">Empty</option>
+            <option value="expired">Expired</option>
+          </select>
+        </label>
+        <label class="gp-select gp-select-sm">
+          <span class="sr-only">Groups per page</span>
+          <select id="ownerGroupsPageSize">
+            <option value="24" selected>24 per page</option>
+            <option value="48">48 per page</option>
+            <option value="96">96 per page</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="ownerGroupsTableContainer" aria-live="polite"></div>
+    </div>
+
+    <dialog id="groupJobsDialog" class="filters-dialog gj-dialog" aria-labelledby="groupJobsTitle">
+      <div class="filters-form">
+        <div class="filters-head">
+          <div class="gj-headtext">
+            <h2 id="groupJobsTitle">Group</h2>
+            <div id="groupJobsSub" class="gj-sub"></div>
+          </div>
+          <button type="button" class="filters-x" id="groupJobsClose" aria-label="Close">&times;</button>
+        </div>
+        <div class="gj-tools">
+          <label class="gj-all"><input type="checkbox" id="groupJobsSelectAll"> Select all</label>
+          <input type="search" id="groupJobsSearch" placeholder="Filter by title, company or ID" aria-label="Filter jobs in this group" autocomplete="off">
+        </div>
+        <div class="gj-list" id="groupJobsList"></div>
+        <div class="filters-foot gj-foot">
+          <span id="groupJobsCount" class="gj-count">None selected</span>
+          <div class="gj-foot-actions">
+            <button type="button" id="groupJobsRemoveSel" class="jobs-tool-btn gj-danger" disabled>Remove</button>
+            <button type="button" id="groupJobsCopySel" class="jobs-tool-btn" disabled>Copy to…</button>
+            <button type="button" id="groupJobsMoveSel" class="jobs-primary-btn" disabled>Move to…</button>
           </div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" id="btnGroupsBulkMoveAll" class="btn btn-primary" style="height: 34px; font-size: 12.5px; font-weight: 700; padding: 0 14px;">
-            ⇄ Move Selected to Group
-          </button>
-          <button type="button" id="btnGroupsClearSelection" class="btn btn-secondary" style="height: 34px; font-size: 12.5px; background: #ffffff;">
-            ✕ Clear
-          </button>
-        </div>
       </div>
-
-      <!-- Groups Search & Filter Toolbar -->
-      <div class="standard-toolbar" style="margin-bottom: 16px;">
-        <div class="search-wrapper" style="position: relative; flex: 1;">
-          <span class="search-icon" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-muted);">🔍</span>
-          <input type="text" id="ownerGroupsSearch" class="search-input" placeholder="Search groups by name or slug..." style="width: 100%; padding-left: 42px; padding-right: 36px;">
-          <button id="btnGroupsSearchClear" type="button" style="display: none; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 14px; color: var(--color-text-muted); cursor: pointer; padding: 4px;" title="Clear search">✕</button>
-        </div>
-
-        <div class="filters-group">
-          <select id="ownerGroupsFilter" class="standard-select">
-            <option value="all" selected>All Groups</option>
-            <option value="freshers">🎓 Freshers Drives (0-1 Yrs)</option>
-            <option value="experienced">💼 Experienced Lateral Drives</option>
-            <option value="active">Active Drives Only (With Jobs)</option>
-            <option value="empty">Empty Groups (0 Jobs)</option>
-            <option value="expired">Expired Groups</option>
-          </select>
-
-          <select id="ownerGroupsPageSize" class="standard-select">
-            <option value="15" selected>15 per page</option>
-            <option value="30">30 per page</option>
-            <option value="50">50 per page</option>
-            <option value="all">All Groups</option>
-          </select>
-        </div>
-      </div>
-
-      <div id="ownerGroupsTableContainer" class="table-responsive">
-        <div style="padding: 36px; text-align: center; color: var(--muted);">Loading requirement groups...</div>
-      </div>
-    </div>
+    </dialog>
 
     <!-- ==========================================
          TAB 6: WEBSITE VISITOR & TRAFFIC ANALYTICS
@@ -2427,8 +2492,7 @@
     <div class="modal-box" style="max-width: 520px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 20px;">⇄</span>
-          <h2 style="font-size: 18px; font-weight: 800; margin: 0; color: var(--color-text-primary);">Move Requirements Between Groups</h2>
+          <h2 id="moveModalTitle" style="font-size: 18px; font-weight: 700; margin: 0; color: var(--color-text-primary);">Move jobs to a group</h2>
         </div>
         <button id="btnCloseMoveModal" type="button" class="modal-close-btn" aria-label="Close move requirements modal">&times;</button>
       </div>
@@ -2439,52 +2503,50 @@
 
         <!-- Explicit Editable Requirement Job ID Field -->
         <div class="form-group" style="margin-bottom: 14px;">
-          <label for="manualJobIdsInput" class="form-label">Requirement Job ID(s) *</label>
+          <label for="manualJobIdsInput" class="form-label">Job IDs</label>
           <div style="position: relative;">
-            <input type="text" id="manualJobIdsInput" class="form-input" placeholder="Type Job ID e.g. 263 or comma-separated: 263, 264" required style="font-family: monospace; font-size: var(--text-sm); font-weight: 700; color: var(--blue-primary); padding-left: 12px;">
+            <input type="text" id="manualJobIdsInput" class="form-input" placeholder="263, 264, 270" inputmode="numeric" required style="font-family: monospace; font-size: var(--text-sm); font-weight: 700; color: var(--blue-primary); padding-left: 12px;">
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-            <span id="moveJobsSummaryText" style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted);">Requirement #263 selected</span>
-            <span id="moveSourceGroupText" style="font-size: 11px; color: var(--color-text-muted);">From: Pipeline</span>
+            <span id="moveJobsSummaryText" style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted);"></span>
+            <span id="moveSourceGroupText" style="font-size: 12px; color: var(--color-text-muted); text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;"></span>
           </div>
         </div>
 
         <div class="form-group" style="margin-bottom: 14px;">
-          <label for="moveToGroupSelect" class="form-label">Destination Specific Group *</label>
+          <label for="moveToGroupSelect" class="form-label">Group</label>
           <div style="position: relative; margin-bottom: 8px;">
             <input type="text" id="filterTargetGroupInput" class="form-input" placeholder="🔍 Search existing specific groups..." style="height: 36px; font-size: var(--text-xs); padding-left: 10px;">
           </div>
           <select id="moveToGroupSelect" class="form-input" required style="width: 100%; height: 42px; font-size: var(--text-sm);">
-            <option value="">-- Choose Target Specific Group --</option>
+            <option value="">Choose a group</option>
           </select>
         </div>
 
         <!-- Create New Specific Group Drawer (if selected) -->
         <div id="newSpecificGroupDrawer" style="display: none; background: var(--surface-hover); border: 1px dashed var(--blue-border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px;">
-          <div style="font-size: var(--text-xs); font-weight: 700; color: var(--blue-primary); margin-bottom: 6px;">✨ Specific Group Name</div>
-          <input type="text" id="newSpecificGroupNameInput" class="form-input" placeholder="e.g. Bangalore IT & Python Hiring Drive 2026" style="margin-bottom: 8px;">
-          <input type="text" id="newSpecificGroupTagInput" class="form-input" placeholder="Banner tag (optional, e.g. 🔥 HOT HIRING DRIVE)" style="font-size: var(--text-xs);">
+          <label for="newSpecificGroupNameInput" style="display: block; font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); margin-bottom: 6px;">New group name</label>
+          <input type="text" id="newSpecificGroupNameInput" class="form-input" placeholder="Bengaluru Python jobs, Nov 2026" style="margin-bottom: 8px;">
+          <input type="text" id="newSpecificGroupTagInput" class="form-input" placeholder="Banner tag (optional)" aria-label="Banner tag (optional)" style="font-size: var(--text-xs);">
         </div>
 
         <div class="form-group" style="margin-bottom: 20px;">
-          <label class="form-label">Transfer Action</label>
+          <span class="form-label">After moving</span>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <label style="font-size: var(--text-sm); display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="radio" name="moveActionType" value="move" checked>
-              <span><strong>Move</strong> (Remove from current group &amp; transfer to target)</span>
+              <span><strong>Move</strong>: take it out of its current group</span>
             </label>
             <label style="font-size: var(--text-sm); display: flex; align-items: center; gap: 8px; cursor: pointer;">
               <input type="radio" name="moveActionType" value="copy">
-              <span><strong>Copy</strong> (Keep in current group and also add to target)</span>
+              <span><strong>Copy</strong>: keep it in its current group too</span>
             </label>
           </div>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" id="btnCancelMove" class="btn btn-secondary">Cancel</button>
-          <button type="submit" id="btnConfirmMove" class="btn btn-primary" style="min-width: 130px;">
-            Confirm Move ⇄
-          </button>
+          <button type="submit" id="btnConfirmMove" class="btn btn-primary" style="min-width: 130px;">Move</button>
         </div>
       </form>
     </div>
@@ -2642,7 +2704,7 @@
   <div class="picker-list" id="pickerList" role="listbox"></div>
   <p class="picker-empty" id="pickerEmpty" hidden>No matches</p>
 </dialog>
-<script src="{% static 'js/owner.js' %}?v=2026111305"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111307"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

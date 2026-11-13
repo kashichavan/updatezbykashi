@@ -94,7 +94,7 @@ class JobPosting(models.Model):
         ('SENIOR_LEVEL', '5+ Years / Senior Roles'),
     ]
 
-    source_name = models.CharField(max_length=100, default='Jobdexo', db_index=True, help_text="e.g. Jobdexo, Greenhouse, Lever, Ashby, PublicFeeds")
+    source_name = models.CharField(max_length=100, default='Direct', db_index=True, help_text="e.g. Jobdexo, Greenhouse, Lever, Ashby, PublicFeeds, Direct")
     source_job_id = models.CharField(max_length=200, blank=True, default='', db_index=True)
     source_url = models.URLField(max_length=500, blank=True, default='', help_text="Original source portal link")
     source_published_at = models.DateTimeField(null=True, blank=True, db_index=True, help_text="Original publication timestamp in UTC")

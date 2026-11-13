@@ -7,6 +7,10 @@ class RequirementsConfig(AppConfig):
     name = 'requirements'
 
     def ready(self):
+        # Feed cache invalidation must run everywhere (web, tests, commands).
+        from .feed_cache import setup_feed_cache_signals
+        setup_feed_cache_signals()
+
         # Exclude one-off management commands from spawning persistent background threads
         excluded_commands = {
             'migrate', 'makemigrations', 'showmigrations', 'collectstatic', 'test',

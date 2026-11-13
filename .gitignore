@@ -144,6 +144,7 @@ nextjs-frontend/out/
 
 # bunshin run files
 .bunshin/
+.playwright-mcp/
 
 # Runtime recovery copy made by build.sh
 db.sqlite3.release

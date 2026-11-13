@@ -86,6 +86,19 @@ def is_authenticated_owner(request):
 
     return False, None
 
+def infer_job_source_name(apply_url='', source_url='', default='Direct'):
+    lower_s = (source_url or '').lower()
+    lower_a = (apply_url or '').lower()
+    if 'jobdexo.com' in lower_s or 'jobdexo.com' in lower_a:
+        return 'Jobdexo'
+    if 'naukri.com' in lower_a:
+        return 'Naukri'
+    if 'linkedin.com' in lower_a:
+        return 'LinkedIn'
+    if any(k in lower_a for k in ['lever.co', 'greenhouse.io', 'ashbyhq.com', 'workable.com']):
+        return 'Startup'
+    return default
+
 def get_cached_youtube_videos():
     cached = cache.get('youtube_videos_feed')
     if cached:
@@ -1186,6 +1199,7 @@ def api_owner_bulk_parse_and_post(request):
                     posted_by=owner_user.username if owner_user else "Owner",
                     poster_email=(owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"),
                     deadline=deadline,
+                    source_name=infer_job_source_name(apply_url),
                 )
 
                 created_jobs.append({'id': job.id, 'title': job.title, 'company': job.company_name})
@@ -1444,6 +1458,7 @@ def api_owner_parse_and_post(request):
                 posted_by=owner_user.username if owner_user else "Owner",
                 poster_email=(owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"),
                 deadline=deadline,
+                source_name=infer_job_source_name(apply_url),
             )
 
             cache.clear()
@@ -1754,11 +1769,18 @@ def api_jobs(request):
             group_filter = request.GET.get('group', '').strip()  # a group id, or 'none' for jobs in no group
 
             # Cache key including all filter dimensions
-            raw_key = f"jobs_feed_{query}_{category_slug}_{exp_filter}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}_{domain_filter}_{city_filter}_{source_filter}_{time_window}_{group_filter}"
+            # The owner portal must always see live data: right after a move,
+            # edit or publish, a cached page would show the old state.
+            from .feed_cache import feed_version
+            is_owner_request = (
+                request.headers.get('Authorization', '').startswith('Bearer ')
+                and is_authenticated_owner(request)[0]
+            )
+            raw_key = f"jobs_feed_v{feed_version()}_{query}_{category_slug}_{exp_filter}_{job_type}_{status_filter}_{filter_today}_{filter_yesterday}_{filter_previous}_{sort}_{page}_{page_size}_{domain_filter}_{city_filter}_{source_filter}_{time_window}_{group_filter}"
             cache_key = f"jobs_feed_{hashlib.md5(raw_key.encode('utf-8')).hexdigest()}"
             
             # Don't use stale cache if searching with query or specific filters
-            if not query and not city_filter and not domain_filter and not time_window and not exp_filter:
+            if not is_owner_request and not query and not city_filter and not domain_filter and not time_window and not exp_filter and not source_filter:
                 cached_response = cache.get(cache_key)
                 if cached_response:
                     return JsonResponse(cached_response)
@@ -1904,8 +1926,55 @@ def api_jobs(request):
                     qs = qs.filter(Q(normalized_city__iexact=city_filter) | Q(location__icontains=city_filter))
 
             source_filter = request.GET.get('source', '').strip()
-            if source_filter:
-                qs = qs.filter(source_name__iexact=source_filter)
+            if source_filter and source_filter.upper() != 'ALL':
+                sf_lower = source_filter.lower()
+                if sf_lower == 'jobdexo':
+                    qs = qs.filter(
+                        Q(source_name__iexact='Jobdexo') |
+                        Q(source_url__icontains='jobdexo.com') |
+                        Q(apply_url__icontains='jobdexo.com')
+                    ).exclude(
+                        Q(source_url='') & (Q(apply_url__icontains='naukri.com') | Q(apply_url__icontains='linkedin.com'))
+                    )
+                elif sf_lower == 'naukri':
+                    qs = qs.filter(
+                        Q(source_name__iexact='Naukri') |
+                        (Q(apply_url__icontains='naukri.com') & ~Q(source_url__icontains='jobdexo.com'))
+                    )
+                elif sf_lower == 'linkedin':
+                    qs = qs.filter(
+                        Q(source_name__iexact='LinkedIn') |
+                        Q(source_name__iexact='LinkedIn Referral') |
+                        (Q(apply_url__icontains='linkedin.com') & ~Q(source_url__icontains='jobdexo.com'))
+                    )
+                elif sf_lower in ['startup', 'startups']:
+                    qs = qs.filter(
+                        Q(source_name__iexact='Startup') |
+                        Q(source_name__iexact='Indian startups') |
+                        Q(apply_url__icontains='lever.co') |
+                        Q(apply_url__icontains='greenhouse.io') |
+                        Q(apply_url__icontains='ashbyhq.com') |
+                        Q(apply_url__icontains='workable.com')
+                    )
+                elif sf_lower in ['direct', 'manual']:
+                    qs = qs.filter(
+                        Q(source_name__iexact='Direct') |
+                        Q(source_name__iexact='Manual') |
+                        (
+                            ~Q(source_name__iexact='Jobdexo') &
+                            ~Q(source_url__icontains='jobdexo.com') &
+                            ~Q(apply_url__icontains='jobdexo.com') &
+                            ~Q(source_name__iexact='Naukri') &
+                            ~Q(apply_url__icontains='naukri.com') &
+                            ~Q(source_name__iexact='LinkedIn') &
+                            ~Q(apply_url__icontains='linkedin.com') &
+                            ~Q(source_name__iexact='Startup') &
+                            ~Q(apply_url__icontains='lever.co') &
+                            ~Q(apply_url__icontains='greenhouse.io')
+                        )
+                    )
+                else:
+                    qs = qs.filter(source_name__iexact=source_filter)
 
             if group_filter == 'none':
                 qs = qs.filter(groups__isnull=True)
@@ -2005,6 +2074,7 @@ def api_jobs(request):
                     'posted_date': j.posted_date.isoformat() if j.posted_date else None,
                     'posted_date_display': posted_date_display,
                     'source_name': j.source_name or 'Direct',
+                    'source_url': j.source_url or '',
                     'source_code': j.get_discreet_source_code(),
                     'contact_phone': j.contact_phone,
                     'relative_time': j.get_relative_time_display(),
@@ -2029,9 +2099,12 @@ def api_jobs(request):
                 'has_previous': page_int > 1,
             }
 
-            cache.set(cache_key, response_data, 300)
             response = JsonResponse(response_data)
-            response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=120'
+            if is_owner_request:
+                response['Cache-Control'] = 'no-store'
+            else:
+                cache.set(cache_key, response_data, 300)
+                response['Cache-Control'] = 'public, max-age=60, stale-while-revalidate=120'
             return response
         except Exception as e:
             logger.warning(f"Error querying DB in api_jobs: {e}")
@@ -2057,6 +2130,7 @@ def api_jobs(request):
 
             deadline = timezone.now() + timedelta(days=7)
 
+            post_apply_url = data.get('apply_url', '').strip()
             job = JobPosting.objects.create(
                 title=data['title'].strip(),
                 company_name=data['company_name'].strip(),
@@ -2067,13 +2141,14 @@ def api_jobs(request):
                 location=data.get('location', 'Remote').strip(),
                 is_remote=data.get('is_remote', True),
                 skills_required=data.get('skills_required', '').strip(),
-                apply_url=data.get('apply_url', '').strip(),
+                apply_url=post_apply_url,
                 allow_direct_apply=False,
                 description=data['description'].strip(),
                 eligibility=data.get('eligibility', 'Open to all students').strip(),
                 posted_by=owner_user.username if owner_user else "Owner",
                 poster_email=(owner_user.email if owner_user and owner_user.email else "admin@kashiiupdatez.com"),
                 deadline=deadline,
+                source_name=data.get('source_name') or infer_job_source_name(post_apply_url),
             )
 
             cache.clear()
@@ -2632,12 +2707,29 @@ def api_owner_groups(request):
         elif filter_type in ['experienced', 'experience']:
             qs = qs.filter(Q(name__icontains='experience') | Q(name__icontains='lateral') | Q(banner_tag__icontains='experience') | Q(description__icontains='experience'))
 
-        qs = qs.prefetch_related(
-            Prefetch('jobs', queryset=JobPosting.objects.only(
-                'id', 'title', 'company_name', 'location', 'stipend_salary',
-                'status', 'posted_date', 'created_at', 'apply_url', 'deadline'
-            ).order_by('-posted_date', '-created_at'))
-        ).order_by('-posted_date', '-id')
+        # Jobs per group: the card grid sends jobs_limit=0 and loads one group's
+        # jobs when its dialog opens (group_id=..). Keeps responses small on a
+        # 512 MB instance; callers that omit jobs_limit still get all jobs.
+        group_id = request.GET.get('group_id', '').strip()
+        if group_id.isdigit():
+            qs = qs.filter(pk=int(group_id))
+        jobs_limit_param = request.GET.get('jobs_limit')
+        if jobs_limit_param is not None:
+            try:
+                jobs_limit = max(0, min(300, int(jobs_limit_param)))
+            except ValueError:
+                jobs_limit = 15
+        else:
+            jobs_limit = None
+
+        if jobs_limit != 0:
+            qs = qs.prefetch_related(
+                Prefetch('jobs', queryset=JobPosting.objects.only(
+                    'id', 'title', 'company_name', 'location', 'stipend_salary',
+                    'status', 'posted_date', 'created_at', 'apply_url', 'deadline'
+                ).order_by('-posted_date', '-created_at'))
+            )
+        qs = qs.order_by('-posted_date', '-id')
 
         total_count = qs.count()
 
@@ -2663,9 +2755,9 @@ def api_owner_groups(request):
 
         res = []
         for g in page_groups:
-            all_jobs_list = list(g.jobs.all())
-            total_count_g = getattr(g, 'annotated_total_count', len(all_jobs_list))
-            active_count_g = getattr(g, 'annotated_active_count', sum(1 for j in all_jobs_list if j.status == 'ACTIVE' and j.deadline and j.deadline > now))
+            all_jobs_list = list(g.jobs.all())[:jobs_limit] if jobs_limit is not None else list(g.jobs.all())
+            total_count_g = g.annotated_total_count
+            active_count_g = g.annotated_active_count
 
             group_jobs = [
                 {
@@ -2679,7 +2771,7 @@ def api_owner_groups(request):
                     'posted_date': timezone.localtime(j.created_at).strftime('%d %b %Y') if j.created_at else str(j.posted_date),
                     'apply_url': j.apply_url,
                 }
-                for j in all_jobs_list[:15]
+                for j in all_jobs_list
             ]
             group_combined = (g.name + ' ' + (g.banner_tag or '') + ' ' + (g.description or '')).lower()
             tier_type = 'FRESHER' if any(w in group_combined for w in ['fresher', 'campus', '0-1', 'intern']) else ('EXPERIENCED' if any(w in group_combined for w in ['experience', 'lateral', 'senior', '1+']) else 'GENERAL')
@@ -2879,7 +2971,11 @@ def api_owner_groups_move_jobs(request):
         if source_labels:
             source_info = f" from {', '.join(source_labels)}"
 
-        msg = f"Successfully moved {count} requirement{'s' if count != 1 else ''}{source_info} to '{to_group.name}'!"
+        noun = f"{count} job{'s' if count != 1 else ''}"
+        if action == 'move':
+            msg = f"Moved {noun}{source_info} to '{to_group.name}'."
+        else:
+            msg = f"Added {noun} to '{to_group.name}'."
 
         # Global cleanup of any other zero-job groups
         cleanup_empty_groups()

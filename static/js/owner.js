@@ -346,22 +346,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRefreshGroups) {
       btnRefreshGroups.addEventListener('click', () => {
         loadGroupsList(currentGroupsPage || 1);
-        showToast('Requirement groups refreshed and empty groups cleaned up!', 'success');
       });
     }
 
     const btnAutoOrganizeGroups = document.getElementById('btnAutoOrganizeGroups');
     if (btnAutoOrganizeGroups) {
       btnAutoOrganizeGroups.addEventListener('click', async () => {
-        btnAutoOrganizeGroups.textContent = '⚡ Segregating & Cleaning...';
+        btnAutoOrganizeGroups.textContent = 'Sorting…';
         btnAutoOrganizeGroups.disabled = true;
         try {
           const res = await authFetch('/api/owner/groups/auto-organize/', { method: 'POST' });
           const data = await res.json();
           if (res.ok) {
-            showToast(data.message || 'Auto-segregated requirements successfully!', 'success');
-            logActivity('Auto-segregated groups', data.message);
-            loadGroupsList();
+            showToast(data.message || 'Groups sorted.', 'success');
+            logActivity('Auto-sorted groups', data.message);
+            loadGroupsList(1);
+            loadGroupFilterOptions();
             loadKpiStats();
           } else {
             showToast(data.error || 'Failed to auto-segregate groups.', 'error');
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
           showToast('Network error while auto-segregating groups.', 'error');
         } finally {
-          btnAutoOrganizeGroups.textContent = '⚡ Auto-Segregate Freshers & Experience Groups';
+          btnAutoOrganizeGroups.textContent = 'Auto-sort by experience';
           btnAutoOrganizeGroups.disabled = false;
         }
       });
@@ -1214,7 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     pickerDialog.addEventListener('click', e => { if (e.target === pickerDialog) pickerDialog.close(); });
     document.getElementById('pickerClose').addEventListener('click', () => pickerDialog.close());
 
-    document.querySelectorAll('#jobFiltersDialog select, #editJobModal select, #moveRequirementsModal select').forEach(enhanceSelect);
+    document.querySelectorAll('#jobFiltersDialog select, #editJobModal select, #moveRequirementsModal select, #tabGroups select').forEach(enhanceSelect);
     // The move dialog had its own search box for this list; the picker has search built in.
     const moveSearch = document.getElementById('filterTargetGroupInput');
     if (moveSearch) moveSearch.parentElement.style.display = 'none';
@@ -1343,6 +1343,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const tier = isIntern ? ['intern', 'Internship'] : isFresher ? ['fresher', 'Fresher'] : ['exp', 'Experienced'];
       const statusCls = isExpired ? 'off' : hoursLeft <= 24 ? 'soon' : 'on';
       const meta = [j.location || 'India', j.stipend_salary].filter(Boolean).map(escapeHtml).join('<span class="jr-sep">·</span>');
+      const sourceName = j.source_name || 'Direct';
+      const srcCls = sourceName.toLowerCase().replace(/[^a-z0-9]/g, '');
       return `
         <article class="job-card tier-${tier[0]}${isExpired ? ' is-expired' : ''}" data-id="${j.id}">
           <div class="jc-top">
@@ -1354,6 +1356,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="jc-meta">${meta}</div>
           <div class="jc-sub">
             <span class="jr-tier ${tier[0]}">${tier[1]}</span>
+            <span class="jr-sep">·</span><span class="jr-source src-${srcCls}">${escapeHtml(sourceName)}</span>
+            ${j.source_url && sourceName === 'Jobdexo' ? `<span class="jr-sep">·</span><a href="${escapeHtml(j.source_url)}" target="_blank" rel="noopener noreferrer" class="jr-source-link" title="Open Jobdexo listing">via Jobdexo ↗</a>` : ''}
             <span class="jr-sep">·</span><span class="jr-date">${escapeHtml(j.posted_date_display || j.posted_date || 'Today')}</span>
             <span class="jr-id">#${j.id}</span>
           </div>
@@ -1368,6 +1372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" role="menuitem" class="btn-ig-share-app" data-id="${j.id}">Story with link sticker</button>
                 <button type="button" role="menuitem" class="btn-open-story-studio" data-id="${j.id}" data-title="${escapeHtml(j.title)}" data-company="${escapeHtml(j.company_name)}">Open story studio</button>
                 <a role="menuitem" href="/api/jobs/${j.id}/ig-story-image/" target="_blank" rel="noopener">Story image (9:16) ↗</a>
+                ${j.source_url ? `<a role="menuitem" href="${escapeHtml(j.source_url)}" target="_blank" rel="noopener noreferrer">Source listing (${escapeHtml(sourceName)}) ↗</a>` : ''}
                 <button type="button" role="menuitem" class="btn-pipeline-move-job" data-id="${j.id}" data-title="${escapeHtml(j.title)}">Move to group</button>
                 <button type="button" role="menuitem" class="btn-toggle-job" data-id="${j.id}">${isExpired ? 'Publish' : 'Unpublish'}</button>
                 <button type="button" role="menuitem" class="btn-delete-job danger" data-id="${j.id}">Delete</button>
@@ -2206,482 +2211,307 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ---- Groups tab: card grid; each group's jobs open in their own dialog ----
+  let groupsPageData = [];
+  let openGroupId = null;
+
+  function groupPageNumbers(cur, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (cur <= 4) return [1, 2, 3, 4, 5, '…', total];
+    if (cur >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total];
+    return [1, '…', cur - 1, cur, cur + 1, '…', total];
+  }
+
   async function loadGroupsList(page = 1) {
     const container = document.getElementById('ownerGroupsTableContainer');
     if (!container) return;
-
     currentGroupsPage = page;
-    container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--color-text-muted);">Loading requirement groups...</div>';
 
-    const searchInput = document.getElementById('ownerGroupsSearch');
-    const filterSelect = document.getElementById('ownerGroupsFilter');
-    const pageSizeSelect = document.getElementById('ownerGroupsPageSize');
+    const q = (document.getElementById('ownerGroupsSearch')?.value || '').trim();
+    const filterVal = document.getElementById('ownerGroupsFilter')?.value || 'all';
+    const pageSizeVal = document.getElementById('ownerGroupsPageSize')?.value || '24';
+    const filtered = Boolean(q) || filterVal !== 'all';
 
-    const q = searchInput ? searchInput.value.trim() : '';
-    const filterVal = filterSelect ? filterSelect.value : 'all';
-    const pageSizeVal = pageSizeSelect ? pageSizeSelect.value : '15';
+    if (!container.querySelector('.group-card')) {
+      container.innerHTML = `<div class="job-grid">${'<div class="job-card skeleton"><div class="sk w40"></div><div class="sk w80"></div><div class="sk w60"></div></div>'.repeat(8)}</div>`;
+    }
+    container.setAttribute('aria-busy', 'true');
 
-    let url = `/api/owner/groups/?page=${page}&page_size=${encodeURIComponent(pageSizeVal)}`;
+    let url = `/api/owner/groups/?page=${page}&page_size=${encodeURIComponent(pageSizeVal)}&_=${Date.now()}`;
     if (q) url += `&q=${encodeURIComponent(q)}`;
-    if (filterVal && filterVal !== 'all') url += `&filter=${encodeURIComponent(filterVal)}`;
+    if (filterVal !== 'all') url += `&filter=${encodeURIComponent(filterVal)}`;
 
     try {
-      const res = await authFetch(url);
+      const res = await authFetch(url, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const groups = data.groups || [];
-      const totalCount = data.total_count !== undefined ? data.total_count : groups.length;
-      const totalPages = data.total_pages !== undefined ? data.total_pages : 1;
-      const curPage = data.current_page !== undefined ? data.current_page : page;
-      const pageSize = data.page_size !== undefined ? data.page_size : 15;
+      const totalCount = data.total_count ?? groups.length;
+      const totalPages = data.total_pages ?? 1;
+      const curPage = data.current_page ?? page;
+      const pageSize = data.page_size ?? groups.length;
       currentGroupsPage = curPage;
-      allGroupsData = groups;
+      groupsPageData = groups;
 
-      if (groups.length === 0) {
+      if (!groups.length) {
         container.innerHTML = `
-          <div style="padding: 48px 24px; text-align: center;">
-            <div style="font-size: 32px; margin-bottom: 8px;">📦</div>
-            <h3 style="font-size: 16px; font-weight: 800; color: var(--color-text-primary); margin-bottom: 6px;">
-              ${q || filterVal !== 'all' ? 'No Matching Groups Found' : 'No Requirement Groups Yet'}
-            </h3>
-            <p style="font-size: 13px; color: var(--color-text-muted); margin-bottom: 16px;">
-              ${q || filterVal !== 'all' ? 'Try adjusting your search keywords or filter selection.' : 'Whenever you use the Bulk Parser or Create Group, a bundle is automatically created with direct shareable links!'}
-            </p>
-            ${q || filterVal !== 'all' ? `
-              <button class="btn btn-secondary" style="height: 38px; font-size: 13px;" onclick="if(document.getElementById('ownerGroupsSearch')) document.getElementById('ownerGroupsSearch').value=''; if(document.getElementById('ownerGroupsFilter')) document.getElementById('ownerGroupsFilter').value='all'; loadGroupsList(1);">
-                Reset Filters
-              </button>
-            ` : `
-              <button class="btn btn-primary" style="height: 38px; font-size: 13px;" onclick="document.querySelector('[data-tab=tabBulkParse]').click()">
-                ⚡ Open Bulk Parser
-              </button>
-            `}
-          </div>
-        `;
+          <div class="gp-empty">
+            <h3>${filtered ? 'No groups match' : 'No groups yet'}</h3>
+            <p>${filtered ? 'Try another search or filter.' : 'Groups are created when you use the bulk parser or move jobs into a new group.'}</p>
+            ${filtered ? '<button type="button" class="jobs-tool-btn" id="btnGroupsResetFilters">Clear search and filter</button>' : ''}
+          </div>`;
+        document.getElementById('btnGroupsResetFilters')?.addEventListener('click', () => {
+          const s = document.getElementById('ownerGroupsSearch'); if (s) s.value = '';
+          const f = document.getElementById('ownerGroupsFilter'); if (f) f.value = 'all';
+          const c = document.getElementById('btnGroupsSearchClear'); if (c) c.style.display = 'none';
+          loadGroupsList(1);
+        });
         return;
       }
 
-      let html = `
-        <table class="data-table" style="width: 100%;">
-          <thead>
-            <tr>
-              <th style="width: 30%;">Group / Drive Name</th>
-              <th style="width: 15%;">Active Jobs</th>
-              <th style="width: 20%;">Created Date (IST)</th>
-              <th style="width: 10%;">Views</th>
-              <th style="width: 25%; text-align: right;">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      groups.forEach(g => {
-        const jobsCount = g.jobs ? g.jobs.length : (g.total_jobs_count || 0);
-        const tierBadge = g.tier_type === 'FRESHER' 
-          ? '<span class="status-pill" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); font-size: 10px; font-weight: 800; padding: 1px 6px;">🎓 FRESHER</span>'
-          : (g.tier_type === 'EXPERIENCED' 
-              ? '<span class="status-pill" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5; border: 1px solid rgba(99, 102, 241, 0.25); font-size: 10px; font-weight: 800; padding: 1px 6px;">💼 EXPERIENCED</span>'
-              : '');
-        html += `
-          <tr data-group-id="${g.id}">
-            <td>
-              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <span style="font-weight: 800; color: var(--color-text-primary); font-size: 14px;">${escapeHtml(g.name)}</span>
-                ${tierBadge}
-              </div>
-              <div style="font-size: 11px; color: var(--blue-primary); font-family: ui-monospace, monospace; margin-top: 2px;">/group/${escapeHtml(g.slug)}/</div>
-            </td>
-            <td>
-              <button type="button" class="btn-toggle-group-jobs btn btn-ghost" data-group-id="${g.id}" style="height: 28px; padding: 0 8px; font-size: 12px; background: var(--blue-light); color: var(--blue-primary); border-radius: var(--radius-sm); border: 1px solid var(--blue-border);" title="Click to view & move requirements">
-                📂 ${g.active_jobs_count} Jobs ▾
-              </button>
-            </td>
-            <td style="color: var(--color-text-muted); font-size: 12.5px;">${escapeHtml(g.created_at)}</td>
-            <td style="font-weight: 700; color: var(--color-text-primary); font-size: 13px;">👁️ ${g.views_count}</td>
-            <td style="text-align: right;">
-              <div style="display: inline-flex; gap: 6px; align-items: center;">
-                <button type="button" class="btn-toggle-group-jobs btn btn-secondary" data-group-id="${g.id}" style="padding: 4px 9px; font-size: 12px; height: 32px;">
-                  ⇄ Move Jobs
-                </button>
-                <a href="${escapeHtml(g.url)}" target="_blank" class="btn btn-secondary" style="padding: 4px 9px; font-size: 12px; height: 32px;" title="Open live public group page">
-                  Open ↗
-                </a>
-                <button type="button" class="btn btn-secondary btn-group-broadcast" data-id="${g.id}" style="padding: 4px 9px; font-size: 12px; height: 32px; background: #ecfdf5; color: #059669; border-color: #a7f3d0;" title="Get WhatsApp / Telegram broadcast message">
-                  Broadcast
-                </button>
-                <button type="button" class="btn btn-danger-ghost btn-group-delete" data-id="${g.id}" data-name="${escapeHtml(g.name)}" style="padding: 4px 8px; font-size: 12px; height: 32px;" title="Delete group bundle">
-                  🗑️
-                </button>
-              </div>
-            </td>
-          </tr>
-          <!-- Expandable Group Requirements Drawer Row -->
-          <tr id="group-jobs-drawer-${g.id}" class="group-jobs-drawer-row" style="display: none; background: #f8fafc;">
-            <td colspan="5" style="padding: 16px 20px; border-bottom: 2px solid var(--blue-border);">
-              <div style="background: #ffffff; border: 1px solid var(--subtle-border); border-radius: var(--radius-md); padding: 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <label style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                      <input type="checkbox" class="select-all-group-jobs" data-group-id="${g.id}">
-                      <span>Select All (${jobsCount})</span>
-                    </label>
-                  </div>
-                  <div style="display: flex; gap: 8px; align-items: center;">
-                    <button type="button" class="btn-bulk-move-jobs btn btn-primary" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" style="height: 30px; font-size: 12px; padding: 0 10px; display: none;">
-                      ⇄ Move Selected (<span class="selected-count">0</span>)
-                    </button>
-                  </div>
-                </div>
-
-                <div class="group-jobs-list" data-group-id="${g.id}" style="display: flex; flex-direction: column; gap: 6px;">
-                  ${(!g.jobs || g.jobs.length === 0) ? `
-                    <div style="padding: 14px; text-align: center; color: var(--color-text-muted); font-size: var(--text-xs);">
-                      No requirements currently in this group. Use the Bulk Parser or Move tools to assign jobs here.
-                    </div>
-                  ` : g.jobs.map(j => `
-                    <div class="group-job-item" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--surface-hover); border: 1px solid var(--subtle-border); border-radius: var(--radius-sm); gap: 10px;">
-                      <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
-                        <input type="checkbox" class="group-job-checkbox" data-group-id="${g.id}" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}">
-                        <div style="min-width: 0; flex: 1;">
-                          <div style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            ${escapeHtml(j.title)} <span style="font-weight: 500; color: var(--color-text-muted);">at ${escapeHtml(j.company_name)}</span>
-                          </div>
-                          <div style="font-size: 11px; color: var(--color-text-muted);">
-                            📍 ${escapeHtml(j.location || 'India')} • 💰 ${escapeHtml(j.stipend_salary || 'Competitive')} • 📅 ${escapeHtml(j.posted_date || '')}
-                          </div>
-                        </div>
-                      </div>
-                      <div style="display: inline-flex; gap: 6px; align-items: center; flex-shrink: 0;">
-                        <button type="button" class="btn-move-single-job btn btn-secondary" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-from-group-id="${g.id}" data-from-group-name="${escapeHtml(g.name)}" style="height: 28px; padding: 0 9px; font-size: 11.5px; border-color: var(--blue-border); color: var(--blue-primary);">
-                          ⇄ Move
-                        </button>
-                        <button type="button" class="btn-remove-single-job btn btn-danger-ghost" data-job-id="${j.id}" data-job-title="${escapeHtml(j.title)}" data-group-id="${g.id}" data-group-name="${escapeHtml(g.name)}" style="height: 28px; padding: 0 8px; font-size: 11.5px;" title="Remove from this group only">
-                          ✕ Remove
-                        </button>
-                      </div>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            </td>
-          </tr>
-        `;
-      });
-
-      html += '</tbody></table>';
-
-      if (pageSizeVal !== 'all' && (totalPages > 1 || totalCount > 0)) {
-        const startNum = totalCount === 0 ? 0 : (curPage - 1) * pageSize + 1;
-        const endNum = Math.min(totalCount, curPage * pageSize);
-
-        let pageNumbers = [];
-        if (totalPages <= 7) {
-          for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
-        } else {
-          if (curPage <= 4) {
-            pageNumbers = [1, 2, 3, 4, 5, '...', totalPages];
-          } else if (curPage >= totalPages - 3) {
-            pageNumbers = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-          } else {
-            pageNumbers = [1, '...', curPage - 1, curPage, curPage + 1, '...', totalPages];
-          }
-        }
-
-        const pagesHtml = pageNumbers.map(p => {
-          if (p === '...') {
-            return `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:36px;color:#94a3b8;font-weight:700;">…</span>`;
-          }
-          return `
-            <button type="button" class="groups-page-btn btn-page-number ${p === curPage ? 'active' : ''}" data-page="${p}" style="min-width: 36px; height: 36px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid ${p === curPage ? '#2563eb' : '#e2e8f0'}; background: ${p === curPage ? '#2563eb' : '#ffffff'}; color: ${p === curPage ? '#ffffff' : '#0f172a'}; cursor: pointer;">
-              ${p}
-            </button>
-          `;
-        }).join('');
-
-        html += `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #ffffff; border: 1px solid var(--subtle-border); border-top: none; border-radius: 0 0 var(--radius-md) var(--radius-md); box-shadow: var(--card-shadow); flex-wrap: wrap; gap: 12px;">
-            <div style="font-size: var(--text-sm); color: var(--color-text-muted); font-weight: 600;">
-              Showing <strong>${startNum}–${endNum}</strong> of <strong>${totalCount}</strong> groups (Page ${curPage} of ${totalPages})
+      const cards = groups.map(g => {
+        const tier = g.tier_type === 'FRESHER' ? ['fresher', 'Fresher'] : g.tier_type === 'EXPERIENCED' ? ['exp', 'Experienced'] : null;
+        const live = g.active_jobs_count || 0;
+        const total = g.total_jobs_count || 0;
+        const status = g.is_expired ? ['off', 'Expired'] : live > 0 ? ['on', `${live} live`] : ['off', 'No live jobs'];
+        return `
+          <article class="job-card group-card${tier ? ` tier-${tier[0]}` : ''}${g.is_expired ? ' is-expired' : ''}" data-group-id="${g.id}">
+            <div class="jc-top">
+              ${tier ? `<span class="jr-tier ${tier[0]}">${tier[1]}</span>` : '<span class="jr-tier gen">General</span>'}
+              <span class="jr-status ${status[0]}">${status[1]}</span>
             </div>
-            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-              <button type="button" id="btnPrevGroupsPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage <= 1 ? 'disabled' : ''}>
-                ← Previous
-              </button>
-              ${pagesHtml}
-              <button type="button" id="btnNextGroupsPage" class="btn btn-secondary" style="height: 36px; padding: 0 12px;" ${curPage >= totalPages ? 'disabled' : ''}>
-                Next →
-              </button>
+            <h3 class="jc-title">${escapeHtml(g.name)}</h3>
+            <div class="jc-meta">${total} job${total === 1 ? '' : 's'}<span class="jr-sep">·</span>${g.views_count || 0} view${g.views_count === 1 ? '' : 's'}</div>
+            <div class="jc-sub"><span class="jr-date">${escapeHtml((g.created_at || '').replace(/,.*$/, ''))}</span><span class="jr-id">#${g.id}</span></div>
+            <div class="jr-actions gc-actions">
+              <button type="button" class="jr-btn primary gc-jobs" data-id="${g.id}">Jobs</button>
+              <button type="button" class="jr-btn gc-copy" data-url="${escapeHtml(g.full_url || g.url)}">Copy link</button>
+              <button type="button" class="jr-btn gc-broadcast" data-id="${g.id}">Share</button>
+              <details class="jr-more">
+                <summary class="jr-btn" aria-label="More actions for ${escapeHtml(g.name)}">More</summary>
+                <div class="jr-menu">
+                  <a href="${escapeHtml(g.url)}" target="_blank" rel="noopener">Open public page</a>
+                  <button type="button" class="gc-add" data-id="${g.id}">Add jobs by ID</button>
+                  <button type="button" class="danger gc-delete" data-id="${g.id}">Delete group</button>
+                </div>
+              </details>
             </div>
-          </div>
-        `;
+          </article>`;
+      }).join('');
+
+      let foot = '';
+      if (pageSizeVal !== 'all') {
+        const start = totalCount ? (curPage - 1) * pageSize + 1 : 0;
+        const end = Math.min(totalCount, curPage * pageSize);
+        const nums = groupPageNumbers(curPage, totalPages).map(p => p === '…'
+          ? '<span class="jl-gap">…</span>'
+          : `<button type="button" class="jl-page gp-page" data-page="${p}"${p === curPage ? ' aria-current="page"' : ''}${p === curPage ? ' disabled' : ''}>${p}</button>`).join('');
+        foot = `
+          <div class="job-list-foot">
+            <span>${start}–${end} of ${totalCount} groups</span>
+            ${totalPages > 1 ? `<div class="jl-pages">
+              <button type="button" class="jl-page gp-page" data-page="${curPage - 1}" ${curPage <= 1 ? 'disabled' : ''} aria-label="Previous page">←</button>
+              ${nums}
+              <button type="button" class="jl-page gp-page" data-page="${curPage + 1}" ${curPage >= totalPages ? 'disabled' : ''} aria-label="Next page">→</button>
+            </div>` : ''}
+          </div>`;
+      } else {
+        foot = `<div class="job-list-foot"><span>${totalCount} groups</span></div>`;
       }
 
-      container.innerHTML = html;
-
-      // 0. Bind Pagination Controls
-      const btnPrevGroups = container.querySelector('#btnPrevGroupsPage');
-      const btnNextGroups = container.querySelector('#btnNextGroupsPage');
-      if (btnPrevGroups) {
-        btnPrevGroups.addEventListener('click', (e) => {
-          e.preventDefault();
-          if (curPage > 1) {
-            loadGroupsList(curPage - 1);
-          }
-        });
-      }
-      if (btnNextGroups) {
-        btnNextGroups.addEventListener('click', (e) => {
-          e.preventDefault();
-          if (curPage < totalPages) {
-            loadGroupsList(curPage + 1);
-          }
-        });
-      }
-      container.querySelectorAll('.groups-page-btn').forEach(pBtn => {
-        pBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          const targetPage = parseInt(pBtn.dataset.page, 10);
-          if (!isNaN(targetPage) && targetPage !== curPage) {
-            loadGroupsList(targetPage);
-          }
-        });
-      });
-
-      // 1. Toggle Drawer Handlers
-      container.querySelectorAll('.btn-toggle-group-jobs').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const groupId = btn.dataset.groupId;
-          const drawer = document.getElementById(`group-jobs-drawer-${groupId}`);
-          if (drawer) {
-            const isHidden = drawer.style.display === 'none';
-            drawer.style.display = isHidden ? 'table-row' : 'none';
-            btn.textContent = isHidden ? `📂 Hide Jobs ▴` : `📂 Jobs ▾`;
-          }
-        });
-      });
-
-      // 2. Single Job Move Button Click
-      container.querySelectorAll('.btn-move-single-job').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const jobId = parseInt(btn.dataset.jobId, 10);
-          const jobTitle = btn.dataset.jobTitle;
-          const fromGroupId = parseInt(btn.dataset.fromGroupId, 10);
-          const fromGroupName = btn.dataset.fromGroupName;
-
-          openMoveRequirementsModal({
-            jobIds: [jobId],
-            jobTitles: [jobTitle],
-            fromGroupId: fromGroupId,
-            fromGroupName: fromGroupName
-          });
-        });
-      });
-
-      // 3. Remove Single Job from Group
-      container.querySelectorAll('.btn-remove-single-job').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const jobId = btn.dataset.jobId;
-          const jobTitle = btn.dataset.jobTitle;
-          const groupId = btn.dataset.groupId;
-          const groupName = btn.dataset.groupName;
-
-          if (confirm(`Remove "${jobTitle}" from group "${groupName}"? (The job posting will remain active on the student feed).`)) {
-            try {
-              const res = await authFetch(`/api/owner/groups/${groupId}/remove-job/${jobId}/`, {
-                method: 'POST'
-              });
-              const data = await res.json();
-              if (res.ok) {
-                showToast(data.message || 'Job removed from group.', 'success');
-                logActivity('Removed job from group', `${jobTitle} from ${groupName}`);
-                loadGroupsList(currentGroupsPage || 1);
-              } else {
-                showToast(data.error || 'Failed to remove job from group.', 'error');
-              }
-            } catch (err) {
-              showToast('Network error removing job from group.', 'error');
-            }
-          }
-        });
-      });
-
-      // 4. Checkbox Selection & Global Multi-Group Bulk Move
-      function updateBulkMoveStates() {
-        const allChecked = Array.from(container.querySelectorAll('.group-job-checkbox:checked'));
-        const totalChecked = allChecked.length;
-
-        // A. Update individual group drawer move buttons
-        const groupMap = {};
-        allChecked.forEach(chk => {
-          const gid = chk.dataset.groupId;
-          groupMap[gid] = (groupMap[gid] || 0) + 1;
-        });
-
-        container.querySelectorAll('.btn-bulk-move-jobs').forEach(bulkBtn => {
-          const gid = bulkBtn.dataset.groupId;
-          const count = groupMap[gid] || 0;
-          if (count > 0) {
-            bulkBtn.style.display = 'inline-flex';
-            const countEl = bulkBtn.querySelector('.selected-count');
-            if (countEl) countEl.textContent = count;
-          } else {
-            bulkBtn.style.display = 'none';
-          }
-        });
-
-        // B. Update global multi-group bulk bar
-        const globalBar = document.getElementById('groupsGlobalBulkBar');
-        const globalText = document.getElementById('groupsGlobalBulkText');
-        const globalMoveBtn = document.getElementById('btnGroupsBulkMoveAll');
-
-        if (globalBar && globalText) {
-          if (totalChecked > 0) {
-            const distinctGroupIds = Object.keys(groupMap);
-            const groupCount = distinctGroupIds.length;
-            const groupWord = groupCount === 1 ? '1 group' : `${groupCount} different groups`;
-            globalText.textContent = `${totalChecked} requirement${totalChecked !== 1 ? 's' : ''} selected across ${groupWord}`;
-            if (globalMoveBtn) {
-              globalMoveBtn.textContent = `⇄ Move Selected (${totalChecked}) to Group`;
-            }
-            globalBar.style.display = 'flex';
-          } else {
-            globalBar.style.display = 'none';
-          }
+      container.innerHTML = `<div class="job-grid">${cards}</div>${foot}`;
+      container.querySelectorAll('.gp-page').forEach(b => b.addEventListener('click', () => {
+        const p = parseInt(b.dataset.page, 10);
+        if (p >= 1 && p <= totalPages && p !== curPage) {
+          loadGroupsList(p);
+          document.getElementById('tabGroups')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
         }
+      }));
+
+      // If the jobs dialog is open (e.g. after removing a job), refresh it from the new data.
+      if (openGroupId && document.getElementById('groupJobsDialog')?.open) {
+        const g = groupsPageData.find(x => x.id === openGroupId);
+        if (g) renderGroupJobsDialog(g); else document.getElementById('groupJobsDialog').close();
       }
-
-      container.querySelectorAll('.select-all-group-jobs').forEach(chkAll => {
-        chkAll.addEventListener('change', () => {
-          const groupId = chkAll.dataset.groupId;
-          const checkboxes = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]`);
-          checkboxes.forEach(c => { c.checked = chkAll.checked; });
-          updateBulkMoveStates();
-        });
-      });
-
-      container.querySelectorAll('.group-job-checkbox').forEach(chk => {
-        chk.addEventListener('change', () => {
-          const groupId = chk.dataset.groupId;
-          const allInGroup = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]`);
-          const checkedInGroup = container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]:checked`);
-          const parentSelectAll = container.querySelector(`.select-all-group-jobs[data-group-id="${groupId}"]`);
-          if (parentSelectAll) {
-            parentSelectAll.checked = (allInGroup.length > 0 && allInGroup.length === checkedInGroup.length);
-          }
-          updateBulkMoveStates();
-        });
-      });
-
-      // 5. Individual Group Drawer Bulk Move Button Click
-      container.querySelectorAll('.btn-bulk-move-jobs').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const groupId = parseInt(btn.dataset.groupId, 10);
-          const groupName = btn.dataset.groupName;
-          const checked = Array.from(container.querySelectorAll(`.group-job-checkbox[data-group-id="${groupId}"]:checked`));
-          
-          if (checked.length === 0) return;
-
-          const jobIds = checked.map(c => parseInt(c.dataset.jobId, 10)).filter(n => !isNaN(n));
-          const jobTitles = checked.map(c => c.dataset.jobTitle);
-
-          openMoveRequirementsModal({
-            jobIds: jobIds,
-            jobTitles: jobTitles,
-            fromGroupId: groupId,
-            fromGroupName: groupName,
-            fromGroupIds: [groupId],
-            fromGroupNames: [groupName]
-          });
-        });
-      });
-
-      // 5B. Global Cross-Group Bulk Move & Clear Handlers
-      const btnGroupsBulkMoveAll = document.getElementById('btnGroupsBulkMoveAll');
-      if (btnGroupsBulkMoveAll) {
-        btnGroupsBulkMoveAll.onclick = () => {
-          const allChecked = Array.from(container.querySelectorAll('.group-job-checkbox:checked'));
-          if (allChecked.length === 0) {
-            showToast('Please select at least one requirement to move.', 'info');
-            return;
-          }
-
-          const jobIds = allChecked.map(c => parseInt(c.dataset.jobId, 10)).filter(n => !isNaN(n));
-          const jobTitles = allChecked.map(c => c.dataset.jobTitle || '');
-          const fromGroupIds = Array.from(new Set(allChecked.map(c => parseInt(c.dataset.groupId, 10)).filter(n => !isNaN(n))));
-          
-          // Find group names for selected group IDs
-          const fromGroupNames = [];
-          fromGroupIds.forEach(gid => {
-            const gObj = (allGroupsData || []).find(g => g.id === gid);
-            if (gObj) fromGroupNames.push(gObj.name);
-          });
-
-          openMoveRequirementsModal({
-            jobIds: jobIds,
-            jobTitles: jobTitles,
-            fromGroupId: fromGroupIds.length === 1 ? fromGroupIds[0] : null,
-            fromGroupName: fromGroupNames.length === 1 ? fromGroupNames[0] : '',
-            fromGroupIds: fromGroupIds,
-            fromGroupNames: fromGroupNames
-          });
-        };
-      }
-
-      const btnGroupsClearSelection = document.getElementById('btnGroupsClearSelection');
-      if (btnGroupsClearSelection) {
-        btnGroupsClearSelection.onclick = () => {
-          container.querySelectorAll('.group-job-checkbox, .select-all-group-jobs').forEach(c => { c.checked = false; });
-          updateBulkMoveStates();
-        };
-      }
-
-      // 6. Broadcast Button
-      container.querySelectorAll('.btn-group-broadcast').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const groupId = btn.dataset.id;
-          try {
-            const res = await authFetch(`/api/owner/groups/${groupId}/broadcast/`);
-            const data = await res.json();
-            if (res.ok) {
-              openBroadcastModal(data);
-            }
-          } catch (err) {
-            showToast('Failed to fetch group broadcast details.', 'error');
-          }
-        });
-      });
-
-      // 7. Delete Button
-      container.querySelectorAll('.btn-group-delete').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const groupId = btn.dataset.id;
-          const groupName = btn.dataset.name;
-          if (confirm(`Are you sure you want to delete group "${groupName}"? (The individual job postings will remain untouched).`)) {
-            try {
-              const res = await authFetch(`/api/owner/groups/${groupId}/delete/`, {
-                method: 'POST'
-              });
-              if (res.ok) {
-                showToast(`Group "${groupName}" deleted.`, 'success');
-                logActivity(`Deleted group`, groupName);
-                loadGroupsList(currentGroupsPage || 1);
-                loadKpiStats();
-              }
-            } catch (err) {
-              showToast('Error deleting group.', 'error');
-            }
-          }
-        });
-      });
-
     } catch (err) {
       console.error('Error loading groups:', err);
-      container.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--color-text-danger);">Failed to load requirement groups.</div>';
+      container.innerHTML = `
+        <div class="gp-empty">
+          <h3>Could not load groups</h3>
+          <p>${escapeHtml(err.message || 'Network error')}</p>
+          <button type="button" class="jobs-tool-btn" id="btnGroupsRetry">Try again</button>
+        </div>`;
+      document.getElementById('btnGroupsRetry')?.addEventListener('click', () => loadGroupsList(page));
+    } finally {
+      container.removeAttribute('aria-busy');
     }
+  }
+
+  // Card actions (one delegated listener; the grid is re-rendered on every load)
+  document.getElementById('ownerGroupsTableContainer')?.addEventListener('click', async (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    const id = parseInt(t.dataset.id, 10);
+    const g = groupsPageData.find(x => x.id === id);
+    if (t.closest('.jr-more')) t.closest('.jr-more').open = false;
+
+    if (t.classList.contains('gc-jobs') && g) {
+      openGroupJobsDialog(g);
+    } else if (t.classList.contains('gc-copy')) {
+      try {
+        await navigator.clipboard.writeText(t.dataset.url);
+        showToast('Group link copied.', 'success');
+      } catch (_) {
+        showToast(t.dataset.url, 'info');
+      }
+    } else if (t.classList.contains('gc-broadcast')) {
+      try {
+        const res = await authFetch(`/api/owner/groups/${id}/broadcast/`);
+        const data = await res.json();
+        if (res.ok) openBroadcastModal(data); else showToast(data.error || 'Could not load the share message.', 'error');
+      } catch (_) {
+        showToast('Could not load the share message.', 'error');
+      }
+    } else if (t.classList.contains('gc-add') && g) {
+      openMoveRequirementsModal({ jobIds: [], jobTitles: [], fromGroupId: null, fromGroupName: '', targetGroupId: g.id, action: 'copy' });
+    } else if (t.classList.contains('gc-delete') && g) {
+      if (!confirm(`Delete the group "${g.name}"? The jobs in it stay published.`)) return;
+      try {
+        const res = await authFetch(`/api/owner/groups/${id}/delete/`, { method: 'POST' });
+        if (!res.ok) throw new Error();
+        showToast(`Deleted "${g.name}".`, 'success');
+        logActivity('Deleted group', g.name);
+        loadGroupsList(currentGroupsPage || 1);
+        loadGroupFilterOptions();
+        loadKpiStats();
+      } catch (_) {
+        showToast('Could not delete the group.', 'error');
+      }
+    }
+  });
+
+  // ---- Group jobs dialog ----
+  const groupJobsDialog = document.getElementById('groupJobsDialog');
+
+  function openGroupJobsDialog(g) {
+    if (!groupJobsDialog) return;
+    openGroupId = g.id;
+    const search = document.getElementById('groupJobsSearch');
+    if (search) search.value = '';
+    renderGroupJobsDialog(g);
+    groupJobsDialog.showModal();
+  }
+
+  function selectedGroupJobIds() {
+    return [...groupJobsDialog.querySelectorAll('.gj-check:checked')].map(c => parseInt(c.value, 10));
+  }
+
+  function syncGroupJobsSelection() {
+    const ids = selectedGroupJobIds();
+    const visible = [...groupJobsDialog.querySelectorAll('.gj-item:not([hidden]) .gj-check')];
+    const all = document.getElementById('groupJobsSelectAll');
+    if (all) {
+      all.checked = visible.length > 0 && visible.every(c => c.checked);
+      all.indeterminate = !all.checked && visible.some(c => c.checked);
+    }
+    const n = ids.length;
+    document.getElementById('groupJobsCount').textContent = n ? `${n} selected` : 'None selected';
+    ['groupJobsMoveSel', 'groupJobsCopySel', 'groupJobsRemoveSel'].forEach(bid => {
+      const b = document.getElementById(bid);
+      if (b) b.disabled = n === 0;
+    });
+  }
+
+  function renderGroupJobsDialog(g) {
+    const total = g.total_jobs_count || 0;
+    const jobs = g.jobs || [];
+    document.getElementById('groupJobsTitle').textContent = g.name;
+    document.getElementById('groupJobsSub').textContent =
+      `${total} job${total === 1 ? '' : 's'} · ${g.active_jobs_count || 0} live` +
+      (jobs.length < total ? ` · showing the newest ${jobs.length}` : '');
+    const list = document.getElementById('groupJobsList');
+    if (!jobs.length) {
+      list.innerHTML = '<p class="gj-empty">This group has no jobs. Use "Add jobs by ID" from the group card to fill it.</p>';
+    } else {
+      list.innerHTML = jobs.map(j => {
+        const live = j.status === 'ACTIVE';
+        return `
+          <div class="gj-item" data-search="${escapeHtml(`${j.id} ${j.title} ${j.company_name} ${j.location || ''}`.toLowerCase())}">
+            <input type="checkbox" class="gj-check" value="${j.id}" id="gj-${g.id}-${j.id}" aria-label="Select ${escapeHtml(j.title)}">
+            <label for="gj-${g.id}-${j.id}" class="gj-main">
+              <span class="gj-title">${escapeHtml(j.title)}</span>
+              <span class="gj-meta">${escapeHtml(j.company_name || '')}${j.location ? `<span class="jr-sep">·</span>${escapeHtml(j.location)}` : ''}<span class="jr-sep">·</span><span class="jr-id">#${j.id}</span></span>
+            </label>
+            <span class="jr-status ${live ? 'on' : 'off'}">${live ? 'Live' : escapeHtml(j.status_display || 'Off')}</span>
+            <button type="button" class="jr-btn gj-move" data-id="${j.id}" data-title="${escapeHtml(j.title)}">Move</button>
+          </div>`;
+      }).join('');
+    }
+    const all = document.getElementById('groupJobsSelectAll');
+    if (all) all.checked = false;
+    syncGroupJobsSelection();
+  }
+
+  function moveFromOpenGroup(jobIds, action) {
+    const g = groupsPageData.find(x => x.id === openGroupId);
+    if (!g || !jobIds.length) return;
+    groupJobsDialog.close();  // the move dialog is not top-layer, so it must not sit under this one
+    openMoveRequirementsModal({
+      jobIds, jobTitles: [], fromGroupId: g.id, fromGroupName: g.name,
+      fromGroupIds: [g.id], fromGroupNames: [g.name], action
+    });
+  }
+
+  if (groupJobsDialog) {
+    groupJobsDialog.addEventListener('click', async (e) => {
+      if (e.target === groupJobsDialog) { groupJobsDialog.close(); return; }
+      const mv = e.target.closest('.gj-move');
+      if (mv) moveFromOpenGroup([parseInt(mv.dataset.id, 10)], 'move');
+    });
+    groupJobsDialog.addEventListener('change', (e) => {
+      if (e.target.id === 'groupJobsSelectAll') {
+        groupJobsDialog.querySelectorAll('.gj-item:not([hidden]) .gj-check').forEach(c => { c.checked = e.target.checked; });
+      }
+      syncGroupJobsSelection();
+    });
+    groupJobsDialog.addEventListener('close', () => { openGroupId = null; });
+    document.getElementById('groupJobsClose')?.addEventListener('click', () => groupJobsDialog.close());
+    document.getElementById('groupJobsSearch')?.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      groupJobsDialog.querySelectorAll('.gj-item').forEach(it => { it.hidden = Boolean(q) && !it.dataset.search.includes(q); });
+      syncGroupJobsSelection();
+    });
+    document.getElementById('groupJobsMoveSel')?.addEventListener('click', () => moveFromOpenGroup(selectedGroupJobIds(), 'move'));
+    document.getElementById('groupJobsCopySel')?.addEventListener('click', () => moveFromOpenGroup(selectedGroupJobIds(), 'copy'));
+    document.getElementById('groupJobsRemoveSel')?.addEventListener('click', async () => {
+      const g = groupsPageData.find(x => x.id === openGroupId);
+      const ids = selectedGroupJobIds();
+      if (!g || !ids.length) return;
+      if (!confirm(`Remove ${ids.length} job${ids.length === 1 ? '' : 's'} from "${g.name}"? They stay published on the site.`)) return;
+      const btn = document.getElementById('groupJobsRemoveSel');
+      btn.disabled = true;
+      let failed = 0;
+      for (const jid of ids) {
+        try {
+          const res = await authFetch(`/api/owner/groups/${g.id}/remove-job/${jid}/`, { method: 'POST' });
+          if (!res.ok) failed++;
+        } catch (_) { failed++; }
+      }
+      const done = ids.length - failed;
+      if (done) {
+        showToast(`Removed ${done} job${done === 1 ? '' : 's'} from "${g.name}".`, 'success');
+        logActivity('Removed jobs from group', `${done} from ${g.name}`);
+      }
+      if (failed) showToast(`${failed} could not be removed.`, 'error');
+      await loadGroupsList(currentGroupsPage || 1);  // re-renders this dialog from fresh data
+      loadGroupFilterOptions();
+      loadJobsList(currentJobsPage);
+    });
   }
 
   // --- MOVE REQUIREMENTS MODAL WORKFLOW ---
 
-  async function openMoveRequirementsModal({ jobIds, jobTitles, fromGroupId, fromGroupName, fromGroupIds, fromGroupNames }) {
+  async function openMoveRequirementsModal({ jobIds, jobTitles, fromGroupId, fromGroupName, fromGroupIds, fromGroupNames, targetGroupId = null, action = 'move' }) {
     const modal = document.getElementById('moveRequirementsModal');
     if (!modal) return;
 
@@ -2712,16 +2542,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateSummaryFromInput() {
       const raw = manualJobIdsInput ? manualJobIdsInput.value.trim() : '';
       if (!raw) {
-        if (summaryText) summaryText.textContent = 'Type Job ID(s) above';
+        if (summaryText) summaryText.textContent = 'Type one or more job IDs';
         return;
       }
       const parsed = raw.split(',').map(x => x.trim()).filter(x => x.length > 0);
       if (summaryText) {
-        if (parsed.length === 1) {
-          summaryText.textContent = `Requirement #${parsed[0]} selected`;
-        } else {
-          summaryText.textContent = `${parsed.length} requirements selected (#${parsed.join(', #')})`;
-        }
+        summaryText.textContent = parsed.length === 1 ? `Job #${parsed[0]}` : `${parsed.length} jobs`;
       }
     }
 
@@ -2732,15 +2558,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (sourceGroupText) {
       if (fromGroupNames && fromGroupNames.length > 1) {
-        sourceGroupText.textContent = `From ${fromGroupNames.length} groups: ${fromGroupNames.join(', ')}`;
+        sourceGroupText.textContent = `From ${fromGroupNames.length} groups`;
       } else if (fromGroupName) {
-        sourceGroupText.textContent = `From Source Group: ${fromGroupName}`;
+        sourceGroupText.textContent = `From ${fromGroupName}`;
       } else {
-        sourceGroupText.textContent = 'From: Pipeline / Current Groups';
+        sourceGroupText.textContent = 'From every group it is in';
       }
     }
 
     if (filterInput) filterInput.value = '';
+    if (targetSelect) targetSelect.value = '';
+    const actionRadio = document.querySelector(`input[name="moveActionType"][value="${action === 'copy' ? 'copy' : 'move'}"]`);
+    if (actionRadio) actionRadio.checked = true;
+    syncMoveConfirmLabel();
+    const moveTitle = document.getElementById('moveModalTitle');
+    if (moveTitle) moveTitle.textContent = targetGroupId ? 'Add jobs to group' : 'Move jobs to a group';
     if (newGroupNameInput) newGroupNameInput.value = '';
     if (newGroupTagInput) newGroupTagInput.value = '';
     if (newGroupDrawer) newGroupDrawer.style.display = 'none';
@@ -2748,31 +2580,31 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderTargetGroupOptions(filterText = '') {
       if (!targetSelect) return;
       const lowerFilter = filterText.toLowerCase().trim();
+      const sourceIds = new Set((window._currentMoveFromGroupIds || []).map(Number));
       const filteredGroups = (allGroupsData || []).filter(g => {
+        if (sourceIds.has(g.id)) return false;  // moving into the group it is already in does nothing
         if (!lowerFilter) return true;
         return g.name.toLowerCase().includes(lowerFilter) || (g.slug && g.slug.toLowerCase().includes(lowerFilter));
       });
 
-      let optionsHtml = '<option value="">-- Choose Target Specific Group --</option>';
-      optionsHtml += '<option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
-
-      if (filteredGroups.length > 0) {
-        filteredGroups.forEach(g => {
-          optionsHtml += `<option value="${g.id}">📁 ${escapeHtml(g.name)} (${g.active_jobs_count || 0} active)</option>`;
-        });
-      } else if (allGroupsData && allGroupsData.length === 0) {
-        optionsHtml = '<option value="NEW" selected style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
-        if (newGroupDrawer) newGroupDrawer.style.display = 'block';
-      }
-
+      const keep = targetSelect.value;
+      let optionsHtml = '<option value="">Choose a group</option>';
+      optionsHtml += '<option value="NEW">+ New group</option>';
+      filteredGroups.forEach(g => {
+        optionsHtml += `<option value="${g.id}">${escapeHtml(g.name)} (${g.total_jobs_count ?? g.active_jobs_count ?? 0})</option>`;
+      });
       targetSelect.innerHTML = optionsHtml;
+      const want = targetGroupId ? String(targetGroupId) : keep;
+      if (want && [...targetSelect.options].some(o => o.value === want)) targetSelect.value = want;
+      else if (!filteredGroups.length) targetSelect.value = 'NEW';
+      if (newGroupDrawer) newGroupDrawer.style.display = targetSelect.value === 'NEW' ? 'block' : 'none';
     }
 
     // Render immediately if we already have group data in memory
     if (allGroupsData && allGroupsData.length > 0) {
       renderTargetGroupOptions('');
     } else if (targetSelect) {
-      targetSelect.innerHTML = '<option value="">⏳ Loading existing groups...</option><option value="NEW" style="font-weight: 800; color: #2563eb;">✨ + Create New Specific Group & Move...</option>';
+      targetSelect.innerHTML = '<option value="">Loading groups…</option><option value="NEW">+ New group</option>';
     }
 
     // Fetch lean summary groups from API
@@ -2808,6 +2640,13 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => manualJobIdsInput.focus(), 50);
     }
   }
+
+  function syncMoveConfirmLabel() {
+    const btn = document.getElementById('btnConfirmMove');
+    const copy = document.querySelector('input[name="moveActionType"]:checked')?.value === 'copy';
+    if (btn && !btn.disabled) btn.textContent = copy ? 'Add to group' : 'Move';
+  }
+  document.querySelectorAll('input[name="moveActionType"]').forEach(r => r.addEventListener('change', syncMoveConfirmLabel));
 
   function closeMoveRequirementsModal() {
     const modal = document.getElementById('moveRequirementsModal');
@@ -2883,17 +2722,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const newGroupTag = document.getElementById('newSpecificGroupTagInput')?.value.trim() || '';
 
       if (!manualJobIdsVal) {
-        showToast('Please type at least one Requirement Job ID (e.g. 263).', 'error');
+        showToast('Type at least one job ID, for example 263.', 'error');
         return;
       }
 
       if (!toGroupId) {
-        showToast('Please select a destination group or choose to create a new one.', 'error');
+        showToast('Choose a group, or pick "+ New group".', 'error');
         return;
       }
 
       if (toGroupId === 'NEW' && !newGroupName) {
-        showToast('Please enter a name for the new specific group.', 'error');
+        showToast('Give the new group a name.', 'error');
         return;
       }
 
@@ -2903,12 +2742,12 @@ document.addEventListener('DOMContentLoaded', () => {
         .filter(n => !isNaN(n) && n > 0);
 
       if (!jobIds || jobIds.length === 0) {
-        showToast('Please enter a valid numeric Requirement Job ID (e.g. 263).', 'error');
+        showToast('Job IDs are numbers, for example 263.', 'error');
         return;
       }
 
       if (btnConfirm) {
-        btnConfirm.textContent = 'Moving...';
+        btnConfirm.textContent = 'Saving…';
         btnConfirm.disabled = true;
       }
 
@@ -2936,23 +2775,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
 
         if (res.ok && data.success) {
-          showToast(data.message || 'Requirements transferred successfully!', 'success');
-          logActivity('Transferred requirements', data.message);
+          showToast(data.message || 'Done.', 'success');
+          logActivity('Moved jobs between groups', data.message);
           closeMoveRequirementsModal();
           loadGroupsList(currentGroupsPage || 1);
           loadGroupFilterOptions();  // group sizes changed, and a new group may exist
           loadJobsList(currentJobsPage);
           loadKpiStats();
         } else {
-          showToast(data.error || 'Failed to move requirements.', 'error');
+          showToast(data.error || 'Could not move the jobs.', 'error');
         }
       } catch (err) {
         console.error('Error moving jobs between groups:', err);
-        showToast('Network error while moving requirements.', 'error');
+        showToast('Network error. Nothing was moved.', 'error');
       } finally {
         if (btnConfirm) {
-          btnConfirm.textContent = 'Confirm Move ⇄';
           btnConfirm.disabled = false;
+          syncMoveConfirmLabel();
         }
       }
     });

@@ -790,6 +790,9 @@ def auto_import_from_jobdexo(urls=None, limit=20, group_name=None):
                 is_featured=True,
                 posted_date=job_posted_date,
                 deadline=job_deadline,
+                source_name='Jobdexo',
+                source_url=job_data.get('source_url', ''),
+                source_job_id=job_data.get('source_url', '').strip('/').split('/')[-1] if job_data.get('source_url') else '',
             )
 
             created_jobs.append({
