@@ -317,4 +317,7 @@ REEL_ACCOUNT_HANDLE = os.environ.get('REEL_ACCOUNT_HANDLE', '').lstrip('@')
 # Daily reels are paused: each video render costs ~230 MB on the 512 MB instance.
 # Set REELS_ENABLED=true to turn drafting, rendering and auto-posting back on.
 REELS_ENABLED = os.environ.get('REELS_ENABLED', 'false').lower() in ('true', '1', 'yes')
+# Video stories/reels are off: an encode still pushed the 512 MB instance over its memory limit.
+# Stories post as still images. Set VIDEO_RENDERING_ENABLED=true only on a larger instance.
+VIDEO_RENDERING_ENABLED = os.environ.get('VIDEO_RENDERING_ENABLED', 'false').lower() in ('true', '1', 'yes')
 

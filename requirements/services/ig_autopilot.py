@@ -180,16 +180,19 @@ def publish_story(job, poster):
     path = None
     link = job_apply_url(job, public_base())
     title = f"{job.company_name} - {job.title}"
+    image_url = f"{public_base()}/api/jobs/{job.id}/ig-story-image/?v={int(_time.time())}"
     try:
         try:
-            path = render_video(job, public_base(), reply_cta=True, seconds=7.0)
-            media_id = poster.publish('story', video_url=_video_url('story', job, None), link_url=link, title=title, job=job)
+            if not getattr(settings, 'VIDEO_RENDERING_ENABLED', False):
+                media_id = poster.publish('story', link_url=link, title=title, job=job, image_url=image_url)
+            else:
+                path = render_video(job, public_base(), reply_cta=True, seconds=7.0)
+                media_id = poster.publish('story', video_url=_video_url('story', job, None), link_url=link, title=title, job=job)
         except ig_graph.IGError as exc:
             if exc.needs_reconnect:
                 raise
             logger.warning("Video story failed for job %s, posting image: %s", job.id, exc)
-            media_id = poster.publish('story', link_url=link, title=title, job=job,
-                                      image_url=f"{public_base()}/api/jobs/{job.id}/ig-story-image/?v={int(_time.time())}")
+            media_id = poster.publish('story', link_url=link, title=title, job=job, image_url=image_url)
         job.insta_story_published = True
         job.insta_story_media_id = media_id
         job.insta_story_published_at = timezone.now()

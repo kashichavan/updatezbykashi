@@ -249,7 +249,7 @@ def publish_via_reelflow(job, base_url='', fmt='image', on_stage=None):
     image_url = f"{base}/api/jobs/{job.id}/ig-story-image/?v={ts}"
     share_url = job.get_story_sticker_url(base_url=base) if hasattr(job, 'get_story_sticker_url') else f"{base}/job/{job.id}/"
     media = {'image_url': image_url}
-    if fmt == 'video':
+    if fmt == 'video' and getattr(settings, 'VIDEO_RENDERING_ENABLED', False):
         if on_stage:
             on_stage('rendering')
         try:

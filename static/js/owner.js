@@ -1639,13 +1639,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const videoEl = document.getElementById('ownerStoryPreviewVideo');
       const videoLink = document.getElementById('ownerStoryVideoLink');
-      if (videoLink) videoLink.href = `/api/jobs/${jobId}/ig-story-video/`;
+      // Video stories are turned off on the server (memory); the preview is the still image.
+      if (videoLink) videoLink.style.display = 'none';
       if (videoEl && imgEl) {
-        // Show the animated version when it is ready; keep the still image meanwhile.
+        videoEl.removeAttribute('src');
         videoEl.style.display = 'none';
         imgEl.style.display = '';
-        videoEl.onloadeddata = () => { videoEl.style.display = ''; imgEl.style.display = 'none'; videoEl.play().catch(() => {}); };
-        videoEl.src = `/api/jobs/${jobId}/ig-story-video/`;
       }
     } catch (err) {
       console.error('Failed to load story assets:', err);
@@ -1714,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const STORY_STAGE_LABEL = {
     queued: '⏳ Queued…',
-    rendering: '🎬 Rendering video…',
+    rendering: 'Preparing…',
     posting: '📤 Posting to Instagram…'
   };
 
@@ -1732,7 +1731,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.innerHTML = STORY_STAGE_LABEL.queued;
     try {
       const res = await authFetch(`/api/jobs/${jobId}/publish-ig-story/`, {
-        method: 'POST', body: JSON.stringify({ async: true, format: 'video' })
+        method: 'POST', body: JSON.stringify({ async: true, format: 'image' })
       });
       const data = await res.json();
       if (!data.queued) {  // server fell back to a direct (synchronous) publish
@@ -1757,7 +1756,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.disabled = false;
     if (st.state === 'done') {
       btn.innerHTML = '✅ Posted';
-      showToast(`🎬 Animated story is live! ${st.message || ''} Replies get the apply link by DM.`, 'success');
+      showToast(`Story is live. ${st.message || ''} Replies get the apply link by DM.`, 'success');
       setTimeout(() => { btn.innerHTML = original; }, 6000);
       return;
     }

@@ -106,7 +106,7 @@ class LinkDmFlowTests(Base):
         self.assertEqual(ig_link_dm.handle_webhook(payload), ["delivered"])
 
 
-@override_settings(REELS_ENABLED=True)
+@override_settings(REELS_ENABLED=True, VIDEO_RENDERING_ENABLED=True)
 class AutopilotTests(Base):
     @override_settings(REELS_CRON_SECRET="cron")
     @patch("requirements.services.ig_autopilot.run_due_async")

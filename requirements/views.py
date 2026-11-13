@@ -2171,6 +2171,8 @@ def api_job_ig_story_video(request, pk):
     """Animated 9:16 MP4 story (motion graphics). Rendered once per job version, then cached."""
     from django.http import FileResponse, HttpResponse
     from .services.instagram_story import generate_job_story_video
+    if not settings.VIDEO_RENDERING_ENABLED:
+        return HttpResponse('Video stories are turned off; use the story image.', status=404, content_type='text/plain')
 
     job = get_object_or_404(JobPosting, pk=pk)
     host_url = request.build_absolute_uri('/').rstrip('/')
@@ -2465,7 +2467,7 @@ def api_publish_job_ig_story(request, pk):
     from .services.ig_autopilot import get_poster
     if opts.get('async') and (get_poster() or getattr(settings, 'REELFLOW_STORY_TOKEN', '')):
         # Rendering video + Instagram processing can take a minute: run it in the background.
-        fmt = 'video' if opts.get('format', 'video') == 'video' else 'image'
+        fmt = 'video' if opts.get('format', 'video') == 'video' and settings.VIDEO_RENDERING_ENABLED else 'image'
         state = publish_story_async(job.id, base_url=host_url, fmt=fmt)
         return JsonResponse({'success': True, 'queued': True, 'state': state.get('state'), 'job_id': job.id}, status=202)
     publisher = InstagramStoryPublisher()

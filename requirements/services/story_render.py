@@ -525,8 +525,14 @@ def pick_track(job):
 _render_lock = threading.Lock()
 
 
+class VideoRenderingDisabled(RuntimeError):
+    """Raised instead of starting ffmpeg when VIDEO_RENDERING_ENABLED is off."""
+
+
 def render_video(job, base_url, reply_cta=True, seconds=7.0, fps=24, music=None) -> str:
     """Render (or reuse) an animated MP4; returns the file path. `music` = audio file path or None."""
+    if not getattr(settings, 'VIDEO_RENDERING_ENABLED', False):
+        raise VideoRenderingDisabled('Video rendering is turned off (VIDEO_RENDERING_ENABLED).')
     variant = _cta_mode(reply_cta) + ('_m' + os.path.splitext(os.path.basename(music))[0][:20] if music else '')
     path = video_cache_path(job, variant, seconds)
     if os.path.exists(path) and os.path.getsize(path) > 0:

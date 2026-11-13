@@ -14,7 +14,7 @@ def at(hour, minute=0):
     return timezone.make_aware(datetime.combine(today, time(hour, minute)))
 
 
-@override_settings(REELS_ENABLED=True)
+@override_settings(REELS_ENABLED=True, VIDEO_RENDERING_ENABLED=True)
 class DailyReelsTests(TestCase):
     def setUp(self):
         cat = Category.objects.create(name="Reels", slug="reels-cat")

@@ -209,6 +209,7 @@ class ReelFlowStoryTests(TestCase):
         self.assertIn("client_id=123", connect["Location"])
 
 
+@override_settings(VIDEO_RENDERING_ENABLED=True)
 class AnimatedStoryTests(TestCase):
     def setUp(self):
         category = Category.objects.create(name="Motion", slug="motion-story")
@@ -263,3 +264,42 @@ class AnimatedStoryTests(TestCase):
 
     def test_story_status_requires_owner(self):
         self.assertEqual(Client().get(f"/api/owner/jobs/{self.job.id}/story-status/").status_code, 401)
+
+
+class VideoRenderingOffTests(TestCase):
+    """VIDEO_RENDERING_ENABLED is off by default: stories post the still image, ffmpeg never starts."""
+
+    def setUp(self):
+        from django.contrib.auth.models import User
+        from requirements.models import Category, JobPosting
+        from django.utils import timezone
+        cat = Category.objects.create(name="Still", slug="still-story")
+        self.job = JobPosting.objects.create(title="Backend Engineer", company_name="Delta", category=cat,
+                                             location="Pune", deadline=timezone.now() + timezone.timedelta(days=7))
+        self.client.force_login(User.objects.create_user("owner_still", password="x", is_staff=True))
+
+    @override_settings(VIDEO_RENDERING_ENABLED=False, REELFLOW_STORY_TOKEN="tok", INSTAGRAM_ACCOUNT_HANDLE="ikashii_07")
+    def test_story_posts_image_without_rendering_video(self):
+        from django.core.cache import cache
+        cache.clear()
+
+        class SyncThread:
+            def __init__(self, target, **kw):
+                self.target = target
+
+            def start(self):
+                self.target()
+
+        ok = Mock(status_code=200)
+        ok.json.return_value = {"success": True, "media_id": "img1", "username": "ikashii_07"}
+        with patch("threading.Thread", SyncThread), \
+             patch("requirements.services.story_render.subprocess.Popen") as popen, \
+             patch("requests.post", return_value=ok) as post:
+            self.client.post(f"/api/jobs/{self.job.id}/publish-ig-story/", data='{"async": true, "format": "video"}',
+                             content_type="application/json", HTTP_ORIGIN="http://testserver")
+            video = self.client.get(f"/api/jobs/{self.job.id}/ig-story-video/")
+        popen.assert_not_called()
+        body = post.call_args.kwargs["json"]
+        self.assertIn("/ig-story-image/", body["image_url"])
+        self.assertNotIn("video_url", body)
+        self.assertEqual(video.status_code, 404)
