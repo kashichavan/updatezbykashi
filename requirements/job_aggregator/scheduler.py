@@ -34,7 +34,9 @@ def _try_acquire_scheduler_lock() -> bool:
 def _background_aggregation_loop():
     """Periodic worker loop running India-wide ingestion."""
     global _SCHEDULER_RUNNING
-    interval_minutes = int(os.getenv("JOB_AGGREGATION_INTERVAL_MINUTES", "15"))
+    from django.conf import settings
+    default_minutes = "180" if getattr(settings, "LITE_MODE", False) else "15"
+    interval_minutes = int(os.getenv("JOB_AGGREGATION_INTERVAL_MINUTES", default_minutes))
     interval_seconds = interval_minutes * 60
 
     logger.info(f"⚡ [India Job Aggregator] Daemon started. Cycle interval: {interval_minutes} minutes.")

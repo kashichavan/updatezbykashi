@@ -319,6 +319,13 @@ PUBLIC_SITE_URL = os.environ.get('PUBLIC_SITE_URL', 'https://kashiiupdatez.onlin
 REELS_CRON_SECRET = os.environ.get('REELS_CRON_SECRET', '')
 REEL_ACCOUNT_HANDLE = os.environ.get('REEL_ACCOUNT_HANDLE', '').lstrip('@')
 # Daily reels are paused: each video render costs ~230 MB on the 512 MB instance.
+# Lite mode (default): only the job listings, groups and owner portal run in the
+# background-free way a shared free Render account can afford. No 24/7 self-ping
+# (two always-on free services would exceed the 750 shared instance hours), no
+# backup thread, no Instagram auto-posting, and the multi-source job aggregator
+# runs every 3 hours instead of every 15 minutes. Set LITE_MODE=false for everything.
+LITE_MODE = os.environ.get('LITE_MODE', 'true').lower() in ('true', '1', 'yes')
+
 # Set REELS_ENABLED=true to turn drafting, rendering and auto-posting back on.
 REELS_ENABLED = os.environ.get('REELS_ENABLED', 'false').lower() in ('true', '1', 'yes')
 # Video stories/reels are off: an encode still pushed the 512 MB instance over its memory limit.

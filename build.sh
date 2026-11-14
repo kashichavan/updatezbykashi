@@ -50,6 +50,24 @@ else:
     print('==> Clean environment: No db.sqlite3 found. Will initialize fresh.')
 "
 
+# 2a. Say which database this build uses, and stop with a plain message if it is unreachable.
+python -c "
+import os, sys, django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'reqpulse.settings')
+django.setup()
+from django.db import connection
+engine = connection.settings_dict['ENGINE'].rsplit('.', 1)[-1]
+print(f'==> Database engine: {engine}')
+try:
+    connection.ensure_connection()
+except Exception as exc:
+    print(f'==> ERROR: cannot connect to the {engine} database: {exc}')
+    if os.environ.get('DATABASE_URL') or os.environ.get('DB_ENGINE'):
+        print('==> DATABASE_URL / DB_ENGINE is set in Render > Environment but that database is unreachable.')
+        print('==> Remove DATABASE_URL and DB_* there to use the SQLite database shipped in the repo.')
+    sys.exit(1)
+"
+
 # 2. Run migrations with resilient retry loop
 echo "==> Running database migrations..."
 for i in {1..5}; do
@@ -67,6 +85,23 @@ for i in {1..5}; do
   fi
 done
 
+LITE_MODE="${LITE_MODE:-true}"
+if [ "$LITE_MODE" != "false" ]; then
+  # Lite mode: the shipped db.sqlite3 already holds the jobs and groups.
+  # Restore the snapshot only if the database came up empty.
+  echo "==> Lite mode: skipping snapshot merge, live group pull, Jobdexo import and demo seeding."
+  python manage.py shell -c "
+from requirements.models import JobPosting
+from django.core.management import call_command
+if JobPosting.objects.count() == 0:
+    print('==> Database is empty: restoring snapshot...')
+    call_command('restore_snapshot')
+else:
+    print(f'==> Database has {JobPosting.objects.count()} jobs.')
+" || true
+  python requirements/seed_prod.py || true
+  python manage.py cleanup_db_quota || true
+else
 # 3. Non-destructive sync of all groups and jobs from snapshot
 python manage.py shell -c "
 from requirements.models import JobPosting, JobGroup
@@ -109,7 +144,9 @@ python manage.py cleanup_db_quota || true
 python manage.py sync_jobdexo --count 20 || true
 
 # 8. Seed Indian Market Demonstration Projects Library (36 curated projects)
-python manage.py seed_indian_projects || true
+python manage.py seed_indian_demo_projects || true
+
+fi
 
 # 9. Ship one self-contained database file. Fold any WAL back into db.sqlite3,
 # drop the -wal/-shm side files, and fail the build (keeping the previous

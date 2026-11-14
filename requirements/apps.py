@@ -24,6 +24,10 @@ class RequirementsConfig(AppConfig):
             if 'runserver' in sys.argv and os.environ.get('RUN_MAIN') != 'true':
                 return
 
+            from django.conf import settings
+            lite = getattr(settings, 'LITE_MODE', False)
+
+            # Job sources stay on in lite mode: they are what fills the listings.
             try:
                 from .job_aggregator.scheduler import start_job_aggregation_daemon
                 start_job_aggregation_daemon()
@@ -35,6 +39,9 @@ class RequirementsConfig(AppConfig):
                 start_hourly_sync_daemon()
             except Exception:
                 pass
+
+            if lite:
+                return  # no backup thread, self-ping or Instagram auto-posting
 
             try:
                 from .backup_service import start_daily_backup_daemon, setup_backup_signals
