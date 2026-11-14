@@ -2237,7 +2237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     container.setAttribute('aria-busy', 'true');
 
-    let url = `/api/owner/groups/?page=${page}&page_size=${encodeURIComponent(pageSizeVal)}&_=${Date.now()}`;
+    let url = `/api/owner/groups/?page=${page}&page_size=${encodeURIComponent(pageSizeVal)}&jobs_limit=0&_=${Date.now()}`;
     if (q) url += `&q=${encodeURIComponent(q)}`;
     if (filterVal !== 'all') url += `&filter=${encodeURIComponent(filterVal)}`;
 
@@ -2328,11 +2328,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }));
 
-      // If the jobs dialog is open (e.g. after removing a job), refresh it from the new data.
-      if (openGroupId && document.getElementById('groupJobsDialog')?.open) {
-        const g = groupsPageData.find(x => x.id === openGroupId);
-        if (g) renderGroupJobsDialog(g); else document.getElementById('groupJobsDialog').close();
-      }
+      // If the jobs dialog is open (e.g. after removing a job), reload its jobs.
+      if (openGroupId && document.getElementById('groupJobsDialog')?.open) refreshOpenGroupDialog();
     } catch (err) {
       console.error('Error loading groups:', err);
       container.innerHTML = `
@@ -2393,13 +2390,36 @@ document.addEventListener('DOMContentLoaded', () => {
   // ---- Group jobs dialog ----
   const groupJobsDialog = document.getElementById('groupJobsDialog');
 
-  function openGroupJobsDialog(g) {
+  // The card list carries no jobs (keeps the response small); fetch one group's jobs on open.
+  async function fetchGroupWithJobs(id) {
+    const res = await authFetch(`/api/owner/groups/?group_id=${id}&jobs_limit=300&_=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return ((await res.json()).groups || [])[0] || null;
+  }
+
+  async function openGroupJobsDialog(g) {
     if (!groupJobsDialog) return;
     openGroupId = g.id;
     const search = document.getElementById('groupJobsSearch');
     if (search) search.value = '';
-    renderGroupJobsDialog(g);
+    renderGroupJobsDialog({ ...g, jobs: [] }, true);
     groupJobsDialog.showModal();
+    await refreshOpenGroupDialog();
+  }
+
+  async function refreshOpenGroupDialog() {
+    const id = openGroupId;
+    if (!id) return;
+    try {
+      const full = await fetchGroupWithJobs(id);
+      if (openGroupId !== id) return;
+      if (!full) { groupJobsDialog.close(); return; }
+      const i = groupsPageData.findIndex(x => x.id === id);
+      if (i >= 0) groupsPageData[i] = full;
+      renderGroupJobsDialog(full);
+    } catch (err) {
+      document.getElementById('groupJobsList').innerHTML = `<p class="gj-empty">Could not load jobs: ${escapeHtml(err.message)}</p>`;
+    }
   }
 
   function selectedGroupJobIds() {
@@ -2422,7 +2442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function renderGroupJobsDialog(g) {
+  function renderGroupJobsDialog(g, loading = false) {
     const total = g.total_jobs_count || 0;
     const jobs = g.jobs || [];
     document.getElementById('groupJobsTitle').textContent = g.name;
@@ -2430,7 +2450,10 @@ document.addEventListener('DOMContentLoaded', () => {
       `${total} job${total === 1 ? '' : 's'} · ${g.active_jobs_count || 0} live` +
       (jobs.length < total ? ` · showing the newest ${jobs.length}` : '');
     const list = document.getElementById('groupJobsList');
-    if (!jobs.length) {
+    if (loading) {
+      document.getElementById('groupJobsSub').textContent = `${total} job${total === 1 ? '' : 's'} · loading…`;
+      list.innerHTML = '<p class="gj-empty">Loading jobs…</p>';
+    } else if (!jobs.length) {
       list.innerHTML = '<p class="gj-empty">This group has no jobs. Use "Add jobs by ID" from the group card to fill it.</p>';
     } else {
       list.innerHTML = jobs.map(j => {

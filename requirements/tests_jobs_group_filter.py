@@ -84,5 +84,14 @@ class JobsFeedCacheInvalidationTests(TestCase):
                 title=f"J{i}", company_name="Acme", category=cat,
                 deadline=timezone.now() + timezone.timedelta(days=5)))
         self.client.force_login(self.owner)
+        # Card list: counts only, no job rows (small response).
+        data = self.client.get("/api/owner/groups/", {"q": "Two", "jobs_limit": 0}).json()
+        self.assertEqual(data["groups"][0]["jobs"], [])
+        self.assertEqual(data["groups"][0]["total_jobs_count"], 20)
+        # Dialog: one group, every job.
+        data = self.client.get("/api/owner/groups/", {"group_id": self.g2.id, "jobs_limit": 300}).json()
+        self.assertEqual([g["id"] for g in data["groups"]], [self.g2.id])
+        self.assertEqual(len(data["groups"][0]["jobs"]), 20)
+        # Callers that omit jobs_limit get every job.
         data = self.client.get("/api/owner/groups/", {"q": "Two"}).json()
         self.assertEqual(len(data["groups"][0]["jobs"]), 20)

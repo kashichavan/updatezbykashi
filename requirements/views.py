@@ -2734,7 +2734,7 @@ def api_owner_groups(request):
         total_count = qs.count()
 
         if page_size_val == 'all':
-            page_size = max(1, total_count)
+            page_size = max(1, min(100, total_count))  # memory cap on a 512 MB instance
             page_num = 1
         else:
             try:
