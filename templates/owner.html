@@ -1421,6 +1421,40 @@
     .gj-foot-actions > * { flex: 1 1 0; justify-content: center; padding: 0 8px; }
   }
 
+
+  /* ---------- Instagram followers tab ---------- */
+  .fl-upload { cursor: pointer; }
+  .fl-upload:focus-within { outline: 2px solid var(--blue-primary); outline-offset: 2px; }
+  .fl-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .fl-stat { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; }
+  .fl-stat b { display: block; font-size: 22px; font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums; }
+  .fl-stat span { font-size: 12.5px; color: #475569; }
+  .fl-stat.accent b { color: #b91c1c; }
+  .fl-note { grid-column: 1 / -1; font-size: 12.5px; color: #475569; margin: -2px 0 0; }
+  .fl-help, .fl-lost { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0 14px; margin-bottom: 14px; }
+  .fl-help summary, .fl-lost summary { cursor: pointer; padding: 12px 0; font-size: 14px; font-weight: 600; color: #0f172a; }
+  .fl-help ol { margin: 0 0 14px; padding-left: 20px; font-size: 13.5px; color: #334155; line-height: 1.6; }
+  .fl-today { margin-bottom: 14px; }
+  .fl-today-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .fl-today-head h3 { margin: 0; font-size: 16px; font-weight: 700; color: #0f172a; }
+  .fl-bar { height: 6px; background: #e2e8f0; border-radius: 9px; overflow: hidden; margin-bottom: 10px; }
+  .fl-bar i { display: block; height: 100%; width: 0; background: #10b981; transition: width .2s ease; }
+  .fl-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 6px; }
+  .fl-list-plain { padding-bottom: 14px; }
+  .fl-row { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 8px 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; }
+  .fl-row.done { background: #f8fafc; }
+  .fl-row.done a { color: #64748b; text-decoration: line-through; }
+  .fl-row.opened:not(.done) { border-color: #93c5fd; }
+  .fl-n { width: 24px; flex-shrink: 0; font-size: 12px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+  .fl-row a { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #1d4ed8; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fl-row a:hover { text-decoration: underline; }
+  .fl-row .jr-btn { height: 30px; flex-shrink: 0; }
+  .fl-empty { padding: 28px 16px; text-align: center; font-size: 13.5px; color: #475569; background: #fff; border: 1px dashed #cbd5e1; border-radius: 10px; }
+  @media (max-width: 640px) {
+    .fl-list { grid-template-columns: 1fr; }
+    .fl-upload { flex: 1 1 auto; justify-content: center; }
+  }
+
   /* Phone header: the action buttons wrap onto their own row instead of running off-screen */
   @media (max-width: 640px) {
     .owner-header-navbar { flex-wrap: wrap; height: auto !important; row-gap: 8px; padding-top: 10px; padding-bottom: 10px; }
@@ -1519,6 +1553,9 @@
       </button>
       <button type="button" class="owner-link-item owner-nav-item" data-tab="tabActivity">
         <span>Activity</span>
+      </button>
+      <button type="button" class="owner-link-item owner-nav-item" data-tab="tabFollowers">
+        <span>Followers</span>
       </button>
     </div>
   </nav>
@@ -2218,6 +2255,52 @@
       </div>
     </dialog>
 
+    <div id="tabFollowers" class="workspace-card tab-content" style="display: none;">
+      <div class="gp-head">
+        <div>
+          <h2>Don't follow you back</h2>
+          <p>Instagram doesn't let apps read follower lists, so this uses your own data download. Nothing here logs in or unfollows for you: open each name and tap Unfollow in Instagram.</p>
+        </div>
+        <div class="gp-head-actions">
+          <label class="jobs-primary-btn fl-upload">
+            <input type="file" id="flFile" accept=".zip,application/zip" hidden>
+            <span id="flUploadLabel">Import download (.zip)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="fl-stats" id="flStats" aria-live="polite"></div>
+
+      <details class="fl-help" id="flHelp">
+        <summary>How to get the download</summary>
+        <ol>
+          <li>In Instagram: <b>Accounts Center → Your information and permissions → Download your information</b>.</li>
+          <li>Choose <b>Some of your information → Followers and following</b>.</li>
+          <li>Format <b>JSON</b>, date range <b>All time</b>, then create files.</li>
+          <li>When the email arrives, download the .zip and import it here. Import a fresh one every week or two to see who unfollowed you.</li>
+        </ol>
+      </details>
+
+      <section class="fl-today" id="flToday" hidden>
+        <div class="fl-today-head">
+          <h3>Today's list</h3>
+          <span id="flTodayCount" class="gj-count"></span>
+        </div>
+        <div class="bar fl-bar" aria-hidden="true"><i id="flBar"></i></div>
+        <ul class="fl-list" id="flList"></ul>
+      </section>
+
+      <details class="fl-lost" id="flLost" hidden>
+        <summary id="flLostTitle"></summary>
+        <ul class="fl-list fl-list-plain" id="flLostList"></ul>
+      </details>
+
+      <details class="fl-lost" id="flKept" hidden>
+        <summary id="flKeptTitle"></summary>
+        <ul class="fl-list" id="flKeptList"></ul>
+      </details>
+    </div>
+
     <!-- ==========================================
          TAB 6: WEBSITE VISITOR & TRAFFIC ANALYTICS
          ========================================== -->
@@ -2704,7 +2787,7 @@
   <div class="picker-list" id="pickerList" role="listbox"></div>
   <p class="picker-empty" id="pickerEmpty" hidden>No matches</p>
 </dialog>
-<script src="{% static 'js/owner.js' %}?v=2026111401"></script>
+<script src="{% static 'js/owner.js' %}?v=2026111402"></script>
 {% endblock %}
 
 {% block motion_js %}{% endblock %}

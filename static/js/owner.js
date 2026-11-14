@@ -65,7 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'tabSmartParse': { title: 'Single-job parser', sub: 'Paste one job message; the parser fills in the fields and publishes it.' },
     'tabPost': { title: 'Post a job', sub: 'Fill in the form to publish one job or internship.' },
     'tabCategory': { title: 'Categories', sub: 'Add or edit job categories and see how many posts each one has.' },
-    'tabActivity': { title: 'Activity log', sub: 'Parses, status changes and publishes made from this portal.' }
+    'tabActivity': { title: 'Activity log', sub: 'Parses, status changes and publishes made from this portal.' },
+    'tabFollowers': { title: 'Instagram followers', sub: "Accounts you follow that don't follow you back, 50 a day, and who unfollowed you." }
   };
 
   const tabUrlMap = {
@@ -78,7 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
     'tabSmartParse': '/owner/single-parser/',
     'tabPost': '/owner/post-job/',
     'tabCategory': '/owner/categories/',
-    'tabActivity': '/owner/activity/'
+    'tabActivity': '/owner/activity/',
+    'tabFollowers': '/owner/instagram-followers/'
   };
 
   const urlTabMap = {
@@ -92,7 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
     '/owner/single-parser/': 'tabSmartParse',
     '/owner/post-job/': 'tabPost',
     '/owner/categories/': 'tabCategory',
-    '/owner/activity/': 'tabActivity'
+    '/owner/activity/': 'tabActivity',
+    '/owner/instagram-followers/': 'tabFollowers'
   };
 
   init();
@@ -193,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (targetId === 'tabCategory') loadCategoryList();
     if (targetId === 'tabGroups') loadGroupsList();
     if (targetId === 'tabAnalytics') loadAnalyticsData();
+    if (targetId === 'tabFollowers' && typeof window.loadFollowersTab === 'function') window.loadFollowersTab();
   }
 
   window.ownerSwitchTab = switchTab;
@@ -3158,6 +3162,137 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'moveRequirementsModal') {
       closeMoveRequirementsModal();
       return;
+    }
+  });
+
+  // ---- Instagram followers: daily "doesn't follow back" list from the owner's data download ----
+  const flEls = {
+    stats: document.getElementById('flStats'), help: document.getElementById('flHelp'),
+    today: document.getElementById('flToday'), list: document.getElementById('flList'),
+    count: document.getElementById('flTodayCount'), bar: document.getElementById('flBar'),
+    lost: document.getElementById('flLost'), lostTitle: document.getElementById('flLostTitle'), lostList: document.getElementById('flLostList'),
+    kept: document.getElementById('flKept'), keptTitle: document.getElementById('flKeptTitle'), keptList: document.getElementById('flKeptList'),
+    file: document.getElementById('flFile'), uploadLabel: document.getElementById('flUploadLabel')
+  };
+  const igUrl = u => `https://www.instagram.com/${encodeURIComponent(u)}/`;
+  const fmt = n => (n ?? 0).toLocaleString('en-IN');
+
+  function flStat(value, label, accent) {
+    return `<div class="fl-stat${accent ? ' accent' : ''}"><b>${value}</b><span>${escapeHtml(label)}</span></div>`;
+  }
+
+  function renderFollowers(s) {
+    if (!flEls.stats) return;
+    const live = s.live;
+    const snap = s.snapshot;
+    let html = '';
+    if (snap) {
+      html += flStat(fmt(snap.not_following_back), "Don't follow back", true);
+      html += flStat(fmt(s.left), 'Left to review');
+      html += flStat(fmt(s.unfollowed_total), 'Unfollowed here');
+      html += flStat(fmt(snap.followers), 'Followers in download');
+      html += flStat(fmt(snap.following), 'Following in download');
+    }
+    if (live) html += flStat(fmt(live.followers), `Followers now (@${live.username})`);
+    html += `<p class="fl-note">${snap ? `Download imported ${escapeHtml(snap.taken_at)}.` : 'No download imported yet.'}` +
+      `${live ? ' Live count from the connected account.' : ''}</p>`;
+    flEls.stats.innerHTML = html;
+    flEls.help.open = !snap;
+
+    flEls.today.hidden = !snap;
+    if (snap) {
+      const batch = s.batch || [];
+      const done = s.done_today || 0;
+      flEls.count.textContent = `${done} of ${s.daily_limit} done today`;
+      flEls.bar.style.width = `${Math.min(100, (100 * done) / s.daily_limit)}%`;
+      if (!batch.length) {
+        flEls.list.innerHTML = `<li class="fl-empty">${s.left ? "Today's 50 are done. Come back tomorrow." : 'Nobody left: everyone you follow follows you back, or you chose to keep them.'}</li>`;
+      } else {
+        flEls.list.innerHTML = batch.map((r, i) => `
+          <li class="fl-row${r.done ? ' done' : ''}">
+            <span class="fl-n">${i + 1}</span>
+            <a href="${igUrl(r.username)}" target="_blank" rel="noopener">@${escapeHtml(r.username)}</a>
+            ${r.done
+              ? `<button type="button" class="jr-btn fl-act" data-act="undo" data-u="${escapeHtml(r.username)}">Undo</button>`
+              : `<button type="button" class="jr-btn fl-act" data-act="keep" data-u="${escapeHtml(r.username)}" title="Keep following; never list again">Keep</button>
+                 <button type="button" class="jr-btn primary fl-act" data-act="done" data-u="${escapeHtml(r.username)}">Unfollowed</button>`}
+          </li>`).join('');
+      }
+    }
+
+    flEls.lost.hidden = !s.lost_since;
+    if (s.lost_since) {
+      flEls.lostTitle.textContent = `Unfollowed you since ${s.lost_since} (${fmt(s.lost_count)})`;
+      flEls.lostList.innerHTML = s.lost.length
+        ? s.lost.map((u, i) => `<li class="fl-row"><span class="fl-n">${i + 1}</span><a href="${igUrl(u)}" target="_blank" rel="noopener">@${escapeHtml(u)}</a></li>`).join('')
+        : '<li class="fl-empty">Nobody unfollowed you between the last two downloads.</li>';
+    }
+
+    const kept = s.kept || [];
+    flEls.kept.hidden = !kept.length;
+    if (kept.length) {
+      flEls.keptTitle.textContent = `Kept (${kept.length})`;
+      flEls.keptList.innerHTML = kept.map(u => `
+        <li class="fl-row"><a href="${igUrl(u)}" target="_blank" rel="noopener">@${escapeHtml(u)}</a>
+        <button type="button" class="jr-btn fl-act" data-act="undo" data-u="${escapeHtml(u)}">Put back</button></li>`).join('');
+    }
+  }
+
+  async function loadFollowersTab() {
+    if (!flEls.stats) return;
+    if (!flEls.stats.innerHTML) flEls.stats.innerHTML = '<p class="fl-note">Loading…</p>';
+    try {
+      const res = await authFetch(`/api/owner/ig-followers/?_=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      renderFollowers(data);
+    } catch (err) {
+      flEls.stats.innerHTML = `<p class="fl-note">Could not load: ${escapeHtml(err.message)}</p>`;
+    }
+  }
+  window.loadFollowersTab = loadFollowersTab;
+  // The tab may already be showing (direct visit to /owner/instagram-followers/) before this code ran.
+  if (document.getElementById('tabFollowers')?.style.display === 'block') loadFollowersTab();
+
+  document.getElementById('tabFollowers')?.addEventListener('click', async (e) => {
+    const link = e.target.closest('.fl-row a');
+    if (link) link.closest('.fl-row').classList.add('opened');
+    const btn = e.target.closest('.fl-act');
+    if (!btn) return;
+    btn.disabled = true;
+    try {
+      const res = await authFetch('/api/owner/ig-followers/mark/', {
+        method: 'POST', body: JSON.stringify({ username: btn.dataset.u, action: btn.dataset.act })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      renderFollowers(data);
+    } catch (err) {
+      showToast(`Could not save: ${err.message}`, 'error');
+      btn.disabled = false;
+    }
+  });
+
+  flEls.file?.addEventListener('change', async () => {
+    const f = flEls.file.files[0];
+    if (!f) return;
+    const label = flEls.uploadLabel.textContent;
+    flEls.uploadLabel.textContent = 'Importing…';
+    const body = new FormData();
+    body.append('file', f);
+    try {
+      const res = await authFetch('/api/owner/ig-followers/import/', { method: 'POST', body });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      renderFollowers(data);
+      const im = data.imported || {};
+      showToast(`Imported ${fmt(im.followers)} followers and ${fmt(im.following)} following.`, 'success');
+      logActivity('Imported Instagram followers', `${im.followers} followers, ${im.following} following`);
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      flEls.uploadLabel.textContent = label;
+      flEls.file.value = '';
     }
   });
 

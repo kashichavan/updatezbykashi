@@ -1,6 +1,6 @@
 from django.urls import path
 from django.views.generic import RedirectView
-from . import views
+from . import views, views_followers
 
 urlpatterns = [
     path('', views.index_view, name='index'),
@@ -128,6 +128,7 @@ urlpatterns = [
     path('owner/categories/', views.owner_view, name='owner_categories'),
     path('owner/groups/', views.owner_view, name='owner_groups'),
     path('owner/activity/', views.owner_view, name='owner_activity'),
+    path('owner/instagram-followers/', views.owner_view, name='owner_ig_followers'),
 
     # Public API Endpoints
     path('api/cron/sync-jobs/', views.api_cron_sync_jobs, name='api_cron_sync_jobs'),
@@ -160,6 +161,9 @@ urlpatterns = [
     path('api/owner/instagram/status/', views.api_owner_instagram_status, name='api_owner_instagram_status'),
     path('api/owner/categories/', views.api_owner_categories, name='api_owner_categories'),
     path('api/owner/groups/', views.api_owner_groups, name='api_owner_groups'),
+    path('api/owner/ig-followers/', views_followers.api_ig_followers, name='api_ig_followers'),
+    path('api/owner/ig-followers/import/', views_followers.api_ig_followers_import, name='api_ig_followers_import'),
+    path('api/owner/ig-followers/mark/', views_followers.api_ig_followers_mark, name='api_ig_followers_mark'),
     path('api/owner/groups/move-jobs/', views.api_owner_groups_move_jobs, name='api_owner_groups_move_jobs'),
     path('api/owner/groups/auto-organize/', views.api_owner_groups_auto_organize, name='api_owner_groups_auto_organize'),
     path('api/owner/groups/<int:group_pk>/remove-job/<int:job_pk>/', views.api_owner_group_remove_job, name='api_owner_group_remove_job'),

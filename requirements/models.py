@@ -1033,3 +1033,40 @@ class IGHandledEvent(models.Model):
     """Webhook event ids already handled (Meta retries deliveries)."""
     key = models.CharField(max_length=200, unique=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+
+class IGFollowSnapshot(models.Model):
+    """One imported Instagram data download: who follows the account and who it follows.
+
+    Instagram's API only exposes follower *counts*, so the lists come from the owner's
+    own "Download your information → Followers and following" export.
+    """
+    handle = models.CharField(max_length=120, db_index=True)
+    taken_at = models.DateTimeField(auto_now_add=True)
+    followers = models.JSONField(default=list)   # [username, ...]
+    following = models.JSONField(default=dict)   # {username: followed_at_unix_ts}
+    followers_count = models.PositiveIntegerField(default=0)
+    following_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-taken_at', '-id']
+
+    def __str__(self):
+        return f"@{self.handle} snapshot {self.taken_at:%Y-%m-%d %H:%M}"
+
+
+class IGUnfollowMark(models.Model):
+    """Owner's decision about an account they follow: unfollowed it (done) or keep following it."""
+    STATUS_DONE = 'done'
+    STATUS_KEEP = 'keep'
+    handle = models.CharField(max_length=120)
+    username = models.CharField(max_length=30)
+    status = models.CharField(max_length=4, choices=[(STATUS_DONE, 'Unfollowed'), (STATUS_KEEP, 'Keep')])
+    marked_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = [('handle', 'username')]
+        indexes = [models.Index(fields=['handle', 'status', 'marked_at'])]
+
+    def __str__(self):
+        return f"@{self.handle} → {self.username}: {self.status}"
