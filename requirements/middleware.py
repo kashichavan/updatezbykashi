@@ -428,3 +428,29 @@ class SecurityHeadersMiddleware:
 
 
 
+
+
+# Commercial SEO crawlers and scrapers that download every page but send no visitors.
+# They burn the hosting bandwidth allowance. Search engines (Google, Bing), link
+# previews (WhatsApp, Instagram, Telegram) and AI search crawlers are not listed.
+BLOCKED_BOT_TOKENS = (
+    'ahrefsbot', 'semrushbot', 'mj12bot', 'dotbot', 'bytespider', 'petalbot',
+    'dataforseobot', 'blexbot', 'megaindex', 'serpstatbot', 'seekportbot',
+    'barkrowler', 'zoominfobot', 'imagesiftbot', 'awariobot', 'censysinspect', 'scrapy',
+)
+
+
+class BadBotMiddleware:
+    """Answer known bandwidth-heavy bots with an empty 403 before any page is built."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        ua = request.META.get('HTTP_USER_AGENT', '').lower()
+        path = request.path
+        # Never block health checks, webhooks or our own keep-alive ping.
+        if ua and not path.startswith(('/api/ping', '/instagram/webhook', '/healthz', '/robots.txt')):
+            if any(tok in ua for tok in BLOCKED_BOT_TOKENS):
+                return HttpResponse(status=403)
+        return self.get_response(request)

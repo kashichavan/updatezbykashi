@@ -73,8 +73,12 @@ SIMPLE_JWT = {
 
 MIDDLEWARE = [
     'requirements.middleware.HealthCheckMiddleware',
+    'requirements.middleware.BadBotMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    # Below WhiteNoise so it only sees pages and API responses (static files are
+    # pre-compressed by WhiteNoise). Cuts outbound bandwidth for HTML/JSON ~80%.
+    'django.middleware.gzip.GZipMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
