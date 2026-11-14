@@ -127,8 +127,14 @@ _SQLITE_OPTIONS = {
     "transaction_mode": "IMMEDIATE",
 }
 
+LITE_MODE = os.environ.get('LITE_MODE', 'true').lower() in ('true', '1', 'yes')
+
 # Database Configuration: PostgreSQL on Render or Local/Internal SQLite3
-_db_url = os.environ.get("DATABASE_URL", "").strip()
+# Lite mode always uses the SQLite database shipped in the repo and ignores any
+# DATABASE_URL / DB_* left in the environment (e.g. one copied from another
+# service). Set USE_EXTERNAL_DB=true to use them anyway.
+_use_external_db = (not LITE_MODE) or os.environ.get('USE_EXTERNAL_DB', '').lower() in ('true', '1', 'yes')
+_db_url = os.environ.get("DATABASE_URL", "").strip() if _use_external_db else ""
 if _db_url.startswith(("postgres://", "postgresql://")):
     try:
         import dj_database_url
@@ -158,7 +164,7 @@ if _db_url.startswith(("postgres://", "postgresql://")):
                 "OPTIONS": dict(_SQLITE_OPTIONS),
             }
         }
-elif os.environ.get("DB_ENGINE"):
+elif _use_external_db and os.environ.get("DB_ENGINE"):
     DATABASES = {"default": {
         "ENGINE": os.environ["DB_ENGINE"],
         "NAME": os.environ["DB_NAME"],
@@ -324,7 +330,7 @@ REEL_ACCOUNT_HANDLE = os.environ.get('REEL_ACCOUNT_HANDLE', '').lstrip('@')
 # (two always-on free services would exceed the 750 shared instance hours), no
 # backup thread, no Instagram auto-posting, and the multi-source job aggregator
 # runs every 3 hours instead of every 15 minutes. Set LITE_MODE=false for everything.
-LITE_MODE = os.environ.get('LITE_MODE', 'true').lower() in ('true', '1', 'yes')
+# LITE_MODE is defined near the database settings (it also picks the database).
 
 # Set REELS_ENABLED=true to turn drafting, rendering and auto-posting back on.
 REELS_ENABLED = os.environ.get('REELS_ENABLED', 'false').lower() in ('true', '1', 'yes')
